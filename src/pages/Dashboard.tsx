@@ -6,11 +6,23 @@ import { StockAlerts } from "@/components/dashboard/StockAlerts";
 import { TrustScore } from "@/components/dashboard/TrustScore";
 import { RecyclingPoints } from "@/components/dashboard/RecyclingPoints";
 import { NotificationSystem } from "@/components/dashboard/NotificationSystem";
-import { Bell, Search, Plus } from "lucide-react";
+import { Bell, Search, Plus, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
+  const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
+  const displayName = profile?.full_name || profile?.business_name || "Seller";
+
   return (
     <div className="min-h-screen bg-background">
       <DashboardSidebar />
@@ -20,7 +32,7 @@ export default function Dashboard() {
         {/* Header */}
         <header className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Welcome back, Jean 👋</h1>
+            <h1 className="text-2xl font-bold text-foreground">Welcome back, {displayName.split(' ')[0]} 👋</h1>
             <p className="text-muted-foreground mt-1">Here's what's happening with your boutiques today.</p>
           </div>
           <div className="flex items-center gap-4">
@@ -40,6 +52,9 @@ export default function Dashboard() {
             <Button className="gap-2">
               <Plus className="w-4 h-4" />
               New Product
+            </Button>
+            <Button variant="outline" size="icon" onClick={handleSignOut} title="Sign out">
+              <LogOut className="w-4 h-4" />
             </Button>
           </div>
         </header>
