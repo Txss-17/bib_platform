@@ -11,6 +11,17 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 
+// Dashboard pages
+import Ventes from "./pages/dashboard/Ventes";
+import Commandes from "./pages/dashboard/Commandes";
+import Produits from "./pages/dashboard/Produits";
+import ProduitsFournisseurs from "./pages/dashboard/ProduitsFournisseurs";
+import Paiements from "./pages/dashboard/Paiements";
+import SEOAnalytics from "./pages/dashboard/SEOAnalytics";
+import Boutiques from "./pages/dashboard/Boutiques";
+import BoutiqueCreate from "./pages/dashboard/BoutiqueCreate";
+import Parametres from "./pages/dashboard/Parametres";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -29,6 +40,78 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/ventes"
+              element={
+                <ProtectedRoute>
+                  <Ventes />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/commandes"
+              element={
+                <ProtectedRoute>
+                  <Commandes />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/produits"
+              element={
+                <ProtectedRoute>
+                  <Produits />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/produits-fournisseurs"
+              element={
+                <ProtectedRoute>
+                  <ProduitsFournisseurs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/paiements"
+              element={
+                <ProtectedRoute>
+                  <Paiements />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/seo-analytics"
+              element={
+                <ProtectedRoute>
+                  <SEOAnalytics />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/boutiques"
+              element={
+                <ProtectedRoute>
+                  <Boutiques />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/boutiques/create"
+              element={
+                <ProtectedRoute>
+                  <BoutiqueCreate />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/parametres"
+              element={
+                <ProtectedRoute>
+                  <Parametres />
                 </ProtectedRoute>
               }
             />
