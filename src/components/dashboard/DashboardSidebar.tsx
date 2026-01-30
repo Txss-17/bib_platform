@@ -4,30 +4,32 @@ import {
   Store,
   Package,
   ShoppingCart,
-  BarChart3,
-  Recycle,
+  TrendingUp,
+  Truck,
+  CreditCard,
+  Search,
   Settings,
   HelpCircle,
-  LogOut,
   ChevronLeft,
   ChevronRight,
-  Bell,
   User,
 } from "lucide-react";
 import { useState } from "react";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Ventes", url: "/dashboard/ventes", icon: TrendingUp },
+  { title: "Commandes", url: "/dashboard/commandes", icon: ShoppingCart },
+  { title: "Produits", url: "/dashboard/produits", icon: Package },
+  { title: "Produits fournisseurs", url: "/dashboard/produits-fournisseurs", icon: Truck },
+  { title: "Paiements", url: "/dashboard/paiements", icon: CreditCard },
+  { title: "SEO & Analytics", url: "/dashboard/seo-analytics", icon: Search },
   { title: "Boutiques", url: "/dashboard/boutiques", icon: Store },
-  { title: "Products", url: "/dashboard/products", icon: Package },
-  { title: "Orders", url: "/dashboard/orders", icon: ShoppingCart },
-  { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
-  { title: "Recycling", url: "/dashboard/recycling", icon: Recycle },
 ];
 
 const bottomNavItems = [
-  { title: "Settings", url: "/dashboard/settings", icon: Settings },
-  { title: "Help & Support", url: "/dashboard/help", icon: HelpCircle },
+  { title: "Paramètres", url: "/dashboard/parametres", icon: Settings },
+  { title: "Aide & Support", url: "/dashboard/aide", icon: HelpCircle },
 ];
 
 export function DashboardSidebar() {
@@ -62,7 +64,7 @@ export function DashboardSidebar() {
       </div>
 
       {/* Main Navigation */}
-      <nav className="flex-1 p-4 space-y-2">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {mainNavItems.map((item) => (
           <NavLink
             key={item.title}
@@ -73,13 +75,13 @@ export function DashboardSidebar() {
             activeClassName="bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary"
           >
             <item.icon className="w-5 h-5 shrink-0" />
-            {!collapsed && <span className="font-medium">{item.title}</span>}
+            {!collapsed && <span className="font-medium text-sm">{item.title}</span>}
           </NavLink>
         ))}
       </nav>
 
       {/* Bottom Navigation */}
-      <div className="p-4 border-t border-border/50 space-y-2">
+      <div className="p-4 border-t border-border/50 space-y-1">
         {bottomNavItems.map((item) => (
           <NavLink
             key={item.title}
@@ -90,7 +92,7 @@ export function DashboardSidebar() {
             activeClassName="bg-primary/10 text-primary"
           >
             <item.icon className="w-5 h-5 shrink-0" />
-            {!collapsed && <span className="font-medium">{item.title}</span>}
+            {!collapsed && <span className="font-medium text-sm">{item.title}</span>}
           </NavLink>
         ))}
 

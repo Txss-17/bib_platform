@@ -14,6 +14,235 @@ export type Database = {
   }
   public: {
     Tables: {
+      boutiques: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          slug: string
+          status: Database["public"]["Enums"]["boutique_status"]
+          theme_settings: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          slug: string
+          status?: Database["public"]["Enums"]["boutique_status"]
+          theme_settings?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          slug?: string
+          status?: Database["public"]["Enums"]["boutique_status"]
+          theme_settings?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      moq_reservations: {
+        Row: {
+          expires_at: string
+          id: string
+          quantity: number
+          reserved_at: string
+          status: Database["public"]["Enums"]["moq_status"]
+          supplier_product_id: string
+          user_id: string
+        }
+        Insert: {
+          expires_at?: string
+          id?: string
+          quantity: number
+          reserved_at?: string
+          status?: Database["public"]["Enums"]["moq_status"]
+          supplier_product_id: string
+          user_id: string
+        }
+        Update: {
+          expires_at?: string
+          id?: string
+          quantity?: number
+          reserved_at?: string
+          status?: Database["public"]["Enums"]["moq_status"]
+          supplier_product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moq_reservations_supplier_product_id_fkey"
+            columns: ["supplier_product_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          amount: number
+          boutique_id: string
+          created_at: string
+          customer_email: string
+          customer_name: string
+          id: string
+          logistics_status: Database["public"]["Enums"]["logistics_status"]
+          market: string
+          order_number: string
+          product_id: string
+        }
+        Insert: {
+          amount: number
+          boutique_id: string
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          id?: string
+          logistics_status?: Database["public"]["Enums"]["logistics_status"]
+          market?: string
+          order_number: string
+          product_id: string
+        }
+        Update: {
+          amount?: number
+          boutique_id?: string
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          id?: string
+          logistics_status?: Database["public"]["Enums"]["logistics_status"]
+          market?: string
+          order_number?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          boutique_id: string | null
+          created_at: string
+          id: string
+          payout_date: string | null
+          period_end: string
+          period_start: string
+          status: Database["public"]["Enums"]["payment_status"]
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          boutique_id?: string | null
+          created_at?: string
+          id?: string
+          payout_date?: string | null
+          period_end: string
+          period_start: string
+          status?: Database["public"]["Enums"]["payment_status"]
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          boutique_id?: string | null
+          created_at?: string
+          id?: string
+          payout_date?: string | null
+          period_end?: string
+          period_start?: string
+          status?: Database["public"]["Enums"]["payment_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          applied_margin: number
+          boutique_id: string
+          created_at: string
+          cumulative_sales: number
+          id: string
+          public_price: number
+          status: Database["public"]["Enums"]["product_status"]
+          supplier_product_id: string
+          updated_at: string
+        }
+        Insert: {
+          applied_margin: number
+          boutique_id: string
+          created_at?: string
+          cumulative_sales?: number
+          id?: string
+          public_price: number
+          status?: Database["public"]["Enums"]["product_status"]
+          supplier_product_id: string
+          updated_at?: string
+        }
+        Update: {
+          applied_margin?: number
+          boutique_id?: string
+          created_at?: string
+          cumulative_sales?: number
+          id?: string
+          public_price?: number
+          status?: Database["public"]["Enums"]["product_status"]
+          supplier_product_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_supplier_product_id_fkey"
+            columns: ["supplier_product_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -59,15 +288,76 @@ export type Database = {
         }
         Relationships: []
       }
+      supplier_products: {
+        Row: {
+          base_price: number
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          market: string
+          max_margin_percent: number
+          moq: number
+          name: string
+          performance_history: Json | null
+          rotation_indicator: Database["public"]["Enums"]["rotation_indicator"]
+        }
+        Insert: {
+          base_price: number
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          market?: string
+          max_margin_percent?: number
+          moq?: number
+          name: string
+          performance_history?: Json | null
+          rotation_indicator?: Database["public"]["Enums"]["rotation_indicator"]
+        }
+        Update: {
+          base_price?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          market?: string
+          max_margin_percent?: number
+          moq?: number
+          name?: string
+          performance_history?: Json | null
+          rotation_indicator?: Database["public"]["Enums"]["rotation_indicator"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      owns_boutique: {
+        Args: { _boutique_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      boutique_status: "draft" | "published"
+      logistics_status:
+        | "pending"
+        | "processing"
+        | "shipped"
+        | "delivered"
+        | "returned"
+      moq_status: "reserved" | "confirmed" | "expired" | "cancelled"
+      payment_status: "pending" | "completed" | "failed"
+      product_status: "active" | "paused"
+      rotation_indicator: "green" | "yellow" | "orange" | "red"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -194,6 +484,19 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      boutique_status: ["draft", "published"],
+      logistics_status: [
+        "pending",
+        "processing",
+        "shipped",
+        "delivered",
+        "returned",
+      ],
+      moq_status: ["reserved", "confirmed", "expired", "cancelled"],
+      payment_status: ["pending", "completed", "failed"],
+      product_status: ["active", "paused"],
+      rotation_indicator: ["green", "yellow", "orange", "red"],
+    },
   },
 } as const
