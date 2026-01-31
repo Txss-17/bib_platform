@@ -2,27 +2,16 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, ExternalLink, Settings, Trash2, Store } from "lucide-react";
+import { Plus, ExternalLink, Settings, Trash2, Store, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useBoutiques, useDeleteBoutique } from "@/hooks/useBoutiques";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+import type { Tables } from "@/integrations/supabase/types";
 
-interface Boutique {
-  id: string;
-  name: string;
-  slug: string;
-  category: string;
-  status: "published" | "draft";
-  productsCount: number;
-  revenue: number;
-  logoUrl?: string;
-}
+type Boutique = Tables<"boutiques">;
 
-const mockBoutiques: Boutique[] = [
-  { id: "1", name: "Maison Déco", slug: "maison-deco", category: "Maison", status: "published", productsCount: 12, revenue: 4330 },
-  { id: "2", name: "Beauty Corner", slug: "beauty-corner", category: "Beauté", status: "published", productsCount: 8, revenue: 2150 },
-  { id: "3", name: "Tech Store", slug: "tech-store", category: "Tech", status: "draft", productsCount: 5, revenue: 0 },
-];
-
-function BoutiqueCard({ boutique }: { boutique: Boutique }) {
+function BoutiqueCard({ boutique, onDelete }: { boutique: Boutique; onDelete: (id: string) => void }) {
   return (
     <Card className="bg-card border-border/50 overflow-hidden">
       <CardContent className="p-6">
@@ -46,17 +35,6 @@ function BoutiqueCard({ boutique }: { boutique: Boutique }) {
           <p className="text-sm font-mono text-primary">linksy.com/{boutique.slug}</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Produits</p>
-            <p className="text-lg font-bold text-foreground">{boutique.productsCount}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Revenus</p>
-            <p className="text-lg font-bold text-foreground">{boutique.revenue.toLocaleString('fr-FR')} €</p>
-          </div>
-        </div>
-
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="flex-1 gap-1">
             <Settings className="w-3 h-3" />
@@ -68,9 +46,38 @@ function BoutiqueCard({ boutique }: { boutique: Boutique }) {
               Ouvrir
             </Button>
           )}
-          <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-destructive hover:text-destructive"
+            onClick={() => onDelete(boutique.id)}
+          >
             <Trash2 className="w-3 h-3" />
           </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function BoutiqueCardSkeleton() {
+  return (
+    <Card className="bg-card border-border/50 overflow-hidden">
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Skeleton className="w-12 h-12 rounded-xl" />
+            <div>
+              <Skeleton className="h-5 w-32 mb-1" />
+              <Skeleton className="h-4 w-20" />
+            </div>
+          </div>
+          <Skeleton className="h-5 w-16" />
+        </div>
+        <Skeleton className="h-16 w-full mb-4" />
+        <div className="flex gap-2">
+          <Skeleton className="h-8 flex-1" />
+          <Skeleton className="h-8 w-20" />
         </div>
       </CardContent>
     </Card>
@@ -101,16 +108,47 @@ function EmptyState() {
 }
 
 export default function Boutiques() {
-  const hasBoutiques = mockBoutiques.length > 0;
+  const { data: boutiques, isLoading, error } = useBoutiques();
+  const deleteBoutique = useDeleteBoutique();
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteBoutique.mutateAsync(id);
+      toast.success("Boutique supprimée avec succès");
+    } catch (error) {
+      toast.error("Erreur lors de la suppression de la boutique");
+      console.error(error);
+    }
+  };
+
+  if (error) {
+    return (
+      <DashboardLayout title="Boutiques" subtitle="Gérez vos boutiques en ligne">
+        <Card className="bg-destructive/10 border-destructive/20">
+          <CardContent className="p-6 text-center">
+            <p className="text-destructive">Une erreur est survenue lors du chargement des boutiques.</p>
+          </CardContent>
+        </Card>
+      </DashboardLayout>
+    );
+  }
+
+  const publishedCount = boutiques?.filter(b => b.status === "published").length || 0;
+  const totalCount = boutiques?.length || 0;
+  const hasBoutiques = totalCount > 0;
 
   return (
     <DashboardLayout title="Boutiques" subtitle="Gérez vos boutiques en ligne">
-      {hasBoutiques ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3].map(i => <BoutiqueCardSkeleton key={i} />)}
+        </div>
+      ) : hasBoutiques ? (
         <>
           {/* Action Bar */}
           <div className="flex justify-between items-center mb-6">
             <p className="text-muted-foreground">
-              {mockBoutiques.filter(b => b.status === "published").length} boutiques publiées sur {mockBoutiques.length}
+              {publishedCount} boutiques publiées sur {totalCount}
             </p>
             <Link to="/dashboard/boutiques/create">
               <Button className="gap-2">
@@ -122,8 +160,8 @@ export default function Boutiques() {
 
           {/* Boutiques Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mockBoutiques.map(boutique => (
-              <BoutiqueCard key={boutique.id} boutique={boutique} />
+            {boutiques?.map(boutique => (
+              <BoutiqueCard key={boutique.id} boutique={boutique} onDelete={handleDelete} />
             ))}
           </div>
         </>

@@ -1,30 +1,50 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { KPICards } from "@/components/dashboard/KPICards";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowRight, ShoppingCart, TrendingUp, Package } from "lucide-react";
+import { Plus, ArrowRight, ShoppingCart, TrendingUp, Package, Store } from "lucide-react";
 import { Link } from "react-router-dom";
-
-// Mock data - will be replaced with real data from Supabase
-const mockStats = {
-  ordersCount: 143,
-  ordersTrend: 12,
-  activeProducts: 25,
-  productsTrend: 8,
-  revenue: 8100,
-  revenueTrend: 18,
-  activeBoutiques: 2,
-  boutiquesTrend: 0,
-};
-
-const recentOrders = [
-  { orderNumber: "LKS26-A3F2B1", product: "Lampe LED Design", amount: 49.99, status: "Livré" },
-  { orderNumber: "LKS26-B7C4D9", product: "Coussin Velours", amount: 29.99, status: "Expédié" },
-  { orderNumber: "LKS26-E2F8G3", product: "Vase Céramique", amount: 39.99, status: "En préparation" },
-];
+import { useBoutiqueStats } from "@/hooks/useBoutiques";
+import { useProductStats } from "@/hooks/useProducts";
+import { useOrderStats, useOrders } from "@/hooks/useOrders";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Dashboard() {
-  const hasBoutiques = mockStats.activeBoutiques > 0;
+  const { data: boutiqueStats, isLoading: boutiquesLoading } = useBoutiqueStats();
+  const { data: productStats, isLoading: productsLoading } = useProductStats();
+  const { data: orderStats, isLoading: ordersLoading } = useOrderStats();
+  const { data: orders } = useOrders();
+
+  const isLoading = boutiquesLoading || productsLoading || ordersLoading;
+  const hasBoutiques = (boutiqueStats?.total || 0) > 0;
+
+  const recentOrders = orders?.slice(0, 3) || [];
+
+  const kpis = [
+    {
+      title: "Commandes",
+      value: orderStats?.total || 0,
+      icon: ShoppingCart,
+      trend: 12,
+    },
+    {
+      title: "Produits actifs",
+      value: productStats?.active || 0,
+      icon: Package,
+      trend: 8,
+    },
+    {
+      title: "Revenus",
+      value: `${(orderStats?.revenue || 0).toLocaleString('fr-FR')} €`,
+      icon: TrendingUp,
+      trend: 18,
+    },
+    {
+      title: "Boutiques actives",
+      value: boutiqueStats?.published || 0,
+      icon: Store,
+      trend: 0,
+    },
+  ];
 
   return (
     <DashboardLayout 
@@ -32,16 +52,38 @@ export default function Dashboard() {
       subtitle="Voici un aperçu de votre activité aujourd'hui"
     >
       {/* KPI Cards */}
-      <KPICards
-        ordersCount={mockStats.ordersCount}
-        ordersTrend={mockStats.ordersTrend}
-        activeProducts={mockStats.activeProducts}
-        productsTrend={mockStats.productsTrend}
-        revenue={mockStats.revenue}
-        revenueTrend={mockStats.revenueTrend}
-        activeBoutiques={mockStats.activeBoutiques}
-        boutiquesTrend={mockStats.boutiquesTrend}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {isLoading ? (
+          [1, 2, 3, 4].map(i => (
+            <Card key={i} className="bg-card border-border/50">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-5 w-5 rounded" />
+                </div>
+                <Skeleton className="h-8 w-20" />
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          kpis.map((kpi, index) => (
+            <Card key={index} className="bg-card border-border/50">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-muted-foreground">{kpi.title}</span>
+                  <kpi.icon className="w-5 h-5 text-muted-foreground" />
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold text-foreground">{kpi.value}</span>
+                  {kpi.trend > 0 && (
+                    <span className="text-xs font-medium text-green-500">+{kpi.trend}%</span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
 
       {/* Primary CTA */}
       <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20 mt-8">
@@ -117,23 +159,38 @@ export default function Dashboard() {
               </Link>
             </div>
             <div className="space-y-3">
-              {recentOrders.map((order) => (
-                <div key={order.orderNumber} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <ShoppingCart className="w-4 h-4 text-primary" />
+              {recentOrders.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Aucune commande pour le moment
+                </p>
+              ) : (
+                recentOrders.map((order) => (
+                  <div key={order.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <ShoppingCart className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          {order.products?.supplier_products?.name || "Produit"}
+                        </p>
+                        <p className="text-xs text-muted-foreground font-mono">{order.order_number}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{order.product}</p>
-                      <p className="text-xs text-muted-foreground font-mono">{order.orderNumber}</p>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-foreground">
+                        {Number(order.amount).toFixed(2)} €
+                      </p>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {order.logistics_status === "delivered" ? "Livré" :
+                         order.logistics_status === "shipped" ? "Expédié" :
+                         order.logistics_status === "processing" ? "En préparation" :
+                         order.logistics_status === "pending" ? "En attente" : order.logistics_status}
+                      </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-foreground">{order.amount.toFixed(2)} €</p>
-                    <p className="text-xs text-muted-foreground">{order.status}</p>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
