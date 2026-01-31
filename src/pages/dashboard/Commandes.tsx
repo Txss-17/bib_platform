@@ -2,18 +2,12 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Package, Truck, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { Package, Truck, CheckCircle, Clock, AlertCircle, ShoppingBag } from "lucide-react";
+import { useOrders } from "@/hooks/useOrders";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { Database } from "@/integrations/supabase/types";
 
-type LogisticsStatus = "pending" | "processing" | "shipped" | "delivered" | "returned";
-
-const mockOrders = [
-  { orderNumber: "LKS26-A3F2B1", product: "Lampe LED Design", status: "delivered" as LogisticsStatus, customer: "Marie Martin", market: "FR", date: "2026-01-28", amount: 49.99 },
-  { orderNumber: "LKS26-B7C4D9", product: "Coussin Velours", status: "shipped" as LogisticsStatus, customer: "Pierre Dubois", market: "BE", date: "2026-01-27", amount: 29.99 },
-  { orderNumber: "LKS26-E2F8G3", product: "Vase Céramique", status: "processing" as LogisticsStatus, customer: "Sophie Laurent", market: "FR", date: "2026-01-27", amount: 39.99 },
-  { orderNumber: "LKS26-H5J1K6", product: "Cadre Photo Bois", status: "pending" as LogisticsStatus, customer: "Jean Petit", market: "DE", date: "2026-01-26", amount: 24.99 },
-  { orderNumber: "LKS26-L9M3N7", product: "Tapis Berbère", status: "delivered" as LogisticsStatus, customer: "Emma Bernard", market: "FR", date: "2026-01-25", amount: 89.99 },
-  { orderNumber: "LKS26-P4Q8R2", product: "Étagère Murale", status: "returned" as LogisticsStatus, customer: "Lucas Moreau", market: "NL", date: "2026-01-24", amount: 59.99 },
-];
+type LogisticsStatus = Database["public"]["Enums"]["logistics_status"];
 
 const statusConfig: Record<LogisticsStatus, { label: string; icon: React.ElementType; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   pending: { label: "En attente", icon: Clock, variant: "outline" },
@@ -35,7 +29,68 @@ function StatusBadge({ status }: { status: LogisticsStatus }) {
   );
 }
 
+function OrdersTableSkeleton() {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>N° Commande</TableHead>
+          <TableHead>Produit</TableHead>
+          <TableHead>Statut</TableHead>
+          <TableHead>Client</TableHead>
+          <TableHead>Marché</TableHead>
+          <TableHead>Date</TableHead>
+          <TableHead className="text-right">Montant</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {[1, 2, 3, 4, 5].map(i => (
+          <TableRow key={i}>
+            <TableCell><Skeleton className="w-24 h-4" /></TableCell>
+            <TableCell><Skeleton className="w-32 h-4" /></TableCell>
+            <TableCell><Skeleton className="w-20 h-5" /></TableCell>
+            <TableCell><Skeleton className="w-28 h-4" /></TableCell>
+            <TableCell><Skeleton className="w-8 h-5" /></TableCell>
+            <TableCell><Skeleton className="w-20 h-4" /></TableCell>
+            <TableCell className="text-right"><Skeleton className="w-16 h-4 ml-auto" /></TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+
+function EmptyState() {
+  return (
+    <Card className="bg-card border-border/50 border-dashed">
+      <CardContent className="p-12 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+          <ShoppingBag className="w-8 h-8 text-primary" />
+        </div>
+        <h3 className="text-xl font-semibold text-foreground mb-2">Aucune commande</h3>
+        <p className="text-muted-foreground max-w-md mx-auto">
+          Vos commandes apparaîtront ici dès que vos clients passeront leurs premières commandes.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function Commandes() {
+  const { data: orders, isLoading, error } = useOrders();
+
+  if (error) {
+    return (
+      <DashboardLayout title="Commandes" subtitle="Suivez vos commandes en temps réel">
+        <Card className="bg-destructive/10 border-destructive/20">
+          <CardContent className="p-6 text-center">
+            <p className="text-destructive">Une erreur est survenue lors du chargement des commandes.</p>
+          </CardContent>
+        </Card>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout title="Commandes" subtitle="Suivez vos commandes en temps réel">
       {/* Info Banner */}
@@ -48,44 +103,60 @@ export default function Commandes() {
         </CardContent>
       </Card>
 
-      {/* Orders Table */}
-      <Card className="bg-card border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg">Toutes les commandes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>N° Commande</TableHead>
-                <TableHead>Produit</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Marché</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead className="text-right">Montant</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mockOrders.map((order) => (
-                <TableRow key={order.orderNumber}>
-                  <TableCell className="font-mono text-sm font-medium">{order.orderNumber}</TableCell>
-                  <TableCell>{order.product}</TableCell>
-                  <TableCell>
-                    <StatusBadge status={order.status} />
-                  </TableCell>
-                  <TableCell>{order.customer}</TableCell>
-                  <TableCell>
-                    <span className="px-2 py-1 rounded bg-muted text-xs font-medium">{order.market}</span>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{new Date(order.date).toLocaleDateString('fr-FR')}</TableCell>
-                  <TableCell className="text-right font-medium">{order.amount.toFixed(2)} €</TableCell>
+      {isLoading ? (
+        <Card className="bg-card border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg">Toutes les commandes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <OrdersTableSkeleton />
+          </CardContent>
+        </Card>
+      ) : orders && orders.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <Card className="bg-card border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg">Toutes les commandes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>N° Commande</TableHead>
+                  <TableHead>Produit</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead>Client</TableHead>
+                  <TableHead>Marché</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="text-right">Montant</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+              </TableHeader>
+              <TableBody>
+                {orders?.map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-mono text-sm font-medium">{order.order_number}</TableCell>
+                    <TableCell>{order.products?.supplier_products?.name || "Produit inconnu"}</TableCell>
+                    <TableCell>
+                      <StatusBadge status={order.logistics_status} />
+                    </TableCell>
+                    <TableCell>{order.customer_name}</TableCell>
+                    <TableCell>
+                      <span className="px-2 py-1 rounded bg-muted text-xs font-medium">{order.market}</span>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {new Date(order.created_at).toLocaleDateString('fr-FR')}
+                    </TableCell>
+                    <TableCell className="text-right font-medium">
+                      {Number(order.amount).toFixed(2)} €
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
     </DashboardLayout>
   );
 }
