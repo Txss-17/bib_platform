@@ -1,13 +1,15 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, ArrowRight, Check, Upload, Palette, Package, Eye } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Upload, Palette, Package, Eye, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useCreateBoutique } from "@/hooks/useBoutiques";
+import { toast } from "sonner";
 
 const steps = [
   { id: 1, title: "Informations", icon: Package },
@@ -66,6 +68,8 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
 }
 
 export default function BoutiqueCreate() {
+  const navigate = useNavigate();
+  const createBoutique = useCreateBoutique();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     name: "",
@@ -88,11 +92,40 @@ export default function BoutiqueCreate() {
 
   const canProceed = () => {
     switch (currentStep) {
-      case 1: return formData.name && formData.category;
+      case 1: return formData.name && formData.category && formData.slug;
       case 2: return formData.colorScheme;
       case 3: return true;
       case 4: return true;
       default: return false;
+    }
+  };
+
+  const handleCreateBoutique = async () => {
+    try {
+      const selectedScheme = colorSchemes.find(s => s.name === formData.colorScheme);
+      
+      await createBoutique.mutateAsync({
+        name: formData.name,
+        slug: formData.slug,
+        category: formData.category,
+        description: formData.description || null,
+        theme_settings: selectedScheme ? {
+          colorScheme: formData.colorScheme,
+          primaryColor: selectedScheme.primary,
+          secondaryColor: selectedScheme.secondary,
+        } : null,
+        status: "draft",
+      });
+
+      toast.success("Boutique créée avec succès !");
+      navigate("/dashboard/boutiques");
+    } catch (error: any) {
+      if (error.code === "23505") {
+        toast.error("Cette URL de boutique est déjà utilisée. Choisissez un autre nom.");
+      } else {
+        toast.error("Erreur lors de la création de la boutique");
+      }
+      console.error("Error creating boutique:", error);
     }
   };
 
@@ -272,8 +305,16 @@ export default function BoutiqueCreate() {
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             ) : (
-              <Button className="gap-2">
-                <Check className="w-4 h-4" />
+              <Button 
+                className="gap-2" 
+                onClick={handleCreateBoutique}
+                disabled={createBoutique.isPending}
+              >
+                {createBoutique.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Check className="w-4 h-4" />
+                )}
                 Créer ma boutique
               </Button>
             )}
