@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, TrendingUp, Recycle } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
@@ -30,9 +31,11 @@ const HeroSection = () => {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 mb-12">
-              <Button variant="hero" size="xl" className="group">
-                Start Your Business
-                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+              <Button variant="hero" size="xl" className="group" asChild>
+                <Link to="/signup">
+                  Start Your Business
+                  <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
               </Button>
               <Button variant="outline" size="xl">
                 Watch Demo
