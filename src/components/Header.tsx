@@ -36,11 +36,11 @@ const Header = () => {
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center gap-4">
-            <Button variant="ghost" size="sm">
-              Sign In
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/login">Sign In</Link>
             </Button>
-            <Button variant="coral" size="default">
-              Start Free
+            <Button variant="coral" size="default" asChild>
+              <Link to="/signup">Start Free</Link>
             </Button>
           </div>
 
@@ -70,11 +70,11 @@ const Header = () => {
                 Trust & Security
               </Link>
               <div className="flex flex-col gap-2 pt-4 border-t border-border/50">
-                <Button variant="ghost" size="sm" className="justify-start">
-                  Sign In
+                <Button variant="ghost" size="sm" className="justify-start" asChild>
+                  <Link to="/login">Sign In</Link>
                 </Button>
-                <Button variant="coral" size="default">
-                  Start Free
+                <Button variant="coral" size="default" asChild>
+                  <Link to="/signup">Start Free</Link>
                 </Button>
               </div>
             </div>
