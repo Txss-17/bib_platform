@@ -20,7 +20,11 @@ import Paiements from "./pages/dashboard/Paiements";
 import SEOAnalytics from "./pages/dashboard/SEOAnalytics";
 import Boutiques from "./pages/dashboard/Boutiques";
 import BoutiqueCreate from "./pages/dashboard/BoutiqueCreate";
+import BoutiqueEdit from "./pages/dashboard/BoutiqueEdit";
 import Parametres from "./pages/dashboard/Parametres";
+
+// Public pages
+import BoutiquePublic from "./pages/BoutiquePublic";
 
 const queryClient = new QueryClient();
 
@@ -108,6 +112,14 @@ const App = () => (
               }
             />
             <Route
+              path="/dashboard/boutiques/edit/:id"
+              element={
+                <ProtectedRoute>
+                  <BoutiqueEdit />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/dashboard/parametres"
               element={
                 <ProtectedRoute>
@@ -115,6 +127,8 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            {/* Public boutique route */}
+            <Route path="/boutique/:slug" element={<BoutiquePublic />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
