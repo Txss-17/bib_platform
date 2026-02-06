@@ -2,6 +2,8 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Euro, ShoppingCart, Receipt, Target, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { SalesMap } from "@/components/dashboard/SalesMap";
+import { useSalesGeography } from "@/hooks/useSalesGeography";
 
 const monthlyData = [
   { month: "Jan", revenue: 4200 },
@@ -52,6 +54,8 @@ function StatCard({ title, value, trend, icon: Icon }: { title: string; value: s
 }
 
 export default function Ventes() {
+  const { data: salesGeo } = useSalesGeography();
+
   return (
     <DashboardLayout title="Ventes" subtitle="Analysez vos performances commerciales">
       {/* KPI Cards */}
@@ -126,6 +130,15 @@ export default function Ventes() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Geographic Sales Map */}
+      <div className="mb-8">
+        <SalesMap
+          salesByContinent={salesGeo?.byContinent || []}
+          salesByCountry={salesGeo?.byCountry || []}
+          salesByCity={salesGeo?.byCity || []}
+        />
       </div>
 
       {/* Low Rotation Products Warning */}

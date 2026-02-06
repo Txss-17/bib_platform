@@ -36,14 +36,18 @@ function BoutiqueCard({ boutique, onDelete }: { boutique: Boutique; onDelete: (i
         </div>
 
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="flex-1 gap-1">
-            <Settings className="w-3 h-3" />
-            Gérer
-          </Button>
+          <Link to={`/dashboard/boutiques/edit/${boutique.id}`} className="flex-1">
+            <Button variant="outline" size="sm" className="w-full gap-1">
+              <Settings className="w-3 h-3" />
+              Modifier
+            </Button>
+          </Link>
           {boutique.status === "published" && (
-            <Button variant="outline" size="sm" className="gap-1">
-              <ExternalLink className="w-3 h-3" />
-              Ouvrir
+            <Button variant="outline" size="sm" className="gap-1" asChild>
+              <a href={`/boutique/${boutique.slug}`} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="w-3 h-3" />
+                Voir
+              </a>
             </Button>
           )}
           <Button 
