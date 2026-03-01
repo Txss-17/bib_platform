@@ -1,36 +1,82 @@
 
 
-# Ajout de commandes de test pour la carte géographique
+# Dashboard responsive + fonctionnalites manquantes
 
-## Objectif
-Insérer des commandes de test couvrant plusieurs continents, pays et marchés pour vérifier le drill-down de la carte des ventes (Continent -> Pays -> Ville).
+## 1. Dashboard responsive (sidebar mobile)
 
-## Étapes
+**Probleme actuel** : La sidebar est fixe a `w-64` avec `ml-64` sur le contenu principal. Sur mobile, le contenu est cache derriere la sidebar.
 
-### 1. Créer des produits de test
-Les commandes nécessitent un `product_id` valide. Il faut d'abord créer quelques produits liés à une boutique existante et des produits fournisseurs existants.
+**Solution** :
+- Modifier `DashboardSidebar.tsx` pour utiliser un **Sheet** (drawer lateral) sur mobile et la sidebar fixe sur desktop
+- Utiliser le hook `useIsMobile()` existant pour detecter la taille d'ecran
+- Ajouter un bouton hamburger (`Menu` icon) dans le header de `DashboardLayout.tsx` visible uniquement sur mobile
+- Supprimer le `ml-64` fixe et le rendre conditionnel (pas de marge sur mobile)
+- La sidebar se ferme automatiquement apres un clic sur un lien de navigation en mode mobile
 
-### 2. Insérer des commandes variées géographiquement
-Insérer environ 15-20 commandes réparties sur plusieurs marchés :
+**Fichiers modifies** :
+- `src/components/dashboard/DashboardSidebar.tsx` : wrapper Sheet sur mobile, sidebar classique sur desktop
+- `src/components/dashboard/DashboardLayout.tsx` : ajout bouton hamburger, marge conditionnelle, passage du state open/close
 
-- **Europe** : FR (France), DE (Allemagne), ES (Espagne), IT (Italie)
-- **Afrique** : MA (Maroc), SN (Sénégal), CI (Côte d'Ivoire)
-- **Amérique du Nord** : US (États-Unis), CA (Canada)
-- **Asie** : JP (Japon), CN (Chine)
+## 2. Sauvegarde des parametres (Parametres.tsx)
 
-Chaque commande aura des montants variés pour simuler des données réalistes.
+**Probleme actuel** : Les champs du profil sont pre-remplis mais le bouton "Enregistrer" ne fait rien.
 
-### 3. Vérification
-Après l'insertion, naviguer vers la page Ventes pour confirmer que :
-- Les continents s'affichent avec les totaux agrégés
-- Le clic sur un continent montre les pays correspondants
-- Les données (Ventes, Commandes, CA) sont correctes
+**Solution** :
+- Ajouter des `useState` pour `fullName`, `businessName`, `businessType` initialises depuis `profile`
+- Appeler `supabase.from("profiles").update(...)` au clic sur "Enregistrer"
+- Appeler `refreshProfile()` du contexte Auth apres la sauvegarde
+- Afficher un toast de succes/erreur
+- Ajouter un state `saving` pour le loading du bouton
 
-## Détails techniques
+**Fichier modifie** : `src/pages/dashboard/Parametres.tsx`
 
-Les insertions se feront via l'outil d'insertion de données (pas via migration) car il s'agit de données, pas de changements de schéma.
+## 3. Page Mot de passe oublie
 
-- Boutique utilisée : `dfedfed7-3e90-4722-90ba-19d0e97f7efe`
-- Produit fournisseur utilisé : `4581b32d-8ca8-4e45-9b21-b2b94140010d`
-- Les `order_number` seront générés automatiquement par le trigger `generate_order_number`
-- Le champ `market` correspondra aux codes pays (FR, DE, US, MA, etc.)
+**Solution** :
+- Creer `src/pages/ForgotPassword.tsx` avec un formulaire email
+- Appeler `supabase.auth.resetPasswordForEmail(email)`
+- Message de confirmation apres envoi
+- Lien retour vers `/login`
+- Ajouter la route `/forgot-password` dans `App.tsx`
+
+**Fichiers crees** : `src/pages/ForgotPassword.tsx`
+**Fichiers modifies** : `src/App.tsx`
+
+## 4. Page Aide & Support
+
+**Solution** :
+- Creer `src/pages/dashboard/Aide.tsx` avec :
+  - Section FAQ (accordion avec questions frequentes)
+  - Section contact (email support, formulaire simple)
+  - Liens vers documentation
+- Ajouter la route `/dashboard/aide` dans `App.tsx` (protegee)
+
+**Fichiers crees** : `src/pages/dashboard/Aide.tsx`
+**Fichiers modifies** : `src/App.tsx`
+
+## 5. Confirmation de suppression
+
+**Probleme actuel** : La suppression de boutiques et produits se fait sans confirmation.
+
+**Solution** :
+- Creer un composant reutilisable `ConfirmDeleteDialog.tsx` utilisant `AlertDialog` de shadcn/ui
+- L'integrer dans `Boutiques.tsx` (suppression boutique) et `Produits.tsx` (suppression produit)
+- Le dialog affiche un message clair ("Etes-vous sur de vouloir supprimer...") avec boutons Annuler/Supprimer
+
+**Fichiers crees** : `src/components/dashboard/ConfirmDeleteDialog.tsx`
+**Fichiers modifies** : `src/pages/dashboard/Boutiques.tsx`, `src/pages/dashboard/Produits.tsx`
+
+## Resume des fichiers
+
+| Action | Fichier |
+|--------|---------|
+| Modifier | `DashboardSidebar.tsx` |
+| Modifier | `DashboardLayout.tsx` |
+| Modifier | `Parametres.tsx` |
+| Modifier | `App.tsx` |
+| Modifier | `Boutiques.tsx` |
+| Modifier | `Produits.tsx` |
+| Creer | `ForgotPassword.tsx` |
+| Creer | `Aide.tsx` |
+| Creer | `ConfirmDeleteDialog.tsx` |
+
