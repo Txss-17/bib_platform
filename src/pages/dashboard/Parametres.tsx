@@ -5,11 +5,48 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { User, Bell, Shield, CreditCard, Globe } from "lucide-react";
+import { User, Bell, Shield, CreditCard, Globe, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 export default function Parametres() {
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
+  const [fullName, setFullName] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [businessType, setBusinessType] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (profile) {
+      setFullName(profile.full_name || "");
+      setBusinessName(profile.business_name || "");
+      setBusinessType(profile.business_type || "");
+    }
+  }, [profile]);
+
+  const handleSave = async () => {
+    if (!profile) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        full_name: fullName,
+        business_name: businessName,
+        business_type: businessType,
+      })
+      .eq("id", profile.id);
+
+    if (error) {
+      toast.error("Erreur lors de la sauvegarde");
+      console.error(error);
+    } else {
+      await refreshProfile();
+      toast.success("Profil mis à jour avec succès");
+    }
+    setSaving(false);
+  };
 
   return (
     <DashboardLayout title="Paramètres" subtitle="Gérez votre compte et vos préférences">
@@ -24,21 +61,24 @@ export default function Parametres() {
             <CardDescription>Informations de votre compte vendeur</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="fullName">Nom complet</Label>
-                <Input id="fullName" defaultValue={profile?.full_name || ""} className="mt-2" />
+                <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} className="mt-2" />
               </div>
               <div>
                 <Label htmlFor="businessName">Nom commercial</Label>
-                <Input id="businessName" defaultValue={profile?.business_name || ""} className="mt-2" />
+                <Input id="businessName" value={businessName} onChange={(e) => setBusinessName(e.target.value)} className="mt-2" />
               </div>
             </div>
             <div>
               <Label htmlFor="businessType">Type d'activité</Label>
-              <Input id="businessType" defaultValue={profile?.business_type || ""} className="mt-2" />
+              <Input id="businessType" value={businessType} onChange={(e) => setBusinessType(e.target.value)} className="mt-2" />
             </div>
-            <Button>Enregistrer les modifications</Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Enregistrer les modifications
+            </Button>
           </CardContent>
         </Card>
 

@@ -10,11 +10,11 @@ import {
   Search,
   Settings,
   HelpCircle,
-  ChevronLeft,
-  ChevronRight,
   User,
 } from "lucide-react";
-import { useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -32,35 +32,20 @@ const bottomNavItems = [
   { title: "Aide & Support", url: "/dashboard/aide", icon: HelpCircle },
 ];
 
-export function DashboardSidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+interface DashboardSidebarProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
 
+function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
-    <aside
-      className={`fixed left-0 top-0 h-full bg-card border-r border-border/50 flex flex-col transition-all duration-300 z-50 ${
-        collapsed ? "w-16" : "w-64"
-      }`}
-    >
+    <>
       {/* Logo */}
-      <div className="p-4 border-b border-border/50 flex items-center justify-between">
-        {!collapsed && (
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">L</span>
-            </div>
-            <span className="font-bold text-xl text-foreground">LINKSY</span>
-          </div>
-        )}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="p-2 rounded-lg hover:bg-muted transition-colors"
-        >
-          {collapsed ? (
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          ) : (
-            <ChevronLeft className="w-4 h-4 text-muted-foreground" />
-          )}
-        </button>
+      <div className="p-4 border-b border-border/50 flex items-center gap-2">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+          <span className="text-primary-foreground font-bold text-sm">L</span>
+        </div>
+        <span className="font-bold text-xl text-foreground">LINKSY</span>
       </div>
 
       {/* Main Navigation */}
@@ -69,13 +54,12 @@ export function DashboardSidebar() {
           <NavLink
             key={item.title}
             to={item.url}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors ${
-              collapsed ? "justify-center" : ""
-            }`}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             activeClassName="bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary"
+            onClick={onNavigate}
           >
             <item.icon className="w-5 h-5 shrink-0" />
-            {!collapsed && <span className="font-medium text-sm">{item.title}</span>}
+            <span className="font-medium text-sm">{item.title}</span>
           </NavLink>
         ))}
       </nav>
@@ -86,31 +70,49 @@ export function DashboardSidebar() {
           <NavLink
             key={item.title}
             to={item.url}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors ${
-              collapsed ? "justify-center" : ""
-            }`}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             activeClassName="bg-primary/10 text-primary"
+            onClick={onNavigate}
           >
             <item.icon className="w-5 h-5 shrink-0" />
-            {!collapsed && <span className="font-medium text-sm">{item.title}</span>}
+            <span className="font-medium text-sm">{item.title}</span>
           </NavLink>
         ))}
 
         {/* User Profile */}
-        <div className={`flex items-center gap-3 px-3 py-2.5 mt-4 rounded-lg bg-muted/50 ${
-          collapsed ? "justify-center" : ""
-        }`}>
+        <div className="flex items-center gap-3 px-3 py-2.5 mt-4 rounded-lg bg-muted/50">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
             <User className="w-4 h-4 text-primary-foreground" />
           </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">Jean Dupont</p>
-              <p className="text-xs text-muted-foreground truncate">Pro Seller</p>
-            </div>
-          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground truncate">Jean Dupont</p>
+            <p className="text-xs text-muted-foreground truncate">Pro Seller</p>
+          </div>
         </div>
       </div>
+    </>
+  );
+}
+
+export function DashboardSidebar({ open, onOpenChange }: DashboardSidebarProps) {
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="left" className="p-0 w-64 flex flex-col">
+          <VisuallyHidden>
+            <SheetTitle>Navigation</SheetTitle>
+          </VisuallyHidden>
+          <SidebarContent onNavigate={() => onOpenChange?.(false)} />
+        </SheetContent>
+      </Sheet>
+    );
+  }
+
+  return (
+    <aside className="fixed left-0 top-0 h-full w-64 bg-card border-r border-border/50 flex flex-col z-50">
+      <SidebarContent />
     </aside>
   );
 }

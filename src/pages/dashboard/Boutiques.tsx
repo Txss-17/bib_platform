@@ -7,6 +7,8 @@ import { Link } from "react-router-dom";
 import { useBoutiques, useDeleteBoutique } from "@/hooks/useBoutiques";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog";
+import { useState } from "react";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Boutique = Tables<"boutiques">;
@@ -114,15 +116,18 @@ function EmptyState() {
 export default function Boutiques() {
   const { data: boutiques, isLoading, error } = useBoutiques();
   const deleteBoutique = useDeleteBoutique();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async () => {
+    if (!deleteId) return;
     try {
-      await deleteBoutique.mutateAsync(id);
+      await deleteBoutique.mutateAsync(deleteId);
       toast.success("Boutique supprimée avec succès");
     } catch (error) {
       toast.error("Erreur lors de la suppression de la boutique");
       console.error(error);
     }
+    setDeleteId(null);
   };
 
   if (error) {
@@ -165,13 +170,20 @@ export default function Boutiques() {
           {/* Boutiques Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {boutiques?.map(boutique => (
-              <BoutiqueCard key={boutique.id} boutique={boutique} onDelete={handleDelete} />
+              <BoutiqueCard key={boutique.id} boutique={boutique} onDelete={(id) => setDeleteId(id)} />
             ))}
           </div>
         </>
       ) : (
         <EmptyState />
       )}
+      <ConfirmDeleteDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Supprimer cette boutique ?"
+        description="Cette action est irréversible. Tous les produits associés à cette boutique seront également supprimés."
+      />
     </DashboardLayout>
   );
 }
