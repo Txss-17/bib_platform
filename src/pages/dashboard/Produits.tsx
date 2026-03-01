@@ -9,6 +9,8 @@ import { Edit, Copy, Trash2, MoreVertical, Plus, Package } from "lucide-react";
 import { useProducts, useUpdateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog";
+import { useState } from "react";
 
 function ProductsTableSkeleton() {
   return (
@@ -68,6 +70,7 @@ export default function Produits() {
   const { data: products, isLoading, error } = useProducts();
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const toggleStatus = async (productId: string, currentStatus: string) => {
     const newStatus = currentStatus === "active" ? "paused" : "active";
@@ -83,14 +86,16 @@ export default function Produits() {
     }
   };
 
-  const handleDelete = async (productId: string) => {
+  const handleDelete = async () => {
+    if (!deleteId) return;
     try {
-      await deleteProduct.mutateAsync(productId);
+      await deleteProduct.mutateAsync(deleteId);
       toast.success("Produit supprimé avec succès");
     } catch (error) {
       toast.error("Erreur lors de la suppression du produit");
       console.error(error);
     }
+    setDeleteId(null);
   };
 
   if (error) {
@@ -193,7 +198,7 @@ export default function Produits() {
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               className="text-destructive"
-                              onClick={() => handleDelete(product.id)}
+                              onClick={() => setDeleteId(product.id)}
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
                               Supprimer
@@ -209,6 +214,13 @@ export default function Produits() {
           </Card>
         </>
       )}
+      <ConfirmDeleteDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        onConfirm={handleDelete}
+        title="Supprimer ce produit ?"
+        description="Ce produit sera retiré de toutes vos boutiques. Cette action est irréversible."
+      />
     </DashboardLayout>
   );
 }

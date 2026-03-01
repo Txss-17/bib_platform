@@ -22,6 +22,8 @@ import Boutiques from "./pages/dashboard/Boutiques";
 import BoutiqueCreate from "./pages/dashboard/BoutiqueCreate";
 import BoutiqueEdit from "./pages/dashboard/BoutiqueEdit";
 import Parametres from "./pages/dashboard/Parametres";
+import Aide from "./pages/dashboard/Aide";
+import ForgotPassword from "./pages/ForgotPassword";
 
 // Public pages
 import BoutiquePublic from "./pages/BoutiquePublic";
@@ -39,6 +41,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route
               path="/dashboard"
               element={
@@ -124,6 +127,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Parametres />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/aide"
+              element={
+                <ProtectedRoute>
+                  <Aide />
                 </ProtectedRoute>
               }
             />
