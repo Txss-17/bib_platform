@@ -5,8 +5,14 @@ import HowItWorksSection from "@/components/HowItWorksSection";
 import TrustSection from "@/components/TrustSection";
 import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
+import { useSEO } from "@/hooks/useSEO";
 
 const Index = () => {
+  useSEO({
+    title: "LINKSY — Plateforme de commerce intelligente",
+    description: "Lancez, gérez et développez votre activité en ligne avec LINKSY. Transparence totale, insights intelligents et protection intégrée. Essai gratuit.",
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
