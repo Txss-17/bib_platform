@@ -25,6 +25,7 @@ import BoutiqueEdit from "./pages/dashboard/BoutiqueEdit";
 import Parametres from "./pages/dashboard/Parametres";
 import Aide from "./pages/dashboard/Aide";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 // Public pages
 import BoutiquePublic from "./pages/BoutiquePublic";
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route
               path="/dashboard"
               element={

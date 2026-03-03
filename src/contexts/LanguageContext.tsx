@@ -191,6 +191,23 @@ const translations: Record<Lang, Record<string, string>> = {
     "forgot.sentdesc2": ", vous recevrez un lien de réinitialisation.",
     "forgot.send": "Envoyer le lien",
     "forgot.back": "Retour à la connexion",
+
+    // Reset Password
+    "reset.title": "Nouveau mot de passe",
+    "reset.desc": "Choisissez un nouveau mot de passe pour votre compte",
+    "reset.new": "Nouveau mot de passe",
+    "reset.confirm": "Confirmer le mot de passe",
+    "reset.submit": "Réinitialiser le mot de passe",
+    "reset.success": "Mot de passe mis à jour !",
+    "reset.redirect": "Vous allez être redirigé vers la connexion...",
+    "reset.errorMin": "Le mot de passe doit contenir au moins 6 caractères",
+    "reset.errorMatch": "Les mots de passe ne correspondent pas",
+    "reset.notoken": "Ce lien semble invalide ou expiré. Veuillez demander un nouveau lien de réinitialisation.",
+
+    // Auth errors
+    "auth.error.network": "Erreur de connexion réseau. Vérifiez votre connexion internet et réessayez.",
+    "auth.error.invalid": "Email ou mot de passe incorrect",
+    "auth.error.generic": "Une erreur est survenue. Veuillez réessayer.",
   },
   en: {
     // Header
@@ -374,6 +391,23 @@ const translations: Record<Lang, Record<string, string>> = {
     "forgot.sentdesc2": ", you will receive a reset link.",
     "forgot.send": "Send reset link",
     "forgot.back": "Back to login",
+
+    // Reset Password
+    "reset.title": "New password",
+    "reset.desc": "Choose a new password for your account",
+    "reset.new": "New password",
+    "reset.confirm": "Confirm password",
+    "reset.submit": "Reset password",
+    "reset.success": "Password updated!",
+    "reset.redirect": "You will be redirected to login...",
+    "reset.errorMin": "Password must be at least 6 characters",
+    "reset.errorMatch": "Passwords do not match",
+    "reset.notoken": "This link seems invalid or expired. Please request a new reset link.",
+
+    // Auth errors
+    "auth.error.network": "Network connection error. Check your internet connection and try again.",
+    "auth.error.invalid": "Incorrect email or password",
+    "auth.error.generic": "An error occurred. Please try again.",
   },
 };
 
