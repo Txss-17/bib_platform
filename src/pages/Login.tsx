@@ -22,12 +22,22 @@ export default function Login() {
   const location = useLocation();
   const from = location.state?.from?.pathname || "/dashboard";
 
+  const getErrorMessage = (errorMsg: string) => {
+    if (errorMsg === "Load failed" || errorMsg.includes("fetch") || errorMsg.includes("network") || errorMsg.includes("Failed to fetch")) {
+      return t("auth.error.network");
+    }
+    if (errorMsg.includes("Invalid login credentials")) {
+      return t("auth.error.invalid");
+    }
+    return errorMsg;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
     const { error } = await signIn(email, password);
-    if (error) { setError(error.message); setLoading(false); }
+    if (error) { setError(getErrorMessage(error.message)); setLoading(false); }
     else { navigate(from, { replace: true }); }
   };
 
