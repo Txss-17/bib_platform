@@ -1,6 +1,7 @@
-import { ShoppingCart, User, Menu } from "lucide-react";
+import { ShoppingCart, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useCart } from "@/contexts/CartContext";
 
 interface StorefrontHeaderProps {
   boutiqueName: string;
@@ -10,6 +11,7 @@ interface StorefrontHeaderProps {
 
 export function StorefrontHeader({ boutiqueName, primaryColor, navLinks }: StorefrontHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { totalItems, setIsOpen } = useCart();
 
   const defaultLinks = [
     { label: "Accueil", href: "#" },
@@ -49,17 +51,16 @@ export function StorefrontHeader({ boutiqueName, primaryColor, navLinks }: Store
 
           {/* Right side icons */}
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="hidden md:flex">
-              <User className="w-5 h-5 text-gray-600" />
-            </Button>
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative" onClick={() => setIsOpen(true)}>
               <ShoppingCart className="w-5 h-5 text-gray-600" />
-              <span 
-                className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-xs flex items-center justify-center"
-                style={{ backgroundColor: primaryColor }}
-              >
-                0
-              </span>
+              {totalItems > 0 && (
+                <span 
+                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-xs flex items-center justify-center"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  {totalItems}
+                </span>
+              )}
             </Button>
             <Button 
               variant="ghost" 

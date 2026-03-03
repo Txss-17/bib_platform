@@ -4,6 +4,7 @@ import { StorefrontFeatures } from "./StorefrontFeatures";
 import { StorefrontProducts } from "./StorefrontProducts";
 import { StorefrontAbout } from "./StorefrontAbout";
 import { StorefrontFooter } from "./StorefrontFooter";
+import { CartDrawer } from "./CartDrawer";
 import { getTemplateForCategory, type ThemeSettings, type SectionConfig } from "@/lib/boutiqueTemplates";
 
 interface Product {
@@ -16,6 +17,8 @@ interface Product {
 
 interface StorefrontPreviewProps {
   boutiqueName: string;
+  boutiqueId?: string;
+  boutiqueSlug?: string;
   category: string;
   themeSettings: ThemeSettings | null;
   products?: Product[];
@@ -24,6 +27,8 @@ interface StorefrontPreviewProps {
 
 export function StorefrontPreview({
   boutiqueName,
+  boutiqueId,
+  boutiqueSlug,
   category,
   themeSettings,
   products = [],
@@ -87,6 +92,7 @@ export function StorefrontPreview({
           title={template.productsSectionTitle}
           products={displayProducts}
           primaryColor={primaryColor}
+          boutiqueSlug={boutiqueSlug}
         />
       )}
 
@@ -99,6 +105,7 @@ export function StorefrontPreview({
         />
       )}
 
+      {boutiqueId && <CartDrawer primaryColor={primaryColor} boutiqueId={boutiqueId} boutiqueName={boutiqueName} />}
       <StorefrontFooter primaryColor={primaryColor} />
     </div>
   );

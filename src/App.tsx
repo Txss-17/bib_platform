@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/toaster";
+import { CartProvider } from "@/contexts/CartContext";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -29,6 +30,7 @@ import ResetPassword from "./pages/ResetPassword";
 
 // Public pages
 import BoutiquePublic from "./pages/BoutiquePublic";
+import ProductPublic from "./pages/ProductPublic";
 
 const queryClient = new QueryClient();
 
@@ -142,8 +144,9 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            {/* Public boutique route */}
+            {/* Public boutique routes */}
             <Route path="/boutique/:slug" element={<BoutiquePublic />} />
+            <Route path="/boutique/:slug/product/:productId" element={<CartProvider><ProductPublic /></CartProvider>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
