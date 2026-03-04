@@ -61,6 +61,9 @@ export function CheckoutForm({ boutiqueId, boutiqueName, primaryColor, onBack }:
     }
   };
 
+  // Derive slug from current URL
+  const boutiqueSlug = window.location.pathname.split("/boutique/")[1]?.split("/")[0] || "";
+
   if (success) {
     return (
       <div className="py-8 text-center space-y-4">
@@ -78,9 +81,20 @@ export function CheckoutForm({ boutiqueId, boutiqueName, primaryColor, onBack }:
         <p className="text-sm text-gray-500">
           Un email de confirmation sera envoyé à <strong>{email}</strong>.
         </p>
-        <Button variant="outline" onClick={() => setIsOpen(false)} className="mt-4">
-          Fermer
-        </Button>
+        <div className="flex flex-col gap-2 mt-4">
+          {boutiqueSlug && (
+            <a
+              href={`/boutique/${boutiqueSlug}/order-tracking`}
+              className="text-sm font-medium hover:underline"
+              style={{ color: primaryColor }}
+            >
+              Suivre ma commande →
+            </a>
+          )}
+          <Button variant="outline" onClick={() => setIsOpen(false)}>
+            Fermer
+          </Button>
+        </div>
       </div>
     );
   }
