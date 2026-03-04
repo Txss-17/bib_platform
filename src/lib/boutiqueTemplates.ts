@@ -2,7 +2,7 @@
 
 export interface SectionConfig {
   id: string;
-  type: "hero" | "features" | "products" | "about" | "testimonials" | "newsletter";
+  type: "hero" | "features" | "products" | "about" | "testimonials" | "newsletter" | "video" | "faq";
   enabled: boolean;
   title?: string;
   subtitle?: string;
@@ -24,6 +24,18 @@ export interface TemplateConfig {
   sections: SectionConfig[];
 }
 
+// All available section types for the editor
+export const availableSections: { type: SectionConfig["type"]; label: string; description: string }[] = [
+  { type: "hero", label: "Hero", description: "Bannière principale avec titre et CTA" },
+  { type: "features", label: "Avantages", description: "Icônes de livraison, qualité, etc." },
+  { type: "products", label: "Produits", description: "Grille de produits" },
+  { type: "about", label: "À propos", description: "Présentation de la boutique" },
+  { type: "testimonials", label: "Avis clients", description: "Témoignages et étoiles" },
+  { type: "video", label: "Vidéo", description: "Vidéo YouTube / Vimeo intégrée" },
+  { type: "faq", label: "FAQ", description: "Questions fréquentes en accordéon" },
+  { type: "newsletter", label: "Newsletter", description: "Formulaire d'inscription email" },
+];
+
 export const categoryTemplates: Record<string, TemplateConfig> = {
   Mode: {
     category: "Mode",
@@ -38,15 +50,15 @@ export const categoryTemplates: Record<string, TemplateConfig> = {
     aboutTitle: "À Propos de Nous",
     aboutDescription: "Nous vous proposons des vêtements essentiels, sans tracas. Logistique et recyclage gérés par LINKSY. Simple, responsable, sans surprise.",
     productsSectionTitle: "Sélection Populaire",
-    fonts: {
-      heading: "Playfair Display",
-      body: "Inter",
-    },
+    fonts: { heading: "Playfair Display", body: "Inter" },
     sections: [
       { id: "hero", type: "hero", enabled: true },
       { id: "features", type: "features", enabled: true },
       { id: "products", type: "products", enabled: true, title: "Sélection Populaire" },
       { id: "about", type: "about", enabled: true },
+      { id: "testimonials", type: "testimonials", enabled: false },
+      { id: "video", type: "video", enabled: false },
+      { id: "faq", type: "faq", enabled: false },
       { id: "newsletter", type: "newsletter", enabled: false },
     ],
   },
@@ -63,16 +75,16 @@ export const categoryTemplates: Record<string, TemplateConfig> = {
     aboutTitle: "Notre Philosophie",
     aboutDescription: "Nous sélectionnons pour vous les plus belles pièces pour votre intérieur. Chaque produit est vérifié et livré avec soin par LINKSY.",
     productsSectionTitle: "Nos Sélections pour la Maison",
-    fonts: {
-      heading: "Cormorant Garamond",
-      body: "Lato",
-    },
+    fonts: { heading: "Cormorant Garamond", body: "Lato" },
     sections: [
       { id: "hero", type: "hero", enabled: true },
       { id: "features", type: "features", enabled: true },
       { id: "products", type: "products", enabled: true, title: "Nos Sélections pour la Maison" },
       { id: "about", type: "about", enabled: true },
       { id: "testimonials", type: "testimonials", enabled: false },
+      { id: "video", type: "video", enabled: false },
+      { id: "faq", type: "faq", enabled: false },
+      { id: "newsletter", type: "newsletter", enabled: false },
     ],
   },
   Tech: {
@@ -88,15 +100,16 @@ export const categoryTemplates: Record<string, TemplateConfig> = {
     aboutTitle: "Notre Expertise",
     aboutDescription: "Nous testons et sélectionnons chaque produit pour vous garantir qualité et fiabilité. LINKSY s'occupe de tout le reste.",
     productsSectionTitle: "Nos Meilleures Ventes",
-    fonts: {
-      heading: "Space Grotesk",
-      body: "Inter",
-    },
+    fonts: { heading: "Space Grotesk", body: "Inter" },
     sections: [
       { id: "hero", type: "hero", enabled: true },
       { id: "features", type: "features", enabled: true },
       { id: "products", type: "products", enabled: true, title: "Nos Meilleures Ventes" },
       { id: "about", type: "about", enabled: true },
+      { id: "testimonials", type: "testimonials", enabled: false },
+      { id: "video", type: "video", enabled: false },
+      { id: "faq", type: "faq", enabled: false },
+      { id: "newsletter", type: "newsletter", enabled: false },
     ],
   },
   Beauté: {
@@ -112,15 +125,16 @@ export const categoryTemplates: Record<string, TemplateConfig> = {
     aboutTitle: "Notre Engagement",
     aboutDescription: "Des produits de beauté sélectionnés avec soin, respectueux de votre peau et de la planète. LINKSY vous garantit une expérience sans stress.",
     productsSectionTitle: "Coups de Cœur",
-    fonts: {
-      heading: "Cormorant Garamond",
-      body: "Nunito Sans",
-    },
+    fonts: { heading: "Cormorant Garamond", body: "Nunito Sans" },
     sections: [
       { id: "hero", type: "hero", enabled: true },
       { id: "features", type: "features", enabled: true },
       { id: "products", type: "products", enabled: true, title: "Coups de Cœur" },
       { id: "about", type: "about", enabled: true },
+      { id: "testimonials", type: "testimonials", enabled: false },
+      { id: "video", type: "video", enabled: false },
+      { id: "faq", type: "faq", enabled: false },
+      { id: "newsletter", type: "newsletter", enabled: false },
     ],
   },
   Sport: {
@@ -136,15 +150,16 @@ export const categoryTemplates: Record<string, TemplateConfig> = {
     aboutTitle: "Notre Mission",
     aboutDescription: "Du matériel sportif testé par des athlètes, accessible à tous. LINKSY vous accompagne dans votre performance.",
     productsSectionTitle: "Équipements Populaires",
-    fonts: {
-      heading: "Montserrat",
-      body: "Open Sans",
-    },
+    fonts: { heading: "Montserrat", body: "Open Sans" },
     sections: [
       { id: "hero", type: "hero", enabled: true },
       { id: "features", type: "features", enabled: true },
       { id: "products", type: "products", enabled: true, title: "Équipements Populaires" },
       { id: "about", type: "about", enabled: true },
+      { id: "testimonials", type: "testimonials", enabled: false },
+      { id: "video", type: "video", enabled: false },
+      { id: "faq", type: "faq", enabled: false },
+      { id: "newsletter", type: "newsletter", enabled: false },
     ],
   },
   Alimentation: {
@@ -160,15 +175,16 @@ export const categoryTemplates: Record<string, TemplateConfig> = {
     aboutTitle: "Notre Philosophie",
     aboutDescription: "Des produits alimentaires sélectionnés auprès de producteurs de confiance. LINKSY garantit fraîcheur et qualité.",
     productsSectionTitle: "Nos Sélections Gourmandes",
-    fonts: {
-      heading: "Playfair Display",
-      body: "Source Sans Pro",
-    },
+    fonts: { heading: "Playfair Display", body: "Source Sans Pro" },
     sections: [
       { id: "hero", type: "hero", enabled: true },
       { id: "features", type: "features", enabled: true },
       { id: "products", type: "products", enabled: true, title: "Nos Sélections Gourmandes" },
       { id: "about", type: "about", enabled: true },
+      { id: "testimonials", type: "testimonials", enabled: false },
+      { id: "video", type: "video", enabled: false },
+      { id: "faq", type: "faq", enabled: false },
+      { id: "newsletter", type: "newsletter", enabled: false },
     ],
   },
   Jardin: {
@@ -184,15 +200,16 @@ export const categoryTemplates: Record<string, TemplateConfig> = {
     aboutTitle: "Notre Passion",
     aboutDescription: "Des plantes et équipements de jardinage sélectionnés avec amour. LINKSY s'occupe de la logistique pour que vous puissiez jardiner en paix.",
     productsSectionTitle: "Nos Incontournables",
-    fonts: {
-      heading: "Libre Baskerville",
-      body: "Lato",
-    },
+    fonts: { heading: "Libre Baskerville", body: "Lato" },
     sections: [
       { id: "hero", type: "hero", enabled: true },
       { id: "features", type: "features", enabled: true },
       { id: "products", type: "products", enabled: true, title: "Nos Incontournables" },
       { id: "about", type: "about", enabled: true },
+      { id: "testimonials", type: "testimonials", enabled: false },
+      { id: "video", type: "video", enabled: false },
+      { id: "faq", type: "faq", enabled: false },
+      { id: "newsletter", type: "newsletter", enabled: false },
     ],
   },
   Enfants: {
@@ -208,15 +225,16 @@ export const categoryTemplates: Record<string, TemplateConfig> = {
     aboutTitle: "Notre Promesse",
     aboutDescription: "Des produits pour enfants rigoureusement sélectionnés pour leur sécurité et leur qualité. LINKSY vous garantit tranquillité d'esprit.",
     productsSectionTitle: "Sélection Enfants",
-    fonts: {
-      heading: "Fredoka One",
-      body: "Nunito",
-    },
+    fonts: { heading: "Fredoka One", body: "Nunito" },
     sections: [
       { id: "hero", type: "hero", enabled: true },
       { id: "features", type: "features", enabled: true },
       { id: "products", type: "products", enabled: true, title: "Sélection Enfants" },
       { id: "about", type: "about", enabled: true },
+      { id: "testimonials", type: "testimonials", enabled: false },
+      { id: "video", type: "video", enabled: false },
+      { id: "faq", type: "faq", enabled: false },
+      { id: "newsletter", type: "newsletter", enabled: false },
     ],
   },
 };
@@ -237,4 +255,6 @@ export interface ThemeSettings {
   customHeroTitle?: string;
   customHeroSubtitle?: string;
   customAboutText?: string;
+  videoUrl?: string;
+  animations?: boolean;
 }

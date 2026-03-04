@@ -47,35 +47,22 @@ export default function OrderTracking() {
     setSearched(true);
 
     try {
-      const { data, error: queryError } = await supabase
-        .from("orders")
-        .select(`
-          order_number,
-          customer_name,
-          customer_email,
-          amount,
-          logistics_status,
-          created_at,
-          products (
-            supplier_products (
-              name
-            )
-          )
-        `)
-        .eq("order_number", orderNumber.trim().toUpperCase())
-        .eq("customer_email", email.trim().toLowerCase())
-        .maybeSingle();
+      const { data, error: rpcError } = await supabase.rpc("track_order", {
+        _order_number: orderNumber.trim(),
+        _customer_email: email.trim(),
+      });
 
-      if (queryError) throw queryError;
+      if (rpcError) throw rpcError;
 
-      if (data) {
+      if (data && data.length > 0) {
+        const row = data[0];
         setOrder({
-          order_number: data.order_number,
-          customer_name: data.customer_name,
-          amount: Number(data.amount),
-          logistics_status: data.logistics_status,
-          created_at: data.created_at,
-          product_name: (data as any).products?.supplier_products?.name || null,
+          order_number: row.order_number,
+          customer_name: row.customer_name,
+          amount: Number(row.amount),
+          logistics_status: row.logistics_status,
+          created_at: row.created_at,
+          product_name: row.product_name,
         });
       }
     } catch (err: any) {
@@ -112,7 +99,7 @@ export default function OrderTracking() {
               id="order-number"
               value={orderNumber}
               onChange={(e) => setOrderNumber(e.target.value)}
-              placeholder="LNK-XXXXX-XXXX"
+              placeholder="LKS26-XXXXXX"
               required
               className="mt-1 font-mono"
             />
