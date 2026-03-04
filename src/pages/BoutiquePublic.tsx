@@ -2,7 +2,6 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StorefrontPreview } from "@/components/storefront/StorefrontPreview";
-import { CartProvider } from "@/contexts/CartContext";
 import { useSEO } from "@/hooks/useSEO";
 import { Loader2 } from "lucide-react";
 import type { ThemeSettings } from "@/lib/boutiqueTemplates";
@@ -89,15 +88,13 @@ export default function BoutiquePublic() {
   const themeSettings = (boutique.theme_settings as unknown) as ThemeSettings | null;
 
   return (
-    <CartProvider>
-      <StorefrontPreview
-        boutiqueName={boutique.name}
-        boutiqueId={boutique.id}
-        boutiqueSlug={boutique.slug}
-        category={boutique.category}
-        themeSettings={themeSettings}
-        products={products}
-      />
-    </CartProvider>
+    <StorefrontPreview
+      boutiqueName={boutique.name}
+      boutiqueId={boutique.id}
+      boutiqueSlug={boutique.slug}
+      category={boutique.category}
+      themeSettings={themeSettings}
+      products={products}
+    />
   );
 }

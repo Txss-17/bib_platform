@@ -31,6 +31,7 @@ import ResetPassword from "./pages/ResetPassword";
 // Public pages
 import BoutiquePublic from "./pages/BoutiquePublic";
 import ProductPublic from "./pages/ProductPublic";
+import OrderTracking from "./pages/OrderTracking";
 
 const queryClient = new QueryClient();
 
@@ -144,9 +145,10 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            {/* Public boutique routes */}
-            <Route path="/boutique/:slug" element={<BoutiquePublic />} />
+            {/* Public boutique routes — shared CartProvider */}
+            <Route path="/boutique/:slug" element={<CartProvider><BoutiquePublic /></CartProvider>} />
             <Route path="/boutique/:slug/product/:productId" element={<CartProvider><ProductPublic /></CartProvider>} />
+            <Route path="/boutique/:slug/order-tracking" element={<OrderTracking />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
