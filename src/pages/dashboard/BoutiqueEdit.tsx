@@ -9,11 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Sparkles } from "lucide-react";
+import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Sparkles, Mail, Plus, GripVertical } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { StorefrontPreview } from "@/components/storefront/StorefrontPreview";
-import { getTemplateForCategory, type ThemeSettings, type SectionConfig } from "@/lib/boutiqueTemplates";
+import { getTemplateForCategory, availableSections, type ThemeSettings, type SectionConfig } from "@/lib/boutiqueTemplates";
+import { useEmailTemplates, useUpsertEmailTemplate, DEFAULT_TEMPLATES } from "@/hooks/useEmailTemplates";
 
 const colorSchemes = [
   { name: "Moderne", primary: "#3b82f6", secondary: "#1e40af" },
@@ -33,6 +34,10 @@ const fontPairs = [
   { heading: "Montserrat", body: "Open Sans", name: "Sportif" },
   { heading: "Libre Baskerville", body: "Source Sans Pro", name: "Éditorial" },
   { heading: "Fredoka One", body: "Nunito", name: "Ludique" },
+  { heading: "DM Serif Display", body: "DM Sans", name: "Magazine" },
+  { heading: "Prata", body: "Work Sans", name: "Luxe" },
+  { heading: "Archivo Black", body: "Archivo", name: "Impactant" },
+  { heading: "Lora", body: "Roboto", name: "Classique Moderne" },
 ];
 
 export default function BoutiqueEdit() {
@@ -44,13 +49,20 @@ export default function BoutiqueEdit() {
     colorScheme: "Moderne",
     primaryColor: "#3b82f6",
     secondaryColor: "#1e40af",
+    animations: true,
   });
 
   const [customTexts, setCustomTexts] = useState({
     heroTitle: "",
     heroSubtitle: "",
     aboutText: "",
+    videoUrl: "",
   });
+
+  // Email template editing state
+  const [editingTemplate, setEditingTemplate] = useState<string | null>(null);
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
 
   // Fetch boutique
   const { data: boutique, isLoading } = useQuery({
@@ -75,11 +87,7 @@ export default function BoutiqueEdit() {
       if (!id) return [];
       const { data, error } = await supabase
         .from("products")
-        .select(`
-          id,
-          public_price,
-          supplier_products (name, image_url)
-        `)
+        .select(`id, public_price, supplier_products (name, image_url)`)
         .eq("boutique_id", id)
         .eq("status", "active")
         .limit(4);
@@ -95,6 +103,10 @@ export default function BoutiqueEdit() {
     enabled: !!id,
   });
 
+  // Email templates
+  const { data: emailTemplates = [] } = useEmailTemplates(id);
+  const upsertTemplate = useUpsertEmailTemplate();
+
   // Initialize from boutique data
   useEffect(() => {
     if (boutique?.theme_settings) {
@@ -105,11 +117,13 @@ export default function BoutiqueEdit() {
         secondaryColor: settings.secondaryColor || "#1e40af",
         fonts: settings.fonts,
         sections: settings.sections,
+        animations: settings.animations !== false,
       });
       setCustomTexts({
         heroTitle: settings.customHeroTitle || "",
         heroSubtitle: settings.customHeroSubtitle || "",
         aboutText: settings.customAboutText || "",
+        videoUrl: settings.videoUrl || "",
       });
     } else if (boutique) {
       const template = getTemplateForCategory(boutique.category);
@@ -119,6 +133,7 @@ export default function BoutiqueEdit() {
         secondaryColor: "#1e40af",
         fonts: template.fonts,
         sections: template.sections,
+        animations: true,
       });
     }
   }, [boutique]);
@@ -132,6 +147,7 @@ export default function BoutiqueEdit() {
         customHeroTitle: customTexts.heroTitle || undefined,
         customHeroSubtitle: customTexts.heroSubtitle || undefined,
         customAboutText: customTexts.aboutText || undefined,
+        videoUrl: customTexts.videoUrl || undefined,
       };
       const { error } = await supabase
         .from("boutiques")
@@ -171,9 +187,15 @@ export default function BoutiqueEdit() {
   const updateSection = (sectionType: string, enabled: boolean) => {
     const template = getTemplateForCategory(boutique?.category || "Mode");
     const currentSections = themeSettings.sections || template.sections;
-    const updatedSections = currentSections.map(s =>
-      s.type === sectionType ? { ...s, enabled } : s
-    );
+    const exists = currentSections.find(s => s.type === sectionType);
+    let updatedSections: SectionConfig[];
+    if (exists) {
+      updatedSections = currentSections.map(s =>
+        s.type === sectionType ? { ...s, enabled } : s
+      );
+    } else {
+      updatedSections = [...currentSections, { id: sectionType, type: sectionType as SectionConfig["type"], enabled }];
+    }
     setThemeSettings(prev => ({ ...prev, sections: updatedSections }));
   };
 
@@ -191,6 +213,30 @@ export default function BoutiqueEdit() {
       ...prev,
       fonts: { heading: pair.heading, body: pair.body },
     }));
+  };
+
+  const handleEditTemplate = (type: string) => {
+    const saved = emailTemplates.find(t => t.type === type);
+    const defaultTpl = DEFAULT_TEMPLATES.find(t => t.type === type);
+    setEditingTemplate(type);
+    setEmailSubject(saved?.subject || defaultTpl?.subject || "");
+    setEmailBody(saved?.body_html || defaultTpl?.body_html || "");
+  };
+
+  const handleSaveTemplate = async () => {
+    if (!editingTemplate || !id) return;
+    try {
+      await upsertTemplate.mutateAsync({
+        boutique_id: id,
+        type: editingTemplate,
+        subject: emailSubject,
+        body_html: emailBody,
+      });
+      toast.success("Modèle d'email enregistré !");
+      setEditingTemplate(null);
+    } catch {
+      toast.error("Erreur lors de la sauvegarde du modèle");
+    }
   };
 
   if (isLoading) {
@@ -224,6 +270,7 @@ export default function BoutiqueEdit() {
     customHeroTitle: customTexts.heroTitle || undefined,
     customHeroSubtitle: customTexts.heroSubtitle || undefined,
     customAboutText: customTexts.aboutText || undefined,
+    videoUrl: customTexts.videoUrl || undefined,
   };
 
   return (
@@ -276,7 +323,7 @@ export default function BoutiqueEdit() {
         {/* Editor panel */}
         <div className="space-y-4">
           <Tabs defaultValue="colors" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="colors" className="gap-1.5">
                 <Palette className="w-4 h-4" />
                 <span className="hidden sm:inline">Couleurs</span>
@@ -292,6 +339,10 @@ export default function BoutiqueEdit() {
               <TabsTrigger value="content" className="gap-1.5">
                 <Sparkles className="w-4 h-4" />
                 <span className="hidden sm:inline">Contenu</span>
+              </TabsTrigger>
+              <TabsTrigger value="emails" className="gap-1.5">
+                <Mail className="w-4 h-4" />
+                <span className="hidden sm:inline">Emails</span>
               </TabsTrigger>
             </TabsList>
 
@@ -321,6 +372,45 @@ export default function BoutiqueEdit() {
                       </button>
                     ))}
                   </div>
+
+                  {/* Custom color picker */}
+                  <div className="mt-4 pt-4 border-t border-border space-y-3">
+                    <p className="text-sm font-medium text-foreground">Couleur personnalisée</p>
+                    <div className="flex gap-3">
+                      <div className="flex-1">
+                        <Label className="text-xs text-muted-foreground">Primaire</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <input
+                            type="color"
+                            value={themeSettings.primaryColor}
+                            onChange={(e) => setThemeSettings(prev => ({ ...prev, primaryColor: e.target.value, colorScheme: "Custom" }))}
+                            className="w-8 h-8 rounded border-0 cursor-pointer"
+                          />
+                          <Input
+                            value={themeSettings.primaryColor}
+                            onChange={(e) => setThemeSettings(prev => ({ ...prev, primaryColor: e.target.value, colorScheme: "Custom" }))}
+                            className="font-mono text-xs h-8"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <Label className="text-xs text-muted-foreground">Secondaire</Label>
+                        <div className="flex items-center gap-2 mt-1">
+                          <input
+                            type="color"
+                            value={themeSettings.secondaryColor}
+                            onChange={(e) => setThemeSettings(prev => ({ ...prev, secondaryColor: e.target.value, colorScheme: "Custom" }))}
+                            className="w-8 h-8 rounded border-0 cursor-pointer"
+                          />
+                          <Input
+                            value={themeSettings.secondaryColor}
+                            onChange={(e) => setThemeSettings(prev => ({ ...prev, secondaryColor: e.target.value, colorScheme: "Custom" }))}
+                            className="font-mono text-xs h-8"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -332,7 +422,7 @@ export default function BoutiqueEdit() {
                   <CardTitle className="text-lg">Typographie</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
+                  <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
                     {fontPairs.map(pair => (
                       <button
                         key={pair.name}
@@ -347,6 +437,14 @@ export default function BoutiqueEdit() {
                         <p className="text-xs text-muted-foreground">
                           {pair.heading} + {pair.body}
                         </p>
+                        <div className="mt-2 pt-2 border-t border-border/50">
+                          <p className="text-lg leading-tight" style={{ fontFamily: `${pair.heading}, serif` }}>
+                            Titre d'exemple
+                          </p>
+                          <p className="text-sm text-muted-foreground" style={{ fontFamily: `${pair.body}, sans-serif` }}>
+                            Texte de corps d'exemple pour la boutique
+                          </p>
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -362,25 +460,39 @@ export default function BoutiqueEdit() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {sections.map(section => (
-                      <div key={section.id} className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium capitalize">{section.type}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {section.type === "hero" && "Bannière principale"}
-                            {section.type === "features" && "Avantages (livraison, etc.)"}
-                            {section.type === "products" && "Grille de produits"}
-                            {section.type === "about" && "À propos de la boutique"}
-                            {section.type === "newsletter" && "Inscription newsletter"}
-                            {section.type === "testimonials" && "Avis clients"}
-                          </p>
+                    {availableSections.map(sectionDef => {
+                      const current = sections.find(s => s.type === sectionDef.type);
+                      const isEnabled = current?.enabled ?? false;
+                      return (
+                        <div key={sectionDef.type} className="flex items-center justify-between p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <GripVertical className="w-4 h-4 text-muted-foreground/40" />
+                            <div>
+                              <p className="font-medium text-sm">{sectionDef.label}</p>
+                              <p className="text-xs text-muted-foreground">{sectionDef.description}</p>
+                            </div>
+                          </div>
+                          <Switch
+                            checked={isEnabled}
+                            onCheckedChange={(checked) => updateSection(sectionDef.type, checked)}
+                          />
                         </div>
-                        <Switch
-                          checked={section.enabled}
-                          onCheckedChange={(checked) => updateSection(section.type, checked)}
-                        />
+                      );
+                    })}
+                  </div>
+
+                  {/* Animations toggle */}
+                  <div className="mt-6 pt-4 border-t border-border">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-sm">Animations au scroll</p>
+                        <p className="text-xs text-muted-foreground">Effets d'apparition progressifs sur les sections</p>
                       </div>
-                    ))}
+                      <Switch
+                        checked={themeSettings.animations !== false}
+                        onCheckedChange={(checked) => setThemeSettings(prev => ({ ...prev, animations: checked }))}
+                      />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -424,6 +536,124 @@ export default function BoutiqueEdit() {
                       rows={4}
                     />
                   </div>
+                  <div>
+                    <Label htmlFor="videoUrl">URL vidéo (YouTube / Vimeo)</Label>
+                    <Input
+                      id="videoUrl"
+                      value={customTexts.videoUrl}
+                      onChange={(e) => setCustomTexts(prev => ({ ...prev, videoUrl: e.target.value }))}
+                      placeholder="https://youtube.com/watch?v=..."
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Activez la section "Vidéo" dans l'onglet Sections pour l'afficher.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Emails tab */}
+            <TabsContent value="emails">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Modèles d'emails</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {editingTemplate ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold">
+                          {DEFAULT_TEMPLATES.find(t => t.type === editingTemplate)?.label || editingTemplate}
+                        </h3>
+                        <Button variant="ghost" size="sm" onClick={() => setEditingTemplate(null)}>
+                          ← Retour
+                        </Button>
+                      </div>
+                      <div>
+                        <Label>Objet de l'email</Label>
+                        <Input
+                          value={emailSubject}
+                          onChange={(e) => setEmailSubject(e.target.value)}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label>Corps de l'email (HTML)</Label>
+                        <Textarea
+                          value={emailBody}
+                          onChange={(e) => setEmailBody(e.target.value)}
+                          className="mt-1 font-mono text-xs"
+                          rows={12}
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Variables disponibles : {"{{boutique_name}}"}, {"{{order_number}}"}, {"{{product_name}}"}, {"{{amount}}"}, {"{{customer_name}}"}
+                        </p>
+                      </div>
+
+                      {/* Preview */}
+                      <div>
+                        <Label>Aperçu</Label>
+                        <div
+                          className="mt-1 p-4 border border-border rounded-lg bg-white text-sm max-h-60 overflow-auto"
+                          dangerouslySetInnerHTML={{
+                            __html: emailBody
+                              .replace(/\{\{boutique_name\}\}/g, boutique.name)
+                              .replace(/\{\{order_number\}\}/g, "LKS26-ABC123")
+                              .replace(/\{\{product_name\}\}/g, "Produit Exemple")
+                              .replace(/\{\{amount\}\}/g, "49.90")
+                              .replace(/\{\{customer_name\}\}/g, "Jean Dupont"),
+                          }}
+                        />
+                      </div>
+
+                      <Button
+                        onClick={handleSaveTemplate}
+                        disabled={upsertTemplate.isPending}
+                        className="w-full"
+                      >
+                        {upsertTemplate.isPending ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Save className="w-4 h-4 mr-2" />
+                        )}
+                        Enregistrer le modèle
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Personnalisez les emails envoyés à vos clients. Chaque modèle peut être modifié avec votre texte et votre ton.
+                      </p>
+                      {DEFAULT_TEMPLATES.map(tpl => {
+                        const saved = emailTemplates.find(t => t.type === tpl.type);
+                        return (
+                          <button
+                            key={tpl.type}
+                            onClick={() => handleEditTemplate(tpl.type)}
+                            className="w-full p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-muted/30 transition-all text-left"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="font-medium text-sm">{tpl.label}</p>
+                                <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-[250px]">
+                                  {saved ? saved.subject : tpl.subject}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {saved && (
+                                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                                    Personnalisé
+                                  </span>
+                                )}
+                                <Sparkles className="w-4 h-4 text-muted-foreground" />
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

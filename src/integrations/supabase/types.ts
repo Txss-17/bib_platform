@@ -56,6 +56,47 @@ export type Database = {
         }
         Relationships: []
       }
+      email_templates: {
+        Row: {
+          body_html: string
+          boutique_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          subject: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          body_html?: string
+          boutique_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          subject?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          body_html?: string
+          boutique_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          subject?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_templates_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       moq_reservations: {
         Row: {
           expires_at: string
@@ -344,6 +385,17 @@ export type Database = {
       owns_boutique: {
         Args: { _boutique_id: string; _user_id: string }
         Returns: boolean
+      }
+      track_order: {
+        Args: { _customer_email: string; _order_number: string }
+        Returns: {
+          amount: number
+          created_at: string
+          customer_name: string
+          logistics_status: string
+          order_number: string
+          product_name: string
+        }[]
       }
     }
     Enums: {
