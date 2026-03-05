@@ -1,5 +1,4 @@
 import { Toaster } from "@/components/ui/toaster";
-import { CartProvider } from "@/contexts/CartContext";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -146,8 +145,8 @@ const App = () => (
               }
             />
             {/* Public boutique routes — shared CartProvider */}
-            <Route path="/boutique/:slug" element={<CartProvider><BoutiquePublic /></CartProvider>} />
-            <Route path="/boutique/:slug/product/:productId" element={<CartProvider><ProductPublic /></CartProvider>} />
+            <Route path="/boutique/:slug" element={<BoutiquePublic />} />
+            <Route path="/boutique/:slug/product/:productId" element={<ProductPublic />} />
             <Route path="/boutique/:slug/order-tracking" element={<OrderTracking />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
