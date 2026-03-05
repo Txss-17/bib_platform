@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { StorefrontHeader } from "./StorefrontHeader";
 import { StorefrontHero } from "./StorefrontHero";
 import { StorefrontFeatures } from "./StorefrontFeatures";
@@ -10,7 +11,7 @@ import { StorefrontNewsletter } from "./StorefrontNewsletter";
 import { StorefrontFooter } from "./StorefrontFooter";
 import { CartDrawer } from "./CartDrawer";
 import { CartProvider } from "@/contexts/CartContext";
-import { getTemplateForCategory, type ThemeSettings, type SectionConfig } from "@/lib/boutiqueTemplates";
+import { getTemplateForCategory, type ThemeSettings, type SectionConfig, type AnimationLevel } from "@/lib/boutiqueTemplates";
 
 interface Product {
   id: string;
@@ -30,6 +31,28 @@ interface StorefrontPreviewProps {
   isPreview?: boolean;
 }
 
+// Build Google Fonts URL from font pair
+function buildGoogleFontsUrl(heading: string, body: string): string {
+  const families = [heading, body]
+    .filter((f, i, a) => a.indexOf(f) === i) // dedupe
+    .map(f => f.replace(/ /g, "+") + ":wght@400;500;600;700")
+    .join("&family=");
+  return `https://fonts.googleapis.com/css2?family=${families}&display=swap`;
+}
+
+function getAnimClasses(level: AnimationLevel): { section: string; hero: string; delayBase: number } {
+  switch (level) {
+    case "none":
+      return { section: "", hero: "", delayBase: 0 };
+    case "subtle":
+      return { section: "animate-fade-in", hero: "animate-fade-in", delayBase: 80 };
+    case "dynamic":
+      return { section: "animate-fade-up", hero: "animate-scale-in", delayBase: 120 };
+    default:
+      return { section: "animate-fade-in", hero: "animate-fade-in", delayBase: 80 };
+  }
+}
+
 export function StorefrontPreview({
   boutiqueName,
   boutiqueId,
@@ -45,11 +68,32 @@ export function StorefrontPreview({
   const secondaryColor = themeSettings?.secondaryColor || "#1e40af";
   const fonts = themeSettings?.fonts || template.fonts;
   const sections = themeSettings?.sections || template.sections;
-  const enableAnimations = themeSettings?.animations !== false;
+  
+  // Animation level: backwards-compat with old boolean
+  const animationLevel: AnimationLevel = themeSettings?.animationLevel 
+    || (themeSettings?.animations === false ? "none" : "subtle");
 
   const heroTitle = themeSettings?.customHeroTitle || template.heroTitle;
   const heroSubtitle = themeSettings?.customHeroSubtitle || template.heroSubtitle;
   const aboutText = themeSettings?.customAboutText || template.aboutDescription;
+  const heroLayout = themeSettings?.heroLayout || "text-left";
+  const heroImageUrl = themeSettings?.heroImageUrl;
+
+  // Dynamically load Google Fonts
+  useEffect(() => {
+    const url = buildGoogleFontsUrl(fonts.heading, fonts.body);
+    const linkId = "storefront-google-fonts";
+    let link = document.getElementById(linkId) as HTMLLinkElement | null;
+    if (link) {
+      link.href = url;
+    } else {
+      link = document.createElement("link");
+      link.id = linkId;
+      link.rel = "stylesheet";
+      link.href = url;
+      document.head.appendChild(link);
+    }
+  }, [fonts.heading, fonts.body]);
 
   const isSectionEnabled = (type: SectionConfig["type"]) => {
     const section = sections.find(s => s.type === type);
@@ -63,13 +107,14 @@ export function StorefrontPreview({
     { id: "4", name: "Produit Exemple 4", price: 22.00, image_url: null },
   ];
 
-  const animClass = enableAnimations ? "animate-fade-up" : "";
+  const { section: animClass, hero: heroAnim, delayBase } = getAnimClasses(animationLevel);
+  const noAnim = animationLevel === "none";
 
   return (
     <CartProvider>
     <div 
       className={`bg-white min-h-screen ${isPreview ? 'pointer-events-none' : ''}`}
-      style={{ fontFamily: fonts.body }}
+      style={{ fontFamily: `'${fonts.body}', sans-serif` }}
     >
       <StorefrontHeader 
         boutiqueName={boutiqueName} 
@@ -77,7 +122,7 @@ export function StorefrontPreview({
       />
 
       {isSectionEnabled("hero") && (
-        <div className={enableAnimations ? "animate-fade-in" : ""}>
+        <div className={heroAnim} style={noAnim ? {} : { animationDuration: "0.5s" }}>
           <StorefrontHero
             title={heroTitle}
             subtitle={heroSubtitle}
@@ -85,12 +130,14 @@ export function StorefrontPreview({
             primaryColor={primaryColor}
             secondaryColor={secondaryColor}
             headingFont={fonts.heading}
+            heroLayout={heroLayout}
+            heroImageUrl={heroImageUrl}
           />
         </div>
       )}
 
       {isSectionEnabled("features") && (
-        <div className={animClass} style={{ animationDelay: "100ms", animationFillMode: "forwards", opacity: enableAnimations ? 0 : 1 }}>
+        <div className={animClass} style={noAnim ? {} : { animationDelay: `${delayBase}ms`, animationFillMode: "forwards", opacity: 0 }}>
           <StorefrontFeatures 
             features={template.features} 
             primaryColor={primaryColor} 
@@ -99,7 +146,7 @@ export function StorefrontPreview({
       )}
 
       {isSectionEnabled("products") && (
-        <div className={animClass} style={{ animationDelay: "200ms", animationFillMode: "forwards", opacity: enableAnimations ? 0 : 1 }}>
+        <div className={animClass} style={noAnim ? {} : { animationDelay: `${delayBase * 2}ms`, animationFillMode: "forwards", opacity: 0 }}>
           <StorefrontProducts
             title={template.productsSectionTitle}
             products={displayProducts}
@@ -110,7 +157,7 @@ export function StorefrontPreview({
       )}
 
       {isSectionEnabled("about") && (
-        <div className={animClass} style={{ animationDelay: "300ms", animationFillMode: "forwards", opacity: enableAnimations ? 0 : 1 }}>
+        <div className={animClass} style={noAnim ? {} : { animationDelay: `${delayBase * 3}ms`, animationFillMode: "forwards", opacity: 0 }}>
           <StorefrontAbout
             title={template.aboutTitle}
             description={aboutText}
