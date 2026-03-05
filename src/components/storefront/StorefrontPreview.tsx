@@ -9,6 +9,7 @@ import { StorefrontFAQ } from "./StorefrontFAQ";
 import { StorefrontNewsletter } from "./StorefrontNewsletter";
 import { StorefrontFooter } from "./StorefrontFooter";
 import { CartDrawer } from "./CartDrawer";
+import { CartProvider } from "@/contexts/CartContext";
 import { getTemplateForCategory, type ThemeSettings, type SectionConfig } from "@/lib/boutiqueTemplates";
 
 interface Product {
@@ -65,6 +66,7 @@ export function StorefrontPreview({
   const animClass = enableAnimations ? "animate-fade-up" : "";
 
   return (
+    <CartProvider>
     <div 
       className={`bg-white min-h-screen ${isPreview ? 'pointer-events-none' : ''}`}
       style={{ fontFamily: fonts.body }}
@@ -141,5 +143,6 @@ export function StorefrontPreview({
       {boutiqueId && <CartDrawer primaryColor={primaryColor} boutiqueId={boutiqueId} boutiqueName={boutiqueName} />}
       <StorefrontFooter primaryColor={primaryColor} />
     </div>
+    </CartProvider>
   );
 }
