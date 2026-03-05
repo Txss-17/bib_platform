@@ -9,11 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Sparkles, Mail, Plus, GripVertical } from "lucide-react";
+import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Sparkles, Mail, Plus, GripVertical, Image, Wand2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { StorefrontPreview } from "@/components/storefront/StorefrontPreview";
-import { getTemplateForCategory, availableSections, type ThemeSettings, type SectionConfig } from "@/lib/boutiqueTemplates";
+import { getTemplateForCategory, availableSections, animationLevels, heroLayouts, type ThemeSettings, type SectionConfig, type AnimationLevel, type HeroLayout } from "@/lib/boutiqueTemplates";
 import { useEmailTemplates, useUpsertEmailTemplate, DEFAULT_TEMPLATES } from "@/hooks/useEmailTemplates";
 
 const colorSchemes = [
@@ -50,6 +50,8 @@ export default function BoutiqueEdit() {
     primaryColor: "#3b82f6",
     secondaryColor: "#1e40af",
     animations: true,
+    animationLevel: "subtle",
+    heroLayout: "text-left",
   });
 
   const [customTexts, setCustomTexts] = useState({
@@ -57,12 +59,15 @@ export default function BoutiqueEdit() {
     heroSubtitle: "",
     aboutText: "",
     videoUrl: "",
+    heroImageUrl: "",
   });
 
   // Email template editing state
   const [editingTemplate, setEditingTemplate] = useState<string | null>(null);
   const [emailSubject, setEmailSubject] = useState("");
   const [emailBody, setEmailBody] = useState("");
+  const [isCustomEmail, setIsCustomEmail] = useState(false);
+  const [customEmailType, setCustomEmailType] = useState("");
 
   // Fetch boutique
   const { data: boutique, isLoading } = useQuery({
@@ -118,12 +123,16 @@ export default function BoutiqueEdit() {
         fonts: settings.fonts,
         sections: settings.sections,
         animations: settings.animations !== false,
+        animationLevel: settings.animationLevel || "subtle",
+        heroLayout: settings.heroLayout || "text-left",
+        heroImageUrl: settings.heroImageUrl,
       });
       setCustomTexts({
         heroTitle: settings.customHeroTitle || "",
         heroSubtitle: settings.customHeroSubtitle || "",
         aboutText: settings.customAboutText || "",
         videoUrl: settings.videoUrl || "",
+        heroImageUrl: settings.heroImageUrl || "",
       });
     } else if (boutique) {
       const template = getTemplateForCategory(boutique.category);
@@ -134,6 +143,8 @@ export default function BoutiqueEdit() {
         fonts: template.fonts,
         sections: template.sections,
         animations: true,
+        animationLevel: "subtle",
+        heroLayout: "text-left",
       });
     }
   }, [boutique]);
@@ -148,6 +159,7 @@ export default function BoutiqueEdit() {
         customHeroSubtitle: customTexts.heroSubtitle || undefined,
         customAboutText: customTexts.aboutText || undefined,
         videoUrl: customTexts.videoUrl || undefined,
+        heroImageUrl: customTexts.heroImageUrl || undefined,
       };
       const { error } = await supabase
         .from("boutiques")
@@ -219,21 +231,33 @@ export default function BoutiqueEdit() {
     const saved = emailTemplates.find(t => t.type === type);
     const defaultTpl = DEFAULT_TEMPLATES.find(t => t.type === type);
     setEditingTemplate(type);
+    setIsCustomEmail(false);
     setEmailSubject(saved?.subject || defaultTpl?.subject || "");
     setEmailBody(saved?.body_html || defaultTpl?.body_html || "");
   };
 
+  const handleNewCustomEmail = () => {
+    setEditingTemplate("__new__");
+    setIsCustomEmail(true);
+    setCustomEmailType("");
+    setEmailSubject("");
+    setEmailBody(`<h1>Titre de votre email</h1>\n<p>Bonjour {{customer_name}},</p>\n<p>Votre message ici...</p>\n<p>L'équipe {{boutique_name}}</p>`);
+  };
+
   const handleSaveTemplate = async () => {
-    if (!editingTemplate || !id) return;
+    if (!id) return;
+    const type = isCustomEmail ? (customEmailType || `custom_${Date.now()}`) : editingTemplate;
+    if (!type) return;
     try {
       await upsertTemplate.mutateAsync({
         boutique_id: id,
-        type: editingTemplate,
+        type,
         subject: emailSubject,
         body_html: emailBody,
       });
       toast.success("Modèle d'email enregistré !");
       setEditingTemplate(null);
+      setIsCustomEmail(false);
     } catch {
       toast.error("Erreur lors de la sauvegarde du modèle");
     }
@@ -271,7 +295,12 @@ export default function BoutiqueEdit() {
     customHeroSubtitle: customTexts.heroSubtitle || undefined,
     customAboutText: customTexts.aboutText || undefined,
     videoUrl: customTexts.videoUrl || undefined,
+    heroImageUrl: customTexts.heroImageUrl || undefined,
   };
+
+  // Get custom email templates (saved but not in default list)
+  const defaultTypes = DEFAULT_TEMPLATES.map(t => t.type);
+  const customTemplates = emailTemplates.filter(t => !defaultTypes.includes(t.type));
 
   return (
     <DashboardLayout 
@@ -323,26 +352,30 @@ export default function BoutiqueEdit() {
         {/* Editor panel */}
         <div className="space-y-4">
           <Tabs defaultValue="colors" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="colors" className="gap-1.5">
-                <Palette className="w-4 h-4" />
-                <span className="hidden sm:inline">Couleurs</span>
+            <TabsList className="grid w-full grid-cols-6">
+              <TabsTrigger value="colors" className="gap-1">
+                <Palette className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline text-xs">Couleurs</span>
               </TabsTrigger>
-              <TabsTrigger value="fonts" className="gap-1.5">
-                <Type className="w-4 h-4" />
-                <span className="hidden sm:inline">Polices</span>
+              <TabsTrigger value="fonts" className="gap-1">
+                <Type className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline text-xs">Polices</span>
               </TabsTrigger>
-              <TabsTrigger value="sections" className="gap-1.5">
-                <Layout className="w-4 h-4" />
-                <span className="hidden sm:inline">Sections</span>
+              <TabsTrigger value="sections" className="gap-1">
+                <Layout className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline text-xs">Sections</span>
               </TabsTrigger>
-              <TabsTrigger value="content" className="gap-1.5">
-                <Sparkles className="w-4 h-4" />
-                <span className="hidden sm:inline">Contenu</span>
+              <TabsTrigger value="hero" className="gap-1">
+                <Image className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline text-xs">Hero</span>
               </TabsTrigger>
-              <TabsTrigger value="emails" className="gap-1.5">
-                <Mail className="w-4 h-4" />
-                <span className="hidden sm:inline">Emails</span>
+              <TabsTrigger value="content" className="gap-1">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline text-xs">Contenu</span>
+              </TabsTrigger>
+              <TabsTrigger value="emails" className="gap-1">
+                <Mail className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline text-xs">Emails</span>
               </TabsTrigger>
             </TabsList>
 
@@ -373,7 +406,6 @@ export default function BoutiqueEdit() {
                     ))}
                   </div>
 
-                  {/* Custom color picker */}
                   <div className="mt-4 pt-4 border-t border-border space-y-3">
                     <p className="text-sm font-medium text-foreground">Couleur personnalisée</p>
                     <div className="flex gap-3">
@@ -438,10 +470,10 @@ export default function BoutiqueEdit() {
                           {pair.heading} + {pair.body}
                         </p>
                         <div className="mt-2 pt-2 border-t border-border/50">
-                          <p className="text-lg leading-tight" style={{ fontFamily: `${pair.heading}, serif` }}>
+                          <p className="text-lg leading-tight" style={{ fontFamily: `'${pair.heading}', serif` }}>
                             Titre d'exemple
                           </p>
-                          <p className="text-sm text-muted-foreground" style={{ fontFamily: `${pair.body}, sans-serif` }}>
+                          <p className="text-sm text-muted-foreground" style={{ fontFamily: `'${pair.body}', sans-serif` }}>
                             Texte de corps d'exemple pour la boutique
                           </p>
                         </div>
@@ -481,18 +513,68 @@ export default function BoutiqueEdit() {
                     })}
                   </div>
 
-                  {/* Animations toggle */}
-                  <div className="mt-6 pt-4 border-t border-border">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-sm">Animations au scroll</p>
-                        <p className="text-xs text-muted-foreground">Effets d'apparition progressifs sur les sections</p>
-                      </div>
-                      <Switch
-                        checked={themeSettings.animations !== false}
-                        onCheckedChange={(checked) => setThemeSettings(prev => ({ ...prev, animations: checked }))}
-                      />
+                  {/* Animations level selector */}
+                  <div className="mt-6 pt-4 border-t border-border space-y-3">
+                    <p className="font-medium text-sm flex items-center gap-2">
+                      <Wand2 className="w-4 h-4" /> Niveau d'animations
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {animationLevels.map(level => (
+                        <button
+                          key={level.value}
+                          onClick={() => setThemeSettings(prev => ({ ...prev, animationLevel: level.value, animations: level.value !== "none" }))}
+                          className={`p-3 rounded-lg border-2 transition-all text-left ${
+                            themeSettings.animationLevel === level.value
+                              ? "border-primary bg-primary/5"
+                              : "border-border hover:border-primary/50"
+                          }`}
+                        >
+                          <p className="font-medium text-xs">{level.label}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{level.description}</p>
+                        </button>
+                      ))}
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Hero layout tab */}
+            <TabsContent value="hero">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Mise en page Hero</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-2">
+                    {heroLayouts.map(layout => (
+                      <button
+                        key={layout.value}
+                        onClick={() => setThemeSettings(prev => ({ ...prev, heroLayout: layout.value }))}
+                        className={`p-3 rounded-lg border-2 transition-all text-left ${
+                          themeSettings.heroLayout === layout.value
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                      >
+                        <p className="font-medium text-xs">{layout.label}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{layout.description}</p>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="pt-4 border-t border-border">
+                    <Label htmlFor="heroImageUrl">URL de l'image Hero</Label>
+                    <Input
+                      id="heroImageUrl"
+                      value={customTexts.heroImageUrl}
+                      onChange={(e) => setCustomTexts(prev => ({ ...prev, heroImageUrl: e.target.value }))}
+                      placeholder="https://example.com/image.jpg"
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Utilisé pour les mises en page avec image (gauche, droite, fond).
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -557,19 +639,43 @@ export default function BoutiqueEdit() {
             <TabsContent value="emails">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Modèles d'emails</CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">Modèles d'emails</CardTitle>
+                    {!editingTemplate && (
+                      <Button size="sm" variant="outline" className="gap-1.5" onClick={handleNewCustomEmail}>
+                        <Plus className="w-4 h-4" />
+                        Nouveau
+                      </Button>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {editingTemplate ? (
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <h3 className="font-semibold">
-                          {DEFAULT_TEMPLATES.find(t => t.type === editingTemplate)?.label || editingTemplate}
+                          {isCustomEmail 
+                            ? "Nouvel email personnalisé" 
+                            : (DEFAULT_TEMPLATES.find(t => t.type === editingTemplate)?.label || editingTemplate)}
                         </h3>
-                        <Button variant="ghost" size="sm" onClick={() => setEditingTemplate(null)}>
+                        <Button variant="ghost" size="sm" onClick={() => { setEditingTemplate(null); setIsCustomEmail(false); }}>
                           ← Retour
                         </Button>
                       </div>
+
+                      {isCustomEmail && (
+                        <div>
+                          <Label>Identifiant du modèle</Label>
+                          <Input
+                            value={customEmailType}
+                            onChange={(e) => setCustomEmailType(e.target.value.replace(/[^a-z0-9_]/g, ""))}
+                            placeholder="ex: relance_panier"
+                            className="mt-1 font-mono text-sm"
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">Lettres minuscules, chiffres et underscore uniquement.</p>
+                        </div>
+                      )}
+
                       <div>
                         <Label>Objet de l'email</Label>
                         <Input
@@ -587,7 +693,7 @@ export default function BoutiqueEdit() {
                           rows={12}
                         />
                         <p className="text-xs text-muted-foreground mt-1">
-                          Variables disponibles : {"{{boutique_name}}"}, {"{{order_number}}"}, {"{{product_name}}"}, {"{{amount}}"}, {"{{customer_name}}"}
+                          Variables : {"{{boutique_name}}"}, {"{{order_number}}"}, {"{{product_name}}"}, {"{{amount}}"}, {"{{customer_name}}"}
                         </p>
                       </div>
 
@@ -609,7 +715,7 @@ export default function BoutiqueEdit() {
 
                       <Button
                         onClick={handleSaveTemplate}
-                        disabled={upsertTemplate.isPending}
+                        disabled={upsertTemplate.isPending || (isCustomEmail && !customEmailType)}
                         className="w-full"
                       >
                         {upsertTemplate.isPending ? (
@@ -623,8 +729,10 @@ export default function BoutiqueEdit() {
                   ) : (
                     <div className="space-y-3">
                       <p className="text-sm text-muted-foreground mb-4">
-                        Personnalisez les emails envoyés à vos clients. Chaque modèle peut être modifié avec votre texte et votre ton.
+                        Personnalisez les emails envoyés à vos clients. Utilisez le bouton <strong>+ Nouveau</strong> pour créer un email personnalisé.
                       </p>
+
+                      {/* Default templates */}
                       {DEFAULT_TEMPLATES.map(tpl => {
                         const saved = emailTemplates.find(t => t.type === tpl.type);
                         return (
@@ -652,6 +760,32 @@ export default function BoutiqueEdit() {
                           </button>
                         );
                       })}
+
+                      {/* Custom templates */}
+                      {customTemplates.length > 0 && (
+                        <>
+                          <div className="border-t border-border pt-3 mt-3">
+                            <p className="text-xs font-medium text-muted-foreground mb-2">EMAILS PERSONNALISÉS</p>
+                          </div>
+                          {customTemplates.map(tpl => (
+                            <button
+                              key={tpl.type}
+                              onClick={() => handleEditTemplate(tpl.type)}
+                              className="w-full p-4 rounded-lg border border-border hover:border-primary/50 hover:bg-muted/30 transition-all text-left"
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-medium text-sm">{tpl.type}</p>
+                                  <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-[250px]">{tpl.subject}</p>
+                                </div>
+                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                                  Custom
+                                </span>
+                              </div>
+                            </button>
+                          ))}
+                        </>
+                      )}
                     </div>
                   )}
                 </CardContent>

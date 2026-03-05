@@ -29,6 +29,7 @@ import ResetPassword from "./pages/ResetPassword";
 
 // Public pages
 import BoutiquePublic from "./pages/BoutiquePublic";
+import BoutiqueAllProducts from "./pages/BoutiqueAllProducts";
 import ProductPublic from "./pages/ProductPublic";
 import OrderTracking from "./pages/OrderTracking";
 
@@ -146,6 +147,7 @@ const App = () => (
             />
             {/* Public boutique routes — shared CartProvider */}
             <Route path="/boutique/:slug" element={<BoutiquePublic />} />
+            <Route path="/boutique/:slug/products" element={<BoutiqueAllProducts />} />
             <Route path="/boutique/:slug/product/:productId" element={<ProductPublic />} />
             <Route path="/boutique/:slug/order-tracking" element={<OrderTracking />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

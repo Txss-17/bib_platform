@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,21 @@ interface CheckoutFormProps {
   onBack: () => void;
 }
 
+// Simple localStorage-based customer profile
+function getSavedProfile(): { name: string; email: string } | null {
+  try {
+    const raw = localStorage.getItem("linksy_customer_profile");
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return null;
+}
+
+function saveProfile(name: string, email: string) {
+  try {
+    localStorage.setItem("linksy_customer_profile", JSON.stringify({ name, email }));
+  } catch {}
+}
+
 export function CheckoutForm({ boutiqueId, boutiqueName, primaryColor, onBack }: CheckoutFormProps) {
   const { items, totalPrice, clearCart, setIsOpen } = useCart();
   const [name, setName] = useState("");
@@ -21,6 +36,15 @@ export function CheckoutForm({ boutiqueId, boutiqueName, primaryColor, onBack }:
   const [success, setSuccess] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-fill from saved profile
+  useEffect(() => {
+    const saved = getSavedProfile();
+    if (saved) {
+      setName(saved.name);
+      setEmail(saved.email);
+    }
+  }, []);
 
   const generateOrderNumber = () => {
     const prefix = "LNK";
@@ -52,6 +76,9 @@ export function CheckoutForm({ boutiqueId, boutiqueName, primaryColor, onBack }:
       const hasError = results.find((r) => r.error);
       if (hasError?.error) throw hasError.error;
 
+      // Save customer profile for reuse
+      saveProfile(name, email);
+
       setSuccess(true);
       clearCart();
     } catch (err: any) {
@@ -61,7 +88,6 @@ export function CheckoutForm({ boutiqueId, boutiqueName, primaryColor, onBack }:
     }
   };
 
-  // Derive slug from current URL
   const boutiqueSlug = window.location.pathname.split("/boutique/")[1]?.split("/")[0] || "";
 
   if (success) {
@@ -105,7 +131,6 @@ export function CheckoutForm({ boutiqueId, boutiqueName, primaryColor, onBack }:
         <ArrowLeft className="w-4 h-4" /> Retour au panier
       </button>
 
-      {/* Order summary */}
       <div className="p-4 rounded-lg bg-gray-50 space-y-2">
         <h4 className="font-medium text-gray-900 text-sm">Récapitulatif</h4>
         {items.map((item) => (
@@ -120,7 +145,6 @@ export function CheckoutForm({ boutiqueId, boutiqueName, primaryColor, onBack }:
         </div>
       </div>
 
-      {/* Customer info */}
       <div className="space-y-3">
         <div>
           <Label htmlFor="checkout-name">Nom complet</Label>

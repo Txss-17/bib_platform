@@ -1,6 +1,7 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, ShoppingCart } from "lucide-react";
+import { Check, ShoppingCart, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 
@@ -21,6 +22,9 @@ interface StorefrontProductsProps {
 
 export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug }: StorefrontProductsProps) {
   const { addItem } = useCart();
+  // On mobile, show only first 8 products initially
+  const [showAll, setShowAll] = useState(false);
+  const mobileLimit = 8;
 
   return (
     <section id="products" className="py-12 md:py-16 bg-white">
@@ -33,10 +37,13 @@ export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug
           <div className="flex-1 h-px bg-gray-200" />
         </div>
 
+        {/* Mobile: 2 columns, show mobileLimit items; Desktop: 4 columns, show all */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {products.map((product) => (
-            <div key={product.id} className="group">
-              {/* Product image — links to product page */}
+          {products.map((product, index) => (
+            <div 
+              key={product.id} 
+              className={`group ${!showAll && index >= mobileLimit ? "hidden md:block" : ""}`}
+            >
               {boutiqueSlug ? (
                 <Link to={`/boutique/${boutiqueSlug}/product/${product.id}`}>
                   <div className="relative aspect-square mb-3 bg-gray-100 rounded-lg overflow-hidden">
@@ -47,7 +54,7 @@ export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug
                     )}
                     {product.isPopular && (
                       <Badge className="absolute top-2 left-2 text-white" style={{ backgroundColor: primaryColor }}>
-                        <Check className="w-3 h-3 mr-1" /> Très populaire
+                        <Check className="w-3 h-3 mr-1" /> Populaire
                       </Badge>
                     )}
                   </div>
@@ -61,7 +68,7 @@ export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug
                   )}
                   {product.isPopular && (
                     <Badge className="absolute top-2 left-2 text-white" style={{ backgroundColor: primaryColor }}>
-                      <Check className="w-3 h-3 mr-1" /> Très populaire
+                      <Check className="w-3 h-3 mr-1" /> Populaire
                     </Badge>
                   )}
                 </div>
@@ -87,11 +94,41 @@ export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug
                 onClick={() => addItem({ id: product.id, name: product.name, price: product.price, image_url: product.image_url })}
               >
                 <ShoppingCart className="w-3.5 h-3.5" />
-                Ajouter au panier
+                Ajouter
               </Button>
             </div>
           ))}
         </div>
+
+        {/* Mobile "Voir plus" button */}
+        {products.length > mobileLimit && !showAll && (
+          <div className="mt-6 text-center md:hidden">
+            {boutiqueSlug ? (
+              <Link to={`/boutique/${boutiqueSlug}/products`}>
+                <Button variant="outline" className="gap-2" style={{ borderColor: primaryColor, color: primaryColor }}>
+                  Voir tous les produits
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
+              </Link>
+            ) : (
+              <Button variant="outline" className="gap-2" onClick={() => setShowAll(true)} style={{ borderColor: primaryColor, color: primaryColor }}>
+                Voir plus
+                <ChevronDown className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* Desktop "Voir tous" link */}
+        {boutiqueSlug && products.length >= 8 && (
+          <div className="mt-8 text-center hidden md:block">
+            <Link to={`/boutique/${boutiqueSlug}/products`}>
+              <Button variant="outline" style={{ borderColor: primaryColor, color: primaryColor }}>
+                Voir tous les produits →
+              </Button>
+            </Link>
+          </div>
+        )}
 
         {products.length === 0 && (
           <div className="text-center py-12 text-gray-500">

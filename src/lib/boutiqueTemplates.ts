@@ -36,6 +36,23 @@ export const availableSections: { type: SectionConfig["type"]; label: string; de
   { type: "newsletter", label: "Newsletter", description: "Formulaire d'inscription email" },
 ];
 
+export type AnimationLevel = "none" | "subtle" | "dynamic";
+export type HeroLayout = "text-left" | "text-center" | "image-left" | "image-right" | "image-bg";
+
+export const animationLevels: { value: AnimationLevel; label: string; description: string }[] = [
+  { value: "none", label: "Aucune", description: "Pas d'animation, chargement instantané" },
+  { value: "subtle", label: "Subtiles", description: "Fade-in doux sur les sections" },
+  { value: "dynamic", label: "Dynamiques", description: "Apparitions avec mouvement et profondeur" },
+];
+
+export const heroLayouts: { value: HeroLayout; label: string; description: string }[] = [
+  { value: "text-left", label: "Texte à gauche", description: "Titre et CTA alignés à gauche" },
+  { value: "text-center", label: "Texte centré", description: "Titre et CTA au centre" },
+  { value: "image-left", label: "Image à gauche", description: "Image à gauche, texte à droite" },
+  { value: "image-right", label: "Image à droite", description: "Texte à gauche, image à droite" },
+  { value: "image-bg", label: "Image en fond", description: "Image plein fond avec texte superposé" },
+];
+
 export const categoryTemplates: Record<string, TemplateConfig> = {
   Mode: {
     category: "Mode",
@@ -257,4 +274,7 @@ export interface ThemeSettings {
   customAboutText?: string;
   videoUrl?: string;
   animations?: boolean;
+  animationLevel?: AnimationLevel;
+  heroLayout?: HeroLayout;
+  heroImageUrl?: string;
 }
