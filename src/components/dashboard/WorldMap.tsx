@@ -8,7 +8,6 @@ import {
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-// ISO 3166-1 numeric → ISO 3166-1 alpha-2 mapping for countries we care about
 const numericToAlpha2: Record<string, string> = {
   "250": "FR", "276": "DE", "724": "ES", "380": "IT", "056": "BE",
   "528": "NL", "620": "PT", "756": "CH", "040": "AT", "616": "PL",
@@ -21,7 +20,6 @@ const numericToAlpha2: Record<string, string> = {
   "036": "AU", "554": "NZ",
 };
 
-// Continent code per alpha-2
 const countryToContinent: Record<string, string> = {
   FR: "EU", DE: "EU", ES: "EU", IT: "EU", BE: "EU", NL: "EU", PT: "EU", CH: "EU", AT: "EU", PL: "EU",
   MA: "AF", SN: "AF", CI: "AF", TN: "AF", CM: "AF", DZ: "AF", EG: "AF", NG: "AF", ZA: "AF", KE: "AF",
@@ -31,7 +29,6 @@ const countryToContinent: Record<string, string> = {
   AU: "OC", NZ: "OC",
 };
 
-// Rough continent bounding for zoom
 const continentProjection: Record<string, { center: [number, number]; zoom: number }> = {
   EU: { center: [15, 50], zoom: 3.5 },
   AF: { center: [20, 5], zoom: 2.5 },
@@ -81,88 +78,101 @@ export function WorldMap({
     if (!alpha2) return "hsl(var(--muted))";
     const data = salesMap.get(alpha2);
     if (!data) return "hsl(var(--muted))";
-
-    // Color intensity based on revenue
     const intensity = Math.max(0.15, data.revenue / maxRevenue);
     return `hsl(var(--primary) / ${intensity})`;
   };
 
   return (
-    <div className="relative w-full" style={{ aspectRatio: "2 / 1" }}>
-      <ComposableMap
-        projection="geoMercator"
-        projectionConfig={{
-          scale: 120,
+    <div className="relative w-full" style={{ aspectRatio: "2 / 1", perspective: "800px" }}>
+      <div
+        className="w-full h-full transition-transform duration-500"
+        style={{
+          transform: "rotateX(15deg) rotateZ(-2deg)",
+          transformStyle: "preserve-3d",
         }}
-        style={{ width: "100%", height: "100%" }}
       >
-        <ZoomableGroup center={projection.center} zoom={projection.zoom}>
-          <Geographies geography={GEO_URL}>
-            {({ geographies }) =>
-              geographies.map((geo) => {
-                const numId = geo.id || geo.properties?.["ISO_A3_EH"];
-                const alpha2 = numericToAlpha2[numId];
-                const data = alpha2 ? salesMap.get(alpha2) : undefined;
-                const continent = alpha2 ? countryToContinent[alpha2] : undefined;
+        <ComposableMap
+          projection="geoMercator"
+          projectionConfig={{ scale: 120 }}
+          style={{ width: "100%", height: "100%" }}
+        >
+          <defs>
+            <linearGradient id="mapGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.05} />
+              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
+            </linearGradient>
+            <filter id="mapShadow">
+              <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="hsl(var(--primary))" floodOpacity="0.15" />
+            </filter>
+          </defs>
+          <ZoomableGroup center={projection.center} zoom={projection.zoom}>
+            <Geographies geography={GEO_URL}>
+              {({ geographies }) =>
+                geographies.map((geo) => {
+                  const numId = geo.id || geo.properties?.["ISO_A3_EH"];
+                  const alpha2 = numericToAlpha2[numId];
+                  const data = alpha2 ? salesMap.get(alpha2) : undefined;
+                  const continent = alpha2 ? countryToContinent[alpha2] : undefined;
+                  const isInView = !selectedContinent || continent === selectedContinent;
 
-                // If viewing a continent, dim countries outside it
-                const isInView = !selectedContinent || continent === selectedContinent;
+                  return (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      onClick={() => {
+                        if (!selectedContinent && continent) {
+                          onSelectContinent?.(continent);
+                        } else if (alpha2 && data) {
+                          onSelectCountry?.(alpha2);
+                        }
+                      }}
+                      onMouseEnter={() => {
+                        setTooltip({
+                          name: geo.properties?.name || "Inconnu",
+                          data,
+                        });
+                      }}
+                      onMouseLeave={() => setTooltip(null)}
+                      style={{
+                        default: {
+                          fill: isInView ? getCountryColor(alpha2) : "hsl(var(--muted) / 0.3)",
+                          stroke: "hsl(var(--border))",
+                          strokeWidth: 0.5,
+                          outline: "none",
+                          cursor: (data || (!selectedContinent && continent)) ? "pointer" : "default",
+                          transition: "fill 0.3s, stroke-width 0.2s",
+                          filter: data ? "url(#mapShadow)" : "none",
+                        },
+                        hover: {
+                          fill: data ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.3)",
+                          stroke: "hsl(var(--primary))",
+                          strokeWidth: 1,
+                          outline: "none",
+                          cursor: (data || (!selectedContinent && continent)) ? "pointer" : "default",
+                        },
+                        pressed: {
+                          fill: "hsl(var(--primary))",
+                          outline: "none",
+                        },
+                      }}
+                    />
+                  );
+                })
+              }
+            </Geographies>
+          </ZoomableGroup>
+        </ComposableMap>
+      </div>
 
-                return (
-                  <Geography
-                    key={geo.rsmKey}
-                    geography={geo}
-                    onClick={() => {
-                      if (!selectedContinent && continent) {
-                        onSelectContinent?.(continent);
-                      } else if (alpha2 && data) {
-                        onSelectCountry?.(alpha2);
-                      }
-                    }}
-                    onMouseEnter={() => {
-                      setTooltip({
-                        name: geo.properties?.name || "Inconnu",
-                        data,
-                      });
-                    }}
-                    onMouseLeave={() => setTooltip(null)}
-                    style={{
-                      default: {
-                        fill: isInView ? getCountryColor(alpha2) : "hsl(var(--muted) / 0.3)",
-                        stroke: "hsl(var(--border))",
-                        strokeWidth: 0.5,
-                        outline: "none",
-                        cursor: (data || (!selectedContinent && continent)) ? "pointer" : "default",
-                        transition: "fill 0.2s",
-                      },
-                      hover: {
-                        fill: data ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.3)",
-                        stroke: "hsl(var(--border))",
-                        strokeWidth: 0.75,
-                        outline: "none",
-                        cursor: (data || (!selectedContinent && continent)) ? "pointer" : "default",
-                      },
-                      pressed: {
-                        fill: "hsl(var(--primary))",
-                        outline: "none",
-                      },
-                    }}
-                  />
-                );
-              })
-            }
-          </Geographies>
-        </ZoomableGroup>
-      </ComposableMap>
-
-      {/* Tooltip */}
+      {/* 3D Tooltip */}
       {tooltip && (
-        <div className="absolute top-4 right-4 bg-card border border-border rounded-lg p-3 shadow-lg pointer-events-none text-sm">
+        <div className="absolute top-4 right-4 bg-card/95 backdrop-blur-sm border border-border rounded-xl p-4 shadow-xl pointer-events-none text-sm">
           <p className="font-semibold text-foreground">{tooltip.name}</p>
           {tooltip.data ? (
-            <div className="mt-1 space-y-0.5 text-muted-foreground">
-              <p>Ventes: <span className="text-foreground font-medium">{tooltip.data.sales}</span></p>
-              <p>CA: <span className="text-foreground font-medium">{tooltip.data.revenue.toFixed(0)}€</span></p>
+            <div className="mt-1.5 space-y-1 text-muted-foreground">
+              <p>Ventes: <span className="text-foreground font-bold">{tooltip.data.sales}</span></p>
+              <p>CA: <span className="text-foreground font-bold">{tooltip.data.revenue.toFixed(0)}€</span></p>
+              <p>Commandes: <span className="text-foreground font-bold">{tooltip.data.orders}</span></p>
             </div>
           ) : (
             <p className="text-muted-foreground mt-1">Aucune vente</p>

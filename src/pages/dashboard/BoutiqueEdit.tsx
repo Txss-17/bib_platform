@@ -9,12 +9,29 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Sparkles, Mail, Plus, GripVertical, Image, Wand2 } from "lucide-react";
+import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Sparkles, Mail, Plus, GripVertical, Image, Wand2, Upload } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { StorefrontPreview } from "@/components/storefront/StorefrontPreview";
 import { getTemplateForCategory, availableSections, animationLevels, heroLayouts, type ThemeSettings, type SectionConfig, type AnimationLevel, type HeroLayout } from "@/lib/boutiqueTemplates";
 import { useEmailTemplates, useUpsertEmailTemplate, DEFAULT_TEMPLATES } from "@/hooks/useEmailTemplates";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const colorSchemes = [
   { name: "Moderne", primary: "#3b82f6", secondary: "#1e40af" },
@@ -28,17 +45,60 @@ const colorSchemes = [
 ];
 
 const fontPairs = [
-  { heading: "Playfair Display", body: "Inter", name: "Élégant Classique" },
-  { heading: "Cormorant Garamond", body: "Lato", name: "Sophistiqué" },
-  { heading: "Space Grotesk", body: "Inter", name: "Moderne Tech" },
-  { heading: "Montserrat", body: "Open Sans", name: "Sportif" },
-  { heading: "Libre Baskerville", body: "Source Sans Pro", name: "Éditorial" },
-  { heading: "Fredoka One", body: "Nunito", name: "Ludique" },
-  { heading: "DM Serif Display", body: "DM Sans", name: "Magazine" },
-  { heading: "Prata", body: "Work Sans", name: "Luxe" },
-  { heading: "Archivo Black", body: "Archivo", name: "Impactant" },
-  { heading: "Lora", body: "Roboto", name: "Classique Moderne" },
+  { heading: "Playfair Display", body: "Lato", name: "Luxe Éditorial" },
+  { heading: "Cormorant Garamond", body: "Nunito Sans", name: "Haute Couture" },
+  { heading: "Space Grotesk", body: "Inter", name: "Startup Tech" },
+  { heading: "Montserrat", body: "Hind", name: "Sportif Bold" },
+  { heading: "DM Serif Display", body: "DM Sans", name: "Magazine Pro" },
+  { heading: "Prata", body: "Work Sans", name: "Luxe Minimaliste" },
+  { heading: "Archivo Black", body: "Archivo", name: "Streetwear" },
+  { heading: "Lora", body: "Source Sans 3", name: "Classique Raffiné" },
+  { heading: "Sora", body: "Inter", name: "SaaS Moderne" },
+  { heading: "Fraunces", body: "Commissioner", name: "Artisanal Premium" },
 ];
+
+// Sortable section item
+function SortableSectionItem({
+  section,
+  sectionDef,
+  isEnabled,
+  onToggle,
+}: {
+  section: SectionConfig;
+  sectionDef: { type: string; label: string; description: string };
+  isEnabled: boolean;
+  onToggle: (type: string, enabled: boolean) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: section.type,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : 0,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center justify-between p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors bg-card"
+    >
+      <div className="flex items-center gap-3">
+        <button {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-none">
+          <GripVertical className="w-4 h-4 text-muted-foreground/60 hover:text-muted-foreground" />
+        </button>
+        <div>
+          <p className="font-medium text-sm">{sectionDef.label}</p>
+          <p className="text-xs text-muted-foreground">{sectionDef.description}</p>
+        </div>
+      </div>
+      <Switch checked={isEnabled} onCheckedChange={(checked) => onToggle(section.type, checked)} />
+    </div>
+  );
+}
 
 export default function BoutiqueEdit() {
   const { id } = useParams<{ id: string }>();
@@ -60,6 +120,7 @@ export default function BoutiqueEdit() {
     aboutText: "",
     videoUrl: "",
     heroImageUrl: "",
+    boutiqueEmail: "",
   });
 
   // Email template editing state
@@ -68,6 +129,12 @@ export default function BoutiqueEdit() {
   const [emailBody, setEmailBody] = useState("");
   const [isCustomEmail, setIsCustomEmail] = useState(false);
   const [customEmailType, setCustomEmailType] = useState("");
+
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   // Fetch boutique
   const { data: boutique, isLoading } = useQuery({
@@ -133,6 +200,7 @@ export default function BoutiqueEdit() {
         aboutText: settings.customAboutText || "",
         videoUrl: settings.videoUrl || "",
         heroImageUrl: settings.heroImageUrl || "",
+        boutiqueEmail: settings.boutiqueEmail || "",
       });
     } else if (boutique) {
       const template = getTemplateForCategory(boutique.category);
@@ -160,6 +228,7 @@ export default function BoutiqueEdit() {
         customAboutText: customTexts.aboutText || undefined,
         videoUrl: customTexts.videoUrl || undefined,
         heroImageUrl: customTexts.heroImageUrl || undefined,
+        boutiqueEmail: customTexts.boutiqueEmail || undefined,
       };
       const { error } = await supabase
         .from("boutiques")
@@ -209,6 +278,20 @@ export default function BoutiqueEdit() {
       updatedSections = [...currentSections, { id: sectionType, type: sectionType as SectionConfig["type"], enabled }];
     }
     setThemeSettings(prev => ({ ...prev, sections: updatedSections }));
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    const oldIndex = currentSections.findIndex(s => s.type === active.id);
+    const newIndex = currentSections.findIndex(s => s.type === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(currentSections, oldIndex, newIndex);
+    setThemeSettings(prev => ({ ...prev, sections: reordered }));
   };
 
   const updateColor = (scheme: typeof colorSchemes[0]) => {
@@ -263,6 +346,33 @@ export default function BoutiqueEdit() {
     }
   };
 
+  // Hero image file upload
+  const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !id) return;
+
+    const fileExt = file.name.split(".").pop();
+    const filePath = `boutique-assets/${id}/hero-${Date.now()}.${fileExt}`;
+
+    toast.loading("Upload en cours...", { id: "hero-upload" });
+
+    const { error: uploadError } = await supabase.storage
+      .from("boutique-media")
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      toast.error("Erreur d'upload: " + uploadError.message, { id: "hero-upload" });
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("boutique-media")
+      .getPublicUrl(filePath);
+
+    setCustomTexts(prev => ({ ...prev, heroImageUrl: urlData.publicUrl }));
+    toast.success("Image uploadée !", { id: "hero-upload" });
+  };
+
   if (isLoading) {
     return (
       <DashboardLayout title="Chargement...">
@@ -296,9 +406,10 @@ export default function BoutiqueEdit() {
     customAboutText: customTexts.aboutText || undefined,
     videoUrl: customTexts.videoUrl || undefined,
     heroImageUrl: customTexts.heroImageUrl || undefined,
+    boutiqueEmail: customTexts.boutiqueEmail || undefined,
   };
 
-  // Get custom email templates (saved but not in default list)
+  // Get custom email templates
   const defaultTypes = DEFAULT_TEMPLATES.map(t => t.type);
   const customTemplates = emailTemplates.filter(t => !defaultTypes.includes(t.type));
 
@@ -484,34 +595,33 @@ export default function BoutiqueEdit() {
               </Card>
             </TabsContent>
 
-            {/* Sections tab */}
+            {/* Sections tab with drag-and-drop */}
             <TabsContent value="sections">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Sections du site</CardTitle>
+                  <p className="text-xs text-muted-foreground">Glissez-déposez pour réorganiser l'ordre des sections</p>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {availableSections.map(sectionDef => {
-                      const current = sections.find(s => s.type === sectionDef.type);
-                      const isEnabled = current?.enabled ?? false;
-                      return (
-                        <div key={sectionDef.type} className="flex items-center justify-between p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors">
-                          <div className="flex items-center gap-3">
-                            <GripVertical className="w-4 h-4 text-muted-foreground/40" />
-                            <div>
-                              <p className="font-medium text-sm">{sectionDef.label}</p>
-                              <p className="text-xs text-muted-foreground">{sectionDef.description}</p>
-                            </div>
-                          </div>
-                          <Switch
-                            checked={isEnabled}
-                            onCheckedChange={(checked) => updateSection(sectionDef.type, checked)}
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                    <SortableContext items={sections.map(s => s.type)} strategy={verticalListSortingStrategy}>
+                      <div className="space-y-2">
+                        {sections.map(section => {
+                          const sectionDef = availableSections.find(s => s.type === section.type);
+                          if (!sectionDef) return null;
+                          return (
+                            <SortableSectionItem
+                              key={section.type}
+                              section={section}
+                              sectionDef={sectionDef}
+                              isEnabled={section.enabled}
+                              onToggle={updateSection}
+                            />
+                          );
+                        })}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
 
                   {/* Animations level selector */}
                   <div className="mt-6 pt-4 border-t border-border space-y-3">
@@ -563,18 +673,30 @@ export default function BoutiqueEdit() {
                     ))}
                   </div>
 
-                  <div className="pt-4 border-t border-border">
-                    <Label htmlFor="heroImageUrl">URL de l'image Hero</Label>
-                    <Input
-                      id="heroImageUrl"
-                      value={customTexts.heroImageUrl}
-                      onChange={(e) => setCustomTexts(prev => ({ ...prev, heroImageUrl: e.target.value }))}
-                      placeholder="https://example.com/image.jpg"
-                      className="mt-1"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Utilisé pour les mises en page avec image (gauche, droite, fond).
+                  <div className="pt-4 border-t border-border space-y-3">
+                    <Label>Image Hero</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={customTexts.heroImageUrl}
+                        onChange={(e) => setCustomTexts(prev => ({ ...prev, heroImageUrl: e.target.value }))}
+                        placeholder="https://example.com/image.jpg"
+                        className="flex-1"
+                      />
+                      <label className="cursor-pointer">
+                        <input type="file" accept="image/*" className="hidden" onChange={handleHeroImageUpload} />
+                        <Button variant="outline" size="icon" asChild>
+                          <span><Upload className="w-4 h-4" /></span>
+                        </Button>
+                      </label>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Collez une URL ou uploadez une image. Utilisé pour les mises en page avec image.
                     </p>
+                    {customTexts.heroImageUrl && (
+                      <div className="rounded-lg overflow-hidden border border-border">
+                        <img src={customTexts.heroImageUrl} alt="Hero preview" className="w-full h-32 object-cover" />
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -627,8 +749,20 @@ export default function BoutiqueEdit() {
                       placeholder="https://youtube.com/watch?v=..."
                       className="mt-1"
                     />
+                  </div>
+
+                  <div className="pt-4 border-t border-border">
+                    <Label htmlFor="boutiqueEmail">Email de la boutique</Label>
+                    <Input
+                      id="boutiqueEmail"
+                      type="email"
+                      value={customTexts.boutiqueEmail}
+                      onChange={(e) => setCustomTexts(prev => ({ ...prev, boutiqueEmail: e.target.value }))}
+                      placeholder="contact@maboutique.com"
+                      className="mt-1"
+                    />
                     <p className="text-xs text-muted-foreground mt-1">
-                      Activez la section "Vidéo" dans l'onglet Sections pour l'afficher.
+                      Utilisé comme adresse d'expédition des emails de confirmation de commande aux clients.
                     </p>
                   </div>
                 </CardContent>
@@ -731,6 +865,17 @@ export default function BoutiqueEdit() {
                       <p className="text-sm text-muted-foreground mb-4">
                         Personnalisez les emails envoyés à vos clients. Utilisez le bouton <strong>+ Nouveau</strong> pour créer un email personnalisé.
                       </p>
+
+                      {/* Email activation config */}
+                      <div className="p-3 rounded-lg border border-border/50 bg-muted/20 mb-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium text-sm">Envoi automatique après commande</p>
+                            <p className="text-xs text-muted-foreground">Envoyer un email de confirmation au client automatiquement</p>
+                          </div>
+                          <Switch defaultChecked />
+                        </div>
+                      </div>
 
                       {/* Default templates */}
                       {DEFAULT_TEMPLATES.map(tpl => {

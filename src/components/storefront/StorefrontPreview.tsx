@@ -31,10 +31,9 @@ interface StorefrontPreviewProps {
   isPreview?: boolean;
 }
 
-// Build Google Fonts URL from font pair
 function buildGoogleFontsUrl(heading: string, body: string): string {
   const families = [heading, body]
-    .filter((f, i, a) => a.indexOf(f) === i) // dedupe
+    .filter((f, i, a) => a.indexOf(f) === i)
     .map(f => f.replace(/ /g, "+") + ":wght@400;500;600;700")
     .join("&family=");
   return `https://fonts.googleapis.com/css2?family=${families}&display=swap`;
@@ -67,9 +66,9 @@ export function StorefrontPreview({
   const primaryColor = themeSettings?.primaryColor || "#3b82f6";
   const secondaryColor = themeSettings?.secondaryColor || "#1e40af";
   const fonts = themeSettings?.fonts || template.fonts;
+  // Use sections order from themeSettings (preserves drag-and-drop order)
   const sections = themeSettings?.sections || template.sections;
   
-  // Animation level: backwards-compat with old boolean
   const animationLevel: AnimationLevel = themeSettings?.animationLevel 
     || (themeSettings?.animations === false ? "none" : "subtle");
 
@@ -110,6 +109,76 @@ export function StorefrontPreview({
   const { section: animClass, hero: heroAnim, delayBase } = getAnimClasses(animationLevel);
   const noAnim = animationLevel === "none";
 
+  // Render sections in their configured order
+  const renderSection = (section: SectionConfig, index: number) => {
+    if (!section.enabled) return null;
+    const delay = delayBase * (index + 1);
+    const animStyle = noAnim ? {} : { animationDelay: `${delay}ms`, animationFillMode: "forwards" as const, opacity: 0 };
+
+    switch (section.type) {
+      case "hero":
+        return (
+          <div key="hero" className={heroAnim} style={noAnim ? {} : { animationDuration: "0.5s" }}>
+            <StorefrontHero
+              title={heroTitle}
+              subtitle={heroSubtitle}
+              tagline={template.heroTagline}
+              primaryColor={primaryColor}
+              secondaryColor={secondaryColor}
+              headingFont={fonts.heading}
+              heroLayout={heroLayout}
+              heroImageUrl={heroImageUrl}
+            />
+          </div>
+        );
+      case "features":
+        return (
+          <div key="features" className={animClass} style={animStyle}>
+            <StorefrontFeatures features={template.features} primaryColor={primaryColor} />
+          </div>
+        );
+      case "products":
+        return (
+          <div key="products" className={animClass} style={animStyle}>
+            <StorefrontProducts
+              title={template.productsSectionTitle}
+              products={displayProducts}
+              primaryColor={primaryColor}
+              boutiqueSlug={boutiqueSlug}
+            />
+          </div>
+        );
+      case "about":
+        return (
+          <div key="about" className={animClass} style={animStyle}>
+            <StorefrontAbout
+              title={template.aboutTitle}
+              description={aboutText}
+              boutiqueName={boutiqueName}
+              primaryColor={primaryColor}
+            />
+          </div>
+        );
+      case "testimonials":
+        return <StorefrontTestimonials key="testimonials" primaryColor={primaryColor} />;
+      case "video":
+        return (
+          <StorefrontVideo
+            key="video"
+            primaryColor={primaryColor}
+            videoUrl={themeSettings?.videoUrl}
+            title="Découvrez notre univers"
+          />
+        );
+      case "faq":
+        return <StorefrontFAQ key="faq" primaryColor={primaryColor} />;
+      case "newsletter":
+        return <StorefrontNewsletter key="newsletter" primaryColor={primaryColor} boutiqueName={boutiqueName} />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <CartProvider>
     <div 
@@ -118,74 +187,12 @@ export function StorefrontPreview({
     >
       <StorefrontHeader 
         boutiqueName={boutiqueName} 
-        primaryColor={primaryColor} 
+        primaryColor={primaryColor}
+        boutiqueSlug={boutiqueSlug}
       />
 
-      {isSectionEnabled("hero") && (
-        <div className={heroAnim} style={noAnim ? {} : { animationDuration: "0.5s" }}>
-          <StorefrontHero
-            title={heroTitle}
-            subtitle={heroSubtitle}
-            tagline={template.heroTagline}
-            primaryColor={primaryColor}
-            secondaryColor={secondaryColor}
-            headingFont={fonts.heading}
-            heroLayout={heroLayout}
-            heroImageUrl={heroImageUrl}
-          />
-        </div>
-      )}
-
-      {isSectionEnabled("features") && (
-        <div className={animClass} style={noAnim ? {} : { animationDelay: `${delayBase}ms`, animationFillMode: "forwards", opacity: 0 }}>
-          <StorefrontFeatures 
-            features={template.features} 
-            primaryColor={primaryColor} 
-          />
-        </div>
-      )}
-
-      {isSectionEnabled("products") && (
-        <div className={animClass} style={noAnim ? {} : { animationDelay: `${delayBase * 2}ms`, animationFillMode: "forwards", opacity: 0 }}>
-          <StorefrontProducts
-            title={template.productsSectionTitle}
-            products={displayProducts}
-            primaryColor={primaryColor}
-            boutiqueSlug={boutiqueSlug}
-          />
-        </div>
-      )}
-
-      {isSectionEnabled("about") && (
-        <div className={animClass} style={noAnim ? {} : { animationDelay: `${delayBase * 3}ms`, animationFillMode: "forwards", opacity: 0 }}>
-          <StorefrontAbout
-            title={template.aboutTitle}
-            description={aboutText}
-            boutiqueName={boutiqueName}
-            primaryColor={primaryColor}
-          />
-        </div>
-      )}
-
-      {isSectionEnabled("testimonials") && (
-        <StorefrontTestimonials primaryColor={primaryColor} />
-      )}
-
-      {isSectionEnabled("video") && (
-        <StorefrontVideo 
-          primaryColor={primaryColor} 
-          videoUrl={themeSettings?.videoUrl}
-          title="Découvrez notre univers"
-        />
-      )}
-
-      {isSectionEnabled("faq") && (
-        <StorefrontFAQ primaryColor={primaryColor} />
-      )}
-
-      {isSectionEnabled("newsletter") && (
-        <StorefrontNewsletter primaryColor={primaryColor} boutiqueName={boutiqueName} />
-      )}
+      {/* Render sections in configured order */}
+      {sections.map((section, index) => renderSection(section, index))}
 
       {boutiqueId && <CartDrawer primaryColor={primaryColor} boutiqueId={boutiqueId} boutiqueName={boutiqueName} />}
       <StorefrontFooter primaryColor={primaryColor} />

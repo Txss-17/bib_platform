@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useCart } from "@/contexts/CartContext";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, CheckCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle, Loader2, MapPin } from "lucide-react";
 
 interface CheckoutFormProps {
   boutiqueId: string;
@@ -13,8 +14,7 @@ interface CheckoutFormProps {
   onBack: () => void;
 }
 
-// Simple localStorage-based customer profile
-function getSavedProfile(): { name: string; email: string } | null {
+function getSavedProfile() {
   try {
     const raw = localStorage.getItem("linksy_customer_profile");
     if (raw) return JSON.parse(raw);
@@ -22,9 +22,9 @@ function getSavedProfile(): { name: string; email: string } | null {
   return null;
 }
 
-function saveProfile(name: string, email: string) {
+function saveProfile(data: Record<string, string>) {
   try {
-    localStorage.setItem("linksy_customer_profile", JSON.stringify({ name, email }));
+    localStorage.setItem("linksy_customer_profile", JSON.stringify(data));
   } catch {}
 }
 
@@ -32,17 +32,28 @@ export function CheckoutForm({ boutiqueId, boutiqueName, primaryColor, onBack }:
   const { items, totalPrice, clearCart, setIsOpen } = useCart();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [country, setCountry] = useState("France");
+  const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState<"info" | "shipping">("info");
 
-  // Auto-fill from saved profile
   useEffect(() => {
     const saved = getSavedProfile();
     if (saved) {
-      setName(saved.name);
-      setEmail(saved.email);
+      setName(saved.name || "");
+      setEmail(saved.email || "");
+      setPhone(saved.phone || "");
+      setAddress(saved.address || "");
+      setCity(saved.city || "");
+      setPostalCode(saved.postalCode || "");
+      setCountry(saved.country || "France");
     }
   }, []);
 
@@ -76,8 +87,7 @@ export function CheckoutForm({ boutiqueId, boutiqueName, primaryColor, onBack }:
       const hasError = results.find((r) => r.error);
       if (hasError?.error) throw hasError.error;
 
-      // Save customer profile for reuse
-      saveProfile(name, email);
+      saveProfile({ name, email, phone, address, city, postalCode, country });
 
       setSuccess(true);
       clearCart();
@@ -131,6 +141,7 @@ export function CheckoutForm({ boutiqueId, boutiqueName, primaryColor, onBack }:
         <ArrowLeft className="w-4 h-4" /> Retour au panier
       </button>
 
+      {/* Order summary */}
       <div className="p-4 rounded-lg bg-gray-50 space-y-2">
         <h4 className="font-medium text-gray-900 text-sm">Récapitulatif</h4>
         {items.map((item) => (
@@ -145,27 +156,93 @@ export function CheckoutForm({ boutiqueId, boutiqueName, primaryColor, onBack }:
         </div>
       </div>
 
-      <div className="space-y-3">
-        <div>
-          <Label htmlFor="checkout-name">Nom complet</Label>
-          <Input id="checkout-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Jean Dupont" required className="mt-1" />
-        </div>
-        <div>
-          <Label htmlFor="checkout-email">Email</Label>
-          <Input id="checkout-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jean@exemple.com" required className="mt-1" />
-        </div>
+      {/* Step indicators */}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => setStep("info")}
+          className={`flex-1 py-2 text-xs font-medium rounded-md transition-colors ${step === "info" ? "text-white" : "bg-gray-100 text-gray-600"}`}
+          style={step === "info" ? { backgroundColor: primaryColor } : {}}
+        >
+          1. Informations
+        </button>
+        <button
+          type="button"
+          onClick={() => setStep("shipping")}
+          className={`flex-1 py-2 text-xs font-medium rounded-md transition-colors ${step === "shipping" ? "text-white" : "bg-gray-100 text-gray-600"}`}
+          style={step === "shipping" ? { backgroundColor: primaryColor } : {}}
+        >
+          2. Livraison
+        </button>
       </div>
 
-      {error && <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</p>}
+      {step === "info" && (
+        <div className="space-y-3">
+          <div>
+            <Label htmlFor="checkout-name">Nom complet</Label>
+            <Input id="checkout-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Jean Dupont" required className="mt-1" />
+          </div>
+          <div>
+            <Label htmlFor="checkout-email">Email</Label>
+            <Input id="checkout-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jean@exemple.com" required className="mt-1" />
+          </div>
+          <div>
+            <Label htmlFor="checkout-phone">Téléphone</Label>
+            <Input id="checkout-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+33 6 12 34 56 78" className="mt-1" />
+          </div>
+          <Button
+            type="button"
+            className="w-full text-white"
+            style={{ backgroundColor: primaryColor }}
+            onClick={() => setStep("shipping")}
+            disabled={!name || !email}
+          >
+            Continuer vers la livraison
+          </Button>
+        </div>
+      )}
 
-      <Button type="submit" className="w-full text-white" style={{ backgroundColor: primaryColor }} disabled={loading}>
-        {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-        Confirmer la commande — {totalPrice.toFixed(2)} €
-      </Button>
+      {step === "shipping" && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+            <MapPin className="w-4 h-4" />
+            Adresse de livraison
+          </div>
+          <div>
+            <Label htmlFor="checkout-address">Adresse</Label>
+            <Input id="checkout-address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="12 rue de la Paix" required className="mt-1" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="checkout-city">Ville</Label>
+              <Input id="checkout-city" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Paris" required className="mt-1" />
+            </div>
+            <div>
+              <Label htmlFor="checkout-postal">Code postal</Label>
+              <Input id="checkout-postal" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="75001" required className="mt-1" />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="checkout-country">Pays</Label>
+            <Input id="checkout-country" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="France" className="mt-1" />
+          </div>
+          <div>
+            <Label htmlFor="checkout-notes">Notes de livraison (optionnel)</Label>
+            <Textarea id="checkout-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Code d'accès, étage, etc." className="mt-1" rows={2} />
+          </div>
 
-      <p className="text-xs text-gray-500 text-center">
-        Livraison incluse • Paiement sécurisé via LINKSY
-      </p>
+          {error && <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</p>}
+
+          <Button type="submit" className="w-full text-white" style={{ backgroundColor: primaryColor }} disabled={loading || !address || !city || !postalCode}>
+            {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+            Confirmer la commande — {totalPrice.toFixed(2)} €
+          </Button>
+
+          <p className="text-xs text-gray-500 text-center">
+            Livraison incluse • Paiement sécurisé via LINKSY
+          </p>
+        </div>
+      )}
     </form>
   );
 }
