@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Package, Truck, CheckCircle, Clock, AlertCircle, ShoppingBag } from "lucide-react";
 import { useOrders } from "@/hooks/useOrders";
+import { useBoutiques } from "@/hooks/useBoutiques";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -20,7 +23,6 @@ const statusConfig: Record<LogisticsStatus, { label: string; icon: React.Element
 function StatusBadge({ status }: { status: LogisticsStatus }) {
   const config = statusConfig[status];
   const Icon = config.icon;
-
   return (
     <Badge variant={config.variant} className="gap-1">
       <Icon className="w-3 h-3" />
@@ -78,6 +80,15 @@ function EmptyState() {
 
 export default function Commandes() {
   const { data: orders, isLoading, error } = useOrders();
+  const { data: boutiques = [] } = useBoutiques();
+  const [selectedBoutique, setSelectedBoutique] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+
+  const filteredOrders = orders?.filter(order => {
+    if (selectedBoutique !== "all" && order.boutique_id !== selectedBoutique) return false;
+    if (selectedStatus !== "all" && order.logistics_status !== selectedStatus) return false;
+    return true;
+  });
 
   if (error) {
     return (
@@ -94,7 +105,7 @@ export default function Commandes() {
   return (
     <DashboardLayout title="Commandes" subtitle="Suivez vos commandes en temps réel">
       {/* Info Banner */}
-      <Card className="bg-primary/5 border-primary/20 mb-8">
+      <Card className="bg-primary/5 border-primary/20 mb-6">
         <CardContent className="p-4">
           <p className="text-sm text-foreground">
             <span className="font-medium">💡 La logistique est transparente</span> — vous vendez, LINKSY opère. 
@@ -102,6 +113,39 @@ export default function Commandes() {
           </p>
         </CardContent>
       </Card>
+
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <Select value={selectedBoutique} onValueChange={setSelectedBoutique}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Toutes les boutiques" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes les boutiques</SelectItem>
+            {boutiques.map(b => (
+              <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Tous les statuts" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les statuts</SelectItem>
+            {Object.entries(statusConfig).map(([key, config]) => (
+              <SelectItem key={key} value={key}>{config.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {(selectedBoutique !== "all" || selectedStatus !== "all") && (
+          <span className="text-xs text-muted-foreground">
+            {filteredOrders?.length || 0} résultat(s)
+          </span>
+        )}
+      </div>
 
       {isLoading ? (
         <Card className="bg-card border-border/50">
@@ -112,7 +156,7 @@ export default function Commandes() {
             <OrdersTableSkeleton />
           </CardContent>
         </Card>
-      ) : orders && orders.length === 0 ? (
+      ) : filteredOrders && filteredOrders.length === 0 ? (
         <EmptyState />
       ) : (
         <Card className="bg-card border-border/50">
@@ -133,7 +177,7 @@ export default function Commandes() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {orders?.map((order) => (
+                {filteredOrders?.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell className="font-mono text-sm font-medium">{order.order_number}</TableCell>
                     <TableCell>{order.products?.supplier_products?.name || "Produit inconnu"}</TableCell>

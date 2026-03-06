@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Euro, ShoppingCart, Receipt, Target, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { SalesMap } from "@/components/dashboard/SalesMap";
 import { useSalesGeography } from "@/hooks/useSalesGeography";
+import { useBoutiques } from "@/hooks/useBoutiques";
 
 const monthlyData = [
   { month: "Jan", revenue: 4200 },
@@ -55,9 +58,29 @@ function StatCard({ title, value, trend, icon: Icon }: { title: string; value: s
 
 export default function Ventes() {
   const { data: salesGeo } = useSalesGeography();
+  const { data: boutiques = [] } = useBoutiques();
+  const [selectedBoutique, setSelectedBoutique] = useState<string>("all");
 
   return (
     <DashboardLayout title="Ventes" subtitle="Analysez vos performances commerciales">
+      {/* Boutique filter */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-muted-foreground">Filtrer par boutique :</span>
+          <Select value={selectedBoutique} onValueChange={setSelectedBoutique}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Toutes les boutiques" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toutes les boutiques</SelectItem>
+              {boutiques.map(b => (
+                <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard title="Chiffre d'affaires" value="8 100 €" trend={12.5} icon={Euro} />
@@ -67,7 +90,6 @@ export default function Ventes() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Monthly Evolution Chart */}
         <Card className="bg-card border-border/50">
           <CardHeader>
             <CardTitle className="text-lg">Évolution mensuelle</CardTitle>
@@ -105,7 +127,6 @@ export default function Ventes() {
           </CardContent>
         </Card>
 
-        {/* Top Products Chart */}
         <Card className="bg-card border-border/50">
           <CardHeader>
             <CardTitle className="text-lg">Produits les plus performants</CardTitle>
