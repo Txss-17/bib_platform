@@ -420,6 +420,10 @@ export default function BoutiqueEdit() {
     videoUrl: customTexts.videoUrl || undefined,
     heroImageUrl: customTexts.heroImageUrl || undefined,
     boutiqueEmail: customTexts.boutiqueEmail || undefined,
+    aboutImageUrl: customTexts.aboutImageUrl || undefined,
+    faqItems: faqItems.length > 0 ? faqItems : undefined,
+    cguText: customTexts.cguText || undefined,
+    cgvText: customTexts.cgvText || undefined,
   };
 
   // Get custom email templates
