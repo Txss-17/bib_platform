@@ -121,7 +121,12 @@ export default function BoutiqueEdit() {
     videoUrl: "",
     heroImageUrl: "",
     boutiqueEmail: "",
+    aboutImageUrl: "",
+    cguText: "",
+    cgvText: "",
   });
+
+  const [faqItems, setFaqItems] = useState<{ question: string; answer: string }[]>([]);
 
   // Email template editing state
   const [editingTemplate, setEditingTemplate] = useState<string | null>(null);
