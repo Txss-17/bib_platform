@@ -159,6 +159,7 @@ export function StorefrontPreview({
               description={aboutText}
               boutiqueName={boutiqueName}
               primaryColor={primaryColor}
+              aboutImageUrl={aboutImageUrl}
             />
           </div>
         );
