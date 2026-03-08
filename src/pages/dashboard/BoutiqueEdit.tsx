@@ -750,7 +750,7 @@ export default function BoutiqueEdit() {
                 <CardHeader>
                   <CardTitle className="text-lg">Personnaliser le contenu</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 max-h-[600px] overflow-y-auto pr-1">
                   <div>
                     <Label htmlFor="heroTitle">Titre principal</Label>
                     <Input
@@ -782,6 +782,31 @@ export default function BoutiqueEdit() {
                       rows={4}
                     />
                   </div>
+
+                  {/* About image upload */}
+                  <div className="pt-4 border-t border-border space-y-3">
+                    <Label>Image "À propos"</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={customTexts.aboutImageUrl}
+                        onChange={(e) => setCustomTexts(prev => ({ ...prev, aboutImageUrl: e.target.value }))}
+                        placeholder="https://example.com/about.jpg"
+                        className="flex-1"
+                      />
+                      <label className="cursor-pointer">
+                        <input type="file" accept="image/*" className="hidden" onChange={handleAboutImageUpload} />
+                        <Button variant="outline" size="icon" asChild>
+                          <span><Upload className="w-4 h-4" /></span>
+                        </Button>
+                      </label>
+                    </div>
+                    {customTexts.aboutImageUrl && (
+                      <div className="rounded-lg overflow-hidden border border-border">
+                        <img src={customTexts.aboutImageUrl} alt="About preview" className="w-full h-24 object-cover" />
+                      </div>
+                    )}
+                  </div>
+
                   <div>
                     <Label htmlFor="videoUrl">URL vidéo (YouTube / Vimeo)</Label>
                     <Input
@@ -790,6 +815,68 @@ export default function BoutiqueEdit() {
                       onChange={(e) => setCustomTexts(prev => ({ ...prev, videoUrl: e.target.value }))}
                       placeholder="https://youtube.com/watch?v=..."
                       className="mt-1"
+                    />
+                  </div>
+
+                  {/* FAQ Editor */}
+                  <div className="pt-4 border-t border-border space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="flex items-center gap-2">
+                        <FileText className="w-4 h-4" /> Questions FAQ
+                      </Label>
+                      <Button size="sm" variant="outline" onClick={addFaqItem} className="gap-1">
+                        <Plus className="w-3 h-3" /> Ajouter
+                      </Button>
+                    </div>
+                    {faqItems.length === 0 && (
+                      <p className="text-xs text-muted-foreground">Aucune question personnalisée. Les FAQ par défaut seront affichées.</p>
+                    )}
+                    {faqItems.map((item, i) => (
+                      <div key={i} className="p-3 rounded-lg border border-border/50 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-muted-foreground">Question {i + 1}</span>
+                          <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => removeFaqItem(i)}>
+                            <Trash2 className="w-3 h-3 text-destructive" />
+                          </Button>
+                        </div>
+                        <Input
+                          value={item.question}
+                          onChange={(e) => updateFaqItem(i, "question", e.target.value)}
+                          placeholder="Votre question..."
+                          className="text-sm"
+                        />
+                        <Textarea
+                          value={item.answer}
+                          onChange={(e) => updateFaqItem(i, "answer", e.target.value)}
+                          placeholder="Votre réponse..."
+                          rows={2}
+                          className="text-sm"
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* CGU / CGV */}
+                  <div className="pt-4 border-t border-border space-y-3">
+                    <Label htmlFor="cgvText">Conditions Générales de Vente (CGV)</Label>
+                    <Textarea
+                      id="cgvText"
+                      value={customTexts.cgvText}
+                      onChange={(e) => setCustomTexts(prev => ({ ...prev, cgvText: e.target.value }))}
+                      placeholder="Entrez vos conditions générales de vente..."
+                      rows={4}
+                      className="text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="cguText">Conditions Générales d'Utilisation (CGU)</Label>
+                    <Textarea
+                      id="cguText"
+                      value={customTexts.cguText}
+                      onChange={(e) => setCustomTexts(prev => ({ ...prev, cguText: e.target.value }))}
+                      placeholder="Entrez vos conditions générales d'utilisation..."
+                      rows={4}
+                      className="text-sm"
                     />
                   </div>
 
