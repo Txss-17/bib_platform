@@ -12,6 +12,7 @@ import { StorefrontFooter } from "./StorefrontFooter";
 import { CartDrawer } from "./CartDrawer";
 import { CartProvider } from "@/contexts/CartContext";
 import { getTemplateForCategory, type ThemeSettings, type SectionConfig, type AnimationLevel } from "@/lib/boutiqueTemplates";
+import type { FAQItem } from "./StorefrontFAQ";
 
 interface Product {
   id: string;
