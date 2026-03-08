@@ -32,6 +32,7 @@ import BoutiquePublic from "./pages/BoutiquePublic";
 import BoutiqueAllProducts from "./pages/BoutiqueAllProducts";
 import ProductPublic from "./pages/ProductPublic";
 import OrderTracking from "./pages/OrderTracking";
+import { CartProvider } from "@/contexts/CartContext";
 
 const queryClient = new QueryClient();
 
@@ -145,10 +146,12 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            {/* Public boutique routes — shared CartProvider */}
+            {/* Public boutique routes */}
             <Route path="/boutique/:slug" element={<BoutiquePublic />} />
             <Route path="/boutique/:slug/products" element={<BoutiqueAllProducts />} />
-            <Route path="/boutique/:slug/product/:productId" element={<ProductPublic />} />
+            <Route path="/boutique/:slug/product/:productId" element={
+              <CartProvider><ProductPublic /></CartProvider>
+            } />
             <Route path="/boutique/:slug/order-tracking" element={<OrderTracking />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

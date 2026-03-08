@@ -1,9 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import type { Tables } from "@/integrations/supabase/types";
+import type { Tables, Database } from "@/integrations/supabase/types";
 
 type Order = Tables<"orders">;
+type LogisticsStatus = Database["public"]["Enums"]["logistics_status"];
 
 export interface OrderWithProduct extends Order {
   products: {
@@ -22,7 +23,6 @@ export function useOrders() {
     queryFn: async () => {
       if (!user) return [];
 
-      // First get user's boutiques
       const { data: boutiques, error: boutiquesError } = await supabase
         .from("boutiques")
         .select("id")
@@ -33,7 +33,6 @@ export function useOrders() {
 
       const boutiqueIds = boutiques.map((b) => b.id);
 
-      // Then get orders for those boutiques with product info
       const { data, error } = await supabase
         .from("orders")
         .select(`
@@ -55,6 +54,25 @@ export function useOrders() {
   });
 }
 
+export function useUpdateOrderStatus() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({ orderId, status }: { orderId: string; status: LogisticsStatus }) => {
+      const { error } = await supabase
+        .from("orders")
+        .update({ logistics_status: status })
+        .eq("id", orderId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["order-stats", user?.id] });
+    },
+  });
+}
+
 export function useOrderStats() {
   const { user } = useAuth();
 
@@ -65,7 +83,6 @@ export function useOrderStats() {
         return { total: 0, pending: 0, shipped: 0, delivered: 0, revenue: 0 };
       }
 
-      // First get user's boutiques
       const { data: boutiques, error: boutiquesError } = await supabase
         .from("boutiques")
         .select("id")
@@ -90,13 +107,7 @@ export function useOrderStats() {
       const delivered = data?.filter((o) => o.logistics_status === "delivered").length || 0;
       const revenue = data?.reduce((sum, o) => sum + Number(o.amount), 0) || 0;
 
-      return {
-        total: data?.length || 0,
-        pending,
-        shipped,
-        delivered,
-        revenue,
-      };
+      return { total: data?.length || 0, pending, shipped, delivered, revenue };
     },
     enabled: !!user,
   });
