@@ -32,6 +32,8 @@ import BoutiquePublic from "./pages/BoutiquePublic";
 import BoutiqueAllProducts from "./pages/BoutiqueAllProducts";
 import ProductPublic from "./pages/ProductPublic";
 import OrderTracking from "./pages/OrderTracking";
+import BoutiqueFAQPage from "./pages/BoutiqueFAQPage";
+import { BoutiqueCGVPage, BoutiqueCGUPage, BoutiqueAboutPage } from "./pages/BoutiqueLegalPages";
 import { CartProvider } from "@/contexts/CartContext";
 
 const queryClient = new QueryClient();
@@ -153,6 +155,10 @@ const App = () => (
               <CartProvider><ProductPublic /></CartProvider>
             } />
             <Route path="/boutique/:slug/order-tracking" element={<OrderTracking />} />
+            <Route path="/boutique/:slug/faq" element={<BoutiqueFAQPage />} />
+            <Route path="/boutique/:slug/cgv" element={<BoutiqueCGVPage />} />
+            <Route path="/boutique/:slug/cgu" element={<BoutiqueCGUPage />} />
+            <Route path="/boutique/:slug/about" element={<BoutiqueAboutPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

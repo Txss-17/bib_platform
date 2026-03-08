@@ -58,7 +58,10 @@ export function WorldMap({
   onSelectCountry,
   selectedContinent,
 }: WorldMapProps) {
-  const [tooltip, setTooltip] = useState<{ name: string; data?: SalesData } | null>(null);
+  const [tooltip, setTooltip] = useState<{ name: string; data?: SalesData; x: number; y: number } | null>(null);
+  const [rotation, setRotation] = useState<[number, number]>([0, 0]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [lastMouse, setLastMouse] = useState<{ x: number; y: number } | null>(null);
 
   const salesMap = useMemo(() => {
     const m = new Map<string, SalesData>();
@@ -82,13 +85,43 @@ export function WorldMap({
     return `hsl(var(--primary) / ${intensity})`;
   };
 
+  const handlePointerDown = (e: React.PointerEvent) => {
+    setIsDragging(true);
+    setLastMouse({ x: e.clientX, y: e.clientY });
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging || !lastMouse) return;
+    const dx = (e.clientX - lastMouse.x) * 0.3;
+    const dy = (e.clientY - lastMouse.y) * 0.3;
+    setRotation(prev => [
+      Math.max(-30, Math.min(30, prev[0] - dy)),
+      Math.max(-45, Math.min(45, prev[1] + dx)),
+    ]);
+    setLastMouse({ x: e.clientX, y: e.clientY });
+  };
+
+  const handlePointerUp = () => {
+    setIsDragging(false);
+    setLastMouse(null);
+  };
+
   return (
-    <div className="relative w-full" style={{ aspectRatio: "2 / 1", perspective: "800px" }}>
+    <div 
+      className="relative w-full select-none" 
+      style={{ aspectRatio: "2 / 1", perspective: "1200px" }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerUp}
+    >
       <div
-        className="w-full h-full transition-transform duration-500"
+        className="w-full h-full transition-transform duration-100"
         style={{
-          transform: "rotateX(15deg) rotateZ(-2deg)",
+          transform: `rotateX(${15 + rotation[0]}deg) rotateY(${rotation[1]}deg) rotateZ(-2deg)`,
           transformStyle: "preserve-3d",
+          cursor: isDragging ? "grabbing" : "grab",
         }}
       >
         <ComposableMap
@@ -103,6 +136,13 @@ export function WorldMap({
             </linearGradient>
             <filter id="mapShadow">
               <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="hsl(var(--primary))" floodOpacity="0.15" />
+            </filter>
+            <filter id="mapGlow">
+              <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
             </filter>
           </defs>
           <ZoomableGroup center={projection.center} zoom={projection.zoom}>
@@ -126,10 +166,13 @@ export function WorldMap({
                           onSelectCountry?.(alpha2);
                         }
                       }}
-                      onMouseEnter={() => {
+                      onMouseEnter={(e) => {
+                        const rect = (e.target as SVGElement).closest('div')?.getBoundingClientRect();
                         setTooltip({
                           name: geo.properties?.name || "Inconnu",
                           data,
+                          x: e.clientX - (rect?.left || 0),
+                          y: e.clientY - (rect?.top || 0),
                         });
                       }}
                       onMouseLeave={() => setTooltip(null)}
@@ -149,6 +192,7 @@ export function WorldMap({
                           strokeWidth: 1,
                           outline: "none",
                           cursor: (data || (!selectedContinent && continent)) ? "pointer" : "default",
+                          filter: data ? "url(#mapGlow)" : "none",
                         },
                         pressed: {
                           fill: "hsl(var(--primary))",
@@ -164,9 +208,15 @@ export function WorldMap({
         </ComposableMap>
       </div>
 
-      {/* 3D Tooltip */}
+      {/* Floating tooltip following cursor */}
       {tooltip && (
-        <div className="absolute top-4 right-4 bg-card/95 backdrop-blur-sm border border-border rounded-xl p-4 shadow-xl pointer-events-none text-sm">
+        <div 
+          className="absolute bg-card/95 backdrop-blur-sm border border-border rounded-xl p-4 shadow-xl pointer-events-none text-sm z-10"
+          style={{ 
+            left: Math.min(tooltip.x + 10, 280), 
+            top: Math.max(tooltip.y - 60, 10),
+          }}
+        >
           <p className="font-semibold text-foreground">{tooltip.name}</p>
           {tooltip.data ? (
             <div className="mt-1.5 space-y-1 text-muted-foreground">
@@ -179,6 +229,12 @@ export function WorldMap({
           )}
         </div>
       )}
+
+      {/* 3D shadow effect */}
+      <div 
+        className="absolute inset-x-4 -bottom-2 h-6 rounded-full opacity-20 blur-lg"
+        style={{ background: "hsl(var(--primary))" }}
+      />
     </div>
   );
 }

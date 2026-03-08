@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Sparkles, Mail, Plus, GripVertical, Image, Wand2, Upload } from "lucide-react";
+import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Sparkles, Mail, Plus, GripVertical, Image, Wand2, Upload, Trash2, FileText } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { StorefrontPreview } from "@/components/storefront/StorefrontPreview";
@@ -121,7 +121,12 @@ export default function BoutiqueEdit() {
     videoUrl: "",
     heroImageUrl: "",
     boutiqueEmail: "",
+    aboutImageUrl: "",
+    cguText: "",
+    cgvText: "",
   });
+
+  const [faqItems, setFaqItems] = useState<{ question: string; answer: string }[]>([]);
 
   // Email template editing state
   const [editingTemplate, setEditingTemplate] = useState<string | null>(null);
@@ -201,7 +206,11 @@ export default function BoutiqueEdit() {
         videoUrl: settings.videoUrl || "",
         heroImageUrl: settings.heroImageUrl || "",
         boutiqueEmail: settings.boutiqueEmail || "",
+        aboutImageUrl: settings.aboutImageUrl || "",
+        cguText: settings.cguText || "",
+        cgvText: settings.cgvText || "",
       });
+      setFaqItems(settings.faqItems || []);
     } else if (boutique) {
       const template = getTemplateForCategory(boutique.category);
       setThemeSettings({
@@ -229,6 +238,10 @@ export default function BoutiqueEdit() {
         videoUrl: customTexts.videoUrl || undefined,
         heroImageUrl: customTexts.heroImageUrl || undefined,
         boutiqueEmail: customTexts.boutiqueEmail || undefined,
+        aboutImageUrl: customTexts.aboutImageUrl || undefined,
+        faqItems: faqItems.length > 0 ? faqItems : undefined,
+        cguText: customTexts.cguText || undefined,
+        cgvText: customTexts.cgvText || undefined,
       };
       const { error } = await supabase
         .from("boutiques")
@@ -373,6 +386,31 @@ export default function BoutiqueEdit() {
     toast.success("Image uploadée !", { id: "hero-upload" });
   };
 
+  // About image upload
+  const handleAboutImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !id) return;
+    const fileExt = file.name.split(".").pop();
+    const filePath = `boutique-assets/${id}/about-${Date.now()}.${fileExt}`;
+    toast.loading("Upload en cours...", { id: "about-upload" });
+    const { error: uploadError } = await supabase.storage
+      .from("boutique-media")
+      .upload(filePath, file, { upsert: true });
+    if (uploadError) {
+      toast.error("Erreur d'upload: " + uploadError.message, { id: "about-upload" });
+      return;
+    }
+    const { data: urlData } = supabase.storage.from("boutique-media").getPublicUrl(filePath);
+    setCustomTexts(prev => ({ ...prev, aboutImageUrl: urlData.publicUrl }));
+    toast.success("Image uploadée !", { id: "about-upload" });
+  };
+
+  const addFaqItem = () => setFaqItems(prev => [...prev, { question: "", answer: "" }]);
+  const removeFaqItem = (i: number) => setFaqItems(prev => prev.filter((_, idx) => idx !== i));
+  const updateFaqItem = (i: number, field: "question" | "answer", value: string) => {
+    setFaqItems(prev => prev.map((item, idx) => idx === i ? { ...item, [field]: value } : item));
+  };
+
   if (isLoading) {
     return (
       <DashboardLayout title="Chargement...">
@@ -407,6 +445,10 @@ export default function BoutiqueEdit() {
     videoUrl: customTexts.videoUrl || undefined,
     heroImageUrl: customTexts.heroImageUrl || undefined,
     boutiqueEmail: customTexts.boutiqueEmail || undefined,
+    aboutImageUrl: customTexts.aboutImageUrl || undefined,
+    faqItems: faqItems.length > 0 ? faqItems : undefined,
+    cguText: customTexts.cguText || undefined,
+    cgvText: customTexts.cgvText || undefined,
   };
 
   // Get custom email templates
@@ -708,7 +750,7 @@ export default function BoutiqueEdit() {
                 <CardHeader>
                   <CardTitle className="text-lg">Personnaliser le contenu</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 max-h-[600px] overflow-y-auto pr-1">
                   <div>
                     <Label htmlFor="heroTitle">Titre principal</Label>
                     <Input
@@ -740,6 +782,31 @@ export default function BoutiqueEdit() {
                       rows={4}
                     />
                   </div>
+
+                  {/* About image upload */}
+                  <div className="pt-4 border-t border-border space-y-3">
+                    <Label>Image "À propos"</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={customTexts.aboutImageUrl}
+                        onChange={(e) => setCustomTexts(prev => ({ ...prev, aboutImageUrl: e.target.value }))}
+                        placeholder="https://example.com/about.jpg"
+                        className="flex-1"
+                      />
+                      <label className="cursor-pointer">
+                        <input type="file" accept="image/*" className="hidden" onChange={handleAboutImageUpload} />
+                        <Button variant="outline" size="icon" asChild>
+                          <span><Upload className="w-4 h-4" /></span>
+                        </Button>
+                      </label>
+                    </div>
+                    {customTexts.aboutImageUrl && (
+                      <div className="rounded-lg overflow-hidden border border-border">
+                        <img src={customTexts.aboutImageUrl} alt="About preview" className="w-full h-24 object-cover" />
+                      </div>
+                    )}
+                  </div>
+
                   <div>
                     <Label htmlFor="videoUrl">URL vidéo (YouTube / Vimeo)</Label>
                     <Input
@@ -748,6 +815,68 @@ export default function BoutiqueEdit() {
                       onChange={(e) => setCustomTexts(prev => ({ ...prev, videoUrl: e.target.value }))}
                       placeholder="https://youtube.com/watch?v=..."
                       className="mt-1"
+                    />
+                  </div>
+
+                  {/* FAQ Editor */}
+                  <div className="pt-4 border-t border-border space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="flex items-center gap-2">
+                        <FileText className="w-4 h-4" /> Questions FAQ
+                      </Label>
+                      <Button size="sm" variant="outline" onClick={addFaqItem} className="gap-1">
+                        <Plus className="w-3 h-3" /> Ajouter
+                      </Button>
+                    </div>
+                    {faqItems.length === 0 && (
+                      <p className="text-xs text-muted-foreground">Aucune question personnalisée. Les FAQ par défaut seront affichées.</p>
+                    )}
+                    {faqItems.map((item, i) => (
+                      <div key={i} className="p-3 rounded-lg border border-border/50 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-muted-foreground">Question {i + 1}</span>
+                          <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => removeFaqItem(i)}>
+                            <Trash2 className="w-3 h-3 text-destructive" />
+                          </Button>
+                        </div>
+                        <Input
+                          value={item.question}
+                          onChange={(e) => updateFaqItem(i, "question", e.target.value)}
+                          placeholder="Votre question..."
+                          className="text-sm"
+                        />
+                        <Textarea
+                          value={item.answer}
+                          onChange={(e) => updateFaqItem(i, "answer", e.target.value)}
+                          placeholder="Votre réponse..."
+                          rows={2}
+                          className="text-sm"
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* CGU / CGV */}
+                  <div className="pt-4 border-t border-border space-y-3">
+                    <Label htmlFor="cgvText">Conditions Générales de Vente (CGV)</Label>
+                    <Textarea
+                      id="cgvText"
+                      value={customTexts.cgvText}
+                      onChange={(e) => setCustomTexts(prev => ({ ...prev, cgvText: e.target.value }))}
+                      placeholder="Entrez vos conditions générales de vente..."
+                      rows={4}
+                      className="text-sm"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="cguText">Conditions Générales d'Utilisation (CGU)</Label>
+                    <Textarea
+                      id="cguText"
+                      value={customTexts.cguText}
+                      onChange={(e) => setCustomTexts(prev => ({ ...prev, cguText: e.target.value }))}
+                      placeholder="Entrez vos conditions générales d'utilisation..."
+                      rows={4}
+                      className="text-sm"
                     />
                   </div>
 

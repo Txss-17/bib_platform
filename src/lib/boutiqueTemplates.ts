@@ -277,4 +277,8 @@ export interface ThemeSettings {
   heroLayout?: HeroLayout;
   heroImageUrl?: string;
   boutiqueEmail?: string;
+  aboutImageUrl?: string;
+  faqItems?: { question: string; answer: string }[];
+  cguText?: string;
+  cgvText?: string;
 }

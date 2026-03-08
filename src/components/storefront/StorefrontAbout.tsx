@@ -6,9 +6,10 @@ interface StorefrontAboutProps {
   description: string;
   boutiqueName: string;
   primaryColor: string;
+  aboutImageUrl?: string;
 }
 
-export function StorefrontAbout({ title, description, boutiqueName, primaryColor }: StorefrontAboutProps) {
+export function StorefrontAbout({ title, description, boutiqueName, primaryColor, aboutImageUrl }: StorefrontAboutProps) {
   return (
     <section id="about" className="py-12 md:py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -36,14 +37,22 @@ export function StorefrontAbout({ title, description, boutiqueName, primaryColor
             </Button>
           </div>
 
-          {/* Placeholder image */}
+          {/* Image */}
           <div className="aspect-[4/3] bg-gray-200 rounded-lg overflow-hidden">
-            <div 
-              className="w-full h-full flex items-center justify-center"
-              style={{ backgroundColor: `${primaryColor}15` }}
-            >
-              <span className="text-gray-400 text-sm">Image de la boutique</span>
-            </div>
+            {aboutImageUrl ? (
+              <img 
+                src={aboutImageUrl} 
+                alt={`Image de ${boutiqueName}`} 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div 
+                className="w-full h-full flex items-center justify-center"
+                style={{ backgroundColor: `${primaryColor}15` }}
+              >
+                <span className="text-gray-400 text-sm">Image de la boutique</span>
+              </div>
+            )}
           </div>
         </div>
       </div>

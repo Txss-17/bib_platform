@@ -7,12 +7,19 @@ interface StorefrontFooterProps {
 export function StorefrontFooter({ primaryColor }: StorefrontFooterProps) {
   const { slug } = useParams<{ slug: string }>();
 
-  const footerLinks = [
-    { label: "About", href: "#about" },
-    { label: "FAQ", href: "#faq" },
-    { label: "CGV", href: "#cgv" },
-    { label: "Mentions Légales", href: "#legal" },
-  ];
+  const footerLinks = slug
+    ? [
+        { label: "À propos", href: `/boutique/${slug}/about` },
+        { label: "FAQ", href: `/boutique/${slug}/faq` },
+        { label: "CGV", href: `/boutique/${slug}/cgv` },
+        { label: "CGU", href: `/boutique/${slug}/cgu` },
+      ]
+    : [
+        { label: "About", href: "#about" },
+        { label: "FAQ", href: "#faq" },
+        { label: "CGV", href: "#cgv" },
+        { label: "Mentions Légales", href: "#legal" },
+      ];
 
   return (
     <footer className="py-6 border-t border-gray-100 bg-white">
@@ -24,24 +31,25 @@ export function StorefrontFooter({ primaryColor }: StorefrontFooterProps) {
           </div>
 
           <nav className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
-            {slug && (
-              <Link
-                to={`/boutique/${slug}/order-tracking`}
-                className="text-sm font-medium hover:text-gray-900 transition-colors"
-                style={{ color: primaryColor }}
-              >
-                Suivre ma commande
-              </Link>
+            {footerLinks.map((link) =>
+              slug && !link.href.startsWith("#") ? (
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  {link.label}
+                </a>
+              )
             )}
-            {footerLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                {link.label}
-              </a>
-            ))}
           </nav>
         </div>
       </div>

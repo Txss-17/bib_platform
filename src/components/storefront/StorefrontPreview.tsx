@@ -12,6 +12,7 @@ import { StorefrontFooter } from "./StorefrontFooter";
 import { CartDrawer } from "./CartDrawer";
 import { CartProvider } from "@/contexts/CartContext";
 import { getTemplateForCategory, type ThemeSettings, type SectionConfig, type AnimationLevel } from "@/lib/boutiqueTemplates";
+import type { FAQItem } from "./StorefrontFAQ";
 
 interface Product {
   id: string;
@@ -75,6 +76,8 @@ export function StorefrontPreview({
   const heroTitle = themeSettings?.customHeroTitle || template.heroTitle;
   const heroSubtitle = themeSettings?.customHeroSubtitle || template.heroSubtitle;
   const aboutText = themeSettings?.customAboutText || template.aboutDescription;
+  const aboutImageUrl = themeSettings?.aboutImageUrl;
+  const faqItems = themeSettings?.faqItems;
   const heroLayout = themeSettings?.heroLayout || "text-left";
   const heroImageUrl = themeSettings?.heroImageUrl;
 
@@ -156,6 +159,7 @@ export function StorefrontPreview({
               description={aboutText}
               boutiqueName={boutiqueName}
               primaryColor={primaryColor}
+              aboutImageUrl={aboutImageUrl}
             />
           </div>
         );
@@ -171,7 +175,7 @@ export function StorefrontPreview({
           />
         );
       case "faq":
-        return <StorefrontFAQ key="faq" primaryColor={primaryColor} />;
+        return <StorefrontFAQ key="faq" primaryColor={primaryColor} items={faqItems} />;
       case "newsletter":
         return <StorefrontNewsletter key="newsletter" primaryColor={primaryColor} boutiqueName={boutiqueName} />;
       default:
