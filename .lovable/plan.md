@@ -1,82 +1,82 @@
 
 
-# Dashboard responsive + fonctionnalites manquantes
+# Ce qui manque dans le projet LINKSY
 
-## 1. Dashboard responsive (sidebar mobile)
+Voici l'audit complet des fonctionnalites manquantes ou partiellement implementees.
 
-**Probleme actuel** : La sidebar est fixe a `w-64` avec `ml-64` sur le contenu principal. Sur mobile, le contenu est cache derriere la sidebar.
+---
 
-**Solution** :
-- Modifier `DashboardSidebar.tsx` pour utiliser un **Sheet** (drawer lateral) sur mobile et la sidebar fixe sur desktop
-- Utiliser le hook `useIsMobile()` existant pour detecter la taille d'ecran
-- Ajouter un bouton hamburger (`Menu` icon) dans le header de `DashboardLayout.tsx` visible uniquement sur mobile
-- Supprimer le `ml-64` fixe et le rendre conditionnel (pas de marge sur mobile)
-- La sidebar se ferme automatiquement apres un clic sur un lien de navigation en mode mobile
+## 1. Fonctionnalites critiques (bloquantes pour la production)
 
-**Fichiers modifies** :
-- `src/components/dashboard/DashboardSidebar.tsx` : wrapper Sheet sur mobile, sidebar classique sur desktop
-- `src/components/dashboard/DashboardLayout.tsx` : ajout bouton hamburger, marge conditionnelle, passage du state open/close
+### Paiement en ligne
+- Aucune integration de paiement (Stripe/Shopify). Le checkout confirme la commande sans encaisser.
+- Integration Stripe ou Shopify necessaire pour les paiements reels.
 
-## 2. Sauvegarde des parametres (Parametres.tsx)
+### Envoi reel des emails
+- Les modeles email existent dans la DB mais **aucun service d'envoi n'est connecte** (pas de Resend, pas d'edge function d'envoi).
+- Les emails de bienvenue, confirmation de commande, expedition ne sont pas envoyes.
 
-**Probleme actuel** : Les champs du profil sont pre-remplis mais le bouton "Enregistrer" ne fait rien.
+### Gestion du statut des commandes
+- Pas de RLS policy UPDATE sur la table `orders` -- le vendeur **ne peut pas changer le statut logistique** (pending -> processing -> shipped -> delivered).
+- La page Commandes affiche les statuts mais aucun bouton pour les modifier.
 
-**Solution** :
-- Ajouter des `useState` pour `fullName`, `businessName`, `businessType` initialises depuis `profile`
-- Appeler `supabase.from("profiles").update(...)` au clic sur "Enregistrer"
-- Appeler `refreshProfile()` du contexte Auth apres la sauvegarde
-- Afficher un toast de succes/erreur
-- Ajouter un state `saving` pour le loading du bouton
+### SEO & Analytics -- donnees fictives
+- `SEOAnalytics.tsx` utilise des donnees hardcodees (scores, suggestions IA). Aucune connexion reelle.
 
-**Fichier modifie** : `src/pages/dashboard/Parametres.tsx`
+### Paiements -- donnees fictives
+- `Paiements.tsx` affiche des donnees mock (`payoutHistory`, `boutiqueBreakdown`). Pas connecte a la table `payments`.
 
-## 3. Page Mot de passe oublie
+---
 
-**Solution** :
-- Creer `src/pages/ForgotPassword.tsx` avec un formulaire email
-- Appeler `supabase.auth.resetPasswordForEmail(email)`
-- Message de confirmation apres envoi
-- Lien retour vers `/login`
-- Ajouter la route `/forgot-password` dans `App.tsx`
+## 2. Fonctionnalites importantes (experience utilisateur)
 
-**Fichiers crees** : `src/pages/ForgotPassword.tsx`
-**Fichiers modifies** : `src/App.tsx`
+### Gestion des stocks / inventaire
+- Pas de champ `stock` sur les produits. Aucune alerte de rupture de stock reelle.
 
-## 4. Page Aide & Support
+### Notifications
+- `NotificationSystem.tsx` existe mais les notifications sont probablement mock. Pas de systeme de notifications temps reel.
 
-**Solution** :
-- Creer `src/pages/dashboard/Aide.tsx` avec :
-  - Section FAQ (accordion avec questions frequentes)
-  - Section contact (email support, formulaire simple)
-  - Liens vers documentation
-- Ajouter la route `/dashboard/aide` dans `App.tsx` (protegee)
+### Page produit publique -- CartProvider manquant
+- `ProductPublic.tsx` utilise `useCart()` mais n'est pas wrappe dans un `CartProvider` (le route dans App.tsx ne l'inclut pas). Risque d'erreur runtime identique au bug precedent.
 
-**Fichiers crees** : `src/pages/dashboard/Aide.tsx`
-**Fichiers modifies** : `src/App.tsx`
+### Recherche globale dans le dashboard
+- La barre de recherche dans le header du dashboard est purement cosmetique (pas de logique).
 
-## 5. Confirmation de suppression
+### Multi-langue
+- `LanguageContext` existe mais la traduction n'est probablement pas appliquee sur toutes les pages.
 
-**Probleme actuel** : La suppression de boutiques et produits se fait sans confirmation.
+---
 
-**Solution** :
-- Creer un composant reutilisable `ConfirmDeleteDialog.tsx` utilisant `AlertDialog` de shadcn/ui
-- L'integrer dans `Boutiques.tsx` (suppression boutique) et `Produits.tsx` (suppression produit)
-- Le dialog affiche un message clair ("Etes-vous sur de vouloir supprimer...") avec boutons Annuler/Supprimer
+## 3. Ameliorations secondaires
 
-**Fichiers crees** : `src/components/dashboard/ConfirmDeleteDialog.tsx`
-**Fichiers modifies** : `src/pages/dashboard/Boutiques.tsx`, `src/pages/dashboard/Produits.tsx`
+| Element | Etat actuel |
+|---------|-------------|
+| Export CSV des commandes/ventes | Non implemente |
+| Dashboard KPIs trends (comparaison periodes) | Valeurs hardcodees (ex: `trend: 12`) |
+| Avatar upload dans Parametres | Champ `avatar_url` existe mais pas d'upload |
+| Suppression de compte utilisateur | Non implemente |
+| Domaine personnalise pour les boutiques | Non implemente |
+| PWA / mode offline | Non implemente |
+| Partage reseaux sociaux des boutiques | Non implemente |
+| Systeme de coupons / promotions | Non implemente |
+| Avis clients reels (pas mock) | `StorefrontTestimonials` affiche des donnees fictives |
+| Page de politique de confidentialite / CGV | Non implementee |
 
-## Resume des fichiers
+---
 
-| Action | Fichier |
-|--------|---------|
-| Modifier | `DashboardSidebar.tsx` |
-| Modifier | `DashboardLayout.tsx` |
-| Modifier | `Parametres.tsx` |
-| Modifier | `App.tsx` |
-| Modifier | `Boutiques.tsx` |
-| Modifier | `Produits.tsx` |
-| Creer | `ForgotPassword.tsx` |
-| Creer | `Aide.tsx` |
-| Creer | `ConfirmDeleteDialog.tsx` |
+## 4. Bugs potentiels identifies
+
+1. **ProductPublic.tsx** -- `useCart()` appele sans `CartProvider` parent (meme bug que celui corrige precedemment)
+2. **Triggers DB manquants** -- `generate_order_number` est defini comme trigger function mais la liste des triggers est vide, donc les order_numbers ne sont peut-etre pas generes automatiquement
+3. **CheckoutForm** genere ses propres order_numbers cote client alors qu'un trigger serveur existe -- duplication potentielle
+
+---
+
+## Recommandation de priorite
+
+1. **Corriger le bug ProductPublic** (CartProvider manquant)
+2. **Ajouter la mise a jour du statut des commandes** (UPDATE policy + UI)
+3. **Integrer Stripe** pour les paiements reels
+4. **Connecter les donnees reelles** sur Paiements et SEO
+5. **Connecter un service d'envoi d'emails** (Resend via edge function)
 
