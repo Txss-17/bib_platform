@@ -175,7 +175,7 @@ export function StorefrontPreview({
           />
         );
       case "faq":
-        return <StorefrontFAQ key="faq" primaryColor={primaryColor} />;
+        return <StorefrontFAQ key="faq" primaryColor={primaryColor} items={faqItems} />;
       case "newsletter":
         return <StorefrontNewsletter key="newsletter" primaryColor={primaryColor} boutiqueName={boutiqueName} />;
       default:
