@@ -3,40 +3,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Search, Eye, TrendingUp, AlertTriangle, Sparkles, RefreshCw, ExternalLink } from "lucide-react";
-
-const seoScores = [
-  { page: "Accueil - Maison Déco", score: 85, issues: 2, url: "/maison-deco" },
-  { page: "Lampe LED Design", score: 92, issues: 0, url: "/maison-deco/lampe-led" },
-  { page: "Coussin Velours", score: 78, issues: 3, url: "/maison-deco/coussin-velours" },
-  { page: "Accueil - Beauty Corner", score: 65, issues: 5, url: "/beauty-corner" },
-];
-
-const aiSuggestions = [
-  {
-    page: "Coussin Velours",
-    original: { title: "Coussin", description: "Un coussin en velours" },
-    suggested: { 
-      title: "Coussin Velours Premium - Confort & Élégance | Maison Déco", 
-      description: "Découvrez notre coussin velours premium, hypoallergénique et ultra-doux. Livraison gratuite. Parfait pour sublimer votre intérieur."
-    }
-  },
-  {
-    page: "Beauty Corner",
-    original: { title: "Beauty Corner", description: "Boutique beauté" },
-    suggested: { 
-      title: "Beauty Corner - Cosmétiques Bio & Soins Naturels | LINKSY", 
-      description: "Explorez notre sélection de cosmétiques bio et soins naturels. Formules clean, testées dermatologiquement. Livraison offerte dès 30€."
-    }
-  },
-];
+import { Search, Eye, TrendingUp, AlertTriangle, Sparkles, RefreshCw } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useBoutiques } from "@/hooks/useBoutiques";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function ScoreCard({ title, value, subtitle, icon: Icon, color }: { 
-  title: string; 
-  value: string | number; 
-  subtitle?: string; 
-  icon: React.ElementType; 
-  color: string;
+  title: string; value: string | number; subtitle?: string; icon: React.ElementType; color: string;
 }) {
   return (
     <Card className="bg-card border-border/50">
@@ -56,6 +31,21 @@ function ScoreCard({ title, value, subtitle, icon: Icon, color }: {
   );
 }
 
+function computeSEOScore(name: string, description: string | null): { score: number; issues: string[] } {
+  const issues: string[] = [];
+  let score = 100;
+
+  if (!name || name.length < 10) { score -= 15; issues.push("Titre trop court (< 10 car.)"); }
+  if (name && name.length > 60) { score -= 10; issues.push("Titre trop long (> 60 car.)"); }
+  if (!description) { score -= 25; issues.push("Pas de méta-description"); }
+  else {
+    if (description.length < 50) { score -= 15; issues.push("Description trop courte (< 50 car.)"); }
+    if (description.length > 160) { score -= 10; issues.push("Description trop longue (> 160 car.)"); }
+  }
+
+  return { score: Math.max(0, score), issues };
+}
+
 function getScoreColor(score: number): string {
   if (score >= 80) return "text-green-500";
   if (score >= 60) return "text-yellow-500";
@@ -69,37 +59,87 @@ function getScoreLabel(score: number): string {
 }
 
 export default function SEOAnalytics() {
-  const avgScore = Math.round(seoScores.reduce((sum, p) => sum + p.score, 0) / seoScores.length);
-  const totalIssues = seoScores.reduce((sum, p) => sum + p.issues, 0);
+  const { user } = useAuth();
+  const { data: boutiques = [], isLoading: boutiquesLoading } = useBoutiques();
+
+  const { data: products = [], isLoading: productsLoading } = useQuery({
+    queryKey: ["seo-products", user?.id],
+    queryFn: async () => {
+      if (!user || boutiques.length === 0) return [];
+      const boutiqueIds = boutiques.map(b => b.id);
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, boutique_id, supplier_products(name, description)")
+        .in("boutique_id", boutiqueIds)
+        .eq("status", "active");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user && boutiques.length > 0,
+  });
+
+  const { data: orderStats } = useQuery({
+    queryKey: ["seo-order-stats", user?.id],
+    queryFn: async () => {
+      if (!user || boutiques.length === 0) return { total: 0 };
+      const boutiqueIds = boutiques.map(b => b.id);
+      const { count, error } = await supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .in("boutique_id", boutiqueIds);
+      if (error) throw error;
+      return { total: count || 0 };
+    },
+    enabled: !!user && boutiques.length > 0,
+  });
+
+  // Compute SEO scores for boutiques and products
+  const seoPages = [
+    ...boutiques.map(b => {
+      const { score, issues } = computeSEOScore(b.name, b.description);
+      return { page: `Accueil — ${b.name}`, score, issues, type: "boutique" as const };
+    }),
+    ...products.slice(0, 10).map((p: any) => {
+      const name = p.supplier_products?.name || "";
+      const desc = p.supplier_products?.description || null;
+      const { score, issues } = computeSEOScore(name, desc);
+      return { page: name || "Produit sans nom", score, issues, type: "product" as const };
+    }),
+  ];
+
+  const avgScore = seoPages.length > 0
+    ? Math.round(seoPages.reduce((s, p) => s + p.score, 0) / seoPages.length)
+    : 0;
+  const totalIssues = seoPages.reduce((s, p) => s + p.issues.length, 0);
+  const isLoading = boutiquesLoading || productsLoading;
 
   return (
     <DashboardLayout title="SEO & Analytics" subtitle="Optimisez votre visibilité en ligne">
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <ScoreCard 
           title="Score SEO moyen" 
-          value={`${avgScore}%`}
-          subtitle={getScoreLabel(avgScore)}
+          value={isLoading ? "..." : `${avgScore}%`}
+          subtitle={isLoading ? undefined : getScoreLabel(avgScore)}
           icon={Search}
           color="bg-primary/10 text-primary"
         />
         <ScoreCard 
-          title="Visibilité Google" 
-          value="12,450"
-          subtitle="Impressions ce mois"
+          title="Pages analysées" 
+          value={isLoading ? "..." : seoPages.length}
+          subtitle={`${boutiques.length} boutique(s) + ${products.length} produit(s)`}
           icon={Eye}
           color="bg-green-500/10 text-green-500"
         />
         <ScoreCard 
-          title="Croissance trafic" 
-          value="+24%"
-          subtitle="vs mois précédent"
+          title="Commandes totales" 
+          value={orderStats?.total ?? "..."}
+          subtitle="Toutes boutiques"
           icon={TrendingUp}
           color="bg-blue-500/10 text-blue-500"
         />
         <ScoreCard 
           title="Problèmes détectés" 
-          value={totalIssues}
+          value={isLoading ? "..." : totalIssues}
           subtitle="À corriger"
           icon={AlertTriangle}
           color="bg-yellow-500/10 text-yellow-500"
@@ -111,67 +151,72 @@ export default function SEOAnalytics() {
         <Card className="bg-card border-border/50">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-lg">Performance par page</CardTitle>
-            <Button variant="outline" size="sm" className="gap-1">
-              <RefreshCw className="w-3 h-3" />
-              Analyser
-            </Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {seoScores.map((page, index) => (
-              <div key={index} className="p-4 rounded-lg bg-muted/50">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-foreground">{page.page}</span>
-                    {page.issues > 0 && (
-                      <Badge variant="outline" className="text-yellow-500 border-yellow-500/30">
-                        {page.issues} problèmes
-                      </Badge>
-                    )}
+            {isLoading ? (
+              <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-16 w-full" />)}</div>
+            ) : seoPages.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">Aucune page à analyser. Créez une boutique et ajoutez des produits.</p>
+            ) : (
+              seoPages.map((page, index) => (
+                <div key={index} className="p-4 rounded-lg bg-muted/50">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-foreground text-sm">{page.page}</span>
+                      {page.issues.length > 0 && (
+                        <Badge variant="outline" className="text-yellow-500 border-yellow-500/30 text-xs">
+                          {page.issues.length} problème{page.issues.length > 1 ? "s" : ""}
+                        </Badge>
+                      )}
+                    </div>
+                    <span className={`font-bold ${getScoreColor(page.score)}`}>{page.score}%</span>
                   </div>
-                  <span className={`font-bold ${getScoreColor(page.score)}`}>{page.score}%</span>
+                  <Progress value={page.score} className="h-2 mb-2" />
+                  {page.issues.length > 0 && (
+                    <ul className="text-xs text-muted-foreground space-y-0.5">
+                      {page.issues.map((issue, i) => (
+                        <li key={i}>• {issue}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-                <Progress value={page.score} className="h-2" />
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
 
-        {/* AI Suggestions */}
+        {/* Suggestions */}
         <Card className="bg-card border-border/50">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
-              Suggestions IA
+              Recommandations
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {aiSuggestions.map((suggestion, index) => (
-              <div key={index} className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium text-foreground">{suggestion.page}</span>
-                  <Button size="sm" className="gap-1">
-                    Appliquer
-                  </Button>
-                </div>
-                
-                <div className="p-3 rounded-lg bg-red-500/5 border border-red-500/20">
-                  <p className="text-xs text-muted-foreground mb-1">Titre actuel</p>
-                  <p className="text-sm text-foreground line-through opacity-60">{suggestion.original.title}</p>
-                </div>
-                
-                <div className="p-3 rounded-lg bg-green-500/5 border border-green-500/20">
-                  <p className="text-xs text-muted-foreground mb-1">Titre suggéré</p>
-                  <p className="text-sm text-foreground font-medium">{suggestion.suggested.title}</p>
-                </div>
-
-                <div className="p-3 rounded-lg bg-green-500/5 border border-green-500/20">
-                  <p className="text-xs text-muted-foreground mb-1">Description suggérée</p>
-                  <p className="text-sm text-foreground">{suggestion.suggested.description}</p>
-                </div>
-
-                {index < aiSuggestions.length - 1 && <hr className="border-border" />}
-              </div>
-            ))}
+          <CardContent className="space-y-4">
+            {isLoading ? (
+              <div className="space-y-3">{[1,2].map(i => <Skeleton key={i} className="h-20 w-full" />)}</div>
+            ) : (
+              <>
+                {seoPages.filter(p => p.issues.length > 0).length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-green-500 font-medium mb-1">🎉 Excellent !</p>
+                    <p className="text-sm text-muted-foreground">Aucun problème SEO détecté sur vos pages.</p>
+                  </div>
+                ) : (
+                  seoPages.filter(p => p.issues.length > 0).slice(0, 5).map((page, idx) => (
+                    <div key={idx} className="p-4 rounded-lg bg-muted/50 space-y-2">
+                      <p className="font-medium text-foreground text-sm">{page.page}</p>
+                      {page.issues.map((issue, i) => (
+                        <div key={i} className="p-2 rounded bg-yellow-500/5 border border-yellow-500/20">
+                          <p className="text-xs text-foreground">⚠️ {issue}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ))
+                )}
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

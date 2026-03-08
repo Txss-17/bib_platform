@@ -32,6 +32,7 @@ import BoutiquePublic from "./pages/BoutiquePublic";
 import BoutiqueAllProducts from "./pages/BoutiqueAllProducts";
 import ProductPublic from "./pages/ProductPublic";
 import OrderTracking from "./pages/OrderTracking";
+import { CartProvider } from "@/contexts/CartContext";
 
 const queryClient = new QueryClient();
 

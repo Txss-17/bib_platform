@@ -3,25 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Euro, Clock, CheckCircle, TrendingUp } from "lucide-react";
-
-const payoutHistory = [
-  { id: "1", period: "1-15 Jan 2026", amount: 1250.00, status: "completed", date: "2026-01-20", boutique: "Maison Déco" },
-  { id: "2", period: "16-31 Déc 2025", amount: 2100.00, status: "completed", date: "2026-01-05", boutique: "Maison Déco" },
-  { id: "3", period: "1-15 Déc 2025", amount: 980.00, status: "completed", date: "2025-12-20", boutique: "Maison Déco" },
-  { id: "4", period: "16-30 Nov 2025", amount: 1450.00, status: "completed", date: "2025-12-05", boutique: "Beauty Corner" },
-];
-
-const boutiqueBreakdown = [
-  { name: "Maison Déco", revenue: 4330.00, pending: 850.00, products: 12 },
-  { name: "Beauty Corner", revenue: 2150.00, pending: 320.00, products: 8 },
-  { name: "Tech Store", revenue: 1200.00, pending: 0, products: 5 },
-];
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useBoutiques } from "@/hooks/useBoutiques";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function StatCard({ title, value, subtitle, icon: Icon, variant = "default" }: { 
-  title: string; 
-  value: string; 
-  subtitle?: string; 
-  icon: React.ElementType; 
+  title: string; value: string; subtitle?: string; icon: React.ElementType; 
   variant?: "default" | "pending" | "success" 
 }) {
   const variantStyles = {
@@ -29,7 +18,6 @@ function StatCard({ title, value, subtitle, icon: Icon, variant = "default" }: {
     pending: "bg-yellow-500/10 text-yellow-500",
     success: "bg-green-500/10 text-green-500",
   };
-
   return (
     <Card className="bg-card border-border/50">
       <CardContent className="p-6">
@@ -49,12 +37,64 @@ function StatCard({ title, value, subtitle, icon: Icon, variant = "default" }: {
 }
 
 export default function Paiements() {
-  const totalRevenue = boutiqueBreakdown.reduce((sum, b) => sum + b.revenue, 0);
-  const totalPending = boutiqueBreakdown.reduce((sum, b) => sum + b.pending, 0);
+  const { user } = useAuth();
+  const { data: boutiques = [] } = useBoutiques();
+
+  // Real payments from DB
+  const { data: payments = [], isLoading: paymentsLoading } = useQuery({
+    queryKey: ["payments", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("payments")
+        .select("*, boutiques(name)")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Real revenue from orders
+  const { data: orderRevenue = { total: 0, byBoutique: [] as any[] }, isLoading: revenueLoading } = useQuery({
+    queryKey: ["order-revenue", user?.id],
+    queryFn: async () => {
+      if (!user) return { total: 0, byBoutique: [] };
+      const boutiqueIds = boutiques.map(b => b.id);
+      if (boutiqueIds.length === 0) return { total: 0, byBoutique: [] };
+
+      const { data, error } = await supabase
+        .from("orders")
+        .select("amount, boutique_id")
+        .in("boutique_id", boutiqueIds);
+      if (error) throw error;
+
+      const total = data.reduce((s, o) => s + Number(o.amount), 0);
+      const byBoutiqueMap: Record<string, number> = {};
+      data.forEach(o => {
+        byBoutiqueMap[o.boutique_id] = (byBoutiqueMap[o.boutique_id] || 0) + Number(o.amount);
+      });
+
+      const byBoutique = boutiques.map(b => ({
+        name: b.name,
+        revenue: byBoutiqueMap[b.id] || 0,
+      }));
+
+      return { total, byBoutique };
+    },
+    enabled: !!user && boutiques.length > 0,
+  });
+
+  const completedPayments = payments.filter(p => p.status === "completed");
+  const totalPaid = completedPayments.reduce((s, p) => s + Number(p.amount), 0);
+  const pendingPayments = payments.filter(p => p.status === "pending");
+  const totalPending = pendingPayments.reduce((s, p) => s + Number(p.amount), 0);
+
+  const isLoading = paymentsLoading || revenueLoading;
 
   return (
     <DashboardLayout title="Paiements" subtitle="Suivez vos revenus et versements">
-      {/* Info Banner */}
       <Card className="bg-primary/5 border-primary/20 mb-8">
         <CardContent className="p-4">
           <p className="text-sm text-foreground">
@@ -64,26 +104,25 @@ export default function Paiements() {
         </CardContent>
       </Card>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <StatCard 
-          title="Revenus cumulés" 
-          value={`${totalRevenue.toLocaleString('fr-FR')} €`}
-          subtitle="Depuis le début"
+          title="Revenus cumulés (commandes)" 
+          value={isLoading ? "..." : `${orderRevenue.total.toLocaleString('fr-FR')} €`}
+          subtitle="Total des ventes"
           icon={Euro}
           variant="success"
         />
         <StatCard 
           title="En attente de versement" 
-          value={`${totalPending.toLocaleString('fr-FR')} €`}
-          subtitle="Prochain versement: 15 Fév"
+          value={isLoading ? "..." : `${totalPending.toLocaleString('fr-FR')} €`}
+          subtitle={pendingPayments.length > 0 ? `${pendingPayments.length} versement(s)` : "Aucun en attente"}
           icon={Clock}
           variant="pending"
         />
         <StatCard 
-          title="Croissance mensuelle" 
-          value="+18.5%"
-          subtitle="vs mois précédent"
+          title="Déjà versé" 
+          value={isLoading ? "..." : `${totalPaid.toLocaleString('fr-FR')} €`}
+          subtitle={`${completedPayments.length} versement(s)`}
           icon={TrendingUp}
         />
       </div>
@@ -95,65 +134,75 @@ export default function Paiements() {
             <CardTitle className="text-lg">Historique des versements</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Période</TableHead>
-                  <TableHead>Boutique</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead className="text-right">Montant</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {payoutHistory.map((payout) => (
-                  <TableRow key={payout.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{payout.period}</p>
-                        <p className="text-xs text-muted-foreground">{new Date(payout.date).toLocaleDateString('fr-FR')}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>{payout.boutique}</TableCell>
-                    <TableCell>
-                      <Badge variant="default" className="gap-1 bg-green-500/10 text-green-500 hover:bg-green-500/20">
-                        <CheckCircle className="w-3 h-3" />
-                        Versé
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      +{payout.amount.toFixed(2)} €
-                    </TableCell>
+            {isLoading ? (
+              <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-12 w-full" />)}</div>
+            ) : payments.length === 0 ? (
+              <p className="text-muted-foreground text-sm text-center py-8">Aucun versement pour le moment.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Période</TableHead>
+                    <TableHead>Boutique</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead className="text-right">Montant</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {payments.map((p: any) => (
+                    <TableRow key={p.id}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{new Date(p.period_start).toLocaleDateString('fr-FR')} - {new Date(p.period_end).toLocaleDateString('fr-FR')}</p>
+                          {p.payout_date && <p className="text-xs text-muted-foreground">Versé le {new Date(p.payout_date).toLocaleDateString('fr-FR')}</p>}
+                        </div>
+                      </TableCell>
+                      <TableCell>{p.boutiques?.name || "—"}</TableCell>
+                      <TableCell>
+                        {p.status === "completed" ? (
+                          <Badge variant="default" className="gap-1 bg-green-500/10 text-green-500 hover:bg-green-500/20">
+                            <CheckCircle className="w-3 h-3" /> Versé
+                          </Badge>
+                        ) : p.status === "pending" ? (
+                          <Badge variant="outline" className="gap-1 text-yellow-500 border-yellow-500/30">
+                            <Clock className="w-3 h-3" /> En attente
+                          </Badge>
+                        ) : (
+                          <Badge variant="destructive">{p.status}</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {p.status === "completed" ? "+" : ""}{Number(p.amount).toFixed(2)} €
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </CardContent>
         </Card>
 
-        {/* Boutique Breakdown */}
+        {/* Revenue by Boutique */}
         <Card className="bg-card border-border/50">
           <CardHeader>
-            <CardTitle className="text-lg">Détail par boutique</CardTitle>
+            <CardTitle className="text-lg">Revenus par boutique</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {boutiqueBreakdown.map((boutique) => (
-              <div key={boutique.name} className="p-4 rounded-lg bg-muted/50">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-foreground">{boutique.name}</h4>
-                  <Badge variant="secondary">{boutique.products} produits</Badge>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Revenus cumulés</p>
-                    <p className="text-lg font-bold text-foreground">{boutique.revenue.toLocaleString('fr-FR')} €</p>
+            {isLoading ? (
+              <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-20 w-full" />)}</div>
+            ) : orderRevenue.byBoutique.length === 0 ? (
+              <p className="text-muted-foreground text-sm text-center py-8">Aucune boutique trouvée.</p>
+            ) : (
+              orderRevenue.byBoutique.map((b: any) => (
+                <div key={b.name} className="p-4 rounded-lg bg-muted/50">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-foreground">{b.name}</h4>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">En attente</p>
-                    <p className="text-lg font-bold text-yellow-500">{boutique.pending.toLocaleString('fr-FR')} €</p>
-                  </div>
+                  <p className="text-sm text-muted-foreground">Revenus cumulés</p>
+                  <p className="text-lg font-bold text-foreground">{b.revenue.toLocaleString('fr-FR')} €</p>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
       </div>
