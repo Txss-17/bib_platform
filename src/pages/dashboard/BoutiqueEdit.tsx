@@ -206,7 +206,11 @@ export default function BoutiqueEdit() {
         videoUrl: settings.videoUrl || "",
         heroImageUrl: settings.heroImageUrl || "",
         boutiqueEmail: settings.boutiqueEmail || "",
+        aboutImageUrl: settings.aboutImageUrl || "",
+        cguText: settings.cguText || "",
+        cgvText: settings.cgvText || "",
       });
+      setFaqItems(settings.faqItems || []);
     } else if (boutique) {
       const template = getTemplateForCategory(boutique.category);
       setThemeSettings({
