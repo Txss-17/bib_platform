@@ -76,6 +76,8 @@ export function StorefrontPreview({
   const heroTitle = themeSettings?.customHeroTitle || template.heroTitle;
   const heroSubtitle = themeSettings?.customHeroSubtitle || template.heroSubtitle;
   const aboutText = themeSettings?.customAboutText || template.aboutDescription;
+  const aboutImageUrl = themeSettings?.aboutImageUrl;
+  const faqItems = themeSettings?.faqItems;
   const heroLayout = themeSettings?.heroLayout || "text-left";
   const heroImageUrl = themeSettings?.heroImageUrl;
 
