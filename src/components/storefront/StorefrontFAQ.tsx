@@ -5,7 +5,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-interface FAQItem {
+export interface FAQItem {
   question: string;
   answer: string;
 }

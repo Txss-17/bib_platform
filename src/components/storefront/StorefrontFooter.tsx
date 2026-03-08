@@ -24,15 +24,6 @@ export function StorefrontFooter({ primaryColor }: StorefrontFooterProps) {
           </div>
 
           <nav className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
-            {slug && (
-              <Link
-                to={`/boutique/${slug}/order-tracking`}
-                className="text-sm font-medium hover:text-gray-900 transition-colors"
-                style={{ color: primaryColor }}
-              >
-                Suivre ma commande
-              </Link>
-            )}
             {footerLinks.map((link) => (
               <a
                 key={link.label}
