@@ -386,6 +386,31 @@ export default function BoutiqueEdit() {
     toast.success("Image uploadée !", { id: "hero-upload" });
   };
 
+  // About image upload
+  const handleAboutImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !id) return;
+    const fileExt = file.name.split(".").pop();
+    const filePath = `boutique-assets/${id}/about-${Date.now()}.${fileExt}`;
+    toast.loading("Upload en cours...", { id: "about-upload" });
+    const { error: uploadError } = await supabase.storage
+      .from("boutique-media")
+      .upload(filePath, file, { upsert: true });
+    if (uploadError) {
+      toast.error("Erreur d'upload: " + uploadError.message, { id: "about-upload" });
+      return;
+    }
+    const { data: urlData } = supabase.storage.from("boutique-media").getPublicUrl(filePath);
+    setCustomTexts(prev => ({ ...prev, aboutImageUrl: urlData.publicUrl }));
+    toast.success("Image uploadée !", { id: "about-upload" });
+  };
+
+  const addFaqItem = () => setFaqItems(prev => [...prev, { question: "", answer: "" }]);
+  const removeFaqItem = (i: number) => setFaqItems(prev => prev.filter((_, idx) => idx !== i));
+  const updateFaqItem = (i: number, field: "question" | "answer", value: string) => {
+    setFaqItems(prev => prev.map((item, idx) => idx === i ? { ...item, [field]: value } : item));
+  };
+
   if (isLoading) {
     return (
       <DashboardLayout title="Chargement...">
