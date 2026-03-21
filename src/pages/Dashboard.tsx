@@ -247,6 +247,9 @@ export default function Dashboard() {
             </Card>
           </div>
 
+          {/* Stock Alerts */}
+          <StockAlerts />
+
           {/* Stock & Engagement */}
           <Card className="bg-card border-border/50">
             <CardContent className="p-5">
