@@ -12,6 +12,7 @@ import { useProductStats, useProducts } from "@/hooks/useProducts";
 import { useOrderStats, useOrders } from "@/hooks/useOrders";
 import { useSupplierProducts } from "@/hooks/useSupplierProducts";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StockAlerts } from "@/components/dashboard/StockAlerts";
 
 export default function Dashboard() {
   const { data: boutiqueStats, isLoading: boutiquesLoading } = useBoutiqueStats();
@@ -245,6 +246,9 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Stock Alerts */}
+          <StockAlerts />
 
           {/* Stock & Engagement */}
           <Card className="bg-card border-border/50">
