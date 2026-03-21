@@ -144,6 +144,30 @@ const App = () => (
               }
             />
             <Route
+              path="/dashboard/analyse-boutiques"
+              element={
+                <ProtectedRoute>
+                  <AnalyseBoutiques />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/analyse-fournisseurs"
+              element={
+                <ProtectedRoute>
+                  <AnalyseFournisseurs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/rapports"
+              element={
+                <ProtectedRoute>
+                  <Rapports />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/dashboard/aide"
               element={
                 <ProtectedRoute>
