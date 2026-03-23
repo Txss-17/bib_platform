@@ -113,7 +113,7 @@ export default function ProduitsFournisseurs() {
 
   return (
     <DashboardLayout
-      title="Sélectionner Produits"
+      title="Catalogue Produits"
       subtitle="Parcourez et sélectionnez des produits adaptés à votre boutique"
     >
       {/* Strategic banner */}
