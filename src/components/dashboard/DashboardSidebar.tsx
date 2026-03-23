@@ -12,8 +12,6 @@ import {
   HelpCircle,
   User,
   BarChart3,
-  Building2,
-  AlertTriangle,
   FileText,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
