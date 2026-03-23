@@ -3,14 +3,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Edit, Copy, Trash2, MoreVertical, Plus, Package } from "lucide-react";
 import { useProducts, useUpdateProduct, useDeleteProduct } from "@/hooks/useProducts";
+import { useBoutiques } from "@/hooks/useBoutiques";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 function ProductsTableSkeleton() {
   return (
@@ -68,9 +70,25 @@ function EmptyState() {
 
 export default function Produits() {
   const { data: products, isLoading, error } = useProducts();
+  const { data: boutiques } = useBoutiques();
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [boutiqueFilter, setBoutiqueFilter] = useState<string>("all");
+  const [sortOrder, setSortOrder] = useState<string>("recent");
+
+  const filteredProducts = useMemo(() => {
+    let result = products || [];
+    if (boutiqueFilter !== "all") {
+      result = result.filter(p => p.boutique_id === boutiqueFilter);
+    }
+    if (sortOrder === "recent") {
+      result = [...result].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    } else if (sortOrder === "sales") {
+      result = [...result].sort((a, b) => b.cumulative_sales - a.cumulative_sales);
+    }
+    return result;
+  }, [products, boutiqueFilter, sortOrder]);
 
   const toggleStatus = async (productId: string, currentStatus: string) => {
     const newStatus = currentStatus === "active" ? "paused" : "active";
@@ -100,7 +118,7 @@ export default function Produits() {
 
   if (error) {
     return (
-      <DashboardLayout title="Produits" subtitle="Gérez les produits de vos boutiques">
+      <DashboardLayout title="Mes Produits" subtitle="Produits sélectionnés pour vos boutiques">
         <Card className="bg-destructive/10 border-destructive/20">
           <CardContent className="p-6 text-center">
             <p className="text-destructive">Une erreur est survenue lors du chargement des produits.</p>
@@ -110,11 +128,11 @@ export default function Produits() {
     );
   }
 
-  const activeCount = products?.filter(p => p.status === "active").length || 0;
-  const totalCount = products?.length || 0;
+  const activeCount = filteredProducts.filter(p => p.status === "active").length;
+  const totalCount = filteredProducts.length;
 
   return (
-    <DashboardLayout title="Produits" subtitle="Gérez les produits de vos boutiques">
+    <DashboardLayout title="Mes Produits" subtitle="Produits sélectionnés pour vos boutiques">
       {isLoading ? (
         <Card className="bg-card border-border/50">
           <CardContent className="p-0">
@@ -125,11 +143,33 @@ export default function Produits() {
         <EmptyState />
       ) : (
         <>
-          {/* Action Bar */}
-          <div className="flex justify-between items-center mb-6">
-            <p className="text-muted-foreground">
-              {activeCount} produits actifs sur {totalCount}
-            </p>
+          {/* Filters Bar */}
+          <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
+            <div className="flex items-center gap-3">
+              <Select value={boutiqueFilter} onValueChange={setBoutiqueFilter}>
+                <SelectTrigger className="w-44 h-9 text-sm">
+                  <SelectValue placeholder="Toutes les boutiques" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes les boutiques</SelectItem>
+                  {boutiques?.map(b => (
+                    <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={sortOrder} onValueChange={setSortOrder}>
+                <SelectTrigger className="w-36 h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recent">Plus récents</SelectItem>
+                  <SelectItem value="sales">Meilleures ventes</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-muted-foreground hidden sm:block">
+                {activeCount} actifs / {totalCount}
+              </p>
+            </div>
             <Button className="gap-2">
               <Plus className="w-4 h-4" />
               Ajouter un produit
@@ -151,7 +191,7 @@ export default function Produits() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {products?.map((product) => (
+                  {filteredProducts.map((product) => (
                     <TableRow key={product.id}>
                       <TableCell>
                         <Switch
