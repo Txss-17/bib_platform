@@ -143,11 +143,33 @@ export default function Produits() {
         <EmptyState />
       ) : (
         <>
-          {/* Action Bar */}
-          <div className="flex justify-between items-center mb-6">
-            <p className="text-muted-foreground">
-              {activeCount} produits actifs sur {totalCount}
-            </p>
+          {/* Filters Bar */}
+          <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
+            <div className="flex items-center gap-3">
+              <Select value={boutiqueFilter} onValueChange={setBoutiqueFilter}>
+                <SelectTrigger className="w-44 h-9 text-sm">
+                  <SelectValue placeholder="Toutes les boutiques" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes les boutiques</SelectItem>
+                  {boutiques?.map(b => (
+                    <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={sortOrder} onValueChange={setSortOrder}>
+                <SelectTrigger className="w-36 h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recent">Plus récents</SelectItem>
+                  <SelectItem value="sales">Meilleures ventes</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-muted-foreground hidden sm:block">
+                {activeCount} actifs / {totalCount}
+              </p>
+            </div>
             <Button className="gap-2">
               <Plus className="w-4 h-4" />
               Ajouter un produit
