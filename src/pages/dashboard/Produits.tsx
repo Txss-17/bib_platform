@@ -70,9 +70,25 @@ function EmptyState() {
 
 export default function Produits() {
   const { data: products, isLoading, error } = useProducts();
+  const { data: boutiques } = useBoutiques();
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [boutiqueFilter, setBoutiqueFilter] = useState<string>("all");
+  const [sortOrder, setSortOrder] = useState<string>("recent");
+
+  const filteredProducts = useMemo(() => {
+    let result = products || [];
+    if (boutiqueFilter !== "all") {
+      result = result.filter(p => p.boutique_id === boutiqueFilter);
+    }
+    if (sortOrder === "recent") {
+      result = [...result].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    } else if (sortOrder === "sales") {
+      result = [...result].sort((a, b) => b.cumulative_sales - a.cumulative_sales);
+    }
+    return result;
+  }, [products, boutiqueFilter, sortOrder]);
 
   const toggleStatus = async (productId: string, currentStatus: string) => {
     const newStatus = currentStatus === "active" ? "paused" : "active";
@@ -102,7 +118,7 @@ export default function Produits() {
 
   if (error) {
     return (
-      <DashboardLayout title="Produits" subtitle="Gérez les produits de vos boutiques">
+      <DashboardLayout title="Mes Produits" subtitle="Produits sélectionnés pour vos boutiques">
         <Card className="bg-destructive/10 border-destructive/20">
           <CardContent className="p-6 text-center">
             <p className="text-destructive">Une erreur est survenue lors du chargement des produits.</p>
@@ -112,11 +128,11 @@ export default function Produits() {
     );
   }
 
-  const activeCount = products?.filter(p => p.status === "active").length || 0;
-  const totalCount = products?.length || 0;
+  const activeCount = filteredProducts.filter(p => p.status === "active").length;
+  const totalCount = filteredProducts.length;
 
   return (
-    <DashboardLayout title="Produits" subtitle="Gérez les produits de vos boutiques">
+    <DashboardLayout title="Mes Produits" subtitle="Produits sélectionnés pour vos boutiques">
       {isLoading ? (
         <Card className="bg-card border-border/50">
           <CardContent className="p-0">
