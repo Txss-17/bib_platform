@@ -13,6 +13,7 @@ import {
   User,
   BarChart3,
   FileText,
+  Link2,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -30,6 +31,7 @@ const mainNavItems = [
   { title: "SEO & Analytics", url: "/dashboard/seo-analytics", icon: Search },
   { title: "Analyse Boutiques", url: "/dashboard/analyse-boutiques", icon: BarChart3 },
   { title: "Rapports", url: "/dashboard/rapports", icon: FileText },
+  { title: "LINKSY Connect", url: "/dashboard/linksy-connect", icon: Link2 },
 ];
 
 const bottomNavItems = [
