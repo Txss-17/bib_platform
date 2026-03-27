@@ -167,6 +167,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
               path="/dashboard/aide"
               element={
                 <ProtectedRoute>
