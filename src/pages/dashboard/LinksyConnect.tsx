@@ -36,8 +36,16 @@ export default function LinksyConnect() {
   const { data: incidentsData, isLoading: incidentsLoading } = useConnectIncidents();
   const { data: suppliersData, isLoading: suppliersLoading } = useConnectSuppliers();
   const createTicket = useCreateTicket();
+  const autoSync = useTriggerAutoSync();
 
   const [ticketForm, setTicketForm] = useState({ subject: "", content: "", email: "", name: "" });
+
+  const handleAutoSync = async () => {
+    try {
+      const result = await autoSync.mutateAsync();
+      toast.success(`Sync auto terminée : ${result.orders?.synced || 0} commandes, ${result.financials?.synced || 0} paiements`);
+    } catch { toast.error("Erreur de synchronisation automatique"); }
+  };
 
   const handleSyncOrders = async () => {
     try {
