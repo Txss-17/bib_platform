@@ -9,14 +9,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   RefreshCw, CheckCircle, XCircle, ArrowUpDown, Package, CreditCard,
-  MessageSquare, AlertTriangle, Truck, Loader2, Send,
+  MessageSquare, AlertTriangle, Truck, Loader2, Send, Clock, Zap,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
   useConnectStatus, useSyncOrders, useSyncFinancials,
   useConnectCatalog, useConnectTickets, useCreateTicket,
-  useConnectIncidents, useConnectSuppliers,
+  useConnectIncidents, useConnectSuppliers, useTriggerAutoSync,
 } from "@/hooks/useLinksyConnect";
 
 function StatusBadge({ connected }: { connected: boolean }) {
