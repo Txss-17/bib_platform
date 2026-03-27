@@ -13,6 +13,7 @@ import {
   User,
   BarChart3,
   FileText,
+  Link2,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
