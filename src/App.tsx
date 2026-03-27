@@ -160,6 +160,13 @@ const App = () => (
               }
             />
             <Route
+              path="/dashboard/linksy-connect"
+              element={
+                <ProtectedRoute>
+                  <LinksyConnect />
+                </ProtectedRoute>
+              }
+            />
               path="/dashboard/aide"
               element={
                 <ProtectedRoute>
