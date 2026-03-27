@@ -97,6 +97,27 @@ export default function LinksyConnect() {
         </CardContent>
       </Card>
 
+      {/* Auto Sync */}
+      <Card className="mb-6 bg-accent/5 border-accent/20">
+        <CardContent className="p-6 flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+              <Zap className="w-5 h-5 text-accent-foreground" />
+            </div>
+            <div>
+              <p className="font-medium text-foreground">Synchronisation automatique</p>
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <Clock className="w-3 h-3" /> Toutes les 2 heures (commandes + finances)
+              </p>
+            </div>
+          </div>
+          <Button onClick={handleAutoSync} disabled={autoSync.isPending} variant="outline">
+            {autoSync.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+            Lancer maintenant
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Sync Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <Card className="bg-card border-border/50">
