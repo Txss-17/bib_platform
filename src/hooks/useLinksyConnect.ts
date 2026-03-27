@@ -73,3 +73,20 @@ export function useConnectSuppliers() {
     queryFn: () => callSync("fetch-suppliers"),
   });
 }
+
+export function useTriggerAutoSync() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Non authentifié");
+
+      const res = await supabase.functions.invoke("linksy-auto-sync");
+      if (res.error) throw res.error;
+      return res.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["connect-status"] });
+    },
+  });
+}
