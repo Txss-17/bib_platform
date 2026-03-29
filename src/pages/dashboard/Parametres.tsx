@@ -15,7 +15,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Parametres() {
   const { user, profile, refreshProfile } = useAuth();
-  const { language, setLanguage } = useLanguage();
+  const { lang, setLang } = useLanguage();
   const [fullName, setFullName] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [businessType, setBusinessType] = useState("");
