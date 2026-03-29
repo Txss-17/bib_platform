@@ -320,7 +320,7 @@ export default function Parametres() {
                 <p className="font-medium text-foreground">Langue de l'interface</p>
                 <p className="text-sm text-muted-foreground">Choisissez la langue d'affichage</p>
               </div>
-              <Select value={language} onValueChange={(v: "fr" | "en") => setLanguage(v)}>
+              <Select value={lang} onValueChange={(v: "fr" | "en") => setLang(v)}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue />
                 </SelectTrigger>
