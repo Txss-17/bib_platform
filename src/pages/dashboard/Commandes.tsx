@@ -105,9 +105,9 @@ export default function Commandes() {
       </Card>
 
       {/* Filters + Export */}
-      <div className="flex flex-wrap items-center gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3 mb-6">
         <Select value={selectedBoutique} onValueChange={setSelectedBoutique}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Toutes les boutiques" />
           </SelectTrigger>
           <SelectContent>
@@ -119,7 +119,7 @@ export default function Commandes() {
         </Select>
 
         <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Tous les statuts" />
           </SelectTrigger>
           <SelectContent>
@@ -136,8 +136,8 @@ export default function Commandes() {
           </span>
         )}
 
-        <div className="ml-auto">
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => filteredOrders && exportCSV(filteredOrders)} disabled={!filteredOrders?.length}>
+        <div className="sm:ml-auto w-full sm:w-auto">
+          <Button variant="outline" size="sm" className="gap-1.5 w-full sm:w-auto" onClick={() => filteredOrders && exportCSV(filteredOrders)} disabled={!filteredOrders?.length}>
             <Download className="w-4 h-4" />
             Export CSV
           </Button>
