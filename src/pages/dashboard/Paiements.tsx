@@ -139,7 +139,7 @@ export default function Paiements() {
             ) : payments.length === 0 ? (
               <p className="text-muted-foreground text-sm text-center py-8">Aucun versement pour le moment.</p>
             ) : (
-              <div className="hidden sm:block">
+              <>
                 <Table>
                   <TableHeader>
                     <TableRow>
