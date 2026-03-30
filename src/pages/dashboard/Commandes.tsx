@@ -105,9 +105,9 @@ export default function Commandes() {
       </Card>
 
       {/* Filters + Export */}
-      <div className="flex flex-wrap items-center gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3 mb-6">
         <Select value={selectedBoutique} onValueChange={setSelectedBoutique}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Toutes les boutiques" />
           </SelectTrigger>
           <SelectContent>
@@ -119,7 +119,7 @@ export default function Commandes() {
         </Select>
 
         <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Tous les statuts" />
           </SelectTrigger>
           <SelectContent>
@@ -136,8 +136,8 @@ export default function Commandes() {
           </span>
         )}
 
-        <div className="ml-auto">
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => filteredOrders && exportCSV(filteredOrders)} disabled={!filteredOrders?.length}>
+        <div className="sm:ml-auto w-full sm:w-auto">
+          <Button variant="outline" size="sm" className="gap-1.5 w-full sm:w-auto" onClick={() => filteredOrders && exportCSV(filteredOrders)} disabled={!filteredOrders?.length}>
             <Download className="w-4 h-4" />
             Export CSV
           </Button>
@@ -179,71 +179,121 @@ export default function Commandes() {
           </CardContent>
         </Card>
       ) : (
-        <Card className="bg-card border-border/50">
-          <CardHeader><CardTitle className="text-lg">Toutes les commandes</CardTitle></CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>N° Commande</TableHead>
-                  <TableHead>Produit</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Marché</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Montant</TableHead>
-                  <TableHead className="w-10"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredOrders?.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-mono text-sm font-medium">{order.order_number}</TableCell>
-                    <TableCell>{order.products?.supplier_products?.name || "Produit inconnu"}</TableCell>
-                    <TableCell><StatusBadge status={order.logistics_status} /></TableCell>
-                    <TableCell>{order.customer_name}</TableCell>
-                    <TableCell>
-                      <span className="px-2 py-1 rounded bg-muted text-xs font-medium">{order.market}</span>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(order.created_at).toLocaleDateString('fr-FR')}
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {Number(order.amount).toFixed(2)} €
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {statusFlow.map((s) => (
-                            <DropdownMenuItem
-                              key={s}
-                              disabled={order.logistics_status === s}
-                              onClick={() => handleStatusChange(order.id, s)}
-                            >
-                              {statusConfig[s].label}
-                            </DropdownMenuItem>
-                          ))}
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            disabled={order.logistics_status === "returned"}
-                            onClick={() => handleStatusChange(order.id, "returned")}
-                          >
-                            Marquer retourné
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+        <>
+          {/* Desktop table */}
+          <Card className="bg-card border-border/50 hidden md:block">
+            <CardHeader><CardTitle className="text-lg">Toutes les commandes</CardTitle></CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>N° Commande</TableHead>
+                    <TableHead>Produit</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Marché</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-right">Montant</TableHead>
+                    <TableHead className="w-10"></TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                </TableHeader>
+                <TableBody>
+                  {filteredOrders?.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-mono text-sm font-medium">{order.order_number}</TableCell>
+                      <TableCell>{order.products?.supplier_products?.name || "Produit inconnu"}</TableCell>
+                      <TableCell><StatusBadge status={order.logistics_status} /></TableCell>
+                      <TableCell>{order.customer_name}</TableCell>
+                      <TableCell>
+                        <span className="px-2 py-1 rounded bg-muted text-xs font-medium">{order.market}</span>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {new Date(order.created_at).toLocaleDateString('fr-FR')}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {Number(order.amount).toFixed(2)} €
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {statusFlow.map((s) => (
+                              <DropdownMenuItem
+                                key={s}
+                                disabled={order.logistics_status === s}
+                                onClick={() => handleStatusChange(order.id, s)}
+                              >
+                                {statusConfig[s].label}
+                              </DropdownMenuItem>
+                            ))}
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              disabled={order.logistics_status === "returned"}
+                              onClick={() => handleStatusChange(order.id, "returned")}
+                            >
+                              Marquer retourné
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          {/* Mobile card view */}
+          <div className="md:hidden space-y-3">
+            <h3 className="text-base font-semibold text-foreground">Toutes les commandes</h3>
+            {filteredOrders?.map((order) => (
+              <Card key={order.id} className="bg-card border-border/50">
+                <CardContent className="p-3">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="min-w-0">
+                      <p className="text-xs font-mono text-muted-foreground">{order.order_number}</p>
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {order.products?.supplier_products?.name || "Produit inconnu"}
+                      </p>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {statusFlow.map((s) => (
+                          <DropdownMenuItem key={s} disabled={order.logistics_status === s} onClick={() => handleStatusChange(order.id, s)}>
+                            {statusConfig[s].label}
+                          </DropdownMenuItem>
+                        ))}
+                        <DropdownMenuItem className="text-destructive" disabled={order.logistics_status === "returned"} onClick={() => handleStatusChange(order.id, "returned")}>
+                          Marquer retourné
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <StatusBadge status={order.logistics_status} />
+                      <span className="text-xs text-muted-foreground">{order.customer_name}</span>
+                    </div>
+                    <span className="text-sm font-bold text-foreground">{Number(order.amount).toFixed(2)} €</span>
+                  </div>
+                  <div className="flex items-center justify-between mt-1.5">
+                    <span className="px-2 py-0.5 rounded bg-muted text-[10px] font-medium">{order.market}</span>
+                    <span className="text-[10px] text-muted-foreground">{new Date(order.created_at).toLocaleDateString('fr-FR')}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </>
       )}
     </DashboardLayout>
   );

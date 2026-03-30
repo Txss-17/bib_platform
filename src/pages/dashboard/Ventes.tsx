@@ -64,11 +64,11 @@ export default function Ventes() {
   return (
     <DashboardLayout title="Ventes" subtitle="Analysez vos performances commerciales">
       {/* Boutique filter */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <span className="text-sm font-medium text-muted-foreground">Filtrer par boutique :</span>
           <Select value={selectedBoutique} onValueChange={setSelectedBoutique}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-full sm:w-[200px]">
               <SelectValue placeholder="Toutes les boutiques" />
             </SelectTrigger>
             <SelectContent>

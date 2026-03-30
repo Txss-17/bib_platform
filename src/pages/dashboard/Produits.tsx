@@ -144,10 +144,10 @@ export default function Produits() {
       ) : (
         <>
           {/* Filters Bar */}
-          <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap justify-between items-start sm:items-center gap-3 mb-6">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
               <Select value={boutiqueFilter} onValueChange={setBoutiqueFilter}>
-                <SelectTrigger className="w-44 h-9 text-sm">
+                <SelectTrigger className="w-full sm:w-44 h-9 text-sm">
                   <SelectValue placeholder="Toutes les boutiques" />
                 </SelectTrigger>
                 <SelectContent>
@@ -158,7 +158,7 @@ export default function Produits() {
                 </SelectContent>
               </Select>
               <Select value={sortOrder} onValueChange={setSortOrder}>
-                <SelectTrigger className="w-36 h-9 text-sm">
+                <SelectTrigger className="w-full sm:w-36 h-9 text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -166,92 +166,146 @@ export default function Produits() {
                   <SelectItem value="sales">Meilleures ventes</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-sm text-muted-foreground hidden sm:block">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {activeCount} actifs / {totalCount}
               </p>
             </div>
-            <Button className="gap-2">
+            <Button className="gap-2 w-full sm:w-auto">
               <Plus className="w-4 h-4" />
               Ajouter un produit
             </Button>
           </div>
 
-          {/* Products Table */}
-          <Card className="bg-card border-border/50">
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">Actif</TableHead>
-                    <TableHead>Produit</TableHead>
-                    <TableHead>Prix public</TableHead>
-                    <TableHead>Marge</TableHead>
-                    <TableHead>Ventes</TableHead>
-                    <TableHead className="w-12"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredProducts.map((product) => (
-                    <TableRow key={product.id}>
-                      <TableCell>
-                        <Switch
-                          checked={product.status === "active"}
-                          onCheckedChange={() => toggleStatus(product.id, product.status)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <img 
-                            src={product.supplier_products?.image_url || "/placeholder.svg"} 
-                            alt={product.supplier_products?.name || "Produit"}
-                            className="w-10 h-10 rounded-lg object-cover bg-muted"
+          {/* Products - Card view on mobile, Table on desktop */}
+          <div className="hidden md:block">
+            <Card className="bg-card border-border/50">
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">Actif</TableHead>
+                      <TableHead>Produit</TableHead>
+                      <TableHead>Prix public</TableHead>
+                      <TableHead>Marge</TableHead>
+                      <TableHead>Ventes</TableHead>
+                      <TableHead className="w-12"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredProducts.map((product) => (
+                      <TableRow key={product.id}>
+                        <TableCell>
+                          <Switch
+                            checked={product.status === "active"}
+                            onCheckedChange={() => toggleStatus(product.id, product.status)}
                           />
-                          <span className="font-medium">
-                            {product.supplier_products?.name || "Produit inconnu"}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {Number(product.public_price).toFixed(2)} €
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="font-mono">
-                          {Number(product.applied_margin).toFixed(0)}%
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{product.cumulative_sales}</TableCell>
-                      <TableCell>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <img 
+                              src={product.supplier_products?.image_url || "/placeholder.svg"} 
+                              alt={product.supplier_products?.name || "Produit"}
+                              className="w-10 h-10 rounded-lg object-cover bg-muted"
+                            />
+                            <span className="font-medium">
+                              {product.supplier_products?.name || "Produit inconnu"}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {Number(product.public_price).toFixed(2)} €
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="font-mono">
+                            {Number(product.applied_margin).toFixed(0)}%
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{product.cumulative_sales}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreVertical className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem>
+                                <Edit className="w-4 h-4 mr-2" />
+                                Modifier le prix
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Copy className="w-4 h-4 mr-2" />
+                                Dupliquer
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                className="text-destructive"
+                                onClick={() => setDeleteId(product.id)}
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Supprimer
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Mobile card view */}
+          <div className="md:hidden space-y-3">
+            {filteredProducts.map((product) => (
+              <Card key={product.id} className="bg-card border-border/50">
+                <CardContent className="p-3">
+                  <div className="flex items-start gap-3">
+                    <img 
+                      src={product.supplier_products?.image_url || "/placeholder.svg"} 
+                      alt={product.supplier_products?.name || "Produit"}
+                      className="w-14 h-14 rounded-lg object-cover bg-muted shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {product.supplier_products?.name || "Produit inconnu"}
+                        </p>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
                               <MoreVertical className="w-4 h-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Edit className="w-4 h-4 mr-2" />
-                              Modifier le prix
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Copy className="w-4 h-4 mr-2" />
-                              Dupliquer
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              className="text-destructive"
-                              onClick={() => setDeleteId(product.id)}
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Supprimer
+                            <DropdownMenuItem><Edit className="w-4 h-4 mr-2" />Modifier</DropdownMenuItem>
+                            <DropdownMenuItem><Copy className="w-4 h-4 mr-2" />Dupliquer</DropdownMenuItem>
+                            <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(product.id)}>
+                              <Trash2 className="w-4 h-4 mr-2" />Supprimer
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        <span className="text-sm font-bold text-foreground">{Number(product.public_price).toFixed(2)} €</span>
+                        <Badge variant="secondary" className="font-mono text-[10px]">{Number(product.applied_margin).toFixed(0)}%</Badge>
+                        <span className="text-xs text-muted-foreground">{product.cumulative_sales} ventes</span>
+                      </div>
+                      <div className="flex items-center justify-between mt-2">
+                        <Switch
+                          checked={product.status === "active"}
+                          onCheckedChange={() => toggleStatus(product.id, product.status)}
+                        />
+                        <Badge variant={product.status === "active" ? "default" : "secondary"} className="text-[10px]">
+                          {product.status === "active" ? "Actif" : "Pause"}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </>
       )}
       <ConfirmDeleteDialog
