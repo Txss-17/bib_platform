@@ -26,7 +26,6 @@ import Parametres from "./pages/dashboard/Parametres";
 import Aide from "./pages/dashboard/Aide";
 import AnalyseBoutiques from "./pages/dashboard/AnalyseBoutiques";
 import Rapports from "./pages/dashboard/Rapports";
-import LinksyConnect from "./pages/dashboard/LinksyConnect";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
@@ -156,14 +155,6 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Rapports />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/linksy-connect"
-              element={
-                <ProtectedRoute>
-                  <LinksyConnect />
                 </ProtectedRoute>
               }
             />
