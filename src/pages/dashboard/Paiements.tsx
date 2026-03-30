@@ -139,45 +139,76 @@ export default function Paiements() {
             ) : payments.length === 0 ? (
               <p className="text-muted-foreground text-sm text-center py-8">Aucun versement pour le moment.</p>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Période</TableHead>
-                    <TableHead>Boutique</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">Montant</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {payments.map((p: any) => (
-                    <TableRow key={p.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{new Date(p.period_start).toLocaleDateString('fr-FR')} - {new Date(p.period_end).toLocaleDateString('fr-FR')}</p>
-                          {p.payout_date && <p className="text-xs text-muted-foreground">Versé le {new Date(p.payout_date).toLocaleDateString('fr-FR')}</p>}
-                        </div>
-                      </TableCell>
-                      <TableCell>{p.boutiques?.name || "—"}</TableCell>
-                      <TableCell>
-                        {p.status === "completed" ? (
-                          <Badge variant="default" className="gap-1 bg-green-500/10 text-green-500 hover:bg-green-500/20">
-                            <CheckCircle className="w-3 h-3" /> Versé
-                          </Badge>
-                        ) : p.status === "pending" ? (
-                          <Badge variant="outline" className="gap-1 text-yellow-500 border-yellow-500/30">
-                            <Clock className="w-3 h-3" /> En attente
-                          </Badge>
-                        ) : (
-                          <Badge variant="destructive">{p.status}</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {p.status === "completed" ? "+" : ""}{Number(p.amount).toFixed(2)} €
-                      </TableCell>
+              <div className="hidden sm:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Période</TableHead>
+                      <TableHead>Boutique</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead className="text-right">Montant</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {payments.map((p: any) => (
+                      <TableRow key={p.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{new Date(p.period_start).toLocaleDateString('fr-FR')} - {new Date(p.period_end).toLocaleDateString('fr-FR')}</p>
+                            {p.payout_date && <p className="text-xs text-muted-foreground">Versé le {new Date(p.payout_date).toLocaleDateString('fr-FR')}</p>}
+                          </div>
+                        </TableCell>
+                        <TableCell>{p.boutiques?.name || "—"}</TableCell>
+                        <TableCell>
+                          {p.status === "completed" ? (
+                            <Badge variant="default" className="gap-1 bg-green-500/10 text-green-500 hover:bg-green-500/20">
+                              <CheckCircle className="w-3 h-3" /> Versé
+                            </Badge>
+                          ) : p.status === "pending" ? (
+                            <Badge variant="outline" className="gap-1 text-yellow-500 border-yellow-500/30">
+                              <Clock className="w-3 h-3" /> En attente
+                            </Badge>
+                          ) : (
+                            <Badge variant="destructive">{p.status}</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          {p.status === "completed" ? "+" : ""}{Number(p.amount).toFixed(2)} €
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              {/* Mobile list */}
+              <div className="sm:hidden space-y-3">
+                {payments.map((p: any) => (
+                  <div key={p.id} className="p-3 rounded-lg bg-muted/30 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(p.period_start).toLocaleDateString('fr-FR')} - {new Date(p.period_end).toLocaleDateString('fr-FR')}
+                      </span>
+                      <span className="text-sm font-bold text-foreground">
+                        {p.status === "completed" ? "+" : ""}{Number(p.amount).toFixed(2)} €
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">{p.boutiques?.name || "—"}</span>
+                      {p.status === "completed" ? (
+                        <Badge variant="default" className="gap-1 bg-green-500/10 text-green-500 hover:bg-green-500/20 text-[10px]">
+                          <CheckCircle className="w-3 h-3" /> Versé
+                        </Badge>
+                      ) : p.status === "pending" ? (
+                        <Badge variant="outline" className="gap-1 text-yellow-500 border-yellow-500/30 text-[10px]">
+                          <Clock className="w-3 h-3" /> En attente
+                        </Badge>
+                      ) : (
+                        <Badge variant="destructive" className="text-[10px]">{p.status}</Badge>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </CardContent>
         </Card>
