@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,10 @@ import { useOrders, useUpdateOrderStatus } from "@/hooks/useOrders";
 import { useBoutiques } from "@/hooks/useBoutiques";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
+import { OrderDetailDialog } from "@/components/dashboard/OrderDetailDialog";
+import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import type { OrderWithProduct } from "@/hooks/useOrders";
 
 type LogisticsStatus = Database["public"]["Enums"]["logistics_status"];
 
