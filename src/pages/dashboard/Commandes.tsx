@@ -326,7 +326,7 @@ export default function Commandes() {
                       </p>
                     </div>
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
+                      <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                         <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
                           <MoreHorizontal className="w-4 h-4" />
                         </Button>
