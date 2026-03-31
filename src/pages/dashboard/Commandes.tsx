@@ -278,7 +278,7 @@ export default function Commandes() {
                       <TableCell className="text-right font-medium">
                         {Number(order.amount).toFixed(2)} €
                       </TableCell>
-                      <TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8">
