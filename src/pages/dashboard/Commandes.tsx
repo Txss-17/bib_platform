@@ -360,6 +360,12 @@ export default function Commandes() {
           </div>
         </>
       )}
+
+      <OrderDetailDialog
+        order={selectedOrder}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+      />
     </DashboardLayout>
   );
 }
