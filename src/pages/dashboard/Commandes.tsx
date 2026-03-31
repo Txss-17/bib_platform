@@ -64,13 +64,27 @@ export default function Commandes() {
   const { data: boutiques = [] } = useBoutiques();
   const updateStatus = useUpdateOrderStatus();
   const [selectedBoutique, setSelectedBoutique] = useState<string>("all");
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState<string>("all");
 
-  const filteredOrders = orders?.filter(order => {
-    if (selectedBoutique !== "all" && order.boutique_id !== selectedBoutique) return false;
-    if (selectedStatus !== "all" && order.logistics_status !== selectedStatus) return false;
-    return true;
-  });
+  const statusCounts = useMemo(() => {
+    const boutiqueFiltered = orders?.filter(o => selectedBoutique === "all" || o.boutique_id === selectedBoutique) || [];
+    return {
+      all: boutiqueFiltered.length,
+      pending: boutiqueFiltered.filter(o => o.logistics_status === "pending").length,
+      processing: boutiqueFiltered.filter(o => o.logistics_status === "processing").length,
+      shipped: boutiqueFiltered.filter(o => o.logistics_status === "shipped").length,
+      delivered: boutiqueFiltered.filter(o => o.logistics_status === "delivered").length,
+      returned: boutiqueFiltered.filter(o => o.logistics_status === "returned").length,
+    };
+  }, [orders, selectedBoutique]);
+
+  const filteredOrders = useMemo(() => {
+    return orders?.filter(order => {
+      if (selectedBoutique !== "all" && order.boutique_id !== selectedBoutique) return false;
+      if (activeTab !== "all" && order.logistics_status !== activeTab) return false;
+      return true;
+    });
+  }, [orders, selectedBoutique, activeTab]);
 
   const handleStatusChange = (orderId: string, newStatus: LogisticsStatus) => {
     updateStatus.mutate(
