@@ -68,6 +68,41 @@ export default function Commandes() {
   const updateStatus = useUpdateOrderStatus();
   const [selectedBoutique, setSelectedBoutique] = useState<string>("all");
   const [activeTab, setActiveTab] = useState<string>("all");
+  const [selectedOrder, setSelectedOrder] = useState<OrderWithProduct | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+
+  // Realtime notifications for order status changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('order-status-changes')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'orders' },
+        (payload) => {
+          const oldStatus = (payload.old as any)?.logistics_status;
+          const newStatus = (payload.new as any)?.logistics_status;
+          const orderNumber = (payload.new as any)?.order_number;
+          if (oldStatus !== newStatus && newStatus && orderNumber) {
+            const statusLabels: Record<string, string> = {
+              pending: "En attente", processing: "En préparation",
+              shipped: "Expédié", delivered: "Livré", returned: "Retourné",
+            };
+            toast({
+              title: "📦 Statut mis à jour",
+              description: `Commande ${orderNumber} : ${statusLabels[newStatus] || newStatus}`,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  const openOrderDetail = (order: OrderWithProduct) => {
+    setSelectedOrder(order);
+    setDetailOpen(true);
+  };
 
   const statusCounts = useMemo(() => {
     const boutiqueFiltered = orders?.filter(o => selectedBoutique === "all" || o.boutique_id === selectedBoutique) || [];
