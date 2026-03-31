@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,10 @@ import { useOrders, useUpdateOrderStatus } from "@/hooks/useOrders";
 import { useBoutiques } from "@/hooks/useBoutiques";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
+import { OrderDetailDialog } from "@/components/dashboard/OrderDetailDialog";
+import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import type { OrderWithProduct } from "@/hooks/useOrders";
 
 type LogisticsStatus = Database["public"]["Enums"]["logistics_status"];
 
@@ -65,6 +68,41 @@ export default function Commandes() {
   const updateStatus = useUpdateOrderStatus();
   const [selectedBoutique, setSelectedBoutique] = useState<string>("all");
   const [activeTab, setActiveTab] = useState<string>("all");
+  const [selectedOrder, setSelectedOrder] = useState<OrderWithProduct | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+
+  // Realtime notifications for order status changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('order-status-changes')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'orders' },
+        (payload) => {
+          const oldStatus = (payload.old as any)?.logistics_status;
+          const newStatus = (payload.new as any)?.logistics_status;
+          const orderNumber = (payload.new as any)?.order_number;
+          if (oldStatus !== newStatus && newStatus && orderNumber) {
+            const statusLabels: Record<string, string> = {
+              pending: "En attente", processing: "En préparation",
+              shipped: "Expédié", delivered: "Livré", returned: "Retourné",
+            };
+            toast({
+              title: "📦 Statut mis à jour",
+              description: `Commande ${orderNumber} : ${statusLabels[newStatus] || newStatus}`,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  const openOrderDetail = (order: OrderWithProduct) => {
+    setSelectedOrder(order);
+    setDetailOpen(true);
+  };
 
   const statusCounts = useMemo(() => {
     const boutiqueFiltered = orders?.filter(o => selectedBoutique === "all" || o.boutique_id === selectedBoutique) || [];
@@ -226,7 +264,7 @@ export default function Commandes() {
                 </TableHeader>
                 <TableBody>
                   {filteredOrders?.map((order) => (
-                    <TableRow key={order.id}>
+                    <TableRow key={order.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openOrderDetail(order)}>
                       <TableCell className="font-mono text-sm font-medium">{order.order_number}</TableCell>
                       <TableCell>{order.products?.supplier_products?.name || "Produit inconnu"}</TableCell>
                       <TableCell><StatusBadge status={order.logistics_status} /></TableCell>
@@ -240,7 +278,7 @@ export default function Commandes() {
                       <TableCell className="text-right font-medium">
                         {Number(order.amount).toFixed(2)} €
                       </TableCell>
-                      <TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -278,7 +316,7 @@ export default function Commandes() {
           <div className="md:hidden space-y-3">
             <h3 className="text-base font-semibold text-foreground">Toutes les commandes</h3>
             {filteredOrders?.map((order) => (
-              <Card key={order.id} className="bg-card border-border/50">
+              <Card key={order.id} className="bg-card border-border/50 cursor-pointer hover:bg-muted/30 transition-colors" onClick={() => openOrderDetail(order)}>
                 <CardContent className="p-3">
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="min-w-0">
@@ -288,7 +326,7 @@ export default function Commandes() {
                       </p>
                     </div>
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
+                      <DropdownMenuTrigger asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                         <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
                           <MoreHorizontal className="w-4 h-4" />
                         </Button>
@@ -322,6 +360,12 @@ export default function Commandes() {
           </div>
         </>
       )}
+
+      <OrderDetailDialog
+        order={selectedOrder}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+      />
     </DashboardLayout>
   );
 }
