@@ -316,7 +316,7 @@ export default function Commandes() {
           <div className="md:hidden space-y-3">
             <h3 className="text-base font-semibold text-foreground">Toutes les commandes</h3>
             {filteredOrders?.map((order) => (
-              <Card key={order.id} className="bg-card border-border/50">
+              <Card key={order.id} className="bg-card border-border/50 cursor-pointer hover:bg-muted/30 transition-colors" onClick={() => openOrderDetail(order)}>
                 <CardContent className="p-3">
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="min-w-0">
