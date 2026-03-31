@@ -264,7 +264,7 @@ export default function Commandes() {
                 </TableHeader>
                 <TableBody>
                   {filteredOrders?.map((order) => (
-                    <TableRow key={order.id}>
+                    <TableRow key={order.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openOrderDetail(order)}>
                       <TableCell className="font-mono text-sm font-medium">{order.order_number}</TableCell>
                       <TableCell>{order.products?.supplier_products?.name || "Produit inconnu"}</TableCell>
                       <TableCell><StatusBadge status={order.logistics_status} /></TableCell>
