@@ -119,8 +119,34 @@ export default function Commandes() {
         </CardContent>
       </Card>
 
-      {/* Filters + Export */}
-      <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3 mb-6">
+      {/* Status tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
+        <TabsList className="w-full flex overflow-x-auto no-scrollbar h-auto flex-wrap gap-1 bg-muted/50 p-1">
+          {[
+            { value: "all", label: "Toutes", icon: ShoppingBag },
+            { value: "pending", label: "En attente", icon: Clock },
+            { value: "processing", label: "En préparation", icon: Package },
+            { value: "shipped", label: "En livraison", icon: Truck },
+            { value: "delivered", label: "Livrées", icon: CheckCircle },
+            { value: "returned", label: "Retournées", icon: RotateCcw },
+          ].map(tab => {
+            const Icon = tab.icon;
+            const count = statusCounts[tab.value as keyof typeof statusCounts];
+            return (
+              <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-background">
+                <Icon className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{tab.label}</span>
+                <Badge variant="secondary" className="ml-0.5 h-5 min-w-[20px] px-1.5 text-[10px]">
+                  {count}
+                </Badge>
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+      </Tabs>
+
+      {/* Boutique filter + Export */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
         <Select value={selectedBoutique} onValueChange={setSelectedBoutique}>
           <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Toutes les boutiques" />
@@ -133,23 +159,9 @@ export default function Commandes() {
           </SelectContent>
         </Select>
 
-        <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Tous les statuts" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Tous les statuts</SelectItem>
-            {Object.entries(statusConfig).map(([key, config]) => (
-              <SelectItem key={key} value={key}>{config.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {(selectedBoutique !== "all" || selectedStatus !== "all") && (
-          <span className="text-xs text-muted-foreground">
-            {filteredOrders?.length || 0} résultat(s)
-          </span>
-        )}
+        <span className="text-xs text-muted-foreground">
+          {filteredOrders?.length || 0} commande(s)
+        </span>
 
         <div className="sm:ml-auto w-full sm:w-auto">
           <Button variant="outline" size="sm" className="gap-1.5 w-full sm:w-auto" onClick={() => filteredOrders && exportCSV(filteredOrders)} disabled={!filteredOrders?.length}>
