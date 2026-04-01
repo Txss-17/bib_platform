@@ -69,7 +69,9 @@ export default function Commandes() {
   const updateStatus = useUpdateOrderStatus();
   const [selectedBoutique, setSelectedBoutique] = useState<string>("all");
   const [activeTab, setActiveTab] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<OrderWithProduct | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
 
   // Realtime notifications for order status changes
