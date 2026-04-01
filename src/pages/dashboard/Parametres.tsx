@@ -83,6 +83,9 @@ export default function Parametres() {
           </CardContent>
         </Card>
 
+        {/* Business Documents Verification */}
+        <BusinessDocuments />
+
         {/* Notifications Section */}
         <Card className="bg-card border-border/50">
           <CardHeader>
