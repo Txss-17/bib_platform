@@ -7,6 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { User, Bell, Shield, CreditCard, Globe, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { BusinessDocuments } from "@/components/dashboard/BusinessDocuments";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
