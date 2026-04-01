@@ -187,8 +187,17 @@ export default function Commandes() {
         </TabsList>
       </Tabs>
 
-      {/* Boutique filter + Export */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
+        <div className="relative w-full sm:w-[240px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="N° commande ou client..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+
         <Select value={selectedBoutique} onValueChange={setSelectedBoutique}>
           <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Toutes les boutiques" />
