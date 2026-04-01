@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, Truck, CheckCircle, Clock, AlertCircle, ShoppingBag, MoreHorizontal, Download, RotateCcw } from "lucide-react";
+import { Package, Truck, CheckCircle, Clock, AlertCircle, ShoppingBag, MoreHorizontal, Download, RotateCcw, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { useOrders, useUpdateOrderStatus } from "@/hooks/useOrders";
 import { useBoutiques } from "@/hooks/useBoutiques";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -68,6 +69,7 @@ export default function Commandes() {
   const updateStatus = useUpdateOrderStatus();
   const [selectedBoutique, setSelectedBoutique] = useState<string>("all");
   const [activeTab, setActiveTab] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<OrderWithProduct | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
@@ -117,12 +119,14 @@ export default function Commandes() {
   }, [orders, selectedBoutique]);
 
   const filteredOrders = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
     return orders?.filter(order => {
       if (selectedBoutique !== "all" && order.boutique_id !== selectedBoutique) return false;
       if (activeTab !== "all" && order.logistics_status !== activeTab) return false;
+      if (query && !order.order_number.toLowerCase().includes(query) && !order.customer_name.toLowerCase().includes(query) && !order.customer_email.toLowerCase().includes(query)) return false;
       return true;
     });
-  }, [orders, selectedBoutique, activeTab]);
+  }, [orders, selectedBoutique, activeTab, searchQuery]);
 
   const handleStatusChange = (orderId: string, newStatus: LogisticsStatus) => {
     updateStatus.mutate(
@@ -183,8 +187,17 @@ export default function Commandes() {
         </TabsList>
       </Tabs>
 
-      {/* Boutique filter + Export */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
+        <div className="relative w-full sm:w-[240px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="N° commande ou client..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+
         <Select value={selectedBoutique} onValueChange={setSelectedBoutique}>
           <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Toutes les boutiques" />
