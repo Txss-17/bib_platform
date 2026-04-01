@@ -119,12 +119,14 @@ export default function Commandes() {
   }, [orders, selectedBoutique]);
 
   const filteredOrders = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
     return orders?.filter(order => {
       if (selectedBoutique !== "all" && order.boutique_id !== selectedBoutique) return false;
       if (activeTab !== "all" && order.logistics_status !== activeTab) return false;
+      if (query && !order.order_number.toLowerCase().includes(query) && !order.customer_name.toLowerCase().includes(query) && !order.customer_email.toLowerCase().includes(query)) return false;
       return true;
     });
-  }, [orders, selectedBoutique, activeTab]);
+  }, [orders, selectedBoutique, activeTab, searchQuery]);
 
   const handleStatusChange = (orderId: string, newStatus: LogisticsStatus) => {
     updateStatus.mutate(
