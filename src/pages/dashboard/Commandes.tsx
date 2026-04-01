@@ -72,7 +72,6 @@ export default function Commandes() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<OrderWithProduct | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
-  const [detailOpen, setDetailOpen] = useState(false);
 
   // Realtime notifications for order status changes
   useEffect(() => {
