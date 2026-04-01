@@ -13,6 +13,7 @@ import { useOrderStats, useOrders } from "@/hooks/useOrders";
 import { useSupplierProducts } from "@/hooks/useSupplierProducts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StockAlerts } from "@/components/dashboard/StockAlerts";
+import { OrdersChart } from "@/components/dashboard/OrdersChart";
 
 export default function Dashboard() {
   const { data: boutiqueStats, isLoading: boutiquesLoading } = useBoutiqueStats();
