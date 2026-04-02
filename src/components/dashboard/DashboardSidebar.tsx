@@ -13,7 +13,9 @@ import {
   User,
   BarChart3,
   FileText,
+  ShieldCheck,
 } from "lucide-react";
+import { useAdminRole } from "@/hooks/useAdminRole";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
