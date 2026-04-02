@@ -6,57 +6,60 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+async function getAuthUser(req: Request) {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader) return null;
+
+  const userClient = createClient(supabaseUrl, anonKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
+  const { data: { user } } = await userClient.auth.getUser();
+  return user;
+}
+
+function isAdminUser(email: string): boolean {
+  const adminEmails = Deno.env.get("LINKSY_ADMIN_EMAILS") || "";
+  const admins = adminEmails.split(",").map((e) => e.trim().toLowerCase());
+  return admins.includes(email.toLowerCase());
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
-
-    // Verify the calling user is an admin
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    const user = await getAuthUser(req);
+    if (!user?.email) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: { user }, error: userError } = await userClient.auth.getUser();
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Check admin role using service role (bypasses RLS)
-    const { data: roles } = await supabaseAdmin
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin");
-
-    const isAdmin = roles && roles.length > 0;
-    if (!isAdmin) {
-      return new Response(JSON.stringify({ error: "Forbidden: admin role required" }), {
+    if (!isAdminUser(user.email)) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+
     const url = new URL(req.url);
     const action = url.searchParams.get("action");
 
+    if (req.method === "GET" && action === "check-admin") {
+      return new Response(JSON.stringify({ isAdmin: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (req.method === "GET" && action === "list") {
-      // List all business documents
       const { data: docs, error } = await supabaseAdmin
         .from("business_documents")
         .select("*")
@@ -64,7 +67,6 @@ serve(async (req) => {
 
       if (error) throw error;
 
-      // Get profiles for user context
       const userIds = [...new Set((docs || []).map((d: any) => d.user_id))];
       let profiles: any[] = [];
       if (userIds.length > 0) {
@@ -102,12 +104,6 @@ serve(async (req) => {
 
       if (error) throw error;
       return new Response(JSON.stringify({ success: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    if (req.method === "GET" && action === "check-admin") {
-      return new Response(JSON.stringify({ isAdmin: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
