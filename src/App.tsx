@@ -26,6 +26,7 @@ import Parametres from "./pages/dashboard/Parametres";
 import Aide from "./pages/dashboard/Aide";
 import AnalyseBoutiques from "./pages/dashboard/AnalyseBoutiques";
 import Rapports from "./pages/dashboard/Rapports";
+import AdminDocuments from "./pages/dashboard/AdminDocuments";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
