@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,6 +52,29 @@ const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secon
   rejected: { label: "Rejeté", variant: "destructive", icon: XCircle },
 };
 
+async function adminFetch(action: string, method = "GET", body?: any) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error("Not authenticated");
+
+  const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-documents?action=${action}`;
+  const options: RequestInit = {
+    method,
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      "Content-Type": "application/json",
+    },
+  };
+  if (body) options.body = JSON.stringify(body);
+
+  const res = await fetch(url, options);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Unknown error" }));
+    throw new Error(err.error || "Request failed");
+  }
+  return res.json();
+}
+
 export default function AdminDocuments() {
   const { isAdmin, loading: adminLoading } = useAdminRole();
   const [documents, setDocuments] = useState<AdminDocument[]>([]);
@@ -62,58 +85,37 @@ export default function AdminDocuments() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
-  const fetchDocuments = async () => {
+  const fetchDocuments = useCallback(async () => {
     setLoading(true);
-    // Fetch all business documents (admin RLS policy allows this)
-    const { data: docs, error } = await supabase
-      .from("business_documents" as any)
-      .select("*")
-      .order("uploaded_at", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching documents:", error);
-      setLoading(false);
-      return;
+    try {
+      const { documents: docs, profiles } = await adminFetch("list");
+      const profileMap = new Map(
+        (profiles || []).map((p: any) => [p.user_id, p])
+      );
+      const enrichedDocs = (docs || []).map((d: any) => ({
+        ...d,
+        user_profile: profileMap.get(d.user_id) || null,
+      }));
+      setDocuments(enrichedDocs);
+    } catch (err) {
+      console.error("Error fetching documents:", err);
     }
-
-    // Fetch profiles for all unique user_ids
-    const userIds = [...new Set((docs as any[]).map((d: any) => d.user_id))];
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("user_id, full_name, business_name, business_type")
-      .in("user_id", userIds);
-
-    const profileMap = new Map(
-      (profiles || []).map((p) => [p.user_id, p])
-    );
-
-    const enrichedDocs = (docs as any[]).map((d: any) => ({
-      ...d,
-      user_profile: profileMap.get(d.user_id) || null,
-    }));
-
-    setDocuments(enrichedDocs);
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
     if (isAdmin) fetchDocuments();
-  }, [isAdmin]);
+  }, [isAdmin, fetchDocuments]);
 
   const handleVerify = async (doc: AdminDocument) => {
     setActionLoading(true);
-    const { error } = await supabase
-      .from("business_documents" as any)
-      .update({ status: "verified", rejection_reason: null } as any)
-      .eq("id", doc.id);
-
-    if (error) {
-      toast.error("Erreur lors de la vérification");
-      console.error(error);
-    } else {
+    try {
+      await adminFetch("verify", "POST", { documentId: doc.id });
       toast.success("Document vérifié avec succès");
       await fetchDocuments();
       setSelectedDoc(null);
+    } catch {
+      toast.error("Erreur lors de la vérification");
     }
     setActionLoading(false);
   };
@@ -124,19 +126,14 @@ export default function AdminDocuments() {
       return;
     }
     setActionLoading(true);
-    const { error } = await supabase
-      .from("business_documents" as any)
-      .update({ status: "rejected", rejection_reason: rejectionReason.trim() } as any)
-      .eq("id", doc.id);
-
-    if (error) {
-      toast.error("Erreur lors du rejet");
-      console.error(error);
-    } else {
+    try {
+      await adminFetch("reject", "POST", { documentId: doc.id, reason: rejectionReason.trim() });
       toast.success("Document rejeté");
       setRejectionReason("");
       await fetchDocuments();
       setSelectedDoc(null);
+    } catch {
+      toast.error("Erreur lors du rejet");
     }
     setActionLoading(false);
   };
@@ -187,8 +184,8 @@ export default function AdminDocuments() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <Card className="bg-card border-border/50">
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-yellow-500/10">
-              <Clock className="w-5 h-5 text-yellow-500" />
+            <div className="p-2 rounded-lg bg-accent/20">
+              <Clock className="w-5 h-5 text-accent-foreground" />
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">{pendingCount}</p>
@@ -198,8 +195,8 @@ export default function AdminDocuments() {
         </Card>
         <Card className="bg-card border-border/50">
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-green-500/10">
-              <CheckCircle className="w-5 h-5 text-green-500" />
+            <div className="p-2 rounded-lg bg-primary/10">
+              <CheckCircle className="w-5 h-5 text-primary" />
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">
@@ -211,8 +208,8 @@ export default function AdminDocuments() {
         </Card>
         <Card className="bg-card border-border/50">
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-red-500/10">
-              <XCircle className="w-5 h-5 text-red-500" />
+            <div className="p-2 rounded-lg bg-destructive/10">
+              <XCircle className="w-5 h-5 text-destructive" />
             </div>
             <div>
               <p className="text-2xl font-bold text-foreground">
@@ -231,7 +228,7 @@ export default function AdminDocuments() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Rechercher par nom, entreprise ou type de document..."
+                placeholder="Rechercher par nom, entreprise ou type..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9"
@@ -375,7 +372,6 @@ export default function AdminDocuments() {
 
           {selectedDoc && (
             <div className="space-y-4">
-              {/* User info */}
               <div className="p-3 rounded-lg bg-muted/50 space-y-1">
                 <p className="text-sm font-medium text-foreground">
                   {selectedDoc.user_profile?.full_name || "Utilisateur inconnu"}
@@ -388,7 +384,6 @@ export default function AdminDocuments() {
                 </p>
               </div>
 
-              {/* Document info */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Type de document</span>
@@ -410,7 +405,6 @@ export default function AdminDocuments() {
                 </div>
               </div>
 
-              {/* File link */}
               <Button variant="outline" className="w-full" asChild>
                 <a href={selectedDoc.file_url} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="w-4 h-4 mr-2" />
@@ -418,7 +412,6 @@ export default function AdminDocuments() {
                 </a>
               </Button>
 
-              {/* Rejection reason (for rejecting) */}
               {selectedDoc.status !== "verified" && (
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1 block">
@@ -447,7 +440,6 @@ export default function AdminDocuments() {
               <Button
                 onClick={() => selectedDoc && handleVerify(selectedDoc)}
                 disabled={actionLoading}
-                className="bg-green-600 hover:bg-green-700 text-white"
               >
                 {actionLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
                 Vérifier

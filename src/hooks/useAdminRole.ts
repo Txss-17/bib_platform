@@ -1,37 +1,44 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 
 export function useAdminRole() {
-  const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkAdmin = async () => {
-      if (!user) {
-        setIsAdmin(false);
-        setLoading(false);
-        return;
-      }
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setIsAdmin(false);
+          setLoading(false);
+          return;
+        }
 
-      const { data, error } = await supabase
-        .from("user_roles" as any)
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin");
+        const res = await supabase.functions.invoke("admin-documents", {
+          body: null,
+          headers: {},
+          method: "GET",
+        });
 
-      if (error) {
-        console.error("Error checking admin role:", error);
+        // Use fetch directly for GET with query params
+        const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-documents?action=check-admin`;
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+        });
+
+        setIsAdmin(response.ok);
+      } catch {
         setIsAdmin(false);
-      } else {
-        setIsAdmin((data as any[])?.length > 0);
       }
       setLoading(false);
     };
 
     checkAdmin();
-  }, [user]);
+  }, []);
 
   return { isAdmin, loading };
 }
