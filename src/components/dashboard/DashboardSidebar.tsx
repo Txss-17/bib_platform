@@ -91,6 +91,22 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         ))}
       </nav>
 
+      {/* Admin Section */}
+      {isAdmin && (
+        <div className="p-3 border-t border-border/50 space-y-0.5">
+          <p className="px-3 py-1 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Admin</p>
+          <NavLink
+            to="/dashboard/admin/documents"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-[13px]"
+            activeClassName="bg-primary/10 text-primary"
+            onClick={onNavigate}
+          >
+            <ShieldCheck className="w-4 h-4 shrink-0" />
+            <span className="font-medium">Vérification docs</span>
+          </NavLink>
+        </div>
+      )}
+
       {/* Bottom Navigation */}
       <div className="p-3 border-t border-border/50 space-y-0.5">
         {bottomNavItems.map((item) => (
