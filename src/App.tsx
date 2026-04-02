@@ -167,6 +167,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/dashboard/admin/documents"
+              element={
+                <ProtectedRoute>
+                  <AdminDocuments />
+                </ProtectedRoute>
+              }
+            />
             {/* Public boutique routes */}
             <Route path="/boutique/:slug" element={<BoutiquePublic />} />
             <Route path="/boutique/:slug/products" element={<BoutiqueAllProducts />} />
