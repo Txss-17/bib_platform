@@ -46,6 +46,7 @@ interface DashboardSidebarProps {
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { profile } = useAuth();
+  const { isAdmin } = useAdminRole();
 
   return (
     <>
