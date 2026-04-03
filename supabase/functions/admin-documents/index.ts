@@ -31,7 +31,17 @@ serve(async (req) => {
   }
 
   try {
+    const url = new URL(req.url);
+    const action = url.searchParams.get("action");
     const user = await getAuthUser(req);
+    const isAdmin = !!user?.email && isAdminUser(user.email);
+
+    if (req.method === "GET" && action === "check-admin") {
+      return new Response(JSON.stringify({ isAdmin }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (!user?.email) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -39,7 +49,7 @@ serve(async (req) => {
       });
     }
 
-    if (!isAdminUser(user.email)) {
+    if (!isAdmin) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -49,15 +59,6 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
-
-    const url = new URL(req.url);
-    const action = url.searchParams.get("action");
-
-    if (req.method === "GET" && action === "check-admin") {
-      return new Response(JSON.stringify({ isAdmin: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     if (req.method === "GET" && action === "list") {
       const { data: docs, error } = await supabaseAdmin
