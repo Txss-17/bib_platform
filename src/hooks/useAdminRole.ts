@@ -25,6 +25,7 @@ export function useAdminRole() {
 
         if (!response.ok) {
           setIsAdmin(false);
+          setLoading(false);
           return;
         }
 
