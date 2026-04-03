@@ -15,13 +15,6 @@ export function useAdminRole() {
           return;
         }
 
-        const res = await supabase.functions.invoke("admin-documents", {
-          body: null,
-          headers: {},
-          method: "GET",
-        });
-
-        // Use fetch directly for GET with query params
         const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-documents?action=check-admin`;
         const response = await fetch(url, {
           headers: {
