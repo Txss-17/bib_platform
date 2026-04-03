@@ -422,44 +422,47 @@ function ProductGridCard({ product }: { product: SupplierProduct }) {
 
 function ProductListCard({ product }: { product: SupplierProduct }) {
   const rotation = rotationConfig[product.rotation_indicator as RotationIndicator];
+  const [showDetail, setShowDetail] = useState(false);
   return (
-    <Card className="bg-card border-border/50">
-      <CardContent className="p-2.5 sm:p-4">
-        {/* Mobile: stacked layout */}
-        <div className="flex gap-2.5 sm:gap-4">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-muted overflow-hidden shrink-0">
-            {product.image_url ? (
-              <img src={product.image_url} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
+    <>
+      <Card className="bg-card border-border/50 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setShowDetail(true)}>
+        <CardContent className="p-2.5 sm:p-4">
+          <div className="flex gap-2.5 sm:gap-4">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-muted overflow-hidden shrink-0">
+              {product.image_url ? (
+                <img src={product.image_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-xs sm:text-sm text-foreground line-clamp-1">{product.name}</h3>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="text-[9px] sm:text-[10px] text-muted-foreground">{product.category}</span>
+                    <span className={`w-1.5 h-1.5 rounded-full ${rotation.color}`} />
+                    <span className="text-[9px] sm:text-[10px] text-muted-foreground">{rotation.badgeLabel}</span>
+                  </div>
+                </div>
+                <p className="text-sm sm:text-base font-bold text-foreground shrink-0">€{product.base_price.toFixed(2)}</p>
               </div>
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <h3 className="font-semibold text-xs sm:text-sm text-foreground line-clamp-1">{product.name}</h3>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-[9px] sm:text-[10px] text-muted-foreground">{product.category}</span>
-                  <span className={`w-1.5 h-1.5 rounded-full ${rotation.color}`} />
-                  <span className="text-[9px] sm:text-[10px] text-muted-foreground">{rotation.badgeLabel}</span>
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-[10px] text-muted-foreground">{product.max_margin_percent}% marge max</p>
+                <div className="flex gap-1.5" onClick={(e) => e.stopPropagation()}>
+                  <MarginSimulator product={product} />
+                  <Button size="sm" className="h-7 text-[10px] sm:text-xs gap-0.5 px-2">
+                    <Plus className="w-3 h-3" /> Ajouter
+                  </Button>
                 </div>
               </div>
-              <p className="text-sm sm:text-base font-bold text-foreground shrink-0">€{product.base_price.toFixed(2)}</p>
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <p className="text-[10px] text-muted-foreground">{product.max_margin_percent}% marge max</p>
-              <div className="flex gap-1.5">
-                <MarginSimulator product={product} />
-                <Button size="sm" className="h-7 text-[10px] sm:text-xs gap-0.5 px-2">
-                  <Plus className="w-3 h-3" /> Ajouter
-                </Button>
-              </div>
             </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+      <ProductDetailDialog product={product} open={showDetail} onOpenChange={setShowDetail} />
+    </>
   );
 }
