@@ -23,7 +23,13 @@ export function useAdminRole() {
           },
         });
 
-        setIsAdmin(response.ok);
+        if (!response.ok) {
+          setIsAdmin(false);
+          return;
+        }
+
+        const data = await response.json();
+        setIsAdmin(Boolean(data?.isAdmin));
       } catch {
         setIsAdmin(false);
       }
