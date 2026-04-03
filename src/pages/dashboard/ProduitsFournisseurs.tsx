@@ -361,52 +361,62 @@ export default function ProduitsFournisseurs() {
 function ProductGridCard({ product }: { product: SupplierProduct }) {
   const rotation = rotationConfig[product.rotation_indicator as RotationIndicator];
   const [showCalc, setShowCalc] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
 
   return (
-    <Card className="bg-card border-border/50 overflow-hidden group hover:shadow-md transition-shadow">
-      <div className="aspect-[4/3] sm:aspect-square relative bg-muted">
-        {product.image_url ? (
-          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <LayoutGrid className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
-          </div>
-        )}
-        <span className="absolute top-1.5 left-1.5 bg-background/80 backdrop-blur-sm text-[9px] sm:text-[10px] font-medium px-1.5 py-0.5 rounded">
-          {product.category}
-        </span>
-      </div>
-      <CardContent className="p-2.5 sm:p-3 space-y-1.5">
-        <h3 className="font-semibold text-xs sm:text-sm text-foreground line-clamp-2 leading-tight">{product.name}</h3>
-        <div className="flex items-center gap-1">
-          <span className={`w-1.5 h-1.5 rounded-full ${rotation.color} shrink-0`} />
-          <span className={`text-[9px] sm:text-[10px] ${rotation.badgeClass} px-1.5 py-0.5 rounded-full`}>
-            {rotation.badgeLabel}
+    <>
+      <Card className="bg-card border-border/50 overflow-hidden group hover:shadow-md transition-shadow">
+        <div className="aspect-[4/3] sm:aspect-square relative bg-muted cursor-pointer" onClick={() => setShowDetail(true)}>
+          {product.image_url ? (
+            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <LayoutGrid className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
+            </div>
+          )}
+          <span className="absolute top-1.5 left-1.5 bg-background/80 backdrop-blur-sm text-[9px] sm:text-[10px] font-medium px-1.5 py-0.5 rounded">
+            {product.category}
           </span>
-        </div>
-        <div className="flex items-end justify-between pt-1">
-          <div>
-            <p className="text-sm sm:text-base font-bold text-foreground">€{product.base_price.toFixed(2)}</p>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground">{product.max_margin_percent}% marge max</p>
-          </div>
-          <div className="flex gap-1">
-            <Button
-              variant="ghost" size="sm"
-              className="h-7 w-7 p-0"
-              onClick={() => setShowCalc(!showCalc)}
-              title="Calculer marge"
-            >
-              {showCalc ? <ChevronUp className="w-3.5 h-3.5" /> : <Calculator className="w-3.5 h-3.5" />}
-            </Button>
-            <Button size="sm" className="h-7 px-2 text-[10px] sm:text-xs gap-0.5">
-              <Plus className="w-3 h-3" />
-              <span className="hidden sm:inline">Ajouter</span>
-            </Button>
+          {/* Hover overlay */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+            <span className="bg-background/90 backdrop-blur-sm text-foreground text-[10px] font-medium px-3 py-1.5 rounded-full flex items-center gap-1">
+              <Eye className="w-3 h-3" /> Voir détails
+            </span>
           </div>
         </div>
-      </CardContent>
-      {showCalc && <InlineMarginCalc product={product} />}
-    </Card>
+        <CardContent className="p-2.5 sm:p-3 space-y-1.5">
+          <h3 className="font-semibold text-xs sm:text-sm text-foreground line-clamp-2 leading-tight cursor-pointer hover:text-primary transition-colors" onClick={() => setShowDetail(true)}>{product.name}</h3>
+          <div className="flex items-center gap-1">
+            <span className={`w-1.5 h-1.5 rounded-full ${rotation.color} shrink-0`} />
+            <span className={`text-[9px] sm:text-[10px] ${rotation.badgeClass} px-1.5 py-0.5 rounded-full`}>
+              {rotation.badgeLabel}
+            </span>
+          </div>
+          <div className="flex items-end justify-between pt-1">
+            <div>
+              <p className="text-sm sm:text-base font-bold text-foreground">€{product.base_price.toFixed(2)}</p>
+              <p className="text-[9px] sm:text-[10px] text-muted-foreground">{product.max_margin_percent}% marge max</p>
+            </div>
+            <div className="flex gap-1">
+              <Button
+                variant="ghost" size="sm"
+                className="h-7 w-7 p-0"
+                onClick={() => setShowCalc(!showCalc)}
+                title="Calculer marge"
+              >
+                {showCalc ? <ChevronUp className="w-3.5 h-3.5" /> : <Calculator className="w-3.5 h-3.5" />}
+              </Button>
+              <Button size="sm" className="h-7 px-2 text-[10px] sm:text-xs gap-0.5">
+                <Plus className="w-3 h-3" />
+                <span className="hidden sm:inline">Ajouter</span>
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+        {showCalc && <InlineMarginCalc product={product} />}
+      </Card>
+      <ProductDetailDialog product={product} open={showDetail} onOpenChange={setShowDetail} />
+    </>
   );
 }
 
