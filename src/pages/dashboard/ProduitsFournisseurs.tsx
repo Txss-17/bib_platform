@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Search, Plus, Calculator, ShieldCheck, Grid3X3, List, LayoutGrid, SlidersHorizontal, X, ChevronDown, ChevronUp, Eye } from "lucide-react";
+import { Search, Plus, Calculator, ShieldCheck, Grid3X3, List, LayoutGrid, SlidersHorizontal, X, ChevronDown, ChevronUp, Eye, Heart } from "lucide-react";
 import { useState } from "react";
 import { useSupplierProducts } from "@/hooks/useSupplierProducts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { ProductDetailDialog } from "@/components/dashboard/ProductDetailDialog";
+import { AddToBoutiqueDialog } from "@/components/dashboard/AddToBoutiqueDialog";
+import { useFavorites } from "@/hooks/useFavorites";
 import type { Tables } from "@/integrations/supabase/types";
 
 type SupplierProduct = Tables<"supplier_products">;
