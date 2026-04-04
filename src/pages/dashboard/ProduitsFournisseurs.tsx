@@ -431,15 +431,16 @@ function ProductGridCard({ product, isFavorite, onToggleFavorite }: { product: S
   );
 }
 
-function ProductListCard({ product }: { product: SupplierProduct }) {
+function ProductListCard({ product, isFavorite, onToggleFavorite }: { product: SupplierProduct; isFavorite: boolean; onToggleFavorite: () => void }) {
   const rotation = rotationConfig[product.rotation_indicator as RotationIndicator];
   const [showDetail, setShowDetail] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
   return (
     <>
       <Card className="bg-card border-border/50 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setShowDetail(true)}>
         <CardContent className="p-2.5 sm:p-4">
           <div className="flex gap-2.5 sm:gap-4">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-muted overflow-hidden shrink-0">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-muted overflow-hidden shrink-0 relative">
               {product.image_url ? (
                 <img src={product.image_url} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -458,13 +459,18 @@ function ProductListCard({ product }: { product: SupplierProduct }) {
                     <span className="text-[9px] sm:text-[10px] text-muted-foreground">{rotation.badgeLabel}</span>
                   </div>
                 </div>
-                <p className="text-sm sm:text-base font-bold text-foreground shrink-0">€{product.base_price.toFixed(2)}</p>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}>
+                    <Heart className={`w-4 h-4 transition-colors ${isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground hover:text-red-400"}`} />
+                  </button>
+                  <p className="text-sm sm:text-base font-bold text-foreground">€{product.base_price.toFixed(2)}</p>
+                </div>
               </div>
               <div className="flex items-center justify-between mt-2">
                 <p className="text-[10px] text-muted-foreground">{product.max_margin_percent}% marge max</p>
                 <div className="flex gap-1.5" onClick={(e) => e.stopPropagation()}>
                   <MarginSimulator product={product} />
-                  <Button size="sm" className="h-7 text-[10px] sm:text-xs gap-0.5 px-2">
+                  <Button size="sm" className="h-7 text-[10px] sm:text-xs gap-0.5 px-2" onClick={() => setShowAddDialog(true)}>
                     <Plus className="w-3 h-3" /> Ajouter
                   </Button>
                 </div>
@@ -473,7 +479,8 @@ function ProductListCard({ product }: { product: SupplierProduct }) {
           </div>
         </CardContent>
       </Card>
-      <ProductDetailDialog product={product} open={showDetail} onOpenChange={setShowDetail} />
+      <ProductDetailDialog product={product} open={showDetail} onOpenChange={setShowDetail} onAdd={() => { setShowDetail(false); setShowAddDialog(true); }} isFavorite={isFavorite} onToggleFavorite={onToggleFavorite} />
+      <AddToBoutiqueDialog product={product} open={showAddDialog} onOpenChange={setShowAddDialog} />
     </>
   );
 }
