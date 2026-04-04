@@ -346,7 +346,7 @@ export default function ProduitsFournisseurs() {
           ) : (
             <div className="space-y-2 sm:space-y-3">
               {sortedProducts.map(product => (
-                <ProductListCard key={product.id} product={product} />
+                <ProductListCard key={product.id} product={product} isFavorite={isFavorite(product.id)} onToggleFavorite={() => toggleFavorite(product.id)} />
               ))}
             </div>
           )}
