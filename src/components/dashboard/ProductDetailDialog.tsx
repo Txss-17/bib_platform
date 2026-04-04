@@ -424,7 +424,7 @@ export function ProductDetailDialog({ product, open, onOpenChange, onAdd, isFavo
                   </div>
                 </div>
 
-                <Button className="w-full gap-2" size="lg">
+                <Button className="w-full gap-2" size="lg" onClick={onAdd}>
                   <Plus className="w-4 h-4" />
                   Ajouter avec personnalisation
                 </Button>
