@@ -360,10 +360,11 @@ export default function ProduitsFournisseurs() {
   );
 }
 
-function ProductGridCard({ product }: { product: SupplierProduct }) {
+function ProductGridCard({ product, isFavorite, onToggleFavorite }: { product: SupplierProduct; isFavorite: boolean; onToggleFavorite: () => void }) {
   const rotation = rotationConfig[product.rotation_indicator as RotationIndicator];
   const [showCalc, setShowCalc] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
 
   return (
     <>
@@ -379,8 +380,15 @@ function ProductGridCard({ product }: { product: SupplierProduct }) {
           <span className="absolute top-1.5 left-1.5 bg-background/80 backdrop-blur-sm text-[9px] sm:text-[10px] font-medium px-1.5 py-0.5 rounded">
             {product.category}
           </span>
+          {/* Favorite button */}
+          <button
+            className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
+            onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
+          >
+            <Heart className={`w-3.5 h-3.5 transition-colors ${isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
+          </button>
           {/* Hover overlay */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
             <span className="bg-background/90 backdrop-blur-sm text-foreground text-[10px] font-medium px-3 py-1.5 rounded-full flex items-center gap-1">
               <Eye className="w-3 h-3" /> Voir détails
             </span>
@@ -408,7 +416,7 @@ function ProductGridCard({ product }: { product: SupplierProduct }) {
               >
                 {showCalc ? <ChevronUp className="w-3.5 h-3.5" /> : <Calculator className="w-3.5 h-3.5" />}
               </Button>
-              <Button size="sm" className="h-7 px-2 text-[10px] sm:text-xs gap-0.5">
+              <Button size="sm" className="h-7 px-2 text-[10px] sm:text-xs gap-0.5" onClick={() => setShowAddDialog(true)}>
                 <Plus className="w-3 h-3" />
                 <span className="hidden sm:inline">Ajouter</span>
               </Button>
@@ -417,7 +425,8 @@ function ProductGridCard({ product }: { product: SupplierProduct }) {
         </CardContent>
         {showCalc && <InlineMarginCalc product={product} />}
       </Card>
-      <ProductDetailDialog product={product} open={showDetail} onOpenChange={setShowDetail} />
+      <ProductDetailDialog product={product} open={showDetail} onOpenChange={setShowDetail} onAdd={() => { setShowDetail(false); setShowAddDialog(true); }} isFavorite={isFavorite} onToggleFavorite={onToggleFavorite} />
+      <AddToBoutiqueDialog product={product} open={showAddDialog} onOpenChange={setShowAddDialog} />
     </>
   );
 }
