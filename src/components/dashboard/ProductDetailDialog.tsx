@@ -80,6 +80,9 @@ interface ProductDetailDialogProps {
   product: SupplierProduct;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onAdd?: () => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
 export function ProductDetailDialog({ product, open, onOpenChange }: ProductDetailDialogProps) {
