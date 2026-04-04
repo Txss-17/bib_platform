@@ -11,7 +11,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import {
   Plus, Star, TrendingUp, TrendingDown, Minus, Package, Palette,
   Play, Image as ImageIcon, ChevronLeft, ChevronRight, Info, BarChart3,
-  MessageSquare, Paintbrush, ShieldCheck, Calculator
+  MessageSquare, Paintbrush, ShieldCheck, Calculator, Heart
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import type { Tables } from "@/integrations/supabase/types";
