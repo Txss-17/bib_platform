@@ -198,10 +198,17 @@ export function ProductDetailDialog({ product, open, onOpenChange, onAdd, isFavo
               </div>
             </div>
 
-            <Button className="w-full gap-2" size="lg">
-              <Plus className="w-4 h-4" />
-              Ajouter à ma boutique
-            </Button>
+            <div className="flex gap-2">
+              {onToggleFavorite && (
+                <Button variant="outline" size="lg" className="px-3" onClick={onToggleFavorite}>
+                  <Heart className={`w-4 h-4 ${isFavorite ? "fill-red-500 text-red-500" : ""}`} />
+                </Button>
+              )}
+              <Button className="flex-1 gap-2" size="lg" onClick={onAdd}>
+                <Plus className="w-4 h-4" />
+                Ajouter à ma boutique
+              </Button>
+            </div>
           </div>
         </div>
 
