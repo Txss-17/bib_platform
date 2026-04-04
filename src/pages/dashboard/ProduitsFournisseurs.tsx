@@ -107,6 +107,7 @@ type ViewMode = "grid" | "list";
 
 export default function ProduitsFournisseurs() {
   const { data: supplierProducts, isLoading } = useSupplierProducts();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("popularity");
