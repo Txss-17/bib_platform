@@ -85,7 +85,7 @@ interface ProductDetailDialogProps {
   onToggleFavorite?: () => void;
 }
 
-export function ProductDetailDialog({ product, open, onOpenChange }: ProductDetailDialogProps) {
+export function ProductDetailDialog({ product, open, onOpenChange, onAdd, isFavorite, onToggleFavorite }: ProductDetailDialogProps) {
   const rotation = rotationConfig[product.rotation_indicator as RotationIndicator];
   const perfData = generatePerformanceData(product);
   const reviews = generateReviews(product);
