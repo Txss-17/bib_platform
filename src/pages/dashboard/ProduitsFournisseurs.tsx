@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Search, Plus, Calculator, ShieldCheck, Grid3X3, List, LayoutGrid, SlidersHorizontal, X, ChevronDown, ChevronUp, Eye } from "lucide-react";
+import { Search, Plus, Calculator, ShieldCheck, Grid3X3, List, LayoutGrid, SlidersHorizontal, X, ChevronDown, ChevronUp, Eye, Heart } from "lucide-react";
 import { useState } from "react";
 import { useSupplierProducts } from "@/hooks/useSupplierProducts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { ProductDetailDialog } from "@/components/dashboard/ProductDetailDialog";
+import { AddToBoutiqueDialog } from "@/components/dashboard/AddToBoutiqueDialog";
+import { useFavorites } from "@/hooks/useFavorites";
 import type { Tables } from "@/integrations/supabase/types";
 
 type SupplierProduct = Tables<"supplier_products">;
@@ -105,6 +107,7 @@ type ViewMode = "grid" | "list";
 
 export default function ProduitsFournisseurs() {
   const { data: supplierProducts, isLoading } = useSupplierProducts();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("popularity");
@@ -337,13 +340,13 @@ export default function ProduitsFournisseurs() {
           ) : viewMode === "grid" ? (
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {sortedProducts.map(product => (
-                <ProductGridCard key={product.id} product={product} />
+                <ProductGridCard key={product.id} product={product} isFavorite={isFavorite(product.id)} onToggleFavorite={() => toggleFavorite(product.id)} />
               ))}
             </div>
           ) : (
             <div className="space-y-2 sm:space-y-3">
               {sortedProducts.map(product => (
-                <ProductListCard key={product.id} product={product} />
+                <ProductListCard key={product.id} product={product} isFavorite={isFavorite(product.id)} onToggleFavorite={() => toggleFavorite(product.id)} />
               ))}
             </div>
           )}
@@ -358,10 +361,11 @@ export default function ProduitsFournisseurs() {
   );
 }
 
-function ProductGridCard({ product }: { product: SupplierProduct }) {
+function ProductGridCard({ product, isFavorite, onToggleFavorite }: { product: SupplierProduct; isFavorite: boolean; onToggleFavorite: () => void }) {
   const rotation = rotationConfig[product.rotation_indicator as RotationIndicator];
   const [showCalc, setShowCalc] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
 
   return (
     <>
@@ -377,8 +381,15 @@ function ProductGridCard({ product }: { product: SupplierProduct }) {
           <span className="absolute top-1.5 left-1.5 bg-background/80 backdrop-blur-sm text-[9px] sm:text-[10px] font-medium px-1.5 py-0.5 rounded">
             {product.category}
           </span>
+          {/* Favorite button */}
+          <button
+            className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
+            onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
+          >
+            <Heart className={`w-3.5 h-3.5 transition-colors ${isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
+          </button>
           {/* Hover overlay */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
             <span className="bg-background/90 backdrop-blur-sm text-foreground text-[10px] font-medium px-3 py-1.5 rounded-full flex items-center gap-1">
               <Eye className="w-3 h-3" /> Voir détails
             </span>
@@ -406,7 +417,7 @@ function ProductGridCard({ product }: { product: SupplierProduct }) {
               >
                 {showCalc ? <ChevronUp className="w-3.5 h-3.5" /> : <Calculator className="w-3.5 h-3.5" />}
               </Button>
-              <Button size="sm" className="h-7 px-2 text-[10px] sm:text-xs gap-0.5">
+              <Button size="sm" className="h-7 px-2 text-[10px] sm:text-xs gap-0.5" onClick={() => setShowAddDialog(true)}>
                 <Plus className="w-3 h-3" />
                 <span className="hidden sm:inline">Ajouter</span>
               </Button>
@@ -415,20 +426,22 @@ function ProductGridCard({ product }: { product: SupplierProduct }) {
         </CardContent>
         {showCalc && <InlineMarginCalc product={product} />}
       </Card>
-      <ProductDetailDialog product={product} open={showDetail} onOpenChange={setShowDetail} />
+      <ProductDetailDialog product={product} open={showDetail} onOpenChange={setShowDetail} onAdd={() => { setShowDetail(false); setShowAddDialog(true); }} isFavorite={isFavorite} onToggleFavorite={onToggleFavorite} />
+      <AddToBoutiqueDialog product={product} open={showAddDialog} onOpenChange={setShowAddDialog} />
     </>
   );
 }
 
-function ProductListCard({ product }: { product: SupplierProduct }) {
+function ProductListCard({ product, isFavorite, onToggleFavorite }: { product: SupplierProduct; isFavorite: boolean; onToggleFavorite: () => void }) {
   const rotation = rotationConfig[product.rotation_indicator as RotationIndicator];
   const [showDetail, setShowDetail] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
   return (
     <>
       <Card className="bg-card border-border/50 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setShowDetail(true)}>
         <CardContent className="p-2.5 sm:p-4">
           <div className="flex gap-2.5 sm:gap-4">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-muted overflow-hidden shrink-0">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-muted overflow-hidden shrink-0 relative">
               {product.image_url ? (
                 <img src={product.image_url} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -447,13 +460,18 @@ function ProductListCard({ product }: { product: SupplierProduct }) {
                     <span className="text-[9px] sm:text-[10px] text-muted-foreground">{rotation.badgeLabel}</span>
                   </div>
                 </div>
-                <p className="text-sm sm:text-base font-bold text-foreground shrink-0">€{product.base_price.toFixed(2)}</p>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}>
+                    <Heart className={`w-4 h-4 transition-colors ${isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground hover:text-red-400"}`} />
+                  </button>
+                  <p className="text-sm sm:text-base font-bold text-foreground">€{product.base_price.toFixed(2)}</p>
+                </div>
               </div>
               <div className="flex items-center justify-between mt-2">
                 <p className="text-[10px] text-muted-foreground">{product.max_margin_percent}% marge max</p>
                 <div className="flex gap-1.5" onClick={(e) => e.stopPropagation()}>
                   <MarginSimulator product={product} />
-                  <Button size="sm" className="h-7 text-[10px] sm:text-xs gap-0.5 px-2">
+                  <Button size="sm" className="h-7 text-[10px] sm:text-xs gap-0.5 px-2" onClick={() => setShowAddDialog(true)}>
                     <Plus className="w-3 h-3" /> Ajouter
                   </Button>
                 </div>
@@ -462,7 +480,8 @@ function ProductListCard({ product }: { product: SupplierProduct }) {
           </div>
         </CardContent>
       </Card>
-      <ProductDetailDialog product={product} open={showDetail} onOpenChange={setShowDetail} />
+      <ProductDetailDialog product={product} open={showDetail} onOpenChange={setShowDetail} onAdd={() => { setShowDetail(false); setShowAddDialog(true); }} isFavorite={isFavorite} onToggleFavorite={onToggleFavorite} />
+      <AddToBoutiqueDialog product={product} open={showAddDialog} onOpenChange={setShowAddDialog} />
     </>
   );
 }

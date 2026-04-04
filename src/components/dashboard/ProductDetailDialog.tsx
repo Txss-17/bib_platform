@@ -11,7 +11,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import {
   Plus, Star, TrendingUp, TrendingDown, Minus, Package, Palette,
   Play, Image as ImageIcon, ChevronLeft, ChevronRight, Info, BarChart3,
-  MessageSquare, Paintbrush, ShieldCheck, Calculator
+  MessageSquare, Paintbrush, ShieldCheck, Calculator, Heart
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 import type { Tables } from "@/integrations/supabase/types";
@@ -80,9 +80,12 @@ interface ProductDetailDialogProps {
   product: SupplierProduct;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onAdd?: () => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
-export function ProductDetailDialog({ product, open, onOpenChange }: ProductDetailDialogProps) {
+export function ProductDetailDialog({ product, open, onOpenChange, onAdd, isFavorite, onToggleFavorite }: ProductDetailDialogProps) {
   const rotation = rotationConfig[product.rotation_indicator as RotationIndicator];
   const perfData = generatePerformanceData(product);
   const reviews = generateReviews(product);
@@ -195,10 +198,17 @@ export function ProductDetailDialog({ product, open, onOpenChange }: ProductDeta
               </div>
             </div>
 
-            <Button className="w-full gap-2" size="lg">
-              <Plus className="w-4 h-4" />
-              Ajouter à ma boutique
-            </Button>
+            <div className="flex gap-2">
+              {onToggleFavorite && (
+                <Button variant="outline" size="lg" className="px-3" onClick={onToggleFavorite}>
+                  <Heart className={`w-4 h-4 ${isFavorite ? "fill-red-500 text-red-500" : ""}`} />
+                </Button>
+              )}
+              <Button className="flex-1 gap-2" size="lg" onClick={onAdd}>
+                <Plus className="w-4 h-4" />
+                Ajouter à ma boutique
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -414,7 +424,7 @@ export function ProductDetailDialog({ product, open, onOpenChange }: ProductDeta
                   </div>
                 </div>
 
-                <Button className="w-full gap-2" size="lg">
+                <Button className="w-full gap-2" size="lg" onClick={onAdd}>
                   <Plus className="w-4 h-4" />
                   Ajouter avec personnalisation
                 </Button>
