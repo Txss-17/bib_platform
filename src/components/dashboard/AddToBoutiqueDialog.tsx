@@ -166,14 +166,23 @@ export function AddToBoutiqueDialog({ product, open, onOpenChange }: AddToBoutiq
               </div>
             </div>
 
+            {isDuplicate && (
+              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-yellow-500/10 border border-yellow-200 text-yellow-700">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <p className="text-xs">Ce produit est déjà dans cette boutique</p>
+              </div>
+            )}
+
             <Button
               className="w-full gap-2"
               size="lg"
-              disabled={!selectedBoutiqueId || isAdding}
+              disabled={!selectedBoutiqueId || isAdding || isDuplicate}
               onClick={handleAdd}
             >
               {isAdding ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Ajout en cours...</>
+              ) : isDuplicate ? (
+                <><CheckCircle2 className="w-4 h-4" /> Déjà ajouté</>
               ) : (
                 <><Plus className="w-4 h-4" /> Ajouter à ma boutique</>
               )}
