@@ -2,11 +2,13 @@ import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Euro, ShoppingCart, Receipt, Target, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Euro, ShoppingCart, Receipt, Target, TrendingUp, TrendingDown, AlertTriangle, Download, FileText } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { SalesMap } from "@/components/dashboard/SalesMap";
 import { useSalesGeography } from "@/hooks/useSalesGeography";
 import { useBoutiques } from "@/hooks/useBoutiques";
+import { exportToCSV, exportToPDF } from "@/lib/exportUtils";
 
 const monthlyData = [
   { month: "Jan", revenue: 4200 },
