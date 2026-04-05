@@ -205,10 +205,14 @@ export default function Commandes() {
           {filteredOrders?.length || 0} commande(s)
         </span>
 
-        <div className="sm:ml-auto w-full sm:w-auto">
-          <Button variant="outline" size="sm" className="gap-1.5 w-full sm:w-auto" onClick={() => filteredOrders && exportCSV(filteredOrders)} disabled={!filteredOrders?.length}>
+        <div className="sm:ml-auto flex gap-2 w-full sm:w-auto">
+          <Button variant="outline" size="sm" className="gap-1.5 flex-1 sm:flex-none" onClick={() => filteredOrders && exportToCSV(filteredOrders, orderExportColumns, "commandes")} disabled={!filteredOrders?.length}>
             <Download className="w-4 h-4" />
-            Export CSV
+            CSV
+          </Button>
+          <Button variant="outline" size="sm" className="gap-1.5 flex-1 sm:flex-none" onClick={() => filteredOrders && exportToPDF(filteredOrders, orderExportColumns, "Rapport des Commandes", "commandes")} disabled={!filteredOrders?.length}>
+            <FileText className="w-4 h-4" />
+            PDF
           </Button>
         </div>
       </div>
