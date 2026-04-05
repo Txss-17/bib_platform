@@ -23,6 +23,7 @@ interface AddToBoutiqueDialogProps {
 
 export function AddToBoutiqueDialog({ product, open, onOpenChange }: AddToBoutiqueDialogProps) {
   const { data: boutiques, isLoading: loadingBoutiques } = useBoutiques();
+  const { data: existingProducts } = useProducts();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedBoutiqueId, setSelectedBoutiqueId] = useState("");
@@ -32,6 +33,13 @@ export function AddToBoutiqueDialog({ product, open, onOpenChange }: AddToBoutiq
 
   const sellingPrice = product.base_price * (1 + margin / 100);
   const profit = sellingPrice - product.base_price;
+
+  const isDuplicate = useMemo(() => {
+    if (!selectedBoutiqueId || !existingProducts) return false;
+    return existingProducts.some(
+      p => p.boutique_id === selectedBoutiqueId && p.supplier_product_id === product.id
+    );
+  }, [selectedBoutiqueId, existingProducts, product.id]);
 
   const handleAdd = async () => {
     if (!selectedBoutiqueId || !user) return;
