@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Store, Calculator, Loader2, CheckCircle2 } from "lucide-react";
+import { Plus, Store, Calculator, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { useBoutiques } from "@/hooks/useBoutiques";
+import { useProducts } from "@/hooks/useProducts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
@@ -22,6 +23,7 @@ interface AddToBoutiqueDialogProps {
 
 export function AddToBoutiqueDialog({ product, open, onOpenChange }: AddToBoutiqueDialogProps) {
   const { data: boutiques, isLoading: loadingBoutiques } = useBoutiques();
+  const { data: existingProducts } = useProducts();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedBoutiqueId, setSelectedBoutiqueId] = useState("");
@@ -31,6 +33,13 @@ export function AddToBoutiqueDialog({ product, open, onOpenChange }: AddToBoutiq
 
   const sellingPrice = product.base_price * (1 + margin / 100);
   const profit = sellingPrice - product.base_price;
+
+  const isDuplicate = useMemo(() => {
+    if (!selectedBoutiqueId || !existingProducts) return false;
+    return existingProducts.some(
+      p => p.boutique_id === selectedBoutiqueId && p.supplier_product_id === product.id
+    );
+  }, [selectedBoutiqueId, existingProducts, product.id]);
 
   const handleAdd = async () => {
     if (!selectedBoutiqueId || !user) return;
@@ -157,14 +166,23 @@ export function AddToBoutiqueDialog({ product, open, onOpenChange }: AddToBoutiq
               </div>
             </div>
 
+            {isDuplicate && (
+              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-yellow-500/10 border border-yellow-200 text-yellow-700">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <p className="text-xs">Ce produit est déjà dans cette boutique</p>
+              </div>
+            )}
+
             <Button
               className="w-full gap-2"
               size="lg"
-              disabled={!selectedBoutiqueId || isAdding}
+              disabled={!selectedBoutiqueId || isAdding || isDuplicate}
               onClick={handleAdd}
             >
               {isAdding ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Ajout en cours...</>
+              ) : isDuplicate ? (
+                <><CheckCircle2 className="w-4 h-4" /> Déjà ajouté</>
               ) : (
                 <><Plus className="w-4 h-4" /> Ajouter à ma boutique</>
               )}
