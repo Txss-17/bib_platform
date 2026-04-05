@@ -190,6 +190,21 @@ export default function ProduitsFournisseurs() {
 
         <div className="flex items-center justify-between sm:justify-end gap-2">
           <Button
+            variant={showFavoritesOnly ? "default" : "outline"}
+            size="sm"
+            className="gap-1 h-8 text-xs"
+            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+          >
+            <Heart className={`w-3.5 h-3.5 ${showFavoritesOnly ? "fill-current" : ""}`} />
+            Favoris
+            {favorites.length > 0 && (
+              <span className="ml-0.5 w-4 h-4 rounded-full bg-primary/20 text-[10px] flex items-center justify-center font-semibold">
+                {favorites.length}
+              </span>
+            )}
+          </Button>
+
+          <Button
             variant="outline" size="sm"
             className="gap-1 h-8 text-xs md:hidden"
             onClick={() => setShowFilters(!showFilters)}
