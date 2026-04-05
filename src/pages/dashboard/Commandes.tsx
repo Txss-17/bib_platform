@@ -10,7 +10,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Package, Truck, CheckCircle, Clock, AlertCircle, ShoppingBag, MoreHorizontal, Download, RotateCcw, Search, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { exportToCSV, exportToPDF } from "@/lib/exportUtils";
-import { Input } from "@/components/ui/input";
 import { useOrders, useUpdateOrderStatus } from "@/hooks/useOrders";
 import { useBoutiques } from "@/hooks/useBoutiques";
 import { Skeleton } from "@/components/ui/skeleton";
