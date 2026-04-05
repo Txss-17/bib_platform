@@ -65,7 +65,7 @@ export default function Ventes() {
 
   return (
     <DashboardLayout title="Ventes" subtitle="Analysez vos performances commerciales">
-      {/* Boutique filter */}
+      {/* Filters & Export */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <span className="text-sm font-medium text-muted-foreground">Filtrer par boutique :</span>
@@ -80,6 +80,26 @@ export default function Ventes() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
+            const cols = [
+              { header: "Mois", accessor: (r: any) => r.month },
+              { header: "Revenu (€)", accessor: (r: any) => String(r.revenue) },
+            ];
+            exportToCSV(monthlyData, cols, "ventes");
+          }}>
+            <Download className="w-4 h-4" /> CSV
+          </Button>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
+            const cols = [
+              { header: "Mois", accessor: (r: any) => r.month },
+              { header: "Revenu (€)", accessor: (r: any) => String(r.revenue) },
+            ];
+            exportToPDF(monthlyData, cols, "Rapport des Ventes", "ventes");
+          }}>
+            <FileText className="w-4 h-4" /> PDF
+          </Button>
         </div>
       </div>
 
