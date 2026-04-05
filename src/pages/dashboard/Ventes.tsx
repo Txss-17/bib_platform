@@ -2,11 +2,13 @@ import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Euro, ShoppingCart, Receipt, Target, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Euro, ShoppingCart, Receipt, Target, TrendingUp, TrendingDown, AlertTriangle, Download, FileText } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { SalesMap } from "@/components/dashboard/SalesMap";
 import { useSalesGeography } from "@/hooks/useSalesGeography";
 import { useBoutiques } from "@/hooks/useBoutiques";
+import { exportToCSV, exportToPDF } from "@/lib/exportUtils";
 
 const monthlyData = [
   { month: "Jan", revenue: 4200 },
@@ -63,7 +65,7 @@ export default function Ventes() {
 
   return (
     <DashboardLayout title="Ventes" subtitle="Analysez vos performances commerciales">
-      {/* Boutique filter */}
+      {/* Filters & Export */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <span className="text-sm font-medium text-muted-foreground">Filtrer par boutique :</span>
@@ -78,6 +80,26 @@ export default function Ventes() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
+            const cols = [
+              { header: "Mois", accessor: (r: any) => r.month },
+              { header: "Revenu (€)", accessor: (r: any) => String(r.revenue) },
+            ];
+            exportToCSV(monthlyData, cols, "ventes");
+          }}>
+            <Download className="w-4 h-4" /> CSV
+          </Button>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
+            const cols = [
+              { header: "Mois", accessor: (r: any) => r.month },
+              { header: "Revenu (€)", accessor: (r: any) => String(r.revenue) },
+            ];
+            exportToPDF(monthlyData, cols, "Rapport des Ventes", "ventes");
+          }}>
+            <FileText className="w-4 h-4" /> PDF
+          </Button>
         </div>
       </div>
 
