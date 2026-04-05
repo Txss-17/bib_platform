@@ -43,27 +43,16 @@ function StatusBadge({ status }: { status: LogisticsStatus }) {
   );
 }
 
-function exportCSV(orders: any[]) {
-  const headers = ["N° Commande", "Client", "Email", "Produit", "Montant", "Statut", "Marché", "Date"];
-  const rows = orders.map(o => [
-    o.order_number,
-    o.customer_name,
-    o.customer_email,
-    o.products?.supplier_products?.name || "",
-    Number(o.amount).toFixed(2),
-    statusConfig[o.logistics_status as LogisticsStatus]?.label || o.logistics_status,
-    o.market,
-    new Date(o.created_at).toLocaleDateString("fr-FR"),
-  ]);
-  const csv = [headers, ...rows].map(r => r.map(c => `"${c}"`).join(",")).join("\n");
-  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `commandes-${new Date().toISOString().slice(0, 10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+const orderExportColumns = [
+  { header: "N° Commande", accessor: (o: any) => o.order_number },
+  { header: "Client", accessor: (o: any) => o.customer_name },
+  { header: "Email", accessor: (o: any) => o.customer_email },
+  { header: "Produit", accessor: (o: any) => o.products?.supplier_products?.name || "" },
+  { header: "Montant", accessor: (o: any) => Number(o.amount).toFixed(2) + " €" },
+  { header: "Statut", accessor: (o: any) => statusConfig[o.logistics_status as LogisticsStatus]?.label || o.logistics_status },
+  { header: "Marché", accessor: (o: any) => o.market },
+  { header: "Date", accessor: (o: any) => new Date(o.created_at).toLocaleDateString("fr-FR") },
+];
 
 export default function Commandes() {
   const { data: orders, isLoading, error } = useOrders();
