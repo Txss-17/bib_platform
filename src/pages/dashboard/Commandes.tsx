@@ -7,7 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, Truck, CheckCircle, Clock, AlertCircle, ShoppingBag, MoreHorizontal, Download, RotateCcw, Search } from "lucide-react";
+import { Package, Truck, CheckCircle, Clock, AlertCircle, ShoppingBag, MoreHorizontal, Download, RotateCcw, Search, FileText } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { exportToCSV, exportToPDF } from "@/lib/exportUtils";
 import { Input } from "@/components/ui/input";
 import { useOrders, useUpdateOrderStatus } from "@/hooks/useOrders";
 import { useBoutiques } from "@/hooks/useBoutiques";
