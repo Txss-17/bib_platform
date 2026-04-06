@@ -1,26 +1,31 @@
-// Export utilities for CSV and PDF generation with Linksy branding
-
-const LINKSY_LOGO_SVG = `
-<svg xmlns="http://www.w3.org/2000/svg" width="120" height="32" viewBox="0 0 120 32">
-  <rect width="120" height="32" rx="4" fill="#7c3aed"/>
-  <text x="60" y="22" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-size="18" font-weight="bold">LINKSY</text>
-</svg>`;
+// Export utilities for CSV and PDF generation with boutique branding + Verified by Linksy
 
 interface ExportColumn {
   header: string;
   accessor: (row: any) => string;
 }
 
-export function exportToCSV(data: any[], columns: ExportColumn[], filename: string) {
+interface ExportOptions {
+  boutiqueName?: string;
+  boutiqueLogo?: string | null;
+}
+
+export function exportToCSV(data: any[], columns: ExportColumn[], filename: string, options?: ExportOptions) {
+  const headerLines: string[] = [];
+  if (options?.boutiqueName) {
+    headerLines.push(`"${options.boutiqueName} — Verified by Linksy"`);
+    headerLines.push(`"Exporté le ${new Date().toLocaleDateString('fr-FR')}"`);
+    headerLines.push("");
+  }
   const headers = columns.map(c => c.header);
   const rows = data.map(row => columns.map(c => c.accessor(row)));
-  const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const csv = [...headerLines, [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n")].join("\n");
   const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
   downloadBlob(blob, `${filename}-${dateStamp()}.csv`);
 }
 
-export function exportToPDF(data: any[], columns: ExportColumn[], title: string, filename: string) {
-  const pageWidth = 842; // A4 landscape
+export function exportToPDF(data: any[], columns: ExportColumn[], title: string, filename: string, options?: ExportOptions) {
+  const pageWidth = 842;
   const pageHeight = 595;
   const margin = 40;
   const headerHeight = 70;
@@ -28,6 +33,7 @@ export function exportToPDF(data: any[], columns: ExportColumn[], title: string,
   const colWidth = (pageWidth - 2 * margin) / columns.length;
   const maxRowsPerPage = Math.floor((pageHeight - margin - headerHeight - 60) / rowHeight);
 
+  const boutiqueName = options?.boutiqueName || "LINKSY";
   const pages: string[] = [];
   const totalPages = Math.ceil(data.length / maxRowsPerPage) || 1;
 
@@ -35,13 +41,13 @@ export function exportToPDF(data: any[], columns: ExportColumn[], title: string,
     const pageData = data.slice(pageIdx * maxRowsPerPage, (pageIdx + 1) * maxRowsPerPage);
     let content = '';
 
-    // Logo & header
+    // Header with boutique name + Verified by Linksy
     content += `
-      <rect x="${margin}" y="15" width="100" height="28" rx="4" fill="#7c3aed"/>
-      <text x="${margin + 50}" y="34" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-size="14" font-weight="bold">LINKSY</text>
-      <text x="${margin + 115}" y="34" fill="#374151" font-family="Arial,sans-serif" font-size="16" font-weight="bold">${escapeXml(title)}</text>
+      <text x="${margin}" y="30" fill="#111827" font-family="Arial,sans-serif" font-size="16" font-weight="bold">${escapeXml(boutiqueName)}</text>
+      <text x="${margin}" y="46" fill="#7c3aed" font-family="Arial,sans-serif" font-size="9" font-style="italic">✓ Verified by Linksy</text>
+      <text x="${pageWidth / 2}" y="34" text-anchor="middle" fill="#374151" font-family="Arial,sans-serif" font-size="14" font-weight="bold">${escapeXml(title)}</text>
       <text x="${pageWidth - margin}" y="34" text-anchor="end" fill="#9ca3af" font-family="Arial,sans-serif" font-size="10">${new Date().toLocaleDateString('fr-FR')} — Page ${pageIdx + 1}/${totalPages}</text>
-      <line x1="${margin}" y1="50" x2="${pageWidth - margin}" y2="50" stroke="#e5e7eb" stroke-width="1"/>
+      <line x1="${margin}" y1="52" x2="${pageWidth - margin}" y2="52" stroke="#e5e7eb" stroke-width="1"/>
     `;
 
     // Table header
@@ -64,13 +70,12 @@ export function exportToPDF(data: any[], columns: ExportColumn[], title: string,
           <text x="${margin + cIdx * colWidth + 6}" y="${y + 15}" fill="#111827" font-family="Arial,sans-serif" font-size="8.5">${escapeXml(truncate(val, 30))}</text>
         `;
       });
-      // Row border
       content += `<line x1="${margin}" y1="${y + rowHeight}" x2="${pageWidth - margin}" y2="${y + rowHeight}" stroke="#e5e7eb" stroke-width="0.5"/>`;
     });
 
     // Footer
     content += `
-      <text x="${pageWidth / 2}" y="${pageHeight - 15}" text-anchor="middle" fill="#9ca3af" font-family="Arial,sans-serif" font-size="8">Généré par LINKSY — ${new Date().toLocaleDateString('fr-FR')} ${new Date().toLocaleTimeString('fr-FR')}</text>
+      <text x="${pageWidth / 2}" y="${pageHeight - 15}" text-anchor="middle" fill="#9ca3af" font-family="Arial,sans-serif" font-size="8">${escapeXml(boutiqueName)} — Verified by Linksy — ${new Date().toLocaleDateString('fr-FR')} ${new Date().toLocaleTimeString('fr-FR')}</text>
     `;
 
     pages.push(content);
@@ -83,7 +88,6 @@ export function exportToPDF(data: any[], columns: ExportColumn[], title: string,
     </svg>
   `);
 
-  // Build a simple HTML that triggers print as PDF
   const html = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>${escapeXml(title)}</title>
 <style>
@@ -101,7 +105,6 @@ ${svgPages.map(s => `<div class="page">${s}</div>`).join('')}
   const url = URL.createObjectURL(blob);
   const w = window.open(url, '_blank');
   if (!w) {
-    // Fallback: download the HTML
     downloadBlob(blob, `${filename}-${dateStamp()}.html`);
   }
   setTimeout(() => URL.revokeObjectURL(url), 60000);

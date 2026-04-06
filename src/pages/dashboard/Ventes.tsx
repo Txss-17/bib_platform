@@ -83,20 +83,22 @@ export default function Ventes() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
+            const bName = selectedBoutique !== "all" ? boutiques.find(b => b.id === selectedBoutique)?.name : undefined;
             const cols = [
               { header: "Mois", accessor: (r: any) => r.month },
               { header: "Revenu (€)", accessor: (r: any) => String(r.revenue) },
             ];
-            exportToCSV(monthlyData, cols, "ventes");
+            exportToCSV(monthlyData, cols, "ventes", { boutiqueName: bName || "LINKSY" });
           }}>
             <Download className="w-4 h-4" /> CSV
           </Button>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => {
+            const bName = selectedBoutique !== "all" ? boutiques.find(b => b.id === selectedBoutique)?.name : undefined;
             const cols = [
               { header: "Mois", accessor: (r: any) => r.month },
               { header: "Revenu (€)", accessor: (r: any) => String(r.revenue) },
             ];
-            exportToPDF(monthlyData, cols, "Rapport des Ventes", "ventes");
+            exportToPDF(monthlyData, cols, "Rapport des Ventes", "ventes", { boutiqueName: bName || "LINKSY" });
           }}>
             <FileText className="w-4 h-4" /> PDF
           </Button>

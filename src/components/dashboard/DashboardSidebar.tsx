@@ -7,7 +7,6 @@ import {
   TrendingUp,
   Truck,
   CreditCard,
-  Search,
   Settings,
   HelpCircle,
   User,
@@ -29,8 +28,7 @@ const mainNavItems = [
   { title: "Commandes", url: "/dashboard/commandes", icon: ShoppingCart },
   { title: "Ventes", url: "/dashboard/ventes", icon: TrendingUp },
   { title: "Paiements", url: "/dashboard/paiements", icon: CreditCard },
-  { title: "SEO & Analytics", url: "/dashboard/seo-analytics", icon: Search },
-  { title: "Analyse Boutiques", url: "/dashboard/analyse-boutiques", icon: BarChart3 },
+  { title: "Analytics", url: "/dashboard/seo-analytics", icon: BarChart3 },
   { title: "Rapports", url: "/dashboard/rapports", icon: FileText },
 ];
 

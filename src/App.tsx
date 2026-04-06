@@ -24,7 +24,6 @@ import BoutiqueCreate from "./pages/dashboard/BoutiqueCreate";
 import BoutiqueEdit from "./pages/dashboard/BoutiqueEdit";
 import Parametres from "./pages/dashboard/Parametres";
 import Aide from "./pages/dashboard/Aide";
-import AnalyseBoutiques from "./pages/dashboard/AnalyseBoutiques";
 import Rapports from "./pages/dashboard/Rapports";
 import AdminDocuments from "./pages/dashboard/AdminDocuments";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -140,14 +139,6 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Parametres />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/analyse-boutiques"
-              element={
-                <ProtectedRoute>
-                  <AnalyseBoutiques />
                 </ProtectedRoute>
               }
             />
