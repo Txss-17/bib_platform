@@ -5,19 +5,58 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { User, Bell, Shield, CreditCard, Globe, Loader2, FileCheck } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { User, Bell, Shield, CreditCard, Globe, Loader2, FileCheck, Trash2, Crown, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { BusinessDocuments } from "@/components/dashboard/BusinessDocuments";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useProducts } from "@/hooks/useProducts";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+const plans = [
+  {
+    name: "Starter",
+    price: "Gratuit",
+    features: ["1 boutique", "50 produits", "Support email"],
+    current: true,
+  },
+  {
+    name: "Pro",
+    price: "29€/mois",
+    features: ["5 boutiques", "500 produits", "Support prioritaire", "Analytics avancés"],
+    current: false,
+    popular: true,
+  },
+  {
+    name: "Scale",
+    price: "99€/mois",
+    features: ["Boutiques illimitées", "Produits illimités", "Support dédié", "API access", "White-label"],
+    current: false,
+  },
+];
 
 export default function Parametres() {
-  const { profile, refreshProfile } = useAuth();
+  const { profile, refreshProfile, user } = useAuth();
+  const { data: products = [] } = useProducts();
   const [fullName, setFullName] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [businessType, setBusinessType] = useState("");
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const hasProducts = products.length > 0;
 
   useEffect(() => {
     if (profile) {
@@ -41,12 +80,26 @@ export default function Parametres() {
 
     if (error) {
       toast.error("Erreur lors de la sauvegarde");
-      console.error(error);
     } else {
       await refreshProfile();
       toast.success("Profil mis à jour avec succès");
     }
     setSaving(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (hasProducts) {
+      toast.error("Vous devez d'abord retirer tous les produits de vos boutiques");
+      return;
+    }
+    setDeleting(true);
+    try {
+      await supabase.auth.signOut();
+      toast.success("Demande de suppression envoyée. Votre compte sera supprimé sous 30 jours.");
+    } catch {
+      toast.error("Erreur lors de la suppression");
+    }
+    setDeleting(false);
   };
 
   return (
@@ -61,6 +114,10 @@ export default function Parametres() {
             <TabsTrigger value="documents" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
               <FileCheck className="w-3.5 h-3.5" />
               <span>Documents</span>
+            </TabsTrigger>
+            <TabsTrigger value="abonnement" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
+              <Crown className="w-3.5 h-3.5" />
+              <span>Abonnement</span>
             </TabsTrigger>
             <TabsTrigger value="notifications" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
               <Bell className="w-3.5 h-3.5" />
@@ -101,7 +158,6 @@ export default function Parametres() {
               </CardContent>
             </Card>
 
-            {/* Langue */}
             <Card className="border-border/50">
               <CardContent className="pt-5">
                 <div className="flex items-center justify-between">
@@ -116,6 +172,51 @@ export default function Parametres() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Delete account */}
+            <Card className="border-destructive/30">
+              <CardContent className="pt-5">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
+                    <Trash2 className="w-5 h-5 text-destructive" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">Supprimer mon compte</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Cette action est irréversible. Tous vos données seront supprimées.
+                    </p>
+                    {hasProducts && (
+                      <div className="flex items-center gap-1.5 mt-2 text-xs text-destructive">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        Vous devez d'abord retirer tous les produits de vos boutiques
+                      </div>
+                    )}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" className="mt-3" disabled={hasProducts}>
+                          Supprimer mon compte
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Cette action supprimera définitivement votre compte, vos boutiques et toutes vos données. Cette action est irréversible.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Annuler</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDeleteAccount} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            {deleting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+                            Confirmer la suppression
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Documents */}
@@ -123,12 +224,46 @@ export default function Parametres() {
             <BusinessDocuments />
           </TabsContent>
 
+          {/* Abonnement */}
+          <TabsContent value="abonnement" className="mt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {plans.map((plan) => (
+                <Card key={plan.name} className={`border-border/50 relative ${plan.popular ? "ring-2 ring-primary" : ""}`}>
+                  {plan.popular && (
+                    <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px]">
+                      Populaire
+                    </Badge>
+                  )}
+                  <CardContent className="pt-6 text-center space-y-3">
+                    <h3 className="font-semibold text-foreground">{plan.name}</h3>
+                    <p className="text-2xl font-bold text-foreground">{plan.price}</p>
+                    <ul className="text-xs text-muted-foreground space-y-1.5 text-left">
+                      {plan.features.map((f, i) => (
+                        <li key={i} className="flex items-center gap-1.5">
+                          <span className="text-primary">✓</span> {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <Button
+                      variant={plan.current ? "outline" : "default"}
+                      size="sm"
+                      className="w-full"
+                      disabled={plan.current}
+                    >
+                      {plan.current ? "Plan actuel" : "Bientôt disponible"}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
           {/* Notifications */}
           <TabsContent value="notifications" className="mt-4">
             <Card className="border-border/50">
               <CardContent className="pt-5 divide-y divide-border/50">
                 {[
-                  { label: "Nouvelles commandes", desc: "Notification à chaque commande", defaultOn: true },
+                  { label: "Nouvelles commandes", desc: "Notification sonore à chaque commande", defaultOn: true },
                   { label: "Alertes de stock", desc: "Alerte quand un produit est en rupture", defaultOn: true },
                   { label: "Rapports hebdomadaires", desc: "Résumé des performances chaque semaine", defaultOn: false },
                 ].map((item, i) => (
