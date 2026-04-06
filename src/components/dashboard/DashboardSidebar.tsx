@@ -7,7 +7,6 @@ import {
   TrendingUp,
   Truck,
   CreditCard,
-  Search,
   Settings,
   HelpCircle,
   User,
