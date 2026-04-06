@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { exportToCSV, exportToPDF } from "@/lib/exportUtils";
 import { useOrders, useUpdateOrderStatus } from "@/hooks/useOrders";
 import { useBoutiques } from "@/hooks/useBoutiques";
+import { playCashRegisterSound } from "@/lib/notificationSound";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { OrderDetailDialog } from "@/components/dashboard/OrderDetailDialog";
@@ -67,6 +68,18 @@ export default function Commandes() {
   useEffect(() => {
     const channel = supabase
       .channel('order-status-changes')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'orders' },
+        (payload) => {
+          const orderNumber = (payload.new as any)?.order_number;
+          playCashRegisterSound();
+          toast({
+            title: "💰 Nouvelle commande !",
+            description: `Commande ${orderNumber || ''} reçue`,
+          });
+        }
+      )
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'orders' },
@@ -205,11 +218,17 @@ export default function Commandes() {
         </span>
 
         <div className="sm:ml-auto flex gap-2 w-full sm:w-auto">
-          <Button variant="outline" size="sm" className="gap-1.5 flex-1 sm:flex-none" onClick={() => filteredOrders && exportToCSV(filteredOrders, orderExportColumns, "commandes")} disabled={!filteredOrders?.length}>
+          <Button variant="outline" size="sm" className="gap-1.5 flex-1 sm:flex-none" onClick={() => {
+            const bName = selectedBoutique !== "all" ? boutiques.find(b => b.id === selectedBoutique)?.name : undefined;
+            filteredOrders && exportToCSV(filteredOrders, orderExportColumns, "commandes", { boutiqueName: bName || "LINKSY" });
+          }} disabled={!filteredOrders?.length}>
             <Download className="w-4 h-4" />
             CSV
           </Button>
-          <Button variant="outline" size="sm" className="gap-1.5 flex-1 sm:flex-none" onClick={() => filteredOrders && exportToPDF(filteredOrders, orderExportColumns, "Rapport des Commandes", "commandes")} disabled={!filteredOrders?.length}>
+          <Button variant="outline" size="sm" className="gap-1.5 flex-1 sm:flex-none" onClick={() => {
+            const bName = selectedBoutique !== "all" ? boutiques.find(b => b.id === selectedBoutique)?.name : undefined;
+            filteredOrders && exportToPDF(filteredOrders, orderExportColumns, "Rapport des Commandes", "commandes", { boutiqueName: bName || "LINKSY" });
+          }} disabled={!filteredOrders?.length}>
             <FileText className="w-4 h-4" />
             PDF
           </Button>
