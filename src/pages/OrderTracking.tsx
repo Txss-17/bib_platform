@@ -60,7 +60,17 @@ export default function OrderTracking() {
 
       if (data && data.length > 0) {
         const row = data[0];
+
+        // Get order ID for issue reporting
+        const { data: orderRow } = await supabase
+          .from("orders")
+          .select("id")
+          .eq("order_number", row.order_number)
+          .eq("customer_email", email.trim().toLowerCase())
+          .maybeSingle();
+
         setOrder({
+          id: orderRow?.id,
           order_number: row.order_number,
           customer_name: row.customer_name,
           amount: Number(row.amount),
