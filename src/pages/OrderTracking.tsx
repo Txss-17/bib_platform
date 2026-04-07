@@ -36,6 +36,7 @@ export default function OrderTracking() {
   const [order, setOrder] = useState<OrderResult | null>(null);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [issueDialogOpen, setIssueDialogOpen] = useState(false);
 
   useSEO({
     title: "Suivi de commande",
