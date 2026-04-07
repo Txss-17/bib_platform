@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Search, Package, Loader2, Truck, CheckCircle, Clock, RotateCcw } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ArrowLeft, Search, Package, Loader2, Truck, CheckCircle, Clock, RotateCcw, AlertTriangle } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
+import { OrderIssueForm } from "@/components/storefront/OrderIssueForm";
 
 const STATUS_MAP: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   pending: { label: "En attente", color: "bg-yellow-100 text-yellow-800", icon: Clock },
@@ -17,6 +19,7 @@ const STATUS_MAP: Record<string, { label: string; color: string; icon: React.Ele
 };
 
 interface OrderResult {
+  id?: string;
   order_number: string;
   customer_name: string;
   amount: number;
