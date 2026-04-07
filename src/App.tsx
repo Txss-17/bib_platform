@@ -26,6 +26,7 @@ import Parametres from "./pages/dashboard/Parametres";
 import Aide from "./pages/dashboard/Aide";
 import Rapports from "./pages/dashboard/Rapports";
 import AdminDocuments from "./pages/dashboard/AdminDocuments";
+import Equipe from "./pages/dashboard/Equipe";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
@@ -155,6 +156,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Aide />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/equipe"
+              element={
+                <ProtectedRoute>
+                  <Equipe />
                 </ProtectedRoute>
               }
             />

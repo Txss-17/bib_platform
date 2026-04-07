@@ -1,11 +1,12 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Package, Truck, CheckCircle, Clock, AlertCircle, RotateCcw, ArrowRight } from "lucide-react";
+import { Package, Truck, CheckCircle, Clock, AlertCircle, RotateCcw, ArrowRight, AlertTriangle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { OrderWithProduct } from "@/hooks/useOrders";
 import type { Database } from "@/integrations/supabase/types";
+import { OrderIssuePanel } from "./OrderIssuePanel";
 
 type LogisticsStatus = Database["public"]["Enums"]["logistics_status"];
 
@@ -139,6 +140,15 @@ export function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDial
             ) : (
               <p className="text-xs text-muted-foreground italic">Aucun changement de statut enregistré pour le moment.</p>
             )}
+          </div>
+
+          {/* Signalements */}
+          <div>
+            <h4 className="text-sm font-semibold mb-3 flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 text-orange-500" />
+              Signalements
+            </h4>
+            <OrderIssuePanel orderId={order.id} />
           </div>
         </div>
       </DialogContent>

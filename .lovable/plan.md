@@ -1,45 +1,94 @@
 
+# Plan : Commandes avancées + Rôles d'équipe
 
-# Plan : Filtre favoris, anti-doublon & analyse des manques
+## Phase 1 — Base de données (migrations)
 
-## Changements demandés
+### Tables à créer :
 
-### 1. Empêcher l'ajout en double côté interface (`AddToBoutiqueDialog.tsx`)
-- Charger les produits existants de l'utilisateur via `useProducts()`
-- Quand une boutique est sélectionnée, vérifier si `supplier_product_id` existe déjà pour cette `boutique_id`
-- Si oui : afficher un message d'avertissement inline et désactiver le bouton "Ajouter"
-- Le backend gère déjà l'erreur `23505` mais l'UX sera proactive
+**1. `order_issues` — Signalements clients**
+- `id`, `order_id` (FK orders), `type` (enum: `not_received`, `return_request`, `defective`), `message`, `image_url`, `status` (enum: `pending`, `accepted`, `refused`, `resolved`, `escalated`), `created_at`, `deadline_at` (auto +48h), `customer_email`
+- RLS : lecture pour le propriétaire de la boutique via `owns_boutique`, insertion anonyme (comme orders)
 
-### 2. Filtre "Favoris uniquement" (`ProduitsFournisseurs.tsx`)
-- Ajouter un état `showFavoritesOnly` (boolean)
-- Ajouter un bouton toggle Heart à côté des filtres existants (barre du haut)
-- Intégrer le filtre dans la chaîne `filteredProducts` : si activé, ne garder que les produits où `isFavorite(product.id)` est `true`
-- Compter les favoris et afficher le nombre sur le bouton
+**2. `issue_responses` — Réponses vendeur aux signalements**
+- `id`, `issue_id` (FK order_issues), `action` (enum: `accept`, `refuse`, `partial_refund`, `resend`, `other`), `message`, `created_at`
+- RLS : insertion/lecture pour le propriétaire de la boutique
 
-### 3. Ce qui manque pour un site professionnel (hors Stripe)
+**3. `boutique_members` — Membres d'équipe**
+- `id`, `boutique_id` (FK boutiques), `user_id` (FK auth.users), `role` (enum: `owner`, `manager`, `marketing`, `support`), `invited_email`, `status` (enum: `pending`, `active`, `removed`), `created_at`
+- RLS : lecture/gestion pour le propriétaire, lecture pour les membres actifs
 
-Voici les lacunes identifiées :
+**4. Enum types :**
+- `issue_type`: `not_received`, `return_request`, `defective`
+- `issue_status`: `pending`, `accepted`, `refused`, `resolved`, `escalated`
+- `issue_action`: `accept`, `refuse`, `partial_refund`, `resend`, `other`
+- `team_role`: `owner`, `manager`, `marketing`, `support`
+- `member_status`: `pending`, `active`, `removed`
 
-| Domaine | Manque | Impact |
-|---------|--------|--------|
-| **Notifications email** | Pas d'envoi réel d'emails (confirmation commande, changement statut) | Critique |
-| **Export de données** | Pas d'export CSV/PDF pour commandes, ventes, rapports | Important |
-| **Dashboard vide** | Le dashboard principal montre des données mockées, pas de données réelles connectées aux tables | Important |
-| **Gestion clients** | Pas de page CRM / liste clients avec historique d'achats | Moyen |
-| **Multi-langue storefront** | Le LanguageSwitcher existe mais la boutique publique est uniquement en français | Moyen |
-| **Images produits multiples** | Un seul `image_url` sur `supplier_products`, pas de galerie | Moyen |
-| **Politique de retour** | Pas de workflow retours/remboursements | Important |
-| **Gestion stock réel** | Le champ stock a été ajouté mais pas connecté aux commandes (décrément auto) | Important |
-| **SEO meta tags** | Pas de balises meta dynamiques sur les pages publiques des boutiques | Moyen |
-| **Onboarding guidé** | Pas de tutoriel / wizard pour les nouveaux utilisateurs | Moyen |
+### Modifications existantes :
+- Ajouter colonne `has_protection` (boolean, default false) sur `boutiques`
+
+## Phase 2 — Pages & composants
+
+### Commandes (amélioration de l'existant)
+
+**A. Page Commandes (`Commandes.tsx`)** — déjà existante
+- Ajouter badge "Problème signalé" sur les commandes ayant un issue
+- Ajouter onglet/filtre "Litiges" pour voir uniquement les commandes avec signalements
+
+**B. Détail commande (`OrderDetailDialog.tsx`)** — améliorer
+- Ajouter timeline visuelle : Commande → Expédition → Livraison
+- Ajouter section "Signalements" avec liste des issues
+- Interface de décision vendeur : boutons Accepter / Refuser / Proposer solution
+- Afficher deadline 48h avec countdown
+- Statut clair : En attente / Accepté / Refusé / Résolu / Escaladé
+
+**C. Page publique signalement (nouveau)**
+- `OrderIssueForm.tsx` — formulaire client accessible depuis le suivi de commande
+- Choix du problème (3 options)
+- Message optionnel + upload image
+- Route : `/boutique/:slug/order-tracking` (ajouter bouton "Signaler un problème")
+
+### Équipe (nouveau)
+
+**D. Page Équipe (`Equipe.tsx`)**
+- Liste des membres avec rôle, statut, date d'ajout
+- Bouton "Inviter un membre" → dialog avec email + sélection rôle
+- Bouton supprimer membre
+- Limite selon abonnement (Standard=1, Growth=3, Premium=5+) avec message upgrade
+- Route : `/dashboard/equipe`
+
+**E. Système de permissions**
+- Hook `useTeamPermissions()` qui retourne les modules accessibles selon le rôle
+- Sidebar filtrée : chaque lien vérifie si le rôle courant y a accès
+- Modules par rôle :
+  - Owner : tout
+  - Manager : produits, commandes, analytics
+  - Marketing : boutique edit, storefront
+  - Support : commandes (litiges uniquement), signalements
+
+## Phase 3 — Hooks & logique
+
+- `useOrderIssues()` — CRUD signalements
+- `useIssueResponses()` — réponses vendeur
+- `useBoutiqueMembers()` — gestion équipe
+- `useTeamPermissions()` — permissions par rôle
+
+## Fichiers créés
+- `src/pages/dashboard/Equipe.tsx`
+- `src/components/dashboard/OrderTimeline.tsx`
+- `src/components/dashboard/OrderIssuePanel.tsx`
+- `src/components/dashboard/IssueDecisionPanel.tsx`
+- `src/components/dashboard/TeamMemberList.tsx`
+- `src/components/dashboard/InviteMemberDialog.tsx`
+- `src/components/storefront/OrderIssueForm.tsx`
+- `src/hooks/useOrderIssues.ts`
+- `src/hooks/useIssueResponses.ts`
+- `src/hooks/useBoutiqueMembers.ts`
+- `src/hooks/useTeamPermissions.ts`
 
 ## Fichiers modifiés
-- `src/components/dashboard/AddToBoutiqueDialog.tsx` — vérification doublon avec données existantes
-- `src/pages/dashboard/ProduitsFournisseurs.tsx` — bouton filtre favoris + logique
-
-## Détails techniques
-
-**Anti-doublon** : On importe `useProducts` dans le dialog. On filtre `products.filter(p => p.boutique_id === selectedBoutiqueId && p.supplier_product_id === product.id)`. Si résultat non vide → afficher `"Déjà ajouté à cette boutique"` avec une icône check et désactiver le bouton.
-
-**Filtre favoris** : Un simple toggle button avec `Heart` icon (fill quand actif). Ajout d'une ligne dans le filtre : `const matchesFavorite = !showFavoritesOnly || isFavorite(product.id)`. Le compteur affiche `favorites.length` via le hook.
-
+- `src/App.tsx` — nouvelle route `/dashboard/equipe`
+- `src/components/dashboard/DashboardSidebar.tsx` — lien Équipe + filtrage par permissions
+- `src/components/dashboard/OrderDetailDialog.tsx` — timeline + signalements + décisions
+- `src/pages/OrderTracking.tsx` — bouton "Signaler un problème"
+- `src/pages/dashboard/Commandes.tsx` — filtre litiges + badges

@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Search, Package, Loader2, Truck, CheckCircle, Clock, RotateCcw } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ArrowLeft, Search, Package, Loader2, Truck, CheckCircle, Clock, RotateCcw, AlertTriangle } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
+import { OrderIssueForm } from "@/components/storefront/OrderIssueForm";
 
 const STATUS_MAP: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   pending: { label: "En attente", color: "bg-yellow-100 text-yellow-800", icon: Clock },
@@ -17,6 +19,7 @@ const STATUS_MAP: Record<string, { label: string; color: string; icon: React.Ele
 };
 
 interface OrderResult {
+  id?: string;
   order_number: string;
   customer_name: string;
   amount: number;
@@ -33,6 +36,7 @@ export default function OrderTracking() {
   const [order, setOrder] = useState<OrderResult | null>(null);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [issueDialogOpen, setIssueDialogOpen] = useState(false);
 
   useSEO({
     title: "Suivi de commande",
@@ -56,7 +60,17 @@ export default function OrderTracking() {
 
       if (data && data.length > 0) {
         const row = data[0];
+
+        // Get order ID for issue reporting
+        const { data: orderRow } = await supabase
+          .from("orders")
+          .select("id")
+          .eq("order_number", row.order_number)
+          .eq("customer_email", email.trim().toLowerCase())
+          .maybeSingle();
+
         setOrder({
+          id: orderRow?.id,
           order_number: row.order_number,
           customer_name: row.customer_name,
           amount: Number(row.amount),
@@ -190,7 +204,35 @@ export default function OrderTracking() {
                 />
               </div>
             </div>
+
+            {/* Report issue button */}
+            {order.logistics_status !== "delivered" && (
+              <Button
+                variant="outline"
+                className="w-full gap-2 text-orange-600 border-orange-200 hover:bg-orange-50"
+                onClick={() => setIssueDialogOpen(true)}
+              >
+                <AlertTriangle className="w-4 h-4" />
+                Signaler un problème
+              </Button>
+            )}
           </div>
+        )}
+
+        {/* Issue dialog */}
+        {order && (
+          <Dialog open={issueDialogOpen} onOpenChange={setIssueDialogOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Signaler un problème</DialogTitle>
+              </DialogHeader>
+              <OrderIssueForm
+                orderId={order.id || ""}
+                customerEmail={email}
+                onSuccess={() => setIssueDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
         )}
       </div>
 
