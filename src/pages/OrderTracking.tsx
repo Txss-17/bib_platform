@@ -194,7 +194,35 @@ export default function OrderTracking() {
                 />
               </div>
             </div>
+
+            {/* Report issue button */}
+            {order.logistics_status !== "delivered" && (
+              <Button
+                variant="outline"
+                className="w-full gap-2 text-orange-600 border-orange-200 hover:bg-orange-50"
+                onClick={() => setIssueDialogOpen(true)}
+              >
+                <AlertTriangle className="w-4 h-4" />
+                Signaler un problème
+              </Button>
+            )}
           </div>
+        )}
+
+        {/* Issue dialog */}
+        {order && (
+          <Dialog open={issueDialogOpen} onOpenChange={setIssueDialogOpen}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Signaler un problème</DialogTitle>
+              </DialogHeader>
+              <OrderIssueForm
+                orderId={order.id || ""}
+                customerEmail={email}
+                onSuccess={() => setIssueDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
         )}
       </div>
 
