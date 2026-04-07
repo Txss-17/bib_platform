@@ -13,6 +13,7 @@ import {
   BarChart3,
   FileText,
   ShieldCheck,
+  Users,
 } from "lucide-react";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -30,6 +31,7 @@ const mainNavItems = [
   { title: "Paiements", url: "/dashboard/paiements", icon: CreditCard },
   { title: "Analytics", url: "/dashboard/seo-analytics", icon: BarChart3 },
   { title: "Rapports", url: "/dashboard/rapports", icon: FileText },
+  { title: "Équipe", url: "/dashboard/equipe", icon: Users },
 ];
 
 const bottomNavItems = [
