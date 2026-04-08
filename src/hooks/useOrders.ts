@@ -60,22 +60,30 @@ export function useUpdateOrderStatus() {
 
   return useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: LogisticsStatus }) => {
-      // For "delivered" status, check if order is customer_validated first
-      if (status === "delivered") {
-        const { data: order } = await supabase
-          .from("orders")
-          .select("customer_validated")
-          .eq("id", orderId)
-          .single();
-        
-        if (order && !(order as any).customer_validated) {
-          throw new Error("La commande doit être validée par le client avant de passer en livré.");
-        }
+      // Le vendeur doit valider la commande avant qu'elle avance automatiquement
+      const { data: order } = await supabase
+        .from("orders")
+        .select("customer_validated, logistics_status")
+        .eq("id", orderId)
+        .single();
+
+      const validated = (order as any)?.customer_validated;
+      const currentStatus = order?.logistics_status;
+
+      // Si la commande n'est pas encore validée par le vendeur, seul "processing" est autorisé (= validation)
+      if (!validated && status !== "processing") {
+        throw new Error("Vous devez d'abord valider cette commande avant de changer son statut.");
       }
-      
+
+      const updateData: any = { logistics_status: status };
+      // Valider automatiquement quand le vendeur passe en "processing"
+      if (status === "processing" && !validated) {
+        updateData.customer_validated = true;
+      }
+
       const { error } = await supabase
         .from("orders")
-        .update({ logistics_status: status } as any)
+        .update(updateData)
         .eq("id", orderId);
       if (error) throw error;
     },
