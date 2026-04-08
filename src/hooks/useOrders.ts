@@ -60,15 +60,46 @@ export function useUpdateOrderStatus() {
 
   return useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: LogisticsStatus }) => {
+      // For "delivered" status, check if order is customer_validated first
+      if (status === "delivered") {
+        const { data: order } = await supabase
+          .from("orders")
+          .select("customer_validated")
+          .eq("id", orderId)
+          .single();
+        
+        if (order && !(order as any).customer_validated) {
+          throw new Error("La commande doit être validée par le client avant de passer en livré.");
+        }
+      }
+      
       const { error } = await supabase
         .from("orders")
-        .update({ logistics_status: status })
+        .update({ logistics_status: status } as any)
         .eq("id", orderId);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["orders", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["order-stats", user?.id] });
+    },
+  });
+}
+
+export function useValidateOrder() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async (orderId: string) => {
+      const { error } = await supabase
+        .from("orders")
+        .update({ customer_validated: true } as any)
+        .eq("id", orderId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders", user?.id] });
     },
   });
 }
