@@ -14,11 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      boutique_members: {
+        Row: {
+          boutique_id: string
+          created_at: string
+          id: string
+          invited_email: string
+          role: Database["public"]["Enums"]["team_role"]
+          status: Database["public"]["Enums"]["member_status"]
+          user_id: string | null
+        }
+        Insert: {
+          boutique_id: string
+          created_at?: string
+          id?: string
+          invited_email: string
+          role?: Database["public"]["Enums"]["team_role"]
+          status?: Database["public"]["Enums"]["member_status"]
+          user_id?: string | null
+        }
+        Update: {
+          boutique_id?: string
+          created_at?: string
+          id?: string
+          invited_email?: string
+          role?: Database["public"]["Enums"]["team_role"]
+          status?: Database["public"]["Enums"]["member_status"]
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boutique_members_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       boutiques: {
         Row: {
           category: string
           created_at: string
           description: string | null
+          has_protection: boolean
           id: string
           logo_url: string | null
           name: string
@@ -32,6 +71,7 @@ export type Database = {
           category: string
           created_at?: string
           description?: string | null
+          has_protection?: boolean
           id?: string
           logo_url?: string | null
           name: string
@@ -45,6 +85,7 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          has_protection?: boolean
           id?: string
           logo_url?: string | null
           name?: string
@@ -97,6 +138,38 @@ export type Database = {
           },
         ]
       }
+      issue_responses: {
+        Row: {
+          action: Database["public"]["Enums"]["issue_action"]
+          created_at: string
+          id: string
+          issue_id: string
+          message: string | null
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["issue_action"]
+          created_at?: string
+          id?: string
+          issue_id: string
+          message?: string | null
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["issue_action"]
+          created_at?: string
+          id?: string
+          issue_id?: string
+          message?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issue_responses_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "order_issues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       moq_reservations: {
         Row: {
           expires_at: string
@@ -135,6 +208,50 @@ export type Database = {
           },
         ]
       }
+      order_issues: {
+        Row: {
+          created_at: string
+          customer_email: string
+          deadline_at: string
+          id: string
+          image_url: string | null
+          message: string | null
+          order_id: string
+          status: Database["public"]["Enums"]["issue_status"]
+          type: Database["public"]["Enums"]["issue_type"]
+        }
+        Insert: {
+          created_at?: string
+          customer_email: string
+          deadline_at?: string
+          id?: string
+          image_url?: string | null
+          message?: string | null
+          order_id: string
+          status?: Database["public"]["Enums"]["issue_status"]
+          type: Database["public"]["Enums"]["issue_type"]
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string
+          deadline_at?: string
+          id?: string
+          image_url?: string | null
+          message?: string | null
+          order_id?: string
+          status?: Database["public"]["Enums"]["issue_status"]
+          type?: Database["public"]["Enums"]["issue_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_issues_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           amount: number
@@ -142,6 +259,7 @@ export type Database = {
           created_at: string
           customer_email: string
           customer_name: string
+          customer_validated: boolean
           id: string
           logistics_status: Database["public"]["Enums"]["logistics_status"]
           market: string
@@ -154,6 +272,7 @@ export type Database = {
           created_at?: string
           customer_email: string
           customer_name: string
+          customer_validated?: boolean
           id?: string
           logistics_status?: Database["public"]["Enums"]["logistics_status"]
           market?: string
@@ -166,6 +285,7 @@ export type Database = {
           created_at?: string
           customer_email?: string
           customer_name?: string
+          customer_validated?: boolean
           id?: string
           logistics_status?: Database["public"]["Enums"]["logistics_status"]
           market?: string
@@ -400,16 +520,26 @@ export type Database = {
     }
     Enums: {
       boutique_status: "draft" | "published"
+      issue_action: "accept" | "refuse" | "partial_refund" | "resend" | "other"
+      issue_status:
+        | "pending"
+        | "accepted"
+        | "refused"
+        | "resolved"
+        | "escalated"
+      issue_type: "not_received" | "return_request" | "defective"
       logistics_status:
         | "pending"
         | "processing"
         | "shipped"
         | "delivered"
         | "returned"
+      member_status: "pending" | "active" | "removed"
       moq_status: "reserved" | "confirmed" | "expired" | "cancelled"
       payment_status: "pending" | "completed" | "failed"
       product_status: "active" | "paused"
       rotation_indicator: "green" | "yellow" | "orange" | "red"
+      team_role: "owner" | "manager" | "marketing" | "support"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -538,6 +668,9 @@ export const Constants = {
   public: {
     Enums: {
       boutique_status: ["draft", "published"],
+      issue_action: ["accept", "refuse", "partial_refund", "resend", "other"],
+      issue_status: ["pending", "accepted", "refused", "resolved", "escalated"],
+      issue_type: ["not_received", "return_request", "defective"],
       logistics_status: [
         "pending",
         "processing",
@@ -545,10 +678,12 @@ export const Constants = {
         "delivered",
         "returned",
       ],
+      member_status: ["pending", "active", "removed"],
       moq_status: ["reserved", "confirmed", "expired", "cancelled"],
       payment_status: ["pending", "completed", "failed"],
       product_status: ["active", "paused"],
       rotation_indicator: ["green", "yellow", "orange", "red"],
+      team_role: ["owner", "manager", "marketing", "support"],
     },
   },
 } as const
