@@ -59,7 +59,7 @@ export function useOrderIssues(orderId?: string) {
       if (!user) return [];
 
       let query = supabase
-        .from("order_issues" as any)
+        .from("order_issues")
         .select("*")
         .order("created_at", { ascending: false });
 
