@@ -115,6 +115,29 @@ export function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDial
             <Badge>{statusConfig[order.logistics_status]?.label || order.logistics_status}</Badge>
           </div>
 
+          {/* Validate button */}
+          {isNotValidated && (
+            <Button 
+              onClick={handleValidate} 
+              disabled={validateOrder.isPending}
+              className="w-full gap-2"
+              size="lg"
+            >
+              {validateOrder.isPending ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Validation en cours...</>
+              ) : (
+                <><ShieldCheck className="w-5 h-5" /> Valider cette commande</>
+              )}
+            </Button>
+          )}
+
+          {order.customer_validated && (
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-green-50 border border-green-200 dark:bg-green-950/20 dark:border-green-800">
+              <ShieldCheck className="w-4 h-4 text-green-600" />
+              <span className="text-xs font-medium text-green-700 dark:text-green-400">Commande validée par le vendeur</span>
+            </div>
+          )
+
           {/* Status history timeline */}
           <div>
             <h4 className="text-sm font-semibold mb-3">Historique des statuts</h4>
