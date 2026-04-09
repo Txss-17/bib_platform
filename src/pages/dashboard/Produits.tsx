@@ -6,13 +6,16 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Edit, Copy, Trash2, MoreVertical, Plus, Package } from "lucide-react";
+import { Edit, Copy, Trash2, MoreVertical, Plus, Package, Filter } from "lucide-react";
 import { useProducts, useUpdateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { useBoutiques } from "@/hooks/useBoutiques";
+import { useSampleValidations, getSampleStatusLabel, getSampleStatusColor, type SampleStatus } from "@/hooks/useSampleValidation";
+import { SampleValidationPanel } from "@/components/dashboard/SampleValidationPanel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog";
 import { useState, useMemo } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 function ProductsTableSkeleton() {
   return (

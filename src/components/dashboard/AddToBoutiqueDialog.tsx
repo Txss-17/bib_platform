@@ -51,6 +51,7 @@ export function AddToBoutiqueDialog({ product, open, onOpenChange }: AddToBoutiq
         supplier_product_id: product.id,
         public_price: Number(sellingPrice.toFixed(2)),
         applied_margin: margin,
+        status: "paused" as any, // Paused until sample is validated
       });
 
       if (error) {
