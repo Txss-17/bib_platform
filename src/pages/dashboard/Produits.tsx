@@ -288,6 +288,7 @@ export default function Produits() {
                           </DropdownMenu>
                         </TableCell>
                       </TableRow>
+                      );
                     })}
                   </TableBody>
                 </Table>
