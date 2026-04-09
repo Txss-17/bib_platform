@@ -1,12 +1,15 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Package, Truck, CheckCircle, Clock, AlertCircle, RotateCcw, ArrowRight, AlertTriangle } from "lucide-react";
+import { Package, Truck, CheckCircle, Clock, AlertCircle, RotateCcw, ArrowRight, AlertTriangle, ShieldCheck, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { OrderWithProduct } from "@/hooks/useOrders";
+import { useValidateOrder } from "@/hooks/useOrders";
 import type { Database } from "@/integrations/supabase/types";
 import { OrderIssuePanel } from "./OrderIssuePanel";
+import { toast } from "sonner";
 
 type LogisticsStatus = Database["public"]["Enums"]["logistics_status"];
 
@@ -50,10 +53,21 @@ interface OrderDetailDialogProps {
 
 export function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDialogProps) {
   const { data: history, isLoading: historyLoading } = useOrderHistory(order?.id || null);
+  const validateOrder = useValidateOrder();
 
   if (!order) return null;
 
   const StatusIcon = statusConfig[order.logistics_status]?.icon || Clock;
+  const isNotValidated = !order.customer_validated && order.logistics_status === "pending";
+
+  const handleValidate = async () => {
+    try {
+      await validateOrder.mutateAsync(order.id);
+      toast.success("Commande validée ! Vous pouvez maintenant gérer son statut.");
+    } catch {
+      toast.error("Erreur lors de la validation");
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
