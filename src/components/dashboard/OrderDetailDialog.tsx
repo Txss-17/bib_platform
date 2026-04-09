@@ -136,7 +136,7 @@ export function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDial
               <ShieldCheck className="w-4 h-4 text-green-600" />
               <span className="text-xs font-medium text-green-700 dark:text-green-400">Commande validée par le vendeur</span>
             </div>
-          )
+          )}
 
           {/* Status history timeline */}
           <div>
