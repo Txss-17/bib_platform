@@ -212,6 +212,7 @@ export default function Produits() {
                     <TableRow>
                       <TableHead className="w-12">Actif</TableHead>
                       <TableHead>Produit</TableHead>
+                      <TableHead>Validation</TableHead>
                       <TableHead>Prix public</TableHead>
                       <TableHead>Marge</TableHead>
                       <TableHead>Ventes</TableHead>
@@ -219,35 +220,47 @@ export default function Produits() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredProducts.map((product) => (
-                      <TableRow key={product.id}>
-                        <TableCell>
-                          <Switch
-                            checked={product.status === "active"}
-                            onCheckedChange={() => toggleStatus(product.id, product.status)}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <img 
-                              src={product.supplier_products?.image_url || "/placeholder.svg"} 
-                              alt={product.supplier_products?.name || "Produit"}
-                              className="w-10 h-10 rounded-lg object-cover bg-muted"
+                    {filteredProducts.map((product) => {
+                      const sampleStatus = getSampleStatus(product.id);
+                      const canToggle = sampleStatus === "validated";
+                      return (
+                        <TableRow key={product.id}>
+                          <TableCell>
+                            <Switch
+                              checked={product.status === "active"}
+                              onCheckedChange={() => toggleStatus(product.id, product.status)}
+                              disabled={!canToggle}
+                              title={!canToggle ? "Validez l'échantillon d'abord" : undefined}
                             />
-                            <span className="font-medium">
-                              {product.supplier_products?.name || "Produit inconnu"}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {Number(product.public_price).toFixed(2)} €
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="font-mono">
-                            {Number(product.applied_margin).toFixed(0)}%
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{product.cumulative_sales}</TableCell>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <img 
+                                src={product.supplier_products?.image_url || "/placeholder.svg"} 
+                                alt={product.supplier_products?.name || "Produit"}
+                                className="w-10 h-10 rounded-lg object-cover bg-muted"
+                              />
+                              <span className="font-medium">
+                                {product.supplier_products?.name || "Produit inconnu"}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <button onClick={() => setSelectedProductId(product.id)}>
+                              <Badge className={`text-[10px] border cursor-pointer ${getSampleStatusColor(sampleStatus)}`}>
+                                {getSampleStatusLabel(sampleStatus)}
+                              </Badge>
+                            </button>
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {Number(product.public_price).toFixed(2)} €
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="font-mono">
+                              {Number(product.applied_margin).toFixed(0)}%
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{product.cumulative_sales}</TableCell>
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
