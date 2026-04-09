@@ -74,16 +74,28 @@ function EmptyState() {
 export default function Produits() {
   const { data: products, isLoading, error } = useProducts();
   const { data: boutiques } = useBoutiques();
+  const { data: sampleValidations } = useSampleValidations();
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [boutiqueFilter, setBoutiqueFilter] = useState<string>("all");
   const [sortOrder, setSortOrder] = useState<string>("recent");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+
+  const getSampleStatus = (productId: string): SampleStatus => {
+    return sampleValidations?.[productId]?.status || "none";
+  };
 
   const filteredProducts = useMemo(() => {
     let result = products || [];
     if (boutiqueFilter !== "all") {
       result = result.filter(p => p.boutique_id === boutiqueFilter);
+    }
+    if (statusFilter === "non_validated") {
+      result = result.filter(p => getSampleStatus(p.id) !== "validated");
+    } else if (statusFilter === "validated") {
+      result = result.filter(p => getSampleStatus(p.id) === "validated");
     }
     if (sortOrder === "recent") {
       result = [...result].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -91,7 +103,9 @@ export default function Produits() {
       result = [...result].sort((a, b) => b.cumulative_sales - a.cumulative_sales);
     }
     return result;
-  }, [products, boutiqueFilter, sortOrder]);
+  }, [products, boutiqueFilter, sortOrder, statusFilter, sampleValidations]);
+
+  const selectedProduct = products?.find(p => p.id === selectedProductId);
 
   const toggleStatus = async (productId: string, currentStatus: string) => {
     const newStatus = currentStatus === "active" ? "paused" : "active";
