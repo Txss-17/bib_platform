@@ -174,6 +174,16 @@ export default function Produits() {
                   ))}
                 </SelectContent>
               </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full sm:w-44 h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les statuts</SelectItem>
+                  <SelectItem value="non_validated">Non activés</SelectItem>
+                  <SelectItem value="validated">Validés</SelectItem>
+                </SelectContent>
+              </Select>
               <Select value={sortOrder} onValueChange={setSortOrder}>
                 <SelectTrigger className="w-full sm:w-36 h-9 text-sm">
                   <SelectValue />
