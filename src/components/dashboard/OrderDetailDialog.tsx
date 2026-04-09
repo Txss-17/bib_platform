@@ -1,12 +1,15 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Package, Truck, CheckCircle, Clock, AlertCircle, RotateCcw, ArrowRight, AlertTriangle } from "lucide-react";
+import { Package, Truck, CheckCircle, Clock, AlertCircle, RotateCcw, ArrowRight, AlertTriangle, ShieldCheck, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { OrderWithProduct } from "@/hooks/useOrders";
+import { useValidateOrder } from "@/hooks/useOrders";
 import type { Database } from "@/integrations/supabase/types";
 import { OrderIssuePanel } from "./OrderIssuePanel";
+import { toast } from "sonner";
 
 type LogisticsStatus = Database["public"]["Enums"]["logistics_status"];
 
@@ -50,10 +53,21 @@ interface OrderDetailDialogProps {
 
 export function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDialogProps) {
   const { data: history, isLoading: historyLoading } = useOrderHistory(order?.id || null);
+  const validateOrder = useValidateOrder();
 
   if (!order) return null;
 
   const StatusIcon = statusConfig[order.logistics_status]?.icon || Clock;
+  const isNotValidated = !order.customer_validated && order.logistics_status === "pending";
+
+  const handleValidate = async () => {
+    try {
+      await validateOrder.mutateAsync(order.id);
+      toast.success("Commande validée ! Vous pouvez maintenant gérer son statut.");
+    } catch {
+      toast.error("Erreur lors de la validation");
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -100,6 +114,29 @@ export function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDial
             <span className="text-sm font-medium">Statut actuel :</span>
             <Badge>{statusConfig[order.logistics_status]?.label || order.logistics_status}</Badge>
           </div>
+
+          {/* Validate button */}
+          {isNotValidated && (
+            <Button 
+              onClick={handleValidate} 
+              disabled={validateOrder.isPending}
+              className="w-full gap-2"
+              size="lg"
+            >
+              {validateOrder.isPending ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Validation en cours...</>
+              ) : (
+                <><ShieldCheck className="w-5 h-5" /> Valider cette commande</>
+              )}
+            </Button>
+          )}
+
+          {order.customer_validated && (
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-green-50 border border-green-200 dark:bg-green-950/20 dark:border-green-800">
+              <ShieldCheck className="w-4 h-4 text-green-600" />
+              <span className="text-xs font-medium text-green-700 dark:text-green-400">Commande validée par le vendeur</span>
+            </div>
+          )}
 
           {/* Status history timeline */}
           <div>

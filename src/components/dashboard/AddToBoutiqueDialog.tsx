@@ -51,6 +51,7 @@ export function AddToBoutiqueDialog({ product, open, onOpenChange }: AddToBoutiq
         supplier_product_id: product.id,
         public_price: Number(sellingPrice.toFixed(2)),
         applied_margin: margin,
+        status: "paused" as any, // Paused until sample is validated
       });
 
       if (error) {
@@ -98,6 +99,12 @@ export function AddToBoutiqueDialog({ product, open, onOpenChange }: AddToBoutiq
             <p className="text-xs text-muted-foreground">
               Retrouvez-le dans "Mes Produits"
             </p>
+            <div className="mx-auto max-w-xs p-3 rounded-lg bg-orange-50 border border-orange-200 text-left dark:bg-orange-950/20 dark:border-orange-800">
+              <p className="text-xs text-orange-700 dark:text-orange-300">
+                <AlertTriangle className="w-3.5 h-3.5 inline mr-1" />
+                <strong>Échantillon requis :</strong> vous devrez valider un échantillon avant de pouvoir vendre ce produit.
+              </p>
+            </div>
           </div>
         ) : (
           <div className="space-y-5 py-2">

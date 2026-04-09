@@ -6,13 +6,16 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Edit, Copy, Trash2, MoreVertical, Plus, Package } from "lucide-react";
+import { Edit, Copy, Trash2, MoreVertical, Plus, Package, Filter } from "lucide-react";
 import { useProducts, useUpdateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { useBoutiques } from "@/hooks/useBoutiques";
+import { useSampleValidations, getSampleStatusLabel, getSampleStatusColor, type SampleStatus } from "@/hooks/useSampleValidation";
+import { SampleValidationPanel } from "@/components/dashboard/SampleValidationPanel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog";
 import { useState, useMemo } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 function ProductsTableSkeleton() {
   return (
@@ -71,16 +74,28 @@ function EmptyState() {
 export default function Produits() {
   const { data: products, isLoading, error } = useProducts();
   const { data: boutiques } = useBoutiques();
+  const { data: sampleValidations } = useSampleValidations();
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [boutiqueFilter, setBoutiqueFilter] = useState<string>("all");
   const [sortOrder, setSortOrder] = useState<string>("recent");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+
+  const getSampleStatus = (productId: string): SampleStatus => {
+    return sampleValidations?.[productId]?.status || "none";
+  };
 
   const filteredProducts = useMemo(() => {
     let result = products || [];
     if (boutiqueFilter !== "all") {
       result = result.filter(p => p.boutique_id === boutiqueFilter);
+    }
+    if (statusFilter === "non_validated") {
+      result = result.filter(p => getSampleStatus(p.id) !== "validated");
+    } else if (statusFilter === "validated") {
+      result = result.filter(p => getSampleStatus(p.id) === "validated");
     }
     if (sortOrder === "recent") {
       result = [...result].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -88,7 +103,9 @@ export default function Produits() {
       result = [...result].sort((a, b) => b.cumulative_sales - a.cumulative_sales);
     }
     return result;
-  }, [products, boutiqueFilter, sortOrder]);
+  }, [products, boutiqueFilter, sortOrder, statusFilter, sampleValidations]);
+
+  const selectedProduct = products?.find(p => p.id === selectedProductId);
 
   const toggleStatus = async (productId: string, currentStatus: string) => {
     const newStatus = currentStatus === "active" ? "paused" : "active";
@@ -157,6 +174,16 @@ export default function Produits() {
                   ))}
                 </SelectContent>
               </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full sm:w-44 h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les statuts</SelectItem>
+                  <SelectItem value="non_validated">Non activés</SelectItem>
+                  <SelectItem value="validated">Validés</SelectItem>
+                </SelectContent>
+              </Select>
               <Select value={sortOrder} onValueChange={setSortOrder}>
                 <SelectTrigger className="w-full sm:w-36 h-9 text-sm">
                   <SelectValue />
@@ -185,6 +212,7 @@ export default function Produits() {
                     <TableRow>
                       <TableHead className="w-12">Actif</TableHead>
                       <TableHead>Produit</TableHead>
+                      <TableHead>Validation</TableHead>
                       <TableHead>Prix public</TableHead>
                       <TableHead>Marge</TableHead>
                       <TableHead>Ventes</TableHead>
@@ -192,35 +220,47 @@ export default function Produits() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredProducts.map((product) => (
-                      <TableRow key={product.id}>
-                        <TableCell>
-                          <Switch
-                            checked={product.status === "active"}
-                            onCheckedChange={() => toggleStatus(product.id, product.status)}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <img 
-                              src={product.supplier_products?.image_url || "/placeholder.svg"} 
-                              alt={product.supplier_products?.name || "Produit"}
-                              className="w-10 h-10 rounded-lg object-cover bg-muted"
+                    {filteredProducts.map((product) => {
+                      const sampleStatus = getSampleStatus(product.id);
+                      const canToggle = sampleStatus === "validated";
+                      return (
+                        <TableRow key={product.id}>
+                          <TableCell>
+                            <Switch
+                              checked={product.status === "active"}
+                              onCheckedChange={() => toggleStatus(product.id, product.status)}
+                              disabled={!canToggle}
+                              title={!canToggle ? "Validez l'échantillon d'abord" : undefined}
                             />
-                            <span className="font-medium">
-                              {product.supplier_products?.name || "Produit inconnu"}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {Number(product.public_price).toFixed(2)} €
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="font-mono">
-                            {Number(product.applied_margin).toFixed(0)}%
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{product.cumulative_sales}</TableCell>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <img 
+                                src={product.supplier_products?.image_url || "/placeholder.svg"} 
+                                alt={product.supplier_products?.name || "Produit"}
+                                className="w-10 h-10 rounded-lg object-cover bg-muted"
+                              />
+                              <span className="font-medium">
+                                {product.supplier_products?.name || "Produit inconnu"}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <button onClick={() => setSelectedProductId(product.id)}>
+                              <Badge className={`text-[10px] border cursor-pointer ${getSampleStatusColor(sampleStatus)}`}>
+                                {getSampleStatusLabel(sampleStatus)}
+                              </Badge>
+                            </button>
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {Number(product.public_price).toFixed(2)} €
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="font-mono">
+                              {Number(product.applied_margin).toFixed(0)}%
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{product.cumulative_sales}</TableCell>
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -248,7 +288,8 @@ export default function Produits() {
                           </DropdownMenu>
                         </TableCell>
                       </TableRow>
-                    ))}
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -291,10 +332,18 @@ export default function Produits() {
                         <Badge variant="secondary" className="font-mono text-[10px]">{Number(product.applied_margin).toFixed(0)}%</Badge>
                         <span className="text-xs text-muted-foreground">{product.cumulative_sales} ventes</span>
                       </div>
+                      <div className="mt-1.5">
+                        <button onClick={() => setSelectedProductId(product.id)}>
+                          <Badge className={`text-[10px] border cursor-pointer ${getSampleStatusColor(getSampleStatus(product.id))}`}>
+                            {getSampleStatusLabel(getSampleStatus(product.id))}
+                          </Badge>
+                        </button>
+                      </div>
                       <div className="flex items-center justify-between mt-2">
                         <Switch
                           checked={product.status === "active"}
                           onCheckedChange={() => toggleStatus(product.id, product.status)}
+                          disabled={getSampleStatus(product.id) !== "validated"}
                         />
                         <Badge variant={product.status === "active" ? "default" : "secondary"} className="text-[10px]">
                           {product.status === "active" ? "Actif" : "Pause"}
@@ -315,6 +364,21 @@ export default function Produits() {
         title="Supprimer ce produit ?"
         description="Ce produit sera retiré de toutes vos boutiques. Cette action est irréversible."
       />
+
+      {/* Sample Validation Dialog */}
+      <Dialog open={!!selectedProductId} onOpenChange={(open) => !open && setSelectedProductId(null)}>
+        <DialogContent className="max-w-[95vw] sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base">Validation du produit</DialogTitle>
+          </DialogHeader>
+          {selectedProductId && selectedProduct && (
+            <SampleValidationPanel
+              productId={selectedProductId}
+              productName={selectedProduct.supplier_products?.name || "Produit"}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
