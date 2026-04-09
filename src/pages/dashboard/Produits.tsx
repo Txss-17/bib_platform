@@ -364,6 +364,21 @@ export default function Produits() {
         title="Supprimer ce produit ?"
         description="Ce produit sera retiré de toutes vos boutiques. Cette action est irréversible."
       />
+
+      {/* Sample Validation Dialog */}
+      <Dialog open={!!selectedProductId} onOpenChange={(open) => !open && setSelectedProductId(null)}>
+        <DialogContent className="max-w-[95vw] sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base">Validation du produit</DialogTitle>
+          </DialogHeader>
+          {selectedProductId && selectedProduct && (
+            <SampleValidationPanel
+              productId={selectedProductId}
+              productName={selectedProduct.supplier_products?.name || "Produit"}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
