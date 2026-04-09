@@ -332,10 +332,18 @@ export default function Produits() {
                         <Badge variant="secondary" className="font-mono text-[10px]">{Number(product.applied_margin).toFixed(0)}%</Badge>
                         <span className="text-xs text-muted-foreground">{product.cumulative_sales} ventes</span>
                       </div>
+                      <div className="mt-1.5">
+                        <button onClick={() => setSelectedProductId(product.id)}>
+                          <Badge className={`text-[10px] border cursor-pointer ${getSampleStatusColor(getSampleStatus(product.id))}`}>
+                            {getSampleStatusLabel(getSampleStatus(product.id))}
+                          </Badge>
+                        </button>
+                      </div>
                       <div className="flex items-center justify-between mt-2">
                         <Switch
                           checked={product.status === "active"}
                           onCheckedChange={() => toggleStatus(product.id, product.status)}
+                          disabled={getSampleStatus(product.id) !== "validated"}
                         />
                         <Badge variant={product.status === "active" ? "default" : "secondary"} className="text-[10px]">
                           {product.status === "active" ? "Actif" : "Pause"}
