@@ -219,7 +219,8 @@ export function SampleValidationPanel({ productId, productName, compact = false 
             <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
             <div>
               <p className="text-xs font-medium text-green-700 dark:text-green-400">Produit validé et actif</p>
-              {validation?.comment && (
+            {'comment' in (validation || {}) && (validation as any)?.comment && (
+              <p className="text-[10px] text-green-600 dark:text-green-500 mt-0.5">"{(validation as any).comment}"</p>
                 <p className="text-[10px] text-green-600 dark:text-green-500 mt-0.5">"{validation.comment}"</p>
               )}
             </div>
