@@ -16,34 +16,21 @@ export interface SampleValidation {
   created_at: string;
 }
 
-// For now, since we can't add a table yet, we store sample validation state
-// in the product's status field and localStorage as a temporary bridge.
-// The real implementation will use a sample_validations table.
-
-const STORAGE_KEY = "linksy_sample_validations";
-
-function getLocalValidations(): Record<string, { status: SampleStatus; photo_url?: string; comment?: string; ordered_at?: string; validated_at?: string }> {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-  } catch {
-    return {};
-  }
-}
-
-function setLocalValidation(productId: string, data: { status: SampleStatus; photo_url?: string; comment?: string; ordered_at?: string; validated_at?: string }) {
-  const all = getLocalValidations();
-  all[productId] = data;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
-}
-
 export function useSampleValidation(productId: string) {
   const { user } = useAuth();
 
   return useQuery({
     queryKey: ["sample-validation", productId, user?.id],
-    queryFn: () => {
-      const all = getLocalValidations();
-      return all[productId] || { status: "none" as SampleStatus };
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sample_validations" as any)
+        .select("*")
+        .eq("product_id", productId)
+        .eq("user_id", user!.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return (data as any as SampleValidation | null) || { status: "none" as SampleStatus };
     },
     enabled: !!user && !!productId,
   });
@@ -54,8 +41,24 @@ export function useSampleValidations() {
 
   return useQuery({
     queryKey: ["sample-validations", user?.id],
-    queryFn: () => {
-      return getLocalValidations();
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sample_validations" as any)
+        .select("*")
+        .eq("user_id", user!.id);
+
+      if (error) throw error;
+      const result: Record<string, { status: SampleStatus; photo_url?: string; comment?: string; ordered_at?: string; validated_at?: string }> = {};
+      for (const row of (data as any as SampleValidation[])) {
+        result[row.product_id] = {
+          status: row.status,
+          photo_url: row.photo_url || undefined,
+          comment: row.comment || undefined,
+          ordered_at: row.ordered_at || undefined,
+          validated_at: row.validated_at || undefined,
+        };
+      }
+      return result;
     },
     enabled: !!user,
   });
@@ -67,10 +70,16 @@ export function useOrderSample() {
 
   return useMutation({
     mutationFn: async (productId: string) => {
-      setLocalValidation(productId, {
-        status: "ordered",
-        ordered_at: new Date().toISOString(),
-      });
+      const { error } = await supabase
+        .from("sample_validations" as any)
+        .upsert({
+          product_id: productId,
+          user_id: user!.id,
+          status: "ordered",
+          ordered_at: new Date().toISOString(),
+        } as any, { onConflict: "product_id,user_id" });
+
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sample-validation"] });
@@ -81,14 +90,17 @@ export function useOrderSample() {
 
 export function useReceiveSample() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (productId: string) => {
-      const current = getLocalValidations()[productId] || {};
-      setLocalValidation(productId, {
-        ...current,
-        status: "received",
-      });
+      const { error } = await supabase
+        .from("sample_validations" as any)
+        .update({ status: "received" } as any)
+        .eq("product_id", productId)
+        .eq("user_id", user!.id);
+
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sample-validation"] });
@@ -99,19 +111,24 @@ export function useReceiveSample() {
 
 export function useValidateSample() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async ({ productId, comment, photoUrl }: { productId: string; comment?: string; photoUrl?: string }) => {
-      const current = getLocalValidations()[productId] || {};
-      setLocalValidation(productId, {
-        ...current,
-        status: "validated",
-        comment,
-        photo_url: photoUrl,
-        validated_at: new Date().toISOString(),
-      });
+      const { error: valError } = await supabase
+        .from("sample_validations" as any)
+        .update({
+          status: "validated",
+          comment,
+          photo_url: photoUrl,
+          validated_at: new Date().toISOString(),
+        } as any)
+        .eq("product_id", productId)
+        .eq("user_id", user!.id);
 
-      // Also activate the product in the database
+      if (valError) throw valError;
+
+      // Activate the product
       const { error } = await supabase
         .from("products")
         .update({ status: "active" })
