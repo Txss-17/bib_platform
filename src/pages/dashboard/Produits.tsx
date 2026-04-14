@@ -94,8 +94,8 @@ export default function Produits() {
     }
     if (statusFilter === "non_validated") {
       result = result.filter(p => getSampleStatus(p.id) !== "validated");
-    } else if (statusFilter === "validated") {
-      result = result.filter(p => getSampleStatus(p.id) === "validated");
+    } else if (statusFilter === "none" || statusFilter === "ordered" || statusFilter === "received" || statusFilter === "validated") {
+      result = result.filter(p => getSampleStatus(p.id) === statusFilter);
     }
     if (sortOrder === "recent") {
       result = [...result].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -175,13 +175,16 @@ export default function Produits() {
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-44 h-9 text-sm">
+                <SelectTrigger className="w-full sm:w-48 h-9 text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tous les statuts</SelectItem>
-                  <SelectItem value="non_validated">Non activés</SelectItem>
-                  <SelectItem value="validated">Validés</SelectItem>
+                  <SelectItem value="non_validated">⏳ En attente validation</SelectItem>
+                  <SelectItem value="none">❌ Échantillon requis</SelectItem>
+                  <SelectItem value="ordered">📦 Échantillon commandé</SelectItem>
+                  <SelectItem value="received">🔍 Échantillon reçu</SelectItem>
+                  <SelectItem value="validated">✅ Validés</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={sortOrder} onValueChange={setSortOrder}>
