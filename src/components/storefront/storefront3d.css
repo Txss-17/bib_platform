@@ -1,0 +1,78 @@
+/* 3D Storefront Effects */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Scroll reveal animations */
+.storefront-3d-reveal-up {
+  opacity: 0;
+  transform: translateY(40px) perspective(800px) rotateX(5deg);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.storefront-3d-reveal-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.storefront-3d-reveal-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.storefront-3d-reveal-scale {
+  opacity: 0;
+  transform: scale(0.9) perspective(800px) rotateY(5deg);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.storefront-3d-visible {
+  opacity: 1 !important;
+  transform: translateY(0) translateX(0) scale(1) perspective(800px) rotateX(0) rotateY(0) !important;
+}
+
+/* 3D hero gradient animation */
+.storefront-3d-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.storefront-3d-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle at 30% 50%,
+    rgba(255,255,255,0.08) 0%,
+    transparent 50%
+  );
+  animation: heroGlow 8s ease-in-out infinite;
+}
+
+@keyframes heroGlow {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(5%, -5%) rotate(2deg); }
+  66% { transform: translate(-3%, 3%) rotate(-1deg); }
+}
+
+/* Depth shadow on 3D cards */
+.storefront-3d-card {
+  transition: all 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.storefront-3d-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px -12px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.05);
+}
