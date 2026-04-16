@@ -22,7 +22,7 @@ interface StorefrontProductsProps {
   is3D?: boolean;
 }
 
-export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug }: StorefrontProductsProps) {
+export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug, is3D = false }: StorefrontProductsProps) {
   const { addItem } = useCart();
   // On mobile, show only first 8 products initially
   const [showAll, setShowAll] = useState(false);
