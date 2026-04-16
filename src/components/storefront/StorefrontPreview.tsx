@@ -11,8 +11,10 @@ import { StorefrontNewsletter } from "./StorefrontNewsletter";
 import { StorefrontFooter } from "./StorefrontFooter";
 import { CartDrawer } from "./CartDrawer";
 import { CartProvider } from "@/contexts/CartContext";
-import { getTemplateForCategory, type ThemeSettings, type SectionConfig, type AnimationLevel } from "@/lib/boutiqueTemplates";
+import { getTemplateForCategory, type ThemeSettings, type SectionConfig, type AnimationLevel, type SiteType } from "@/lib/boutiqueTemplates";
 import type { FAQItem } from "./StorefrontFAQ";
+import { ParallaxSection, ScrollReveal, TiltCard } from "./Storefront3DEffects";
+import "./storefront3d.css";
 
 interface Product {
   id: string;
@@ -67,6 +69,8 @@ export function StorefrontPreview({
   const primaryColor = themeSettings?.primaryColor || "#3b82f6";
   const secondaryColor = themeSettings?.secondaryColor || "#1e40af";
   const fonts = themeSettings?.fonts || template.fonts;
+  const siteType: SiteType = themeSettings?.siteType || "classic";
+  const is3D = siteType === "3d";
   // Use sections order from themeSettings (preserves drag-and-drop order)
   const sections = themeSettings?.sections || template.sections;
   
@@ -112,6 +116,18 @@ export function StorefrontPreview({
   const { section: animClass, hero: heroAnim, delayBase } = getAnimClasses(animationLevel);
   const noAnim = animationLevel === "none";
 
+  // Wrap content with 3D effects when in 3D mode
+  const wrap3D = (content: React.ReactNode, key: string, direction?: "up" | "left" | "right" | "scale") => {
+    if (!is3D) return content;
+    return (
+      <ScrollReveal key={key} direction={direction || "up"}>
+        <ParallaxSection speed={0.15}>
+          {content}
+        </ParallaxSection>
+      </ScrollReveal>
+    );
+  };
+
   // Render sections in their configured order
   const renderSection = (section: SectionConfig, index: number) => {
     if (!section.enabled) return null;
@@ -121,7 +137,7 @@ export function StorefrontPreview({
     switch (section.type) {
       case "hero":
         return (
-          <div key="hero" className={heroAnim} style={noAnim ? {} : { animationDuration: "0.5s" }}>
+          <div key="hero" className={`${heroAnim} ${is3D ? "storefront-3d-hero" : ""}`} style={noAnim ? {} : { animationDuration: "0.5s" }}>
             <StorefrontHero
               title={heroTitle}
               subtitle={heroSubtitle}
@@ -135,13 +151,15 @@ export function StorefrontPreview({
           </div>
         );
       case "features":
-        return (
+        return wrap3D(
           <div key="features" className={animClass} style={animStyle}>
             <StorefrontFeatures features={template.features} primaryColor={primaryColor} />
-          </div>
+          </div>,
+          "features",
+          "scale"
         );
       case "products":
-        return (
+        return wrap3D(
           <div key="products" className={animClass} style={animStyle}>
             <StorefrontProducts
               title={template.productsSectionTitle}
@@ -149,10 +167,12 @@ export function StorefrontPreview({
               primaryColor={primaryColor}
               boutiqueSlug={boutiqueSlug}
             />
-          </div>
+          </div>,
+          "products",
+          "up"
         );
       case "about":
-        return (
+        return wrap3D(
           <div key="about" className={animClass} style={animStyle}>
             <StorefrontAbout
               title={template.aboutTitle}
@@ -161,23 +181,27 @@ export function StorefrontPreview({
               primaryColor={primaryColor}
               aboutImageUrl={aboutImageUrl}
             />
-          </div>
+          </div>,
+          "about",
+          "left"
         );
       case "testimonials":
-        return <StorefrontTestimonials key="testimonials" primaryColor={primaryColor} />;
+        return wrap3D(<StorefrontTestimonials key="testimonials" primaryColor={primaryColor} />, "testimonials", "right");
       case "video":
-        return (
+        return wrap3D(
           <StorefrontVideo
             key="video"
             primaryColor={primaryColor}
             videoUrl={themeSettings?.videoUrl}
             title="Découvrez notre univers"
-          />
+          />,
+          "video",
+          "scale"
         );
       case "faq":
-        return <StorefrontFAQ key="faq" primaryColor={primaryColor} items={faqItems} />;
+        return wrap3D(<StorefrontFAQ key="faq" primaryColor={primaryColor} items={faqItems} />, "faq", "up");
       case "newsletter":
-        return <StorefrontNewsletter key="newsletter" primaryColor={primaryColor} boutiqueName={boutiqueName} />;
+        return wrap3D(<StorefrontNewsletter key="newsletter" primaryColor={primaryColor} boutiqueName={boutiqueName} />, "newsletter", "up");
       default:
         return null;
     }
