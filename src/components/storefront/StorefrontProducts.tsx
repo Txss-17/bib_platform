@@ -114,6 +114,7 @@ export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug
               </div>
             );
           })}
+        </div>
 
         {/* Mobile "Voir plus" button */}
         {products.length > mobileLimit && !showAll && (
