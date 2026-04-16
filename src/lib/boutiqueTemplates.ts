@@ -37,6 +37,12 @@ export const availableSections: { type: SectionConfig["type"]; label: string; de
 
 export type AnimationLevel = "none" | "subtle" | "dynamic";
 export type HeroLayout = "text-left" | "text-center" | "image-left" | "image-right" | "image-bg";
+export type SiteType = "classic" | "3d";
+
+export const siteTypes: { value: SiteType; label: string; description: string }[] = [
+  { value: "classic", label: "Classique", description: "Design épuré et professionnel, chargement rapide" },
+  { value: "3d", label: "3D & Effets", description: "Parallaxe, profondeur, effets visuels immersifs" },
+];
 
 export const animationLevels: { value: AnimationLevel; label: string; description: string }[] = [
   { value: "none", label: "Aucune", description: "Pas d'animation, chargement instantané" },
@@ -263,6 +269,7 @@ export interface ThemeSettings {
   colorScheme: string;
   primaryColor: string;
   secondaryColor: string;
+  siteType?: SiteType;
   fonts?: {
     heading: string;
     body: string;
