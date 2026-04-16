@@ -504,8 +504,12 @@ export default function BoutiqueEdit() {
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Editor panel */}
         <div className="space-y-4">
-          <Tabs defaultValue="colors" className="w-full">
-            <TabsList className="grid w-full grid-cols-6">
+          <Tabs defaultValue="style" className="w-full">
+            <TabsList className="grid w-full grid-cols-7">
+              <TabsTrigger value="style" className="gap-1">
+                <Box className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline text-xs">Style</span>
+              </TabsTrigger>
               <TabsTrigger value="colors" className="gap-1">
                 <Palette className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline text-xs">Couleurs</span>
@@ -531,6 +535,73 @@ export default function BoutiqueEdit() {
                 <span className="hidden sm:inline text-xs">Emails</span>
               </TabsTrigger>
             </TabsList>
+
+            {/* Style/Site type tab */}
+            <TabsContent value="style">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Type de site</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 gap-3">
+                    {siteTypes.map(st => (
+                      <button
+                        key={st.value}
+                        onClick={() => setThemeSettings(prev => ({ ...prev, siteType: st.value }))}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${
+                          (themeSettings.siteType || "classic") === st.value
+                            ? "border-primary bg-primary/5 shadow-md"
+                            : "border-border hover:border-primary/30"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {st.value === "classic" ? (
+                            <Layout className="w-6 h-6 text-primary" />
+                          ) : (
+                            <Box className="w-6 h-6 text-primary" />
+                          )}
+                          <div>
+                            <p className="font-semibold text-sm">{st.label}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{st.description}</p>
+                          </div>
+                        </div>
+                        {st.value === "3d" && (themeSettings.siteType || "classic") === "3d" && (
+                          <div className="mt-3 pt-3 border-t border-border space-y-3">
+                            <p className="text-xs text-muted-foreground">Effets inclus :</p>
+                            <ul className="text-xs space-y-1 text-muted-foreground">
+                              <li>✦ Parallaxe au scroll</li>
+                              <li>✦ Apparitions avec profondeur 3D</li>
+                              <li>✦ Effets de survol interactifs</li>
+                              <li>✦ Hero avec lueur animée</li>
+                            </ul>
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <Label className="text-sm font-medium">Niveau d'animation</Label>
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      {animationLevels.map(level => (
+                        <button
+                          key={level.value}
+                          onClick={() => setThemeSettings(prev => ({ ...prev, animationLevel: level.value }))}
+                          className={`p-2 rounded-lg border text-center transition-all text-xs ${
+                            themeSettings.animationLevel === level.value
+                              ? "border-primary bg-primary/5"
+                              : "border-border hover:border-primary/30"
+                          }`}
+                        >
+                          <p className="font-medium">{level.label}</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">{level.description}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
             {/* Colors tab */}
             <TabsContent value="colors">
