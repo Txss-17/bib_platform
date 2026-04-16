@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, ShoppingCart, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
+import { TiltCard } from "./Storefront3DEffects";
 
 interface Product {
   id: string;
@@ -18,9 +19,10 @@ interface StorefrontProductsProps {
   products: Product[];
   primaryColor: string;
   boutiqueSlug?: string;
+  is3D?: boolean;
 }
 
-export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug }: StorefrontProductsProps) {
+export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug, is3D = false }: StorefrontProductsProps) {
   const { addItem } = useCart();
   // On mobile, show only first 8 products initially
   const [showAll, setShowAll] = useState(false);
@@ -39,13 +41,25 @@ export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug
 
         {/* Mobile: 2 columns, show mobileLimit items; Desktop: 4 columns, show all */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {products.map((product, index) => (
-            <div 
-              key={product.id} 
-              className={`group ${!showAll && index >= mobileLimit ? "hidden md:block" : ""}`}
-            >
-              {boutiqueSlug ? (
-                <Link to={`/boutique/${boutiqueSlug}/product/${product.id}`}>
+          {products.map((product, index) => {
+            const cardContent = (
+              <>
+                {boutiqueSlug ? (
+                  <Link to={`/boutique/${boutiqueSlug}/product/${product.id}`}>
+                    <div className="relative aspect-square mb-3 bg-gray-100 rounded-lg overflow-hidden">
+                      {product.image_url ? (
+                        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400"><span className="text-sm">Image</span></div>
+                      )}
+                      {product.isPopular && (
+                        <Badge className="absolute top-2 left-2 text-white" style={{ backgroundColor: primaryColor }}>
+                          <Check className="w-3 h-3 mr-1" /> Populaire
+                        </Badge>
+                      )}
+                    </div>
+                  </Link>
+                ) : (
                   <div className="relative aspect-square mb-3 bg-gray-100 rounded-lg overflow-hidden">
                     {product.image_url ? (
                       <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -58,46 +72,48 @@ export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug
                       </Badge>
                     )}
                   </div>
-                </Link>
-              ) : (
-                <div className="relative aspect-square mb-3 bg-gray-100 rounded-lg overflow-hidden">
-                  {product.image_url ? (
-                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400"><span className="text-sm">Image</span></div>
-                  )}
-                  {product.isPopular && (
-                    <Badge className="absolute top-2 left-2 text-white" style={{ backgroundColor: primaryColor }}>
-                      <Check className="w-3 h-3 mr-1" /> Populaire
-                    </Badge>
-                  )}
+                )}
+
+                <h3 className="font-medium text-gray-900 text-sm md:text-base mb-1 line-clamp-2">
+                  {boutiqueSlug ? (
+                    <Link to={`/boutique/${boutiqueSlug}/product/${product.id}`} className="hover:underline">
+                      {product.name}
+                    </Link>
+                  ) : product.name}
+                </h3>
+                <div className="flex items-baseline gap-2 mb-3">
+                  <span className="text-lg font-semibold" style={{ color: primaryColor }}>
+                    {product.price.toFixed(2)} €
+                  </span>
+                  <span className="text-xs text-gray-500">Livraison incluse</span>
                 </div>
-              )}
 
-              <h3 className="font-medium text-gray-900 text-sm md:text-base mb-1 line-clamp-2">
-                {boutiqueSlug ? (
-                  <Link to={`/boutique/${boutiqueSlug}/product/${product.id}`} className="hover:underline">
-                    {product.name}
-                  </Link>
-                ) : product.name}
-              </h3>
-              <div className="flex items-baseline gap-2 mb-3">
-                <span className="text-lg font-semibold" style={{ color: primaryColor }}>
-                  {product.price.toFixed(2)} €
-                </span>
-                <span className="text-xs text-gray-500">Livraison incluse</span>
-              </div>
+                <Button
+                  className="w-full text-white text-sm gap-1.5"
+                  style={{ backgroundColor: primaryColor }}
+                  onClick={() => addItem({ id: product.id, name: product.name, price: product.price, image_url: product.image_url })}
+                >
+                  <ShoppingCart className="w-3.5 h-3.5" />
+                  Ajouter
+                </Button>
+              </>
+            );
 
-              <Button
-                className="w-full text-white text-sm gap-1.5"
-                style={{ backgroundColor: primaryColor }}
-                onClick={() => addItem({ id: product.id, name: product.name, price: product.price, image_url: product.image_url })}
+            return (
+              <div 
+                key={product.id} 
+                className={`group ${!showAll && index >= mobileLimit ? "hidden md:block" : ""}`}
               >
-                <ShoppingCart className="w-3.5 h-3.5" />
-                Ajouter
-              </Button>
-            </div>
-          ))}
+                {is3D ? (
+                  <TiltCard intensity={8} className="storefront-3d-card rounded-xl p-2">
+                    {cardContent}
+                  </TiltCard>
+                ) : (
+                  cardContent
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Mobile "Voir plus" button */}
