@@ -19,6 +19,7 @@ interface StorefrontProductsProps {
   products: Product[];
   primaryColor: string;
   boutiqueSlug?: string;
+  is3D?: boolean;
 }
 
 export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug }: StorefrontProductsProps) {
