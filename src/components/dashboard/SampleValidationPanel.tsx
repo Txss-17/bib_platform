@@ -50,7 +50,10 @@ export function SampleValidationPanel({ productId, productName, compact = false 
   const handleOrder = async () => {
     try {
       await orderSample.mutateAsync(productId);
-      toast.success("Échantillon commandé ! Vous recevrez une notification.");
+      toast.success("📦 Échantillon commandé !", {
+        description: `Votre échantillon de "${productName}" a été commandé. Vous serez notifié à la réception.`,
+        duration: 5000,
+      });
     } catch {
       toast.error("Erreur lors de la commande");
     }
@@ -59,7 +62,10 @@ export function SampleValidationPanel({ productId, productName, compact = false 
   const handleReceive = async () => {
     try {
       await receiveSample.mutateAsync(productId);
-      toast.success("Échantillon marqué comme reçu");
+      toast.success("🔍 Échantillon reçu !", {
+        description: `"${productName}" est marqué comme reçu. Testez-le puis validez pour l'activer en boutique.`,
+        duration: 5000,
+      });
     } catch {
       toast.error("Erreur");
     }
@@ -72,7 +78,10 @@ export function SampleValidationPanel({ productId, productName, compact = false 
     }
     try {
       await validateSample.mutateAsync({ productId, comment });
-      toast.success(`${productName} est maintenant actif et visible en boutique !`);
+      toast.success("✅ Produit validé et activé !", {
+        description: `"${productName}" est maintenant visible et disponible à la vente dans votre boutique.`,
+        duration: 6000,
+      });
       setShowValidateForm(false);
     } catch {
       toast.error("Erreur lors de la validation");
