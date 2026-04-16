@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, ShoppingCart, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
+import { TiltCard } from "./Storefront3DEffects";
 
 interface Product {
   id: string;
