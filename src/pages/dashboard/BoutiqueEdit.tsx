@@ -9,11 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Sparkles, Mail, Plus, GripVertical, Image, Wand2, Upload, Trash2, FileText } from "lucide-react";
+import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Sparkles, Mail, Plus, GripVertical, Image, Wand2, Upload, Trash2, FileText, Box } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { StorefrontPreview } from "@/components/storefront/StorefrontPreview";
-import { getTemplateForCategory, availableSections, animationLevels, heroLayouts, type ThemeSettings, type SectionConfig, type AnimationLevel, type HeroLayout } from "@/lib/boutiqueTemplates";
+import { getTemplateForCategory, availableSections, animationLevels, heroLayouts, siteTypes, type ThemeSettings, type SectionConfig, type AnimationLevel, type HeroLayout, type SiteType } from "@/lib/boutiqueTemplates";
 import { useEmailTemplates, useUpsertEmailTemplate, DEFAULT_TEMPLATES } from "@/hooks/useEmailTemplates";
 import {
   DndContext,
