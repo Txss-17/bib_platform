@@ -46,6 +46,8 @@ export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug
               key={product.id} 
               className={`group ${!showAll && index >= mobileLimit ? "hidden md:block" : ""}`}
             >
+            {is3D ? (
+              <TiltCard intensity={8}>
               {boutiqueSlug ? (
                 <Link to={`/boutique/${boutiqueSlug}/product/${product.id}`}>
                   <div className="relative aspect-square mb-3 bg-gray-100 rounded-lg overflow-hidden">
@@ -98,8 +100,8 @@ export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug
                 <ShoppingCart className="w-3.5 h-3.5" />
                 Ajouter
               </Button>
+              {is3D && </TiltCard>}
             </div>
-          ))}
         </div>
 
         {/* Mobile "Voir plus" button */}
