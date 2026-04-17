@@ -127,17 +127,7 @@ export function StorefrontPreview({
   const { section: animClass, hero: heroAnim, delayBase } = getAnimClasses(animationLevel);
   const noAnim = animationLevel === "none";
 
-  // Wrap content with 3D effects when in 3D mode
-  const wrap3D = (content: React.ReactNode, key: string, direction?: "up" | "left" | "right" | "scale") => {
-    if (!is3D) return content;
-    return (
-      <ScrollReveal key={key} direction={direction || "up"}>
-        <ParallaxSection speed={0.15}>
-          {content}
-        </ParallaxSection>
-      </ScrollReveal>
-    );
-  };
+
 
   // Render sections in their configured order
   const renderSection = (section: SectionConfig, index: number) => {
