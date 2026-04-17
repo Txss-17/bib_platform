@@ -105,8 +105,10 @@ export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug
                 className={`group ${!showAll && index >= mobileLimit ? "hidden md:block" : ""}`}
               >
                 {is3D ? (
-                  <TiltCard intensity={8} className="storefront-3d-card rounded-xl p-2">
-                    {cardContent}
+                  <TiltCard intensity={8} className="storefront-3d-card rounded-xl">
+                    <ShineCard className="rounded-xl p-2">
+                      {cardContent}
+                    </ShineCard>
                   </TiltCard>
                 ) : (
                   cardContent
