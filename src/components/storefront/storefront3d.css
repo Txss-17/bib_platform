@@ -89,3 +89,95 @@
   background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.15), transparent 60%);
   mix-blend-mode: overlay;
 }
+
+/* Flip */
+@keyframes sfFlipIn {
+  0% { opacity: 0; transform: perspective(800px) rotateX(-80deg); }
+  100% { opacity: 1; transform: perspective(800px) rotateX(0); }
+}
+.sf-effect-flip { animation: sfFlipIn 0.8s ease-out both; transform-origin: top center; }
+
+/* Rotate */
+@keyframes sfRotateIn {
+  0% { opacity: 0; transform: rotate(-6deg) scale(0.95); }
+  100% { opacity: 1; transform: rotate(0) scale(1); }
+}
+.sf-effect-rotate { animation: sfRotateIn 0.7s ease-out both; }
+
+/* Blur-in */
+@keyframes sfBlurIn {
+  0% { opacity: 0; filter: blur(20px); transform: scale(1.05); }
+  100% { opacity: 1; filter: blur(0); transform: scale(1); }
+}
+.sf-effect-blur-in { animation: sfBlurIn 0.9s ease-out both; }
+
+/* Bounce */
+@keyframes sfBounceIn {
+  0% { opacity: 0; transform: translateY(40px) scale(0.9); }
+  60% { opacity: 1; transform: translateY(-12px) scale(1.03); }
+  80% { transform: translateY(4px) scale(0.99); }
+  100% { transform: translateY(0) scale(1); }
+}
+.sf-effect-bounce { animation: sfBounceIn 0.9s cubic-bezier(.34,1.56,.64,1) both; }
+
+/* Shine sweep */
+.sf-effect-shine { position: relative; overflow: hidden; }
+.sf-effect-shine::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-20deg);
+  animation: sfShineSweep 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes sfShineSweep {
+  0% { left: -75%; }
+  60%, 100% { left: 125%; }
+}
+
+/* Float */
+@keyframes sfFloatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.sf-effect-float { animation: sfFloatY 4s ease-in-out infinite; }
+
+/* Pulse */
+@keyframes sfPulseScale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.015); }
+}
+.sf-effect-pulse { animation: sfPulseScale 2.5s ease-in-out infinite; }
+
+/* Wave */
+@keyframes sfWave {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  25% { transform: translateX(2px) rotate(0.2deg); }
+  75% { transform: translateX(-2px) rotate(-0.2deg); }
+}
+.sf-effect-wave { animation: sfWave 6s ease-in-out infinite; }
+
+/* Cursor-following shine for product cards */
+.sf-card-shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.sf-card-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle 180px at var(--shine-x, 50%) var(--shine-y, 50%),
+    rgba(255,255,255,0.35),
+    transparent 60%
+  );
+  opacity: var(--shine-opacity, 0);
+  transition: opacity 0.25s ease;
+  mix-blend-mode: overlay;
+  z-index: 2;
+}

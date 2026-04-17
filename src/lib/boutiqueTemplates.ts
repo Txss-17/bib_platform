@@ -1,6 +1,23 @@
 // Template configurations for each boutique category
 
-export type SectionEffect = "none" | "fade" | "slide-up" | "slide-left" | "slide-right" | "zoom" | "tilt" | "parallax" | "glow";
+export type SectionEffect =
+  | "none"
+  | "fade"
+  | "slide-up"
+  | "slide-left"
+  | "slide-right"
+  | "zoom"
+  | "tilt"
+  | "parallax"
+  | "glow"
+  | "flip"
+  | "rotate"
+  | "blur-in"
+  | "bounce"
+  | "shine"
+  | "float"
+  | "pulse"
+  | "wave";
 
 export interface SectionConfig {
   id: string;
@@ -22,6 +39,14 @@ export const sectionEffects: { value: SectionEffect; label: string; description:
   { value: "tilt", label: "Tilt 3D", description: "Inclinaison avec perspective" },
   { value: "parallax", label: "Parallaxe", description: "Mouvement décalé au scroll" },
   { value: "glow", label: "Lueur", description: "Effet brillance lumineuse" },
+  { value: "flip", label: "Flip 3D", description: "Retournement sur l'axe horizontal" },
+  { value: "rotate", label: "Rotation", description: "Apparition avec légère rotation" },
+  { value: "blur-in", label: "Flou", description: "Apparition depuis un effet flouté" },
+  { value: "bounce", label: "Rebond", description: "Apparition avec rebond élastique" },
+  { value: "shine", label: "Brillance", description: "Reflet lumineux qui traverse" },
+  { value: "float", label: "Flottement", description: "Mouvement vertical permanent" },
+  { value: "pulse", label: "Pulsation", description: "Battement rythmique permanent" },
+  { value: "wave", label: "Vague", description: "Ondulation continue subtile" },
 ];
 
 export interface TemplateConfig {

@@ -27,6 +27,18 @@ function effectToReveal(effect?: SectionEffect): "up" | "left" | "right" | "scal
   }
 }
 
+const effectClassMap: Partial<Record<SectionEffect, string>> = {
+  flip: "sf-effect-flip",
+  rotate: "sf-effect-rotate",
+  "blur-in": "sf-effect-blur-in",
+  bounce: "sf-effect-bounce",
+  shine: "sf-effect-shine",
+  float: "sf-effect-float",
+  pulse: "sf-effect-pulse",
+  wave: "sf-effect-wave",
+  glow: "sf-effect-glow",
+};
+
 interface Product {
   id: string;
   name: string;
@@ -230,8 +242,8 @@ export function StorefrontPreview({
         wrapped = <TiltCard key={`tilt-${section.type}`} intensity={tiltMap[intensity]}>{inner}</TiltCard>;
       } else if (effect === "parallax") {
         wrapped = <ParallaxSection key={`px-${section.type}`} speed={speedMap[intensity]}>{inner}</ParallaxSection>;
-      } else if (effect === "glow") {
-        wrapped = <div key={`gl-${section.type}`} className="sf-effect-glow">{inner}</div>;
+      } else if (effectClassMap[effect]) {
+        wrapped = <div key={`fx-${section.type}`} className={effectClassMap[effect]}>{inner}</div>;
       }
       if (reveal) {
         return <ScrollReveal key={`r-${section.type}`} direction={reveal}>{wrapped}</ScrollReveal>;

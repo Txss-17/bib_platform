@@ -845,8 +845,27 @@ export default function BoutiqueEdit() {
             <TabsContent value="sections">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Sections du site</CardTitle>
-                  <p className="text-xs text-muted-foreground">Glissez-déposez pour réorganiser l'ordre des sections</p>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <CardTitle className="text-lg">Sections du site</CardTitle>
+                      <p className="text-xs text-muted-foreground">Glissez-déposez pour réorganiser l'ordre des sections</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const template = getTemplateForCategory(boutique?.category || "Mode");
+                        const current = themeSettings.sections || template.sections;
+                        const cleared = current.map(s => ({ ...s, effect: "none" as SectionEffect, effectIntensity: "medium" as const }));
+                        setThemeSettings(prev => ({ ...prev, sections: cleared }));
+                        toast.success("Tous les effets ont été réinitialisés");
+                      }}
+                      className="gap-1.5 shrink-0"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /> Réinitialiser les effets
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
