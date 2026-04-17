@@ -666,6 +666,74 @@ export default function BoutiqueEdit() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Live preview comparison */}
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="text-lg">Aperçu live</CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    Le rendu se met à jour en direct. Le panneau de droite affiche le mode sélectionné : <strong>{(themeSettings.siteType || "classic") === "3d" ? "3D & Effets" : "Classique"}</strong>.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-3">
+                    {siteTypes.map(st => {
+                      const isActive = (themeSettings.siteType || "classic") === st.value;
+                      return (
+                        <button
+                          key={st.value}
+                          onClick={() => setThemeSettings(prev => ({ ...prev, siteType: st.value }))}
+                          className={`group relative rounded-lg border-2 overflow-hidden text-left transition-all ${
+                            isActive ? "border-primary shadow-lg" : "border-border hover:border-primary/40"
+                          }`}
+                        >
+                          <div
+                            className="h-32 relative overflow-hidden"
+                            style={{
+                              background: `linear-gradient(135deg, ${themeSettings.primaryColor}, ${themeSettings.secondaryColor})`,
+                            }}
+                          >
+                            {st.value === "3d" && (
+                              <>
+                                <div
+                                  className="absolute -top-8 -left-8 w-24 h-24 rounded-full bg-white/20 blur-xl animate-pulse"
+                                />
+                                <div
+                                  className="absolute bottom-0 right-0 w-16 h-16 rounded-full bg-white/10 blur-lg"
+                                  style={{ animation: "float 3s ease-in-out infinite" }}
+                                />
+                              </>
+                            )}
+                            <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-2">
+                              <p className="text-xs font-bold drop-shadow" style={{ fontFamily: `'${(themeSettings.fonts?.heading) || "Inter"}', sans-serif` }}>
+                                {boutique.name}
+                              </p>
+                              <div className="flex gap-1 mt-2">
+                                {[1,2,3].map(i => (
+                                  <div
+                                    key={i}
+                                    className={`w-6 h-8 rounded bg-white/30 ${st.value === "3d" ? "transform group-hover:rotate-3 transition-transform" : ""}`}
+                                    style={st.value === "3d" ? { transform: `perspective(200px) rotateY(${(i-2)*8}deg)` } : {}}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="p-2 bg-card">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-semibold">{st.label}</p>
+                              {isActive && <span className="text-[10px] text-primary font-bold">✓ Actif</span>}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-3 text-center">
+                    💡 Survolez la version 3D pour voir les effets de profondeur
+                  </p>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* Colors tab */}
