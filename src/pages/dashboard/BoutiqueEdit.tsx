@@ -13,7 +13,7 @@ import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Spa
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { StorefrontPreview } from "@/components/storefront/StorefrontPreview";
-import { getTemplateForCategory, availableSections, animationLevels, heroLayouts, siteTypes, type ThemeSettings, type SectionConfig, type AnimationLevel, type HeroLayout, type SiteType } from "@/lib/boutiqueTemplates";
+import { getTemplateForCategory, availableSections, animationLevels, heroLayouts, siteTypes, sectionEffects, type ThemeSettings, type SectionConfig, type AnimationLevel, type HeroLayout, type SiteType, type SectionEffect } from "@/lib/boutiqueTemplates";
 import { useEmailTemplates, useUpsertEmailTemplate, DEFAULT_TEMPLATES } from "@/hooks/useEmailTemplates";
 import {
   DndContext,
