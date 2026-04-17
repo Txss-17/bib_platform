@@ -1,12 +1,28 @@
 // Template configurations for each boutique category
 
+export type SectionEffect = "none" | "fade" | "slide-up" | "slide-left" | "slide-right" | "zoom" | "tilt" | "parallax" | "glow";
+
 export interface SectionConfig {
   id: string;
   type: "hero" | "features" | "products" | "about" | "testimonials" | "newsletter" | "video" | "faq";
   enabled: boolean;
   title?: string;
   subtitle?: string;
+  effect?: SectionEffect;
+  effectIntensity?: "low" | "medium" | "high";
 }
+
+export const sectionEffects: { value: SectionEffect; label: string; description: string }[] = [
+  { value: "none", label: "Aucun", description: "Apparition instantanée" },
+  { value: "fade", label: "Fondu", description: "Apparition douce en opacité" },
+  { value: "slide-up", label: "Glisse haut", description: "Monte depuis le bas" },
+  { value: "slide-left", label: "Glisse gauche", description: "Entre depuis la gauche" },
+  { value: "slide-right", label: "Glisse droite", description: "Entre depuis la droite" },
+  { value: "zoom", label: "Zoom", description: "Apparition avec mise à l'échelle" },
+  { value: "tilt", label: "Tilt 3D", description: "Inclinaison avec perspective" },
+  { value: "parallax", label: "Parallaxe", description: "Mouvement décalé au scroll" },
+  { value: "glow", label: "Lueur", description: "Effet brillance lumineuse" },
+];
 
 export interface TemplateConfig {
   category: string;

@@ -13,7 +13,7 @@ import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Spa
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { StorefrontPreview } from "@/components/storefront/StorefrontPreview";
-import { getTemplateForCategory, availableSections, animationLevels, heroLayouts, siteTypes, type ThemeSettings, type SectionConfig, type AnimationLevel, type HeroLayout, type SiteType } from "@/lib/boutiqueTemplates";
+import { getTemplateForCategory, availableSections, animationLevels, heroLayouts, siteTypes, sectionEffects, type ThemeSettings, type SectionConfig, type AnimationLevel, type HeroLayout, type SiteType, type SectionEffect } from "@/lib/boutiqueTemplates";
 import { useEmailTemplates, useUpsertEmailTemplate, DEFAULT_TEMPLATES } from "@/hooks/useEmailTemplates";
 import {
   DndContext,
@@ -63,11 +63,15 @@ function SortableSectionItem({
   sectionDef,
   isEnabled,
   onToggle,
+  onEffectChange,
+  onIntensityChange,
 }: {
   section: SectionConfig;
   sectionDef: { type: string; label: string; description: string };
   isEnabled: boolean;
   onToggle: (type: string, enabled: boolean) => void;
+  onEffectChange: (type: string, effect: SectionEffect) => void;
+  onIntensityChange: (type: string, intensity: "low" | "medium" | "high") => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: section.type,
@@ -80,22 +84,62 @@ function SortableSectionItem({
     zIndex: isDragging ? 10 : 0,
   };
 
+  const currentEffect = (section.effect || "none") as SectionEffect;
+  const currentIntensity = section.effectIntensity || "medium";
+  const showIntensity = currentEffect === "tilt" || currentEffect === "parallax";
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center justify-between p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors bg-card"
+      className="rounded-lg border border-border/50 hover:bg-muted/30 transition-colors bg-card"
     >
-      <div className="flex items-center gap-3">
-        <button {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-none">
-          <GripVertical className="w-4 h-4 text-muted-foreground/60 hover:text-muted-foreground" />
-        </button>
-        <div>
-          <p className="font-medium text-sm">{sectionDef.label}</p>
-          <p className="text-xs text-muted-foreground">{sectionDef.description}</p>
+      <div className="flex items-center justify-between p-3">
+        <div className="flex items-center gap-3">
+          <button {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-none">
+            <GripVertical className="w-4 h-4 text-muted-foreground/60 hover:text-muted-foreground" />
+          </button>
+          <div>
+            <p className="font-medium text-sm">{sectionDef.label}</p>
+            <p className="text-xs text-muted-foreground">{sectionDef.description}</p>
+          </div>
         </div>
+        <Switch checked={isEnabled} onCheckedChange={(checked) => onToggle(section.type, checked)} />
       </div>
-      <Switch checked={isEnabled} onCheckedChange={(checked) => onToggle(section.type, checked)} />
+      {isEnabled && (
+        <div className="px-3 pb-3 pt-1 border-t border-border/40 space-y-2">
+          <div className="flex items-center gap-2">
+            <Wand2 className="w-3.5 h-3.5 text-muted-foreground" />
+            <Label className="text-xs text-muted-foreground">Effet à l'apparition</Label>
+          </div>
+          <select
+            value={currentEffect}
+            onChange={(e) => onEffectChange(section.type, e.target.value as SectionEffect)}
+            className="w-full text-xs rounded-md border border-border bg-background px-2 py-1.5"
+          >
+            {sectionEffects.map(eff => (
+              <option key={eff.value} value={eff.value}>{eff.label} — {eff.description}</option>
+            ))}
+          </select>
+          {showIntensity && (
+            <div className="flex gap-1">
+              {(["low", "medium", "high"] as const).map(lvl => (
+                <button
+                  key={lvl}
+                  onClick={() => onIntensityChange(section.type, lvl)}
+                  className={`flex-1 text-xs py-1 rounded border transition-colors ${
+                    currentIntensity === lvl
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border hover:border-primary/40"
+                  }`}
+                >
+                  {lvl === "low" ? "Subtil" : lvl === "medium" ? "Moyen" : "Intense"}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -280,6 +324,24 @@ export default function BoutiqueEdit() {
       toast.error("Erreur lors de la publication");
     },
   });
+
+  const updateSectionEffect = (sectionType: string, effect: SectionEffect) => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    const updated = currentSections.map(s =>
+      s.type === sectionType ? { ...s, effect } : s
+    );
+    setThemeSettings(prev => ({ ...prev, sections: updated }));
+  };
+
+  const updateSectionIntensity = (sectionType: string, effectIntensity: "low" | "medium" | "high") => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    const updated = currentSections.map(s =>
+      s.type === sectionType ? { ...s, effectIntensity } : s
+    );
+    setThemeSettings(prev => ({ ...prev, sections: updated }));
+  };
 
   const updateSection = (sectionType: string, enabled: boolean) => {
     const template = getTemplateForCategory(boutique?.category || "Mode");
@@ -604,6 +666,74 @@ export default function BoutiqueEdit() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Live preview comparison */}
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="text-lg">Aperçu live</CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    Le rendu se met à jour en direct. Le panneau de droite affiche le mode sélectionné : <strong>{(themeSettings.siteType || "classic") === "3d" ? "3D & Effets" : "Classique"}</strong>.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-3">
+                    {siteTypes.map(st => {
+                      const isActive = (themeSettings.siteType || "classic") === st.value;
+                      return (
+                        <button
+                          key={st.value}
+                          onClick={() => setThemeSettings(prev => ({ ...prev, siteType: st.value }))}
+                          className={`group relative rounded-lg border-2 overflow-hidden text-left transition-all ${
+                            isActive ? "border-primary shadow-lg" : "border-border hover:border-primary/40"
+                          }`}
+                        >
+                          <div
+                            className="h-32 relative overflow-hidden"
+                            style={{
+                              background: `linear-gradient(135deg, ${themeSettings.primaryColor}, ${themeSettings.secondaryColor})`,
+                            }}
+                          >
+                            {st.value === "3d" && (
+                              <>
+                                <div
+                                  className="absolute -top-8 -left-8 w-24 h-24 rounded-full bg-white/20 blur-xl animate-pulse"
+                                />
+                                <div
+                                  className="absolute bottom-0 right-0 w-16 h-16 rounded-full bg-white/10 blur-lg"
+                                  style={{ animation: "float 3s ease-in-out infinite" }}
+                                />
+                              </>
+                            )}
+                            <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-2">
+                              <p className="text-xs font-bold drop-shadow" style={{ fontFamily: `'${(themeSettings.fonts?.heading) || "Inter"}', sans-serif` }}>
+                                {boutique.name}
+                              </p>
+                              <div className="flex gap-1 mt-2">
+                                {[1,2,3].map(i => (
+                                  <div
+                                    key={i}
+                                    className={`w-6 h-8 rounded bg-white/30 ${st.value === "3d" ? "transform group-hover:rotate-3 transition-transform" : ""}`}
+                                    style={st.value === "3d" ? { transform: `perspective(200px) rotateY(${(i-2)*8}deg)` } : {}}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="p-2 bg-card">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-semibold">{st.label}</p>
+                              {isActive && <span className="text-[10px] text-primary font-bold">✓ Actif</span>}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-3 text-center">
+                    💡 Survolez la version 3D pour voir les effets de profondeur
+                  </p>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* Colors tab */}
@@ -732,6 +862,8 @@ export default function BoutiqueEdit() {
                               sectionDef={sectionDef}
                               isEnabled={section.enabled}
                               onToggle={updateSection}
+                              onEffectChange={updateSectionEffect}
+                              onIntensityChange={updateSectionIntensity}
                             />
                           );
                         })}
