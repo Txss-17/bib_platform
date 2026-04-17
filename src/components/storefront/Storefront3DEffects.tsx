@@ -156,3 +156,39 @@ export function ScrollReveal({ children, className = "", direction = "up" }: Scr
     </div>
   );
 }
+
+interface ShineCardProps {
+  children: ReactNode;
+  className?: string;
+}
+
+export function ShineCard({ children, className = "" }: ShineCardProps) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    el.style.setProperty("--shine-x", `${x}%`);
+    el.style.setProperty("--shine-y", `${y}%`);
+    el.style.setProperty("--shine-opacity", "1");
+  };
+
+  const handleMouseLeave = () => {
+    const el = ref.current;
+    if (el) el.style.setProperty("--shine-opacity", "0");
+  };
+
+  return (
+    <div
+      ref={ref}
+      className={`sf-card-shine ${className}`}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      {children}
+    </div>
+  );
+}
