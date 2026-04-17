@@ -794,6 +794,8 @@ export default function BoutiqueEdit() {
                               sectionDef={sectionDef}
                               isEnabled={section.enabled}
                               onToggle={updateSection}
+                              onEffectChange={updateSectionEffect}
+                              onIntensityChange={updateSectionIntensity}
                             />
                           );
                         })}
