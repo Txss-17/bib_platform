@@ -325,6 +325,24 @@ export default function BoutiqueEdit() {
     },
   });
 
+  const updateSectionEffect = (sectionType: string, effect: SectionEffect) => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    const updated = currentSections.map(s =>
+      s.type === sectionType ? { ...s, effect } : s
+    );
+    setThemeSettings(prev => ({ ...prev, sections: updated }));
+  };
+
+  const updateSectionIntensity = (sectionType: string, effectIntensity: "low" | "medium" | "high") => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    const updated = currentSections.map(s =>
+      s.type === sectionType ? { ...s, effectIntensity } : s
+    );
+    setThemeSettings(prev => ({ ...prev, sections: updated }));
+  };
+
   const updateSection = (sectionType: string, enabled: boolean) => {
     const template = getTemplateForCategory(boutique?.category || "Mode");
     const currentSections = themeSettings.sections || template.sections;
