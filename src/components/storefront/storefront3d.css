@@ -76,3 +76,16 @@
   transform: translateY(-8px) scale(1.02);
   box-shadow: 0 20px 40px -12px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.05);
 }
+
+/* Per-section effect helpers */
+.sf-effect-glow {
+  position: relative;
+}
+.sf-effect-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.15), transparent 60%);
+  mix-blend-mode: overlay;
+}
