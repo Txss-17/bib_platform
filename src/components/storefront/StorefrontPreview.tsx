@@ -145,9 +145,12 @@ export function StorefrontPreview({
     const delay = delayBase * (index + 1);
     const animStyle = noAnim ? {} : { animationDelay: `${delay}ms`, animationFillMode: "forwards" as const, opacity: 0 };
 
+    let inner: React.ReactNode = null;
+    let defaultDir: "up" | "left" | "right" | "scale" = "up";
+
     switch (section.type) {
       case "hero":
-        return (
+        inner = (
           <div key="hero" className={`${heroAnim} ${is3D ? "storefront-3d-hero" : ""}`} style={noAnim ? {} : { animationDuration: "0.5s" }}>
             <StorefrontHero
               title={heroTitle}
@@ -161,16 +164,19 @@ export function StorefrontPreview({
             />
           </div>
         );
+        // Hero handled separately, no wrap
+        return inner;
       case "features":
-        return wrap3D(
+        defaultDir = "scale";
+        inner = (
           <div key="features" className={animClass} style={animStyle}>
             <StorefrontFeatures features={template.features} primaryColor={primaryColor} />
-          </div>,
-          "features",
-          "scale"
+          </div>
         );
+        break;
       case "products":
-        return wrap3D(
+        defaultDir = "up";
+        inner = (
           <div key="products" className={animClass} style={animStyle}>
             <StorefrontProducts
               title={template.productsSectionTitle}
@@ -179,12 +185,12 @@ export function StorefrontPreview({
               boutiqueSlug={boutiqueSlug}
               is3D={is3D}
             />
-          </div>,
-          "products",
-          "up"
+          </div>
         );
+        break;
       case "about":
-        return wrap3D(
+        defaultDir = "left";
+        inner = (
           <div key="about" className={animClass} style={animStyle}>
             <StorefrontAbout
               title={template.aboutTitle}
@@ -193,30 +199,65 @@ export function StorefrontPreview({
               primaryColor={primaryColor}
               aboutImageUrl={aboutImageUrl}
             />
-          </div>,
-          "about",
-          "left"
+          </div>
         );
+        break;
       case "testimonials":
-        return wrap3D(<StorefrontTestimonials key="testimonials" primaryColor={primaryColor} />, "testimonials", "right");
+        defaultDir = "right";
+        inner = <StorefrontTestimonials key="testimonials" primaryColor={primaryColor} />;
+        break;
       case "video":
-        return wrap3D(
+        defaultDir = "scale";
+        inner = (
           <StorefrontVideo
             key="video"
             primaryColor={primaryColor}
             videoUrl={themeSettings?.videoUrl}
             title="Découvrez notre univers"
-          />,
-          "video",
-          "scale"
+          />
         );
+        break;
       case "faq":
-        return wrap3D(<StorefrontFAQ key="faq" primaryColor={primaryColor} items={faqItems} />, "faq", "up");
+        inner = <StorefrontFAQ key="faq" primaryColor={primaryColor} items={faqItems} />;
+        break;
       case "newsletter":
-        return wrap3D(<StorefrontNewsletter key="newsletter" primaryColor={primaryColor} boutiqueName={boutiqueName} />, "newsletter", "up");
+        inner = <StorefrontNewsletter key="newsletter" primaryColor={primaryColor} boutiqueName={boutiqueName} />;
+        break;
       default:
         return null;
     }
+
+    // Per-section effect (overrides 3D defaults when explicitly set)
+    const effect = section.effect;
+    const intensity = section.effectIntensity || "medium";
+    const speedMap = { low: 0.08, medium: 0.18, high: 0.35 };
+    const tiltMap = { low: 4, medium: 8, high: 14 };
+
+    if (effect && effect !== "none") {
+      const reveal = effectToReveal(effect);
+      let wrapped: React.ReactNode = inner;
+      if (effect === "tilt") {
+        wrapped = <TiltCard key={`tilt-${section.type}`} intensity={tiltMap[intensity]}>{inner}</TiltCard>;
+      } else if (effect === "parallax") {
+        wrapped = <ParallaxSection key={`px-${section.type}`} speed={speedMap[intensity]}>{inner}</ParallaxSection>;
+      } else if (effect === "glow") {
+        wrapped = <div key={`gl-${section.type}`} className="sf-effect-glow">{inner}</div>;
+      }
+      if (reveal) {
+        return <ScrollReveal key={`r-${section.type}`} direction={reveal}>{wrapped}</ScrollReveal>;
+      }
+      return wrapped;
+    }
+
+    // Fallback: legacy 3D wrap when site type is 3D and no explicit effect
+    if (is3D) {
+      return (
+        <ScrollReveal key={`r-${section.type}`} direction={defaultDir}>
+          <ParallaxSection speed={0.15}>{inner}</ParallaxSection>
+        </ScrollReveal>
+      );
+    }
+    return inner;
   };
 
   return (
