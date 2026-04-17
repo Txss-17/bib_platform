@@ -63,11 +63,15 @@ function SortableSectionItem({
   sectionDef,
   isEnabled,
   onToggle,
+  onEffectChange,
+  onIntensityChange,
 }: {
   section: SectionConfig;
   sectionDef: { type: string; label: string; description: string };
   isEnabled: boolean;
   onToggle: (type: string, enabled: boolean) => void;
+  onEffectChange: (type: string, effect: SectionEffect) => void;
+  onIntensityChange: (type: string, intensity: "low" | "medium" | "high") => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: section.type,
@@ -80,22 +84,62 @@ function SortableSectionItem({
     zIndex: isDragging ? 10 : 0,
   };
 
+  const currentEffect = (section.effect || "none") as SectionEffect;
+  const currentIntensity = section.effectIntensity || "medium";
+  const showIntensity = currentEffect === "tilt" || currentEffect === "parallax";
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center justify-between p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors bg-card"
+      className="rounded-lg border border-border/50 hover:bg-muted/30 transition-colors bg-card"
     >
-      <div className="flex items-center gap-3">
-        <button {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-none">
-          <GripVertical className="w-4 h-4 text-muted-foreground/60 hover:text-muted-foreground" />
-        </button>
-        <div>
-          <p className="font-medium text-sm">{sectionDef.label}</p>
-          <p className="text-xs text-muted-foreground">{sectionDef.description}</p>
+      <div className="flex items-center justify-between p-3">
+        <div className="flex items-center gap-3">
+          <button {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-none">
+            <GripVertical className="w-4 h-4 text-muted-foreground/60 hover:text-muted-foreground" />
+          </button>
+          <div>
+            <p className="font-medium text-sm">{sectionDef.label}</p>
+            <p className="text-xs text-muted-foreground">{sectionDef.description}</p>
+          </div>
         </div>
+        <Switch checked={isEnabled} onCheckedChange={(checked) => onToggle(section.type, checked)} />
       </div>
-      <Switch checked={isEnabled} onCheckedChange={(checked) => onToggle(section.type, checked)} />
+      {isEnabled && (
+        <div className="px-3 pb-3 pt-1 border-t border-border/40 space-y-2">
+          <div className="flex items-center gap-2">
+            <Wand2 className="w-3.5 h-3.5 text-muted-foreground" />
+            <Label className="text-xs text-muted-foreground">Effet à l'apparition</Label>
+          </div>
+          <select
+            value={currentEffect}
+            onChange={(e) => onEffectChange(section.type, e.target.value as SectionEffect)}
+            className="w-full text-xs rounded-md border border-border bg-background px-2 py-1.5"
+          >
+            {sectionEffects.map(eff => (
+              <option key={eff.value} value={eff.value}>{eff.label} — {eff.description}</option>
+            ))}
+          </select>
+          {showIntensity && (
+            <div className="flex gap-1">
+              {(["low", "medium", "high"] as const).map(lvl => (
+                <button
+                  key={lvl}
+                  onClick={() => onIntensityChange(section.type, lvl)}
+                  className={`flex-1 text-xs py-1 rounded border transition-colors ${
+                    currentIntensity === lvl
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border hover:border-primary/40"
+                  }`}
+                >
+                  {lvl === "low" ? "Subtil" : lvl === "medium" ? "Moyen" : "Intense"}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
