@@ -11,10 +11,21 @@ import { StorefrontNewsletter } from "./StorefrontNewsletter";
 import { StorefrontFooter } from "./StorefrontFooter";
 import { CartDrawer } from "./CartDrawer";
 import { CartProvider } from "@/contexts/CartContext";
-import { getTemplateForCategory, type ThemeSettings, type SectionConfig, type AnimationLevel, type SiteType } from "@/lib/boutiqueTemplates";
+import { getTemplateForCategory, type ThemeSettings, type SectionConfig, type AnimationLevel, type SiteType, type SectionEffect } from "@/lib/boutiqueTemplates";
 import type { FAQItem } from "./StorefrontFAQ";
 import { ParallaxSection, ScrollReveal, TiltCard } from "./Storefront3DEffects";
 import "./storefront3d.css";
+
+function effectToReveal(effect?: SectionEffect): "up" | "left" | "right" | "scale" | null {
+  switch (effect) {
+    case "slide-up": return "up";
+    case "slide-left": return "left";
+    case "slide-right": return "right";
+    case "zoom": return "scale";
+    case "fade": return "up";
+    default: return null;
+  }
+}
 
 interface Product {
   id: string;
