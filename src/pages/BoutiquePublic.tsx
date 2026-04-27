@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,6 +6,7 @@ import { StorefrontPreview } from "@/components/storefront/StorefrontPreview";
 import { useSEO } from "@/hooks/useSEO";
 import { Loader2 } from "lucide-react";
 import type { ThemeSettings } from "@/lib/boutiqueTemplates";
+import { trackStorefrontEvent } from "@/lib/storefrontTracking";
 
 export default function BoutiquePublic() {
   const { slug } = useParams<{ slug: string }>();
@@ -62,6 +64,13 @@ export default function BoutiquePublic() {
     title: boutique?.name || "Boutique",
     description: boutique?.description || `Découvrez ${boutique?.name || "notre boutique"} sur Brand-In-A-Box. Livraison incluse sur tous les produits.`,
   });
+
+  // Realtime analytics: log a boutique view as soon as the published page loads.
+  useEffect(() => {
+    if (boutique?.id) {
+      trackStorefrontEvent(boutique.id, "boutique_view");
+    }
+  }, [boutique?.id]);
 
   if (boutiqueLoading || productsLoading) {
     return (
