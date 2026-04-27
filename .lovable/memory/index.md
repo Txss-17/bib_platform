@@ -1,0 +1,48 @@
+# Project Memory
+
+## Core
+- **Brand**: Brand-In-A-Box (BIB) — tagline "Your brand. Ready to launch.". Palette marine `hsl(215 55% 14%)` + or `hsl(41 55% 52%)` + ivoire. Display: Playfair, body: Inter. Use `<Logo />`, never hardcode the wordmark.
+- **Vision**: Marketplace = Shopify + catalogue fournisseurs pré-intégré. Plateforme gère sourcing + logistique + qualité (échantillon obligatoire). Pitch : « 0 stock, 0 logistique, produits audités ».
+- **Stripe**: centralisé côté BIB (PAS Stripe Connect). BIB encaisse les ventes et reverse les vendeurs via table `payments`. Le client final n'a qu'UN compte sur le marketplace.
+- **Stack**: Supabase (Auth, RLS, `boutique-media`), Vercel. Custom React Query hooks.
+- **Recyclage**: 1 point = 10 centimes crédités sur la carte cadeau de la boutique d'origine (trigger `credit_gift_card_on_scan`).
+- **Data & Security**: Order format LKS26-XXXXXX. Anonymous inserts on 'orders' for checkout. Explicit confirm on deletions.
+- **UX/UI**: Mobile-first premium (marine + gold + ivory). Trust-first, KPIs readable <5s. Bilingual (FR default, EN). Legacy Tailwind namespace `linksy-*` is repointed to BIB palette — do NOT mass-rename.
+
+## Memories
+- [Brand Identity](mem://brand/identity) — Brand-In-A-Box logo, marine+gold palette, Playfair+Inter, <Logo /> component
+- [Project Vision](mem://project/vision) — Shopify + catalogue fournisseurs pré-intégré, 0 stock 0 logistique
+- [Marketplace](mem://features/marketplace) — /marketplace public, cartes boutiques + stories produits, comptes clients, gift cards alimentées par recyclage
+- [Aesthetic](mem://style/aesthetic) — Mobile-first, marine/teal/coral palette, 2x4 mobile grids
+- [UX Principles](mem://style/ux-principles) — Trust-first, KPI readability < 5s, localized errors
+- [Auth Requirements](mem://auth/requirements) — 18+ only, individual vs business profiles
+- [Architecture Patterns](mem://tech/architecture-patterns) — Custom React Query hooks, storefront context in preview
+- [Data Conventions](mem://tech/data-conventions) — Order IDs (LKS26-XXXXXX), geographic metadata
+- [Storage](mem://tech/storage) — `boutique-media` bucket for user uploads
+- [Security Policies](mem://auth/security-policies) — RLS anonymous inserts for public checkout
+- [Language Strategy](mem://project/language-strategy) — FR/EN bilingual via LanguageContext with local persistence
+- [Operating Model](mem://project/operating-model) — Platform logistics, seller customer relations, 48h dispute escalation
+- [Linksy Connect](mem://integration/linksy-connect) — Bidirectional sync via linksy-auto-sync Edge function
+- [Dashboard](mem://features/dashboard) — KPI health dashboard, order status pie chart, weekly bar chart
+- [Boutique Management](mem://features/boutique-management) — Drag-and-drop modular editor, tracking in header
+- [Public Storefront](mem://features/public-storefront-ecommerce) — 2-step checkout (Identity, Delivery), local customer profile
+- [Order Tracking](mem://features/order-tracking) — Tracking via email and order ID using track_order RPC
+- [Order Management](mem://features/order-management) — Vendor validation required before shipping, 48h dispute escalation
+- [Order Notifications](mem://features/order-notifications) — Cash register sound on new orders via Web Audio API
+- [Sample Validation](mem://features/sample-validation-system) — Mandatory Stripe sample order before product activation
+- [Stock Management](mem://features/stock-management) — MOQ tracking with critical (<=0.1) and low (<=0.3) thresholds
+- [Supplier Catalog](mem://features/supplier-catalog) — Pre-validated products, duplicate prevention, margin simulator
+- [Supplier Insights](mem://features/supplier-product-insights) — Logistics data, 6-month performance chart, margin simulator
+- [Product Intelligence](mem://features/product-intelligence) — Explainable AI for recommendations
+- [Recycling System](mem://features/recycling-system) — Packaging scans for environmental impact and loyalty points
+- [SEO Analytics](mem://features/seo-analytics) — Unified SEO dashboard with AI suggestions
+- [SEO Management](mem://tech/seo-management) — useSEO hook for dynamic metadata
+- [Geographic Sales](mem://features/geographic-sales-tracking) — Interactive 3D map for sales by region
+- [User Support](mem://features/user-support) — FAQ and tickets synced with Linksy Connect
+- [Email Marketing](mem://features/email-marketing) — Transactional emails and manual promotional templates
+- [Compliance Verification](mem://features/compliance-verification) — KYC docs to boutique-media, approval cycle
+- [Admin Panel](mem://features/admin-panel) — Doc verification for LINKSY_ADMIN_EMAILS, isAdmin Edge function
+- [Reporting Exports](mem://features/reporting-exports) — CSV/PDF exports include 'Verified by Linksy'
+- [Account Management](mem://features/account-management) — Deletion requires empty stock; Starter/Pro/Scale plans
+- [Team Collaboration](mem://features/team-collaboration) — Roles (Owner, Manager, Marketing, Support), limits by plan
+- [Data Safety](mem://constraints/data-safety) — Explicit user validation for deleting shops or products
