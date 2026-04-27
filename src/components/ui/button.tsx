@@ -21,6 +21,11 @@ const buttonVariants = cva(
         trust: "bg-gradient-trust text-secondary-foreground font-semibold shadow-md hover:shadow-lg hover:scale-[1.01]",
         coral: "bg-linksy-coral text-accent-foreground font-medium shadow-sm hover:bg-linksy-coral-light hover:shadow-md",
         navy: "bg-linksy-navy text-primary-foreground font-medium shadow-sm hover:bg-linksy-navy-light hover:shadow-md",
+        // Premium gold-on-marine signature CTA
+        premium:
+          "bg-gradient-premium text-bib-gold font-display font-semibold shadow-premium hover:shadow-glow hover:scale-[1.02] active:scale-[0.98] border border-bib-gold/30",
+        gold:
+          "bg-gradient-gold text-bib-marine font-semibold shadow-md hover:shadow-glow hover:scale-[1.01] active:scale-[0.98]",
       },
       size: {
         default: "h-10 px-4 py-2",
