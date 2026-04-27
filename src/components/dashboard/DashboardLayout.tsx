@@ -37,10 +37,12 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
                 <Menu className="w-5 h-5" />
               </Button>
             )}
-            <div className="min-w-0">
-              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground truncate">{title}</h1>
-              {subtitle && <p className="text-muted-foreground mt-0.5 text-xs sm:text-sm truncate">{subtitle}</p>}
-            </div>
+            {title && (
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground truncate">{title}</h1>
+                {subtitle && <p className="text-muted-foreground mt-0.5 text-xs sm:text-sm truncate">{subtitle}</p>}
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 shrink-0">
             {!isMobile && (
