@@ -55,6 +55,7 @@ export type Database = {
       boutiques: {
         Row: {
           category: string
+          cover_image_url: string | null
           created_at: string
           description: string | null
           has_protection: boolean
@@ -63,12 +64,14 @@ export type Database = {
           name: string
           slug: string
           status: Database["public"]["Enums"]["boutique_status"]
+          tagline: string | null
           theme_settings: Json | null
           updated_at: string
           user_id: string
         }
         Insert: {
           category: string
+          cover_image_url?: string | null
           created_at?: string
           description?: string | null
           has_protection?: boolean
@@ -77,12 +80,14 @@ export type Database = {
           name: string
           slug: string
           status?: Database["public"]["Enums"]["boutique_status"]
+          tagline?: string | null
           theme_settings?: Json | null
           updated_at?: string
           user_id: string
         }
         Update: {
           category?: string
+          cover_image_url?: string | null
           created_at?: string
           description?: string | null
           has_protection?: boolean
@@ -91,7 +96,44 @@ export type Database = {
           name?: string
           slug?: string
           status?: Database["public"]["Enums"]["boutique_status"]
+          tagline?: string | null
           theme_settings?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      customer_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          marketing_opt_in: boolean
+          total_recycling_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id?: string
+          marketing_opt_in?: boolean
+          total_recycling_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          marketing_opt_in?: boolean
+          total_recycling_points?: number
           updated_at?: string
           user_id?: string
         }
@@ -134,6 +176,48 @@ export type Database = {
             columns: ["boutique_id"]
             isOneToOne: false
             referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gift_cards: {
+        Row: {
+          balance_cents: number
+          boutique_id: string
+          created_at: string
+          customer_profile_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          balance_cents?: number
+          boutique_id: string
+          created_at?: string
+          customer_profile_id: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          balance_cents?: number
+          boutique_id?: string
+          created_at?: string
+          customer_profile_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gift_cards_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gift_cards_customer_profile_id_fkey"
+            columns: ["customer_profile_id"]
+            isOneToOne: false
+            referencedRelation: "customer_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -259,6 +343,7 @@ export type Database = {
           created_at: string
           customer_email: string
           customer_name: string
+          customer_profile_id: string | null
           customer_validated: boolean
           id: string
           logistics_status: Database["public"]["Enums"]["logistics_status"]
@@ -272,6 +357,7 @@ export type Database = {
           created_at?: string
           customer_email: string
           customer_name: string
+          customer_profile_id?: string | null
           customer_validated?: boolean
           id?: string
           logistics_status?: Database["public"]["Enums"]["logistics_status"]
@@ -285,6 +371,7 @@ export type Database = {
           created_at?: string
           customer_email?: string
           customer_name?: string
+          customer_profile_id?: string | null
           customer_validated?: boolean
           id?: string
           logistics_status?: Database["public"]["Enums"]["logistics_status"]
@@ -298,6 +385,13 @@ export type Database = {
             columns: ["boutique_id"]
             isOneToOne: false
             referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_customer_profile_id_fkey"
+            columns: ["customer_profile_id"]
+            isOneToOne: false
+            referencedRelation: "customer_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -449,6 +543,58 @@ export type Database = {
         }
         Relationships: []
       }
+      recycling_scans: {
+        Row: {
+          boutique_id: string
+          created_at: string
+          customer_profile_id: string
+          id: string
+          order_id: string | null
+          points: number
+          source: Database["public"]["Enums"]["recycling_source"]
+        }
+        Insert: {
+          boutique_id: string
+          created_at?: string
+          customer_profile_id: string
+          id?: string
+          order_id?: string | null
+          points: number
+          source?: Database["public"]["Enums"]["recycling_source"]
+        }
+        Update: {
+          boutique_id?: string
+          created_at?: string
+          customer_profile_id?: string
+          id?: string
+          order_id?: string | null
+          points?: number
+          source?: Database["public"]["Enums"]["recycling_source"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recycling_scans_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recycling_scans_customer_profile_id_fkey"
+            columns: ["customer_profile_id"]
+            isOneToOne: false
+            referencedRelation: "customer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recycling_scans_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_products: {
         Row: {
           base_price: number
@@ -502,6 +648,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_guest_orders: {
+        Args: { _customer_profile_id: string; _email: string }
+        Returns: number
+      }
       owns_boutique: {
         Args: { _boutique_id: string; _user_id: string }
         Returns: boolean
@@ -538,6 +688,7 @@ export type Database = {
       moq_status: "reserved" | "confirmed" | "expired" | "cancelled"
       payment_status: "pending" | "completed" | "failed"
       product_status: "active" | "paused"
+      recycling_source: "qr_scan" | "manual" | "pickup"
       rotation_indicator: "green" | "yellow" | "orange" | "red"
       team_role: "owner" | "manager" | "marketing" | "support"
     }
@@ -682,6 +833,7 @@ export const Constants = {
       moq_status: ["reserved", "confirmed", "expired", "cancelled"],
       payment_status: ["pending", "completed", "failed"],
       product_status: ["active", "paused"],
+      recycling_source: ["qr_scan", "manual", "pickup"],
       rotation_indicator: ["green", "yellow", "orange", "red"],
       team_role: ["owner", "manager", "marketing", "support"],
     },
