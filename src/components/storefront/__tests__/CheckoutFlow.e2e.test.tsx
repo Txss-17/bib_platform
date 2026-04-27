@@ -148,7 +148,8 @@ describe("Store BIB checkout → account creation E2E", () => {
       const cta = screen.getByRole("link", { name: /Activer mon compte client/i });
       const href = cta.getAttribute("href")!;
       expect(href).toMatch(/^\/signup\?/);
-      expect(href).toContain("next=%2Fmon-compte");
+      // Slash inside the next= param may or may not be URL-encoded — both are valid
+      expect(href).toMatch(/next=(\/|%2F)mon-compte/);
       // Email must be URL-encoded and use the value typed by the user
       expect(href).toContain(
         `email=${encodeURIComponent("Camille.Test@Example.COM")}`
