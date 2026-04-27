@@ -14,6 +14,7 @@ import { useSupplierProducts } from "@/hooks/useSupplierProducts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StockAlerts } from "@/components/dashboard/StockAlerts";
 import { OrdersChart } from "@/components/dashboard/OrdersChart";
+import { LiveOrdersFeed } from "@/components/dashboard/LiveOrdersFeed";
 
 export default function Dashboard() {
   const { data: boutiqueStats, isLoading: boutiquesLoading } = useBoutiqueStats();
@@ -282,6 +283,9 @@ export default function Dashboard() {
 
         {/* Right Sidebar */}
         <div className="space-y-6">
+          {/* Live feed temps réel */}
+          <LiveOrdersFeed />
+
           {/* Produits Recommandés */}
           <Card className="bg-card border-border/50">
             <CardContent className="p-5">
