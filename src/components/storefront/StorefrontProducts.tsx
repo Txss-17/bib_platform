@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { TiltCard, ShineCard } from "./Storefront3DEffects";
 import { trackStorefrontEvent } from "@/lib/storefrontTracking";
+import { useStorefrontContext } from "@/contexts/StorefrontContext";
 
 interface Product {
   id: string;
@@ -26,6 +27,8 @@ interface StorefrontProductsProps {
 
 export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug, boutiqueId, is3D = false }: StorefrontProductsProps) {
   const { addItem } = useCart();
+  const ctx = useStorefrontContext();
+  const trackedBoutiqueId = ctx?.boutiqueId || boutiqueId;
   // On mobile, show only first 8 products initially
   const [showAll, setShowAll] = useState(false);
   const mobileLimit = 8;
@@ -95,8 +98,8 @@ export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug
                   style={{ backgroundColor: primaryColor }}
                   onClick={() => {
                     addItem({ id: product.id, name: product.name, price: product.price, image_url: product.image_url });
-                    if (boutiqueId) {
-                      trackStorefrontEvent(boutiqueId, "add_to_cart", { productId: product.id });
+                    if (trackedBoutiqueId) {
+                      trackStorefrontEvent(trackedBoutiqueId, "add_to_cart", { productId: product.id });
                     }
                   }}
                 >
