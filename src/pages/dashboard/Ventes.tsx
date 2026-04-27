@@ -39,10 +39,12 @@ import {
   PageHeader,
   SectionCard,
   KpiTile,
+  KpiTileSkeleton,
   EmptyState,
 } from "@/components/dashboard/shared";
 import { SalesHeatmap } from "@/components/dashboard/sales/SalesHeatmap";
 import { LiveActivity } from "@/components/dashboard/sales/LiveActivity";
+import { useSalesKpis } from "@/hooks/useSalesKpis";
 
 const monthlyData = [
   { month: "Jan", revenue: 4200 },
@@ -70,15 +72,22 @@ export default function Ventes() {
   const { data: salesGeo } = useSalesGeography();
   const { data: boutiques = [] } = useBoutiques();
   const [selectedBoutique, setSelectedBoutique] = useState<string>("all");
+  const { data: kpis, isLoading: kpisLoading } = useSalesKpis(selectedBoutique);
 
-  const totalRevenue = useMemo(
-    () => (salesGeo?.byCountry || []).reduce((s, r) => s + r.revenue, 0),
-    [salesGeo],
-  );
-  const totalOrders = useMemo(
-    () => (salesGeo?.byCountry || []).reduce((s, r) => s + r.orders, 0),
-    [salesGeo],
-  );
+  const fmtEUR = (n: number) =>
+    new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency: "EUR",
+      maximumFractionDigits: 0,
+    }).format(n);
+
+  const fmtBasket = (n: number) =>
+    new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency: "EUR",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(n);
 
   const handleExport = (kind: "csv" | "pdf") => {
     const bName =
@@ -143,36 +152,48 @@ export default function Ventes() {
 
       {/* KPI Tiles */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-        <KpiTile
-          label="Chiffre d'affaires"
-          value={`${(totalRevenue || 8100).toLocaleString("fr-FR")} €`}
-          trend={12.5}
-          trendLabel="vs mois dernier"
-          icon={<Euro className="w-5 h-5" />}
-          tone="primary"
-        />
-        <KpiTile
-          label="Commandes"
-          value={totalOrders || 143}
-          trend={8.2}
-          trendLabel="vs mois dernier"
-          icon={<ShoppingCart className="w-5 h-5" />}
-        />
-        <KpiTile
-          label="Panier moyen"
-          value="56,64 €"
-          trend={-2.1}
-          trendLabel="vs mois dernier"
-          icon={<Receipt className="w-5 h-5" />}
-        />
-        <KpiTile
-          label="Conversion"
-          value="3,2 %"
-          trend={0.5}
-          trendLabel="vs mois dernier"
-          icon={<Target className="w-5 h-5" />}
-          tone="gold"
-        />
+        {kpisLoading || !kpis ? (
+          <>
+            <KpiTileSkeleton tone="primary" />
+            <KpiTileSkeleton />
+            <KpiTileSkeleton />
+            <KpiTileSkeleton tone="gold" />
+          </>
+        ) : (
+          <>
+            <KpiTile
+              label="Chiffre d'affaires"
+              value={fmtEUR(kpis.revenue)}
+              trend={kpis.revenueTrend ?? undefined}
+              trendLabel="vs mois dernier"
+              icon={<Euro className="w-5 h-5" />}
+              tone="primary"
+            />
+            <KpiTile
+              label="Commandes"
+              value={kpis.orders}
+              trend={kpis.ordersTrend ?? undefined}
+              trendLabel="vs mois dernier"
+              icon={<ShoppingCart className="w-5 h-5" />}
+            />
+            <KpiTile
+              label="Panier moyen"
+              value={fmtBasket(kpis.averageBasket)}
+              trend={kpis.averageBasketTrend ?? undefined}
+              trendLabel="vs mois dernier"
+              icon={<Receipt className="w-5 h-5" />}
+            />
+            <KpiTile
+              label="Conversion"
+              value={`${kpis.conversionRate.toLocaleString("fr-FR")} %`}
+              trend={kpis.conversionTrend ?? undefined}
+              trendLabel="vs mois dernier"
+              icon={<Target className="w-5 h-5" />}
+              tone="gold"
+              hint={kpis.conversionRate === 0 ? "Aucune donnée" : undefined}
+            />
+          </>
+        )}
       </div>
 
       {/* Trend + Live Activity */}
