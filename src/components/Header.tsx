@@ -11,10 +11,18 @@ const Header = () => {
   const { t } = useLanguage();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
+    <header
+      className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50"
+      style={{
+        paddingLeft: "env(safe-area-inset-left)",
+        paddingRight: "env(safe-area-inset-right)",
+      }}
+    >
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-20">
-          <Logo />
+        <div className="flex items-center justify-between gap-3 h-16 lg:h-20">
+          {/* Mobile: 36px icon. Desktop (lg): 44px icon — both use identical pixel-true crop. */}
+          <span className="lg:hidden"><Logo iconSize={36} /></span>
+          <span className="hidden lg:inline-flex"><Logo iconSize={44} /></span>
 
           <div className="hidden lg:flex items-center gap-8">
             <Link to="#features" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">{t("nav.features")}</Link>
@@ -33,7 +41,12 @@ const Header = () => {
             </Button>
           </div>
 
-          <button className="lg:hidden p-2 text-foreground" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          <button
+            className="lg:hidden -mr-2 p-2 inline-flex items-center justify-center min-w-[44px] min-h-[44px] text-foreground"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-expanded={mobileMenuOpen}
+          >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
