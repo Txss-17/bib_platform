@@ -239,7 +239,7 @@ export function CheckoutForm({ boutiqueId, boutiqueName, primaryColor, onBack }:
           </Button>
 
           <p className="text-xs text-gray-500 text-center">
-            Livraison incluse • Paiement sécurisé via LINKSY
+            Livraison incluse • Paiement sécurisé via Brand-In-A-Box
           </p>
         </div>
       )}

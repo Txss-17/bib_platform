@@ -57,7 +57,7 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // LINKSY Brand Colors
+        // Brand-In-A-Box brand colors (legacy `linksy` namespace kept to avoid wide refactor)
         linksy: {
           navy: "hsl(var(--linksy-navy))",
           "navy-light": "hsl(var(--linksy-navy-light))",
@@ -68,6 +68,12 @@ export default {
           success: "hsl(var(--linksy-success))",
           warning: "hsl(var(--linksy-warning))",
         },
+        bib: {
+          gold: "hsl(var(--bib-gold))",
+          "gold-light": "hsl(var(--bib-gold-light))",
+          marine: "hsl(var(--bib-marine))",
+          ivory: "hsl(var(--bib-ivory))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -76,6 +82,7 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['"Playfair Display"', 'Georgia', 'serif'],
       },
       boxShadow: {
         'sm': 'var(--shadow-sm)',
@@ -83,6 +90,7 @@ export default {
         'lg': 'var(--shadow-lg)',
         'xl': 'var(--shadow-xl)',
         'glow': 'var(--shadow-glow)',
+        'premium': 'var(--shadow-premium)',
       },
       keyframes: {
         "accordion-down": {

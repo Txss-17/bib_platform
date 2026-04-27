@@ -23,7 +23,7 @@ export function StorefrontAbout({ title, description, boutiqueName, primaryColor
               Chez {boutiqueName}, {description.toLowerCase().startsWith('nous') ? description : `nous ${description.toLowerCase()}`}
             </p>
             <p className="text-gray-600 mb-2">
-              Logistique et recyclage gérés par LINKSY.
+              Logistique et recyclage gérés par Brand-In-A-Box.
             </p>
             <p className="text-gray-600 mb-6">
               Simple, responsable, sans surprise.

@@ -33,7 +33,7 @@ export function exportToPDF(data: any[], columns: ExportColumn[], title: string,
   const colWidth = (pageWidth - 2 * margin) / columns.length;
   const maxRowsPerPage = Math.floor((pageHeight - margin - headerHeight - 60) / rowHeight);
 
-  const boutiqueName = options?.boutiqueName || "LINKSY";
+  const boutiqueName = options?.boutiqueName || "Brand-In-A-Box";
   const pages: string[] = [];
   const totalPages = Math.ceil(data.length / maxRowsPerPage) || 1;
 

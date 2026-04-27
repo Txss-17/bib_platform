@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { Logo } from "@/components/Logo";
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -13,12 +14,7 @@ const Header = () => {
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-20">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-hero flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">L</span>
-            </div>
-            <span className="text-xl font-bold text-foreground">LINKSY</span>
-          </Link>
+          <Logo />
 
           <div className="hidden lg:flex items-center gap-8">
             <Link to="#features" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">{t("nav.features")}</Link>

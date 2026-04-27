@@ -66,7 +66,7 @@ export default function ProductPublic() {
 
   useSEO({
     title: boutique ? `${productName} — ${boutique.name}` : productName,
-    description: productDesc || `Achetez ${productName} sur ${boutique?.name || "LINKSY"}. Livraison incluse.`,
+    description: productDesc || `Achetez ${productName} sur ${boutique?.name || "Brand-In-A-Box"}. Livraison incluse.`,
     image: productImage || undefined,
     type: "product",
   });

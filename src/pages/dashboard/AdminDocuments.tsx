@@ -170,7 +170,7 @@ export default function AdminDocuments() {
             <Shield className="w-16 h-16 text-muted-foreground mb-4" />
             <h2 className="text-xl font-semibold text-foreground mb-2">Accès administrateur requis</h2>
             <p className="text-muted-foreground max-w-md">
-              Cette page est réservée aux administrateurs de la plateforme LINKSY.
+              Cette page est réservée aux administrateurs de la plateforme Brand-In-A-Box.
             </p>
           </CardContent>
         </Card>

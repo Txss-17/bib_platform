@@ -111,7 +111,7 @@ export const categoryTemplates: Record<string, TemplateConfig> = {
       { icon: "leaf", label: "Production Responsable" },
     ],
     aboutTitle: "À Propos de Nous",
-    aboutDescription: "Nous vous proposons des vêtements essentiels, sans tracas. Logistique et recyclage gérés par LINKSY. Simple, responsable, sans surprise.",
+    aboutDescription: "Nous vous proposons des vêtements essentiels, sans tracas. Logistique et recyclage gérés par Brand-In-A-Box. Simple, responsable, sans surprise.",
     productsSectionTitle: "Sélection Populaire",
     fonts: { heading: "Playfair Display", body: "Lato" },
     sections: [
@@ -136,7 +136,7 @@ export const categoryTemplates: Record<string, TemplateConfig> = {
       { icon: "lock", label: "Paiement Sécurisé" },
     ],
     aboutTitle: "Notre Philosophie",
-    aboutDescription: "Nous sélectionnons pour vous les plus belles pièces pour votre intérieur. Chaque produit est vérifié et livré avec soin par LINKSY.",
+    aboutDescription: "Nous sélectionnons pour vous les plus belles pièces pour votre intérieur. Chaque produit est vérifié et livré avec soin par Brand-In-A-Box.",
     productsSectionTitle: "Nos Sélections pour la Maison",
     fonts: { heading: "DM Serif Display", body: "DM Sans" },
     sections: [
@@ -161,7 +161,7 @@ export const categoryTemplates: Record<string, TemplateConfig> = {
       { icon: "headphones", label: "Support 24/7" },
     ],
     aboutTitle: "Notre Expertise",
-    aboutDescription: "Nous testons et sélectionnons chaque produit pour vous garantir qualité et fiabilité. LINKSY s'occupe de tout le reste.",
+    aboutDescription: "Nous testons et sélectionnons chaque produit pour vous garantir qualité et fiabilité. Brand-In-A-Box s'occupe de tout le reste.",
     productsSectionTitle: "Nos Meilleures Ventes",
     fonts: { heading: "Sora", body: "Inter" },
     sections: [
@@ -186,7 +186,7 @@ export const categoryTemplates: Record<string, TemplateConfig> = {
       { icon: "truck", label: "Livraison Offerte" },
     ],
     aboutTitle: "Notre Engagement",
-    aboutDescription: "Des produits de beauté sélectionnés avec soin, respectueux de votre peau et de la planète. LINKSY vous garantit une expérience sans stress.",
+    aboutDescription: "Des produits de beauté sélectionnés avec soin, respectueux de votre peau et de la planète. Brand-In-A-Box vous garantit une expérience sans stress.",
     productsSectionTitle: "Coups de Cœur",
     fonts: { heading: "Cormorant Garamond", body: "Nunito Sans" },
     sections: [
@@ -211,7 +211,7 @@ export const categoryTemplates: Record<string, TemplateConfig> = {
       { icon: "users", label: "Conseils d'Experts" },
     ],
     aboutTitle: "Notre Mission",
-    aboutDescription: "Du matériel sportif testé par des athlètes, accessible à tous. LINKSY vous accompagne dans votre performance.",
+    aboutDescription: "Du matériel sportif testé par des athlètes, accessible à tous. Brand-In-A-Box vous accompagne dans votre performance.",
     productsSectionTitle: "Équipements Populaires",
     fonts: { heading: "Montserrat", body: "Hind" },
     sections: [
@@ -236,7 +236,7 @@ export const categoryTemplates: Record<string, TemplateConfig> = {
       { icon: "package", label: "Emballage Éco" },
     ],
     aboutTitle: "Notre Philosophie",
-    aboutDescription: "Des produits alimentaires sélectionnés auprès de producteurs de confiance. LINKSY garantit fraîcheur et qualité.",
+    aboutDescription: "Des produits alimentaires sélectionnés auprès de producteurs de confiance. Brand-In-A-Box garantit fraîcheur et qualité.",
     productsSectionTitle: "Nos Sélections Gourmandes",
     fonts: { heading: "Fraunces", body: "Commissioner" },
     sections: [
@@ -261,7 +261,7 @@ export const categoryTemplates: Record<string, TemplateConfig> = {
       { icon: "package", label: "Emballage Protecteur" },
     ],
     aboutTitle: "Notre Passion",
-    aboutDescription: "Des plantes et équipements de jardinage sélectionnés avec amour. LINKSY s'occupe de la logistique pour que vous puissiez jardiner en paix.",
+    aboutDescription: "Des plantes et équipements de jardinage sélectionnés avec amour. Brand-In-A-Box s'occupe de la logistique pour que vous puissiez jardiner en paix.",
     productsSectionTitle: "Nos Incontournables",
     fonts: { heading: "Lora", body: "Source Sans 3" },
     sections: [
@@ -286,7 +286,7 @@ export const categoryTemplates: Record<string, TemplateConfig> = {
       { icon: "heart", label: "Fait avec Amour" },
     ],
     aboutTitle: "Notre Promesse",
-    aboutDescription: "Des produits pour enfants rigoureusement sélectionnés pour leur sécurité et leur qualité. LINKSY vous garantit tranquillité d'esprit.",
+    aboutDescription: "Des produits pour enfants rigoureusement sélectionnés pour leur sécurité et leur qualité. Brand-In-A-Box vous garantit tranquillité d'esprit.",
     productsSectionTitle: "Sélection Enfants",
     fonts: { heading: "Prata", body: "Work Sans" },
     sections: [

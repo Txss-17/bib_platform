@@ -2,66 +2,73 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap');
 
 @layer base {
   :root {
-    /* LINKSY Brand Colors - Trust & Growth */
-    --background: 210 20% 98%;
-    --foreground: 215 25% 15%;
+    /* Brand-In-A-Box — Premium Marine + Gold */
+    --background: 40 30% 98%;          /* Ivory */
+    --foreground: 215 45% 12%;          /* Deep marine ink */
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 215 45% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 215 45% 12%;
 
-    /* Deep Indigo - Trust & Authority */
-    --primary: 215 50% 23%;
-    --primary-foreground: 210 20% 98%;
+    /* Deep Marine — Brand-In-A-Box signature */
+    --primary: 215 55% 14%;
+    --primary-foreground: 40 30% 98%;
 
-    /* Teal/Emerald - Growth & Sustainability */
-    --secondary: 168 45% 45%;
-    --secondary-foreground: 0 0% 100%;
+    /* Champagne Gold — Premium accent */
+    --secondary: 41 55% 52%;
+    --secondary-foreground: 215 55% 14%;
 
-    --muted: 210 15% 92%;
-    --muted-foreground: 215 15% 45%;
+    --muted: 40 18% 94%;
+    --muted-foreground: 215 15% 38%;
 
-    /* Warm Accent - CTAs */
-    --accent: 25 85% 55%;
-    --accent-foreground: 0 0% 100%;
+    /* Gold accent for CTAs */
+    --accent: 41 60% 50%;
+    --accent-foreground: 215 55% 14%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 15% 88%;
-    --input: 210 15% 88%;
-    --ring: 215 50% 23%;
+    --border: 40 15% 88%;
+    --input: 40 15% 88%;
+    --ring: 41 55% 52%;
 
     --radius: 0.75rem;
 
-    /* LINKSY Custom Tokens */
-    --linksy-navy: 215 50% 23%;
-    --linksy-navy-light: 215 45% 35%;
-    --linksy-teal: 168 45% 45%;
-    --linksy-teal-light: 168 40% 55%;
-    --linksy-coral: 25 85% 55%;
-    --linksy-coral-light: 25 80% 65%;
+    /* Brand tokens (legacy class names kept, new premium values) */
+    --linksy-navy: 215 55% 14%;
+    --linksy-navy-light: 215 45% 22%;
+    --linksy-teal: 41 55% 52%;          /* now Gold */
+    --linksy-teal-light: 41 65% 65%;
+    --linksy-coral: 14 75% 55%;          /* warm copper accent */
+    --linksy-coral-light: 14 75% 68%;
     --linksy-success: 152 55% 42%;
     --linksy-warning: 38 92% 50%;
+    --bib-gold: 41 55% 52%;
+    --bib-gold-light: 41 65% 65%;
+    --bib-marine: 215 55% 14%;
+    --bib-ivory: 40 30% 98%;
     
-    /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(215 50% 23%) 0%, hsl(215 45% 35%) 50%, hsl(168 45% 45%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(210 20% 98%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(25 85% 55%) 0%, hsl(25 80% 65%) 100%);
-    --gradient-trust: linear-gradient(135deg, hsl(168 45% 45%) 0%, hsl(168 40% 55%) 100%);
+    /* Premium gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(215 55% 14%) 0%, hsl(215 45% 22%) 60%, hsl(41 55% 52%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(40 30% 98%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(41 55% 52%) 0%, hsl(41 65% 65%) 100%);
+    --gradient-trust: linear-gradient(135deg, hsl(41 55% 52%) 0%, hsl(41 70% 70%) 100%);
+    --gradient-premium: linear-gradient(135deg, hsl(215 55% 14%) 0%, hsl(215 50% 18%) 50%, hsl(41 55% 52%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(41 50% 45%) 0%, hsl(41 65% 60%) 50%, hsl(41 55% 52%) 100%);
     
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(215 25% 15% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(215 25% 15% / 0.08), 0 2px 4px -2px hsl(215 25% 15% / 0.05);
-    --shadow-lg: 0 10px 15px -3px hsl(215 25% 15% / 0.08), 0 4px 6px -4px hsl(215 25% 15% / 0.05);
-    --shadow-xl: 0 20px 25px -5px hsl(215 25% 15% / 0.1), 0 8px 10px -6px hsl(215 25% 15% / 0.05);
-    --shadow-glow: 0 0 40px -10px hsl(168 45% 45% / 0.3);
+    --shadow-sm: 0 1px 2px 0 hsl(215 45% 12% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(215 45% 12% / 0.08), 0 2px 4px -2px hsl(215 45% 12% / 0.05);
+    --shadow-lg: 0 10px 15px -3px hsl(215 45% 12% / 0.08), 0 4px 6px -4px hsl(215 45% 12% / 0.05);
+    --shadow-xl: 0 20px 25px -5px hsl(215 45% 12% / 0.12), 0 8px 10px -6px hsl(215 45% 12% / 0.05);
+    --shadow-glow: 0 0 40px -10px hsl(41 55% 52% / 0.45);
+    --shadow-premium: 0 20px 60px -20px hsl(215 55% 14% / 0.35), 0 0 0 1px hsl(41 55% 52% / 0.15);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -74,33 +81,33 @@
   }
 
   .dark {
-    --background: 215 30% 8%;
-    --foreground: 210 20% 95%;
+    --background: 215 50% 6%;
+    --foreground: 40 25% 95%;
 
-    --card: 215 25% 12%;
-    --card-foreground: 210 20% 95%;
+    --card: 215 45% 10%;
+    --card-foreground: 40 25% 95%;
 
-    --popover: 215 25% 12%;
-    --popover-foreground: 210 20% 95%;
+    --popover: 215 45% 10%;
+    --popover-foreground: 40 25% 95%;
 
-    --primary: 168 45% 45%;
-    --primary-foreground: 215 30% 8%;
+    --primary: 41 55% 52%;
+    --primary-foreground: 215 50% 6%;
 
-    --secondary: 215 35% 25%;
-    --secondary-foreground: 210 20% 95%;
+    --secondary: 215 35% 20%;
+    --secondary-foreground: 40 25% 95%;
 
-    --muted: 215 25% 18%;
-    --muted-foreground: 215 15% 60%;
+    --muted: 215 35% 14%;
+    --muted-foreground: 215 15% 65%;
 
-    --accent: 25 85% 55%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 41 55% 52%;
+    --accent-foreground: 215 50% 6%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 215 25% 20%;
-    --input: 215 25% 20%;
-    --ring: 168 45% 45%;
+    --border: 215 35% 18%;
+    --input: 215 35% 18%;
+    --ring: 41 55% 52%;
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
@@ -125,6 +132,7 @@
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
+    font-family: 'Playfair Display', Georgia, serif;
   }
 }
 
@@ -138,6 +146,13 @@
 
   .text-gradient-trust {
     background: var(--gradient-trust);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-gold {
+    background: var(--gradient-gold);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -159,8 +174,24 @@
     background: var(--gradient-trust);
   }
 
+  .bg-gradient-premium {
+    background: var(--gradient-premium);
+  }
+
+  .bg-gradient-gold {
+    background: var(--gradient-gold);
+  }
+
   .shadow-glow {
     box-shadow: var(--shadow-glow);
+  }
+
+  .shadow-premium {
+    box-shadow: var(--shadow-premium);
+  }
+
+  .font-display {
+    font-family: 'Playfair Display', Georgia, serif;
   }
 
   .animate-float {

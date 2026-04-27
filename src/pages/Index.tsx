@@ -9,8 +9,8 @@ import { useSEO } from "@/hooks/useSEO";
 
 const Index = () => {
   useSEO({
-    title: "LINKSY — Plateforme de commerce intelligente",
-    description: "Lancez, gérez et développez votre activité en ligne avec LINKSY. Transparence totale, insights intelligents et protection intégrée. Essai gratuit.",
+    title: "Brand-In-A-Box — Plateforme de commerce intelligente",
+    description: "Lancez, gérez et développez votre activité en ligne avec Brand-In-A-Box. Transparence totale, insights intelligents et protection intégrée. Essai gratuit.",
   });
 
   return (

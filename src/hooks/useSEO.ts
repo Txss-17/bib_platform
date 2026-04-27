@@ -11,7 +11,7 @@ interface SEOProps {
 export function useSEO({ title, description, image, url, type = "website" }: SEOProps) {
   useEffect(() => {
     // Title
-    document.title = `${title} | LINKSY`;
+    document.title = `${title} | Brand-In-A-Box`;
 
     // Helper to set or create meta tags
     const setMeta = (property: string, content: string, isOG = false) => {
@@ -34,7 +34,7 @@ export function useSEO({ title, description, image, url, type = "website" }: SEO
     if (image) setMeta("og:image", image, true);
     setMeta("og:type", type === "product" ? "product" : "website", true);
     setMeta("og:url", url || window.location.href, true);
-    setMeta("og:site_name", "LINKSY", true);
+    setMeta("og:site_name", "Brand-In-A-Box", true);
 
     // Twitter Card
     setMeta("twitter:card", image ? "summary_large_image" : "summary");
@@ -43,7 +43,7 @@ export function useSEO({ title, description, image, url, type = "website" }: SEO
     if (image) setMeta("twitter:image", image);
 
     return () => {
-      document.title = "LINKSY";
+      document.title = "Brand-In-A-Box";
     };
   }, [title, description, image, url, type]);
 }

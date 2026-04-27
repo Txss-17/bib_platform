@@ -88,7 +88,7 @@ export default function Ventes() {
               { header: "Mois", accessor: (r: any) => r.month },
               { header: "Revenu (€)", accessor: (r: any) => String(r.revenue) },
             ];
-            exportToCSV(monthlyData, cols, "ventes", { boutiqueName: bName || "LINKSY" });
+            exportToCSV(monthlyData, cols, "ventes", { boutiqueName: bName || "Brand-In-A-Box" });
           }}>
             <Download className="w-4 h-4" /> CSV
           </Button>
@@ -98,7 +98,7 @@ export default function Ventes() {
               { header: "Mois", accessor: (r: any) => r.month },
               { header: "Revenu (€)", accessor: (r: any) => String(r.revenue) },
             ];
-            exportToPDF(monthlyData, cols, "Rapport des Ventes", "ventes", { boutiqueName: bName || "LINKSY" });
+            exportToPDF(monthlyData, cols, "Rapport des Ventes", "ventes", { boutiqueName: bName || "Brand-In-A-Box" });
           }}>
             <FileText className="w-4 h-4" /> PDF
           </Button>

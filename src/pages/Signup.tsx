@@ -80,7 +80,7 @@ export default function Signup() {
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-lg">L</span>
               </div>
-              <span className="font-bold text-2xl text-foreground">LINKSY</span>
+              <span className="font-bold text-2xl text-foreground">Brand-In-A-Box</span>
             </Link>
             <LanguageSwitcher />
           </div>

@@ -237,7 +237,7 @@ export default function OrderTracking() {
       </div>
 
       <footer className="py-4 text-center text-xs text-gray-400">
-        Powered by <span className="font-bold text-gray-600">LINKSY</span>
+        Powered by <span className="font-bold text-gray-600">Brand-In-A-Box</span>
       </footer>
     </div>
   );
