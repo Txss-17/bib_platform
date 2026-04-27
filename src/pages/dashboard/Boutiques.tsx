@@ -33,7 +33,7 @@ function BoutiqueCard({ boutique, onDelete }: { boutique: Boutique; onDelete: (i
         </div>
 
         <div className="p-3 rounded-lg bg-muted/50 mb-4">
-          <p className="text-sm text-muted-foreground">URL LINKSY</p>
+          <p className="text-sm text-muted-foreground">URL Brand-In-A-Box</p>
           <p className="text-sm font-mono text-primary">linksy.com/{boutique.slug}</p>
         </div>
 

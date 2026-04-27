@@ -60,7 +60,7 @@ export default function BoutiquePublic() {
   // SEO
   useSEO({
     title: boutique?.name || "Boutique",
-    description: boutique?.description || `Découvrez ${boutique?.name || "notre boutique"} sur LINKSY. Livraison incluse sur tous les produits.`,
+    description: boutique?.description || `Découvrez ${boutique?.name || "notre boutique"} sur Brand-In-A-Box. Livraison incluse sur tous les produits.`,
   });
 
   if (boutiqueLoading || productsLoading) {

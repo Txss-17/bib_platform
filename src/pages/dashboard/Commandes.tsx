@@ -158,7 +158,7 @@ export default function Commandes() {
       <Card className="bg-primary/5 border-primary/20 mb-6">
         <CardContent className="p-4">
           <p className="text-sm text-foreground">
-            <span className="font-medium">💡 La logistique est transparente</span> — vous vendez, LINKSY opère. 
+            <span className="font-medium">💡 La logistique est transparente</span> — vous vendez, Brand-In-A-Box opère. 
             Toutes les expéditions et retours sont gérés automatiquement.
           </p>
         </CardContent>
@@ -220,14 +220,14 @@ export default function Commandes() {
         <div className="sm:ml-auto flex gap-2 w-full sm:w-auto">
           <Button variant="outline" size="sm" className="gap-1.5 flex-1 sm:flex-none" onClick={() => {
             const bName = selectedBoutique !== "all" ? boutiques.find(b => b.id === selectedBoutique)?.name : undefined;
-            filteredOrders && exportToCSV(filteredOrders, orderExportColumns, "commandes", { boutiqueName: bName || "LINKSY" });
+            filteredOrders && exportToCSV(filteredOrders, orderExportColumns, "commandes", { boutiqueName: bName || "Brand-In-A-Box" });
           }} disabled={!filteredOrders?.length}>
             <Download className="w-4 h-4" />
             CSV
           </Button>
           <Button variant="outline" size="sm" className="gap-1.5 flex-1 sm:flex-none" onClick={() => {
             const bName = selectedBoutique !== "all" ? boutiques.find(b => b.id === selectedBoutique)?.name : undefined;
-            filteredOrders && exportToPDF(filteredOrders, orderExportColumns, "Rapport des Commandes", "commandes", { boutiqueName: bName || "LINKSY" });
+            filteredOrders && exportToPDF(filteredOrders, orderExportColumns, "Rapport des Commandes", "commandes", { boutiqueName: bName || "Brand-In-A-Box" });
           }} disabled={!filteredOrders?.length}>
             <FileText className="w-4 h-4" />
             PDF
