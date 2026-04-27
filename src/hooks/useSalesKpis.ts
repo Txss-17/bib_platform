@@ -11,11 +11,31 @@ export interface SalesKpis {
   averageBasketTrend: number | null;
   conversionRate: number;
   conversionTrend: number | null;
+  /**
+   * Rolling 30-minute sparkline series, 6 buckets of 5 minutes.
+   * Useful for quick visual trend on each KPI tile.
+   */
+  sparklines: {
+    revenue: number[];
+    orders: number[];
+    averageBasket: number[];
+    conversionRate: number[];
+  };
 }
 
 function pctChange(current: number, previous: number): number | null {
   if (!previous) return current > 0 ? 100 : null;
   return Math.round(((current - previous) / previous) * 1000) / 10;
+}
+
+const SPARK_BUCKETS = 6;
+const SPARK_BUCKET_MS = 5 * 60_000; // 5 min
+const SPARK_WINDOW_MS = SPARK_BUCKETS * SPARK_BUCKET_MS;
+
+function bucketIndex(d: Date, start: number): number {
+  const idx = Math.floor((d.getTime() - start) / SPARK_BUCKET_MS);
+  if (idx < 0 || idx >= SPARK_BUCKETS) return -1;
+  return idx;
 }
 
 /**
@@ -31,6 +51,7 @@ export function useSalesKpis(boutiqueId: string = "all") {
   return useQuery<SalesKpis>({
     queryKey: ["sales-kpis", user?.id, boutiqueId],
     queryFn: async () => {
+      const emptyBuckets = Array(SPARK_BUCKETS).fill(0);
       const empty: SalesKpis = {
         revenue: 0,
         revenueTrend: null,
@@ -40,6 +61,12 @@ export function useSalesKpis(boutiqueId: string = "all") {
         averageBasketTrend: null,
         conversionRate: 0,
         conversionTrend: null,
+        sparklines: {
+          revenue: [...emptyBuckets],
+          orders: [...emptyBuckets],
+          averageBasket: [...emptyBuckets],
+          conversionRate: [...emptyBuckets],
+        },
       };
       if (!user) return empty;
 
@@ -100,6 +127,44 @@ export function useSalesKpis(boutiqueId: string = "all") {
       const curConv = denom > 0 ? (curCount / denom) * 100 : 0;
       const prevConv = denom > 0 ? (prevCount / denom) * 100 : 0;
 
+      // ---- Sparklines (rolling 30 min, 6 buckets) ----
+      const sparkStart = now.getTime() - SPARK_WINDOW_MS;
+      const revBuckets = Array(SPARK_BUCKETS).fill(0);
+      const ordBuckets = Array(SPARK_BUCKETS).fill(0);
+      (orders || []).forEach((o) => {
+        const d = new Date(o.created_at as string);
+        if (d.getTime() < sparkStart) return;
+        const i = bucketIndex(d, sparkStart);
+        if (i < 0) return;
+        revBuckets[i] += Number(o.amount) || 0;
+        ordBuckets[i] += 1;
+      });
+      const basketBuckets = revBuckets.map((r, i) =>
+        ordBuckets[i] > 0 ? Math.round((r / ordBuckets[i]) * 100) / 100 : 0,
+      );
+
+      // Conversion sparkline: checkout_start / add_to_cart in each bucket
+      // (per-bucket micro-funnel). Falls back to orders/products if no events.
+      const sinceIso = new Date(sparkStart).toISOString();
+      const { data: events } = await (supabase.from("storefront_events") as any)
+        .select("event_type, created_at")
+        .in("boutique_id", ids)
+        .gte("created_at", sinceIso)
+        .limit(2000);
+      const carts = Array(SPARK_BUCKETS).fill(0);
+      const checkouts = Array(SPARK_BUCKETS).fill(0);
+      (events as Array<{ event_type: string; created_at: string }> | null)?.forEach(
+        (e) => {
+          const i = bucketIndex(new Date(e.created_at), sparkStart);
+          if (i < 0) return;
+          if (e.event_type === "add_to_cart") carts[i] += 1;
+          if (e.event_type === "checkout_start") checkouts[i] += 1;
+        },
+      );
+      const convBuckets = carts.map((c, i) =>
+        c > 0 ? Math.round((checkouts[i] / c) * 1000) / 10 : 0,
+      );
+
       return {
         revenue: Math.round(curRev * 100) / 100,
         revenueTrend: pctChange(curRev, prevRev),
@@ -109,6 +174,12 @@ export function useSalesKpis(boutiqueId: string = "all") {
         averageBasketTrend: pctChange(curBasket, prevBasket),
         conversionRate: Math.round(curConv * 10) / 10,
         conversionTrend: pctChange(curConv, prevConv),
+        sparklines: {
+          revenue: revBuckets,
+          orders: ordBuckets,
+          averageBasket: basketBuckets,
+          conversionRate: convBuckets,
+        },
       };
     },
     enabled: !!user,
