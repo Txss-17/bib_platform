@@ -52,7 +52,7 @@ export default function Marketplace() {
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link to="/marketplace" className="flex items-center gap-2">
-            <Logo size="sm" />
+            <Logo iconSize={28} />
           </Link>
           <div className="hidden flex-1 max-w-md mx-8 md:block">
             <div className="relative">
@@ -182,7 +182,7 @@ export default function Marketplace() {
       {/* Footer */}
       <footer className="mt-12 border-t border-border/60 bg-card/30">
         <div className="container mx-auto flex flex-col items-center gap-4 px-4 py-8 text-center text-sm text-muted-foreground sm:flex-row sm:justify-between sm:text-left">
-          <Logo size="sm" />
+          <Logo iconSize={28} asLink={false} />
           <p>© {new Date().getFullYear()} Brand-In-A-Box · Marketplace officiel</p>
           <Link to="/" className="hover:text-foreground">À propos</Link>
         </div>

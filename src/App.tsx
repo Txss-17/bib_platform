@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import BrandPreview from "./pages/BrandPreview";
+import Marketplace from "./pages/Marketplace";
 
 // Dashboard pages
 import Ventes from "./pages/dashboard/Ventes";
@@ -53,6 +54,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/brand-preview" element={<BrandPreview />} />
+            <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
