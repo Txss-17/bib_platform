@@ -174,7 +174,7 @@ export default function ProduitsFournisseurs() {
         eyebrow="Catalogue fournisseur"
         title="Produits validés"
         subtitle="Sélectionnez les produits adaptés à votre vision et à la demande du marché."
-        actions={<RealtimeStatusPill status="live" label="Catalogue live" />}
+        actions={<RealtimeStatusPill status="live" />}
       />
 
       {/* KPI strip */}
