@@ -246,6 +246,11 @@ export default function Ventes() {
         </SectionCard>
       </div>
 
+      {/* Realtime storefront pulse */}
+      <div className="mb-6">
+        <RealtimePulseCard boutiqueId={selectedBoutique} />
+      </div>
+
       {/* Geographic + Top Products */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
         <SectionCard
