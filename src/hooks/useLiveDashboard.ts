@@ -86,6 +86,7 @@ export function useLiveDashboard(options: { sound?: boolean } = {}) {
 export function useActiveSessions() {
   const { user } = useAuth();
   const [count, setCount] = useState(0);
+  const [history, setHistory] = useState<number[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -95,7 +96,8 @@ export function useActiveSessions() {
     channel
       .on("presence", { event: "sync" }, () => {
         const state = channel.presenceState();
-        setCount(Object.keys(state).length);
+        const c = Object.keys(state).length;
+        setCount(c);
       })
       .subscribe(async (status) => {
         if (status === "SUBSCRIBED") {
@@ -107,5 +109,13 @@ export function useActiveSessions() {
     };
   }, [user]);
 
-  return count;
+  // Sample the count every 5s into a rolling 30-point history for sparkline
+  useEffect(() => {
+    const t = window.setInterval(() => {
+      setHistory((prev) => [...prev.slice(-29), count]);
+    }, 5000);
+    return () => window.clearInterval(t);
+  }, [count]);
+
+  return { count, history };
 }
