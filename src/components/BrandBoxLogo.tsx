@@ -1,28 +1,37 @@
 import { useEffect, useRef, useState } from "react";
+import logoImg from "@/assets/brand-in-a-box-logo.png";
 
 /**
- * Animated Brand-In-A-Box signature mark.
- * A gold "B" drops into the marine open box on mount and on scroll.
- * Colors are kept strictly separated:
- *  - Marine (--bib-marine) for the box silhouette
- *  - Gold (--bib-gold) for the B
- *  - Ivory background only
- * No mixed/blended gradients between marine and gold.
+ * Brand-In-A-Box signature mark — uses the OFFICIAL uploaded logo image.
+ * Animation: the gold "B" appears to drop INTO the marine open box.
+ * We layer two clipped copies of the same logo image:
+ *  - bottom layer: only the box (lower half), always visible
+ *  - top layer: only the B (upper half), translates in from above on reveal
+ * The brand logo is preserved 1:1 from the source asset — no recoloring,
+ * no recreated SVG, no marine/gold blend.
+ *
+ * `variant`:
+ *  - "icon": only the box-and-B mark (icon area)
+ *  - "full": full uploaded asset including wordmark
  */
 interface BrandBoxLogoProps {
   size?: number;
-  /** If true, replays the drop animation when the element scrolls into view. */
   replayOnScroll?: boolean;
   className?: string;
+  variant?: "icon" | "full";
 }
 
-export function BrandBoxLogo({ size = 240, replayOnScroll = true, className = "" }: BrandBoxLogoProps) {
+export function BrandBoxLogo({
+  size = 240,
+  replayOnScroll = true,
+  className = "",
+  variant = "full",
+}: BrandBoxLogoProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
-    // Initial play after mount
-    const t = window.setTimeout(() => setPlaying(true), 150);
+    const t = window.setTimeout(() => setPlaying(true), 200);
     return () => window.clearTimeout(t);
   }, []);
 
@@ -33,9 +42,10 @@ export function BrandBoxLogo({ size = 240, replayOnScroll = true, className = ""
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            // Restart animation
             setPlaying(false);
-            requestAnimationFrame(() => requestAnimationFrame(() => setPlaying(true)));
+            requestAnimationFrame(() =>
+              requestAnimationFrame(() => setPlaying(true))
+            );
           }
         });
       },
@@ -45,143 +55,116 @@ export function BrandBoxLogo({ size = 240, replayOnScroll = true, className = ""
     return () => io.disconnect();
   }, [replayOnScroll]);
 
+  // Source asset is 1243 x 629 (≈ 1.976 ratio).
+  // The icon (box + B) sits in the left ~38% of the image.
+  // We split the icon vertically at ~46% to separate the B (top) from the box (bottom).
+  const aspectFull = 1243 / 629; // full asset
+  const width = variant === "full" ? size * aspectFull : size; // icon ≈ square
+  const height = size;
+
+  // For "icon" variant, we crop the source image to just the mark area.
+  const iconClip = "inset(4% 62% 6% 18%)"; // top right bottom left
+  const splitPct = 46;
+
   return (
     <div
       ref={ref}
       className={`relative inline-block ${className}`}
-      style={{ width: size, height: size }}
+      style={{ width, height }}
       aria-label="Brand-In-A-Box"
       role="img"
     >
-      <svg
-        viewBox="0 0 240 240"
-        width="100%"
-        height="100%"
-        className="overflow-visible"
-      >
-        <defs>
-          {/* Solid colors only — no marine/gold blend */}
-          <linearGradient id="bib-gold-flat" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="hsl(41 65% 60%)" />
-            <stop offset="100%" stopColor="hsl(41 55% 48%)" />
-          </linearGradient>
-          <linearGradient id="bib-marine-flat" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="hsl(215 55% 18%)" />
-            <stop offset="100%" stopColor="hsl(215 55% 12%)" />
-          </linearGradient>
-        </defs>
-
-        {/* Soft ivory pedestal shadow */}
-        <ellipse
-          cx="120"
-          cy="218"
-          rx="78"
-          ry="6"
-          fill="hsl(215 45% 12%)"
-          opacity="0.12"
-        />
-
-        {/* The falling B — animated */}
-        <g
-          className={playing ? "bib-anim-drop" : ""}
-          style={{ transformOrigin: "120px 120px" }}
-        >
-          <text
-            x="120"
-            y="138"
-            textAnchor="middle"
-            fontFamily="'Playfair Display', Georgia, serif"
-            fontWeight="700"
-            fontSize="120"
-            fill="url(#bib-gold-flat)"
+      {variant === "full" ? (
+        <>
+          {/* Full asset — bottom half (box + wordmark baseline) */}
+          <div
+            className="absolute inset-0"
+            style={{
+              clipPath: `inset(${splitPct}% 0 0 0)`,
+              WebkitClipPath: `inset(${splitPct}% 0 0 0)`,
+            }}
           >
-            B
-          </text>
-        </g>
-
-        {/* Box back wall (behind B reveal) */}
-        <path
-          d="M 50 110 L 120 90 L 190 110 L 190 200 L 50 200 Z"
-          fill="url(#bib-marine-flat)"
-        />
-
-        {/* Box front face — masks the B's lower half (the B "enters" the box) */}
-        <path
-          d="M 50 130 L 120 110 L 190 130 L 190 200 L 50 200 Z"
-          fill="hsl(215 55% 14%)"
-        />
-
-        {/* Front face highlight band (gold strip — clearly separated, not blended) */}
-        <rect x="98" y="170" width="44" height="14" rx="2" fill="hsl(41 55% 52%)" />
-        <text
-          x="120"
-          y="181"
-          textAnchor="middle"
-          fontFamily="'Inter', sans-serif"
-          fontWeight="700"
-          fontSize="9"
-          fill="hsl(215 55% 14%)"
-          letterSpacing="1"
-        >
-          BIB
-        </text>
-
-        {/* Box lid flaps — open */}
-        <g>
-          {/* Left flap */}
-          <path
-            d="M 50 110 L 120 90 L 120 60 L 30 80 Z"
-            fill="hsl(215 55% 12%)"
-            className={playing ? "bib-anim-flap-left" : ""}
-            style={{ transformOrigin: "50px 110px" }}
-          />
-          {/* Right flap */}
-          <path
-            d="M 190 110 L 120 90 L 120 60 L 210 80 Z"
-            fill="hsl(215 55% 16%)"
-            className={playing ? "bib-anim-flap-right" : ""}
-            style={{ transformOrigin: "190px 110px" }}
-          />
-        </g>
-
-        {/* Sparkle on landing */}
-        <g className={playing ? "bib-anim-sparkle" : "opacity-0"}>
-          <circle cx="120" cy="120" r="3" fill="hsl(41 70% 75%)" />
-          <circle cx="95" cy="125" r="2" fill="hsl(41 70% 75%)" />
-          <circle cx="145" cy="125" r="2" fill="hsl(41 70% 75%)" />
-        </g>
-      </svg>
+            <img
+              src={logoImg}
+              alt=""
+              className="w-full h-full object-contain select-none pointer-events-none"
+              draggable={false}
+            />
+          </div>
+          {/* Full asset — top half (B + upper wordmark), drops in */}
+          <div
+            className={`absolute inset-0 ${playing ? "bib-anim-drop" : "opacity-0"}`}
+            style={{
+              clipPath: `inset(0 0 ${100 - splitPct}% 0)`,
+              WebkitClipPath: `inset(0 0 ${100 - splitPct}% 0)`,
+            }}
+          >
+            <img
+              src={logoImg}
+              alt="Brand-In-A-Box — Your brand. Ready to launch."
+              className="w-full h-full object-contain select-none pointer-events-none"
+              draggable={false}
+            />
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Icon-only — bottom (box) */}
+          <div
+            className="absolute inset-0 overflow-hidden"
+            style={{ clipPath: `inset(${splitPct}% 0 0 0)` }}
+          >
+            <img
+              src={logoImg}
+              alt=""
+              className="absolute select-none pointer-events-none"
+              style={{
+                width: `${(1 / 0.2) * 100}%`,
+                height: "auto",
+                left: "-90%",
+                top: "0%",
+                clipPath: iconClip,
+                WebkitClipPath: iconClip,
+              }}
+              draggable={false}
+            />
+          </div>
+          {/* Icon-only — top (B) drops in */}
+          <div
+            className={`absolute inset-0 overflow-hidden ${
+              playing ? "bib-anim-drop" : "opacity-0"
+            }`}
+            style={{ clipPath: `inset(0 0 ${100 - splitPct}% 0)` }}
+          >
+            <img
+              src={logoImg}
+              alt="Brand-In-A-Box"
+              className="absolute select-none pointer-events-none"
+              style={{
+                width: `${(1 / 0.2) * 100}%`,
+                height: "auto",
+                left: "-90%",
+                top: "0%",
+                clipPath: iconClip,
+                WebkitClipPath: iconClip,
+              }}
+              draggable={false}
+            />
+          </div>
+        </>
+      )}
 
       <style>{`
         @keyframes bib-drop {
-          0%   { transform: translateY(-160px) rotate(-8deg); opacity: 0; }
-          15%  { opacity: 1; }
-          55%  { transform: translateY(0) rotate(0deg); }
-          65%  { transform: translateY(-12px) rotate(2deg); }
-          80%  { transform: translateY(0) rotate(0deg); }
-          100% { transform: translateY(0) rotate(0deg); }
+          0%   { transform: translateY(-70%) rotate(-3deg); opacity: 0; }
+          25%  { opacity: 1; }
+          70%  { transform: translateY(0) rotate(0deg); }
+          82%  { transform: translateY(-4%) rotate(1deg); }
+          100% { transform: translateY(0) rotate(0deg); opacity: 1; }
         }
-        @keyframes bib-flap-left {
-          0%, 30% { transform: rotate(0deg); }
-          60%     { transform: rotate(-12deg); }
-          100%    { transform: rotate(0deg); }
-        }
-        @keyframes bib-flap-right {
-          0%, 30% { transform: rotate(0deg); }
-          60%     { transform: rotate(12deg); }
-          100%    { transform: rotate(0deg); }
-        }
-        @keyframes bib-sparkle {
-          0%, 55% { opacity: 0; transform: scale(0.6); }
-          70%     { opacity: 1; transform: scale(1.2); }
-          100%    { opacity: 0; transform: scale(1); }
-        }
-        .bib-anim-drop      { animation: bib-drop 1.6s cubic-bezier(0.5, 0, 0.2, 1) both; }
-        .bib-anim-flap-left { animation: bib-flap-left 1.6s ease-in-out both; }
-        .bib-anim-flap-right{ animation: bib-flap-right 1.6s ease-in-out both; }
-        .bib-anim-sparkle   { animation: bib-sparkle 1.6s ease-out both; transform-origin: 120px 120px; }
+        .bib-anim-drop { animation: bib-drop 1.4s cubic-bezier(0.5, 0, 0.2, 1) both; }
         @media (prefers-reduced-motion: reduce) {
-          .bib-anim-drop, .bib-anim-flap-left, .bib-anim-flap-right, .bib-anim-sparkle { animation: none; }
+          .bib-anim-drop { animation: none; opacity: 1; }
         }
       `}</style>
     </div>
