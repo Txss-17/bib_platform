@@ -20,7 +20,7 @@ function formatRelative(iso: string) {
 export function LiveOrdersFeed() {
   const [soundOn, setSoundOn] = useState(true);
   const { feed, isLive, lastEventAt } = useLiveDashboard({ sound: soundOn });
-  const sessions = useActiveSessions();
+  const { count: sessions } = useActiveSessions();
   // Force re-render every 15s so relative timestamps stay fresh
   const [, setTick] = useState(0);
   useEffect(() => {

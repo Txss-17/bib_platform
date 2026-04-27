@@ -112,11 +112,29 @@ export function useValidateOrder() {
   });
 }
 
-export function useOrderStats() {
+export type StatsPeriod = "day" | "week" | "month" | "all";
+
+function periodStartIso(period: StatsPeriod): string | null {
+  if (period === "all") return null;
+  const d = new Date();
+  if (period === "day") {
+    d.setHours(0, 0, 0, 0);
+  } else if (period === "week") {
+    const day = (d.getDay() + 6) % 7; // Monday-start
+    d.setDate(d.getDate() - day);
+    d.setHours(0, 0, 0, 0);
+  } else {
+    d.setDate(1);
+    d.setHours(0, 0, 0, 0);
+  }
+  return d.toISOString();
+}
+
+export function useOrderStats(period: StatsPeriod = "all") {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ["order-stats", user?.id],
+    queryKey: ["order-stats", user?.id, period],
     queryFn: async () => {
       if (!user) {
         return { total: 0, pending: 0, shipped: 0, delivered: 0, revenue: 0 };
@@ -133,11 +151,14 @@ export function useOrderStats() {
       }
 
       const boutiqueIds = boutiques.map((b) => b.id);
+      const fromIso = periodStartIso(period);
 
-      const { data, error } = await supabase
+      let query = supabase
         .from("orders")
-        .select("logistics_status, amount")
+        .select("logistics_status, amount, created_at")
         .in("boutique_id", boutiqueIds);
+      if (fromIso) query = query.gte("created_at", fromIso);
+      const { data, error } = await query;
 
       if (error) throw error;
 

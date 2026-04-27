@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StockAlerts } from "@/components/dashboard/StockAlerts";
 import { OrdersChart } from "@/components/dashboard/OrdersChart";
 import { LiveOrdersFeed } from "@/components/dashboard/LiveOrdersFeed";
+import { KPIConfigPanel } from "@/components/dashboard/KPIConfigPanel";
 
 export default function Dashboard() {
   const { data: boutiqueStats, isLoading: boutiquesLoading } = useBoutiqueStats();
@@ -90,6 +91,9 @@ export default function Dashboard() {
               )}
             </CardContent>
           </Card>
+
+          {/* KPI Config + Active Sessions */}
+          <KPIConfigPanel />
 
           {/* Mes Boutiques */}
           <div>
