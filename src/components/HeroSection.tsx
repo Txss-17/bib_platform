@@ -14,34 +14,35 @@ import { useEffect, useRef, useState } from "react";
 const HeroSection = () => {
   const { t } = useLanguage();
   const sectionRef = useRef<HTMLElement>(null);
-  const [progress, setProgress] = useState(0); // 0 = B above box, 1 = B inside
+  // `progress` drives the B's vertical position INSIDE the box.
+  //   1 = B fully inside (resting at the bottom of the box opening)
+  //   0 = B fully OUT, lifted above the box
+  // We oscillate with scroll so the B continuously comes out and goes back in.
+  const [progress, setProgress] = useState(1);
 
-  // Scroll-driven progress: starts at 0 when section's top hits ~80% of viewport,
-  // reaches 1 when the section is fully in view. After the drop completes, the
-  // bounce keyframes take over (we lock to 1 and switch to CSS animation).
   useEffect(() => {
     const compute = () => {
-      const el = sectionRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight || 1;
-      // 0 when top of section sits at the bottom of the viewport,
-      // 1 by the time it has scrolled up by ~50% of viewport height.
-      const start = vh * 0.95;
-      const end = vh * 0.25;
-      const raw = (start - rect.top) / (start - end);
-      setProgress(Math.min(Math.max(raw, 0), 1));
+      // Total scrollable height of the page
+      const scrolled = window.scrollY;
+      // One full out-and-in cycle every ~600px of scroll → feels lively but not frantic
+      const cycle = 600;
+      const phase = (scrolled % cycle) / cycle; // 0 → 1
+      // Sine wave: starts at 1 (inside), rises out, comes back in.
+      //   sin(0)=0 → progress=1 (inside)
+      //   sin(π/2)=1 → progress=0 (fully out)
+      //   sin(π)=0 → progress=1 (back inside)
+      const wave = Math.sin(phase * Math.PI * 2); // -1 → 1
+      // Map wave (-1..1) to progress (1..0..1..2..1) but clamp:
+      // We want symmetric behaviour: B goes out then back in. Use |sin|.
+      const out = Math.abs(wave); // 0 → 1 → 0
+      setProgress(1 - out); // 1 (inside) → 0 (out) → 1 (inside)
     };
     compute();
     window.addEventListener("scroll", compute, { passive: true });
-    window.addEventListener("resize", compute);
-    return () => {
-      window.removeEventListener("scroll", compute);
-      window.removeEventListener("resize", compute);
-    };
+    return () => window.removeEventListener("scroll", compute);
   }, []);
 
-  const landed = progress >= 0.98;
+  const landed = progress >= 0.85;
 
   return (
     <section
