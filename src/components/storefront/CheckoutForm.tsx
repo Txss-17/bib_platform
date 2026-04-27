@@ -131,6 +131,21 @@ export function CheckoutForm({ boutiqueId, boutiqueName, primaryColor, onBack }:
             Fermer
           </Button>
         </div>
+
+        {/* Opt-in account creation */}
+        <div className="mt-6 p-4 rounded-xl border border-primary/20 bg-primary/5 text-left">
+          <p className="text-sm font-semibold text-gray-900">Créez votre compte Brand-In-A-Box</p>
+          <p className="mt-1 text-xs text-gray-600">
+            Retrouvez toutes vos commandes (toutes boutiques), gagnez des cartes cadeaux en recyclant vos cartons (1 point = 0,10 €).
+          </p>
+          <a
+            href={`/signup?next=/mon-compte&email=${encodeURIComponent(email)}`}
+            className="mt-3 inline-flex items-center justify-center w-full rounded-lg px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            style={{ backgroundColor: primaryColor }}
+          >
+            Activer mon compte client
+          </a>
+        </div>
       </div>
     );
   }

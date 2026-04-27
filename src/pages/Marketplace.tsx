@@ -67,7 +67,7 @@ export default function Marketplace() {
           </div>
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="sm">
-              <Link to="/login">Mon compte</Link>
+              <Link to="/mon-compte">Mon compte</Link>
             </Button>
             <Button asChild size="sm" className="hidden sm:inline-flex">
               <Link to="/signup">Vendre sur BIB</Link>
