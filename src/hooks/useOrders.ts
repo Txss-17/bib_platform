@@ -112,9 +112,10 @@ export function useValidateOrder() {
   });
 }
 
-export type StatsPeriod = "day" | "week" | "month";
+export type StatsPeriod = "day" | "week" | "month" | "all";
 
 function periodStartIso(period: StatsPeriod): string | null {
+  if (period === "all") return null;
   const d = new Date();
   if (period === "day") {
     d.setHours(0, 0, 0, 0);
@@ -129,7 +130,7 @@ function periodStartIso(period: StatsPeriod): string | null {
   return d.toISOString();
 }
 
-export function useOrderStats(period: StatsPeriod = "month") {
+export function useOrderStats(period: StatsPeriod = "all") {
   const { user } = useAuth();
 
   return useQuery({
