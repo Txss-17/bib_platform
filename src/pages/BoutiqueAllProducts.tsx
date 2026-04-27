@@ -10,6 +10,7 @@ import { StorefrontHeader } from "@/components/storefront/StorefrontHeader";
 import { StorefrontFooter } from "@/components/storefront/StorefrontFooter";
 import { CartDrawer } from "@/components/storefront/CartDrawer";
 import { CartProvider, useCart } from "@/contexts/CartContext";
+import { StorefrontProvider } from "@/contexts/StorefrontContext";
 import { Loader2, Search, ShoppingCart, Check, ArrowLeft, SlidersHorizontal } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 import type { ThemeSettings } from "@/lib/boutiqueTemplates";
@@ -115,6 +116,7 @@ function AllProductsContent() {
   }
 
   return (
+    <StorefrontProvider boutiqueId={boutique.id} boutiqueName={boutique.name} boutiqueSlug={boutique.slug ?? slug}>
     <div className="min-h-screen bg-white flex flex-col">
       <StorefrontHeader boutiqueName={boutique.name} primaryColor={primaryColor} />
       
@@ -223,6 +225,7 @@ function AllProductsContent() {
       <CartDrawer primaryColor={primaryColor} boutiqueId={boutique.id} boutiqueName={boutique.name} />
       <StorefrontFooter primaryColor={primaryColor} />
     </div>
+    </StorefrontProvider>
   );
 }
 
