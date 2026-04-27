@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,14 @@ export default function Login() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/dashboard";
+  const [searchParams] = useSearchParams();
+  // Priority: ?next= query param (used by Store BIB / customer flow)
+  // > router state (ProtectedRoute) > seller dashboard fallback.
+  const from =
+    searchParams.get("next") ||
+    location.state?.from?.pathname ||
+    "/dashboard";
+  const isCustomer = from.startsWith("/mon-compte") || from.startsWith("/recycler");
 
   const getErrorMessage = (errorMsg: string) => {
     if (errorMsg === "Load failed" || errorMsg.includes("fetch") || errorMsg.includes("network") || errorMsg.includes("Failed to fetch")) {
@@ -91,7 +98,12 @@ export default function Login() {
             <CardFooter className="flex flex-col gap-4">
               <div className="text-center text-sm text-muted-foreground">
                 {t("login.noaccount")}{" "}
-                <Link to="/signup" className="text-primary font-medium hover:underline">{t("login.create")}</Link>
+                <Link
+                  to={isCustomer ? `/signup?next=${encodeURIComponent(from)}` : "/signup"}
+                  className="text-primary font-medium hover:underline"
+                >
+                  {t("login.create")}
+                </Link>
               </div>
             </CardFooter>
           </Card>
