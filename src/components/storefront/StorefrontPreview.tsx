@@ -193,6 +193,7 @@ export function StorefrontPreview({
               products={displayProducts}
               primaryColor={primaryColor}
               boutiqueSlug={boutiqueSlug}
+              boutiqueId={boutiqueId}
               is3D={is3D}
             />
           </div>
