@@ -6,15 +6,23 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Search, Plus, Calculator, ShieldCheck, Grid3X3, List, LayoutGrid, SlidersHorizontal, X, ChevronDown, ChevronUp, Eye, Heart } from "lucide-react";
-import { useState } from "react";
-import { useSupplierProducts } from "@/hooks/useSupplierProducts";
+import { Search, Plus, Calculator, ShieldCheck, Grid3X3, List, LayoutGrid, SlidersHorizontal, X, ChevronDown, ChevronUp, Eye, Heart, Package, Sparkles, TrendingUp } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useSupplierProducts, useSupplierProductsRealtime } from "@/hooks/useSupplierProducts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { ProductDetailDialog } from "@/components/dashboard/ProductDetailDialog";
 import { AddToBoutiqueDialog } from "@/components/dashboard/AddToBoutiqueDialog";
 import { useFavorites } from "@/hooks/useFavorites";
 import type { Tables } from "@/integrations/supabase/types";
+import {
+  PageHeader,
+  SectionCard,
+  KpiTile,
+  KpiTileSkeleton,
+  EmptyState,
+  RealtimeStatusPill,
+} from "@/components/dashboard/shared";
 
 type SupplierProduct = Tables<"supplier_products">;
 type RotationIndicator = "green" | "yellow" | "orange" | "red";
@@ -107,6 +115,7 @@ type ViewMode = "grid" | "list";
 
 export default function ProduitsFournisseurs() {
   const { data: supplierProducts, isLoading } = useSupplierProducts();
+  useSupplierProductsRealtime();
   const { favorites, isFavorite, toggleFavorite } = useFavorites();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -147,34 +156,86 @@ export default function ProduitsFournisseurs() {
 
   const activeFilterCount = selectedCategories.length + (priceRange[0] > 0 || priceRange[1] < 100 ? 1 : 0);
 
+  // Catalogue KPIs (computed on full list, not on filtered view)
+  const catalogueKpis = useMemo(() => {
+    const all = products;
+    const total = all.length;
+    const highDemand = all.filter((p) => p.rotation_indicator === "green").length;
+    const avgMargin = total > 0
+      ? Math.round(all.reduce((s, p) => s + (p.max_margin_percent || 0), 0) / total)
+      : 0;
+    const favoritesCount = favorites.length;
+    return { total, highDemand, avgMargin, favoritesCount };
+  }, [products, favorites]);
+
   return (
-    <DashboardLayout
-      title="Catalogue Produits"
-      subtitle="Parcourez et sélectionnez des produits"
-    >
+    <DashboardLayout title="Catalogue" subtitle="">
+      <PageHeader
+        eyebrow="Catalogue fournisseur"
+        title="Produits validés"
+        subtitle="Sélectionnez les produits adaptés à votre vision et à la demande du marché."
+        actions={<RealtimeStatusPill status="live" />}
+      />
+
+      {/* KPI strip */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+        {isLoading ? (
+          <>
+            <KpiTileSkeleton />
+            <KpiTileSkeleton />
+            <KpiTileSkeleton />
+            <KpiTileSkeleton tone="gold" />
+          </>
+        ) : (
+          <>
+            <KpiTile
+              label="Produits"
+              value={catalogueKpis.total}
+              icon={<Package className="w-4 h-4" />}
+              hint="Pré-validés"
+            />
+            <KpiTile
+              label="Demande élevée"
+              value={catalogueKpis.highDemand}
+              icon={<TrendingUp className="w-4 h-4" />}
+              hint="Indicateur vert"
+            />
+            <KpiTile
+              label="Marge max moy."
+              value={`${catalogueKpis.avgMargin}%`}
+              icon={<Calculator className="w-4 h-4" />}
+            />
+            <KpiTile
+              label="Favoris"
+              value={catalogueKpis.favoritesCount}
+              tone="gold"
+              icon={<Heart className="w-4 h-4" />}
+            />
+          </>
+        )}
+      </div>
+
       {/* Strategic banner */}
-      <Card className="bg-primary/5 border-primary/20 mb-4 sm:mb-6">
-        <CardContent className="p-3 sm:p-4">
-          <div className="flex items-start gap-2 sm:gap-3">
-            <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-primary mt-0.5 shrink-0" />
-            <div>
-              <p className="text-xs sm:text-sm text-foreground">
-                <span className="font-semibold">Vos choix impactent vos </span>
-                <span className="font-bold text-primary">résultats.</span>
-                <span className="hidden sm:inline"> Sélectionnez uniquement les produits adaptés à votre vision et à la demande marché.</span>
-              </p>
-              <div className="flex items-center gap-3 mt-1.5">
-                <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500" /> Risque faible
-                </span>
-                <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500" /> Demande Élevée
-                </span>
-              </div>
+      <SectionCard className="mb-4 sm:mb-6 bg-primary/5 border-primary/20">
+        <div className="flex items-start gap-2 sm:gap-3">
+          <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-primary mt-0.5 shrink-0" />
+          <div>
+            <p className="text-xs sm:text-sm text-foreground">
+              <span className="font-semibold">Vos choix impactent vos </span>
+              <span className="font-bold text-primary">résultats.</span>
+              <span className="hidden sm:inline"> Sélectionnez uniquement les produits adaptés à votre vision et à la demande marché.</span>
+            </p>
+            <div className="flex items-center gap-3 mt-1.5">
+              <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Risque faible
+              </span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Demande élevée
+              </span>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </SectionCard>
 
       {/* Top bar - stacked on mobile */}
       <div className="space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-4 mb-4 sm:mb-6">
@@ -368,9 +429,29 @@ export default function ProduitsFournisseurs() {
             </div>
           )}
           {!isLoading && sortedProducts.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-sm text-muted-foreground">Aucun produit trouvé avec ces filtres</p>
-            </div>
+            <SectionCard>
+              <EmptyState
+                icon={<Search className="w-7 h-7" />}
+                title="Aucun produit trouvé"
+                description="Ajustez vos filtres ou réinitialisez-les pour explorer tout le catalogue."
+                action={
+                  activeFilterCount > 0 ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedCategories([]);
+                        setPriceRange([0, 100]);
+                        setSearchQuery("");
+                        setShowFavoritesOnly(false);
+                      }}
+                    >
+                      Réinitialiser les filtres
+                    </Button>
+                  ) : undefined
+                }
+              />
+            </SectionCard>
           )}
         </div>
       </div>
