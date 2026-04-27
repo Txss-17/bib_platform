@@ -64,7 +64,7 @@ const PERIOD_LABEL: Record<StatsPeriod, string> = {
 
 const KPI_META: Record<
   KpiKey,
-  { label: string; icon: React.ComponentType<{ className?: string }>; tone: "primary" | "gold" | "muted" }
+  { label: string; icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; tone: "primary" | "gold" | "muted" }
 > = {
   revenue: { label: "Chiffre d'affaires", icon: Euro, tone: "gold" },
   orders: { label: "Commandes", icon: ShoppingCart, tone: "primary" },
