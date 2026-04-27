@@ -1,0 +1,123 @@
+import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { ShieldCheck, ImageOff } from "lucide-react";
+import type { MarketplaceBoutique } from "@/hooks/useMarketplace";
+
+interface Props {
+  boutique: MarketplaceBoutique;
+}
+
+export function BoutiqueCard({ boutique }: Props) {
+  const stories = useShuffled(boutique.product_previews);
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  useEffect(() => {
+    if (stories.length < 2) return;
+    const id = window.setInterval(() => {
+      setActiveIdx((i) => (i + 1) % stories.length);
+    }, 2500);
+    return () => window.clearInterval(id);
+  }, [stories.length]);
+
+  const current = stories[activeIdx];
+
+  return (
+    <Link
+      to={`/boutique/${boutique.slug}`}
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:border-primary/30"
+    >
+      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+        {current?.image_url ? (
+          <img
+            key={current.id}
+            src={current.image_url}
+            alt={current.name}
+            loading="lazy"
+            className="h-full w-full object-cover animate-in fade-in duration-700"
+          />
+        ) : boutique.cover_image_url ? (
+          <img src={boutique.cover_image_url} alt={boutique.name} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-muted">
+            <ImageOff className="h-10 w-10 text-muted-foreground/40" />
+          </div>
+        )}
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+
+        {stories.length > 1 && (
+          <div className="absolute left-3 right-3 top-3 flex gap-1">
+            {stories.map((_, i) => (
+              <div
+                key={i}
+                className={`h-0.5 flex-1 rounded-full transition-all ${
+                  i === activeIdx ? "bg-white" : "bg-white/30"
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
+        {boutique.has_protection && (
+          <Badge className="absolute right-3 top-6 gap-1 border-0 bg-primary/90 text-primary-foreground backdrop-blur">
+            <ShieldCheck className="h-3 w-3" />
+            Vérifié
+          </Badge>
+        )}
+
+        <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+          <div className="flex items-center gap-2">
+            {boutique.logo_url ? (
+              <img
+                src={boutique.logo_url}
+                alt=""
+                className="h-9 w-9 rounded-full border border-white/40 object-cover"
+              />
+            ) : (
+              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/40 bg-white/10 text-sm font-semibold">
+                {boutique.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-display text-base font-semibold leading-tight">
+                {boutique.name}
+              </p>
+              {current && (
+                <p className="truncate text-xs text-white/80">
+                  {current.name} · {current.price.toFixed(2)} €
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between p-4">
+        <div className="min-w-0">
+          <p className="truncate text-xs uppercase tracking-wider text-muted-foreground">
+            {boutique.category}
+          </p>
+          <p className="truncate text-sm text-foreground/80">
+            {boutique.tagline || boutique.description || `${boutique.product_count} produit${boutique.product_count > 1 ? "s" : ""}`}
+          </p>
+        </div>
+        <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+          Visiter →
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+function useShuffled<T>(items: T[]): T[] {
+  const [shuffled] = useState(() => {
+    const arr = [...items];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  });
+  return shuffled;
+}
