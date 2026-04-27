@@ -21,12 +21,28 @@ export type SectionEffect =
 
 export interface SectionConfig {
   id: string;
-  type: "hero" | "features" | "products" | "about" | "testimonials" | "newsletter" | "video" | "faq";
+  type:
+    | "hero"
+    | "features"
+    | "products"
+    | "about"
+    | "testimonials"
+    | "newsletter"
+    | "video"
+    | "faq"
+    | "announcement"
+    | "countdown"
+    | "comparison"
+    | "bundle"
+    | "lookbook"
+    | "sticky-cta";
   enabled: boolean;
   title?: string;
   subtitle?: string;
   effect?: SectionEffect;
   effectIntensity?: "low" | "medium" | "high";
+  /** Free-form per-section data (announcement message, countdown end date, etc.) */
+  data?: Record<string, any>;
 }
 
 export const sectionEffects: { value: SectionEffect; label: string; description: string }[] = [
@@ -67,13 +83,19 @@ export interface TemplateConfig {
 
 export const availableSections: { type: SectionConfig["type"]; label: string; description: string }[] = [
   { type: "hero", label: "Hero", description: "Bannière principale avec titre et CTA" },
+  { type: "announcement", label: "Bandeau annonce", description: "Bandeau supérieur (livraison gratuite, promo...)" },
   { type: "features", label: "Avantages", description: "Icônes de livraison, qualité, etc." },
+  { type: "countdown", label: "Compte à rebours", description: "Urgence : offre limitée dans le temps" },
+  { type: "comparison", label: "Comparatif", description: "Avant / Après ou Nous vs Concurrents" },
+  { type: "bundle", label: "Bundle / Offre groupée", description: "Pack de plusieurs produits avec remise" },
+  { type: "lookbook", label: "Lookbook", description: "Galerie immersive façon magazine" },
   { type: "products", label: "Produits", description: "Grille de produits" },
   { type: "about", label: "À propos", description: "Présentation de la boutique" },
   { type: "testimonials", label: "Avis clients", description: "Témoignages et étoiles" },
   { type: "video", label: "Vidéo", description: "Vidéo YouTube / Vimeo intégrée" },
   { type: "faq", label: "FAQ", description: "Questions fréquentes en accordéon" },
   { type: "newsletter", label: "Newsletter", description: "Formulaire d'inscription email" },
+  { type: "sticky-cta", label: "CTA flottant", description: "Bouton d'achat fixé en bas d'écran" },
 ];
 
 export type AnimationLevel = "none" | "subtle" | "dynamic";
@@ -304,6 +326,188 @@ export const categoryTemplates: Record<string, TemplateConfig> = {
 
 export function getTemplateForCategory(category: string): TemplateConfig {
   return categoryTemplates[category] || categoryTemplates.Mode;
+}
+
+/**
+ * Conversion-first templates — applicable in 1 click from the editor.
+ * Each template prescribes a complete section list, with default copy
+ * stored in `section.data` so the storefront has content out of the box.
+ */
+export interface ConversionTemplate {
+  id: "fashion" | "tech" | "one-product" | "fitness";
+  label: string;
+  description: string;
+  category: string;
+  primaryColor: string;
+  secondaryColor: string;
+  fonts: { heading: string; body: string };
+  heroTitle: string;
+  heroSubtitle: string;
+  heroLayout: HeroLayout;
+  sections: SectionConfig[];
+}
+
+export const conversionTemplates: ConversionTemplate[] = [
+  {
+    id: "fashion",
+    label: "Fashion — Drop éditorial",
+    description: "Lookbook immersif, témoignages, urgence sur la collection capsule.",
+    category: "Mode",
+    primaryColor: "#0F172A",
+    secondaryColor: "#C9A14A",
+    fonts: { heading: "Playfair Display", body: "Inter" },
+    heroTitle: "Notre collection capsule. Maintenant.",
+    heroSubtitle: "Pièces en édition limitée. Livraison incluse.",
+    heroLayout: "image-bg",
+    sections: [
+      {
+        id: "announcement", type: "announcement", enabled: true,
+        data: { message: "Livraison offerte dès 80€ — édition limitée", emoji: "✨" },
+      },
+      { id: "hero", type: "hero", enabled: true, effect: "fade" },
+      {
+        id: "countdown", type: "countdown", enabled: true, effect: "slide-up",
+        data: { title: "Drop se termine dans", endsInHours: 48 },
+      },
+      { id: "lookbook", type: "lookbook", enabled: true, effect: "slide-up", data: { title: "Le lookbook" } },
+      { id: "products", type: "products", enabled: true, effect: "fade" },
+      { id: "testimonials", type: "testimonials", enabled: true, effect: "slide-right" },
+      { id: "newsletter", type: "newsletter", enabled: true },
+      { id: "sticky-cta", type: "sticky-cta", enabled: true, data: { label: "Acheter la collection", anchor: "products" } },
+    ],
+  },
+  {
+    id: "tech",
+    label: "Tech — Lancement produit",
+    description: "Comparatif vs concurrents, bundle d'accessoires, FAQ technique.",
+    category: "Tech",
+    primaryColor: "#0F172A",
+    secondaryColor: "#C9A14A",
+    fonts: { heading: "Sora", body: "Inter" },
+    heroTitle: "La nouvelle référence tech.",
+    heroSubtitle: "Garantie 2 ans. Support 24/7. Livré sous 48h.",
+    heroLayout: "image-right",
+    sections: [
+      {
+        id: "announcement", type: "announcement", enabled: true,
+        data: { message: "Précommande ouverte — livraison sous 48h", emoji: "⚡" },
+      },
+      { id: "hero", type: "hero", enabled: true, effect: "fade" },
+      { id: "features", type: "features", enabled: true, effect: "fade" },
+      {
+        id: "comparison", type: "comparison", enabled: true, effect: "slide-up",
+        data: {
+          title: "Pourquoi nous choisir",
+          us: "Notre offre",
+          them: "La concurrence",
+          rows: [
+            { label: "Garantie 2 ans incluse", us: true, them: false },
+            { label: "Support 24/7 en français", us: true, them: false },
+            { label: "Livraison express offerte", us: true, them: false },
+            { label: "Retour gratuit 30 jours", us: true, them: true },
+          ],
+        },
+      },
+      { id: "products", type: "products", enabled: true, effect: "fade" },
+      {
+        id: "bundle", type: "bundle", enabled: true, effect: "slide-up",
+        data: {
+          title: "Pack complet — économisez 25%",
+          subtitle: "Tout pour démarrer en un seul achat",
+          items: ["Produit principal", "Accessoire premium", "Étui de protection"],
+          originalPrice: 399,
+          bundlePrice: 299,
+        },
+      },
+      { id: "faq", type: "faq", enabled: true },
+      { id: "newsletter", type: "newsletter", enabled: true },
+      { id: "sticky-cta", type: "sticky-cta", enabled: true, data: { label: "Précommander maintenant", anchor: "products" } },
+    ],
+  },
+  {
+    id: "one-product",
+    label: "One-product — Page hero",
+    description: "Focus sur un seul produit avec urgence, comparatif, social proof, FAQ.",
+    category: "Mode",
+    primaryColor: "#0F172A",
+    secondaryColor: "#C9A14A",
+    fonts: { heading: "Playfair Display", body: "Inter" },
+    heroTitle: "Le produit qui change tout.",
+    heroSubtitle: "Plus de 1 200 clients conquis. Livré en 48h.",
+    heroLayout: "image-right",
+    sections: [
+      {
+        id: "announcement", type: "announcement", enabled: true,
+        data: { message: "Stock limité — plus que 47 unités", emoji: "🔥" },
+      },
+      { id: "hero", type: "hero", enabled: true },
+      {
+        id: "countdown", type: "countdown", enabled: true,
+        data: { title: "Offre de lancement se termine dans", endsInHours: 12 },
+      },
+      { id: "features", type: "features", enabled: true },
+      { id: "video", type: "video", enabled: true, effect: "zoom" },
+      { id: "testimonials", type: "testimonials", enabled: true, effect: "slide-up" },
+      {
+        id: "comparison", type: "comparison", enabled: true,
+        data: {
+          title: "Avant / Après",
+          us: "Avec le produit",
+          them: "Sans le produit",
+          rows: [
+            { label: "Gain de temps quotidien", us: true, them: false },
+            { label: "Résultat visible", us: true, them: false },
+            { label: "Tranquillité d'esprit", us: true, them: false },
+          ],
+        },
+      },
+      { id: "faq", type: "faq", enabled: true },
+      { id: "newsletter", type: "newsletter", enabled: true },
+      { id: "sticky-cta", type: "sticky-cta", enabled: true, data: { label: "Je le veux", anchor: "products" } },
+    ],
+  },
+  {
+    id: "fitness",
+    label: "Fitness — Programme intense",
+    description: "Bundle équipement, témoignages avant/après, urgence promo.",
+    category: "Sport",
+    primaryColor: "#0F172A",
+    secondaryColor: "#C9A14A",
+    fonts: { heading: "Montserrat", body: "Inter" },
+    heroTitle: "Transformez votre quotidien.",
+    heroSubtitle: "Équipement pro. Résultats prouvés. Communauté dédiée.",
+    heroLayout: "image-bg",
+    sections: [
+      {
+        id: "announcement", type: "announcement", enabled: true,
+        data: { message: "−30% sur tous les packs ce week-end", emoji: "💪" },
+      },
+      { id: "hero", type: "hero", enabled: true },
+      {
+        id: "countdown", type: "countdown", enabled: true,
+        data: { title: "Promo se termine dans", endsInHours: 36 },
+      },
+      { id: "features", type: "features", enabled: true },
+      {
+        id: "bundle", type: "bundle", enabled: true,
+        data: {
+          title: "Pack Démarrage Complet",
+          subtitle: "Tout pour commencer dès demain matin",
+          items: ["Équipement principal", "Programme 30 jours", "Accès communauté privée"],
+          originalPrice: 249,
+          bundlePrice: 179,
+        },
+      },
+      { id: "products", type: "products", enabled: true },
+      { id: "testimonials", type: "testimonials", enabled: true, effect: "slide-up" },
+      { id: "faq", type: "faq", enabled: true },
+      { id: "sticky-cta", type: "sticky-cta", enabled: true, data: { label: "Démarrer mon programme", anchor: "products" } },
+    ],
+  },
+];
+
+export function getConversionTemplate(id: ConversionTemplate["id"]): ConversionTemplate | undefined {
+  return conversionTemplates.find((t) => t.id === id);
 }
 
 export interface ThemeSettings {

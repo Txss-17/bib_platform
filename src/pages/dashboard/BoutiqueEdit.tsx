@@ -13,7 +13,7 @@ import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Spa
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { StorefrontPreview } from "@/components/storefront/StorefrontPreview";
-import { getTemplateForCategory, availableSections, animationLevels, heroLayouts, siteTypes, sectionEffects, type ThemeSettings, type SectionConfig, type AnimationLevel, type HeroLayout, type SiteType, type SectionEffect } from "@/lib/boutiqueTemplates";
+import { getTemplateForCategory, availableSections, animationLevels, heroLayouts, siteTypes, sectionEffects, conversionTemplates, type ThemeSettings, type SectionConfig, type AnimationLevel, type HeroLayout, type SiteType, type SectionEffect, type ConversionTemplate } from "@/lib/boutiqueTemplates";
 import { useEmailTemplates, useUpsertEmailTemplate, DEFAULT_TEMPLATES } from "@/hooks/useEmailTemplates";
 import {
   DndContext,
@@ -370,6 +370,50 @@ export default function BoutiqueEdit() {
 
     const reordered = arrayMove(currentSections, oldIndex, newIndex);
     setThemeSettings(prev => ({ ...prev, sections: reordered }));
+  };
+
+  /** Apply a conversion-first template to the boutique (sections + colors + fonts + hero copy). */
+  const applyConversionTemplate = (tpl: ConversionTemplate) => {
+    setThemeSettings(prev => ({
+      ...prev,
+      sections: tpl.sections,
+      fonts: tpl.fonts,
+      heroLayout: tpl.heroLayout,
+      // Brand colors stay locked to BIB (marine + gold) — only update if user hasn't set custom.
+      primaryColor: tpl.primaryColor,
+      secondaryColor: tpl.secondaryColor,
+      colorScheme: tpl.label,
+    }));
+    setCustomTexts(prev => ({
+      ...prev,
+      heroTitle: tpl.heroTitle,
+      heroSubtitle: tpl.heroSubtitle,
+    }));
+    toast.success(`Template « ${tpl.label} » appliqué — n'oubliez pas d'enregistrer.`);
+  };
+
+  /** Add a new section (from availableSections) at the end of the list, enabled by default. */
+  const addSection = (type: SectionConfig["type"]) => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    if (currentSections.some(s => s.type === type)) {
+      toast.info("Cette section est déjà dans la liste — activez-la avec l'interrupteur.");
+      return;
+    }
+    const updated: SectionConfig[] = [
+      ...currentSections,
+      { id: type, type, enabled: true },
+    ];
+    setThemeSettings(prev => ({ ...prev, sections: updated }));
+    toast.success("Section ajoutée");
+  };
+
+  /** Remove a section from the list entirely (different from disabling). */
+  const removeSection = (type: SectionConfig["type"]) => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    const updated = currentSections.filter(s => s.type !== type);
+    setThemeSettings(prev => ({ ...prev, sections: updated }));
   };
 
   const updateColor = (scheme: typeof colorSchemes[0]) => {
@@ -843,6 +887,55 @@ export default function BoutiqueEdit() {
 
             {/* Sections tab with drag-and-drop */}
             <TabsContent value="sections">
+              {/* Conversion templates picker */}
+              <Card className="mb-4 border-bib-gold/30">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-bib-gold" />
+                    Templates conversion
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    Appliquez en 1 clic une mise en page premium pensée pour vendre.
+                    Vos contenus existants seront conservés ; les sections seront réinitialisées au modèle choisi.
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {conversionTemplates.map(tpl => (
+                      <button
+                        key={tpl.id}
+                        type="button"
+                        onClick={() => applyConversionTemplate(tpl)}
+                        className="group text-left rounded-xl border-2 border-border hover:border-bib-gold/60 hover:shadow-md transition-all p-3 bg-card"
+                      >
+                        {/* Mini wireframe preview */}
+                        <div className="aspect-[4/3] rounded-lg bg-bib-ivory border border-border/60 p-2 mb-3 flex flex-col gap-1.5 overflow-hidden">
+                          <div className="h-1.5 bg-bib-marine/80 rounded-sm" />
+                          <div className="flex-1 rounded bg-bib-marine/10 flex items-center justify-center">
+                            <div className="w-1/2 h-2 bg-bib-marine/40 rounded" />
+                          </div>
+                          <div className="grid grid-cols-3 gap-1">
+                            <div className="h-3 rounded bg-bib-gold/30" />
+                            <div className="h-3 rounded bg-bib-marine/15" />
+                            <div className="h-3 rounded bg-bib-marine/15" />
+                          </div>
+                          <div className="h-1 bg-bib-gold rounded-sm" />
+                        </div>
+                        <p className="font-display font-semibold text-sm text-bib-marine group-hover:text-bib-gold transition-colors">
+                          {tpl.label}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground leading-snug mt-1">
+                          {tpl.description}
+                        </p>
+                        <p className="text-[10px] uppercase tracking-wider text-bib-gold font-semibold mt-2">
+                          {tpl.sections.filter(s => s.enabled).length} sections
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
               <Card>
                 <CardHeader>
                   <div className="flex items-start justify-between gap-3">
@@ -850,7 +943,27 @@ export default function BoutiqueEdit() {
                       <CardTitle className="text-lg">Sections du site</CardTitle>
                       <p className="text-xs text-muted-foreground">Glissez-déposez pour réorganiser l'ordre des sections</p>
                     </div>
-                    <Button
+                    <div className="flex items-center gap-2 shrink-0">
+                      {/* Add a section picker */}
+                      <select
+                        defaultValue=""
+                        onChange={(e) => {
+                          const v = e.target.value as SectionConfig["type"];
+                          if (v) {
+                            addSection(v);
+                            e.target.value = "";
+                          }
+                        }}
+                        className="text-xs rounded-md border border-border bg-background px-2 py-2 hover:border-primary/50 transition-colors"
+                      >
+                        <option value="">+ Ajouter une section…</option>
+                        {availableSections
+                          .filter(s => !sections.some(cur => cur.type === s.type))
+                          .map(s => (
+                            <option key={s.type} value={s.type}>{s.label}</option>
+                          ))}
+                      </select>
+                      <Button
                       type="button"
                       variant="outline"
                       size="sm"
@@ -861,10 +974,11 @@ export default function BoutiqueEdit() {
                         setThemeSettings(prev => ({ ...prev, sections: cleared }));
                         toast.success("Tous les effets ont été réinitialisés");
                       }}
-                      className="gap-1.5 shrink-0"
+                        className="gap-1.5"
                     >
-                      <Trash2 className="w-3.5 h-3.5" /> Réinitialiser les effets
-                    </Button>
+                        <Trash2 className="w-3.5 h-3.5" /> Effets
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
