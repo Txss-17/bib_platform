@@ -372,6 +372,50 @@ export default function BoutiqueEdit() {
     setThemeSettings(prev => ({ ...prev, sections: reordered }));
   };
 
+  /** Apply a conversion-first template to the boutique (sections + colors + fonts + hero copy). */
+  const applyConversionTemplate = (tpl: ConversionTemplate) => {
+    setThemeSettings(prev => ({
+      ...prev,
+      sections: tpl.sections,
+      fonts: tpl.fonts,
+      heroLayout: tpl.heroLayout,
+      // Brand colors stay locked to BIB (marine + gold) — only update if user hasn't set custom.
+      primaryColor: tpl.primaryColor,
+      secondaryColor: tpl.secondaryColor,
+      colorScheme: tpl.label,
+    }));
+    setCustomTexts(prev => ({
+      ...prev,
+      heroTitle: tpl.heroTitle,
+      heroSubtitle: tpl.heroSubtitle,
+    }));
+    toast.success(`Template « ${tpl.label} » appliqué — n'oubliez pas d'enregistrer.`);
+  };
+
+  /** Add a new section (from availableSections) at the end of the list, enabled by default. */
+  const addSection = (type: SectionConfig["type"]) => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    if (currentSections.some(s => s.type === type)) {
+      toast.info("Cette section est déjà dans la liste — activez-la avec l'interrupteur.");
+      return;
+    }
+    const updated: SectionConfig[] = [
+      ...currentSections,
+      { id: type, type, enabled: true },
+    ];
+    setThemeSettings(prev => ({ ...prev, sections: updated }));
+    toast.success("Section ajoutée");
+  };
+
+  /** Remove a section from the list entirely (different from disabling). */
+  const removeSection = (type: SectionConfig["type"]) => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    const updated = currentSections.filter(s => s.type !== type);
+    setThemeSettings(prev => ({ ...prev, sections: updated }));
+  };
+
   const updateColor = (scheme: typeof colorSchemes[0]) => {
     setThemeSettings(prev => ({
       ...prev,
