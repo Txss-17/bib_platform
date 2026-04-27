@@ -49,9 +49,9 @@ const CTASection = () => {
               </div>
             </div>
 
-            {/* Mini animated logo — replays at this scroll position */}
+            {/* Mini official logo — replays at this scroll position */}
             <div className="hidden lg:block">
-              <BrandBoxLogo size={220} replayOnScroll />
+              <BrandBoxLogo size={140} variant="full" replayOnScroll />
             </div>
           </div>
         </div>
