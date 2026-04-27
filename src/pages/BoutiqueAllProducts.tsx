@@ -13,6 +13,7 @@ import { CartProvider, useCart } from "@/contexts/CartContext";
 import { Loader2, Search, ShoppingCart, Check, ArrowLeft, SlidersHorizontal } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 import type { ThemeSettings } from "@/lib/boutiqueTemplates";
+import { trackStorefrontEvent } from "@/lib/storefrontTracking";
 
 function AllProductsContent() {
   const { slug } = useParams<{ slug: string }>();
@@ -196,7 +197,12 @@ function AllProductsContent() {
                 <Button
                   className="w-full text-white text-sm gap-1.5"
                   style={{ backgroundColor: primaryColor }}
-                  onClick={() => addItem({ id: product.id, name: product.name, price: product.price, image_url: product.image_url })}
+                  onClick={() => {
+                    addItem({ id: product.id, name: product.name, price: product.price, image_url: product.image_url });
+                    if (boutique?.id) {
+                      trackStorefrontEvent(boutique.id, "add_to_cart", { productId: product.id });
+                    }
+                  }}
                 >
                   <ShoppingCart className="w-3.5 h-3.5" />
                   Ajouter

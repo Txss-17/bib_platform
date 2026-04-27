@@ -44,6 +44,7 @@ import {
 } from "@/components/dashboard/shared";
 import { SalesHeatmap } from "@/components/dashboard/sales/SalesHeatmap";
 import { LiveActivity } from "@/components/dashboard/sales/LiveActivity";
+import { RealtimePulseCard } from "@/components/dashboard/sales/RealtimePulseCard";
 import { useSalesKpis } from "@/hooks/useSalesKpis";
 
 const monthlyData = [
@@ -243,6 +244,11 @@ export default function Ventes() {
         >
           <LiveActivity />
         </SectionCard>
+      </div>
+
+      {/* Realtime storefront pulse */}
+      <div className="mb-6">
+        <RealtimePulseCard boutiqueId={selectedBoutique} />
       </div>
 
       {/* Geographic + Top Products */}

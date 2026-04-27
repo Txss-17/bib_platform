@@ -595,6 +595,36 @@ export type Database = {
           },
         ]
       }
+      storefront_events: {
+        Row: {
+          boutique_id: string
+          created_at: string
+          event_type: Database["public"]["Enums"]["storefront_event_type"]
+          id: string
+          metadata: Json
+          product_id: string | null
+          session_id: string | null
+        }
+        Insert: {
+          boutique_id: string
+          created_at?: string
+          event_type: Database["public"]["Enums"]["storefront_event_type"]
+          id?: string
+          metadata?: Json
+          product_id?: string | null
+          session_id?: string | null
+        }
+        Update: {
+          boutique_id?: string
+          created_at?: string
+          event_type?: Database["public"]["Enums"]["storefront_event_type"]
+          id?: string
+          metadata?: Json
+          product_id?: string | null
+          session_id?: string | null
+        }
+        Relationships: []
+      }
       supplier_products: {
         Row: {
           base_price: number
@@ -690,6 +720,11 @@ export type Database = {
       product_status: "active" | "paused"
       recycling_source: "qr_scan" | "manual" | "pickup"
       rotation_indicator: "green" | "yellow" | "orange" | "red"
+      storefront_event_type:
+        | "boutique_view"
+        | "product_view"
+        | "add_to_cart"
+        | "checkout_start"
       team_role: "owner" | "manager" | "marketing" | "support"
     }
     CompositeTypes: {
@@ -835,6 +870,12 @@ export const Constants = {
       product_status: ["active", "paused"],
       recycling_source: ["qr_scan", "manual", "pickup"],
       rotation_indicator: ["green", "yellow", "orange", "red"],
+      storefront_event_type: [
+        "boutique_view",
+        "product_view",
+        "add_to_cart",
+        "checkout_start",
+      ],
       team_role: ["owner", "manager", "marketing", "support"],
     },
   },

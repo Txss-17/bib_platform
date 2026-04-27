@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +11,7 @@ import { StorefrontFooter } from "@/components/storefront/StorefrontFooter";
 import { CartDrawer } from "@/components/storefront/CartDrawer";
 import { useSEO } from "@/hooks/useSEO";
 import type { ThemeSettings } from "@/lib/boutiqueTemplates";
+import { trackStorefrontEvent } from "@/lib/storefrontTracking";
 
 export default function ProductPublic() {
   const { slug, productId } = useParams<{ slug: string; productId: string }>();
@@ -71,6 +73,13 @@ export default function ProductPublic() {
     type: "product",
   });
 
+  // Realtime analytics: log a product view for the seller's pulse.
+  useEffect(() => {
+    if (boutique?.id && product?.id) {
+      trackStorefrontEvent(boutique.id, "product_view", { productId: product.id });
+    }
+  }, [boutique?.id, product?.id]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -102,6 +111,9 @@ export default function ProductPublic() {
       price: productPrice,
       image_url: productImage || null,
     });
+    if (boutique?.id) {
+      trackStorefrontEvent(boutique.id, "add_to_cart", { productId: product.id });
+    }
   };
 
   return (
