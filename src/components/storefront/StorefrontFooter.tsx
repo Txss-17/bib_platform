@@ -27,7 +27,7 @@ export function StorefrontFooter({ primaryColor }: StorefrontFooterProps) {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-500">Powered by</span>
-            <span className="font-bold text-gray-900">LINKSY</span>
+            <span className="font-bold text-gray-900">Brand-In-A-Box</span>
           </div>
 
           <nav className="flex flex-wrap items-center justify-center gap-4 md:gap-6">

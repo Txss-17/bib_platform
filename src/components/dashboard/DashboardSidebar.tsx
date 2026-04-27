@@ -20,6 +20,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useAuth } from "@/contexts/AuthContext";
+import { Logo } from "@/components/Logo";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -51,11 +52,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <>
       {/* Logo */}
-      <div className="p-4 border-b border-border/50 flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-          <span className="text-primary-foreground font-bold text-sm">L</span>
-        </div>
-        <span className="font-bold text-xl text-foreground">LINKSY</span>
+      <div className="p-4 border-b border-border/50">
+        <Logo />
       </div>
 
       {/* User Profile Card */}
@@ -69,7 +67,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               {profile?.full_name || profile?.business_name || "Utilisateur"}
             </p>
             <p className="text-xs text-muted-foreground truncate">
-              {profile?.business_type || "Vendeur LINKSY"}
+              {profile?.business_type || "Vendeur BIB"}
             </p>
           </div>
         </div>

@@ -29,7 +29,7 @@ export function StorefrontHero({
     <div className="absolute top-4 right-4 md:top-8 md:right-8 z-10">
       <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full shadow-sm border border-gray-100">
         <Check className="w-4 h-4" style={{ color: primaryColor }} />
-        <span className="text-sm font-medium text-gray-700">Verified by LINKSY</span>
+        <span className="text-sm font-medium text-gray-700">Verified by Brand-In-A-Box</span>
       </div>
     </div>
   );

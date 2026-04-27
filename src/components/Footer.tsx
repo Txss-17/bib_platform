@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Twitter, Linkedin, Instagram, Shield, Globe, MapPin } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Logo } from "@/components/Logo";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -11,12 +12,9 @@ const Footer = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 lg:gap-12">
           <div className="col-span-2 lg:col-span-1">
-            <Link to="/" className="flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">L</span>
-              </div>
-              <span className="text-xl font-bold">LINKSY</span>
-            </Link>
+            <div className="mb-6">
+              <Logo variant="full" onLight={false} />
+            </div>
             <p className="text-primary-foreground/70 text-sm leading-relaxed mb-6">{t("footer.desc")}</p>
             <div className="flex items-center gap-4">
               <a href="#" className="text-primary-foreground/60 hover:text-primary-foreground transition-colors"><Twitter size={20} /></a>
@@ -69,7 +67,7 @@ const Footer = () => {
               <div className="flex items-center gap-2"><Globe size={16} /><span>{t("footer.multimarket")}</span></div>
               <div className="flex items-center gap-2"><MapPin size={16} /><span>EU, UAE, Africa</span></div>
             </div>
-            <p className="text-sm text-primary-foreground/60">© {currentYear} LINKSY. {t("footer.rights")}</p>
+            <p className="text-sm text-primary-foreground/60">© {currentYear} Brand-In-A-Box. {t("footer.rights")}</p>
           </div>
         </div>
       </div>
