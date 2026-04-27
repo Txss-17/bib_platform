@@ -34,13 +34,15 @@ export async function trackStorefrontEvent(
 ): Promise<void> {
   if (!boutiqueId) return;
   try {
-    await supabase.from("storefront_events").insert({
-      boutique_id: boutiqueId,
-      product_id: options.productId ?? null,
-      event_type: eventType,
-      session_id: getSessionId(),
-      metadata: options.metadata ?? {},
-    });
+    await supabase.from("storefront_events").insert([
+      {
+        boutique_id: boutiqueId,
+        product_id: options.productId ?? null,
+        event_type: eventType,
+        session_id: getSessionId(),
+        metadata: (options.metadata ?? {}) as never,
+      },
+    ] as never);
   } catch {
     /* swallow — analytics must never break the storefront */
   }
