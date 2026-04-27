@@ -63,6 +63,7 @@ const App = () => (
             <Route path="/mon-compte" element={<MonCompte />} />
             <Route path="/recycler" element={<Recycler />} />
             <Route path="/recycler/:slug" element={<Recycler />} />
+            <Route path="/suivi-commande" element={<OrderTracking />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

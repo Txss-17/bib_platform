@@ -6,8 +6,15 @@ import { Logo } from "@/components/Logo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useSEO } from "@/hooks/useSEO";
-import { Search, ShieldCheck, Truck, Recycle, Loader2 } from "lucide-react";
+import { Search, ShieldCheck, Truck, Recycle, Loader2, Package } from "lucide-react";
 
 const TRUST_BADGES = [
   { icon: Truck, label: "0 stock, 0 logistique", desc: "Expédition gérée par Brand-In-A-Box" },
@@ -19,11 +26,13 @@ export default function Marketplace() {
   const { data: boutiques = [], isLoading } = useMarketplaceBoutiques();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [market, setMarket] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"recent" | "established" | "impact" | "popular">("recent");
 
   useSEO({
-    title: "Marketplace — Brand-In-A-Box",
+    title: "Store BIB — Toutes les boutiques Brand-In-A-Box",
     description:
-      "Découvrez toutes les boutiques Brand-In-A-Box : produits audités, qualité conforme, livraison incluse. Cumulez des points en recyclant vos cartons.",
+      "Store BIB : la marketplace officielle de Brand-In-A-Box. Filtrez par catégorie, marché ou impact environnemental. Produits audités, livraison incluse.",
   });
 
   const categories = useMemo(() => {
@@ -31,9 +40,15 @@ export default function Marketplace() {
     return ["all", ...Array.from(set)];
   }, [boutiques]);
 
+  const markets = useMemo(() => {
+    const set = new Set(boutiques.map((b) => b.market).filter(Boolean));
+    return ["all", ...Array.from(set)];
+  }, [boutiques]);
+
   const filtered = useMemo(() => {
-    return boutiques.filter((b) => {
+    const list = boutiques.filter((b) => {
       if (activeCategory !== "all" && b.category !== activeCategory) return false;
+      if (market !== "all" && b.market !== market) return false;
       if (search.trim()) {
         const q = search.toLowerCase();
         return (
@@ -44,15 +59,39 @@ export default function Marketplace() {
       }
       return true;
     });
-  }, [boutiques, activeCategory, search]);
+
+    const sorted = [...list];
+    switch (sortBy) {
+      case "recent":
+        sorted.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        break;
+      case "established":
+        sorted.sort(
+          (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+        break;
+      case "impact":
+        sorted.sort((a, b) => b.recycling_points - a.recycling_points);
+        break;
+      case "popular":
+        sorted.sort((a, b) => b.total_sales - a.total_sales);
+        break;
+    }
+    return sorted;
+  }, [boutiques, activeCategory, market, search, sortBy]);
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <Link to="/marketplace" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <Logo iconSize={28} />
+            <span className="hidden font-display text-sm font-semibold text-muted-foreground sm:inline">
+              · Store
+            </span>
           </Link>
           <div className="hidden flex-1 max-w-md mx-8 md:block">
             <div className="relative">
@@ -66,11 +105,16 @@ export default function Marketplace() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
+              <Link to="/suivi-commande" className="gap-1.5">
+                <Package className="h-4 w-4" /> Suivi commande
+              </Link>
+            </Button>
             <Button asChild variant="ghost" size="sm">
               <Link to="/mon-compte">Mon compte</Link>
             </Button>
             <Button asChild size="sm" className="hidden sm:inline-flex">
-              <Link to="/signup">Vendre sur BIB</Link>
+              <Link to="/vendre">Vendre sur BIB</Link>
             </Button>
           </div>
         </div>
@@ -81,7 +125,7 @@ export default function Marketplace() {
         <div className="container mx-auto px-4 py-10 md:py-16">
           <div className="mx-auto max-w-3xl text-center">
             <Badge variant="outline" className="mb-4 border-primary/30 bg-primary/5 text-primary">
-              Marketplace officiel Brand-In-A-Box
+              Store BIB · marketplace officiel Brand-In-A-Box
             </Badge>
             <h1 className="font-display text-3xl font-bold leading-tight md:text-5xl">
               Toutes vos marques préférées,{" "}
@@ -101,6 +145,15 @@ export default function Marketplace() {
                 placeholder="Rechercher…"
                 className="pl-9"
               />
+            </div>
+
+            {/* Mobile quick links */}
+            <div className="mt-4 flex justify-center gap-2 md:hidden">
+              <Button asChild variant="outline" size="sm">
+                <Link to="/suivi-commande" className="gap-1.5">
+                  <Package className="h-4 w-4" /> Suivi commande
+                </Link>
+              </Button>
             </div>
           </div>
 
@@ -124,26 +177,55 @@ export default function Marketplace() {
         </div>
       </section>
 
-      {/* Categories */}
-      {categories.length > 1 && (
-        <div className="sticky top-16 z-30 border-b border-border/60 bg-background/95 backdrop-blur">
-          <div className="container mx-auto flex gap-2 overflow-x-auto px-4 py-3 scrollbar-none">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
-                  activeCategory === cat
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                }`}
-              >
-                {cat === "all" ? "Toutes" : cat}
-              </button>
-            ))}
+      {/* Filters bar */}
+      <div className="sticky top-16 z-30 border-b border-border/60 bg-background/95 backdrop-blur">
+        <div className="container mx-auto px-4 py-3 space-y-3">
+          {categories.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto scrollbar-none">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
+                    activeCategory === cat
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                  }`}
+                >
+                  {cat === "all" ? "Toutes catégories" : cat}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Select value={market} onValueChange={setMarket}>
+              <SelectTrigger className="h-9 w-[150px]">
+                <SelectValue placeholder="Marché" />
+              </SelectTrigger>
+              <SelectContent>
+                {markets.map((m) => (
+                  <SelectItem key={m} value={m}>
+                    {m === "all" ? "Tous les marchés" : m}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+              <SelectTrigger className="h-9 w-[200px]">
+                <SelectValue placeholder="Trier par" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recent">🆕 Récemment ajoutées</SelectItem>
+                <SelectItem value="established">⏳ Établies (long terme)</SelectItem>
+                <SelectItem value="impact">♻️ Impact environnemental</SelectItem>
+                <SelectItem value="popular">🔥 Plus populaires</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Boutiques grid */}
       <main className="container mx-auto px-4 py-10">

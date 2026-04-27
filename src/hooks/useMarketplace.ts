@@ -20,6 +20,10 @@ export interface MarketplaceBoutique {
   has_protection: boolean;
   product_count: number;
   product_previews: MarketplaceProductPreview[];
+  market: string;
+  created_at: string;
+  total_sales: number;
+  recycling_points: number;
 }
 
 /**
@@ -35,12 +39,16 @@ export function useMarketplaceBoutiques() {
         .select(`
           id, name, slug, category, description, tagline,
           logo_url, cover_image_url, has_protection,
+          created_at,
           products!inner (
             id,
             public_price,
             status,
+            cumulative_sales,
             supplier_products ( name, image_url )
-          )
+          ),
+          orders ( id, market ),
+          recycling_scans ( points )
         `)
         .eq("status", "published")
         .eq("products.status", "active")
@@ -58,6 +66,17 @@ export function useMarketplaceBoutiques() {
             price: Number(p.public_price),
           }));
 
+        const total_sales = (b.products ?? []).reduce(
+          (acc: number, p: any) => acc + (p.cumulative_sales ?? 0),
+          0
+        );
+        const orders = b.orders ?? [];
+        const market = orders[0]?.market ?? "EU";
+        const recycling_points = (b.recycling_scans ?? []).reduce(
+          (acc: number, s: any) => acc + (s.points ?? 0),
+          0
+        );
+
         return {
           id: b.id,
           name: b.name,
@@ -70,6 +89,10 @@ export function useMarketplaceBoutiques() {
           has_protection: b.has_protection,
           product_count: (b.products ?? []).length,
           product_previews: previews,
+          market,
+          created_at: b.created_at,
+          total_sales,
+          recycling_points,
         };
       });
     },
