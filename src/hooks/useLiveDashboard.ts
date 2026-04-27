@@ -8,8 +8,7 @@ export interface LiveOrderEvent {
   id: string;
   order_number: string | null;
   amount: number;
-  city?: string | null;
-  country?: string | null;
+  market?: string | null;
   created_at: string;
 }
 
@@ -54,8 +53,7 @@ export function useLiveDashboard(options: { sound?: boolean } = {}) {
               id: row.id,
               order_number: row.order_number ?? null,
               amount: Number(row.amount ?? 0),
-              city: row.delivery_city ?? null,
-              country: row.delivery_country ?? null,
+              market: row.market ?? null,
               created_at: row.created_at ?? new Date().toISOString(),
             };
             setFeed((prev) => [evt, ...prev].slice(0, 12));
