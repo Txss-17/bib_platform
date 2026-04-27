@@ -55,10 +55,11 @@ const App = () => (
         <LanguageProvider>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<Marketplace />} />
+            <Route path="/" element={<Index />} />
             <Route path="/vendre" element={<Vendre />} />
             <Route path="/landing" element={<Index />} />
             <Route path="/brand-preview" element={<BrandPreview />} />
+            <Route path="/store" element={<Marketplace />} />
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/mon-compte" element={<MonCompte />} />
             <Route path="/recycler" element={<Recycler />} />
