@@ -5,6 +5,7 @@ import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import { CheckoutForm } from "./CheckoutForm";
 import { trackStorefrontEvent } from "@/lib/storefrontTracking";
+import { useStorefrontContext } from "@/contexts/StorefrontContext";
 
 interface CartDrawerProps {
   primaryColor: string;
@@ -15,6 +16,9 @@ interface CartDrawerProps {
 export function CartDrawer({ primaryColor, boutiqueId, boutiqueName }: CartDrawerProps) {
   const { items, isOpen, setIsOpen, updateQuantity, removeItem, totalPrice, totalItems } = useCart();
   const [showCheckout, setShowCheckout] = useState(false);
+  const ctx = useStorefrontContext();
+  // Always prefer the context value when available so tracking is never lost.
+  const trackedBoutiqueId = ctx?.boutiqueId || boutiqueId;
 
   if (showCheckout) {
     return (
@@ -109,7 +113,7 @@ export function CartDrawer({ primaryColor, boutiqueId, boutiqueName }: CartDrawe
                 className="w-full text-white"
                 style={{ backgroundColor: primaryColor }}
                 onClick={() => {
-                  trackStorefrontEvent(boutiqueId, "checkout_start", {
+                  trackStorefrontEvent(trackedBoutiqueId, "checkout_start", {
                     metadata: { items: totalItems, total: totalPrice },
                   });
                   setShowCheckout(true);

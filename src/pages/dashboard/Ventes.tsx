@@ -169,6 +169,7 @@ export default function Ventes() {
               trendLabel="vs mois dernier"
               icon={<Euro className="w-5 h-5" />}
               tone="primary"
+              sparkline={kpis.sparklines.revenue}
             />
             <KpiTile
               label="Commandes"
@@ -176,6 +177,7 @@ export default function Ventes() {
               trend={kpis.ordersTrend ?? undefined}
               trendLabel="vs mois dernier"
               icon={<ShoppingCart className="w-5 h-5" />}
+              sparkline={kpis.sparklines.orders}
             />
             <KpiTile
               label="Panier moyen"
@@ -183,6 +185,7 @@ export default function Ventes() {
               trend={kpis.averageBasketTrend ?? undefined}
               trendLabel="vs mois dernier"
               icon={<Receipt className="w-5 h-5" />}
+              sparkline={kpis.sparklines.averageBasket}
             />
             <KpiTile
               label="Conversion"
@@ -192,6 +195,7 @@ export default function Ventes() {
               icon={<Target className="w-5 h-5" />}
               tone="gold"
               hint={kpis.conversionRate === 0 ? "Aucune donnée" : undefined}
+              sparkline={kpis.sparklines.conversionRate}
             />
           </>
         )}

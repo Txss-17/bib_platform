@@ -12,13 +12,88 @@ interface KpiTileProps {
   hint?: string;
   /** Visual emphasis variant */
   tone?: "default" | "primary" | "gold";
+  /** Optional rolling micro-trend (e.g. last 30 min) drawn as a sparkline. */
+  sparkline?: number[];
+}
+
+/**
+ * Tiny inline SVG sparkline. No deps, scales to any container width.
+ * Returns null when there is not enough data to draw a meaningful trend.
+ */
+function Sparkline({
+  values,
+  tone = "default",
+}: {
+  values: number[];
+  tone: KpiTileProps["tone"];
+}) {
+  if (!values || values.length < 2) return null;
+  const max = Math.max(...values);
+  const min = Math.min(...values);
+  const range = max - min || 1;
+  const w = 100;
+  const h = 28;
+  const step = w / (values.length - 1);
+  const pts = values
+    .map((v, i) => `${(i * step).toFixed(2)},${(h - ((v - min) / range) * h).toFixed(2)}`)
+    .join(" ");
+
+  // Marine on light tones, ivory on primary background, gold on gold tone.
+  const stroke =
+    tone === "primary"
+      ? "hsl(var(--primary-foreground))"
+      : tone === "gold"
+        ? "hsl(var(--secondary))"
+        : "hsl(var(--secondary))";
+  const fillStop =
+    tone === "primary"
+      ? "hsl(var(--primary-foreground))"
+      : "hsl(var(--secondary))";
+  const gradId = `spark-grad-${tone}`;
+
+  return (
+    <svg
+      viewBox={`0 0 ${w} ${h}`}
+      preserveAspectRatio="none"
+      className="w-full h-7 mt-2 opacity-90"
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={fillStop} stopOpacity={0.35} />
+          <stop offset="100%" stopColor={fillStop} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <polygon
+        points={`0,${h} ${pts} ${w},${h}`}
+        fill={`url(#${gradId})`}
+      />
+      <polyline
+        points={pts}
+        fill="none"
+        stroke={stroke}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 }
 
 /**
  * Compact KPI tile — readable in <5s, on-brand marine + gold.
  * Used everywhere we surface a numeric headline.
  */
-export function KpiTile({ label, value, trend, trendLabel, icon, hint, tone = "default" }: KpiTileProps) {
+export function KpiTile({
+  label,
+  value,
+  trend,
+  trendLabel,
+  icon,
+  hint,
+  tone = "default",
+  sparkline,
+}: KpiTileProps) {
   const isUp = typeof trend === "number" && trend > 0;
   const isDown = typeof trend === "number" && trend < 0;
   const isFlat = typeof trend === "number" && trend === 0;
@@ -103,6 +178,9 @@ export function KpiTile({ label, value, trend, trendLabel, icon, hint, tone = "d
             </div>
           )}
         </div>
+        {sparkline && sparkline.some((v) => v > 0) && (
+          <Sparkline values={sparkline} tone={tone} />
+        )}
       </CardContent>
     </Card>
   );
