@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { BrandBoxLogo } from "@/components/BrandBoxLogo";
+import { BrandIcon } from "@/components/Logo";
 
 const CTASection = () => {
   const { t } = useLanguage();
@@ -49,9 +49,9 @@ const CTASection = () => {
               </div>
             </div>
 
-            {/* Mini official logo — replays at this scroll position */}
-            <div className="hidden lg:block">
-              <BrandBoxLogo size={140} variant="full" replayOnScroll />
+            {/* Official mark — flat, on a contrasting marine block (no blend) */}
+            <div className="hidden lg:flex items-center justify-center w-[180px] h-[180px] rounded-2xl bg-bib-ivory shadow-lg">
+              <BrandIcon size={120} />
             </div>
           </div>
         </div>

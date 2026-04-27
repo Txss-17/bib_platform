@@ -54,13 +54,16 @@
     --bib-marine: 215 55% 14%;
     --bib-ivory: 40 30% 98%;
     
-    /* Premium gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(215 55% 14%) 0%, hsl(215 45% 22%) 60%, hsl(41 55% 52%) 100%);
+    /* Brand-In-A-Box uses ONLY solid colors — white, marine, gold.
+       The legacy gradient tokens below are intentionally flat (single-hue
+       within each family) so any old `bg-gradient-*` class still resolves
+       to a clean, on-brand surface — never a marine→gold blend. */
+    --gradient-hero: linear-gradient(180deg, hsl(215 55% 14%) 0%, hsl(215 55% 14%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(40 30% 98%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(41 55% 52%) 0%, hsl(41 65% 65%) 100%);
-    --gradient-trust: linear-gradient(135deg, hsl(41 55% 52%) 0%, hsl(41 70% 70%) 100%);
-    --gradient-premium: linear-gradient(135deg, hsl(215 55% 14%) 0%, hsl(215 50% 18%) 50%, hsl(41 55% 52%) 100%);
-    --gradient-gold: linear-gradient(135deg, hsl(41 50% 45%) 0%, hsl(41 65% 60%) 50%, hsl(41 55% 52%) 100%);
+    --gradient-accent: linear-gradient(180deg, hsl(41 55% 52%) 0%, hsl(41 55% 52%) 100%);
+    --gradient-trust: linear-gradient(180deg, hsl(41 55% 52%) 0%, hsl(41 55% 52%) 100%);
+    --gradient-premium: linear-gradient(180deg, hsl(215 55% 14%) 0%, hsl(215 55% 14%) 100%);
+    --gradient-gold: linear-gradient(180deg, hsl(41 55% 52%) 0%, hsl(41 55% 52%) 100%);
     
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(215 45% 12% / 0.05);
@@ -137,26 +140,10 @@
 }
 
 @layer utilities {
-  .text-gradient-hero {
-    background: var(--gradient-hero);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .text-gradient-trust {
-    background: var(--gradient-trust);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .text-gradient-gold {
-    background: var(--gradient-gold);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+  /* Brand rule: no gradient text. These helpers render as flat brand color. */
+  .text-gradient-hero  { color: hsl(var(--bib-marine)); }
+  .text-gradient-trust { color: hsl(var(--bib-gold)); }
+  .text-gradient-gold  { color: hsl(var(--bib-gold)); }
 
   .bg-gradient-hero {
     background: var(--gradient-hero);
