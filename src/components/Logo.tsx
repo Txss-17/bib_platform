@@ -25,11 +25,24 @@ export function Logo({
   const wordmarkColor = onLight ? "text-foreground" : "text-primary-foreground";
   const taglineColor = onLight ? "text-muted-foreground" : "text-primary-foreground/70";
 
+  // Official Brand-In-A-Box icon (box + gold B), cropped from the source asset.
+  // Source asset is 1243x629; the icon area sits at x∈[18.6%, 41.2%], y∈[25.8%, 76.3%].
+  // We render the full image inside a square viewport and offset it via background-position
+  // so only the icon mark is visible — never recolored, never recreated.
   const Mark = (
-    <span className="relative inline-flex items-center justify-center w-9 h-9 rounded-lg overflow-hidden bg-primary shadow-sm shrink-0">
-      <span className="absolute inset-0 bg-gradient-premium opacity-90" />
-      <span className="relative font-display font-bold text-bib-gold text-lg leading-none">B</span>
-    </span>
+    <span
+      className="relative inline-block w-9 h-9 shrink-0"
+      style={{
+        backgroundImage: `url(${logoImg})`,
+        // 1243/(1243*(0.412-0.186)) ≈ 444% width; 629/(629*(0.763-0.258)) ≈ 198% height
+        backgroundSize: "444% 198%",
+        // Position so the icon bbox is centered in our 36x36 viewport
+        // x: left edge 18.6% → -18.6%/(0.412-0.186) of viewport width
+        backgroundPosition: "-82.3% -51.1%",
+        backgroundRepeat: "no-repeat",
+      }}
+      aria-hidden
+    />
   );
 
   const content = (
