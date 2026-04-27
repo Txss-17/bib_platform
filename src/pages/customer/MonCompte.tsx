@@ -52,7 +52,13 @@ export default function MonCompte() {
   }
 
   if (!user) return <NotLoggedIn />;
-  if (!customer) return <CompleteProfileScreen email={user.email ?? ""} />;
+  if (!customer)
+    return (
+      <CompleteProfileScreen
+        email={user.email ?? ""}
+        defaultName={(user.user_metadata as any)?.full_name ?? ""}
+      />
+    );
 
   return (
     <div className="min-h-screen bg-background">
@@ -113,8 +119,8 @@ function NotLoggedIn() {
   );
 }
 
-function CompleteProfileScreen({ email }: { email: string }) {
-  const [fullName, setFullName] = useState("");
+function CompleteProfileScreen({ email, defaultName }: { email: string; defaultName?: string }) {
+  const [fullName, setFullName] = useState(defaultName ?? "");
   const [optIn, setOptIn] = useState(false);
   const create = useCreateCustomerProfile();
 
