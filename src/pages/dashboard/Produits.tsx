@@ -6,16 +6,40 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Edit, Copy, Trash2, MoreVertical, Plus, Package, Filter } from "lucide-react";
+import {
+  Edit,
+  Copy,
+  Trash2,
+  MoreVertical,
+  Plus,
+  Package,
+  CheckCircle2,
+  Clock,
+  TrendingUp,
+} from "lucide-react";
+import { Link } from "react-router-dom";
 import { useProducts, useUpdateProduct, useDeleteProduct } from "@/hooks/useProducts";
 import { useBoutiques } from "@/hooks/useBoutiques";
-import { useSampleValidations, getSampleStatusLabel, getSampleStatusColor, type SampleStatus } from "@/hooks/useSampleValidation";
+import {
+  useSampleValidations,
+  getSampleStatusLabel,
+  getSampleStatusColor,
+  type SampleStatus,
+} from "@/hooks/useSampleValidation";
+import { useSupplierProductsRealtime } from "@/hooks/useSupplierProducts";
 import { SampleValidationPanel } from "@/components/dashboard/SampleValidationPanel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog";
 import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  PageHeader,
+  SectionCard,
+  KpiTile,
+  KpiTileSkeleton,
+  EmptyState,
+} from "@/components/dashboard/shared";
 
 function ProductsTableSkeleton() {
   return (
@@ -51,23 +75,23 @@ function ProductsTableSkeleton() {
   );
 }
 
-function EmptyState() {
+function ProductsEmptyState() {
   return (
-    <Card className="bg-card border-border/50 border-dashed">
-      <CardContent className="p-12 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-          <Package className="w-8 h-8 text-primary" />
-        </div>
-        <h3 className="text-xl font-semibold text-foreground mb-2">Aucun produit</h3>
-        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-          Commencez par ajouter des produits depuis notre catalogue fournisseur pour les vendre dans vos boutiques.
-        </p>
-        <Button size="lg" className="gap-2">
-          <Plus className="w-5 h-5" />
-          Parcourir le catalogue
-        </Button>
-      </CardContent>
-    </Card>
+    <SectionCard>
+      <EmptyState
+        icon={<Package className="w-7 h-7" />}
+        title="Aucun produit"
+        description="Commencez par parcourir le catalogue fournisseur pour ajouter vos premiers produits."
+        action={
+          <Link to="/dashboard/produits-fournisseurs">
+            <Button size="lg" className="gap-2">
+              <Plus className="w-5 h-5" />
+              Parcourir le catalogue
+            </Button>
+          </Link>
+        }
+      />
+    </SectionCard>
   );
 }
 
@@ -82,6 +106,9 @@ export default function Produits() {
   const [sortOrder, setSortOrder] = useState<string>("recent");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+
+  // Live updates from the supplier catalogue (new products, MOQ changes, retirement).
+  useSupplierProductsRealtime();
 
   const getSampleStatus = (productId: string): SampleStatus => {
     return sampleValidations?.[productId]?.status || "none";
@@ -133,23 +160,93 @@ export default function Produits() {
     setDeleteId(null);
   };
 
+  // Aggregate KPIs over the *full* product list (not filtered) so the
+  // headline figures don't shift when the user changes filters.
+  const kpis = useMemo(() => {
+    const all = products ?? [];
+    const active = all.filter((p) => p.status === "active").length;
+    const sales = all.reduce((sum, p) => sum + (p.cumulative_sales || 0), 0);
+    const validated = all.filter(
+      (p) => sampleValidations?.[p.id]?.status === "validated",
+    ).length;
+    const pendingValidation = all.length - validated;
+    return { total: all.length, active, sales, validated, pendingValidation };
+  }, [products, sampleValidations]);
+
+  const activeCount = filteredProducts.filter((p) => p.status === "active").length;
+  const totalCount = filteredProducts.length;
+
   if (error) {
     return (
-      <DashboardLayout title="Mes Produits" subtitle="Produits sélectionnés pour vos boutiques">
-        <Card className="bg-destructive/10 border-destructive/20">
-          <CardContent className="p-6 text-center">
-            <p className="text-destructive">Une erreur est survenue lors du chargement des produits.</p>
-          </CardContent>
-        </Card>
+      <DashboardLayout title="Mes Produits" subtitle="">
+        <PageHeader eyebrow="Catalogue" title="Mes produits" />
+        <SectionCard>
+          <p className="text-destructive text-sm">
+            Une erreur est survenue lors du chargement des produits.
+          </p>
+        </SectionCard>
       </DashboardLayout>
     );
   }
 
-  const activeCount = filteredProducts.filter(p => p.status === "active").length;
-  const totalCount = filteredProducts.length;
+  const headerActions = (
+    <Link to="/dashboard/produits-fournisseurs">
+      <Button className="gap-2">
+        <Plus className="w-4 h-4" />
+        Ajouter depuis le catalogue
+      </Button>
+    </Link>
+  );
 
   return (
-    <DashboardLayout title="Mes Produits" subtitle="Produits sélectionnés pour vos boutiques">
+    <DashboardLayout title="Mes Produits" subtitle="">
+      <PageHeader
+        eyebrow="Catalogue"
+        title="Mes produits"
+        subtitle="Pilotez les produits actifs sur vos boutiques et leur statut de validation."
+        actions={headerActions}
+      />
+
+      {/* KPI strip */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        {isLoading ? (
+          <>
+            <KpiTileSkeleton />
+            <KpiTileSkeleton />
+            <KpiTileSkeleton />
+            <KpiTileSkeleton tone="gold" />
+          </>
+        ) : (
+          <>
+            <KpiTile
+              label="Produits"
+              value={kpis.total}
+              icon={<Package className="w-4 h-4" />}
+              hint={`${kpis.active} actifs`}
+            />
+            <KpiTile
+              label="Validés"
+              value={kpis.validated}
+              icon={<CheckCircle2 className="w-4 h-4" />}
+              hint={`${kpis.pendingValidation} en attente`}
+            />
+            <KpiTile
+              label="Ventes cumulées"
+              value={kpis.sales}
+              icon={<TrendingUp className="w-4 h-4" />}
+              hint="Toutes boutiques"
+            />
+            <KpiTile
+              label="À valider"
+              value={kpis.pendingValidation}
+              tone="gold"
+              icon={<Clock className="w-4 h-4" />}
+              hint="Échantillon requis"
+            />
+          </>
+        )}
+      </div>
+
       {isLoading ? (
         <Card className="bg-card border-border/50">
           <CardContent className="p-0">
@@ -157,11 +254,15 @@ export default function Produits() {
           </CardContent>
         </Card>
       ) : totalCount === 0 ? (
-        <EmptyState />
+        <ProductsEmptyState />
       ) : (
-        <>
+        <SectionCard
+          title="Inventaire produits"
+          description={`${activeCount} actifs sur ${totalCount} affichés`}
+          flush
+        >
           {/* Filters Bar */}
-          <div className="flex flex-col sm:flex-row sm:flex-wrap justify-between items-start sm:items-center gap-3 mb-6">
+          <div className="flex flex-col sm:flex-row sm:flex-wrap justify-between items-start sm:items-center gap-3 p-4 border-b border-border/50">
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
               <Select value={boutiqueFilter} onValueChange={setBoutiqueFilter}>
                 <SelectTrigger className="w-full sm:w-44 h-9 text-sm">
@@ -196,20 +297,11 @@ export default function Produits() {
                   <SelectItem value="sales">Meilleures ventes</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                {activeCount} actifs / {totalCount}
-              </p>
             </div>
-            <Button className="gap-2 w-full sm:w-auto">
-              <Plus className="w-4 h-4" />
-              Ajouter un produit
-            </Button>
           </div>
 
           {/* Products - Card view on mobile, Table on desktop */}
           <div className="hidden md:block">
-            <Card className="bg-card border-border/50">
-              <CardContent className="p-0">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -295,12 +387,10 @@ export default function Produits() {
                     })}
                   </TableBody>
                 </Table>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Mobile card view */}
-          <div className="md:hidden space-y-3">
+          <div className="md:hidden space-y-3 p-3">
             {filteredProducts.map((product) => (
               <Card key={product.id} className="bg-card border-border/50">
                 <CardContent className="p-3">
@@ -358,7 +448,7 @@ export default function Produits() {
               </Card>
             ))}
           </div>
-        </>
+        </SectionCard>
       )}
       <ConfirmDeleteDialog
         open={!!deleteId}
