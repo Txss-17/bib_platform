@@ -1,120 +1,161 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, ExternalLink, Settings, Trash2, Store, Loader2 } from "lucide-react";
+import {
+  Plus,
+  ExternalLink,
+  Settings,
+  Trash2,
+  Store,
+  Globe,
+  Package,
+  Truck,
+  AlertTriangle,
+  CheckCircle2,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { useBoutiques, useDeleteBoutique } from "@/hooks/useBoutiques";
-import { Skeleton } from "@/components/ui/skeleton";
+import {
+  PageHeader,
+  SectionCard,
+  KpiTile,
+  KpiTileSkeleton,
+  EmptyState,
+  HealthRing,
+} from "@/components/dashboard/shared";
 import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Tables } from "@/integrations/supabase/types";
+import { usePerBoutiqueHealth, type PerBoutiqueHealth } from "@/hooks/usePerBoutiqueHealth";
+import { cn } from "@/lib/utils";
 
 type Boutique = Tables<"boutiques">;
 
-function BoutiqueCard({ boutique, onDelete }: { boutique: Boutique; onDelete: (id: string) => void }) {
+const LEVEL_LABEL: Record<PerBoutiqueHealth["level"], string> = {
+  excellent: "Excellente",
+  good: "Bonne",
+  fair: "À surveiller",
+  poor: "Action requise",
+};
+
+function StatusDot({ status }: { status: "ok" | "warning" | "critical" }) {
+  const cls =
+    status === "ok"
+      ? "bg-emerald-500"
+      : status === "warning"
+        ? "bg-secondary"
+        : "bg-destructive";
+  return <span className={cn("inline-block w-2 h-2 rounded-full", cls)} />;
+}
+
+function BoutiqueCard({
+  boutique,
+  health,
+  onDelete,
+}: {
+  boutique: Boutique;
+  health?: PerBoutiqueHealth;
+  onDelete: (id: string) => void;
+}) {
   return (
-    <Card className="bg-card border-border/50 overflow-hidden">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <Store className="w-6 h-6 text-primary-foreground" />
+    <SectionCard className="hover:shadow-md transition-shadow">
+      <div className="flex items-start gap-4">
+        <HealthRing
+          score={health?.score ?? 0}
+          level={health?.level ?? "fair"}
+          size={64}
+          strokeWidth={7}
+          loading={!health}
+        />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <h3 className="font-display font-semibold text-foreground truncate">
+                {boutique.name}
+              </h3>
+              <p className="text-xs text-muted-foreground">{boutique.category}</p>
             </div>
-            <div>
-              <h3 className="font-semibold text-foreground">{boutique.name}</h3>
-              <p className="text-sm text-muted-foreground">{boutique.category}</p>
-            </div>
+            <Badge
+              variant={boutique.status === "published" ? "default" : "secondary"}
+              className="text-[10px] shrink-0"
+            >
+              {boutique.status === "published" ? "En ligne" : "Brouillon"}
+            </Badge>
           </div>
-          <Badge variant={boutique.status === "published" ? "default" : "secondary"}>
-            {boutique.status === "published" ? "Publiée" : "Brouillon"}
-          </Badge>
+          <p className="text-[11px] uppercase tracking-wider text-secondary mt-2">
+            {health ? LEVEL_LABEL[health.level] : "Analyse…"}
+          </p>
         </div>
+      </div>
 
-        <div className="p-3 rounded-lg bg-muted/50 mb-4">
-          <p className="text-sm text-muted-foreground">URL Brand-In-A-Box</p>
-          <p className="text-sm font-mono text-primary">linksy.com/{boutique.slug}</p>
+      {/* Signals */}
+      <div className="grid grid-cols-2 gap-2 mt-4">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <StatusDot status={health?.signals.publish ?? "warning"} />
+          <Globe className="w-3 h-3" /> Publication
         </div>
-
-        <div className="flex gap-2">
-          <Link to={`/dashboard/boutiques/edit/${boutique.id}`} className="flex-1">
-            <Button variant="outline" size="sm" className="w-full gap-1">
-              <Settings className="w-3 h-3" />
-              Modifier
-            </Button>
-          </Link>
-          {boutique.status === "published" && (
-            <Button variant="outline" size="sm" className="gap-1" asChild>
-              <a href={`/boutique/${boutique.slug}`} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="w-3 h-3" />
-                Voir
-              </a>
-            </Button>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <StatusDot status={health?.signals.products ?? "warning"} />
+          <Package className="w-3 h-3" />
+          {health?.metrics.activeProducts ?? 0} actifs
+        </div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <StatusDot status={health?.signals.fulfillment ?? "warning"} />
+          <Truck className="w-3 h-3" />
+          {health?.metrics.pendingOrders ?? 0} à traiter
+        </div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <StatusDot status={health?.signals.stock ?? "ok"} />
+          {health?.signals.stock === "ok" ? (
+            <CheckCircle2 className="w-3 h-3" />
+          ) : (
+            <AlertTriangle className="w-3 h-3" />
           )}
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="text-destructive hover:text-destructive"
-            onClick={() => onDelete(boutique.id)}
-          >
-            <Trash2 className="w-3 h-3" />
-          </Button>
+          Stock
         </div>
-      </CardContent>
-    </Card>
-  );
-}
+      </div>
 
-function BoutiqueCardSkeleton() {
-  return (
-    <Card className="bg-card border-border/50 overflow-hidden">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <Skeleton className="w-12 h-12 rounded-xl" />
-            <div>
-              <Skeleton className="h-5 w-32 mb-1" />
-              <Skeleton className="h-4 w-20" />
-            </div>
-          </div>
-          <Skeleton className="h-5 w-16" />
-        </div>
-        <Skeleton className="h-16 w-full mb-4" />
-        <div className="flex gap-2">
-          <Skeleton className="h-8 flex-1" />
-          <Skeleton className="h-8 w-20" />
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function EmptyState() {
-  return (
-    <Card className="bg-card border-border/50 border-dashed">
-      <CardContent className="p-12 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-          <Store className="w-8 h-8 text-primary" />
-        </div>
-        <h3 className="text-xl font-semibold text-foreground mb-2">Créez votre première boutique</h3>
-        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-          Lancez-vous et créez votre boutique en ligne en quelques minutes. 
-          Choisissez parmi notre catalogue de produits validés et commencez à vendre.
+      {/* URL */}
+      <div className="p-2.5 rounded-lg bg-muted/40 border border-border/40 mt-4">
+        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+          URL publique
         </p>
-        <Link to="/dashboard/boutiques/create">
-          <Button size="lg" className="gap-2">
-            <Plus className="w-5 h-5" />
-            Créer ma boutique
+        <p className="text-xs font-mono text-primary truncate">/boutique/{boutique.slug}</p>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2 mt-3">
+        <Link to={`/dashboard/boutiques/edit/${boutique.id}`} className="flex-1">
+          <Button variant="outline" size="sm" className="w-full gap-1">
+            <Settings className="w-3 h-3" />
+            Éditer
           </Button>
         </Link>
-      </CardContent>
-    </Card>
+        {boutique.status === "published" && (
+          <Button variant="outline" size="sm" className="gap-1" asChild>
+            <a href={`/boutique/${boutique.slug}`} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="w-3 h-3" />
+              Voir
+            </a>
+          </Button>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-destructive hover:text-destructive shrink-0 h-8 w-8"
+          onClick={() => onDelete(boutique.id)}
+        >
+          <Trash2 className="w-3 h-3" />
+        </Button>
+      </div>
+    </SectionCard>
   );
 }
 
 export default function Boutiques() {
   const { data: boutiques, isLoading, error } = useBoutiques();
+  const { data: healthMap } = usePerBoutiqueHealth();
   const deleteBoutique = useDeleteBoutique();
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -122,61 +163,139 @@ export default function Boutiques() {
     if (!deleteId) return;
     try {
       await deleteBoutique.mutateAsync(deleteId);
-      toast.success("Boutique supprimée avec succès");
-    } catch (error) {
-      toast.error("Erreur lors de la suppression de la boutique");
-      console.error(error);
+      toast.success("Boutique supprimée");
+    } catch (e) {
+      toast.error("Erreur lors de la suppression");
+      console.error(e);
     }
     setDeleteId(null);
   };
 
-  if (error) {
-    return (
-      <DashboardLayout title="Boutiques" subtitle="Gérez vos boutiques en ligne">
-        <Card className="bg-destructive/10 border-destructive/20">
-          <CardContent className="p-6 text-center">
-            <p className="text-destructive">Une erreur est survenue lors du chargement des boutiques.</p>
-          </CardContent>
-        </Card>
-      </DashboardLayout>
-    );
-  }
+  const portfolio = useMemo(() => {
+    const list = boutiques ?? [];
+    const total = list.length;
+    const published = list.filter((b) => b.status === "published").length;
+    let totalProducts = 0;
+    let totalPending = 0;
+    let avgScore = 0;
+    let scored = 0;
+    list.forEach((b) => {
+      const h = healthMap?.get(b.id);
+      if (h) {
+        totalProducts += h.metrics.activeProducts;
+        totalPending += h.metrics.pendingOrders;
+        avgScore += h.score;
+        scored += 1;
+      }
+    });
+    return {
+      total,
+      published,
+      totalProducts,
+      totalPending,
+      avgScore: scored > 0 ? Math.round(avgScore / scored) : 0,
+    };
+  }, [boutiques, healthMap]);
 
-  const publishedCount = boutiques?.filter(b => b.status === "published").length || 0;
-  const totalCount = boutiques?.length || 0;
-  const hasBoutiques = totalCount > 0;
+  const headerActions = (
+    <Link to="/dashboard/boutiques/create">
+      <Button className="gap-2">
+        <Plus className="w-4 h-4" />
+        Nouvelle boutique
+      </Button>
+    </Link>
+  );
 
   return (
-    <DashboardLayout title="Boutiques" subtitle="Gérez vos boutiques en ligne">
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map(i => <BoutiqueCardSkeleton key={i} />)}
-        </div>
-      ) : hasBoutiques ? (
-        <>
-          {/* Action Bar */}
-          <div className="flex justify-between items-center mb-6">
-            <p className="text-muted-foreground">
-              {publishedCount} boutiques publiées sur {totalCount}
-            </p>
-            <Link to="/dashboard/boutiques/create">
-              <Button className="gap-2">
-                <Plus className="w-4 h-4" />
-                Créer une boutique
-              </Button>
-            </Link>
-          </div>
+    <DashboardLayout title="Boutiques" subtitle="">
+      <PageHeader
+        eyebrow="Portefeuille"
+        title="Vos boutiques"
+        subtitle="Vue consolidée de la santé de chaque boutique."
+        actions={headerActions}
+      />
 
-          {/* Boutiques Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {boutiques?.map(boutique => (
-              <BoutiqueCard key={boutique.id} boutique={boutique} onDelete={(id) => setDeleteId(id)} />
-            ))}
-          </div>
-        </>
+      {/* KPI strip */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        {isLoading ? (
+          <>
+            <KpiTileSkeleton />
+            <KpiTileSkeleton />
+            <KpiTileSkeleton />
+            <KpiTileSkeleton tone="gold" />
+          </>
+        ) : (
+          <>
+            <KpiTile
+              label="Boutiques"
+              value={portfolio.total}
+              hint={`${portfolio.published} en ligne`}
+              icon={<Store className="w-4 h-4" />}
+            />
+            <KpiTile
+              label="Produits actifs"
+              value={portfolio.totalProducts}
+              icon={<Package className="w-4 h-4" />}
+            />
+            <KpiTile
+              label="À traiter"
+              value={portfolio.totalPending}
+              icon={<Truck className="w-4 h-4" />}
+              hint="Toutes boutiques"
+            />
+            <KpiTile
+              label="Score moyen"
+              value={`${portfolio.avgScore}/100`}
+              tone="gold"
+              hint="Santé portefeuille"
+            />
+          </>
+        )}
+      </div>
+
+      {error ? (
+        <SectionCard>
+          <p className="text-destructive text-sm">
+            Une erreur est survenue lors du chargement des boutiques.
+          </p>
+        </SectionCard>
+      ) : isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <SectionCard key={i}>
+              <div className="h-32 rounded-xl bg-muted/40 animate-pulse" />
+            </SectionCard>
+          ))}
+        </div>
+      ) : (boutiques?.length ?? 0) === 0 ? (
+        <SectionCard>
+          <EmptyState
+            icon={<Store className="w-7 h-7" />}
+            title="Créez votre première boutique"
+            description="Lancez-vous en quelques minutes. Choisissez parmi notre catalogue de produits validés et commencez à vendre."
+            action={
+              <Link to="/dashboard/boutiques/create">
+                <Button size="lg" className="gap-2">
+                  <Plus className="w-5 h-5" />
+                  Créer ma boutique
+                </Button>
+              </Link>
+            }
+          />
+        </SectionCard>
       ) : (
-        <EmptyState />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {boutiques!.map((b) => (
+            <BoutiqueCard
+              key={b.id}
+              boutique={b}
+              health={healthMap?.get(b.id)}
+              onDelete={(id) => setDeleteId(id)}
+            />
+          ))}
+        </div>
       )}
+
       <ConfirmDeleteDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
