@@ -75,8 +75,7 @@ export default function Recycler() {
         return;
       }
       boutiqueId = orderRow.boutique_id;
-      // @ts-expect-error nested select
-      boutiqueName = orderRow.boutiques?.name ?? boutiqueName;
+      boutiqueName = (orderRow as any).boutiques?.name ?? boutiqueName;
       orderId = orderRow.id;
     }
 
