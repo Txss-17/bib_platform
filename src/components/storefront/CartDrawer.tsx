@@ -4,6 +4,7 @@ import { useCart } from "@/contexts/CartContext";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import { CheckoutForm } from "./CheckoutForm";
+import { trackStorefrontEvent } from "@/lib/storefrontTracking";
 
 interface CartDrawerProps {
   primaryColor: string;
@@ -107,7 +108,12 @@ export function CartDrawer({ primaryColor, boutiqueId, boutiqueName }: CartDrawe
               <Button
                 className="w-full text-white"
                 style={{ backgroundColor: primaryColor }}
-                onClick={() => setShowCheckout(true)}
+                onClick={() => {
+                  trackStorefrontEvent(boutiqueId, "checkout_start", {
+                    metadata: { items: totalItems, total: totalPrice },
+                  });
+                  setShowCheckout(true);
+                }}
               >
                 Passer la commande
               </Button>
