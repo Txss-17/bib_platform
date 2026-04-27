@@ -11,6 +11,7 @@ import { StorefrontNewsletter } from "./StorefrontNewsletter";
 import { StorefrontFooter } from "./StorefrontFooter";
 import { CartDrawer } from "./CartDrawer";
 import { CartProvider } from "@/contexts/CartContext";
+import { StorefrontProvider } from "@/contexts/StorefrontContext";
 import { getTemplateForCategory, type ThemeSettings, type SectionConfig, type AnimationLevel, type SiteType, type SectionEffect } from "@/lib/boutiqueTemplates";
 import type { FAQItem } from "./StorefrontFAQ";
 import { ParallaxSection, ScrollReveal, TiltCard } from "./Storefront3DEffects";
@@ -334,6 +335,11 @@ export function StorefrontPreview({
   };
 
   return (
+    <StorefrontProvider
+      boutiqueId={boutiqueId ?? ""}
+      boutiqueName={boutiqueName}
+      boutiqueSlug={boutiqueSlug}
+    >
     <CartProvider>
     <div 
       className={`bg-white min-h-screen ${isPreview ? 'pointer-events-none' : ''}`}
@@ -379,5 +385,6 @@ export function StorefrontPreview({
       })()}
     </div>
     </CartProvider>
+    </StorefrontProvider>
   );
 }
