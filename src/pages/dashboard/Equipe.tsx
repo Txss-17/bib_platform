@@ -1,10 +1,20 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, UserPlus, Shield, Crown, Megaphone, HeadphonesIcon, Trash2, ArrowUpCircle, Loader2 } from "lucide-react";
+import {
+  Users,
+  UserPlus,
+  Shield,
+  Crown,
+  Megaphone,
+  HeadphonesIcon,
+  Trash2,
+  ArrowUpCircle,
+  Loader2,
+  Sparkles,
+} from "lucide-react";
 import { useBoutiques } from "@/hooks/useBoutiques";
 import {
   useBoutiqueMembers,
@@ -16,6 +26,13 @@ import {
 import { InviteMemberDialog } from "@/components/dashboard/InviteMemberDialog";
 import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog";
 import { toast } from "@/hooks/use-toast";
+import {
+  PageHeader,
+  SectionCard,
+  KpiTile,
+  KpiTileSkeleton,
+  EmptyState,
+} from "@/components/dashboard/shared";
 
 const roleIcons: Record<TeamRole, React.ElementType> = {
   owner: Crown,
@@ -50,6 +67,8 @@ export default function Equipe() {
   const memberLimit = PLAN_LIMITS[currentPlan] || 1;
   const activeCount = members.filter((m) => m.status !== "removed").length;
   const canInvite = activeCount < memberLimit;
+  const pendingCount = members.filter((m) => m.status === "pending").length;
+  const activeNow = members.filter((m) => m.status === "active").length;
 
   const handleRemove = () => {
     if (!deleteTarget) return;
@@ -65,93 +84,127 @@ export default function Equipe() {
   };
 
   return (
-    <DashboardLayout title="Équipe" subtitle="Gérez les membres de votre boutique">
-      {/* Boutique selector */}
-      {boutiques.length > 1 && (
-        <Select value={boutiqueId} onValueChange={setSelectedBoutique}>
-          <SelectTrigger className="w-full sm:w-[240px] mb-4">
-            <SelectValue placeholder="Sélectionner une boutique" />
-          </SelectTrigger>
-          <SelectContent>
-            {boutiques.map((b) => (
-              <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
+    <DashboardLayout title="Équipe" subtitle="">
+      <PageHeader
+        eyebrow="Collaboration"
+        title="Équipe & rôles"
+        subtitle="Invitez vos collaborateurs et attribuez-leur des rôles précis pour chaque boutique."
+        actions={
+          boutiques.length > 1 ? (
+            <Select value={boutiqueId} onValueChange={setSelectedBoutique}>
+              <SelectTrigger className="w-full sm:w-[240px]">
+                <SelectValue placeholder="Boutique" />
+              </SelectTrigger>
+              <SelectContent>
+                {boutiques.map((b) => (
+                  <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : null
+        }
+      />
 
-      {/* Plan limits */}
-      <Card className="mb-6 border-border/50">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Users className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">{activeCount} / {memberLimit} membre(s)</p>
-                <p className="text-xs text-muted-foreground capitalize">Plan {currentPlan}</p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              {canInvite ? (
-                <Button size="sm" className="gap-1.5" onClick={() => setInviteOpen(true)} disabled={!boutiqueId}>
-                  <UserPlus className="w-4 h-4" /> Inviter
-                </Button>
-              ) : (
-                <Button size="sm" variant="outline" className="gap-1.5">
-                  <ArrowUpCircle className="w-4 h-4" /> Passer au plan supérieur
-                </Button>
-              )}
-            </div>
-          </div>
-          {!canInvite && (
-            <p className="text-xs text-amber-600 mt-2 bg-amber-50 p-2 rounded">
-              Vous avez atteint la limite de membres pour votre plan. Passez au plan Growth (3 membres) ou Premium (5+ membres).
-            </p>
-          )}
-        </CardContent>
-      </Card>
+      {/* KPI strip */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+        <KpiTile
+          label="Membres actifs"
+          value={activeNow}
+          icon={<Users className="w-4 h-4" />}
+          hint={`${activeCount}/${memberLimit} sur le plan`}
+        />
+        <KpiTile
+          label="Invitations"
+          value={pendingCount}
+          icon={<UserPlus className="w-4 h-4" />}
+          hint="En attente"
+        />
+        <KpiTile
+          label="Plan"
+          value={<span className="capitalize">{currentPlan}</span>}
+          tone="gold"
+          icon={<Sparkles className="w-4 h-4" />}
+          hint={`Limite : ${memberLimit}`}
+        />
+        <KpiTile
+          label="Boutiques"
+          value={boutiques.length}
+          hint="Couvertes par l'équipe"
+        />
+      </div>
+
+      {/* Action card */}
+      <SectionCard
+        className="mb-6"
+        icon={<Users className="w-4 h-4" />}
+        title={canInvite ? "Inviter un nouveau membre" : "Limite atteinte"}
+        description={
+          canInvite
+            ? "Choisissez un rôle adapté à ses responsabilités."
+            : "Passez au plan Growth (3) ou Premium (10) pour ajouter plus de membres."
+        }
+        actions={
+          canInvite ? (
+            <Button size="sm" className="gap-1.5" onClick={() => setInviteOpen(true)} disabled={!boutiqueId}>
+              <UserPlus className="w-4 h-4" /> Inviter
+            </Button>
+          ) : (
+            <Button size="sm" variant="outline" className="gap-1.5">
+              <ArrowUpCircle className="w-4 h-4" /> Mettre à niveau
+            </Button>
+          )
+        }
+      >
+        {!canInvite && (
+          <p className="text-xs text-secondary bg-secondary/10 border border-secondary/20 p-2 rounded-lg">
+            Vous utilisez {activeCount}/{memberLimit} sièges du plan {currentPlan}.
+          </p>
+        )}
+      </SectionCard>
 
       {/* Members list */}
-      <Card className="border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg">Membres de l'équipe</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {!boutiqueId ? (
-            <p className="text-sm text-muted-foreground text-center py-8">Sélectionnez une boutique pour voir l'équipe.</p>
-          ) : isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : members.length === 0 ? (
-            <div className="text-center py-8 space-y-3">
-              <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mx-auto">
-                <Users className="w-7 h-7 text-muted-foreground" />
-              </div>
-              <p className="text-sm text-muted-foreground">Aucun membre dans cette équipe.</p>
-              {canInvite && (
-                <Button size="sm" variant="outline" onClick={() => setInviteOpen(true)}>
-                  <UserPlus className="w-4 h-4 mr-1.5" /> Inviter un membre
+      <SectionCard
+        title="Membres de l'équipe"
+        description={boutiqueId ? `${activeCount} membre(s) sur cette boutique` : undefined}
+      >
+        {!boutiqueId ? (
+          <EmptyState
+            icon={<Users className="w-7 h-7" />}
+            title="Aucune boutique sélectionnée"
+            description="Sélectionnez une boutique pour gérer son équipe."
+          />
+        ) : isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : members.length === 0 ? (
+          <EmptyState
+            icon={<Users className="w-7 h-7" />}
+            title="Aucun membre"
+            description="Invitez vos premiers collaborateurs pour partager la gestion de cette boutique."
+            action={
+              canInvite ? (
+                <Button size="sm" onClick={() => setInviteOpen(true)} className="gap-1.5">
+                  <UserPlus className="w-4 h-4" /> Inviter un membre
                 </Button>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-2">
+              ) : undefined
+            }
+          />
+        ) : (
+          <div className="space-y-2">
               {members.map((member) => {
                 const RoleIcon = roleIcons[member.role];
                 return (
                   <div
                     key={member.id}
-                    className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors"
+                    className="flex items-center justify-between gap-3 p-3 rounded-xl border border-border/50 hover:bg-muted/30 transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center shrink-0">
-                        <RoleIcon className="w-4 h-4 text-muted-foreground" />
+                      <div className="w-9 h-9 rounded-full bg-secondary/15 text-secondary flex items-center justify-center shrink-0">
+                        <RoleIcon className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{member.invited_email}</p>
+                        <p className="text-sm font-medium text-foreground truncate">{member.invited_email}</p>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <Badge className={`${roleColors[member.role]} text-[10px] px-1.5 py-0`}>
                             {ROLE_LABELS[member.role]}
@@ -175,24 +228,25 @@ export default function Equipe() {
                   </div>
                 );
               })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+      </SectionCard>
 
-      {/* Roles explanation */}
-      <Card className="mt-6 border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg">Rôles disponibles</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-3 sm:grid-cols-2">
+      {/* Roles reference */}
+      <SectionCard
+        className="mt-6"
+        title="Rôles disponibles"
+        description="Permissions granulaires par fonction métier."
+        icon={<Shield className="w-4 h-4" />}
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
           {(["owner", "manager", "marketing", "support"] as TeamRole[]).map((role) => {
             const Icon = roleIcons[role];
             return (
-              <div key={role} className="p-3 rounded-lg border border-border/30 bg-muted/20">
+              <div key={role} className="p-3 rounded-xl border border-border/40 bg-muted/20">
                 <div className="flex items-center gap-2 mb-1">
-                  <Icon className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium">{ROLE_LABELS[role]}</span>
+                  <Icon className="w-4 h-4 text-secondary" />
+                  <span className="text-sm font-medium text-foreground">{ROLE_LABELS[role]}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {role === "owner" && "Accès total, gestion des abonnements et paiements"}
@@ -203,8 +257,8 @@ export default function Equipe() {
               </div>
             );
           })}
-        </CardContent>
-      </Card>
+        </div>
+      </SectionCard>
 
       <InviteMemberDialog open={inviteOpen} onOpenChange={setInviteOpen} boutiqueId={boutiqueId} />
 
