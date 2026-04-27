@@ -107,3 +107,29 @@ export function KpiTile({ label, value, trend, trendLabel, icon, hint, tone = "d
     </Card>
   );
 }
+
+/**
+ * Skeleton placeholder matching KpiTile dimensions for consistent loading states.
+ */
+export function KpiTileSkeleton({ tone = "default" as KpiTileProps["tone"] } = {}) {
+  const toneClasses =
+    tone === "primary"
+      ? "bg-primary/90"
+      : tone === "gold"
+        ? "bg-secondary/10 border-secondary/30"
+        : "bg-card";
+  return (
+    <Card className={cn("border-border/60 shadow-sm rounded-2xl", toneClasses)}>
+      <CardContent className="p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="h-3 w-24 rounded bg-muted/60 animate-pulse" />
+            <div className="h-8 w-32 rounded bg-muted/70 animate-pulse" />
+            <div className="h-4 w-20 rounded-full bg-muted/50 animate-pulse" />
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-muted/50 animate-pulse shrink-0" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
