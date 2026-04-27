@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
@@ -8,12 +8,18 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Shield, Recycle, TrendingUp, Store } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Shield, Recycle, TrendingUp, Store, Gift, Package, Truck } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function Signup() {
+  const [searchParams] = useSearchParams();
+  const next = searchParams.get("next") || "/dashboard";
+  const prefilledEmail = searchParams.get("email") || "";
+  // Customer flow = anyone redirected to the customer area (Store BIB)
+  const isCustomer = next.startsWith("/mon-compte") || next.startsWith("/recycler");
+
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(prefilledEmail);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -35,22 +41,37 @@ export default function Signup() {
     setLoading(true);
     const { error } = await signUp(email, password, fullName);
     if (error) { setError(error.message); setLoading(false); }
-    else { navigate("/dashboard"); }
+    else { navigate(next); }
   };
 
-  const features = [
+  const sellerFeatures = [
     { icon: Store, title: t("signup.multiboutique"), desc: t("signup.multiboutique.desc") },
     { icon: TrendingUp, title: t("signup.analytics"), desc: t("signup.analytics.desc") },
     { icon: Shield, title: t("signup.secure"), desc: t("signup.secure.desc") },
     { icon: Recycle, title: t("signup.sustainable"), desc: t("signup.sustainable.desc") },
   ];
 
+  const customerFeatures = [
+    { icon: Package, title: "Toutes vos commandes", desc: "Suivi unifié, toutes boutiques confondues." },
+    { icon: Gift, title: "Cartes cadeaux", desc: "1 point recyclé = 0,10 € sur la boutique d'origine." },
+    { icon: Truck, title: "Livraison incluse", desc: "Logistique gérée par Brand-In-A-Box." },
+    { icon: Recycle, title: "Recyclage récompensé", desc: "Scannez vos cartons, cumulez des avoirs." },
+  ];
+
+  const features = isCustomer ? customerFeatures : sellerFeatures;
+
   return (
     <div className="min-h-screen bg-background flex">
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary/10 via-accent/5 to-background items-center justify-center p-12">
         <div className="max-w-lg">
-          <h2 className="text-3xl font-bold text-foreground mb-6">{t("signup.branding.title")}</h2>
-          <p className="text-muted-foreground mb-8">{t("signup.branding.desc")}</p>
+          <h2 className="text-3xl font-bold text-foreground mb-6">
+            {isCustomer ? "Votre compte Store BIB" : t("signup.branding.title")}
+          </h2>
+          <p className="text-muted-foreground mb-8">
+            {isCustomer
+              ? "Un seul compte pour acheter sur toutes les boutiques Brand-In-A-Box, suivre vos commandes et profiter de vos cartes cadeaux recyclage."
+              : t("signup.branding.desc")}
+          </p>
           <div className="grid grid-cols-2 gap-4">
             {features.map((f, i) => (
               <div key={i} className="p-4 rounded-xl bg-card border border-border/50">
@@ -87,8 +108,14 @@ export default function Signup() {
 
           <Card className="border-border/50 shadow-lg">
             <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold">{t("signup.title")}</CardTitle>
-              <CardDescription>{t("signup.desc")}</CardDescription>
+              <CardTitle className="text-2xl font-bold">
+                {isCustomer ? "Créer mon compte Store BIB" : t("signup.title")}
+              </CardTitle>
+              <CardDescription>
+                {isCustomer
+                  ? "Retrouvez vos commandes et activez vos cartes cadeaux recyclage."
+                  : t("signup.desc")}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -104,8 +131,21 @@ export default function Signup() {
                   <Label htmlFor="email">{t("signup.email")}</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input id="email" type="email" placeholder="vendeur@exemple.com" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-10" required />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder={isCustomer ? "client@exemple.com" : "vendeur@exemple.com"}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
                   </div>
+                  {isCustomer && prefilledEmail && (
+                    <p className="text-xs text-muted-foreground">
+                      Nous utilisons cet email pour rattacher automatiquement vos commandes passées.
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">{t("signup.password")}</Label>
