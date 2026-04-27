@@ -2,12 +2,14 @@ import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import Footer from "@/components/Footer";
 import CTASection from "@/components/CTASection";
+import FeaturesSection from "@/components/FeaturesSection";
+import HowItWorksSection from "@/components/HowItWorksSection";
+import TrustSection from "@/components/TrustSection";
 import { RevealRow } from "@/components/landing/RevealRow";
 import { MarqueeStrip } from "@/components/landing/MarqueeStrip";
 import { useSEO } from "@/hooks/useSEO";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
-  Store,
   BarChart3,
   ShieldCheck,
   Recycle,
@@ -56,6 +58,9 @@ const Index = () => {
           ]}
         />
 
+        {/* Quick value props (3 columns of pure brand color) */}
+        <FeaturesSection />
+
         {/* ROW 1 — slide from LEFT — Modular boutiques */}
         <RevealRow
           side="left"
@@ -75,10 +80,13 @@ const Index = () => {
           visual={<MockupBoutique />}
         />
 
+        {/* How it works — 4 steps */}
+        <HowItWorksSection />
+
         {/* ROW 2 — slide from RIGHT — Live dashboard */}
         <RevealRow
           side="right"
-          tone="marine-soft"
+          tone="ivory"
           eyebrow="Dashboard live"
           title={
             <>
@@ -94,7 +102,10 @@ const Index = () => {
           visual={<MockupDashboard />}
         />
 
-        {/* ROW 3 — slide from LEFT — Trust & Compliance */}
+        {/* Trust block (stats + 6 cards) */}
+        <TrustSection />
+
+        {/* ROW 3 — slide from LEFT — Trust & Compliance highlight */}
         <RevealRow
           side="left"
           tone="ivory"
@@ -116,7 +127,7 @@ const Index = () => {
         {/* ROW 4 — slide from RIGHT — Logistics & ops */}
         <RevealRow
           side="right"
-          tone="gold-soft"
+          tone="ivory"
           eyebrow="Logistics OS"
           title={
             <>
