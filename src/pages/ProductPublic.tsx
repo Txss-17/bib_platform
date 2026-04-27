@@ -9,6 +9,7 @@ import { useCart } from "@/contexts/CartContext";
 import { StorefrontHeader } from "@/components/storefront/StorefrontHeader";
 import { StorefrontFooter } from "@/components/storefront/StorefrontFooter";
 import { CartDrawer } from "@/components/storefront/CartDrawer";
+import { StorefrontProvider } from "@/contexts/StorefrontContext";
 import { useSEO } from "@/hooks/useSEO";
 import type { ThemeSettings } from "@/lib/boutiqueTemplates";
 import { trackStorefrontEvent } from "@/lib/storefrontTracking";
@@ -117,6 +118,11 @@ export default function ProductPublic() {
   };
 
   return (
+    <StorefrontProvider
+      boutiqueId={boutique?.id ?? ""}
+      boutiqueName={boutique?.name ?? ""}
+      boutiqueSlug={boutique?.slug ?? slug}
+    >
     <div className="min-h-screen bg-white flex flex-col">
       {boutique && (
         <>
@@ -212,5 +218,6 @@ export default function ProductPublic() {
 
       <StorefrontFooter primaryColor={primaryColor} />
     </div>
+    </StorefrontProvider>
   );
 }
