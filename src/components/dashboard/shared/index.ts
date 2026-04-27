@@ -5,3 +5,4 @@ export { KpiTile, KpiTileSkeleton } from "./KpiTile";
 export { EmptyState } from "./EmptyState";
 export { RealtimeStatusPill } from "./RealtimeStatusPill";
 export type { RealtimeStatus } from "./RealtimeStatusPill";
+export { HealthRing } from "./HealthRing";
