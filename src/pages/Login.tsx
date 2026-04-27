@@ -98,7 +98,12 @@ export default function Login() {
             <CardFooter className="flex flex-col gap-4">
               <div className="text-center text-sm text-muted-foreground">
                 {t("login.noaccount")}{" "}
-                <Link to="/signup" className="text-primary font-medium hover:underline">{t("login.create")}</Link>
+                <Link
+                  to={isCustomer ? `/signup?next=${encodeURIComponent(from)}` : "/signup"}
+                  className="text-primary font-medium hover:underline"
+                >
+                  {t("login.create")}
+                </Link>
               </div>
             </CardFooter>
           </Card>
