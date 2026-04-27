@@ -1,12 +1,61 @@
 import { Link } from "react-router-dom";
 import logoImg from "@/assets/brand-in-a-box-logo.png";
 
+// Source asset: 1243x629. Icon bbox measured from the official PNG:
+// x∈[231,512] (≈22.6% wide), y∈[162,480] (≈50.5% tall). Aspect ≈ 281/318 ≈ 0.884.
+// All values below are pure percentages so the crop is pixel-identical at any size.
+const ICON_CROP = {
+  fracW: 0.226, // (512-231)/1243
+  fracH: 0.505, // (480-162)/629
+  fracX: 0.186, // 231/1243
+  fracY: 0.258, // 162/629
+  ratio: 281 / 318, // displayed aspect ratio (≈ 0.884)
+} as const;
+
+export interface BrandIconProps {
+  /** Pixel size of the icon's bounding box (height). Width follows the ratio. */
+  size?: number;
+  className?: string;
+}
+
+/**
+ * Official Brand-In-A-Box icon (gold B inside marine box) cropped from the
+ * uploaded reference PNG. Pure CSS percent-positioning → identical crop at
+ * every size (36px on mobile, 72px on desktop, anything in between).
+ */
+export function BrandIcon({ size = 36, className = "" }: BrandIconProps) {
+  // Width derived from displayed aspect ratio so the crop stays pixel-true.
+  const width = Math.round(size * ICON_CROP.ratio);
+  return (
+    <span
+      className={`relative inline-block overflow-hidden shrink-0 ${className}`}
+      style={{ width, height: size }}
+      aria-hidden
+    >
+      <img
+        src={logoImg}
+        alt=""
+        draggable={false}
+        className="absolute select-none pointer-events-none max-w-none"
+        style={{
+          width: `${100 / ICON_CROP.fracW}%`,
+          height: "auto",
+          left: `${-ICON_CROP.fracX * (100 / ICON_CROP.fracW)}%`,
+          top: `${-ICON_CROP.fracY * (100 / ICON_CROP.fracW) * (629 / 1243)}%`,
+        }}
+      />
+    </span>
+  );
+}
+
 interface LogoProps {
   variant?: "full" | "compact" | "icon";
   className?: string;
   onLight?: boolean;
   asLink?: boolean;
   to?: string;
+  /** Icon pixel size (height). Defaults to 36 on mobile, scales up via responsive prop. */
+  iconSize?: number;
 }
 
 /**
@@ -21,38 +70,12 @@ export function Logo({
   onLight = true,
   asLink = true,
   to = "/",
+  iconSize = 36,
 }: LogoProps) {
   const wordmarkColor = onLight ? "text-foreground" : "text-primary-foreground";
   const taglineColor = onLight ? "text-muted-foreground" : "text-primary-foreground/70";
 
-  // Official Brand-In-A-Box icon (box + gold B) extracted from the uploaded asset.
-  // Source asset: 1243x629. Icon bbox: x∈[231,512] (≈22.6% wide), y∈[162,480] (≈50.5% tall).
-  // We mount the full image scaled so the icon area exactly fills the square viewport,
-  // then translate it so the bbox aligns with (0,0). No recolor, no recreated B.
-  // Icon aspect ratio ≈ 281/318 ≈ 0.88 → we use a square viewport with object-cover-like crop.
-  const Mark = (
-    <span className="relative inline-block w-9 h-9 shrink-0 overflow-hidden">
-      <img
-        src={logoImg}
-        alt=""
-        aria-hidden
-        draggable={false}
-        className="absolute select-none pointer-events-none max-w-none"
-        style={{
-          // viewport is 36px wide, icon crop is 22.6% of source → scale source to 36/0.226 ≈ 159px wide
-          // Express in % of the viewport so it stays responsive to font-size based sizing.
-          width: `${100 / 0.226}%`, // ≈ 442%
-          height: "auto",
-          // shift left so icon bbox left edge (18.6% of source) aligns to viewport x=0
-          left: `${-0.186 * (100 / 0.226)}%`, // ≈ -82.3%
-          // shift up so icon bbox top (25.8% of source) aligns to viewport y=0
-          // image rendered height = width × (629/1243) = 442% × 0.506 ≈ 224% of viewport width = 224% of 36px ≈ 80.6px
-          // top offset in px = -0.258 × 80.6 ≈ -20.8px ≈ -57.7% of viewport height (36px)
-          top: `${-0.258 * (100 / 0.226) * (629 / 1243)}%`, // ≈ -57.7%
-        }}
-      />
-    </span>
-  );
+  const Mark = <BrandIcon size={iconSize} />;
 
   const content = (
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
