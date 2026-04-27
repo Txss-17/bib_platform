@@ -10,7 +10,7 @@ interface LiveOrder {
   amount: number;
   market: string | null;
   customer_name: string | null;
-  status: string | null;
+  logistics_status: string | null;
   created_at: string;
 }
 
@@ -40,11 +40,11 @@ export function LiveActivity() {
 
       const { data } = await supabase
         .from("orders")
-        .select("id, order_number, amount, market, customer_name, status, created_at")
+        .select("id, order_number, amount, market, customer_name, logistics_status, created_at")
         .in("boutique_id", ids)
         .order("created_at", { ascending: false })
         .limit(8);
-      setOrders((data as LiveOrder[]) || []);
+      setOrders(((data as unknown) as LiveOrder[]) || []);
       setLoading(false);
 
       channel = supabase
@@ -114,7 +114,7 @@ export function LiveActivity() {
               {Number(o.amount).toLocaleString("fr-FR")} €
             </p>
             <p className="text-[11px] text-muted-foreground capitalize">
-              {o.status || "—"}
+              {o.logistics_status || "—"}
             </p>
           </div>
         </li>
