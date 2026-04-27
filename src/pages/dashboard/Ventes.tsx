@@ -44,6 +44,7 @@ import {
 } from "@/components/dashboard/shared";
 import { SalesHeatmap } from "@/components/dashboard/sales/SalesHeatmap";
 import { LiveActivity } from "@/components/dashboard/sales/LiveActivity";
+import { RealtimePulseCard } from "@/components/dashboard/sales/RealtimePulseCard";
 import { useSalesKpis } from "@/hooks/useSalesKpis";
 
 const monthlyData = [
