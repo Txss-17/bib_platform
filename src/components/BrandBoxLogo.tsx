@@ -83,7 +83,9 @@ export function BrandBoxLogo({
   const width = variant === "full" ? size * aspectFull : Math.round(size * ICON.ratio);
   const height = size;
 
-  // ---- FULL variant: animate the wordmark fade + B drop on the cropped icon area only ----
+  // ---- FULL variant: render the official asset 1:1, with a discreet entry fade.
+  //      The dramatic B-drops-into-box motion is reserved for the ICON variant
+  //      so the wordmark and tagline never get distorted.
   if (variant === "full") {
     return (
       <div
@@ -93,45 +95,13 @@ export function BrandBoxLogo({
         role="img"
         aria-label="Brand-In-A-Box — Your brand. Ready to launch."
       >
-        {/* Layer 1: full asset MINUS the B (everything except the upper-icon area) */}
         <img
           src={logoImg}
           alt=""
           draggable={false}
-          className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none"
-          style={{
-            // Hide the B region so we can re-introduce it with motion on top.
-            WebkitMaskImage:
-              "linear-gradient(#000,#000), linear-gradient(#000,#000)",
-            WebkitMaskComposite: "xor",
-            maskComposite: "exclude",
-          }}
-        />
-        {/* Animated B layer — clipped to the icon's upper portion */}
-        <BDrop
-          width={width}
-          height={height}
-          // Map the B sub-rect (within the FULL asset) to clip values:
-          clipTopPct={ICON.fracY * 100}
-          clipBottomPct={(1 - (ICON.fracY + ICON.fracH * (ICON.splitPct / 100))) * 100}
-          clipLeftPct={ICON.fracX * 100}
-          clipRightPct={(1 - (ICON.fracX + ICON.fracW)) * 100}
-          playing={typeof progress === "number" ? undefined : playing}
-          progress={progress}
-        />
-        {/* Static "box body + wordmark" layer */}
-        <img
-          src={logoImg}
-          alt=""
-          draggable={false}
-          className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none"
-          style={{
-            // Show only the box body + the wordmark (everything below the B).
-            clipPath: `polygon(
-              0% 0%, 100% 0%, 100% 100%, 0% 100%,
-              0% ${ICON.fracY * 100 + ICON.fracH * (ICON.splitPct / 100) * 100}%
-            )`,
-          }}
+          className={`w-full h-full object-contain select-none pointer-events-none ${
+            playing ? "animate-fade-up" : "opacity-0"
+          }`}
         />
       </div>
     );
@@ -253,50 +223,6 @@ export function BrandBoxLogo({
           .bib-anim-bdrop { animation: none; opacity: 1; transform: none; }
         }
       `}</style>
-    </div>
-  );
-}
-
-/* Internal helper for the FULL variant (kept simple — same animation principle) */
-function BDrop({
-  width: _w,
-  height: _h,
-  clipTopPct,
-  clipBottomPct,
-  clipLeftPct,
-  clipRightPct,
-  playing,
-  progress,
-}: {
-  width: number;
-  height: number;
-  clipTopPct: number;
-  clipBottomPct: number;
-  clipLeftPct: number;
-  clipRightPct: number;
-  playing?: boolean;
-  progress?: number;
-}) {
-  const driven = typeof progress === "number";
-  const p = driven ? Math.min(Math.max(progress!, 0), 1) : 0;
-  return (
-    <div
-      className={`absolute inset-0 overflow-hidden ${
-        driven ? "" : playing ? "bib-anim-bdrop" : "opacity-0"
-      }`}
-      style={{
-        clipPath: `inset(${clipTopPct}% ${clipRightPct}% ${clipBottomPct}% ${clipLeftPct}%)`,
-        transform: driven ? `translateY(${(-1 + p) * 60}%)` : undefined,
-        opacity: driven ? Math.min(p * 1.4, 1) : undefined,
-        transformOrigin: "50% 100%",
-      }}
-    >
-      <img
-        src={logoImg}
-        alt=""
-        draggable={false}
-        className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none"
-      />
     </div>
   );
 }
