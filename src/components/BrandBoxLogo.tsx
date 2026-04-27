@@ -184,11 +184,14 @@ export function BrandBoxLogo({
           clipPath: `inset(0 0 ${splitInsetBottom} 0)`,
           transform:
             typeof progress === "number"
-              ? `translateY(${(-1 + Math.min(Math.max(progress, 0), 1)) * 70}%) scale(${0.9 + 0.1 * Math.min(progress, 1)})`
+              ? `translateY(${(-1 + Math.min(Math.max(progress, 0), 1)) * 80}%) scale(${0.92 + 0.08 * Math.min(progress, 1)})`
               : undefined,
-          opacity: typeof progress === "number" ? Math.min(progress * 1.4, 1) : undefined,
+          opacity: typeof progress === "number" ? Math.min(0.4 + progress * 0.8, 1) : undefined,
           transformOrigin: "50% 100%",
-          transition: typeof progress === "number" ? "none" : undefined,
+          transition:
+            typeof progress === "number"
+              ? "transform 220ms cubic-bezier(0.34, 1.56, 0.4, 1), opacity 220ms ease-out"
+              : undefined,
         }}
       >
         <img
