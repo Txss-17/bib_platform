@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
+import Vendre from "./pages/Vendre";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -54,7 +55,9 @@ const App = () => (
         <LanguageProvider>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Marketplace />} />
+            <Route path="/vendre" element={<Vendre />} />
+            <Route path="/landing" element={<Index />} />
             <Route path="/brand-preview" element={<BrandPreview />} />
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/mon-compte" element={<MonCompte />} />
