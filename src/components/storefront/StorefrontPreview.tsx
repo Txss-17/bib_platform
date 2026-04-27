@@ -15,6 +15,14 @@ import { getTemplateForCategory, type ThemeSettings, type SectionConfig, type An
 import type { FAQItem } from "./StorefrontFAQ";
 import { ParallaxSection, ScrollReveal, TiltCard } from "./Storefront3DEffects";
 import "./storefront3d.css";
+import {
+  StorefrontAnnouncement,
+  StorefrontCountdown,
+  StorefrontComparison,
+  StorefrontBundle,
+  StorefrontLookbook,
+  StorefrontStickyCTA,
+} from "./StorefrontConversionSections";
 
 function effectToReveal(effect?: SectionEffect): "up" | "left" | "right" | "scale" | null {
   switch (effect) {
@@ -179,7 +187,7 @@ export function StorefrontPreview({
       case "products":
         defaultDir = "up";
         inner = (
-          <div key="products" className={animClass} style={animStyle}>
+          <div key="products" id="products" className={animClass} style={animStyle}>
             <StorefrontProducts
               title={template.productsSectionTitle}
               products={displayProducts}
@@ -225,6 +233,68 @@ export function StorefrontPreview({
       case "newsletter":
         inner = <StorefrontNewsletter key="newsletter" primaryColor={primaryColor} boutiqueName={boutiqueName} />;
         break;
+      case "announcement":
+        // Rendered separately at the very top — skip here.
+        return null;
+      case "countdown":
+        defaultDir = "up";
+        inner = (
+          <div key="countdown" className={animClass} style={animStyle}>
+            <StorefrontCountdown
+              title={section.data?.title}
+              endsInHours={section.data?.endsInHours}
+              primaryColor={primaryColor}
+              secondaryColor={secondaryColor}
+            />
+          </div>
+        );
+        break;
+      case "comparison":
+        defaultDir = "up";
+        inner = (
+          <div key="comparison" className={animClass} style={animStyle}>
+            <StorefrontComparison
+              title={section.data?.title}
+              us={section.data?.us}
+              them={section.data?.them}
+              rows={section.data?.rows}
+              primaryColor={primaryColor}
+              secondaryColor={secondaryColor}
+            />
+          </div>
+        );
+        break;
+      case "bundle":
+        defaultDir = "scale";
+        inner = (
+          <div key="bundle" className={animClass} style={animStyle}>
+            <StorefrontBundle
+              title={section.data?.title}
+              subtitle={section.data?.subtitle}
+              items={section.data?.items}
+              originalPrice={section.data?.originalPrice}
+              bundlePrice={section.data?.bundlePrice}
+              primaryColor={primaryColor}
+              secondaryColor={secondaryColor}
+            />
+          </div>
+        );
+        break;
+      case "lookbook":
+        defaultDir = "up";
+        inner = (
+          <div key="lookbook" className={animClass} style={animStyle}>
+            <StorefrontLookbook
+              title={section.data?.title}
+              images={section.data?.images}
+              primaryColor={primaryColor}
+            />
+          </div>
+        );
+        break;
+      case "sticky-cta":
+        // Rendered globally at the bottom of the page — skip here.
+        return null;
       default:
         return null;
     }
@@ -268,6 +338,19 @@ export function StorefrontPreview({
       className={`bg-white min-h-screen ${isPreview ? 'pointer-events-none' : ''}`}
       style={{ fontFamily: `'${fonts.body}', sans-serif` }}
     >
+      {/* Announcement bar — always rendered first, even when added later in the list */}
+      {(() => {
+        const ann = sections.find((s) => s.type === "announcement" && s.enabled);
+        if (!ann) return null;
+        return (
+          <StorefrontAnnouncement
+            message={ann.data?.message}
+            emoji={ann.data?.emoji}
+            primaryColor={primaryColor}
+          />
+        );
+      })()}
+
       <StorefrontHeader 
         boutiqueName={boutiqueName} 
         primaryColor={primaryColor}
@@ -279,6 +362,20 @@ export function StorefrontPreview({
 
       {boutiqueId && <CartDrawer primaryColor={primaryColor} boutiqueId={boutiqueId} boutiqueName={boutiqueName} />}
       <StorefrontFooter primaryColor={primaryColor} />
+
+      {/* Sticky CTA — fixed bottom of page, rendered last */}
+      {(() => {
+        const cta = sections.find((s) => s.type === "sticky-cta" && s.enabled);
+        if (!cta || isPreview) return null;
+        return (
+          <StorefrontStickyCTA
+            label={cta.data?.label}
+            anchor={cta.data?.anchor || "products"}
+            primaryColor={primaryColor}
+            secondaryColor={secondaryColor}
+          />
+        );
+      })()}
     </div>
     </CartProvider>
   );
