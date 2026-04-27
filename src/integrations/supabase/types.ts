@@ -454,8 +454,10 @@ export type Database = {
           created_at: string
           cumulative_sales: number
           id: string
+          low_stock_threshold: number
           public_price: number
           status: Database["public"]["Enums"]["product_status"]
+          stock_quantity: number
           supplier_product_id: string
           updated_at: string
         }
@@ -465,8 +467,10 @@ export type Database = {
           created_at?: string
           cumulative_sales?: number
           id?: string
+          low_stock_threshold?: number
           public_price: number
           status?: Database["public"]["Enums"]["product_status"]
+          stock_quantity?: number
           supplier_product_id: string
           updated_at?: string
         }
@@ -476,8 +480,10 @@ export type Database = {
           created_at?: string
           cumulative_sales?: number
           id?: string
+          low_stock_threshold?: number
           public_price?: number
           status?: Database["public"]["Enums"]["product_status"]
+          stock_quantity?: number
           supplier_product_id?: string
           updated_at?: string
         }
