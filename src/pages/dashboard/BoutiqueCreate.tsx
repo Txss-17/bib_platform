@@ -153,7 +153,7 @@ export default function BoutiqueCreate() {
       <StepIndicator currentStep={currentStep} />
 
       <div className="max-w-2xl mx-auto">
-        <SectionCard contentClassName="p-6 sm:p-8">
+        <SectionCard flush contentClassName="p-6 sm:p-8">
           {/* Step 1: Basic Info */}
           {currentStep === 1 && (
             <div className="space-y-6">
