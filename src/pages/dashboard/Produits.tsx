@@ -178,7 +178,7 @@ export default function Produits() {
 
   if (error) {
     return (
-      <DashboardLayout title="Mes Produits" subtitle="">
+      <DashboardLayout>
         <PageHeader eyebrow="Catalogue" title="Mes produits" />
         <SectionCard>
           <p className="text-destructive text-sm">
@@ -199,7 +199,7 @@ export default function Produits() {
   );
 
   return (
-    <DashboardLayout title="Mes Produits" subtitle="">
+    <DashboardLayout>
       <PageHeader
         eyebrow="Catalogue"
         title="Mes produits"

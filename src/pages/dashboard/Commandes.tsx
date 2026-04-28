@@ -293,7 +293,7 @@ export default function Commandes() {
 
   if (error) {
     return (
-      <DashboardLayout title="">
+      <DashboardLayout>
         <PageHeader
           eyebrow="Operations"
           title="Cockpit Commandes"
@@ -309,7 +309,7 @@ export default function Commandes() {
   }
 
   return (
-    <DashboardLayout title="">
+    <DashboardLayout>
       <PageHeader
         eyebrow="Operations"
         title="Cockpit Commandes"

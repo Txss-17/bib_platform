@@ -169,7 +169,7 @@ export default function ProduitsFournisseurs() {
   }, [products, favorites]);
 
   return (
-    <DashboardLayout title="Catalogue" subtitle="">
+    <DashboardLayout>
       <PageHeader
         eyebrow="Catalogue fournisseur"
         title="Produits validés"

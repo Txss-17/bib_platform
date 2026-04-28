@@ -85,7 +85,7 @@ export default function Paiements() {
   const maxRev = Math.max(1, ...orderRevenue.byBoutique.map((b: any) => b.revenue));
 
   return (
-    <DashboardLayout title="Paiements" subtitle="Suivez vos revenus et versements">
+    <DashboardLayout>
       <PageHeader
         eyebrow="Finance"
         title="Cockpit financier"

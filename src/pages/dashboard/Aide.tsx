@@ -192,7 +192,7 @@ export default function Aide() {
   };
 
   return (
-    <DashboardLayout title="Aide & Support" subtitle="Trouvez des réponses ou contactez notre équipe">
+    <DashboardLayout>
       <PageHeader
         eyebrow="Centre d'aide"
         title="Aide & Support"

@@ -128,7 +128,7 @@ export default function Parametres() {
   };
 
   return (
-    <DashboardLayout title="Paramètres" subtitle="Gérez votre compte">
+    <DashboardLayout>
       <PageHeader
         eyebrow="Compte"
         title="Paramètres"
