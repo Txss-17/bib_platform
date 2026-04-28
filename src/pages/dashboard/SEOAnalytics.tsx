@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/select";
 import {
   Search, TrendingUp, Sparkles, Zap, RefreshCw, BarChart3, Store, ArrowRight, Eye,
-  AlertTriangle, ImageOff, Copy, FileWarning,
+  AlertTriangle, ImageOff, Copy, FileWarning, Wand2,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +25,7 @@ import { Link } from "react-router-dom";
 import {
   PageHeader, SectionCard, KpiTile, EmptyState,
 } from "@/components/dashboard/shared";
+import { DuplicateTitlesDialog } from "@/components/dashboard/seo/DuplicateTitlesDialog";
 
 function computeSEOScore(name: string, description: string | null) {
   const issues: string[] = [];
@@ -80,6 +81,7 @@ export default function SEOAnalytics() {
   const { data: allOrders } = useOrders();
   const { data: allProducts } = useProducts();
   const [selectedBoutique, setSelectedBoutique] = useState<string>("all");
+  const [dupDialogOpen, setDupDialogOpen] = useState(false);
 
   const filteredBoutiques =
     selectedBoutique === "all" ? boutiques : boutiques.filter((b) => b.id === selectedBoutique);
@@ -361,6 +363,16 @@ export default function SEOAnalytics() {
         title="Alertes SEO à corriger"
         description="Titres dupliqués, méta manquants, images Open Graph absentes — détectés automatiquement."
         icon={<AlertTriangle className="w-4 h-4 text-destructive" />}
+        actions={
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1.5"
+            onClick={() => setDupDialogOpen(true)}
+          >
+            <Wand2 className="w-3.5 h-3.5" /> Corriger les doublons
+          </Button>
+        }
       >
         {seoAlerts.length === 0 ? (
           <EmptyState
@@ -408,6 +420,23 @@ export default function SEOAnalytics() {
           </div>
         )}
       </SectionCard>
+
+      <DuplicateTitlesDialog
+        open={dupDialogOpen}
+        onOpenChange={setDupDialogOpen}
+        boutiques={filteredBoutiques.map((b) => ({
+          id: b.id,
+          name: b.name,
+          category: b.category,
+          tagline: b.tagline,
+        }))}
+        products={(seoProducts as any[]).map((p) => ({
+          id: p.id,
+          boutique_id: p.boutique_id,
+          name: p.supplier_products?.name || "",
+          category: null,
+        }))}
+      />
 
       {/* Revenue chart + AI panel */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
