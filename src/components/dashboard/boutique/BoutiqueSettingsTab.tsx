@@ -961,11 +961,17 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                         placeholder="Tapez le nom exact"
                         autoFocus
                       />
+                      {deleteError && (
+                        <div className="rounded-md border border-destructive/40 bg-destructive/5 p-2.5 text-xs text-destructive flex gap-2">
+                          <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                          <span>{deleteError}</span>
+                        </div>
+                      )}
                     </div>
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel onClick={() => setConfirmName("")}>
+                  <AlertDialogCancel onClick={() => { setConfirmName(""); setDeleteError(null); }}>
                     Annuler
                   </AlertDialogCancel>
                   <AlertDialogAction
