@@ -7,9 +7,12 @@ import { useSEO, buildLocaleAlternates } from "@/hooks/useSEO";
 import { Loader2 } from "lucide-react";
 import type { ThemeSettings } from "@/lib/boutiqueTemplates";
 import { trackStorefrontEvent } from "@/lib/storefrontTracking";
+import { PageSeoInspector } from "@/components/storefront/PageSeoInspector";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function BoutiquePublic() {
   const { slug } = useParams<{ slug: string }>();
+  const { user } = useAuth();
 
   const { data: boutique, isLoading: boutiqueLoading, error } = useQuery({
     queryKey: ["public-boutique", slug],
@@ -130,6 +133,7 @@ export default function BoutiquePublic() {
   const themeSettings = (boutique.theme_settings as unknown) as ThemeSettings | null;
 
   return (
+    <>
     <StorefrontPreview
       boutiqueName={boutique.name}
       boutiqueId={boutique.id}
@@ -138,5 +142,16 @@ export default function BoutiquePublic() {
       themeSettings={themeSettings}
       products={products}
     />
+    <PageSeoInspector
+      visible={!!user && user.id === boutique.user_id}
+      kind="boutique"
+      title={boutique.name}
+      description={
+        boutique.description ||
+        `Découvrez ${boutique.name} sur Brand-In-A-Box. Livraison incluse sur tous les produits.`
+      }
+      ogImage={boutique.cover_image_url || boutique.logo_url}
+    />
+    </>
   );
 }

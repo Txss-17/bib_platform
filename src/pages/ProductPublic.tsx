@@ -13,9 +13,12 @@ import { StorefrontProvider } from "@/contexts/StorefrontContext";
 import { useSEO, buildLocaleAlternates } from "@/hooks/useSEO";
 import type { ThemeSettings } from "@/lib/boutiqueTemplates";
 import { trackStorefrontEvent } from "@/lib/storefrontTracking";
+import { PageSeoInspector } from "@/components/storefront/PageSeoInspector";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ProductPublic() {
   const { slug, productId } = useParams<{ slug: string; productId: string }>();
+  const { user } = useAuth();
 
   const { data: boutique } = useQuery({
     queryKey: ["public-boutique", slug],
@@ -248,6 +251,18 @@ export default function ProductPublic() {
       </main>
 
       <StorefrontFooter primaryColor={primaryColor} />
+      <PageSeoInspector
+        visible={!!user && !!boutique && user.id === boutique.user_id}
+        kind="product"
+        title={
+          boutique ? `${productName} — ${boutique.name}` : productName
+        }
+        description={
+          productDesc ||
+          `Achetez ${productName} sur ${boutique?.name || "Brand-In-A-Box"}. Livraison incluse.`
+        }
+        ogImage={productImage}
+      />
     </div>
     </StorefrontProvider>
   );
