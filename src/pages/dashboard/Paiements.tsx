@@ -11,10 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBoutiques } from "@/hooks/useBoutiques";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  PageHeader, SectionCard, KpiTile, KpiTileSkeleton, EmptyState,
-  RealtimeStatusPill,
-} from "@/components/dashboard/shared";
+import { PageHeader, SectionCard, KpiTile, KpiTileSkeleton, EmptyState, RealtimeStatusPill, KpiGrid } from "@/components/dashboard/shared";
 import { usePaymentsRealtime } from "@/hooks/usePaymentsRealtime";
 import { PaymentsActivityFeed } from "@/components/dashboard/payments/PaymentsActivityFeed";
 
@@ -94,7 +91,7 @@ export default function Paiements() {
       />
 
       {/* KPI strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      <KpiGrid cols={4}>
         {isLoading ? (
           <>
             <KpiTileSkeleton tone="primary" />
@@ -132,7 +129,7 @@ export default function Paiements() {
             />
           </>
         )}
-      </div>
+      </KpiGrid>
 
       {/* Info bar */}
       <SectionCard className="mb-6 bg-secondary/5 border-secondary/30">

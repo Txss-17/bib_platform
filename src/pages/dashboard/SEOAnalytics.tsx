@@ -22,9 +22,7 @@ import {
 } from "recharts";
 import { subDays, format } from "date-fns";
 import { Link } from "react-router-dom";
-import {
-  PageHeader, SectionCard, KpiTile, EmptyState,
-} from "@/components/dashboard/shared";
+import { PageHeader, SectionCard, KpiTile, EmptyState, KpiGrid } from "@/components/dashboard/shared";
 import { DuplicateTitlesDialog } from "@/components/dashboard/seo/DuplicateTitlesDialog";
 
 function computeSEOScore(name: string, description: string | null) {
@@ -324,7 +322,7 @@ export default function SEOAnalytics() {
       />
 
       {/* KPI strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      <KpiGrid cols={4}>
         <KpiTile
           tone="primary"
           label="Score SEO moyen"
@@ -355,7 +353,7 @@ export default function SEOAnalytics() {
               : "À traiter"
           }
         />
-      </div>
+      </KpiGrid>
 
       {/* Concrete SEO alerts */}
       <SectionCard

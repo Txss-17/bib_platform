@@ -4,12 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  PageHeader,
-  SectionCard,
-  KpiTile,
-  EmptyState,
-} from "@/components/dashboard/shared";
+import { PageHeader, SectionCard, KpiTile, EmptyState, KpiGrid } from "@/components/dashboard/shared";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -204,7 +199,7 @@ export default function AdminDocuments() {
       />
 
       {/* KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <KpiGrid cols={3}>
         <KpiTile
           label="En attente"
           value={pendingCount}
@@ -221,7 +216,7 @@ export default function AdminDocuments() {
           value={documents.filter((d) => d.status === "rejected").length}
           icon={<XCircle className="w-5 h-5" />}
         />
-      </div>
+      </KpiGrid>
 
       {/* Filters */}
       <SectionCard className="mb-6">

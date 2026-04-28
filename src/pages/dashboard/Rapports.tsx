@@ -67,7 +67,7 @@ export default function Rapports() {
       />
 
       {/* KPI summary */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      <KpiGrid cols={4}>
         <KpiTile
           tone="primary"
           label="Chiffre d'affaires"
@@ -92,7 +92,7 @@ export default function Rapports() {
           value={fmt(boutiqueStats?.published || 0)}
           icon={<BarChart3 className="w-5 h-5" />}
         />
-      </div>
+      </KpiGrid>
 
       {/* Reports grid */}
       <SectionCard

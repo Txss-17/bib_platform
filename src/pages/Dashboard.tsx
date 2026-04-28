@@ -70,7 +70,7 @@ export default function Dashboard() {
       />
 
       {/* KPI grid — readable in <5s */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      <KpiGrid cols={4}>
         {isLoading ? (
           <>
             <KpiTileSkeleton tone="primary" />
@@ -108,7 +108,7 @@ export default function Dashboard() {
             />
           </>
         )}
-      </div>
+      </KpiGrid>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
         {/* Main column */}

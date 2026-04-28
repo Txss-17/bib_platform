@@ -12,9 +12,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  PageHeader, SectionCard, KpiTile,
-} from "@/components/dashboard/shared";
+import { PageHeader, SectionCard, KpiTile, KpiGrid } from "@/components/dashboard/shared";
 import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -199,7 +197,7 @@ export default function Aide() {
         subtitle="FAQ, ressources et accès direct à l'équipe Brand-In-A-Box."
       />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      <KpiGrid cols={4}>
         <KpiTile
           tone="primary"
           label="Délai de réponse"
@@ -225,7 +223,7 @@ export default function Aide() {
           icon={<MessageCircle className="w-5 h-5" />}
           hint="Email · Chat · FAQ"
         />
-      </div>
+      </KpiGrid>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* FAQ */}

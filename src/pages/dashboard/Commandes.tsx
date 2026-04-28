@@ -51,14 +51,7 @@ import { OrderDetailDialog } from "@/components/dashboard/OrderDetailDialog";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import type { OrderWithProduct } from "@/hooks/useOrders";
-import {
-  PageHeader,
-  SectionCard,
-  KpiTile,
-  KpiTileSkeleton,
-  EmptyState,
-  RealtimeStatusPill,
-} from "@/components/dashboard/shared";
+import { PageHeader, SectionCard, KpiTile, KpiTileSkeleton, EmptyState, RealtimeStatusPill, KpiGrid } from "@/components/dashboard/shared";
 import { useOrderPulse } from "@/hooks/useOrderPulse";
 import { cn } from "@/lib/utils";
 
@@ -352,7 +345,7 @@ export default function Commandes() {
       />
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      <KpiGrid cols={4}>
         {isLoading ? (
           <>
             <KpiTileSkeleton tone="primary" />
@@ -398,7 +391,7 @@ export default function Commandes() {
             />
           </>
         )}
-      </div>
+      </KpiGrid>
 
       {/* Escalation alert + Realtime feed */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">

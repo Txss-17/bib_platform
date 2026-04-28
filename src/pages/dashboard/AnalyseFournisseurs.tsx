@@ -38,7 +38,7 @@ export default function AnalyseFournisseurs() {
       />
 
       {/* Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <KpiGrid cols={3}>
         <KpiTile
           label="Produits disponibles"
           value={supplierProducts?.length || 0}
@@ -55,7 +55,7 @@ export default function AnalyseFournisseurs() {
           value={Object.keys(categoryStats).length}
           icon={<BarChart3 className="w-5 h-5" />}
         />
-      </div>
+      </KpiGrid>
 
       {/* Category breakdown */}
       <SectionCard
