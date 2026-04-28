@@ -57,14 +57,24 @@ export type Database = {
           category: string
           cover_image_url: string | null
           created_at: string
+          default_currency: string
           description: string | null
           has_protection: boolean
           id: string
+          legal_address: string | null
+          legal_business_name: string | null
+          legal_email: string | null
+          legal_phone: string | null
+          legal_siret: string | null
           logo_url: string | null
           name: string
+          seo_description: string | null
+          seo_og_image_url: string | null
+          seo_title: string | null
           slug: string
           status: Database["public"]["Enums"]["boutique_status"]
           tagline: string | null
+          target_markets: string[]
           theme_settings: Json | null
           updated_at: string
           user_id: string
@@ -73,14 +83,24 @@ export type Database = {
           category: string
           cover_image_url?: string | null
           created_at?: string
+          default_currency?: string
           description?: string | null
           has_protection?: boolean
           id?: string
+          legal_address?: string | null
+          legal_business_name?: string | null
+          legal_email?: string | null
+          legal_phone?: string | null
+          legal_siret?: string | null
           logo_url?: string | null
           name: string
+          seo_description?: string | null
+          seo_og_image_url?: string | null
+          seo_title?: string | null
           slug: string
           status?: Database["public"]["Enums"]["boutique_status"]
           tagline?: string | null
+          target_markets?: string[]
           theme_settings?: Json | null
           updated_at?: string
           user_id: string
@@ -89,14 +109,24 @@ export type Database = {
           category?: string
           cover_image_url?: string | null
           created_at?: string
+          default_currency?: string
           description?: string | null
           has_protection?: boolean
           id?: string
+          legal_address?: string | null
+          legal_business_name?: string | null
+          legal_email?: string | null
+          legal_phone?: string | null
+          legal_siret?: string | null
           logo_url?: string | null
           name?: string
+          seo_description?: string | null
+          seo_og_image_url?: string | null
+          seo_title?: string | null
           slug?: string
           status?: Database["public"]["Enums"]["boutique_status"]
           tagline?: string | null
+          target_markets?: string[]
           theme_settings?: Json | null
           updated_at?: string
           user_id?: string
