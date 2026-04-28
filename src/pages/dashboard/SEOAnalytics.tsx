@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/select";
 import {
   Search, TrendingUp, Sparkles, Zap, RefreshCw, BarChart3, Store, ArrowRight, Eye,
+  AlertTriangle, ImageOff, Copy, FileWarning,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +42,32 @@ function computeSEOScore(name: string, description: string | null) {
   return { score: Math.max(0, score), issues, strengths };
 }
 
+type SeoAlertSeverity = "high" | "medium" | "low";
+type SeoAlert = {
+  severity: SeoAlertSeverity;
+  category: "duplicate" | "meta" | "og" | "title";
+  title: string;
+  detail: string;
+  pages: string[];
+};
+
+const SEVERITY_STYLES: Record<SeoAlertSeverity, string> = {
+  high: "border-destructive/30 bg-destructive/5 text-destructive",
+  medium: "border-secondary/30 bg-secondary/5 text-secondary",
+  low: "border-border bg-muted/30 text-muted-foreground",
+};
+const SEVERITY_LABEL: Record<SeoAlertSeverity, string> = {
+  high: "Critique",
+  medium: "À traiter",
+  low: "Conseil",
+};
+const ALERT_ICON = {
+  duplicate: Copy,
+  meta: FileWarning,
+  og: ImageOff,
+  title: AlertTriangle,
+};
+
 function scoreColor(score: number) {
   if (score >= 80) return "text-emerald-600";
   if (score >= 60) return "text-secondary";
@@ -64,7 +91,7 @@ export default function SEOAnalytics() {
       const ids = filteredBoutiques.map((b) => b.id);
       const { data, error } = await supabase
         .from("products")
-        .select("id, boutique_id, supplier_products(name, description)")
+        .select("id, boutique_id, supplier_products(name, description, image_url)")
         .in("boutique_id", ids)
         .eq("status", "active");
       if (error) throw error;
@@ -116,10 +143,125 @@ export default function SEOAnalytics() {
     }),
   ];
 
+  // ---- Concrete SEO alerts (duplicates, missing meta, missing OG image) ----
+  const seoAlerts: SeoAlert[] = useMemo(() => {
+    const alerts: SeoAlert[] = [];
+
+    // 1. Boutiques without OG image (logo + cover both missing)
+    const boutiquesNoOG = filteredBoutiques.filter(
+      (b) => !b.cover_image_url && !b.logo_url,
+    );
+    if (boutiquesNoOG.length > 0) {
+      alerts.push({
+        severity: "high",
+        category: "og",
+        title: "Image Open Graph manquante",
+        detail:
+          "Sans cover ni logo, vos boutiques s'affichent sans aperçu sur Google, WhatsApp et les réseaux sociaux.",
+        pages: boutiquesNoOG.map((b) => `Boutique · ${b.name}`),
+      });
+    }
+
+    // 2. Boutiques without description
+    const boutiquesNoDesc = filteredBoutiques.filter(
+      (b) => !b.description || b.description.trim().length === 0,
+    );
+    if (boutiquesNoDesc.length > 0) {
+      alerts.push({
+        severity: "high",
+        category: "meta",
+        title: "Méta-description boutique manquante",
+        detail:
+          "Ajoutez une description (50–160 caractères) pour expliciter votre offre dans les résultats Google.",
+        pages: boutiquesNoDesc.map((b) => `Boutique · ${b.name}`),
+      });
+    }
+
+    // 3. Products without description
+    const productsNoDesc = seoProducts.filter(
+      (p: any) =>
+        !p.supplier_products?.description ||
+        p.supplier_products.description.trim().length === 0,
+    );
+    if (productsNoDesc.length > 0) {
+      alerts.push({
+        severity: "medium",
+        category: "meta",
+        title: "Description produit manquante",
+        detail: `${productsNoDesc.length} produit(s) actif(s) n'ont pas de description.`,
+        pages: productsNoDesc
+          .slice(0, 5)
+          .map((p: any) => p.supplier_products?.name || "Produit"),
+      });
+    }
+
+    // 4. Products without image (=> no OG image either)
+    const productsNoImage = seoProducts.filter(
+      (p: any) => !p.supplier_products?.image_url,
+    );
+    if (productsNoImage.length > 0) {
+      alerts.push({
+        severity: "high",
+        category: "og",
+        title: "Image produit absente",
+        detail:
+          "Sans visuel, ces fiches produits sont pénalisées dans Google Shopping et n'ont pas d'image OG.",
+        pages: productsNoImage
+          .slice(0, 5)
+          .map((p: any) => p.supplier_products?.name || "Produit"),
+      });
+    }
+
+    // 5. Duplicate titles across boutiques + products
+    const titleMap = new Map<string, string[]>();
+    for (const b of filteredBoutiques) {
+      const key = (b.name || "").trim().toLowerCase();
+      if (!key) continue;
+      titleMap.set(key, [...(titleMap.get(key) ?? []), `Boutique · ${b.name}`]);
+    }
+    for (const p of seoProducts as any[]) {
+      const name = (p.supplier_products?.name || "").trim().toLowerCase();
+      if (!name) continue;
+      titleMap.set(name, [
+        ...(titleMap.get(name) ?? []),
+        `Produit · ${p.supplier_products?.name}`,
+      ]);
+    }
+    const duplicates = [...titleMap.values()].filter((arr) => arr.length > 1).flat();
+    if (duplicates.length > 0) {
+      alerts.push({
+        severity: "medium",
+        category: "duplicate",
+        title: "Titres dupliqués détectés",
+        detail:
+          "Plusieurs pages partagent le même titre — Google peut n'en indexer qu'une seule.",
+        pages: duplicates.slice(0, 6),
+      });
+    }
+
+    // 6. Title length issues across all pages
+    const badTitles = seoPages.filter(
+      (p) => p.issues.some((i) => i.toLowerCase().includes("titre")),
+    );
+    if (badTitles.length > 0) {
+      alerts.push({
+        severity: "low",
+        category: "title",
+        title: "Longueur de titre non optimale",
+        detail: "Visez 30–60 caractères pour un affichage complet dans les SERP.",
+        pages: badTitles.slice(0, 5).map((p) => p.page),
+      });
+    }
+
+    return alerts;
+  }, [filteredBoutiques, seoProducts, seoPages]);
+
+  const criticalAlertCount = seoAlerts.filter((a) => a.severity === "high").length;
+
   const avgScore = seoPages.length
     ? Math.round(seoPages.reduce((s, p) => s + p.score, 0) / seoPages.length)
     : 0;
-  const totalIssues = seoPages.reduce((s, p) => s + p.issues.length, 0);
+  const totalIssues = seoAlerts.reduce((s, a) => s + a.pages.length, 0);
   const totalRevenue = recentOrders.reduce((s, o) => s + Number(o.amount), 0);
 
   const boutiqueAnalytics = filteredBoutiques.map((boutique) => {
@@ -200,12 +342,72 @@ export default function SEOAnalytics() {
           icon={<Eye className="w-5 h-5" />}
         />
         <KpiTile
-          label="Problèmes SEO"
+          label="Alertes SEO"
           value={totalIssues}
-          icon={<Zap className="w-5 h-5" />}
-          hint={totalIssues === 0 ? "Aucun à corriger" : "À traiter"}
+          icon={<AlertTriangle className="w-5 h-5" />}
+          hint={
+            criticalAlertCount > 0
+              ? `${criticalAlertCount} critique(s)`
+              : totalIssues === 0
+              ? "Aucune à corriger"
+              : "À traiter"
+          }
         />
       </div>
+
+      {/* Concrete SEO alerts */}
+      <SectionCard
+        className="mb-6"
+        title="Alertes SEO à corriger"
+        description="Titres dupliqués, méta manquants, images Open Graph absentes — détectés automatiquement."
+        icon={<AlertTriangle className="w-4 h-4 text-destructive" />}
+      >
+        {seoAlerts.length === 0 ? (
+          <EmptyState
+            title="Aucune alerte"
+            description="Vos boutiques et produits respectent les bonnes pratiques SEO essentielles."
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {seoAlerts.map((alert, i) => {
+              const Icon = ALERT_ICON[alert.category];
+              return (
+                <div
+                  key={i}
+                  className={`rounded-xl border p-3 ${SEVERITY_STYLES[alert.severity]}`}
+                >
+                  <div className="flex items-start gap-2.5 mb-2">
+                    <Icon className="w-4 h-4 mt-0.5 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <p className="text-sm font-semibold text-foreground truncate">
+                          {alert.title}
+                        </p>
+                        <Badge variant="outline" className="text-[10px] shrink-0">
+                          {SEVERITY_LABEL[alert.severity]}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {alert.detail}
+                      </p>
+                    </div>
+                  </div>
+                  <ul className="text-[11px] text-muted-foreground space-y-0.5 pl-1">
+                    {alert.pages.slice(0, 4).map((p, j) => (
+                      <li key={j} className="truncate">• {p}</li>
+                    ))}
+                    {alert.pages.length > 4 && (
+                      <li className="text-foreground/70">
+                        + {alert.pages.length - 4} autre(s)
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </SectionCard>
 
       {/* Revenue chart + AI panel */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
