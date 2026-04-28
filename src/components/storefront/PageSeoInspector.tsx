@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, AlertTriangle, X, Eye, EyeOff, Search } from "lucide-react";
+import { Check, AlertTriangle, X, Eye, EyeOff, Search, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSeoSettings } from "@/lib/seoSettings";
+import { toast } from "sonner";
 
 interface PageSeoInspectorProps {
   /** Visible only when true (typically: viewer is the boutique owner). */
@@ -26,6 +27,8 @@ interface Field {
   value: string;
   status: Status;
   hint?: string;
+  copyKey?: string;
+  copyValue?: string;
 }
 
 const STATUS_STYLES: Record<Status, string> = {
@@ -71,6 +74,7 @@ export function PageSeoInspector({
   const { settings } = useSeoSettings();
   const [open, setOpen] = useState(false);
   const [pathname, setPathname] = useState("");
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") setPathname(window.location.pathname);
@@ -101,11 +105,15 @@ export function PageSeoInspector({
         value: ogImage || "(absente)",
         status: classifyImage(ogImage),
         hint: ogImage ? "Aperçu social actif" : "Sans image, pas d'aperçu social",
+        copyKey: ogImage ? "og-image" : undefined,
+        copyValue: ogImage || undefined,
       },
       {
         label: "Canonique",
         value: finalCanonical || "(non définie)",
         status: finalCanonical ? "ok" : "warn",
+        copyKey: finalCanonical ? "canonical" : undefined,
+        copyValue: finalCanonical || undefined,
       },
       {
         label: "Hreflang",
@@ -118,6 +126,15 @@ export function PageSeoInspector({
       },
     ];
   }, [title, description, ogImage, finalCanonical, settings]);
+
+  const handleCopy = (value: string, key: string) => {
+    if (!navigator?.clipboard) return;
+    navigator.clipboard.writeText(value).then(() => {
+      setCopiedKey(key);
+      toast.success("Copié dans le presse-papiers", { description: value.slice(0, 60) });
+      setTimeout(() => setCopiedKey((k) => (k === key ? null : k)), 1500);
+    });
+  };
 
   const errorCount = fields.filter((f) => f.status === "error").length;
   const warnCount = fields.filter((f) => f.status === "warn").length;
@@ -197,9 +214,26 @@ export function PageSeoInspector({
                     <span className="text-[11px] font-semibold uppercase tracking-wide">
                       {f.label}
                     </span>
-                    <span className="flex items-center gap-1 text-[10px] font-medium">
-                      <Icon className="w-3 h-3" />
-                      {STATUS_LABEL[f.status]}
+                    <span className="flex items-center gap-1.5 text-[10px] font-medium">
+                      {f.copyKey && f.copyValue && (
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(f.copyValue!, f.copyKey!)}
+                          className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded border border-current/30 hover:bg-background/40 transition"
+                          aria-label={`Copier ${f.label}`}
+                        >
+                          {copiedKey === f.copyKey ? (
+                            <Check className="w-2.5 h-2.5" />
+                          ) : (
+                            <Copy className="w-2.5 h-2.5" />
+                          )}
+                          <span>Copier</span>
+                        </button>
+                      )}
+                      <span className="flex items-center gap-1">
+                        <Icon className="w-3 h-3" />
+                        {STATUS_LABEL[f.status]}
+                      </span>
                     </span>
                   </div>
                   <p className="text-xs text-foreground/90 break-all line-clamp-2">
