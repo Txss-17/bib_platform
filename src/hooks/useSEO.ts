@@ -2,6 +2,13 @@ import { useEffect } from "react";
 
 type SEOType = "website" | "product" | "article" | "store" | "profile";
 
+export interface HreflangAlternate {
+  /** BCP47 / hreflang tag, e.g. "fr", "en", "fr-FR", "x-default" */
+  hreflang: string;
+  /** Absolute URL for that locale */
+  href: string;
+}
+
 interface SEOProps {
   title: string;
   description?: string;
@@ -18,11 +25,14 @@ interface SEOProps {
   locale?: string;
   /** Optional JSON-LD structured data — pass an object or array of objects */
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
+  /** Optional hreflang alternates for multi-locale SEO targeting */
+  alternates?: HreflangAlternate[];
 }
 
 const SITE_NAME = "Brand-In-A-Box";
 const DEFAULT_TITLE = "Brand-In-A-Box · Your brand. Ready to launch.";
 const JSONLD_ID = "bib-jsonld";
+const HREFLANG_CLASS = "bib-hreflang";
 
 function setMeta(property: string, content: string, isOG = false) {
   const attr = isOG ? "property" : "name";
@@ -45,6 +55,22 @@ function setLink(rel: string, href: string) {
     document.head.appendChild(tag);
   }
   tag.setAttribute("href", href);
+}
+
+function setAlternates(alternates: HreflangAlternate[] | undefined) {
+  // Always wipe previously injected alternates (we own this slot)
+  document
+    .querySelectorAll(`link.${HREFLANG_CLASS}`)
+    .forEach((el) => el.remove());
+  if (!alternates || alternates.length === 0) return;
+  for (const alt of alternates) {
+    const link = document.createElement("link");
+    link.setAttribute("rel", "alternate");
+    link.setAttribute("hreflang", alt.hreflang);
+    link.setAttribute("href", alt.href);
+    link.classList.add(HREFLANG_CLASS);
+    document.head.appendChild(link);
+  }
 }
 
 function setJsonLd(payload: SEOProps["jsonLd"]) {
@@ -82,6 +108,7 @@ export function useSEO({
   robots = "index, follow",
   locale = "fr_FR",
   jsonLd,
+  alternates,
 }: SEOProps) {
   useEffect(() => {
     const fullTitle = title ? `${title} | ${SITE_NAME}` : SITE_NAME;
@@ -121,11 +148,18 @@ export function useSEO({
     // Structured data
     setJsonLd(jsonLd);
 
+    // Hreflang alternates for international targeting
+    setAlternates(alternates);
+
     return () => {
       document.title = DEFAULT_TITLE;
       // Drop our JSON-LD slot when leaving the page so the next route owns it.
       const existing = document.getElementById(JSONLD_ID);
       if (existing) existing.remove();
+      // Drop hreflang alternates so they don't leak to other routes.
+      document
+        .querySelectorAll(`link.${HREFLANG_CLASS}`)
+        .forEach((el) => el.remove());
     };
   }, [
     title,
@@ -138,5 +172,30 @@ export function useSEO({
     robots,
     locale,
     jsonLd ? JSON.stringify(jsonLd) : undefined,
+    alternates ? JSON.stringify(alternates) : undefined,
   ]);
+}
+
+/**
+ * Helper: build standard hreflang alternates for FR/EN with x-default,
+ * preserving the current pathname and using `?lang=` as the locale switch.
+ */
+export function buildLocaleAlternates(
+  pathname?: string,
+  locales: string[] = ["fr", "en"],
+  defaultLocale = "fr",
+): HreflangAlternate[] {
+  if (typeof window === "undefined") return [];
+  const path = pathname ?? window.location.pathname;
+  const origin = window.location.origin;
+  const base = `${origin}${path}`;
+  const alts: HreflangAlternate[] = locales.map((l) => ({
+    hreflang: l,
+    href: `${base}?lang=${l}`,
+  }));
+  alts.push({
+    hreflang: "x-default",
+    href: defaultLocale === "fr" ? base : `${base}?lang=${defaultLocale}`,
+  });
+  return alts;
 }

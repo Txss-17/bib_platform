@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StorefrontPreview } from "@/components/storefront/StorefrontPreview";
-import { useSEO } from "@/hooks/useSEO";
+import { useSEO, buildLocaleAlternates } from "@/hooks/useSEO";
 import { Loader2 } from "lucide-react";
 import type { ThemeSettings } from "@/lib/boutiqueTemplates";
 import { trackStorefrontEvent } from "@/lib/storefrontTracking";
@@ -73,6 +73,7 @@ export default function BoutiquePublic() {
       "boutique en ligne",
       "Brand-In-A-Box",
     ].filter(Boolean) as string[],
+    alternates: buildLocaleAlternates(),
     jsonLd: boutique
       ? {
           "@context": "https://schema.org",

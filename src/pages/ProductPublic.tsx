@@ -10,7 +10,7 @@ import { StorefrontHeader } from "@/components/storefront/StorefrontHeader";
 import { StorefrontFooter } from "@/components/storefront/StorefrontFooter";
 import { CartDrawer } from "@/components/storefront/CartDrawer";
 import { StorefrontProvider } from "@/contexts/StorefrontContext";
-import { useSEO } from "@/hooks/useSEO";
+import { useSEO, buildLocaleAlternates } from "@/hooks/useSEO";
 import type { ThemeSettings } from "@/lib/boutiqueTemplates";
 import { trackStorefrontEvent } from "@/lib/storefrontTracking";
 
@@ -76,6 +76,7 @@ export default function ProductPublic() {
     type: "product",
     keywords: [productName, boutique?.name, boutique?.category, "achat en ligne"]
       .filter(Boolean) as string[],
+    alternates: buildLocaleAlternates(),
     jsonLd: product
       ? {
           "@context": "https://schema.org",
