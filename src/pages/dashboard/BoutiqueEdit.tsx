@@ -645,7 +645,7 @@ export default function BoutiqueEdit() {
         {/* Editor panel */}
         <div className="space-y-4">
           <Tabs defaultValue="style" className="w-full">
-            <TabsList className="grid w-full grid-cols-7">
+            <TabsList className="grid w-full grid-cols-4 sm:grid-cols-8 h-auto">
               <TabsTrigger value="style" className="gap-1">
                 <Box className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline text-xs">Style</span>
@@ -673,6 +673,10 @@ export default function BoutiqueEdit() {
               <TabsTrigger value="emails" className="gap-1">
                 <Mail className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline text-xs">Emails</span>
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="gap-1">
+                <SettingsIcon className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline text-xs">Réglages</span>
               </TabsTrigger>
             </TabsList>
 
