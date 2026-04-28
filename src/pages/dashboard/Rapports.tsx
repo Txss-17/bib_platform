@@ -54,10 +54,7 @@ export default function Rapports() {
     0;
 
   return (
-    <DashboardLayout
-      title="Rapports & Recommandations"
-      subtitle="Téléchargez vos rapports et suivez vos performances"
-    >
+    <DashboardLayout>
       <PageHeader
         eyebrow="Finance & analyse"
         title="Rapports"

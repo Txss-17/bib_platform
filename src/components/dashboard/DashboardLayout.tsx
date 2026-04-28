@@ -9,16 +9,9 @@ import { useState } from "react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  /**
-   * Optional fallback title — kept for backwards compatibility with pages that
-   * have not yet adopted <PageHeader>. New pages should NOT pass this and
-   * should render <PageHeader title="..." /> at the top of their content.
-   */
-  title?: string;
-  subtitle?: string;
 }
 
-export function DashboardLayout({ children, title, subtitle }: DashboardLayoutProps) {
+export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -34,20 +27,19 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
       <DashboardSidebar open={sidebarOpen} onOpenChange={setSidebarOpen} />
       
       <main className={`${isMobile ? "" : "ml-64"} p-3 sm:p-4 md:p-8 min-w-0`}>
-        {/* Header */}
+        {/* Top chrome — search, notifications, account. Page titles live in <PageHeader>. */}
         <header className="flex items-center justify-between mb-4 md:mb-6 gap-2 sm:gap-4">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             {isMobile && (
-              <Button variant="outline" size="icon" className="shrink-0" onClick={() => setSidebarOpen(true)}>
+              <Button
+                variant="outline"
+                size="icon"
+                className="shrink-0"
+                onClick={() => setSidebarOpen(true)}
+                aria-label="Ouvrir le menu"
+              >
                 <Menu className="w-5 h-5" />
               </Button>
-            )}
-            {/* Legacy title fallback — only renders for pages that haven't migrated to <PageHeader> */}
-            {title && (
-              <div className="min-w-0 sr-only" aria-hidden="true">
-                <h1>{title}</h1>
-                {subtitle && <p>{subtitle}</p>}
-              </div>
             )}
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 shrink-0">

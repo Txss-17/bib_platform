@@ -48,7 +48,7 @@ export default function Dashboard() {
   const avgBasket = totalOrders > 0 ? revenue / totalOrders : 0;
 
   return (
-    <DashboardLayout title="Tableau de Bord">
+    <DashboardLayout>
       <PageHeader
         eyebrow="Accueil"
         title="Bonjour 👋"

@@ -111,7 +111,7 @@ export default function Ventes() {
   };
 
   return (
-    <DashboardLayout title="">
+    <DashboardLayout>
       <PageHeader
         eyebrow="Sales Cockpit"
         title="Pilotez vos ventes en temps réel"

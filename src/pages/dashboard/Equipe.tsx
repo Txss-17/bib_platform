@@ -84,7 +84,7 @@ export default function Equipe() {
   };
 
   return (
-    <DashboardLayout title="Équipe" subtitle="">
+    <DashboardLayout>
       <PageHeader
         eyebrow="Collaboration"
         title="Équipe & rôles"

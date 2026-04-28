@@ -303,7 +303,7 @@ export default function SEOAnalytics() {
   const isLoading = boutiquesLoading || productsLoading;
 
   return (
-    <DashboardLayout title="Analytics" subtitle="Performances et référencement de vos boutiques">
+    <DashboardLayout>
       <PageHeader
         eyebrow="Analytics & SEO"
         title="Performance & découvrabilité"

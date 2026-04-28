@@ -207,7 +207,7 @@ export default function Boutiques() {
   );
 
   return (
-    <DashboardLayout title="Boutiques" subtitle="">
+    <DashboardLayout>
       <PageHeader
         eyebrow="Portefeuille"
         title="Vos boutiques"
