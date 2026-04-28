@@ -256,7 +256,7 @@ export default function AdminDocuments() {
             </div>
           ) : filteredDocs.length === 0 ? (
             <EmptyState
-              icon={<FileText className="w-6 h-6" />}
+              variant="no-results"
               title="Aucun document trouvé"
               description="Ajustez vos filtres ou attendez de nouvelles soumissions."
             />
