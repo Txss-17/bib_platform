@@ -69,9 +69,39 @@ export default function ProductPublic() {
 
   useSEO({
     title: boutique ? `${productName} — ${boutique.name}` : productName,
-    description: productDesc || `Achetez ${productName} sur ${boutique?.name || "Brand-In-A-Box"}. Livraison incluse.`,
+    description:
+      productDesc ||
+      `Achetez ${productName} sur ${boutique?.name || "Brand-In-A-Box"}. Livraison incluse.`,
     image: productImage || undefined,
     type: "product",
+    keywords: [productName, boutique?.name, boutique?.category, "achat en ligne"]
+      .filter(Boolean) as string[],
+    jsonLd: product
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: productName,
+          description: productDesc || undefined,
+          image: productImage || undefined,
+          sku: product.id,
+          brand: boutique
+            ? { "@type": "Brand", name: boutique.name }
+            : undefined,
+          offers: {
+            "@type": "Offer",
+            price: productPrice,
+            priceCurrency: "EUR",
+            availability: "https://schema.org/InStock",
+            url:
+              typeof window !== "undefined"
+                ? `${window.location.origin}${window.location.pathname}`
+                : undefined,
+            seller: boutique
+              ? { "@type": "Organization", name: boutique.name }
+              : undefined,
+          },
+        }
+      : undefined,
   });
 
   // Realtime analytics: log a product view for the seller's pulse.
