@@ -990,3 +990,92 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
     </div>
   );
 }
+
+/**
+ * Live SERP + social card snippet preview. Mirrors the markup search engines
+ * and OG consumers will display, so users see the impact of their changes
+ * immediately.
+ */
+function SnippetPreview({
+  slug,
+  title,
+  description,
+  ogImage,
+}: {
+  slug: string;
+  title: string;
+  description: string;
+  ogImage: string;
+}) {
+  const origin =
+    typeof window !== "undefined" ? window.location.origin : "https://app.bib.com";
+  const url = `${origin}/boutique/${slug}`;
+  const titleTooLong = title.length > 65;
+  const descTooLong = description.length > 160;
+  const titleTooShort = title.length > 0 && title.length < 30;
+  const descTooShort = description.length > 0 && description.length < 70;
+
+  return (
+    <div className="space-y-3 pt-2 border-t border-border/40">
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        Aperçu temps réel
+      </p>
+
+      {/* Google SERP-like snippet */}
+      <div className="rounded-lg border border-border bg-card p-4 font-sans">
+        <p className="text-xs text-muted-foreground truncate">{url}</p>
+        <p className="text-[#1a0dab] dark:text-blue-400 text-lg leading-tight mt-0.5 truncate">
+          {title || "(titre manquant)"}
+        </p>
+        <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+          {description || "(meta description manquante)"}
+        </p>
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          <Badge
+            variant={titleTooLong ? "destructive" : titleTooShort ? "secondary" : "default"}
+            className="text-[10px]"
+          >
+            Titre {title.length}c
+            {titleTooLong ? " — trop long" : titleTooShort ? " — trop court" : " ✓"}
+          </Badge>
+          <Badge
+            variant={descTooLong ? "destructive" : descTooShort ? "secondary" : "default"}
+            className="text-[10px]"
+          >
+            Meta {description.length}c
+            {descTooLong ? " — trop long" : descTooShort ? " — trop court" : " ✓"}
+          </Badge>
+        </div>
+      </div>
+
+      {/* Social card preview */}
+      <div className="rounded-lg border border-border overflow-hidden bg-card">
+        <div className="aspect-[1200/630] bg-muted relative">
+          {ogImage ? (
+            <img
+              src={ogImage}
+              alt="Aperçu carte sociale"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
+              <ImageIcon className="w-8 h-8 mb-1" />
+              <span className="text-xs">Image OG manquante</span>
+            </div>
+          )}
+        </div>
+        <div className="p-3 bg-muted/30">
+          <p className="text-[10px] uppercase text-muted-foreground tracking-wider truncate">
+            {origin.replace(/^https?:\/\//, "")}
+          </p>
+          <p className="text-sm font-medium leading-tight mt-0.5 line-clamp-2">
+            {title || "(titre manquant)"}
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+            {description}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
