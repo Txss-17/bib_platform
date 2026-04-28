@@ -4,12 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  PageHeader,
-  SectionCard,
-  KpiTile,
-  EmptyState,
-} from "@/components/dashboard/shared";
+import { PageHeader, SectionCard, KpiTile, EmptyState, KpiGrid } from "@/components/dashboard/shared";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -182,7 +177,7 @@ export default function AdminDocuments() {
         />
         <SectionCard>
           <EmptyState
-            icon={<Shield className="w-6 h-6" />}
+            variant="forbidden"
             title="Accès administrateur requis"
             description="Cette page est réservée aux administrateurs de la plateforme Brand-In-A-Box."
           />
@@ -204,7 +199,7 @@ export default function AdminDocuments() {
       />
 
       {/* KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <KpiGrid cols={3}>
         <KpiTile
           label="En attente"
           value={pendingCount}
@@ -221,7 +216,7 @@ export default function AdminDocuments() {
           value={documents.filter((d) => d.status === "rejected").length}
           icon={<XCircle className="w-5 h-5" />}
         />
-      </div>
+      </KpiGrid>
 
       {/* Filters */}
       <SectionCard className="mb-6">
@@ -261,7 +256,7 @@ export default function AdminDocuments() {
             </div>
           ) : filteredDocs.length === 0 ? (
             <EmptyState
-              icon={<FileText className="w-6 h-6" />}
+              variant="no-results"
               title="Aucun document trouvé"
               description="Ajustez vos filtres ou attendez de nouvelles soumissions."
             />

@@ -26,13 +26,7 @@ import {
 import { InviteMemberDialog } from "@/components/dashboard/InviteMemberDialog";
 import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog";
 import { toast } from "@/hooks/use-toast";
-import {
-  PageHeader,
-  SectionCard,
-  KpiTile,
-  KpiTileSkeleton,
-  EmptyState,
-} from "@/components/dashboard/shared";
+import { PageHeader, SectionCard, KpiTile, KpiTileSkeleton, EmptyState, KpiGrid } from "@/components/dashboard/shared";
 
 const roleIcons: Record<TeamRole, React.ElementType> = {
   owner: Crown,
@@ -106,7 +100,7 @@ export default function Equipe() {
       />
 
       {/* KPI strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      <KpiGrid cols={4}>
         <KpiTile
           label="Membres actifs"
           value={activeNow}
@@ -131,7 +125,7 @@ export default function Equipe() {
           value={boutiques.length}
           hint="Couvertes par l'équipe"
         />
-      </div>
+      </KpiGrid>
 
       {/* Action card */}
       <SectionCard

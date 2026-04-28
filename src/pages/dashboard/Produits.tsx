@@ -33,13 +33,7 @@ import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog";
 import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import {
-  PageHeader,
-  SectionCard,
-  KpiTile,
-  KpiTileSkeleton,
-  EmptyState,
-} from "@/components/dashboard/shared";
+import { PageHeader, SectionCard, KpiTile, KpiTileSkeleton, EmptyState, KpiGrid } from "@/components/dashboard/shared";
 
 function ProductsTableSkeleton() {
   return (
@@ -208,7 +202,7 @@ export default function Produits() {
       />
 
       {/* KPI strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      <KpiGrid cols={4}>
         {isLoading ? (
           <>
             <KpiTileSkeleton />
@@ -245,7 +239,7 @@ export default function Produits() {
             />
           </>
         )}
-      </div>
+      </KpiGrid>
 
       {isLoading ? (
         <Card className="bg-card border-border/50">

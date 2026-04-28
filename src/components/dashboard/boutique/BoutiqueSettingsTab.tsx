@@ -1405,6 +1405,8 @@ function SnippetPreview({
       {/* Google SERP-like snippet */}
       <div className="rounded-lg border border-border bg-card p-4 font-sans">
         <p className="text-xs text-muted-foreground truncate">{url}</p>
+        {/* Google SERP fidelity: #1a0dab is Google's exact result-link colour.
+            Intentional non-token exception for visual realism of the preview only. */}
         <p className="text-[#1a0dab] dark:text-info text-lg leading-tight mt-0.5 truncate">
           {title || "(titre manquant)"}
         </p>

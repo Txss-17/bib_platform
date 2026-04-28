@@ -15,14 +15,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useBoutiques, useDeleteBoutique } from "@/hooks/useBoutiques";
-import {
-  PageHeader,
-  SectionCard,
-  KpiTile,
-  KpiTileSkeleton,
-  EmptyState,
-  HealthRing,
-} from "@/components/dashboard/shared";
+import { PageHeader, SectionCard, KpiTile, KpiTileSkeleton, EmptyState, HealthRing, KpiGrid } from "@/components/dashboard/shared";
 import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog";
 import { useMemo, useState } from "react";
@@ -216,7 +209,7 @@ export default function Boutiques() {
       />
 
       {/* KPI strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      <KpiGrid cols={4}>
         {isLoading ? (
           <>
             <KpiTileSkeleton />
@@ -251,7 +244,7 @@ export default function Boutiques() {
             />
           </>
         )}
-      </div>
+      </KpiGrid>
 
       {error ? (
         <SectionCard>

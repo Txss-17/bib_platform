@@ -35,13 +35,7 @@ import {
 import { useSalesGeography } from "@/hooks/useSalesGeography";
 import { useBoutiques } from "@/hooks/useBoutiques";
 import { exportToCSV, exportToPDF } from "@/lib/exportUtils";
-import {
-  PageHeader,
-  SectionCard,
-  KpiTile,
-  KpiTileSkeleton,
-  EmptyState,
-} from "@/components/dashboard/shared";
+import { PageHeader, SectionCard, KpiTile, KpiTileSkeleton, EmptyState, KpiGrid } from "@/components/dashboard/shared";
 import { SalesHeatmap } from "@/components/dashboard/sales/SalesHeatmap";
 import { LiveActivity } from "@/components/dashboard/sales/LiveActivity";
 import { RealtimePulseCard } from "@/components/dashboard/sales/RealtimePulseCard";
@@ -152,7 +146,7 @@ export default function Ventes() {
       />
 
       {/* KPI Tiles */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      <KpiGrid cols={4}>
         {kpisLoading || !kpis ? (
           <>
             <KpiTileSkeleton tone="primary" />
@@ -199,7 +193,7 @@ export default function Ventes() {
             />
           </>
         )}
-      </div>
+      </KpiGrid>
 
       {/* Trend + Live Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">

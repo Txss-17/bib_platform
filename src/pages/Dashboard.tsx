@@ -18,6 +18,7 @@ import {
   SectionCard,
   KpiTile,
   KpiTileSkeleton,
+  KpiGrid,
   EmptyState,
 } from "@/components/dashboard/shared";
 import { HealthScoreCard } from "@/components/dashboard/home/HealthScoreCard";
@@ -70,7 +71,7 @@ export default function Dashboard() {
       />
 
       {/* KPI grid — readable in <5s */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      <KpiGrid cols={4}>
         {isLoading ? (
           <>
             <KpiTileSkeleton tone="primary" />
@@ -108,7 +109,7 @@ export default function Dashboard() {
             />
           </>
         )}
-      </div>
+      </KpiGrid>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
         {/* Main column */}
@@ -413,7 +414,7 @@ export default function Dashboard() {
             <div className="space-y-2 pt-2">
               <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-emerald-600" />
+                  <TrendingUp className="w-4 h-4 text-success" />
                   <span className="text-sm text-foreground">Revenus du mois</span>
                 </div>
                 <span className="text-sm font-bold text-foreground tabular-nums">
