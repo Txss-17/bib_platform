@@ -571,44 +571,73 @@ export default function BoutiqueEdit() {
       title={`Éditer: ${boutique.name}`} 
       subtitle="Personnalisez l'apparence de votre boutique"
     >
-      <div className="flex items-center justify-between mb-6">
-        <Link to="/dashboard/boutiques">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Retour
-          </Button>
-        </Link>
-        <div className="flex gap-2">
-          {boutique.status === "published" && (
-            <Button variant="outline" size="sm" asChild>
-              <a href={`/boutique/${boutique.slug}`} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Voir le site
-              </a>
-            </Button>
-          )}
-          <Button 
-            onClick={() => updateBoutique.mutate()}
-            disabled={updateBoutique.isPending}
-          >
-            {updateBoutique.isPending ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <Save className="w-4 h-4 mr-2" />
+      {/* Premium BIB header */}
+      <div className="mb-6 rounded-xl border border-border/60 bg-gradient-to-br from-card to-muted/30 p-4 sm:p-5 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <Link to="/dashboard/boutiques">
+              <Button variant="ghost" size="sm" className="-ml-2">
+                <ArrowLeft className="w-4 h-4 mr-1.5" />
+                Boutiques
+              </Button>
+            </Link>
+            <div className="h-6 w-px bg-border" />
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="font-display text-lg sm:text-xl truncate">
+                  {boutique.name}
+                </h2>
+                <Badge
+                  variant={boutique.status === "published" ? "default" : "secondary"}
+                  className="text-[10px] uppercase tracking-wide"
+                >
+                  {boutique.status === "published" ? "Publié" : "Brouillon"}
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground truncate">
+                /boutique/{boutique.slug}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {boutique.status === "published" && (
+              <Button variant="outline" size="sm" asChild>
+                <a
+                  href={`/boutique/${boutique.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Voir le site
+                </a>
+              </Button>
             )}
-            Enregistrer
-          </Button>
-          {boutique.status === "draft" && (
-            <Button 
-              variant="default"
-              className="bg-green-600 hover:bg-green-700"
-              onClick={() => publishBoutique.mutate()}
-              disabled={publishBoutique.isPending}
+            <Button
+              onClick={() => updateBoutique.mutate()}
+              disabled={updateBoutique.isPending}
+              size="sm"
             >
-              <Eye className="w-4 h-4 mr-2" />
-              Publier
+              {updateBoutique.isPending ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4 mr-2" />
+              )}
+              Enregistrer
             </Button>
-          )}
+            {boutique.status === "draft" && (
+              <Button
+                variant="default"
+                size="sm"
+                className="bg-[hsl(41_55%_52%)] hover:bg-[hsl(41_55%_46%)] text-[hsl(215_55%_14%)]"
+                onClick={() => publishBoutique.mutate()}
+                disabled={publishBoutique.isPending}
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                Publier
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
