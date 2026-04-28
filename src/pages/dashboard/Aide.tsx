@@ -8,12 +8,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   HelpCircle, Mail, BookOpen, MessageCircle, Sparkles, Clock, ArrowRight,
+  Search, ExternalLink, Copy, Check,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
   PageHeader, SectionCard, KpiTile,
 } from "@/components/dashboard/shared";
+import { Badge } from "@/components/ui/badge";
 
 const faqItems = [
   {
@@ -53,6 +55,51 @@ export default function Aide() {
   const [contactMessage, setContactMessage] = useState("");
   const [contactSubject, setContactSubject] = useState("");
   const [sending, setSending] = useState(false);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const sitemapUrl = `https://lfsiwtpctqxpzyskakey.supabase.co/functions/v1/sitemap-xml`;
+
+  const copyToClipboard = (value: string, key: string) => {
+    navigator.clipboard.writeText(value).then(() => {
+      setCopiedKey(key);
+      toast.success("Copié dans le presse-papiers");
+      setTimeout(() => setCopiedKey(null), 1500);
+    });
+  };
+
+  const gscSteps: { title: string; description: string; action?: { label: string; value: string; key: string } }[] = [
+    {
+      title: "1. Créez un compte Google Search Console",
+      description:
+        "Rendez-vous sur search.google.com/search-console et connectez-vous avec votre compte Google professionnel.",
+    },
+    {
+      title: "2. Ajoutez votre propriété",
+      description:
+        "Choisissez « Préfixe d'URL » puis collez l'adresse publique de votre site (ex : https://votre-domaine.com). Pour une boutique Brand-In-A-Box, utilisez l'URL exacte de votre boutique publiée.",
+    },
+    {
+      title: "3. Vérifiez la propriété",
+      description:
+        "Choisissez la méthode « Balise HTML » : Google vous donne une balise <meta name=\"google-site-verification\" content=\"…\" />. Contactez le support Brand-In-A-Box pour qu'on l'ajoute dans le <head> du site (ou collez-la dans Paramètres > SEO si dispo).",
+    },
+    {
+      title: "4. Soumettez votre sitemap",
+      description:
+        "Dans Search Console > Sitemaps, ajoutez l'URL ci-dessous. Brand-In-A-Box met automatiquement à jour ce fichier dès qu'une boutique ou un produit change.",
+      action: { label: "URL du sitemap", value: sitemapUrl, key: "sitemap" },
+    },
+    {
+      title: "5. Vérifiez l'indexation",
+      description:
+        "Sous « Inspection de l'URL », collez l'URL d'une boutique ou d'un produit. Si la page est valide, cliquez « Demander une indexation ». Le résultat apparaît sous 24–48 h dans Pages > Indexées.",
+    },
+    {
+      title: "6. Activez les rapports clés",
+      description:
+        "Surveillez « Performances » (clics, impressions, CTR, position) et « Pages » (indexées vs exclues) au moins une fois par semaine. Corrigez les alertes via le tableau de bord Analytics.",
+    },
+  ];
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -187,6 +234,75 @@ export default function Aide() {
           </SectionCard>
         </div>
       </div>
+
+      {/* Google Search Console step-by-step guide */}
+      <SectionCard
+        className="mt-6"
+        title="Connecter Google Search Console"
+        description="Faites indexer vos boutiques et fiches produits par Google en 6 étapes."
+        icon={<Search className="w-4 h-4 text-secondary" />}
+        actions={
+          <a
+            href="https://search.google.com/search-console"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <Button variant="outline" size="sm" className="gap-1.5">
+              Ouvrir Search Console <ExternalLink className="w-3.5 h-3.5" />
+            </Button>
+          </a>
+        }
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          {gscSteps.map((step, idx) => (
+            <div
+              key={idx}
+              className="rounded-xl border border-border/60 bg-muted/20 p-3.5"
+            >
+              <div className="flex items-start gap-2 mb-1.5">
+                <Badge
+                  variant="outline"
+                  className="text-[10px] shrink-0 mt-0.5 border-secondary/40 text-secondary"
+                >
+                  Étape {idx + 1}
+                </Badge>
+                <p className="text-sm font-semibold text-foreground leading-tight">
+                  {step.title.replace(/^\d+\.\s*/, "")}
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed mb-2">
+                {step.description}
+              </p>
+              {step.action && (
+                <div className="mt-2 flex items-center gap-2 rounded-lg border border-border/60 bg-background px-2.5 py-1.5">
+                  <code className="text-[11px] text-foreground truncate flex-1">
+                    {step.action.value}
+                  </code>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 shrink-0"
+                    onClick={() => copyToClipboard(step.action!.value, step.action!.key)}
+                    aria-label="Copier"
+                  >
+                    {copiedKey === step.action.key ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                  </Button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 rounded-xl border border-secondary/30 bg-secondary/5 p-3 text-xs text-foreground/80">
+          <strong className="text-secondary">Astuce :</strong> Le sitemap inclut déjà les
+          alternates <code>hreflang</code> FR/EN pour le ciblage international, et est
+          régénéré automatiquement à chaque ajout/édition de boutique ou de produit.
+          Pas besoin de le resoumettre.
+        </div>
+      </SectionCard>
     </DashboardLayout>
   );
 }
