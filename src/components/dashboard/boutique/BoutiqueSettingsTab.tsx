@@ -583,7 +583,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
               hidden
               onChange={(e) => {
                 const f = e.target.files?.[0];
-                if (f) handleOgUpload(f);
+                if (f) handleOgFilePicked(f);
               }}
             />
             {form.seo_og_image_url ? (
@@ -612,7 +612,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => update({ seo_og_image_url: "" })}
+                      onClick={() => handleRemoveOg()}
                     >
                       <X className="w-3.5 h-3.5 mr-1.5" />
                       Supprimer
