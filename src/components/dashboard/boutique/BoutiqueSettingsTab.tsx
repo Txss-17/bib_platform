@@ -82,9 +82,100 @@ const ROLES = [
   { value: "support", label: "Support" },
 ] as const;
 
+/** Country -> default currency + target market suggestions (BIB commerce defaults). */
+const COUNTRY_PRESETS: Record<
+  string,
+  { label: string; currency: string; markets: string[] }
+> = {
+  FR: { label: "France", currency: "EUR", markets: ["FR", "EU"] },
+  BE: { label: "Belgique", currency: "EUR", markets: ["EU"] },
+  DE: { label: "Allemagne", currency: "EUR", markets: ["EU"] },
+  ES: { label: "Espagne", currency: "EUR", markets: ["EU"] },
+  IT: { label: "Italie", currency: "EUR", markets: ["EU"] },
+  CH: { label: "Suisse", currency: "CHF", markets: ["EU", "INTL"] },
+  GB: { label: "Royaume-Uni", currency: "GBP", markets: ["UK", "EU"] },
+  US: { label: "États-Unis", currency: "USD", markets: ["US", "INTL"] },
+  CA: { label: "Canada", currency: "CAD", markets: ["CA", "US"] },
+  INTL: { label: "International", currency: "EUR", markets: ["INTL"] },
+};
+
+/**
+ * Client-side validation schema. Mirrors the Postgres triggers added in
+ * the latest migration so users get immediate feedback before the round-trip.
+ */
+const settingsSchema = z.object({
+  seo_title: z.string().trim().max(80, "80 caractères max").optional().or(z.literal("")),
+  seo_description: z.string().trim().max(200, "200 caractères max").optional().or(z.literal("")),
+  seo_og_image_url: z
+    .string()
+    .trim()
+    .max(500)
+    .url("URL invalide")
+    .optional()
+    .or(z.literal("")),
+  legal_business_name: z.string().trim().max(200).optional().or(z.literal("")),
+  legal_siret: z
+    .string()
+    .trim()
+    .optional()
+    .or(z.literal(""))
+    .refine(
+      (v) => !v || /^[0-9]{14}$/.test(v.replace(/\s+/g, "")),
+      "Le SIRET doit contenir exactement 14 chiffres"
+    ),
+  legal_address: z.string().trim().max(500).optional().or(z.literal("")),
+  legal_email: z
+    .string()
+    .trim()
+    .max(255, "255 caractères max")
+    .optional()
+    .or(z.literal(""))
+    .refine(
+      (v) => !v || /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(v),
+      "Format email invalide"
+    ),
+  legal_phone: z
+    .string()
+    .trim()
+    .optional()
+    .or(z.literal(""))
+    .refine(
+      (v) => !v || /^\+?[0-9\s.\-()]{7,25}$/.test(v),
+      "Numéro invalide (7 à 20 chiffres)"
+    ),
+  default_currency: z.string().min(3).max(3),
+  target_markets: z.array(z.string()).min(1, "Sélectionnez au moins un marché"),
+});
+
+type SettingsErrors = Partial<Record<keyof z.infer<typeof settingsSchema>, string>>;
+
+/**
+ * Translate a Postgres `RAISE EXCEPTION` from our boutique guard triggers
+ * into a friendly French message (uses the HINT when present).
+ */
+function formatServerError(err: any): string {
+  const msg: string = err?.message || "";
+  const hint: string | undefined = err?.hint;
+  if (hint) return hint;
+  if (msg.includes("invalid_legal_email"))
+    return "Format email invalide. Vérifiez le champ email professionnel.";
+  if (msg.includes("invalid_legal_siret"))
+    return "Le SIRET doit contenir exactement 14 chiffres.";
+  if (msg.includes("invalid_legal_phone"))
+    return "Numéro de téléphone invalide.";
+  if (msg.includes("boutique_has_open_orders"))
+    return "Suppression bloquée : commandes en cours à traiter.";
+  if (msg.includes("boutique_has_recent_orders"))
+    return "Suppression bloquée : des commandes récentes (< 30 jours) doivent être conservées.";
+  if (msg.includes("boutique_has_engaged_stock"))
+    return "Suppression bloquée : du stock est encore engagé sur des produits actifs.";
+  return msg || "Erreur inconnue";
+}
+
 export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const { data: boutique, isLoading } = useQuery({
     queryKey: ["boutique-settings", boutiqueId],
