@@ -12,3 +12,14 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+# XML sitemap (dynamic — listed published boutiques and active products with hreflang alternates)
+Sitemap: https://lfsiwtpctqxpzyskakey.supabase.co/functions/v1/sitemap-xml
+
+# Disallow private dashboard / auth screens
+Disallow: /dashboard
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /mon-compte
