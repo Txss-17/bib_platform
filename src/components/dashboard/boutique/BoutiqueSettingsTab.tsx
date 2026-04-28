@@ -429,6 +429,8 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
   const deleteMutation = useMutation({
     mutationFn: async () => {
       setDeleteError(null);
+      // Clean up OG image file from storage before removing the row
+      await deleteOgFromStorage(boutique?.seo_og_image_url);
       // The DB trigger guard_boutique_delete_trigger enforces the real rules
       // (open orders, recent orders, engaged stock) and returns the exact reason.
       const { error } = await supabase
