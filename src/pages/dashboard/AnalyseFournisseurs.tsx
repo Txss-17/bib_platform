@@ -1,6 +1,6 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
-import { PageHeader, SectionCard, KpiTile } from "@/components/dashboard/shared";
+import { PageHeader, SectionCard, KpiTile, KpiGrid } from "@/components/dashboard/shared";
 import { useSupplierProducts } from "@/hooks/useSupplierProducts";
 import { useProducts } from "@/hooks/useProducts";
 import { Package, TrendingUp, BarChart3 } from "lucide-react";
