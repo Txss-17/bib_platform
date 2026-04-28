@@ -1,4 +1,5 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { PageHeader, EmptyState, SectionCard } from "@/components/dashboard/shared";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -524,7 +525,15 @@ export default function BoutiqueEdit() {
 
   if (isLoading) {
     return (
-      <DashboardLayout title="Chargement...">
+      <DashboardLayout>
+        <PageHeader
+          eyebrow="Boutiques"
+          title="Chargement…"
+          breadcrumbs={[
+            { label: "Dashboard", href: "/dashboard" },
+            { label: "Boutiques", href: "/dashboard/boutiques" },
+          ]}
+        />
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
@@ -534,13 +543,30 @@ export default function BoutiqueEdit() {
 
   if (!boutique) {
     return (
-      <DashboardLayout title="Boutique introuvable">
-        <Link to="/dashboard/boutiques">
-          <Button variant="outline">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Retour aux boutiques
-          </Button>
-        </Link>
+      <DashboardLayout>
+        <PageHeader
+          eyebrow="Boutiques"
+          title="Boutique introuvable"
+          subtitle="Cette boutique n'existe pas ou a été supprimée."
+          breadcrumbs={[
+            { label: "Dashboard", href: "/dashboard" },
+            { label: "Boutiques", href: "/dashboard/boutiques" },
+          ]}
+          actions={
+            <Link to="/dashboard/boutiques">
+              <Button variant="outline" size="sm" className="gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Retour
+              </Button>
+            </Link>
+          }
+        />
+        <SectionCard>
+          <EmptyState
+            title="Aucune boutique à éditer"
+            description="Retournez à la liste pour en créer ou en sélectionner une."
+          />
+        </SectionCard>
       </DashboardLayout>
     );
   }
@@ -567,10 +593,17 @@ export default function BoutiqueEdit() {
   const customTemplates = emailTemplates.filter(t => !defaultTypes.includes(t.type));
 
   return (
-    <DashboardLayout 
-      title={`Éditer: ${boutique.name}`} 
-      subtitle="Personnalisez l'apparence de votre boutique"
-    >
+    <DashboardLayout>
+      <PageHeader
+        eyebrow="Boutiques"
+        title={`Éditer : ${boutique.name}`}
+        subtitle="Personnalisez l'apparence et les contenus de votre boutique."
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Boutiques", href: "/dashboard/boutiques" },
+          { label: boutique.name },
+        ]}
+      />
       {/* Premium BIB header */}
       <div className="mb-6 rounded-xl border border-border/60 bg-gradient-to-br from-card to-muted/30 p-4 sm:p-5 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
