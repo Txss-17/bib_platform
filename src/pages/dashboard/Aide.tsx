@@ -23,6 +23,7 @@ import { useBoutiques } from "@/hooks/useBoutiques";
 import { useProducts } from "@/hooks/useProducts";
 import { resolvePublicOrigin, useSeoSettings } from "@/lib/seoSettings";
 import { Store, Package } from "lucide-react";
+import { SeoFixChecklist } from "@/components/dashboard/seo/SeoFixChecklist";
 
 const faqItems = [
   {
