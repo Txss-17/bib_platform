@@ -52,6 +52,53 @@ export type Database = {
           },
         ]
       }
+      boutique_og_history: {
+        Row: {
+          boutique_id: string
+          byte_size: number | null
+          created_at: string
+          height: number | null
+          id: string
+          image_url: string
+          source_filename: string | null
+          storage_path: string | null
+          user_id: string
+          width: number | null
+        }
+        Insert: {
+          boutique_id: string
+          byte_size?: number | null
+          created_at?: string
+          height?: number | null
+          id?: string
+          image_url: string
+          source_filename?: string | null
+          storage_path?: string | null
+          user_id: string
+          width?: number | null
+        }
+        Update: {
+          boutique_id?: string
+          byte_size?: number | null
+          created_at?: string
+          height?: number | null
+          id?: string
+          image_url?: string
+          source_filename?: string | null
+          storage_path?: string | null
+          user_id?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boutique_og_history_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       boutiques: {
         Row: {
           category: string

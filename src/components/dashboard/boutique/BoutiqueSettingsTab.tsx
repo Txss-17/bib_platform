@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +45,9 @@ import {
   Globe,
   Info,
   CheckCircle2,
+  History,
+  RotateCw,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -198,6 +202,15 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
   const [errors, setErrors] = useState<SettingsErrors>({});
   const [country, setCountry] = useState<string>("FR");
   const [uploadingOg, setUploadingOg] = useState(false);
+  // Detailed upload state for the progress bar / retry UI.
+  const [ogUpload, setOgUpload] = useState<{
+    status: "idle" | "exporting" | "uploading" | "error" | "success";
+    progress: number; // 0-100
+    message?: string;
+  }>({ status: "idle", progress: 0 });
+  // Last cropped blob kept in memory so we can retry the upload without
+  // forcing the user to recrop on transient network failures.
+  const lastBlobRef = useRef<Blob | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const ogFileRef = useRef<HTMLInputElement>(null);
   // Cropper state
@@ -328,12 +341,21 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
 
   /** Open the cropper for a freshly selected file (after lightweight checks). */
   const handleOgFilePicked = (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      toast.error("Veuillez sélectionner une image (PNG, JPG ou WebP)");
+    // Strict whitelist: JPG / PNG / WebP only.
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowed.includes(file.type)) {
+      toast.error(
+        `Format non supporté (${file.type || "inconnu"}). JPG, PNG ou WebP uniquement.`
+      );
       return;
     }
     if (file.size > 8 * 1024 * 1024) {
       toast.error("L'image ne doit pas dépasser 8 Mo");
+      return;
+    }
+    // Tiny files are almost certainly broken or over-compressed for OG use.
+    if (file.size < 4 * 1024) {
+      toast.error("Fichier trop petit — image probablement corrompue.");
       return;
     }
     setCropperFile(file);
@@ -363,16 +385,22 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
     }
   };
 
-  /** Upload the cropped 1200×630 blob and replace the previous OG file. */
-  const handleCroppedUpload = async (blob: Blob) => {
+  /**
+   * Core upload routine — exposed so the retry button can reuse it without
+   * forcing the user to recrop. Tracks granular state for the progress UI.
+   */
+  const performOgUpload = async (blob: Blob) => {
     if (!user) {
       toast.error("Session expirée");
+      setOgUpload({ status: "error", progress: 0, message: "Session expirée" });
       return;
     }
     setUploadingOg(true);
+    setOgUpload({ status: "exporting", progress: 15, message: "Préparation du fichier…" });
     const previousUrl = form.seo_og_image_url ?? "";
     try {
       const path = `og/${user.id}/${boutiqueId}_${Date.now()}.jpg`;
+      setOgUpload({ status: "uploading", progress: 45, message: "Téléversement vers le stockage…" });
       const { error: upErr } = await supabase.storage
         .from("boutique-media")
         .upload(path, blob, {
@@ -381,22 +409,78 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
           contentType: "image/jpeg",
         });
       if (upErr) throw upErr;
+      setOgUpload({ status: "uploading", progress: 80, message: "Finalisation…" });
       const { data: pub } = supabase.storage
         .from("boutique-media")
         .getPublicUrl(path);
       update({ seo_og_image_url: pub.publicUrl });
+
+      // Log this version into the history so the user can roll back later.
+      try {
+        const dims = await readBlobDimensions(blob);
+        await supabase.from("boutique_og_history").insert({
+          boutique_id: boutiqueId,
+          user_id: user.id,
+          image_url: pub.publicUrl,
+          storage_path: path,
+          width: dims?.width ?? 1200,
+          height: dims?.height ?? 630,
+          byte_size: blob.size,
+          source_filename: cropperFile?.name ?? null,
+        });
+        queryClient.invalidateQueries({ queryKey: ["boutique-og-history", boutiqueId] });
+      } catch {
+        /* history is non-critical */
+      }
+
       // Cleanup the previous file if it lived in our bucket
+      // (only if it's not still referenced by a history row)
       await deleteOgFromStorage(previousUrl);
+      setOgUpload({ status: "success", progress: 100 });
       toast.success("Image OG recadrée — n'oubliez pas d'enregistrer.");
       setCropperOpen(false);
       setCropperFile(null);
+      lastBlobRef.current = null;
     } catch (e: any) {
-      toast.error(e?.message || "Échec de l'upload");
+      const msg = e?.message || "Échec de l'upload";
+      setOgUpload({ status: "error", progress: 0, message: msg });
+      toast.error(msg);
     } finally {
       setUploadingOg(false);
       if (ogFileRef.current) ogFileRef.current.value = "";
     }
   };
+
+  /** Cropper callback — keep a ref to the blob so we can retry on failure. */
+  const handleCroppedUpload = async (blob: Blob) => {
+    lastBlobRef.current = blob;
+    await performOgUpload(blob);
+  };
+
+  /** Retry the last cropped upload after a transient failure. */
+  const handleRetryUpload = async () => {
+    if (!lastBlobRef.current) {
+      toast.error("Aucun recadrage à réessayer — veuillez sélectionner à nouveau l'image.");
+      return;
+    }
+    await performOgUpload(lastBlobRef.current);
+  };
+
+  /** Read width/height from a JPEG blob (used for history logging). */
+  const readBlobDimensions = (blob: Blob): Promise<{ width: number; height: number } | null> =>
+    new Promise((resolve) => {
+      const url = URL.createObjectURL(blob);
+      const im = new Image();
+      im.onload = () => {
+        resolve({ width: im.naturalWidth, height: im.naturalHeight });
+        URL.revokeObjectURL(url);
+      };
+      im.onerror = () => {
+        URL.revokeObjectURL(url);
+        resolve(null);
+      };
+      im.src = url;
+    });
 
   /** Remove the OG image (form + storage cleanup). */
   const handleRemoveOg = async () => {
@@ -404,6 +488,46 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
     update({ seo_og_image_url: "" });
     await deleteOgFromStorage(prev);
     if (prev) toast.success("Image OG supprimée du stockage.");
+  };
+
+  // OG image history — list previous cropped versions for rollback.
+  const { data: ogHistory = [] } = useQuery({
+    queryKey: ["boutique-og-history", boutiqueId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("boutique_og_history")
+        .select("id, image_url, storage_path, width, height, byte_size, source_filename, created_at")
+        .eq("boutique_id", boutiqueId)
+        .order("created_at", { ascending: false })
+        .limit(12);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  /** Restore a previous OG image (does not re-upload — just points the form to it). */
+  const restoreFromHistory = (url: string) => {
+    update({ seo_og_image_url: url });
+    toast.success("Image restaurée — pensez à enregistrer.");
+  };
+
+  /** Delete a history entry (and its storage file when not currently selected). */
+  const deleteHistoryEntry = async (entry: { id: string; storage_path: string | null; image_url: string }) => {
+    const inUse = entry.image_url === form.seo_og_image_url;
+    const { error } = await supabase.from("boutique_og_history").delete().eq("id", entry.id);
+    if (error) {
+      toast.error("Suppression impossible : " + error.message);
+      return;
+    }
+    if (!inUse && entry.storage_path) {
+      try {
+        await supabase.storage.from("boutique-media").remove([entry.storage_path]);
+      } catch {
+        /* non-critical */
+      }
+    }
+    queryClient.invalidateQueries({ queryKey: ["boutique-og-history", boutiqueId] });
+    toast.success("Version supprimée de l'historique.");
   };
 
   // Unpublish
@@ -653,6 +777,123 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
             />
             {errors.seo_og_image_url && (
               <p className="text-xs text-destructive">{errors.seo_og_image_url}</p>
+            )}
+
+            {/* Upload progress + retry */}
+            {ogUpload.status !== "idle" && ogUpload.status !== "success" && (
+              <div className="rounded-md border border-border/60 bg-muted/30 p-3 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-1.5 font-medium">
+                    {ogUpload.status === "error" ? (
+                      <AlertTriangle className="w-3.5 h-3.5 text-destructive" />
+                    ) : (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                    )}
+                    {ogUpload.status === "exporting" && "Export du recadrage…"}
+                    {ogUpload.status === "uploading" && "Upload en cours…"}
+                    {ogUpload.status === "error" && "Échec — réessayez ci-dessous"}
+                  </span>
+                  <span className="text-muted-foreground">{ogUpload.progress}%</span>
+                </div>
+                <Progress
+                  value={ogUpload.progress}
+                  className={`h-1.5 ${ogUpload.status === "error" ? "[&>div]:bg-destructive" : ""}`}
+                />
+                {ogUpload.message && (
+                  <p className="text-[11px] text-muted-foreground">{ogUpload.message}</p>
+                )}
+                {ogUpload.status === "error" && lastBlobRef.current && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleRetryUpload}
+                    className="w-full"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                    Réessayer l'upload
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {/* OG history — past cropped versions for rollback */}
+            {ogHistory.length > 0 && (
+              <div className="space-y-2 pt-2">
+                <div className="flex items-center justify-between">
+                  <Label className="flex items-center gap-1.5 text-xs">
+                    <History className="w-3.5 h-3.5 text-primary" />
+                    Historique ({ogHistory.length})
+                  </Label>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {ogHistory.map((entry: any) => {
+                    const isCurrent = entry.image_url === form.seo_og_image_url;
+                    return (
+                      <div
+                        key={entry.id}
+                        className={`group relative rounded-md overflow-hidden border ${
+                          isCurrent
+                            ? "border-primary ring-1 ring-primary/40"
+                            : "border-border/60"
+                        } bg-muted/30`}
+                      >
+                        <div className="aspect-[1200/630] bg-muted">
+                          <img
+                            src={entry.image_url}
+                            alt={`Version OG du ${new Date(entry.created_at).toLocaleString()}`}
+                            loading="lazy"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="p-1.5 space-y-1">
+                          <p className="text-[10px] text-muted-foreground leading-tight">
+                            {new Date(entry.created_at).toLocaleString("fr-FR", {
+                              dateStyle: "short",
+                              timeStyle: "short",
+                            })}
+                          </p>
+                          {entry.byte_size && (
+                            <p className="text-[10px] text-muted-foreground/80">
+                              {(entry.byte_size / 1024).toFixed(0)} Ko
+                            </p>
+                          )}
+                          <div className="flex gap-1">
+                            {isCurrent ? (
+                              <Badge
+                                variant="default"
+                                className="text-[9px] h-5 px-1.5 w-full justify-center"
+                              >
+                                En ligne
+                              </Badge>
+                            ) : (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-6 px-2 text-[10px] flex-1"
+                                  onClick={() => restoreFromHistory(entry.image_url)}
+                                >
+                                  <RotateCw className="w-3 h-3 mr-1" />
+                                  Restaurer
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                                  onClick={() => deleteHistoryEntry(entry)}
+                                  aria-label="Supprimer cette version"
+                                >
+                                  <X className="w-3 h-3" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             )}
           </div>
 
