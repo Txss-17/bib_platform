@@ -1,5 +1,4 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useProducts } from "@/hooks/useProducts";
+import { PageHeader, SectionCard } from "@/components/dashboard/shared";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -104,6 +104,11 @@ export default function Parametres() {
 
   return (
     <DashboardLayout title="Paramètres" subtitle="Gérez votre compte">
+      <PageHeader
+        eyebrow="Compte"
+        title="Paramètres"
+        subtitle="Profil, abonnement, sécurité et préférences de notification."
+      />
       <div className="max-w-3xl">
         <Tabs defaultValue="profil" className="w-full">
           <TabsList className="w-full flex overflow-x-auto gap-1 bg-muted/50 p-1 h-auto flex-wrap">
@@ -135,8 +140,12 @@ export default function Parametres() {
 
           {/* Profil */}
           <TabsContent value="profil" className="mt-4 space-y-4">
-            <Card className="border-border/50">
-              <CardContent className="pt-5 space-y-4">
+            <SectionCard
+              title="Identité"
+              description="Informations utilisées sur vos factures et exports"
+              icon={<User className="w-4 h-4" />}
+            >
+              <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label htmlFor="fullName" className="text-xs">Nom complet</Label>
@@ -155,12 +164,14 @@ export default function Parametres() {
                   {saving && <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />}
                   Enregistrer
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </SectionCard>
 
-            <Card className="border-border/50">
-              <CardContent className="pt-5">
-                <div className="flex items-center justify-between">
+            <SectionCard
+              title="Préférences"
+              icon={<Globe className="w-4 h-4" />}
+            >
+              <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-foreground flex items-center gap-2">
                       <Globe className="w-4 h-4 text-muted-foreground" />
@@ -170,13 +181,16 @@ export default function Parametres() {
                   </div>
                   <Button variant="outline" size="sm">Modifier</Button>
                 </div>
-              </CardContent>
-            </Card>
+            </SectionCard>
 
             {/* Delete account */}
-            <Card className="border-destructive/30">
-              <CardContent className="pt-5">
-                <div className="flex items-start gap-3">
+            <SectionCard
+              className="border-destructive/30"
+              title="Zone de danger"
+              description="Action définitive et irréversible"
+              icon={<Trash2 className="w-4 h-4 text-destructive" />}
+            >
+              <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
                     <Trash2 className="w-5 h-5 text-destructive" />
                   </div>
@@ -215,8 +229,7 @@ export default function Parametres() {
                     </AlertDialog>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+            </SectionCard>
           </TabsContent>
 
           {/* Documents */}
@@ -226,21 +239,32 @@ export default function Parametres() {
 
           {/* Abonnement */}
           <TabsContent value="abonnement" className="mt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <SectionCard
+              title="Plans & abonnement"
+              description="Choisissez la formule adaptée à votre échelle"
+              icon={<Crown className="w-4 h-4" />}
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {plans.map((plan) => (
-                <Card key={plan.name} className={`border-border/50 relative ${plan.popular ? "ring-2 ring-primary" : ""}`}>
+                <div
+                  key={plan.name}
+                  className={`relative rounded-2xl border p-5 text-center space-y-3 ${
+                    plan.popular
+                      ? "border-secondary/50 ring-2 ring-secondary/40 bg-secondary/5"
+                      : "border-border/60 bg-card"
+                  }`}
+                >
                   {plan.popular && (
-                    <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px]">
+                    <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-secondary text-secondary-foreground text-[10px]">
                       Populaire
                     </Badge>
                   )}
-                  <CardContent className="pt-6 text-center space-y-3">
-                    <h3 className="font-semibold text-foreground">{plan.name}</h3>
-                    <p className="text-2xl font-bold text-foreground">{plan.price}</p>
+                    <h3 className="font-display font-semibold text-foreground">{plan.name}</h3>
+                    <p className="text-2xl font-display font-bold text-foreground">{plan.price}</p>
                     <ul className="text-xs text-muted-foreground space-y-1.5 text-left">
                       {plan.features.map((f, i) => (
                         <li key={i} className="flex items-center gap-1.5">
-                          <span className="text-primary">✓</span> {f}
+                          <span className="text-secondary">✓</span> {f}
                         </li>
                       ))}
                     </ul>
@@ -252,16 +276,20 @@ export default function Parametres() {
                     >
                       {plan.current ? "Plan actuel" : "Bientôt disponible"}
                     </Button>
-                  </CardContent>
-                </Card>
+                </div>
               ))}
-            </div>
+              </div>
+            </SectionCard>
           </TabsContent>
 
           {/* Notifications */}
           <TabsContent value="notifications" className="mt-4">
-            <Card className="border-border/50">
-              <CardContent className="pt-5 divide-y divide-border/50">
+            <SectionCard
+              title="Notifications"
+              description="Choisissez comment vous êtes alerté"
+              icon={<Bell className="w-4 h-4" />}
+            >
+              <div className="divide-y divide-border/50">
                 {[
                   { label: "Nouvelles commandes", desc: "Notification sonore à chaque commande", defaultOn: true },
                   { label: "Alertes de stock", desc: "Alerte quand un produit est en rupture", defaultOn: true },
@@ -275,14 +303,18 @@ export default function Parametres() {
                     <Switch defaultChecked={item.defaultOn} />
                   </div>
                 ))}
-              </CardContent>
-            </Card>
+              </div>
+            </SectionCard>
           </TabsContent>
 
           {/* Sécurité */}
           <TabsContent value="securite" className="mt-4">
-            <Card className="border-border/50">
-              <CardContent className="pt-5 divide-y divide-border/50">
+            <SectionCard
+              title="Sécurité du compte"
+              description="Authentification renforcée et gestion du mot de passe"
+              icon={<Shield className="w-4 h-4" />}
+            >
+              <div className="divide-y divide-border/50">
                 <div className="flex items-center justify-between gap-3 pb-3">
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-foreground">Authentification 2FA</p>
@@ -297,21 +329,25 @@ export default function Parametres() {
                   </div>
                   <Button variant="outline" size="sm">Modifier</Button>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </SectionCard>
           </TabsContent>
 
           {/* Paiement */}
           <TabsContent value="paiement" className="mt-4">
-            <Card className="border-border/50">
-              <CardContent className="pt-5 space-y-3">
+            <SectionCard
+              title="Coordonnées bancaires"
+              description="Compte utilisé pour les versements tous les 15 jours"
+              icon={<CreditCard className="w-4 h-4" />}
+            >
+              <div className="space-y-3">
                 <div className="p-3 rounded-lg bg-muted/50">
                   <p className="text-xs text-muted-foreground">IBAN</p>
                   <p className="font-mono text-sm text-foreground">FR76 •••• •••• •••• •••• ••87</p>
                 </div>
                 <Button variant="outline" size="sm">Modifier les coordonnées</Button>
-              </CardContent>
-            </Card>
+              </div>
+            </SectionCard>
           </TabsContent>
         </Tabs>
       </div>
