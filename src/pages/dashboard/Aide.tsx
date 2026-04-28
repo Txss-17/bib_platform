@@ -12,7 +12,13 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { PageHeader, SectionCard, KpiTile, KpiGrid } from "@/components/dashboard/shared";
+import {
+  PageHeader,
+  SectionCard,
+  KpiTile,
+  KpiGrid,
+  EmptyStateInline,
+} from "@/components/dashboard/shared";
 import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -397,9 +403,10 @@ export default function Aide() {
               </SelectTrigger>
               <SelectContent>
                 {inspectOptions.length === 0 ? (
-                  <div className="px-3 py-2 text-xs text-muted-foreground">
-                    Aucune page publiée pour l'instant.
-                  </div>
+                  <EmptyStateInline
+                    variant="no-content"
+                    title="Aucune page publiée pour l'instant."
+                  />
                 ) : (
                   inspectOptions.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
