@@ -778,6 +778,123 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
             {errors.seo_og_image_url && (
               <p className="text-xs text-destructive">{errors.seo_og_image_url}</p>
             )}
+
+            {/* Upload progress + retry */}
+            {ogUpload.status !== "idle" && ogUpload.status !== "success" && (
+              <div className="rounded-md border border-border/60 bg-muted/30 p-3 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="flex items-center gap-1.5 font-medium">
+                    {ogUpload.status === "error" ? (
+                      <AlertTriangle className="w-3.5 h-3.5 text-destructive" />
+                    ) : (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                    )}
+                    {ogUpload.status === "exporting" && "Export du recadrage…"}
+                    {ogUpload.status === "uploading" && "Upload en cours…"}
+                    {ogUpload.status === "error" && "Échec — réessayez ci-dessous"}
+                  </span>
+                  <span className="text-muted-foreground">{ogUpload.progress}%</span>
+                </div>
+                <Progress
+                  value={ogUpload.progress}
+                  className={`h-1.5 ${ogUpload.status === "error" ? "[&>div]:bg-destructive" : ""}`}
+                />
+                {ogUpload.message && (
+                  <p className="text-[11px] text-muted-foreground">{ogUpload.message}</p>
+                )}
+                {ogUpload.status === "error" && lastBlobRef.current && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleRetryUpload}
+                    className="w-full"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                    Réessayer l'upload
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {/* OG history — past cropped versions for rollback */}
+            {ogHistory.length > 0 && (
+              <div className="space-y-2 pt-2">
+                <div className="flex items-center justify-between">
+                  <Label className="flex items-center gap-1.5 text-xs">
+                    <History className="w-3.5 h-3.5 text-primary" />
+                    Historique ({ogHistory.length})
+                  </Label>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {ogHistory.map((entry: any) => {
+                    const isCurrent = entry.image_url === form.seo_og_image_url;
+                    return (
+                      <div
+                        key={entry.id}
+                        className={`group relative rounded-md overflow-hidden border ${
+                          isCurrent
+                            ? "border-primary ring-1 ring-primary/40"
+                            : "border-border/60"
+                        } bg-muted/30`}
+                      >
+                        <div className="aspect-[1200/630] bg-muted">
+                          <img
+                            src={entry.image_url}
+                            alt={`Version OG du ${new Date(entry.created_at).toLocaleString()}`}
+                            loading="lazy"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="p-1.5 space-y-1">
+                          <p className="text-[10px] text-muted-foreground leading-tight">
+                            {new Date(entry.created_at).toLocaleString("fr-FR", {
+                              dateStyle: "short",
+                              timeStyle: "short",
+                            })}
+                          </p>
+                          {entry.byte_size && (
+                            <p className="text-[10px] text-muted-foreground/80">
+                              {(entry.byte_size / 1024).toFixed(0)} Ko
+                            </p>
+                          )}
+                          <div className="flex gap-1">
+                            {isCurrent ? (
+                              <Badge
+                                variant="default"
+                                className="text-[9px] h-5 px-1.5 w-full justify-center"
+                              >
+                                En ligne
+                              </Badge>
+                            ) : (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-6 px-2 text-[10px] flex-1"
+                                  onClick={() => restoreFromHistory(entry.image_url)}
+                                >
+                                  <RotateCw className="w-3 h-3 mr-1" />
+                                  Restaurer
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                                  onClick={() => deleteHistoryEntry(entry)}
+                                  aria-label="Supprimer cette version"
+                                >
+                                  <X className="w-3 h-3" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Real-time snippet preview */}
