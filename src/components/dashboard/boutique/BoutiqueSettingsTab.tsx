@@ -686,6 +686,29 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5">
+              <Globe className="w-3.5 h-3.5 text-primary" />
+              Pays principal
+            </Label>
+            <Select value={country} onValueChange={applyCountry}>
+              <SelectTrigger className="max-w-xs">
+                <SelectValue placeholder="Sélectionnez un pays" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(COUNTRY_PRESETS).map(([code, p]) => (
+                  <SelectItem key={code} value={code}>
+                    {p.label} — {p.currency}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Ajuste automatiquement la devise et propose les marchés les plus
+              pertinents.
+            </p>
+          </div>
+
           <div className="space-y-2 max-w-xs">
             <Label>Devise par défaut</Label>
             <Select
@@ -725,7 +748,32 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                 );
               })}
             </div>
+            {errors.target_markets && (
+              <p className="text-xs text-destructive">{errors.target_markets}</p>
+            )}
           </div>
+
+          {/* Consistency warnings */}
+          {consistencyWarnings.length > 0 ? (
+            <Alert variant="default" className="border-amber-500/40 bg-amber-50/40 dark:bg-amber-950/20">
+              <Info className="h-4 w-4 text-amber-600" />
+              <AlertDescription>
+                <p className="text-xs font-medium mb-1">Configuration à compléter :</p>
+                <ul className="text-xs space-y-0.5 list-disc pl-4">
+                  {consistencyWarnings.map((w, i) => (
+                    <li key={i}>{w}</li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <Alert className="border-emerald-500/40 bg-emerald-50/40 dark:bg-emerald-950/20">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <AlertDescription className="text-xs">
+                Configuration commerciale cohérente.
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
 
