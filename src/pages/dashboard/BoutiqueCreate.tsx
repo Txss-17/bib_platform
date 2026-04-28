@@ -1,6 +1,6 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { PageHeader, SectionCard } from "@/components/dashboard/shared";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -130,16 +130,30 @@ export default function BoutiqueCreate() {
   };
 
   return (
-    <DashboardLayout title="Créer une boutique" subtitle="Lancez votre boutique en quelques étapes">
-      <Link to="/dashboard/boutiques" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6">
-        <ArrowLeft className="w-4 h-4" />
-        Retour aux boutiques
-      </Link>
+    <DashboardLayout>
+      <PageHeader
+        eyebrow="Boutiques"
+        title="Créer une boutique"
+        subtitle="Lancez votre boutique en quelques étapes."
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Boutiques", href: "/dashboard/boutiques" },
+          { label: "Nouvelle" },
+        ]}
+        actions={
+          <Link to="/dashboard/boutiques">
+            <Button variant="outline" size="sm" className="gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Retour
+            </Button>
+          </Link>
+        }
+      />
 
       <StepIndicator currentStep={currentStep} />
 
-      <Card className="bg-card border-border/50 max-w-2xl mx-auto">
-        <CardContent className="p-8">
+      <div className="max-w-2xl mx-auto">
+        <SectionCard contentClassName="p-6 sm:p-8">
           {/* Step 1: Basic Info */}
           {currentStep === 1 && (
             <div className="space-y-6">
@@ -319,8 +333,8 @@ export default function BoutiqueCreate() {
               </Button>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </SectionCard>
+      </div>
     </DashboardLayout>
   );
 }
