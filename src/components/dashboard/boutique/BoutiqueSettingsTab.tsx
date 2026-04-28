@@ -360,18 +360,9 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
   const [confirmName, setConfirmName] = useState("");
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      // Block if active products with stock
-      const { count, error: countErr } = await supabase
-        .from("products")
-        .select("id", { count: "exact", head: true })
-        .eq("boutique_id", boutiqueId)
-        .gt("stock_quantity", 0);
-      if (countErr) throw countErr;
-      if ((count ?? 0) > 0) {
-        throw new Error(
-          "Suppression bloquée : il reste des produits avec du stock. Videz votre catalogue d'abord."
-        );
-      }
+      setDeleteError(null);
+      // The DB trigger guard_boutique_delete_trigger enforces the real rules
+      // (open orders, recent orders, engaged stock) and returns the exact reason.
       const { error } = await supabase
         .from("boutiques")
         .delete()
@@ -383,7 +374,11 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
       queryClient.invalidateQueries({ queryKey: ["boutiques"] });
       navigate("/dashboard/boutiques");
     },
-    onError: (e: any) => toast.error(e?.message || "Suppression impossible"),
+    onError: (e: any) => {
+      const reason = formatServerError(e);
+      setDeleteError(reason);
+      toast.error(reason);
+    },
   });
 
   // Team members
