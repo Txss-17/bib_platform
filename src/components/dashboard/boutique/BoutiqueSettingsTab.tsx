@@ -49,6 +49,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
+import { OgImageCropperDialog } from "./OgImageCropperDialog";
 
 type Boutique = {
   id: string;
@@ -199,6 +200,11 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
   const [uploadingOg, setUploadingOg] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const ogFileRef = useRef<HTMLInputElement>(null);
+  // Cropper state
+  const [cropperFile, setCropperFile] = useState<File | null>(null);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  // Country-change confirmation
+  const [pendingCountry, setPendingCountry] = useState<string | null>(null);
 
   useEffect(() => {
     if (boutique) {
@@ -225,20 +231,37 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
   const update = (patch: Partial<Boutique>) =>
     setForm((prev) => ({ ...prev, ...patch }));
 
-  /** Apply country preset: switches currency and seeds target markets if empty. */
-  const applyCountry = (code: string) => {
-    setCountry(code);
+  /**
+   * Apply country preset: switches currency and seeds target markets if empty.
+   * If the change would actually mutate currency or markets, ask the user to
+   * confirm via a dedicated dialog rather than silently overwriting their setup.
+   */
+  const requestCountryChange = (code: string) => {
     const preset = COUNTRY_PRESETS[code];
     if (!preset) return;
     const currentMarkets = form.target_markets ?? [];
+    const currencyChanges = (form.default_currency ?? "EUR") !== preset.currency;
+    const marketsToAdd = preset.markets.filter((m) => !currentMarkets.includes(m));
+    if (!currencyChanges && marketsToAdd.length === 0) {
+      setCountry(code); // nothing to confirm
+      return;
+    }
+    setPendingCountry(code);
+  };
+
+  const acceptCountryChange = () => {
+    if (!pendingCountry) return;
+    const preset = COUNTRY_PRESETS[pendingCountry];
+    setCountry(pendingCountry);
+    const currentMarkets = form.target_markets ?? [];
     update({
       default_currency: preset.currency,
-      // Merge to keep user choices that don't conflict
       target_markets: Array.from(new Set([...preset.markets, ...currentMarkets])),
     });
-    toast.info(
-      `Devise ${preset.currency} et marchés ${preset.markets.join(", ")} appliqués pour ${preset.label}.`
+    toast.success(
+      `Devise ${preset.currency} et marchés ${preset.markets.join(", ")} appliqués.`
     );
+    setPendingCountry(null);
   };
 
   /** Compute completeness warnings to surface at the bottom of the commerce card. */
@@ -303,39 +326,84 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
     onError: (e: any) => toast.error(formatServerError(e)),
   });
 
-  /** Upload an image to the boutique-media bucket and store its public URL. */
-  const handleOgUpload = async (file: File) => {
-    if (!user) {
-      toast.error("Session expirée");
-      return;
-    }
+  /** Open the cropper for a freshly selected file (after lightweight checks). */
+  const handleOgFilePicked = (file: File) => {
     if (!file.type.startsWith("image/")) {
       toast.error("Veuillez sélectionner une image (PNG, JPG ou WebP)");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("L'image ne doit pas dépasser 5 Mo");
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("L'image ne doit pas dépasser 8 Mo");
+      return;
+    }
+    setCropperFile(file);
+    setCropperOpen(true);
+  };
+
+  /**
+   * Extract the storage path of a public URL pointing to our boutique-media
+   * bucket. Returns null for external URLs so we never try to delete them.
+   */
+  const extractStoragePath = (url: string | null | undefined): string | null => {
+    if (!url) return null;
+    const marker = "/boutique-media/";
+    const i = url.indexOf(marker);
+    if (i === -1) return null;
+    return decodeURIComponent(url.slice(i + marker.length).split("?")[0]);
+  };
+
+  /** Best-effort removal of a previously uploaded OG file from storage. */
+  const deleteOgFromStorage = async (url: string | null | undefined) => {
+    const path = extractStoragePath(url);
+    if (!path) return;
+    try {
+      await supabase.storage.from("boutique-media").remove([path]);
+    } catch {
+      /* silent — orphan cleanup is non-critical */
+    }
+  };
+
+  /** Upload the cropped 1200×630 blob and replace the previous OG file. */
+  const handleCroppedUpload = async (blob: Blob) => {
+    if (!user) {
+      toast.error("Session expirée");
       return;
     }
     setUploadingOg(true);
+    const previousUrl = form.seo_og_image_url ?? "";
     try {
-      const ext = file.name.split(".").pop() || "png";
-      const path = `og/${user.id}/${boutiqueId}_${Date.now()}.${ext}`;
+      const path = `og/${user.id}/${boutiqueId}_${Date.now()}.jpg`;
       const { error: upErr } = await supabase.storage
         .from("boutique-media")
-        .upload(path, file, { cacheControl: "3600", upsert: false });
+        .upload(path, blob, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: "image/jpeg",
+        });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage
         .from("boutique-media")
         .getPublicUrl(path);
       update({ seo_og_image_url: pub.publicUrl });
-      toast.success("Image OG téléchargée — n'oubliez pas d'enregistrer.");
+      // Cleanup the previous file if it lived in our bucket
+      await deleteOgFromStorage(previousUrl);
+      toast.success("Image OG recadrée — n'oubliez pas d'enregistrer.");
+      setCropperOpen(false);
+      setCropperFile(null);
     } catch (e: any) {
       toast.error(e?.message || "Échec de l'upload");
     } finally {
       setUploadingOg(false);
       if (ogFileRef.current) ogFileRef.current.value = "";
     }
+  };
+
+  /** Remove the OG image (form + storage cleanup). */
+  const handleRemoveOg = async () => {
+    const prev = form.seo_og_image_url ?? "";
+    update({ seo_og_image_url: "" });
+    await deleteOgFromStorage(prev);
+    if (prev) toast.success("Image OG supprimée du stockage.");
   };
 
   // Unpublish
