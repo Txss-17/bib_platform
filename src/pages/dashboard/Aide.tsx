@@ -21,7 +21,8 @@ import {
 } from "@/components/ui/select";
 import { useBoutiques } from "@/hooks/useBoutiques";
 import { useProducts } from "@/hooks/useProducts";
-import { resolvePublicOrigin } from "@/lib/seoSettings";
+import { resolvePublicOrigin, useSeoSettings } from "@/lib/seoSettings";
+import { Store, Package } from "lucide-react";
 
 const faqItems = [
   {
@@ -65,32 +66,56 @@ export default function Aide() {
   const [inspectTarget, setInspectTarget] = useState<string>("");
   const { data: boutiques = [] } = useBoutiques();
   const { data: products = [] } = useProducts();
+  const { settings: seoSettings } = useSeoSettings();
 
   const sitemapUrl = `https://lfsiwtpctqxpzyskakey.supabase.co/functions/v1/sitemap-xml`;
 
   const publicOrigin = resolvePublicOrigin();
 
+  /**
+   * Build canonical URL for a page using the configured x-default locale.
+   * The canonical mirrors what useSEO emits in the page <head>.
+   */
+  const buildCanonical = (pathname: string) => {
+    const base = `${publicOrigin}${pathname}`;
+    // x-default = defaultLocale → append ?lang= only if defaultLocale isn't 'fr'
+    // (the app uses 'fr' implicitly when no lang param is present)
+    if (seoSettings.defaultLocale && seoSettings.defaultLocale !== "fr") {
+      return `${base}?lang=${seoSettings.defaultLocale}`;
+    }
+    return base;
+  };
+
   // Build the list of inspectable URLs (published boutiques + their active products)
   const inspectOptions = (() => {
-    const opts: { value: string; label: string; group: string }[] = [];
+    const opts: {
+      value: string;
+      label: string;
+      group: "Boutiques" | "Produits";
+      kind: "boutique" | "product";
+    }[] = [];
     for (const b of boutiques.filter((x) => x.status === "published")) {
       opts.push({
-        value: `${publicOrigin}/boutique/${b.slug}`,
+        value: buildCanonical(`/boutique/${b.slug}`),
         label: `Accueil — ${b.name}`,
         group: "Boutiques",
+        kind: "boutique",
       });
     }
     for (const p of products.filter((p) => p.status === "active")) {
       const b = boutiques.find((x) => x.id === p.boutique_id);
       if (!b || b.status !== "published") continue;
       opts.push({
-        value: `${publicOrigin}/boutique/${b.slug}/product/${p.id}`,
+        value: buildCanonical(`/boutique/${b.slug}/product/${p.id}`),
         label: `${p.supplier_products?.name || "Produit"} — ${b.name}`,
         group: "Produits",
+        kind: "product",
       });
     }
     return opts;
   })();
+
+  const selectedOption = inspectOptions.find((o) => o.value === inspectTarget);
 
   const handleInspectUrl = () => {
     if (!inspectTarget) {
@@ -101,9 +126,13 @@ export default function Aide() {
       publicOrigin + "/",
     )}&id=${encodeURIComponent(inspectTarget)}`;
     window.open(inspectionUrl, "_blank", "noopener,noreferrer");
-    toast.success("Inspection ouverte dans Search Console", {
-      description: "Cliquez « Demander une indexation » dans la nouvelle fenêtre.",
-    });
+    toast.success(
+      `Inspection ouverte (${selectedOption?.kind === "product" ? "produit" : "boutique"})`,
+      {
+        description:
+          "URL canonique transmise à Search Console. Cliquez « Demander une indexation ».",
+      },
+    );
   };
 
   const copyToClipboard = (value: string, key: string) => {
@@ -375,19 +404,47 @@ export default function Aide() {
                 ) : (
                   inspectOptions.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
-                      <span className="text-[10px] font-semibold text-secondary mr-2">
-                        {opt.group}
+                      <span className="inline-flex items-center gap-1.5">
+                        {opt.kind === "boutique" ? (
+                          <Store className="w-3 h-3 text-secondary" />
+                        ) : (
+                          <Package className="w-3 h-3 text-secondary" />
+                        )}
+                        <span className="text-[10px] font-semibold text-secondary">
+                          {opt.group}
+                        </span>
+                        <span>{opt.label}</span>
                       </span>
-                      {opt.label}
                     </SelectItem>
                   ))
                 )}
               </SelectContent>
             </Select>
-            {inspectTarget && (
-              <p className="text-[11px] text-muted-foreground truncate">
-                URL ciblée : <code className="text-foreground">{inspectTarget}</code>
-              </p>
+            {inspectTarget && selectedOption && (
+              <div className="space-y-0.5">
+                <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                  <Badge
+                    variant="outline"
+                    className="text-[9px] py-0 h-4 border-secondary/40 text-secondary gap-1"
+                  >
+                    {selectedOption.kind === "boutique" ? (
+                      <Store className="w-2.5 h-2.5" />
+                    ) : (
+                      <Package className="w-2.5 h-2.5" />
+                    )}
+                    {selectedOption.kind === "boutique" ? "Boutique" : "Produit"}
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className="text-[9px] py-0 h-4 border-border text-muted-foreground"
+                  >
+                    canonique · x-default → {seoSettings.defaultLocale}
+                  </Badge>
+                </p>
+                <p className="text-[11px] text-muted-foreground truncate">
+                  <code className="text-foreground">{inspectTarget}</code>
+                </p>
+              </div>
             )}
           </div>
           <Button
@@ -395,17 +452,26 @@ export default function Aide() {
             disabled={!inspectTarget}
             className="gap-2 whitespace-nowrap"
           >
-            <Search className="w-4 h-4" /> Lancer l'inspection
+            <Search className="w-4 h-4" />
+            {selectedOption?.kind === "product"
+              ? "Inspecter ce produit"
+              : selectedOption?.kind === "boutique"
+              ? "Inspecter cette boutique"
+              : "Lancer l'inspection"}
             <ExternalLink className="w-3.5 h-3.5" />
           </Button>
         </div>
         <div className="mt-3 rounded-lg border border-border/60 bg-muted/30 p-2.5 text-[11px] text-muted-foreground">
           <strong className="text-foreground">Comment ça marche :</strong>{" "}
-          Le bouton ouvre Google Search Console avec l'URL sélectionnée déjà collée
-          dans l'inspection. Cliquez ensuite sur « Demander une indexation » dans
-          Google pour accélérer la prise en compte (jusqu'à 24-48 h).
+          Brand-In-A-Box transmet l'URL <strong>canonique</strong> (locale x-default
+          « {seoSettings.defaultLocale} ») à Search Console pour éviter les doublons
+          d'indexation entre versions linguistiques. Cliquez ensuite sur
+          « Demander une indexation » dans Google (effet sous 24-48 h).
         </div>
       </SectionCard>
+
+      {/* SEO fix-it checklist */}
+      <SeoFixChecklist boutiques={boutiques} products={products} />
     </DashboardLayout>
   );
 }
