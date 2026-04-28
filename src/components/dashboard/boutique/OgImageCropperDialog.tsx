@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, ZoomIn, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Loader2, ZoomIn, AlertTriangle, CheckCircle2, FileWarning } from "lucide-react";
 
 /**
  * OG image cropper dialog: drag to reposition, slider to zoom, exports a
@@ -21,6 +21,15 @@ import { Loader2, ZoomIn, AlertTriangle, CheckCircle2 } from "lucide-react";
 const TARGET_W = 1200;
 const TARGET_H = 630;
 const TARGET_RATIO = TARGET_W / TARGET_H;
+
+/** MIME types we accept for OG uploads — matches the file picker accept list. */
+const ACCEPTED_MIMES = ["image/jpeg", "image/png", "image/webp"];
+/**
+ * Soft compression heuristic: bytes-per-pixel below this threshold means the
+ * file is likely heavily re-compressed (visible artefacts, halos).
+ * 0.05 bpp ≈ ~38KB for a 1200×630 JPEG — way too low for a hero/OG card.
+ */
+const MIN_BPP = 0.05;
 
 type Props = {
   open: boolean;
@@ -38,6 +47,7 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
   const dragStart = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [busy, setBusy] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Display canvas size (preview); export uses TARGET_W × TARGET_H.
   const PREVIEW_W = 480;
@@ -45,7 +55,16 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
 
   // Load file -> image
   useEffect(() => {
-    if (!file) { setSrc(null); setImg(null); return; }
+    if (!file) { setSrc(null); setImg(null); setLoadError(null); return; }
+    setLoadError(null);
+    // Strict MIME whitelist (defense in depth — picker already filters)
+    if (!ACCEPTED_MIMES.includes(file.type)) {
+      setLoadError(
+        `Format non supporté (${file.type || "inconnu"}). Utilisez JPG, PNG ou WebP.`
+      );
+      setImg(null);
+      return;
+    }
     const url = URL.createObjectURL(file);
     setSrc(url);
     const i = new Image();
@@ -54,17 +73,30 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
       setZoom(1);
       setOffset({ x: 0, y: 0 });
     };
+    i.onerror = () => {
+      setLoadError(
+        "Impossible de décoder l'image — fichier probablement corrompu ou tronqué."
+      );
+      setImg(null);
+    };
     i.src = url;
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
   // Validation of source file (dimensions + ratio offset)
   const validation = (() => {
-    if (!img) return null;
+    if (!img || !file) return null;
     const ratio = img.naturalWidth / img.naturalHeight;
     const ratioDiff = Math.abs(ratio - TARGET_RATIO) / TARGET_RATIO;
     const tooSmall =
       img.naturalWidth < TARGET_W || img.naturalHeight < TARGET_H;
+    const pixels = img.naturalWidth * img.naturalHeight;
+    const bpp = pixels > 0 ? file.size / pixels : 0;
+    // Only flag JPEG/WebP for over-compression (PNG is lossless so bpp varies wildly)
+    const overCompressed =
+      (file.type === "image/jpeg" || file.type === "image/webp") &&
+      bpp < MIN_BPP &&
+      pixels >= TARGET_W * TARGET_H * 0.5;
     return {
       width: img.naturalWidth,
       height: img.naturalHeight,
@@ -72,6 +104,8 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
       ratioDiff,
       tooSmall,
       offRatio: ratioDiff > 0.15, // > 15% off the 1.91:1 target
+      bpp,
+      overCompressed,
     };
   })();
 
@@ -80,6 +114,35 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
     if (!img) return 1;
     return Math.max(PREVIEW_W / img.naturalWidth, PREVIEW_H / img.naturalHeight);
   }, [img]);
+
+  /**
+   * Clamp the pan offset so the displayed image always covers the recommended
+   * area — users can't drag the image so far that empty space appears at the
+   * edges. Keeps the preview consistent with what's exported.
+   */
+  const clampOffset = useCallback(
+    (raw: { x: number; y: number }, currentZoom = zoom) => {
+      if (!img) return raw;
+      const s = baseScale() * currentZoom;
+      const dw = img.naturalWidth * s;
+      const dh = img.naturalHeight * s;
+      // Maximum slack on each axis = how much the scaled image overflows the
+      // preview frame. If the image is exactly the preview size, slack is 0.
+      const maxX = Math.max(0, (dw - PREVIEW_W) / 2);
+      const maxY = Math.max(0, (dh - PREVIEW_H) / 2);
+      return {
+        x: Math.max(-maxX, Math.min(maxX, raw.x)),
+        y: Math.max(-maxY, Math.min(maxY, raw.y)),
+      };
+    },
+    [img, baseScale, zoom]
+  );
+
+  // Re-clamp whenever zoom changes (zooming out can leave offset out of bounds)
+  useEffect(() => {
+    setOffset((prev) => clampOffset(prev));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zoom, img]);
 
   // Draw on each change
   useEffect(() => {
@@ -110,10 +173,10 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
   };
   const onPointerMove = (e: React.PointerEvent) => {
     if (!dragging || !dragStart.current) return;
-    setOffset({
+    setOffset(clampOffset({
       x: dragStart.current.ox + (e.clientX - dragStart.current.x),
       y: dragStart.current.oy + (e.clientY - dragStart.current.y),
-    });
+    }));
   };
   const onPointerUp = () => { setDragging(false); dragStart.current = null; };
 
@@ -159,15 +222,24 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
           </DialogDescription>
         </DialogHeader>
 
+        {loadError && (
+          <Alert className="border-destructive/40 bg-destructive/10">
+            <FileWarning className="h-4 w-4 text-destructive" />
+            <AlertDescription className="text-xs text-destructive">
+              {loadError}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {validation && (
           <Alert
             className={
-              validation.tooSmall || validation.offRatio
+              validation.tooSmall || validation.offRatio || validation.overCompressed
                 ? "border-amber-500/40 bg-amber-50/40 dark:bg-amber-950/20"
                 : "border-emerald-500/40 bg-emerald-50/40 dark:bg-emerald-950/20"
             }
           >
-            {validation.tooSmall || validation.offRatio ? (
+            {validation.tooSmall || validation.offRatio || validation.overCompressed ? (
               <AlertTriangle className="h-4 w-4 text-amber-600" />
             ) : (
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
@@ -189,7 +261,14 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
                   rapport à 1.91:1 — des bandes peuvent être rognées.
                 </p>
               )}
-              {!validation.tooSmall && !validation.offRatio && (
+              {validation.overCompressed && (
+                <p>
+                  Image fortement compressée ({validation.bpp.toFixed(3)} bpp) —
+                  artefacts visibles probables. Ré-exportez la source en haute
+                  qualité.
+                </p>
+              )}
+              {!validation.tooSmall && !validation.offRatio && !validation.overCompressed && (
                 <p>Image conforme à la cible Open Graph.</p>
               )}
             </AlertDescription>
@@ -225,7 +304,7 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
           <Button variant="ghost" onClick={onClose} disabled={busy}>
             Annuler
           </Button>
-          <Button onClick={handleConfirm} disabled={!img || busy}>
+          <Button onClick={handleConfirm} disabled={!img || busy || !!loadError}>
             {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
             Recadrer & enregistrer
           </Button>
