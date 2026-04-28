@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,9 +39,16 @@ import {
   Plus,
   X,
   AlertTriangle,
+  Upload,
+  Image as ImageIcon,
+  Globe,
+  Info,
+  CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { z } from "zod";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Boutique = {
   id: string;
@@ -74,9 +82,100 @@ const ROLES = [
   { value: "support", label: "Support" },
 ] as const;
 
+/** Country -> default currency + target market suggestions (BIB commerce defaults). */
+const COUNTRY_PRESETS: Record<
+  string,
+  { label: string; currency: string; markets: string[] }
+> = {
+  FR: { label: "France", currency: "EUR", markets: ["FR", "EU"] },
+  BE: { label: "Belgique", currency: "EUR", markets: ["EU"] },
+  DE: { label: "Allemagne", currency: "EUR", markets: ["EU"] },
+  ES: { label: "Espagne", currency: "EUR", markets: ["EU"] },
+  IT: { label: "Italie", currency: "EUR", markets: ["EU"] },
+  CH: { label: "Suisse", currency: "CHF", markets: ["EU", "INTL"] },
+  GB: { label: "Royaume-Uni", currency: "GBP", markets: ["UK", "EU"] },
+  US: { label: "États-Unis", currency: "USD", markets: ["US", "INTL"] },
+  CA: { label: "Canada", currency: "CAD", markets: ["CA", "US"] },
+  INTL: { label: "International", currency: "EUR", markets: ["INTL"] },
+};
+
+/**
+ * Client-side validation schema. Mirrors the Postgres triggers added in
+ * the latest migration so users get immediate feedback before the round-trip.
+ */
+const settingsSchema = z.object({
+  seo_title: z.string().trim().max(80, "80 caractères max").optional().or(z.literal("")),
+  seo_description: z.string().trim().max(200, "200 caractères max").optional().or(z.literal("")),
+  seo_og_image_url: z
+    .string()
+    .trim()
+    .max(500)
+    .url("URL invalide")
+    .optional()
+    .or(z.literal("")),
+  legal_business_name: z.string().trim().max(200).optional().or(z.literal("")),
+  legal_siret: z
+    .string()
+    .trim()
+    .optional()
+    .or(z.literal(""))
+    .refine(
+      (v) => !v || /^[0-9]{14}$/.test(v.replace(/\s+/g, "")),
+      "Le SIRET doit contenir exactement 14 chiffres"
+    ),
+  legal_address: z.string().trim().max(500).optional().or(z.literal("")),
+  legal_email: z
+    .string()
+    .trim()
+    .max(255, "255 caractères max")
+    .optional()
+    .or(z.literal(""))
+    .refine(
+      (v) => !v || /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(v),
+      "Format email invalide"
+    ),
+  legal_phone: z
+    .string()
+    .trim()
+    .optional()
+    .or(z.literal(""))
+    .refine(
+      (v) => !v || /^\+?[0-9\s.\-()]{7,25}$/.test(v),
+      "Numéro invalide (7 à 20 chiffres)"
+    ),
+  default_currency: z.string().min(3).max(3),
+  target_markets: z.array(z.string()).min(1, "Sélectionnez au moins un marché"),
+});
+
+type SettingsErrors = Partial<Record<keyof z.infer<typeof settingsSchema>, string>>;
+
+/**
+ * Translate a Postgres `RAISE EXCEPTION` from our boutique guard triggers
+ * into a friendly French message (uses the HINT when present).
+ */
+function formatServerError(err: any): string {
+  const msg: string = err?.message || "";
+  const hint: string | undefined = err?.hint;
+  if (hint) return hint;
+  if (msg.includes("invalid_legal_email"))
+    return "Format email invalide. Vérifiez le champ email professionnel.";
+  if (msg.includes("invalid_legal_siret"))
+    return "Le SIRET doit contenir exactement 14 chiffres.";
+  if (msg.includes("invalid_legal_phone"))
+    return "Numéro de téléphone invalide.";
+  if (msg.includes("boutique_has_open_orders"))
+    return "Suppression bloquée : commandes en cours à traiter.";
+  if (msg.includes("boutique_has_recent_orders"))
+    return "Suppression bloquée : des commandes récentes (< 30 jours) doivent être conservées.";
+  if (msg.includes("boutique_has_engaged_stock"))
+    return "Suppression bloquée : du stock est encore engagé sur des produits actifs.";
+  return msg || "Erreur inconnue";
+}
+
 export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const { data: boutique, isLoading } = useQuery({
     queryKey: ["boutique-settings", boutiqueId],
@@ -95,6 +194,12 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
 
   // Local form state
   const [form, setForm] = useState<Partial<Boutique>>({});
+  const [errors, setErrors] = useState<SettingsErrors>({});
+  const [country, setCountry] = useState<string>("FR");
+  const [uploadingOg, setUploadingOg] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const ogFileRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (boutique) {
       setForm({
@@ -109,14 +214,68 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
         default_currency: boutique.default_currency ?? "EUR",
         target_markets: boutique.target_markets ?? ["EU"],
       });
+      // Infer country from currency on first load (best guess only)
+      const guessed = Object.entries(COUNTRY_PRESETS).find(
+        ([, p]) => p.currency === (boutique.default_currency ?? "EUR")
+      );
+      if (guessed) setCountry(guessed[0]);
     }
   }, [boutique]);
 
   const update = (patch: Partial<Boutique>) =>
     setForm((prev) => ({ ...prev, ...patch }));
 
+  /** Apply country preset: switches currency and seeds target markets if empty. */
+  const applyCountry = (code: string) => {
+    setCountry(code);
+    const preset = COUNTRY_PRESETS[code];
+    if (!preset) return;
+    const currentMarkets = form.target_markets ?? [];
+    update({
+      default_currency: preset.currency,
+      // Merge to keep user choices that don't conflict
+      target_markets: Array.from(new Set([...preset.markets, ...currentMarkets])),
+    });
+    toast.info(
+      `Devise ${preset.currency} et marchés ${preset.markets.join(", ")} appliqués pour ${preset.label}.`
+    );
+  };
+
+  /** Compute completeness warnings to surface at the bottom of the commerce card. */
+  const consistencyWarnings = useMemo(() => {
+    const warns: string[] = [];
+    const markets = form.target_markets ?? [];
+    const currency = form.default_currency ?? "EUR";
+    if (markets.includes("US") && currency !== "USD") {
+      warns.push("Marché US sélectionné mais devise ≠ USD — préférez USD pour ce marché.");
+    }
+    if (markets.includes("UK") && currency !== "GBP") {
+      warns.push("Marché UK sélectionné mais devise ≠ GBP — préférez GBP pour ce marché.");
+    }
+    if (markets.length === 0) {
+      warns.push("Aucun marché cible défini — au moins un est nécessaire pour la livraison.");
+    }
+    if (!form.legal_business_name && !form.legal_siret) {
+      warns.push("Aucune information légale renseignée — requis pour CGV et factures.");
+    }
+    return warns;
+  }, [form.target_markets, form.default_currency, form.legal_business_name, form.legal_siret]);
+
   const saveMutation = useMutation({
     mutationFn: async () => {
+      // Client-side validation first
+      const parsed = settingsSchema.safeParse(form);
+      if (!parsed.success) {
+        const fieldErrors: SettingsErrors = {};
+        parsed.error.issues.forEach((iss) => {
+          const k = iss.path[0] as keyof SettingsErrors;
+          if (k && !fieldErrors[k]) fieldErrors[k] = iss.message;
+        });
+        setErrors(fieldErrors);
+        throw new Error("Vérifiez les champs en rouge.");
+      }
+      setErrors({});
+
       const { error } = await supabase
         .from("boutiques")
         .update({
@@ -124,7 +283,9 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
           seo_description: form.seo_description || null,
           seo_og_image_url: form.seo_og_image_url || null,
           legal_business_name: form.legal_business_name || null,
-          legal_siret: form.legal_siret || null,
+          legal_siret: form.legal_siret
+            ? form.legal_siret.replace(/\s+/g, "")
+            : null,
           legal_address: form.legal_address || null,
           legal_email: form.legal_email || null,
           legal_phone: form.legal_phone || null,
@@ -139,8 +300,43 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
       queryClient.invalidateQueries({ queryKey: ["boutique-settings", boutiqueId] });
       queryClient.invalidateQueries({ queryKey: ["boutique-edit", boutiqueId] });
     },
-    onError: (e: any) => toast.error(e?.message || "Erreur lors de la sauvegarde"),
+    onError: (e: any) => toast.error(formatServerError(e)),
   });
+
+  /** Upload an image to the boutique-media bucket and store its public URL. */
+  const handleOgUpload = async (file: File) => {
+    if (!user) {
+      toast.error("Session expirée");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Veuillez sélectionner une image (PNG, JPG ou WebP)");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("L'image ne doit pas dépasser 5 Mo");
+      return;
+    }
+    setUploadingOg(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `og/${user.id}/${boutiqueId}_${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("boutique-media")
+        .upload(path, file, { cacheControl: "3600", upsert: false });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage
+        .from("boutique-media")
+        .getPublicUrl(path);
+      update({ seo_og_image_url: pub.publicUrl });
+      toast.success("Image OG téléchargée — n'oubliez pas d'enregistrer.");
+    } catch (e: any) {
+      toast.error(e?.message || "Échec de l'upload");
+    } finally {
+      setUploadingOg(false);
+      if (ogFileRef.current) ogFileRef.current.value = "";
+    }
+  };
 
   // Unpublish
   const unpublishMutation = useMutation({
@@ -164,18 +360,9 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
   const [confirmName, setConfirmName] = useState("");
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      // Block if active products with stock
-      const { count, error: countErr } = await supabase
-        .from("products")
-        .select("id", { count: "exact", head: true })
-        .eq("boutique_id", boutiqueId)
-        .gt("stock_quantity", 0);
-      if (countErr) throw countErr;
-      if ((count ?? 0) > 0) {
-        throw new Error(
-          "Suppression bloquée : il reste des produits avec du stock. Videz votre catalogue d'abord."
-        );
-      }
+      setDeleteError(null);
+      // The DB trigger guard_boutique_delete_trigger enforces the real rules
+      // (open orders, recent orders, engaged stock) and returns the exact reason.
       const { error } = await supabase
         .from("boutiques")
         .delete()
@@ -187,7 +374,11 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
       queryClient.invalidateQueries({ queryKey: ["boutiques"] });
       navigate("/dashboard/boutiques");
     },
-    onError: (e: any) => toast.error(e?.message || "Suppression impossible"),
+    onError: (e: any) => {
+      const reason = formatServerError(e);
+      setDeleteError(reason);
+      toast.error(reason);
+    },
   });
 
   // Team members
@@ -278,7 +469,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="seo_title">Titre SEO</Label>
-              <span className="text-xs text-muted-foreground">
+              <span className={`text-xs ${(form.seo_title?.length ?? 0) > 65 ? "text-destructive" : "text-muted-foreground"}`}>
                 {(form.seo_title?.length ?? 0)}/65
               </span>
             </div>
@@ -288,12 +479,16 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
               placeholder="Ex: Bijoux artisanaux faits main — Atelier Lina"
               value={form.seo_title ?? ""}
               onChange={(e) => update({ seo_title: e.target.value })}
+              aria-invalid={!!errors.seo_title}
             />
+            {errors.seo_title && (
+              <p className="text-xs text-destructive">{errors.seo_title}</p>
+            )}
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="seo_description">Meta description</Label>
-              <span className="text-xs text-muted-foreground">
+              <span className={`text-xs ${(form.seo_description?.length ?? 0) > 160 ? "text-destructive" : "text-muted-foreground"}`}>
                 {(form.seo_description?.length ?? 0)}/160
               </span>
             </div>
@@ -305,19 +500,102 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
               value={form.seo_description ?? ""}
               onChange={(e) => update({ seo_description: e.target.value })}
             />
+            {errors.seo_description && (
+              <p className="text-xs text-destructive">{errors.seo_description}</p>
+            )}
           </div>
+
+          {/* OG Image uploader with preview */}
           <div className="space-y-2">
-            <Label htmlFor="seo_og_image_url">Image Open Graph (URL)</Label>
+            <Label>Image Open Graph (1200×630 recommandé)</Label>
+            <input
+              ref={ogFileRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              hidden
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleOgUpload(f);
+              }}
+            />
+            {form.seo_og_image_url ? (
+              <div className="rounded-lg border border-border bg-muted/30 overflow-hidden">
+                <div className="relative aspect-[1200/630] bg-muted">
+                  <img
+                    src={form.seo_og_image_url}
+                    alt="Aperçu image OG"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-card">
+                  <span className="text-xs text-muted-foreground truncate max-w-[60%]">
+                    {form.seo_og_image_url.split("/").pop()}
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => ogFileRef.current?.click()}
+                      disabled={uploadingOg}
+                    >
+                      <Upload className="w-3.5 h-3.5 mr-1.5" />
+                      Remplacer
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => update({ seo_og_image_url: "" })}
+                    >
+                      <X className="w-3.5 h-3.5 mr-1.5" />
+                      Supprimer
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => ogFileRef.current?.click()}
+                disabled={uploadingOg}
+                className="w-full aspect-[1200/630] max-h-48 rounded-lg border-2 border-dashed border-border hover:border-primary/50 hover:bg-muted/30 transition-colors flex flex-col items-center justify-center gap-2 text-muted-foreground"
+              >
+                {uploadingOg ? (
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                ) : (
+                  <>
+                    <ImageIcon className="w-7 h-7" />
+                    <span className="text-sm font-medium">
+                      Cliquez pour téléverser une image OG
+                    </span>
+                    <span className="text-xs">
+                      PNG / JPG / WebP — max 5 Mo
+                    </span>
+                  </>
+                )}
+              </button>
+            )}
             <Input
-              id="seo_og_image_url"
-              placeholder="https://..."
+              placeholder="ou collez une URL externe"
               value={form.seo_og_image_url ?? ""}
               onChange={(e) => update({ seo_og_image_url: e.target.value })}
+              aria-invalid={!!errors.seo_og_image_url}
+              className="text-xs"
             />
-            <p className="text-xs text-muted-foreground">
-              Ratio recommandé 1200×630 pour les partages réseaux sociaux.
-            </p>
+            {errors.seo_og_image_url && (
+              <p className="text-xs text-destructive">{errors.seo_og_image_url}</p>
+            )}
           </div>
+
+          {/* Real-time snippet preview */}
+          <SnippetPreview
+            slug={boutique.slug}
+            title={form.seo_title || boutique.name}
+            description={
+              form.seo_description ||
+              "Découvrez notre boutique et nos produits soigneusement sélectionnés."
+            }
+            ogImage={form.seo_og_image_url || ""}
+          />
         </CardContent>
       </Card>
 
@@ -349,7 +627,11 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
               placeholder="123 456 789 00012"
               value={form.legal_siret ?? ""}
               onChange={(e) => update({ legal_siret: e.target.value })}
+              aria-invalid={!!errors.legal_siret}
             />
+            {errors.legal_siret && (
+              <p className="text-xs text-destructive">{errors.legal_siret}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="legal_phone">Téléphone professionnel</Label>
@@ -358,7 +640,11 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
               placeholder="+33 1 23 45 67 89"
               value={form.legal_phone ?? ""}
               onChange={(e) => update({ legal_phone: e.target.value })}
+              aria-invalid={!!errors.legal_phone}
             />
+            {errors.legal_phone && (
+              <p className="text-xs text-destructive">{errors.legal_phone}</p>
+            )}
           </div>
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="legal_address">Adresse postale</Label>
@@ -378,7 +664,11 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
               placeholder="contact@maboutique.com"
               value={form.legal_email ?? ""}
               onChange={(e) => update({ legal_email: e.target.value })}
+              aria-invalid={!!errors.legal_email}
             />
+            {errors.legal_email && (
+              <p className="text-xs text-destructive">{errors.legal_email}</p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -396,6 +686,29 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5">
+              <Globe className="w-3.5 h-3.5 text-primary" />
+              Pays principal
+            </Label>
+            <Select value={country} onValueChange={applyCountry}>
+              <SelectTrigger className="max-w-xs">
+                <SelectValue placeholder="Sélectionnez un pays" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(COUNTRY_PRESETS).map(([code, p]) => (
+                  <SelectItem key={code} value={code}>
+                    {p.label} — {p.currency}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Ajuste automatiquement la devise et propose les marchés les plus
+              pertinents.
+            </p>
+          </div>
+
           <div className="space-y-2 max-w-xs">
             <Label>Devise par défaut</Label>
             <Select
@@ -435,7 +748,32 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                 );
               })}
             </div>
+            {errors.target_markets && (
+              <p className="text-xs text-destructive">{errors.target_markets}</p>
+            )}
           </div>
+
+          {/* Consistency warnings */}
+          {consistencyWarnings.length > 0 ? (
+            <Alert variant="default" className="border-amber-500/40 bg-amber-50/40 dark:bg-amber-950/20">
+              <Info className="h-4 w-4 text-amber-600" />
+              <AlertDescription>
+                <p className="text-xs font-medium mb-1">Configuration à compléter :</p>
+                <ul className="text-xs space-y-0.5 list-disc pl-4">
+                  {consistencyWarnings.map((w, i) => (
+                    <li key={i}>{w}</li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <Alert className="border-emerald-500/40 bg-emerald-50/40 dark:bg-emerald-950/20">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <AlertDescription className="text-xs">
+                Configuration commerciale cohérente.
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
 
@@ -623,11 +961,17 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                         placeholder="Tapez le nom exact"
                         autoFocus
                       />
+                      {deleteError && (
+                        <div className="rounded-md border border-destructive/40 bg-destructive/5 p-2.5 text-xs text-destructive flex gap-2">
+                          <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                          <span>{deleteError}</span>
+                        </div>
+                      )}
                     </div>
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel onClick={() => setConfirmName("")}>
+                  <AlertDialogCancel onClick={() => { setConfirmName(""); setDeleteError(null); }}>
                     Annuler
                   </AlertDialogCancel>
                   <AlertDialogAction
@@ -649,6 +993,95 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+/**
+ * Live SERP + social card snippet preview. Mirrors the markup search engines
+ * and OG consumers will display, so users see the impact of their changes
+ * immediately.
+ */
+function SnippetPreview({
+  slug,
+  title,
+  description,
+  ogImage,
+}: {
+  slug: string;
+  title: string;
+  description: string;
+  ogImage: string;
+}) {
+  const origin =
+    typeof window !== "undefined" ? window.location.origin : "https://app.bib.com";
+  const url = `${origin}/boutique/${slug}`;
+  const titleTooLong = title.length > 65;
+  const descTooLong = description.length > 160;
+  const titleTooShort = title.length > 0 && title.length < 30;
+  const descTooShort = description.length > 0 && description.length < 70;
+
+  return (
+    <div className="space-y-3 pt-2 border-t border-border/40">
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        Aperçu temps réel
+      </p>
+
+      {/* Google SERP-like snippet */}
+      <div className="rounded-lg border border-border bg-card p-4 font-sans">
+        <p className="text-xs text-muted-foreground truncate">{url}</p>
+        <p className="text-[#1a0dab] dark:text-blue-400 text-lg leading-tight mt-0.5 truncate">
+          {title || "(titre manquant)"}
+        </p>
+        <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+          {description || "(meta description manquante)"}
+        </p>
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          <Badge
+            variant={titleTooLong ? "destructive" : titleTooShort ? "secondary" : "default"}
+            className="text-[10px]"
+          >
+            Titre {title.length}c
+            {titleTooLong ? " — trop long" : titleTooShort ? " — trop court" : " ✓"}
+          </Badge>
+          <Badge
+            variant={descTooLong ? "destructive" : descTooShort ? "secondary" : "default"}
+            className="text-[10px]"
+          >
+            Meta {description.length}c
+            {descTooLong ? " — trop long" : descTooShort ? " — trop court" : " ✓"}
+          </Badge>
+        </div>
+      </div>
+
+      {/* Social card preview */}
+      <div className="rounded-lg border border-border overflow-hidden bg-card">
+        <div className="aspect-[1200/630] bg-muted relative">
+          {ogImage ? (
+            <img
+              src={ogImage}
+              alt="Aperçu carte sociale"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
+              <ImageIcon className="w-8 h-8 mb-1" />
+              <span className="text-xs">Image OG manquante</span>
+            </div>
+          )}
+        </div>
+        <div className="p-3 bg-muted/30">
+          <p className="text-[10px] uppercase text-muted-foreground tracking-wider truncate">
+            {origin.replace(/^https?:\/\//, "")}
+          </p>
+          <p className="text-sm font-medium leading-tight mt-0.5 line-clamp-2">
+            {title || "(titre manquant)"}
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+            {description}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
