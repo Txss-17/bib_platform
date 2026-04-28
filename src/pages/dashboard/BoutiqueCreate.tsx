@@ -46,7 +46,7 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
             currentStep === step.id 
               ? "bg-primary text-primary-foreground" 
               : currentStep > step.id 
-                ? "bg-success text-white"
+                ? "bg-success text-success-foreground"
                 : "bg-muted text-muted-foreground"
           }`}>
             {currentStep > step.id ? (
