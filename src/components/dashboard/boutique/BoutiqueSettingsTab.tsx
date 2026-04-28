@@ -627,7 +627,11 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
               placeholder="123 456 789 00012"
               value={form.legal_siret ?? ""}
               onChange={(e) => update({ legal_siret: e.target.value })}
+              aria-invalid={!!errors.legal_siret}
             />
+            {errors.legal_siret && (
+              <p className="text-xs text-destructive">{errors.legal_siret}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="legal_phone">Téléphone professionnel</Label>
@@ -636,7 +640,11 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
               placeholder="+33 1 23 45 67 89"
               value={form.legal_phone ?? ""}
               onChange={(e) => update({ legal_phone: e.target.value })}
+              aria-invalid={!!errors.legal_phone}
             />
+            {errors.legal_phone && (
+              <p className="text-xs text-destructive">{errors.legal_phone}</p>
+            )}
           </div>
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="legal_address">Adresse postale</Label>
@@ -656,7 +664,11 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
               placeholder="contact@maboutique.com"
               value={form.legal_email ?? ""}
               onChange={(e) => update({ legal_email: e.target.value })}
+              aria-invalid={!!errors.legal_email}
             />
+            {errors.legal_email && (
+              <p className="text-xs text-destructive">{errors.legal_email}</p>
+            )}
           </div>
         </CardContent>
       </Card>
