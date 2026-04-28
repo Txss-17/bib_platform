@@ -59,10 +59,42 @@ export default function BoutiquePublic() {
     enabled: !!boutique?.id,
   });
 
-  // SEO
+  // SEO — store-level metadata + JSON-LD
   useSEO({
     title: boutique?.name || "Boutique",
-    description: boutique?.description || `Découvrez ${boutique?.name || "notre boutique"} sur Brand-In-A-Box. Livraison incluse sur tous les produits.`,
+    description:
+      boutique?.description ||
+      `Découvrez ${boutique?.name || "notre boutique"} sur Brand-In-A-Box. Livraison incluse sur tous les produits.`,
+    image: boutique?.cover_image_url || boutique?.logo_url || undefined,
+    type: "store",
+    keywords: [
+      boutique?.name,
+      boutique?.category,
+      "boutique en ligne",
+      "Brand-In-A-Box",
+    ].filter(Boolean) as string[],
+    jsonLd: boutique
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Store",
+          name: boutique.name,
+          description: boutique.description || undefined,
+          image: boutique.cover_image_url || boutique.logo_url || undefined,
+          logo: boutique.logo_url || undefined,
+          slogan: boutique.tagline || undefined,
+          url:
+            typeof window !== "undefined"
+              ? `${window.location.origin}${window.location.pathname}`
+              : undefined,
+          makesOffer: products?.slice(0, 12).map((p) => ({
+            "@type": "Offer",
+            name: p.name,
+            price: p.price,
+            priceCurrency: "EUR",
+            image: p.image_url || undefined,
+          })),
+        }
+      : undefined,
   });
 
   // Realtime analytics: log a boutique view as soon as the published page loads.
