@@ -1,6 +1,6 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader, SectionCard, KpiTile } from "@/components/dashboard/shared";
 import { useSupplierProducts } from "@/hooks/useSupplierProducts";
 import { useProducts } from "@/hooks/useProducts";
 import { Package, TrendingUp, BarChart3 } from "lucide-react";
@@ -26,69 +26,95 @@ export default function AnalyseFournisseurs() {
   const usedCount = supplierProducts?.filter(p => usedProductIds.has(p.id)).length || 0;
 
   return (
-    <DashboardLayout title="Analyse Fournisseurs" subtitle="Performance et disponibilité du catalogue fournisseur">
+    <DashboardLayout>
+      <PageHeader
+        eyebrow="Analytics"
+        title="Analyse fournisseurs"
+        subtitle="Performance et disponibilité du catalogue fournisseur."
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Analyse fournisseurs" },
+        ]}
+      />
+
       {/* Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card className="bg-card border-border/50">
-          <CardContent className="p-5 text-center">
-            <Package className="w-6 h-6 text-primary mx-auto mb-2" />
-            <p className="text-2xl font-bold text-foreground">{supplierProducts?.length || 0}</p>
-            <p className="text-xs text-muted-foreground">Produits disponibles</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border/50">
-          <CardContent className="p-5 text-center">
-            <TrendingUp className="w-6 h-6 text-success mx-auto mb-2" />
-            <p className="text-2xl font-bold text-foreground">{usedCount}</p>
-            <p className="text-xs text-muted-foreground">Produits utilisés par vous</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border/50">
-          <CardContent className="p-5 text-center">
-            <BarChart3 className="w-6 h-6 text-info mx-auto mb-2" />
-            <p className="text-2xl font-bold text-foreground">{Object.keys(categoryStats).length}</p>
-            <p className="text-xs text-muted-foreground">Catégories</p>
-          </CardContent>
-        </Card>
+        <KpiTile
+          label="Produits disponibles"
+          value={supplierProducts?.length || 0}
+          icon={<Package className="w-5 h-5" />}
+        />
+        <KpiTile
+          label="Produits utilisés par vous"
+          value={usedCount}
+          icon={<TrendingUp className="w-5 h-5" />}
+          tone="gold"
+        />
+        <KpiTile
+          label="Catégories"
+          value={Object.keys(categoryStats).length}
+          icon={<BarChart3 className="w-5 h-5" />}
+        />
       </div>
 
       {/* Category breakdown */}
-      <h3 className="text-lg font-semibold text-foreground mb-4">Par catégorie</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {Object.entries(categoryStats).map(([category, stats]) => (
-          <Card key={category} className="bg-card border-border/50">
-            <CardContent className="p-5">
+      <SectionCard
+        title="Par catégorie"
+        description="Prix et marges moyens par catégorie de produit."
+        icon={<BarChart3 className="w-4 h-4" />}
+        className="mb-6"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Object.entries(categoryStats).map(([category, stats]) => (
+            <div
+              key={category}
+              className="rounded-xl border border-border/60 bg-muted/30 p-4"
+            >
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-semibold text-foreground">{category}</h4>
-                <Badge>{stats.count} produits</Badge>
+                <Badge>{stats.count}</Badge>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-2 rounded bg-muted/50">
-                  <p className="text-sm font-bold text-foreground">€{stats.avgPrice.toFixed(2)}</p>
+                <div>
+                  <p className="text-sm font-bold text-foreground">
+                    €{stats.avgPrice.toFixed(2)}
+                  </p>
                   <p className="text-[10px] text-muted-foreground">Prix moyen</p>
                 </div>
-                <div className="p-2 rounded bg-muted/50">
-                  <p className="text-sm font-bold text-foreground">{Math.round(stats.avgMargin)}%</p>
+                <div>
+                  <p className="text-sm font-bold text-foreground">
+                    {Math.round(stats.avgMargin)}%
+                  </p>
                   <p className="text-[10px] text-muted-foreground">Marge moy.</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            </div>
+          ))}
+        </div>
+      </SectionCard>
 
       {/* Top products */}
-      <h3 className="text-lg font-semibold text-foreground mt-8 mb-4">Produits les plus performants</h3>
-      <div className="space-y-3">
-        {supplierProducts
-          ?.filter(p => p.rotation_indicator === "green")
-          .slice(0, 5)
-          .map(product => (
-            <Card key={product.id} className="bg-card border-border/50">
-              <CardContent className="p-4 flex items-center gap-4">
+      <SectionCard
+        title="Produits les plus performants"
+        description="Top 5 du catalogue à forte demande."
+        icon={<TrendingUp className="w-4 h-4" />}
+      >
+        <div className="space-y-3">
+          {supplierProducts
+            ?.filter((p) => p.rotation_indicator === "green")
+            .slice(0, 5)
+            .map((product) => (
+              <div
+                key={product.id}
+                className="flex items-center gap-4 rounded-xl border border-border/60 bg-card p-3"
+              >
                 <div className="w-12 h-12 rounded-lg bg-muted overflow-hidden shrink-0">
                   {product.image_url ? (
-                    <img src={product.image_url} alt="" className="w-full h-full object-cover" />
+                    <img
+                      src={product.image_url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <Package className="w-5 h-5 text-muted-foreground" />
@@ -96,19 +122,28 @@ export default function AnalyseFournisseurs() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{product.name}</p>
-                  <p className="text-xs text-muted-foreground">{product.category} – MOQ: {product.moq}</p>
+                  <p className="text-sm font-semibold text-foreground truncate">
+                    {product.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {product.category} – MOQ: {product.moq}
+                  </p>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="font-bold text-foreground">€{product.base_price.toFixed(2)}</p>
-                  <Badge variant="outline" className="bg-success/15 text-success text-[10px]">
+                  <p className="font-bold text-foreground">
+                    €{product.base_price.toFixed(2)}
+                  </p>
+                  <Badge
+                    variant="outline"
+                    className="bg-success/15 text-success text-[10px]"
+                  >
                     Demande élevée
                   </Badge>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-      </div>
+              </div>
+            ))}
+        </div>
+      </SectionCard>
     </DashboardLayout>
   );
 }

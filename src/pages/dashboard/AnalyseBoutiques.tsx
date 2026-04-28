@@ -1,7 +1,7 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PageHeader, SectionCard, KpiTile, EmptyState } from "@/components/dashboard/shared";
 import { useBoutiques } from "@/hooks/useBoutiques";
 import { useOrders } from "@/hooks/useOrders";
 import { useProducts } from "@/hooks/useProducts";
@@ -30,65 +30,79 @@ export default function AnalyseBoutiques() {
   }) || [];
 
   return (
-    <DashboardLayout title="Analyse Boutiques" subtitle="Performances détaillées de chaque boutique">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {boutiqueAnalytics.map(boutique => (
-          <Card key={boutique.id} className="bg-card border-border/50">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Store className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">{boutique.name}</h3>
-                  <Badge variant={boutique.status === "published" ? "default" : "secondary"} className="text-[10px]">
-                    {boutique.status === "published" ? "Publiée" : "Brouillon"}
-                  </Badge>
-                </div>
-              </div>
+    <DashboardLayout>
+      <PageHeader
+        eyebrow="Analytics"
+        title="Analyse boutiques"
+        subtitle="Performances détaillées de chacune de vos boutiques."
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Analyse boutiques" },
+        ]}
+      />
+
+      {boutiqueAnalytics.length === 0 ? (
+        <SectionCard>
+          <EmptyState
+            icon={<Store className="w-6 h-6" />}
+            title="Aucune boutique créée"
+            description="Créez votre première boutique pour suivre ses performances ici."
+            action={
+              <Link to="/dashboard/boutiques/create">
+                <Button className="gap-2">
+                  <Store className="w-4 h-4" /> Créer une boutique
+                </Button>
+              </Link>
+            }
+          />
+        </SectionCard>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          {boutiqueAnalytics.map((boutique) => (
+            <SectionCard
+              key={boutique.id}
+              icon={<Store className="w-4 h-4" />}
+              title={boutique.name}
+              description={
+                <Badge
+                  variant={boutique.status === "published" ? "default" : "secondary"}
+                  className="text-[10px] mt-1"
+                >
+                  {boutique.status === "published" ? "Publiée" : "Brouillon"}
+                </Badge>
+              }
+            >
               <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="p-3 rounded-lg bg-muted/50 text-center">
-                  <p className="text-lg font-bold text-foreground">€{boutique.revenue.toLocaleString('fr-FR')}</p>
-                  <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
-                    <TrendingUp className="w-3 h-3" /> CA
-                  </p>
-                </div>
-                <div className="p-3 rounded-lg bg-muted/50 text-center">
-                  <p className="text-lg font-bold text-foreground">{boutique.orderCount}</p>
-                  <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
-                    <ShoppingCart className="w-3 h-3" /> Commandes
-                  </p>
-                </div>
-                <div className="p-3 rounded-lg bg-muted/50 text-center">
-                  <p className="text-lg font-bold text-foreground">{boutique.productCount}</p>
-                  <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
-                    <Package className="w-3 h-3" /> Produits
-                  </p>
-                </div>
-                <div className="p-3 rounded-lg bg-muted/50 text-center">
-                  <p className="text-lg font-bold text-foreground">{boutique.conversionRate}%</p>
-                  <p className="text-[10px] text-muted-foreground">Taux livraison</p>
-                </div>
+                <KpiTile
+                  label="CA"
+                  value={`€${boutique.revenue.toLocaleString("fr-FR")}`}
+                  icon={<TrendingUp className="w-4 h-4" />}
+                />
+                <KpiTile
+                  label="Commandes"
+                  value={boutique.orderCount}
+                  icon={<ShoppingCart className="w-4 h-4" />}
+                />
+                <KpiTile
+                  label="Produits"
+                  value={boutique.productCount}
+                  icon={<Package className="w-4 h-4" />}
+                />
+                <KpiTile
+                  label="Taux livraison"
+                  value={`${boutique.conversionRate}%`}
+                  tone="gold"
+                />
               </div>
               <Link to={`/dashboard/boutiques/edit/${boutique.id}`}>
                 <Button variant="outline" size="sm" className="w-full gap-1">
                   Gérer la boutique <ArrowRight className="w-3 h-3" />
                 </Button>
               </Link>
-            </CardContent>
-          </Card>
-        ))}
-        {boutiqueAnalytics.length === 0 && (
-          <Card className="col-span-full border-dashed">
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">Aucune boutique créée</p>
-              <Link to="/dashboard/boutiques/create">
-                <Button className="mt-4 gap-2"><Store className="w-4 h-4" /> Créer une boutique</Button>
-              </Link>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+            </SectionCard>
+          ))}
+        </div>
+      )}
     </DashboardLayout>
   );
 }

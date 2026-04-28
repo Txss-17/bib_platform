@@ -9,7 +9,12 @@ import { useState } from "react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
-  title: string;
+  /**
+   * Optional fallback title — kept for backwards compatibility with pages that
+   * have not yet adopted <PageHeader>. New pages should NOT pass this and
+   * should render <PageHeader title="..." /> at the top of their content.
+   */
+  title?: string;
   subtitle?: string;
 }
 
@@ -30,17 +35,18 @@ export function DashboardLayout({ children, title, subtitle }: DashboardLayoutPr
       
       <main className={`${isMobile ? "" : "ml-64"} p-3 sm:p-4 md:p-8 min-w-0`}>
         {/* Header */}
-        <header className="flex items-center justify-between mb-6 md:mb-8 gap-2 sm:gap-4">
+        <header className="flex items-center justify-between mb-4 md:mb-6 gap-2 sm:gap-4">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             {isMobile && (
               <Button variant="outline" size="icon" className="shrink-0" onClick={() => setSidebarOpen(true)}>
                 <Menu className="w-5 h-5" />
               </Button>
             )}
+            {/* Legacy title fallback — only renders for pages that haven't migrated to <PageHeader> */}
             {title && (
-              <div className="min-w-0">
-                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground truncate">{title}</h1>
-                {subtitle && <p className="text-muted-foreground mt-0.5 text-xs sm:text-sm truncate">{subtitle}</p>}
+              <div className="min-w-0 sr-only" aria-hidden="true">
+                <h1>{title}</h1>
+                {subtitle && <p>{subtitle}</p>}
               </div>
             )}
           </div>
