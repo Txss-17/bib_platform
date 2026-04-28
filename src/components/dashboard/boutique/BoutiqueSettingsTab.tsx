@@ -1061,6 +1061,70 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
           </div>
         </CardContent>
       </Card>
+
+      {/* OG image cropper */}
+      <OgImageCropperDialog
+        open={cropperOpen}
+        file={cropperFile}
+        onClose={() => { setCropperOpen(false); setCropperFile(null); }}
+        onConfirm={handleCroppedUpload}
+      />
+
+      {/* Country change confirmation */}
+      <AlertDialog
+        open={!!pendingCountry}
+        onOpenChange={(o) => !o && setPendingCountry(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Appliquer les réglages pour{" "}
+              {pendingCountry ? COUNTRY_PRESETS[pendingCountry]?.label : ""} ?
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm">
+                {pendingCountry && (
+                  <>
+                    <p>Les ajustements suivants seront appliqués :</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {(form.default_currency ?? "EUR") !==
+                        COUNTRY_PRESETS[pendingCountry].currency && (
+                        <li>
+                          Devise : <strong>{form.default_currency ?? "EUR"}</strong>{" "}
+                          → <strong>{COUNTRY_PRESETS[pendingCountry].currency}</strong>
+                        </li>
+                      )}
+                      {COUNTRY_PRESETS[pendingCountry].markets
+                        .filter((m) => !(form.target_markets ?? []).includes(m))
+                        .length > 0 && (
+                        <li>
+                          Marchés ajoutés :{" "}
+                          <strong>
+                            {COUNTRY_PRESETS[pendingCountry].markets
+                              .filter((m) => !(form.target_markets ?? []).includes(m))
+                              .join(", ")}
+                          </strong>
+                        </li>
+                      )}
+                    </ul>
+                    <p className="text-xs text-muted-foreground">
+                      Vos marchés actuels seront conservés.
+                    </p>
+                  </>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingCountry(null)}>
+              Annuler
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={acceptCountryChange}>
+              Appliquer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
