@@ -16,6 +16,7 @@ import {
   RealtimeStatusPill,
 } from "@/components/dashboard/shared";
 import { usePaymentsRealtime } from "@/hooks/usePaymentsRealtime";
+import { PaymentsActivityFeed } from "@/components/dashboard/payments/PaymentsActivityFeed";
 
 const fmt = (n: number) =>
   n.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -33,7 +34,8 @@ export default function Paiements() {
   const { user } = useAuth();
   const { data: boutiques = [] } = useBoutiques();
   const boutiqueIds = boutiques.map((b) => b.id);
-  const { status: rtStatus } = usePaymentsRealtime(boutiqueIds);
+  const { status: rtStatus, feed, clearFeed } = usePaymentsRealtime(boutiqueIds);
+  const boutiqueLookup = Object.fromEntries(boutiques.map((b) => [b.id, b.name]));
 
   const { data: payments = [], isLoading: paymentsLoading } = useQuery({
     queryKey: ["payments", user?.id],
@@ -245,7 +247,17 @@ export default function Paiements() {
           )}
         </SectionCard>
 
-        {/* Revenue by Boutique */}
+        {/* Live Activity Feed */}
+        <PaymentsActivityFeed
+          feed={feed}
+          status={rtStatus}
+          onClear={clearFeed}
+          boutiqueLookup={boutiqueLookup}
+        />
+      </div>
+
+      {/* Revenue by Boutique */}
+      <div className="mt-6">
         <SectionCard
           title="Revenus par boutique"
           description={topBoutique ? `${topBoutique.name} en tête` : "Répartition portefeuille"}
