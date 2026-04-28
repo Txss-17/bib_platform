@@ -759,7 +759,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
               <Globe className="w-3.5 h-3.5 text-primary" />
               Pays principal
             </Label>
-            <Select value={country} onValueChange={applyCountry}>
+            <Select value={country} onValueChange={requestCountryChange}>
               <SelectTrigger className="max-w-xs">
                 <SelectValue placeholder="Sélectionnez un pays" />
               </SelectTrigger>
