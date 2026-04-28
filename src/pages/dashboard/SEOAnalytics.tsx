@@ -342,7 +342,6 @@ export default function SEOAnalytics() {
           icon={<Eye className="w-5 h-5" />}
         />
         <KpiTile
-          tone={criticalAlertCount > 0 ? "destructive" as any : undefined}
           label="Alertes SEO"
           value={totalIssues}
           icon={<AlertTriangle className="w-5 h-5" />}
