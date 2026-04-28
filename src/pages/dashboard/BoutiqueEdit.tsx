@@ -1439,6 +1439,11 @@ export default function BoutiqueEdit() {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            {/* Settings tab — SEO per boutique, legal info, commerce, team, danger zone */}
+            <TabsContent value="settings">
+              {id && <BoutiqueSettingsTab boutiqueId={id} />}
+            </TabsContent>
           </Tabs>
         </div>
 
