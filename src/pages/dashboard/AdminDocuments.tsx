@@ -177,7 +177,7 @@ export default function AdminDocuments() {
         />
         <SectionCard>
           <EmptyState
-            icon={<Shield className="w-6 h-6" />}
+            variant="forbidden"
             title="Accès administrateur requis"
             description="Cette page est réservée aux administrateurs de la plateforme Brand-In-A-Box."
           />
