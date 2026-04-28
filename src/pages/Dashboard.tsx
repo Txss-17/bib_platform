@@ -18,6 +18,7 @@ import {
   SectionCard,
   KpiTile,
   KpiTileSkeleton,
+  KpiGrid,
   EmptyState,
 } from "@/components/dashboard/shared";
 import { HealthScoreCard } from "@/components/dashboard/home/HealthScoreCard";

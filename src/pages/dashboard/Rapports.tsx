@@ -9,7 +9,7 @@ import { useOrderStats } from "@/hooks/useOrders";
 import { useProductStats } from "@/hooks/useProducts";
 import { useBoutiqueStats } from "@/hooks/useBoutiques";
 import {
-  PageHeader, SectionCard, KpiTile, EmptyState,
+  PageHeader, SectionCard, KpiTile, KpiGrid, EmptyState,
 } from "@/components/dashboard/shared";
 
 const fmt = (n: number) => n.toLocaleString("fr-FR");
