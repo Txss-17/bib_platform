@@ -1,10 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  PageHeader,
+  SectionCard,
+  KpiTile,
+  EmptyState,
+} from "@/components/dashboard/shared";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -154,7 +160,12 @@ export default function AdminDocuments() {
 
   if (adminLoading) {
     return (
-      <DashboardLayout title="Administration" subtitle="Chargement...">
+      <DashboardLayout>
+        <PageHeader
+          eyebrow="Administration"
+          title="Vérification des documents"
+          subtitle="Chargement…"
+        />
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
         </div>
@@ -164,111 +175,97 @@ export default function AdminDocuments() {
 
   if (!isAdmin) {
     return (
-      <DashboardLayout title="Accès refusé" subtitle="Vous n'avez pas les permissions nécessaires">
-        <Card className="bg-card border-border/50">
-          <CardContent className="flex flex-col items-center justify-center py-20 text-center">
-            <Shield className="w-16 h-16 text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold text-foreground mb-2">Accès administrateur requis</h2>
-            <p className="text-muted-foreground max-w-md">
-              Cette page est réservée aux administrateurs de la plateforme Brand-In-A-Box.
-            </p>
-          </CardContent>
-        </Card>
+      <DashboardLayout>
+        <PageHeader
+          eyebrow="Administration"
+          title="Accès refusé"
+          subtitle="Vous n'avez pas les permissions nécessaires."
+        />
+        <SectionCard>
+          <EmptyState
+            icon={<Shield className="w-6 h-6" />}
+            title="Accès administrateur requis"
+            description="Cette page est réservée aux administrateurs de la plateforme Brand-In-A-Box."
+          />
+        </SectionCard>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout title="Vérification des documents" subtitle="Gérez les documents d'entreprise soumis par les vendeurs">
-      {/* Stats Cards */}
+    <DashboardLayout>
+      <PageHeader
+        eyebrow="Administration"
+        title="Vérification des documents"
+        subtitle="Gérez les documents d'entreprise soumis par les vendeurs."
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Vérification documents" },
+        ]}
+      />
+
+      {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <Card className="bg-card border-border/50">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-accent/20">
-              <Clock className="w-5 h-5 text-accent-foreground" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">{pendingCount}</p>
-              <p className="text-xs text-muted-foreground">En attente</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border/50">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <CheckCircle className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">
-                {documents.filter((d) => d.status === "verified").length}
-              </p>
-              <p className="text-xs text-muted-foreground">Vérifiés</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-card border-border/50">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-destructive/10">
-              <XCircle className="w-5 h-5 text-destructive" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">
-                {documents.filter((d) => d.status === "rejected").length}
-              </p>
-              <p className="text-xs text-muted-foreground">Rejetés</p>
-            </div>
-          </CardContent>
-        </Card>
+        <KpiTile
+          label="En attente"
+          value={pendingCount}
+          icon={<Clock className="w-5 h-5" />}
+          tone="gold"
+        />
+        <KpiTile
+          label="Vérifiés"
+          value={documents.filter((d) => d.status === "verified").length}
+          icon={<CheckCircle className="w-5 h-5" />}
+        />
+        <KpiTile
+          label="Rejetés"
+          value={documents.filter((d) => d.status === "rejected").length}
+          icon={<XCircle className="w-5 h-5" />}
+        />
       </div>
 
       {/* Filters */}
-      <Card className="bg-card border-border/50 mb-6">
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher par nom, entreprise ou type..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Filtrer par statut" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les statuts</SelectItem>
-                <SelectItem value="pending">En attente</SelectItem>
-                <SelectItem value="verified">Vérifiés</SelectItem>
-                <SelectItem value="rejected">Rejetés</SelectItem>
-              </SelectContent>
-            </Select>
+      <SectionCard className="mb-6">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher par nom, entreprise ou type..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
           </div>
-        </CardContent>
-      </Card>
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-full sm:w-48">
+              <SelectValue placeholder="Filtrer par statut" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous les statuts</SelectItem>
+              <SelectItem value="pending">En attente</SelectItem>
+              <SelectItem value="verified">Vérifiés</SelectItem>
+              <SelectItem value="rejected">Rejetés</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </SectionCard>
 
       {/* Documents Table */}
-      <Card className="bg-card border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            Documents soumis ({filteredDocs.length})
-          </CardTitle>
-          <CardDescription>
-            Cliquez sur un document pour le vérifier ou le rejeter
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <SectionCard
+        icon={<FileText className="w-4 h-4" />}
+        title={`Documents soumis (${filteredDocs.length})`}
+        description="Cliquez sur un document pour le vérifier ou le rejeter."
+      >
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
             </div>
           ) : filteredDocs.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              Aucun document trouvé
-            </div>
+            <EmptyState
+              icon={<FileText className="w-6 h-6" />}
+              title="Aucun document trouvé"
+              description="Ajustez vos filtres ou attendez de nouvelles soumissions."
+            />
           ) : (
             <>
               {/* Desktop table */}
@@ -357,8 +354,7 @@ export default function AdminDocuments() {
               </div>
             </>
           )}
-        </CardContent>
-      </Card>
+      </SectionCard>
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedDoc} onOpenChange={(o) => { if (!o) setSelectedDoc(null); }}>
