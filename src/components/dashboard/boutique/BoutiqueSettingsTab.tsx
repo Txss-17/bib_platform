@@ -469,7 +469,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="seo_title">Titre SEO</Label>
-              <span className="text-xs text-muted-foreground">
+              <span className={`text-xs ${(form.seo_title?.length ?? 0) > 65 ? "text-destructive" : "text-muted-foreground"}`}>
                 {(form.seo_title?.length ?? 0)}/65
               </span>
             </div>
@@ -479,12 +479,16 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
               placeholder="Ex: Bijoux artisanaux faits main — Atelier Lina"
               value={form.seo_title ?? ""}
               onChange={(e) => update({ seo_title: e.target.value })}
+              aria-invalid={!!errors.seo_title}
             />
+            {errors.seo_title && (
+              <p className="text-xs text-destructive">{errors.seo_title}</p>
+            )}
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="seo_description">Meta description</Label>
-              <span className="text-xs text-muted-foreground">
+              <span className={`text-xs ${(form.seo_description?.length ?? 0) > 160 ? "text-destructive" : "text-muted-foreground"}`}>
                 {(form.seo_description?.length ?? 0)}/160
               </span>
             </div>
@@ -496,19 +500,102 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
               value={form.seo_description ?? ""}
               onChange={(e) => update({ seo_description: e.target.value })}
             />
+            {errors.seo_description && (
+              <p className="text-xs text-destructive">{errors.seo_description}</p>
+            )}
           </div>
+
+          {/* OG Image uploader with preview */}
           <div className="space-y-2">
-            <Label htmlFor="seo_og_image_url">Image Open Graph (URL)</Label>
+            <Label>Image Open Graph (1200×630 recommandé)</Label>
+            <input
+              ref={ogFileRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              hidden
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleOgUpload(f);
+              }}
+            />
+            {form.seo_og_image_url ? (
+              <div className="rounded-lg border border-border bg-muted/30 overflow-hidden">
+                <div className="relative aspect-[1200/630] bg-muted">
+                  <img
+                    src={form.seo_og_image_url}
+                    alt="Aperçu image OG"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-2 p-2 bg-card">
+                  <span className="text-xs text-muted-foreground truncate max-w-[60%]">
+                    {form.seo_og_image_url.split("/").pop()}
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => ogFileRef.current?.click()}
+                      disabled={uploadingOg}
+                    >
+                      <Upload className="w-3.5 h-3.5 mr-1.5" />
+                      Remplacer
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => update({ seo_og_image_url: "" })}
+                    >
+                      <X className="w-3.5 h-3.5 mr-1.5" />
+                      Supprimer
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => ogFileRef.current?.click()}
+                disabled={uploadingOg}
+                className="w-full aspect-[1200/630] max-h-48 rounded-lg border-2 border-dashed border-border hover:border-primary/50 hover:bg-muted/30 transition-colors flex flex-col items-center justify-center gap-2 text-muted-foreground"
+              >
+                {uploadingOg ? (
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                ) : (
+                  <>
+                    <ImageIcon className="w-7 h-7" />
+                    <span className="text-sm font-medium">
+                      Cliquez pour téléverser une image OG
+                    </span>
+                    <span className="text-xs">
+                      PNG / JPG / WebP — max 5 Mo
+                    </span>
+                  </>
+                )}
+              </button>
+            )}
             <Input
-              id="seo_og_image_url"
-              placeholder="https://..."
+              placeholder="ou collez une URL externe"
               value={form.seo_og_image_url ?? ""}
               onChange={(e) => update({ seo_og_image_url: e.target.value })}
+              aria-invalid={!!errors.seo_og_image_url}
+              className="text-xs"
             />
-            <p className="text-xs text-muted-foreground">
-              Ratio recommandé 1200×630 pour les partages réseaux sociaux.
-            </p>
+            {errors.seo_og_image_url && (
+              <p className="text-xs text-destructive">{errors.seo_og_image_url}</p>
+            )}
           </div>
+
+          {/* Real-time snippet preview */}
+          <SnippetPreview
+            slug={boutique.slug}
+            title={form.seo_title || boutique.name}
+            description={
+              form.seo_description ||
+              "Découvrez notre boutique et nos produits soigneusement sélectionnés."
+            }
+            ogImage={form.seo_og_image_url || ""}
+          />
         </CardContent>
       </Card>
 
