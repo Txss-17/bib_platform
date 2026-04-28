@@ -94,13 +94,13 @@ export function AddToBoutiqueDialog({ product, open, onOpenChange }: AddToBoutiq
 
         {success ? (
           <div className="py-8 text-center space-y-3">
-            <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
+            <CheckCircle2 className="w-12 h-12 text-success mx-auto" />
             <p className="text-sm font-medium">Produit ajouté avec succès !</p>
             <p className="text-xs text-muted-foreground">
               Retrouvez-le dans "Mes Produits"
             </p>
-            <div className="mx-auto max-w-xs p-3 rounded-lg bg-orange-50 border border-orange-200 text-left dark:bg-orange-950/20 dark:border-orange-800">
-              <p className="text-xs text-orange-700 dark:text-orange-300">
+            <div className="mx-auto max-w-xs p-3 rounded-lg bg-warning/10 border border-warning/30 text-left dark:border-warning/30">
+              <p className="text-xs text-warning dark:text-warning">
                 <AlertTriangle className="w-3.5 h-3.5 inline mr-1" />
                 <strong>Échantillon requis :</strong> vous devrez valider un échantillon avant de pouvoir vendre ce produit.
               </p>
@@ -168,13 +168,13 @@ export function AddToBoutiqueDialog({ product, open, onOpenChange }: AddToBoutiq
                 </div>
                 <div>
                   <p className="text-[10px] text-muted-foreground">Profit/unité</p>
-                  <p className="text-sm font-bold text-green-600">+{profit.toFixed(2)} €</p>
+                  <p className="text-sm font-bold text-success">+{profit.toFixed(2)} €</p>
                 </div>
               </div>
             </div>
 
             {isDuplicate && (
-              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-yellow-500/10 border border-yellow-200 text-yellow-700">
+              <div className="flex items-center gap-2 p-2.5 rounded-lg bg-warning/10 border border-warning/30 text-warning">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
                 <p className="text-xs">Ce produit est déjà dans cette boutique</p>
               </div>

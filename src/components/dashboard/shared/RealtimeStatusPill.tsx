@@ -25,20 +25,20 @@ const MAP: Record<
   },
   connecting: {
     label: "Connexion…",
-    dotClass: "bg-amber-500 animate-pulse",
-    pillClass: "bg-amber-500/10 text-amber-600",
+    dotClass: "bg-warning animate-pulse",
+    pillClass: "bg-warning/10 text-warning",
     Icon: Loader2,
   },
   reconnecting: {
     label: "Reconnexion…",
-    dotClass: "bg-amber-500 animate-pulse",
-    pillClass: "bg-amber-500/10 text-amber-600",
+    dotClass: "bg-warning animate-pulse",
+    pillClass: "bg-warning/10 text-warning",
     Icon: RefreshCcw,
   },
   live: {
     label: "Live",
-    dotClass: "bg-emerald-500 animate-pulse",
-    pillClass: "bg-emerald-500/10 text-emerald-600",
+    dotClass: "bg-success animate-pulse",
+    pillClass: "bg-success/10 text-success",
   },
   offline: {
     label: "Hors-ligne",

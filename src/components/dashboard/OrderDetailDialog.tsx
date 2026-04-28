@@ -14,10 +14,10 @@ import { toast } from "sonner";
 type LogisticsStatus = Database["public"]["Enums"]["logistics_status"];
 
 const statusConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  pending: { label: "En attente", icon: Clock, color: "text-yellow-500" },
-  processing: { label: "En préparation", icon: Package, color: "text-blue-500" },
-  shipped: { label: "Expédié", icon: Truck, color: "text-purple-500" },
-  delivered: { label: "Livré", icon: CheckCircle, color: "text-green-500" },
+  pending: { label: "En attente", icon: Clock, color: "text-warning" },
+  processing: { label: "En préparation", icon: Package, color: "text-info" },
+  shipped: { label: "Expédié", icon: Truck, color: "text-accent" },
+  delivered: { label: "Livré", icon: CheckCircle, color: "text-success" },
   returned: { label: "Retourné", icon: AlertCircle, color: "text-destructive" },
 };
 
@@ -132,9 +132,9 @@ export function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDial
           )}
 
           {order.customer_validated && (
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-green-50 border border-green-200 dark:bg-green-950/20 dark:border-green-800">
-              <ShieldCheck className="w-4 h-4 text-green-600" />
-              <span className="text-xs font-medium text-green-700 dark:text-green-400">Commande validée par le vendeur</span>
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-success/10 border border-success/30 dark:border-success/30">
+              <ShieldCheck className="w-4 h-4 text-success" />
+              <span className="text-xs font-medium text-success dark:text-success">Commande validée par le vendeur</span>
             </div>
           )}
 
@@ -182,7 +182,7 @@ export function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDial
           {/* Signalements */}
           <div>
             <h4 className="text-sm font-semibold mb-3 flex items-center gap-1.5">
-              <AlertTriangle className="w-4 h-4 text-orange-500" />
+              <AlertTriangle className="w-4 h-4 text-warning" />
               Signalements
             </h4>
             <OrderIssuePanel orderId={order.id} />

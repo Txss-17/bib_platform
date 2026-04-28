@@ -70,7 +70,7 @@ const ALERT_ICON = {
 };
 
 function scoreColor(score: number) {
-  if (score >= 80) return "text-emerald-600";
+  if (score >= 80) return "text-success";
   if (score >= 60) return "text-secondary";
   return "text-destructive";
 }

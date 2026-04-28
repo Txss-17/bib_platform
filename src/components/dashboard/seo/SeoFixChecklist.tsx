@@ -58,9 +58,9 @@ const CATEGORY_META: Record<
 };
 
 const SEVERITY_BADGE: Record<Severity, string> = {
-  high: "border-red-500/40 text-red-600 bg-red-500/10",
-  medium: "border-amber-500/40 text-amber-600 bg-amber-500/10",
-  low: "border-emerald-500/40 text-emerald-600 bg-emerald-500/10",
+  high: "border-destructive/30/40 text-destructive bg-destructive/10",
+  medium: "border-warning/30/40 text-warning bg-warning/10",
+  low: "border-success/30/40 text-success bg-success/10",
 };
 
 interface Props {
@@ -216,8 +216,8 @@ export function SeoFixChecklist({ boutiques, products }: Props) {
       }
     >
       {totalFixed ? (
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 flex items-center gap-3">
-          <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
+        <div className="rounded-xl border border-success/30/30 bg-success/5 p-4 flex items-center gap-3">
+          <CheckCircle2 className="w-6 h-6 text-success shrink-0" />
           <div>
             <p className="text-sm font-semibold text-foreground">
               Tous vos contenus sont conformes 🎉
@@ -274,8 +274,8 @@ export function SeoFixChecklist({ boutiques, products }: Props) {
                   <div
                     className={`shrink-0 w-8 h-8 rounded-lg border flex items-center justify-center ${
                       meta.tone === "error"
-                        ? "border-red-500/30 bg-red-500/10 text-red-600"
-                        : "border-amber-500/30 bg-amber-500/10 text-amber-600"
+                        ? "border-destructive/30/30 bg-destructive/10 text-destructive"
+                        : "border-warning/30/30 bg-warning/10 text-warning"
                     }`}
                   >
                     <Icon className="w-4 h-4" />

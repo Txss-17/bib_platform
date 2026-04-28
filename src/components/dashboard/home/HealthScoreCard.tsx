@@ -17,7 +17,7 @@ const STATUS_ICON = {
 } as const;
 
 const STATUS_TONE = {
-  ok: "text-emerald-600 bg-emerald-500/10",
+  ok: "text-success bg-success/10",
   warning: "text-secondary bg-secondary/15",
   critical: "text-destructive bg-destructive/10",
 } as const;
