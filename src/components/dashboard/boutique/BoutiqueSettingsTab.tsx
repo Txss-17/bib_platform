@@ -194,6 +194,12 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
 
   // Local form state
   const [form, setForm] = useState<Partial<Boutique>>({});
+  const [errors, setErrors] = useState<SettingsErrors>({});
+  const [country, setCountry] = useState<string>("FR");
+  const [uploadingOg, setUploadingOg] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const ogFileRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (boutique) {
       setForm({
@@ -208,14 +214,68 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
         default_currency: boutique.default_currency ?? "EUR",
         target_markets: boutique.target_markets ?? ["EU"],
       });
+      // Infer country from currency on first load (best guess only)
+      const guessed = Object.entries(COUNTRY_PRESETS).find(
+        ([, p]) => p.currency === (boutique.default_currency ?? "EUR")
+      );
+      if (guessed) setCountry(guessed[0]);
     }
   }, [boutique]);
 
   const update = (patch: Partial<Boutique>) =>
     setForm((prev) => ({ ...prev, ...patch }));
 
+  /** Apply country preset: switches currency and seeds target markets if empty. */
+  const applyCountry = (code: string) => {
+    setCountry(code);
+    const preset = COUNTRY_PRESETS[code];
+    if (!preset) return;
+    const currentMarkets = form.target_markets ?? [];
+    update({
+      default_currency: preset.currency,
+      // Merge to keep user choices that don't conflict
+      target_markets: Array.from(new Set([...preset.markets, ...currentMarkets])),
+    });
+    toast.info(
+      `Devise ${preset.currency} et marchés ${preset.markets.join(", ")} appliqués pour ${preset.label}.`
+    );
+  };
+
+  /** Compute completeness warnings to surface at the bottom of the commerce card. */
+  const consistencyWarnings = useMemo(() => {
+    const warns: string[] = [];
+    const markets = form.target_markets ?? [];
+    const currency = form.default_currency ?? "EUR";
+    if (markets.includes("US") && currency !== "USD") {
+      warns.push("Marché US sélectionné mais devise ≠ USD — préférez USD pour ce marché.");
+    }
+    if (markets.includes("UK") && currency !== "GBP") {
+      warns.push("Marché UK sélectionné mais devise ≠ GBP — préférez GBP pour ce marché.");
+    }
+    if (markets.length === 0) {
+      warns.push("Aucun marché cible défini — au moins un est nécessaire pour la livraison.");
+    }
+    if (!form.legal_business_name && !form.legal_siret) {
+      warns.push("Aucune information légale renseignée — requis pour CGV et factures.");
+    }
+    return warns;
+  }, [form.target_markets, form.default_currency, form.legal_business_name, form.legal_siret]);
+
   const saveMutation = useMutation({
     mutationFn: async () => {
+      // Client-side validation first
+      const parsed = settingsSchema.safeParse(form);
+      if (!parsed.success) {
+        const fieldErrors: SettingsErrors = {};
+        parsed.error.issues.forEach((iss) => {
+          const k = iss.path[0] as keyof SettingsErrors;
+          if (k && !fieldErrors[k]) fieldErrors[k] = iss.message;
+        });
+        setErrors(fieldErrors);
+        throw new Error("Vérifiez les champs en rouge.");
+      }
+      setErrors({});
+
       const { error } = await supabase
         .from("boutiques")
         .update({
@@ -223,7 +283,9 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
           seo_description: form.seo_description || null,
           seo_og_image_url: form.seo_og_image_url || null,
           legal_business_name: form.legal_business_name || null,
-          legal_siret: form.legal_siret || null,
+          legal_siret: form.legal_siret
+            ? form.legal_siret.replace(/\s+/g, "")
+            : null,
           legal_address: form.legal_address || null,
           legal_email: form.legal_email || null,
           legal_phone: form.legal_phone || null,
@@ -238,8 +300,43 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
       queryClient.invalidateQueries({ queryKey: ["boutique-settings", boutiqueId] });
       queryClient.invalidateQueries({ queryKey: ["boutique-edit", boutiqueId] });
     },
-    onError: (e: any) => toast.error(e?.message || "Erreur lors de la sauvegarde"),
+    onError: (e: any) => toast.error(formatServerError(e)),
   });
+
+  /** Upload an image to the boutique-media bucket and store its public URL. */
+  const handleOgUpload = async (file: File) => {
+    if (!user) {
+      toast.error("Session expirée");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Veuillez sélectionner une image (PNG, JPG ou WebP)");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("L'image ne doit pas dépasser 5 Mo");
+      return;
+    }
+    setUploadingOg(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `og/${user.id}/${boutiqueId}_${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("boutique-media")
+        .upload(path, file, { cacheControl: "3600", upsert: false });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage
+        .from("boutique-media")
+        .getPublicUrl(path);
+      update({ seo_og_image_url: pub.publicUrl });
+      toast.success("Image OG téléchargée — n'oubliez pas d'enregistrer.");
+    } catch (e: any) {
+      toast.error(e?.message || "Échec de l'upload");
+    } finally {
+      setUploadingOg(false);
+      if (ogFileRef.current) ogFileRef.current.value = "";
+    }
+  };
 
   // Unpublish
   const unpublishMutation = useMutation({
