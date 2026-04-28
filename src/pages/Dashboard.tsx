@@ -414,7 +414,7 @@ export default function Dashboard() {
             <div className="space-y-2 pt-2">
               <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-emerald-600" />
+                  <TrendingUp className="w-4 h-4 text-success" />
                   <span className="text-sm text-foreground">Revenus du mois</span>
                 </div>
                 <span className="text-sm font-bold text-foreground tabular-nums">
