@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { readSeoSettings } from "@/lib/seoSettings";
 
 type SEOType = "website" | "product" | "article" | "store" | "profile";
 
@@ -179,23 +180,29 @@ export function useSEO({
 /**
  * Helper: build standard hreflang alternates for FR/EN with x-default,
  * preserving the current pathname and using `?lang=` as the locale switch.
+ *
+ * If `locales`/`defaultLocale` are omitted, the values are taken from the
+ * user's SEO settings (Paramètres > SEO).
  */
 export function buildLocaleAlternates(
   pathname?: string,
-  locales: string[] = ["fr", "en"],
-  defaultLocale = "fr",
+  locales?: string[],
+  defaultLocale?: string,
 ): HreflangAlternate[] {
   if (typeof window === "undefined") return [];
+  const settings = readSeoSettings();
+  const finalLocales = locales ?? settings.activeLocales;
+  const finalDefault = defaultLocale ?? settings.defaultLocale;
   const path = pathname ?? window.location.pathname;
-  const origin = window.location.origin;
+  const origin = settings.publicOrigin?.replace(/\/$/, "") || window.location.origin;
   const base = `${origin}${path}`;
-  const alts: HreflangAlternate[] = locales.map((l) => ({
+  const alts: HreflangAlternate[] = finalLocales.map((l) => ({
     hreflang: l,
     href: `${base}?lang=${l}`,
   }));
   alts.push({
     hreflang: "x-default",
-    href: defaultLocale === "fr" ? base : `${base}?lang=${defaultLocale}`,
+    href: `${base}?lang=${finalDefault}`,
   });
   return alts;
 }

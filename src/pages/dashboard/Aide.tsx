@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   HelpCircle, Mail, BookOpen, MessageCircle, Sparkles, Clock, ArrowRight,
-  Search, ExternalLink, Copy, Check,
+  Search, ExternalLink, Copy, Check, Globe,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -16,6 +16,12 @@ import {
   PageHeader, SectionCard, KpiTile,
 } from "@/components/dashboard/shared";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { useBoutiques } from "@/hooks/useBoutiques";
+import { useProducts } from "@/hooks/useProducts";
+import { resolvePublicOrigin } from "@/lib/seoSettings";
 
 const faqItems = [
   {
@@ -56,8 +62,49 @@ export default function Aide() {
   const [contactSubject, setContactSubject] = useState("");
   const [sending, setSending] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [inspectTarget, setInspectTarget] = useState<string>("");
+  const { data: boutiques = [] } = useBoutiques();
+  const { data: products = [] } = useProducts();
 
   const sitemapUrl = `https://lfsiwtpctqxpzyskakey.supabase.co/functions/v1/sitemap-xml`;
+
+  const publicOrigin = resolvePublicOrigin();
+
+  // Build the list of inspectable URLs (published boutiques + their active products)
+  const inspectOptions = (() => {
+    const opts: { value: string; label: string; group: string }[] = [];
+    for (const b of boutiques.filter((x) => x.status === "published")) {
+      opts.push({
+        value: `${publicOrigin}/boutique/${b.slug}`,
+        label: `Accueil — ${b.name}`,
+        group: "Boutiques",
+      });
+    }
+    for (const p of products.filter((p) => p.status === "active")) {
+      const b = boutiques.find((x) => x.id === p.boutique_id);
+      if (!b || b.status !== "published") continue;
+      opts.push({
+        value: `${publicOrigin}/boutique/${b.slug}/product/${p.id}`,
+        label: `${p.supplier_products?.name || "Produit"} — ${b.name}`,
+        group: "Produits",
+      });
+    }
+    return opts;
+  })();
+
+  const handleInspectUrl = () => {
+    if (!inspectTarget) {
+      toast.error("Sélectionnez d'abord une boutique ou un produit");
+      return;
+    }
+    const inspectionUrl = `https://search.google.com/search-console/inspect?resource_id=${encodeURIComponent(
+      publicOrigin + "/",
+    )}&id=${encodeURIComponent(inspectTarget)}`;
+    window.open(inspectionUrl, "_blank", "noopener,noreferrer");
+    toast.success("Inspection ouverte dans Search Console", {
+      description: "Cliquez « Demander une indexation » dans la nouvelle fenêtre.",
+    });
+  };
 
   const copyToClipboard = (value: string, key: string) => {
     navigator.clipboard.writeText(value).then(() => {
@@ -301,6 +348,62 @@ export default function Aide() {
           alternates <code>hreflang</code> FR/EN pour le ciblage international, et est
           régénéré automatiquement à chaque ajout/édition de boutique ou de produit.
           Pas besoin de le resoumettre.
+        </div>
+      </SectionCard>
+
+      {/* Quick URL Inspection launcher */}
+      <SectionCard
+        className="mt-6"
+        title="Inspection d'URL — accélérer l'indexation"
+        description="Ouvre Search Console pré-rempli avec l'URL choisie et lance la demande d'indexation."
+        icon={<Globe className="w-4 h-4 text-secondary" />}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-end">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-foreground">
+              Page à inspecter
+            </label>
+            <Select value={inspectTarget} onValueChange={setInspectTarget}>
+              <SelectTrigger>
+                <SelectValue placeholder="Choisir une boutique ou un produit publié…" />
+              </SelectTrigger>
+              <SelectContent>
+                {inspectOptions.length === 0 ? (
+                  <div className="px-3 py-2 text-xs text-muted-foreground">
+                    Aucune page publiée pour l'instant.
+                  </div>
+                ) : (
+                  inspectOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      <span className="text-[10px] font-semibold text-secondary mr-2">
+                        {opt.group}
+                      </span>
+                      {opt.label}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+            {inspectTarget && (
+              <p className="text-[11px] text-muted-foreground truncate">
+                URL ciblée : <code className="text-foreground">{inspectTarget}</code>
+              </p>
+            )}
+          </div>
+          <Button
+            onClick={handleInspectUrl}
+            disabled={!inspectTarget}
+            className="gap-2 whitespace-nowrap"
+          >
+            <Search className="w-4 h-4" /> Lancer l'inspection
+            <ExternalLink className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+        <div className="mt-3 rounded-lg border border-border/60 bg-muted/30 p-2.5 text-[11px] text-muted-foreground">
+          <strong className="text-foreground">Comment ça marche :</strong>{" "}
+          Le bouton ouvre Google Search Console avec l'URL sélectionnée déjà collée
+          dans l'inspection. Cliquez ensuite sur « Demander une indexation » dans
+          Google pour accélérer la prise en compte (jusqu'à 24-48 h).
         </div>
       </SectionCard>
     </DashboardLayout>

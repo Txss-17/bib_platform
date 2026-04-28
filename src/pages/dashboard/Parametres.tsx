@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { User, Bell, Shield, CreditCard, Globe, Loader2, FileCheck, Trash2, Crown, AlertTriangle } from "lucide-react";
+import { User, Bell, Shield, CreditCard, Globe, Loader2, FileCheck, Trash2, Crown, AlertTriangle, Search, Languages, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { BusinessDocuments } from "@/components/dashboard/BusinessDocuments";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,15 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useProducts } from "@/hooks/useProducts";
 import { PageHeader, SectionCard } from "@/components/dashboard/shared";
+import {
+  ALL_LOCALES,
+  useSeoSettings,
+  type SeoLocale,
+} from "@/lib/seoSettings";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,6 +59,7 @@ const plans = [
 export default function Parametres() {
   const { profile, refreshProfile, user } = useAuth();
   const { data: products = [] } = useProducts();
+  const { settings: seoSettings, update: updateSeoSettings } = useSeoSettings();
   const [fullName, setFullName] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [businessType, setBusinessType] = useState("");
@@ -102,6 +112,21 @@ export default function Parametres() {
     setDeleting(false);
   };
 
+  const handleToggleLocale = (locale: SeoLocale, checked: boolean) => {
+    let next = checked
+      ? [...new Set([...seoSettings.activeLocales, locale])]
+      : seoSettings.activeLocales.filter((l) => l !== locale);
+    if (next.length === 0) {
+      toast.error("Au moins une locale doit rester active");
+      return;
+    }
+    // Default must stay in active list — pick first if needed
+    let defaultLocale = seoSettings.defaultLocale;
+    if (!next.includes(defaultLocale)) defaultLocale = next[0];
+    updateSeoSettings({ activeLocales: next, defaultLocale });
+    toast.success("Préférences SEO mises à jour");
+  };
+
   return (
     <DashboardLayout title="Paramètres" subtitle="Gérez votre compte">
       <PageHeader
@@ -123,6 +148,10 @@ export default function Parametres() {
             <TabsTrigger value="abonnement" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
               <Crown className="w-3.5 h-3.5" />
               <span>Abonnement</span>
+            </TabsTrigger>
+            <TabsTrigger value="seo" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
+              <Search className="w-3.5 h-3.5" />
+              <span>SEO</span>
             </TabsTrigger>
             <TabsTrigger value="notifications" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
               <Bell className="w-3.5 h-3.5" />
@@ -278,6 +307,133 @@ export default function Parametres() {
                     </Button>
                 </div>
               ))}
+              </div>
+            </SectionCard>
+          </TabsContent>
+
+          {/* SEO multilingue */}
+          <TabsContent value="seo" className="mt-4 space-y-4">
+            <SectionCard
+              title="Locales & marchés actifs"
+              description="Choisissez les paires hreflang publiées pour vos boutiques et produits"
+              icon={<Languages className="w-4 h-4" />}
+            >
+              <div className="space-y-2">
+                {ALL_LOCALES.map((l) => {
+                  const active = seoSettings.activeLocales.includes(l.value);
+                  const isDefault = seoSettings.defaultLocale === l.value;
+                  return (
+                    <div
+                      key={l.value}
+                      className={`flex items-center justify-between gap-3 rounded-xl border p-3 ${
+                        active
+                          ? "border-secondary/40 bg-secondary/5"
+                          : "border-border/60 bg-card"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <Checkbox
+                          checked={active}
+                          onCheckedChange={(c) =>
+                            handleToggleLocale(l.value, Boolean(c))
+                          }
+                          aria-label={`Activer ${l.label}`}
+                        />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                            {l.label}{" "}
+                            <Badge variant="outline" className="text-[10px]">
+                              {l.value}
+                            </Badge>
+                            {isDefault && (
+                              <Badge className="bg-secondary text-secondary-foreground text-[10px] gap-1">
+                                <Star className="w-2.5 h-2.5" /> x-default
+                              </Badge>
+                            )}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">
+                            Marché : {l.market}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </SectionCard>
+
+            <SectionCard
+              title="Locale par défaut"
+              description="Utilisée pour la balise canonique et l'attribut x-default"
+              icon={<Star className="w-4 h-4 text-secondary" />}
+            >
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Locale par défaut</Label>
+                  <Select
+                    value={seoSettings.defaultLocale}
+                    onValueChange={(v) => {
+                      updateSeoSettings({ defaultLocale: v as SeoLocale });
+                      toast.success("Locale par défaut mise à jour");
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {seoSettings.activeLocales.map((code) => {
+                        const meta = ALL_LOCALES.find((x) => x.value === code);
+                        return (
+                          <SelectItem key={code} value={code}>
+                            {meta?.label} ({code})
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[11px] text-muted-foreground">
+                    Les visiteurs hors locales actives seront orientés vers cette
+                    version par Google.
+                  </p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Domaine public (optionnel)</Label>
+                  <Input
+                    placeholder="https://www.mon-domaine.com"
+                    value={seoSettings.publicOrigin || ""}
+                    onChange={(e) =>
+                      updateSeoSettings({
+                        publicOrigin: e.target.value || undefined,
+                      })
+                    }
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    Si vous utilisez un domaine personnalisé, indiquez-le ici pour
+                    que les canoniques et hreflang pointent vers la bonne URL.
+                  </p>
+                </div>
+              </div>
+            </SectionCard>
+
+            <SectionCard
+              title="Aperçu des hreflang générés"
+              description="Exemple appliqué à toutes vos boutiques et produits publiés"
+              icon={<Globe className="w-4 h-4" />}
+            >
+              <div className="rounded-xl border border-border bg-muted/30 p-3 font-mono text-[11px] text-foreground space-y-0.5 overflow-x-auto">
+                {seoSettings.activeLocales.map((l) => (
+                  <div key={l}>
+                    &lt;link rel="alternate" hreflang="{l}" href="
+                    {(seoSettings.publicOrigin || "https://votre-domaine.com")}
+                    /boutique/exemple?lang={l}" /&gt;
+                  </div>
+                ))}
+                <div>
+                  &lt;link rel="alternate" hreflang="x-default" href="
+                  {(seoSettings.publicOrigin || "https://votre-domaine.com")}
+                  /boutique/exemple?lang={seoSettings.defaultLocale}" /&gt;
+                </div>
               </div>
             </SectionCard>
           </TabsContent>
