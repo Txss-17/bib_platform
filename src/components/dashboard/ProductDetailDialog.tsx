@@ -20,10 +20,10 @@ type SupplierProduct = Tables<"supplier_products">;
 type RotationIndicator = "green" | "yellow" | "orange" | "red";
 
 const rotationConfig: Record<RotationIndicator, { label: string; color: string; badgeClass: string }> = {
-  green: { label: "Demande Élevée", color: "bg-green-500", badgeClass: "bg-green-500/15 text-green-700 border-green-200" },
-  yellow: { label: "Demande Modérée", color: "bg-yellow-500", badgeClass: "bg-yellow-500/15 text-yellow-700 border-yellow-200" },
-  orange: { label: "Demande Faible", color: "bg-orange-500", badgeClass: "bg-orange-500/15 text-orange-700 border-orange-200" },
-  red: { label: "Très Utilisé", color: "bg-red-500", badgeClass: "bg-blue-500/15 text-blue-700 border-blue-200" },
+  green: { label: "Demande Élevée", color: "bg-success", badgeClass: "bg-success/15 text-success border-success/30" },
+  yellow: { label: "Demande Modérée", color: "bg-warning", badgeClass: "bg-warning/15 text-warning border-warning/30" },
+  orange: { label: "Demande Faible", color: "bg-warning", badgeClass: "bg-warning/15 text-warning border-warning/30" },
+  red: { label: "Très Utilisé", color: "bg-destructive", badgeClass: "bg-info/15 text-info border-info/30" },
 };
 
 // Mock performance data derived from product
@@ -69,7 +69,7 @@ function StarRating({ rating, size = "sm" }: { rating: number; size?: "sm" | "md
       {[1, 2, 3, 4, 5].map(i => (
         <Star
           key={i}
-          className={`${sizeClass} ${i <= rating ? "fill-yellow-400 text-yellow-400" : i - 0.5 <= rating ? "fill-yellow-400/50 text-yellow-400" : "text-muted-foreground/30"}`}
+          className={`${sizeClass} ${i <= rating ? "fill-warning text-warning" : i - 0.5 <= rating ? "fill-warning/50 text-warning" : "text-muted-foreground/30"}`}
         />
       ))}
     </div>
@@ -153,7 +153,7 @@ export function ProductDetailDialog({ product, open, onOpenChange, onAdd, isFavo
                   {rotation.label}
                 </Badge>
                 {isCustomizable && (
-                  <Badge variant="outline" className="text-[10px] bg-purple-500/10 text-purple-700 border-purple-200">
+                  <Badge variant="outline" className="text-[10px] bg-accent/10 text-accent border-accent/30">
                     <Palette className="w-3 h-3 mr-1" /> Personnalisable
                   </Badge>
                 )}
@@ -193,7 +193,7 @@ export function ProductDetailDialog({ product, open, onOpenChange, onAdd, isFavo
                 <span className="text-xs font-mono w-10 text-right">{margin}%</span>
               </div>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Profit/unité: <span className="text-green-600 font-semibold">+{profit.toFixed(2)} €</span></span>
+                <span className="text-muted-foreground">Profit/unité: <span className="text-success font-semibold">+{profit.toFixed(2)} €</span></span>
                 <span className="text-muted-foreground">MOQ: <span className="font-semibold text-foreground">{product.moq} unités</span></span>
               </div>
             </div>
@@ -201,7 +201,7 @@ export function ProductDetailDialog({ product, open, onOpenChange, onAdd, isFavo
             <div className="flex gap-2">
               {onToggleFavorite && (
                 <Button variant="outline" size="lg" className="px-3" onClick={onToggleFavorite}>
-                  <Heart className={`w-4 h-4 ${isFavorite ? "fill-red-500 text-red-500" : ""}`} />
+                  <Heart className={`w-4 h-4 ${isFavorite ? "fill-destructive text-destructive" : ""}`} />
                 </Button>
               )}
               <Button className="flex-1 gap-2" size="lg" onClick={onAdd}>
@@ -276,7 +276,7 @@ export function ProductDetailDialog({ product, open, onOpenChange, onAdd, isFavo
                 <div className="flex flex-wrap gap-2">
                   {["Stockage", "Emballage", "Expédition", "Suivi", "Retours"].map(item => (
                     <Badge key={item} variant="secondary" className="text-[10px] gap-1">
-                      <ShieldCheck className="w-3 h-3 text-green-500" /> {item}
+                      <ShieldCheck className="w-3 h-3 text-success" /> {item}
                     </Badge>
                   ))}
                 </div>
@@ -310,7 +310,7 @@ export function ProductDetailDialog({ product, open, onOpenChange, onAdd, isFavo
               <div className="grid grid-cols-3 gap-3">
                 <Card className="bg-muted/30">
                   <CardContent className="p-3 text-center">
-                    <TrendingUp className="w-4 h-4 text-green-500 mx-auto mb-1" />
+                    <TrendingUp className="w-4 h-4 text-success mx-auto mb-1" />
                     <p className="text-lg font-bold">
                       +{Math.round(((perfData[perfData.length - 1] as any)?.ventes / (perfData[0] as any)?.ventes - 1) * 100)}%
                     </p>
@@ -328,7 +328,7 @@ export function ProductDetailDialog({ product, open, onOpenChange, onAdd, isFavo
                 </Card>
                 <Card className="bg-muted/30">
                   <CardContent className="p-3 text-center">
-                    <Star className="w-4 h-4 text-yellow-500 mx-auto mb-1" />
+                    <Star className="w-4 h-4 text-warning mx-auto mb-1" />
                     <p className="text-lg font-bold">{avgRating.toFixed(1)}</p>
                     <p className="text-[10px] text-muted-foreground">Note moy.</p>
                   </CardContent>
@@ -359,7 +359,7 @@ export function ProductDetailDialog({ product, open, onOpenChange, onAdd, isFavo
                             <p className="text-sm font-medium">{review.author}</p>
                             {review.verified && (
                               <Badge variant="secondary" className="text-[9px] h-4 px-1.5 gap-0.5">
-                                <ShieldCheck className="w-2.5 h-2.5 text-green-500" /> Vérifié
+                                <ShieldCheck className="w-2.5 h-2.5 text-success" /> Vérifié
                               </Badge>
                             )}
                           </div>
@@ -377,9 +377,9 @@ export function ProductDetailDialog({ product, open, onOpenChange, onAdd, isFavo
             {/* Customize Tab */}
             {isCustomizable && (
               <TabsContent value="customize" className="mt-4 space-y-4">
-                <div className="bg-purple-500/5 border border-purple-200 rounded-lg p-4">
+                <div className="bg-accent/5 border border-accent/30 rounded-lg p-4">
                   <div className="flex items-start gap-3">
-                    <Palette className="w-5 h-5 text-purple-600 mt-0.5 shrink-0" />
+                    <Palette className="w-5 h-5 text-accent mt-0.5 shrink-0" />
                     <div>
                       <h4 className="text-sm font-semibold text-foreground">Ce produit est personnalisable</h4>
                       <p className="text-xs text-muted-foreground mt-1">

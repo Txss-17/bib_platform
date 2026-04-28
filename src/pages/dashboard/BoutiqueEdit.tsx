@@ -1398,7 +1398,7 @@ export default function BoutiqueEdit() {
                               </div>
                               <div className="flex items-center gap-2">
                                 {saved && (
-                                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                                  <span className="text-xs bg-success/15 text-success px-2 py-0.5 rounded-full">
                                     Personnalisé
                                   </span>
                                 )}
@@ -1426,7 +1426,7 @@ export default function BoutiqueEdit() {
                                   <p className="font-medium text-sm">{tpl.type}</p>
                                   <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-[250px]">{tpl.subject}</p>
                                 </div>
-                                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                                <span className="text-xs bg-info/15 text-info px-2 py-0.5 rounded-full">
                                   Custom
                                 </span>
                               </div>
@@ -1454,9 +1454,9 @@ export default function BoutiqueEdit() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium">Aperçu du site</CardTitle>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <div className="w-3 h-3 rounded-full bg-red-400" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                  <div className="w-3 h-3 rounded-full bg-green-400" />
+                  <div className="w-3 h-3 rounded-full bg-destructive" />
+                  <div className="w-3 h-3 rounded-full bg-warning" />
+                  <div className="w-3 h-3 rounded-full bg-success" />
                 </div>
               </div>
             </CardHeader>

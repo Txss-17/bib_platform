@@ -252,7 +252,7 @@ export function DuplicateTitlesDialog({
                     Produits en doublon ({productSuggestions.length})
                   </h3>
                 </div>
-                <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-2.5 text-[11px] text-foreground/80">
+                <div className="rounded-xl border border-warning/30/30 bg-warning/5 p-2.5 text-[11px] text-foreground/80">
                   Les noms produits proviennent du catalogue fournisseur (lecture
                   seule). Copiez le titre suggéré et utilisez-le dans la
                   description ou les meta de votre boutique pour les différencier.
@@ -285,7 +285,7 @@ export function DuplicateTitlesDialog({
                         onClick={() => handleCopy(s.suggested, `p:${s.id}`)}
                       >
                         {copiedKey === `p:${s.id}` ? (
-                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          <Check className="w-3.5 h-3.5 text-success" />
                         ) : (
                           <Copy className="w-3.5 h-3.5" />
                         )}

@@ -363,7 +363,7 @@ export default function Aide() {
                     aria-label="Copier"
                   >
                     {copiedKey === step.action.key ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <Check className="w-3.5 h-3.5 text-success" />
                     ) : (
                       <Copy className="w-3.5 h-3.5" />
                     )}

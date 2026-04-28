@@ -28,10 +28,10 @@ type SupplierProduct = Tables<"supplier_products">;
 type RotationIndicator = "green" | "yellow" | "orange" | "red";
 
 const rotationConfig: Record<RotationIndicator, { label: string; badgeLabel: string; color: string; badgeClass: string }> = {
-  green: { label: "Demande Marché Élevée", badgeLabel: "Demande Élevée", color: "bg-green-500", badgeClass: "bg-green-500/15 text-green-700 border-green-200" },
-  yellow: { label: "Demande Marché Modérée", badgeLabel: "Demande Modérée", color: "bg-yellow-500", badgeClass: "bg-yellow-500/15 text-yellow-700 border-yellow-200" },
-  orange: { label: "Demande Marché Faible", badgeLabel: "Demande Faible", color: "bg-orange-500", badgeClass: "bg-orange-500/15 text-orange-700 border-orange-200" },
-  red: { label: "Produit Très Utilisé", badgeLabel: "Très Utilisé", color: "bg-red-500", badgeClass: "bg-blue-500/15 text-blue-700 border-blue-200" },
+  green: { label: "Demande Marché Élevée", badgeLabel: "Demande Élevée", color: "bg-success", badgeClass: "bg-success/15 text-success border-success/30" },
+  yellow: { label: "Demande Marché Modérée", badgeLabel: "Demande Modérée", color: "bg-warning", badgeClass: "bg-warning/15 text-warning border-warning/30" },
+  orange: { label: "Demande Marché Faible", badgeLabel: "Demande Faible", color: "bg-warning", badgeClass: "bg-warning/15 text-warning border-warning/30" },
+  red: { label: "Produit Très Utilisé", badgeLabel: "Très Utilisé", color: "bg-destructive", badgeClass: "bg-info/15 text-info border-info/30" },
 };
 
 const CATEGORIES = ["Éco", "Maison", "Bien-être", "Santé", "Technologies", "Mode", "Kids"];
@@ -76,7 +76,7 @@ function MarginSimulator({ product }: { product: SupplierProduct }) {
             </div>
             <div>
               <label className="text-xs text-muted-foreground">Profit par unité</label>
-              <p className="text-lg font-bold text-green-500">+{profit.toFixed(2)} €</p>
+              <p className="text-lg font-bold text-success">+{profit.toFixed(2)} €</p>
             </div>
           </div>
         </div>
@@ -95,7 +95,7 @@ function InlineMarginCalc({ product }: { product: SupplierProduct }) {
     <div className="px-3 pb-3 space-y-2 border-t border-border/50 pt-2">
       <div className="flex items-center justify-between">
         <span className="text-[10px] text-muted-foreground">Marge: {margin}%</span>
-        <span className="text-[10px] font-mono text-green-600">+{profit.toFixed(2)} €</span>
+        <span className="text-[10px] font-mono text-success">+{profit.toFixed(2)} €</span>
       </div>
       <Slider
         min={0} max={product.max_margin_percent} step={1}
@@ -227,10 +227,10 @@ export default function ProduitsFournisseurs() {
             </p>
             <div className="flex items-center gap-3 mt-1.5">
               <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Risque faible
+                <span className="w-1.5 h-1.5 rounded-full bg-success" /> Risque faible
               </span>
               <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Demande élevée
+                <span className="w-1.5 h-1.5 rounded-full bg-success" /> Demande élevée
               </span>
             </div>
           </div>
@@ -484,7 +484,7 @@ function ProductGridCard({ product, isFavorite, onToggleFavorite }: { product: S
             className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
             onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
           >
-            <Heart className={`w-3.5 h-3.5 transition-colors ${isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground"}`} />
+            <Heart className={`w-3.5 h-3.5 transition-colors ${isFavorite ? "fill-destructive text-destructive" : "text-muted-foreground"}`} />
           </button>
           {/* Hover overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
@@ -560,7 +560,7 @@ function ProductListCard({ product, isFavorite, onToggleFavorite }: { product: S
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <button onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}>
-                    <Heart className={`w-4 h-4 transition-colors ${isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground hover:text-red-400"}`} />
+                    <Heart className={`w-4 h-4 transition-colors ${isFavorite ? "fill-destructive text-destructive" : "text-muted-foreground hover:text-destructive"}`} />
                   </button>
                   <p className="text-sm sm:text-base font-bold text-foreground">€{product.base_price.toFixed(2)}</p>
                 </div>

@@ -68,10 +68,10 @@ const statusConfig: Record<
   LogisticsStatus,
   { label: string; icon: React.ElementType; tone: string }
 > = {
-  pending: { label: "En attente", icon: Clock, tone: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
-  processing: { label: "En préparation", icon: Package, tone: "bg-sky-500/10 text-sky-600 border-sky-500/20" },
-  shipped: { label: "Expédié", icon: Truck, tone: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20" },
-  delivered: { label: "Livré", icon: CheckCircle, tone: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" },
+  pending: { label: "En attente", icon: Clock, tone: "bg-warning/10 text-warning border-warning/30/20" },
+  processing: { label: "En préparation", icon: Package, tone: "bg-info/10 text-info border-info/30/20" },
+  shipped: { label: "Expédié", icon: Truck, tone: "bg-info/10 text-info border-info/30/20" },
+  delivered: { label: "Livré", icon: CheckCircle, tone: "bg-success/10 text-success border-success/30/20" },
   returned: { label: "Retourné", icon: AlertCircle, tone: "bg-destructive/10 text-destructive border-destructive/20" },
 };
 
@@ -486,7 +486,7 @@ export default function Commandes() {
                     <span
                       className={cn(
                         "w-1.5 h-1.5 rounded-full shrink-0",
-                        e.kind === "new" ? "bg-secondary" : "bg-sky-500",
+                        e.kind === "new" ? "bg-secondary" : "bg-info",
                       )}
                     />
                     <div className="min-w-0">
@@ -628,7 +628,7 @@ export default function Commandes() {
                         className={cn(
                           "cursor-pointer hover:bg-muted/40 transition-colors",
                           overdue && "bg-destructive/5",
-                          urgent && !overdue && "bg-amber-500/5",
+                          urgent && !overdue && "bg-warning/5",
                         )}
                         onClick={() => openOrderDetail(order)}
                       >

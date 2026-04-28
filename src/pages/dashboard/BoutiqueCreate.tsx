@@ -46,7 +46,7 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
             currentStep === step.id 
               ? "bg-primary text-primary-foreground" 
               : currentStep > step.id 
-                ? "bg-green-500 text-white"
+                ? "bg-success text-success-foreground"
                 : "bg-muted text-muted-foreground"
           }`}>
             {currentStep > step.id ? (
@@ -58,7 +58,7 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
           </div>
           {index < steps.length - 1 && (
             <div className={`w-12 h-0.5 mx-2 ${
-              currentStep > step.id ? "bg-green-500" : "bg-border"
+              currentStep > step.id ? "bg-success" : "bg-border"
             }`} />
           )}
         </div>

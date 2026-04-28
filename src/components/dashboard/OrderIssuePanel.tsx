@@ -27,11 +27,11 @@ const statusIcons: Record<string, React.ElementType> = {
 };
 
 const statusColors: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-800",
-  accepted: "bg-green-100 text-green-800",
-  refused: "bg-red-100 text-red-800",
-  resolved: "bg-blue-100 text-blue-800",
-  escalated: "bg-orange-100 text-orange-800",
+  pending: "bg-warning/15 text-warning",
+  accepted: "bg-success/15 text-success",
+  refused: "bg-destructive/15 text-destructive",
+  resolved: "bg-info/15 text-info",
+  escalated: "bg-warning/15 text-warning",
 };
 
 interface OrderIssuePanelProps {
@@ -88,7 +88,7 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
       <CardContent className="p-3 space-y-2">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-orange-500 shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-warning shrink-0" />
             <div>
               <p className="text-sm font-medium">{ISSUE_TYPE_LABELS[issue.type]}</p>
               <p className="text-xs text-muted-foreground">{issue.customer_email}</p>

@@ -235,14 +235,14 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
           <Alert
             className={
               validation.tooSmall || validation.offRatio || validation.overCompressed
-                ? "border-amber-500/40 bg-amber-50/40 dark:bg-amber-950/20"
-                : "border-emerald-500/40 bg-emerald-50/40 dark:bg-emerald-950/20"
+                ? "border-warning/30/40 bg-warning/10/40"
+                : "border-success/30/40 bg-success/10/40"
             }
           >
             {validation.tooSmall || validation.offRatio || validation.overCompressed ? (
-              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <AlertTriangle className="h-4 w-4 text-warning" />
             ) : (
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+              <CheckCircle2 className="h-4 w-4 text-success" />
             )}
             <AlertDescription className="text-xs space-y-0.5">
               <p>

@@ -42,7 +42,7 @@ const LEVEL_LABEL: Record<PerBoutiqueHealth["level"], string> = {
 function StatusDot({ status }: { status: "ok" | "warning" | "critical" }) {
   const cls =
     status === "ok"
-      ? "bg-emerald-500"
+      ? "bg-success"
       : status === "warning"
         ? "bg-secondary"
         : "bg-destructive";

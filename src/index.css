@@ -34,6 +34,16 @@
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
+    /* Semantic status tokens — used across dashboard for stock, orders, validation,
+       SEO, and any pass/warn/fail state. Always pair with -foreground for text on
+       solid backgrounds; use the bare token at /10 or /15 opacity for soft surfaces. */
+    --success: 152 55% 38%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 48%;
+    --warning-foreground: 215 55% 14%;
+    --info: 215 75% 48%;
+    --info-foreground: 0 0% 100%;
+
     --border: 40 15% 88%;
     --input: 40 15% 88%;
     --ring: 41 55% 52%;
@@ -107,6 +117,14 @@
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
+
+    /* Status tokens — slightly brighter on dark surfaces for contrast */
+    --success: 152 55% 50%;
+    --success-foreground: 215 50% 6%;
+    --warning: 38 92% 58%;
+    --warning-foreground: 215 50% 6%;
+    --info: 215 75% 60%;
+    --info-foreground: 215 50% 6%;
 
     --border: 215 35% 18%;
     --input: 215 35% 18%;

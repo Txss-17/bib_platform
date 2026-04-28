@@ -90,7 +90,7 @@ export function SampleValidationPanel({ productId, productName, compact = false 
 
   if (status === "validated" && compact) {
     return (
-      <Badge className="text-[10px] bg-green-100 text-green-700 border-green-200">
+      <Badge className="text-[10px] bg-success/15 text-success border-success/30">
         <CheckCircle2 className="w-3 h-3 mr-1" /> Validé
       </Badge>
     );
@@ -120,9 +120,9 @@ export function SampleValidationPanel({ productId, productName, compact = false 
 
         {/* Info message */}
         {status !== "validated" && (
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-orange-50 border border-orange-200 dark:bg-orange-950/20 dark:border-orange-800">
-            <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5 shrink-0" />
-            <p className="text-xs text-orange-700 dark:text-orange-300">
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-warning/10 border border-warning/30 dark:border-warning/30">
+            <AlertTriangle className="w-4 h-4 text-warning mt-0.5 shrink-0" />
+            <p className="text-xs text-warning dark:text-warning">
               Vous devez tester ce produit avant de le vendre. Les vendeurs testant leurs produits vendent 3x mieux !
             </p>
           </div>
@@ -139,7 +139,7 @@ export function SampleValidationPanel({ productId, productName, compact = false 
               <div key={step.key} className="flex items-center gap-1 flex-1">
                 <div className={`flex items-center gap-1.5 p-2 rounded-lg flex-1 text-xs transition-colors ${
                   done 
-                    ? "bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400" 
+                    ? "bg-success/15 text-success dark:text-success" 
                     : active 
                       ? "bg-primary/10 text-primary" 
                       : "bg-muted text-muted-foreground"
@@ -148,7 +148,7 @@ export function SampleValidationPanel({ productId, productName, compact = false 
                   <span className="font-medium hidden sm:inline">{step.label}</span>
                 </div>
                 {i < steps.length - 1 && (
-                  <ArrowRight className={`w-3 h-3 shrink-0 ${done ? "text-green-500" : "text-muted-foreground/30"}`} />
+                  <ArrowRight className={`w-3 h-3 shrink-0 ${done ? "text-success" : "text-muted-foreground/30"}`} />
                 )}
               </div>
             );
@@ -224,12 +224,12 @@ export function SampleValidationPanel({ productId, productName, compact = false 
         )}
 
         {status === "validated" && (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-green-50 border border-green-200 dark:bg-green-950/20 dark:border-green-800">
-            <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 border border-success/30 dark:border-success/30">
+            <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
             <div>
-              <p className="text-xs font-medium text-green-700 dark:text-green-400">Produit validé et actif</p>
+              <p className="text-xs font-medium text-success dark:text-success">Produit validé et actif</p>
               {validation && 'comment' in validation && (validation as any).comment && (
-                <p className="text-[10px] text-green-600 dark:text-green-500 mt-0.5">"{(validation as any).comment}"</p>
+                <p className="text-[10px] text-success dark:text-success mt-0.5">"{(validation as any).comment}"</p>
               )}
             </div>
           </div>

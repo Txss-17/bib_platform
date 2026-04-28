@@ -38,14 +38,14 @@ export default function AnalyseFournisseurs() {
         </Card>
         <Card className="bg-card border-border/50">
           <CardContent className="p-5 text-center">
-            <TrendingUp className="w-6 h-6 text-green-500 mx-auto mb-2" />
+            <TrendingUp className="w-6 h-6 text-success mx-auto mb-2" />
             <p className="text-2xl font-bold text-foreground">{usedCount}</p>
             <p className="text-xs text-muted-foreground">Produits utilisés par vous</p>
           </CardContent>
         </Card>
         <Card className="bg-card border-border/50">
           <CardContent className="p-5 text-center">
-            <BarChart3 className="w-6 h-6 text-blue-500 mx-auto mb-2" />
+            <BarChart3 className="w-6 h-6 text-info mx-auto mb-2" />
             <p className="text-2xl font-bold text-foreground">{Object.keys(categoryStats).length}</p>
             <p className="text-xs text-muted-foreground">Catégories</p>
           </CardContent>
@@ -101,7 +101,7 @@ export default function AnalyseFournisseurs() {
                 </div>
                 <div className="text-right shrink-0">
                   <p className="font-bold text-foreground">€{product.base_price.toFixed(2)}</p>
-                  <Badge variant="outline" className="bg-green-500/15 text-green-700 text-[10px]">
+                  <Badge variant="outline" className="bg-success/15 text-success text-[10px]">
                     Demande élevée
                   </Badge>
                 </div>

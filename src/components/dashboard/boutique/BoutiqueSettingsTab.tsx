@@ -1066,8 +1066,8 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
 
           {/* Consistency warnings */}
           {consistencyWarnings.length > 0 ? (
-            <Alert variant="default" className="border-amber-500/40 bg-amber-50/40 dark:bg-amber-950/20">
-              <Info className="h-4 w-4 text-amber-600" />
+            <Alert variant="default" className="border-warning/30/40 bg-warning/10/40">
+              <Info className="h-4 w-4 text-warning" />
               <AlertDescription>
                 <p className="text-xs font-medium mb-1">Configuration à compléter :</p>
                 <ul className="text-xs space-y-0.5 list-disc pl-4">
@@ -1078,8 +1078,8 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
               </AlertDescription>
             </Alert>
           ) : (
-            <Alert className="border-emerald-500/40 bg-emerald-50/40 dark:bg-emerald-950/20">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+            <Alert className="border-success/30/40 bg-success/10/40">
+              <CheckCircle2 className="h-4 w-4 text-success" />
               <AlertDescription className="text-xs">
                 Configuration commerciale cohérente.
               </AlertDescription>
@@ -1405,7 +1405,7 @@ function SnippetPreview({
       {/* Google SERP-like snippet */}
       <div className="rounded-lg border border-border bg-card p-4 font-sans">
         <p className="text-xs text-muted-foreground truncate">{url}</p>
-        <p className="text-[#1a0dab] dark:text-blue-400 text-lg leading-tight mt-0.5 truncate">
+        <p className="text-[#1a0dab] dark:text-info text-lg leading-tight mt-0.5 truncate">
           {title || "(titre manquant)"}
         </p>
         <p className="text-sm text-muted-foreground line-clamp-2 mt-1">

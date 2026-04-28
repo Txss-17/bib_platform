@@ -142,7 +142,7 @@ export function KpiTile({
                   <span
                     className={cn(
                       "inline-flex items-center gap-1 text-xs font-semibold rounded-full px-2 py-0.5",
-                      isUp && "bg-emerald-500/10 text-emerald-600",
+                      isUp && "bg-success/10 text-success",
                       isDown && "bg-destructive/10 text-destructive",
                       isFlat && "bg-muted text-muted-foreground",
                     )}

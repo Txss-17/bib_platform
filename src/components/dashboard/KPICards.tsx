@@ -21,7 +21,7 @@ function KPICard({ title, value, trend, icon: Icon }: KPICardProps) {
             <p className="text-3xl font-bold text-foreground">{value}</p>
             {trend !== undefined && (
               <div className={`flex items-center gap-1 text-sm ${
-                isPositive ? "text-green-500" : isNegative ? "text-red-500" : "text-muted-foreground"
+                isPositive ? "text-success" : isNegative ? "text-destructive" : "text-muted-foreground"
               }`}>
                 {isPositive ? (
                   <TrendingUp className="w-4 h-4" />

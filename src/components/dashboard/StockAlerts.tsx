@@ -30,13 +30,13 @@ const statusConfig = {
   },
   low: {
     label: "Faible",
-    color: "bg-yellow-500/10 text-yellow-700 border-yellow-200",
-    progressColor: "bg-yellow-500",
+    color: "bg-warning/10 text-warning border-warning/30",
+    progressColor: "bg-warning",
   },
   ok: {
     label: "OK",
-    color: "bg-green-500/10 text-green-700 border-green-200",
-    progressColor: "bg-green-500",
+    color: "bg-success/10 text-success border-success/30",
+    progressColor: "bg-success",
   },
 };
 
@@ -76,7 +76,7 @@ export function StockAlerts() {
     <Card className="bg-card border-border/50">
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <div className="flex items-center gap-2">
-          <AlertTriangle className="w-5 h-5 text-yellow-500" />
+          <AlertTriangle className="w-5 h-5 text-warning" />
           <CardTitle className="text-lg font-semibold">Alertes Stock</CardTitle>
         </div>
         <Badge
@@ -84,7 +84,7 @@ export function StockAlerts() {
           className={
             alertItems.filter((s) => s.status === "critical").length > 0
               ? "bg-destructive/10 text-destructive border-destructive/20"
-              : "bg-green-500/10 text-green-700 border-green-200"
+              : "bg-success/10 text-success border-success/30"
           }
         >
           {alertItems.filter((s) => s.status === "critical").length} critique(s)

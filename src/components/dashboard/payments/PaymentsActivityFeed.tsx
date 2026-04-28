@@ -24,7 +24,7 @@ const VARIANTS: Record<
   PaymentActivityKind,
   { icon: typeof Activity; bg: string; fg: string; sign: "+" | "-" | "" }
 > = {
-  sale: { icon: ShoppingBag, bg: "bg-emerald-500/10", fg: "text-emerald-600", sign: "+" },
+  sale: { icon: ShoppingBag, bg: "bg-success/10", fg: "text-success", sign: "+" },
   payout_scheduled: { icon: ArrowDownToLine, bg: "bg-secondary/15", fg: "text-secondary", sign: "" },
   payout_updated: { icon: RefreshCw, bg: "bg-muted", fg: "text-muted-foreground", sign: "" },
   payout_completed: { icon: ArrowUpRight, bg: "bg-primary/10", fg: "text-primary", sign: "-" },

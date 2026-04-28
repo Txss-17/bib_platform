@@ -194,7 +194,7 @@ export default function Paiements() {
                         <TableCell className="text-sm">{p.boutiques?.name || "—"}</TableCell>
                         <TableCell>
                           {p.status === "completed" ? (
-                            <Badge className="gap-1 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-0">
+                            <Badge className="gap-1 bg-success/10 text-success hover:bg-success/20 border-0">
                               <CheckCircle className="w-3 h-3" /> Versé
                             </Badge>
                           ) : p.status === "pending" ? (
@@ -229,7 +229,7 @@ export default function Paiements() {
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">{p.boutiques?.name || "—"}</span>
                       {p.status === "completed" ? (
-                        <Badge className="gap-1 bg-emerald-500/10 text-emerald-600 border-0 text-[10px]">
+                        <Badge className="gap-1 bg-success/10 text-success border-0 text-[10px]">
                           <CheckCircle className="w-3 h-3" /> Versé
                         </Badge>
                       ) : p.status === "pending" ? (

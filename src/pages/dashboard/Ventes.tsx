@@ -322,7 +322,7 @@ export default function Ventes() {
                     Dernière vente il y a {product.daysSinceLastSale} jours · Stock {product.stock}
                   </p>
                 </div>
-                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-600 shrink-0">
+                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-warning/10 text-warning shrink-0">
                   Attention
                 </span>
               </div>

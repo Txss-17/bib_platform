@@ -42,15 +42,15 @@ const roleIcons: Record<TeamRole, React.ElementType> = {
 };
 
 const roleColors: Record<TeamRole, string> = {
-  owner: "bg-amber-100 text-amber-800",
-  manager: "bg-blue-100 text-blue-800",
-  marketing: "bg-purple-100 text-purple-800",
-  support: "bg-green-100 text-green-800",
+  owner: "bg-warning/15 text-warning",
+  manager: "bg-info/15 text-info",
+  marketing: "bg-accent/15 text-accent-foreground",
+  support: "bg-success/15 text-success",
 };
 
 const statusLabels: Record<string, { label: string; color: string }> = {
-  pending: { label: "En attente", color: "bg-yellow-100 text-yellow-800" },
-  active: { label: "Actif", color: "bg-green-100 text-green-800" },
+  pending: { label: "En attente", color: "bg-warning/15 text-warning" },
+  active: { label: "Actif", color: "bg-success/15 text-success" },
 };
 
 export default function Equipe() {
