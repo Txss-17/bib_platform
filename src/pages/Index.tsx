@@ -7,6 +7,9 @@ import HowItWorksSection from "@/components/HowItWorksSection";
 import TrustSection from "@/components/TrustSection";
 import { RevealRow } from "@/components/landing/RevealRow";
 import { MarqueeStrip } from "@/components/landing/MarqueeStrip";
+import ComplianceBadgesSection from "@/components/landing/ComplianceBadgesSection";
+import PriceTransparencySection from "@/components/landing/PriceTransparencySection";
+import AiExplainabilitySection from "@/components/landing/AiExplainabilitySection";
 import { useSEO } from "@/hooks/useSEO";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
@@ -61,6 +64,9 @@ const Index = () => {
         {/* Quick value props (3 columns of pure brand color) */}
         <FeaturesSection />
 
+        {/* === TRUST PROOF #1 — Compliance badges (marine, full-bleed) === */}
+        <ComplianceBadgesSection />
+
         {/* ROW 1 — slide from LEFT — Modular boutiques */}
         <RevealRow
           side="left"
@@ -83,6 +89,9 @@ const Index = () => {
         {/* How it works — 4 steps */}
         <HowItWorksSection />
 
+        {/* === TRUST PROOF #2 — Live price/margin simulator === */}
+        <PriceTransparencySection />
+
         {/* ROW 2 — slide from RIGHT — Live dashboard */}
         <RevealRow
           side="right"
@@ -104,6 +113,9 @@ const Index = () => {
 
         {/* Trust block (stats + 6 cards) */}
         <TrustSection />
+
+        {/* === TRUST PROOF #3 — Explainable AI === */}
+        <AiExplainabilitySection />
 
         {/* ROW 3 — slide from LEFT — Trust & Compliance highlight */}
         <RevealRow
