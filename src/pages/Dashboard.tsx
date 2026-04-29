@@ -23,6 +23,8 @@ import {
 } from "@/components/dashboard/shared";
 import { HealthScoreCard } from "@/components/dashboard/home/HealthScoreCard";
 import { HomeActivityCard } from "@/components/dashboard/home/HomeActivityCard";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist";
 
 export default function Dashboard() {
   const { data: boutiqueStats, isLoading: boutiquesLoading } = useBoutiqueStats();
@@ -50,6 +52,9 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
+      {/* First-5-minutes onboarding — wizard auto-opens if profile incomplete */}
+      <OnboardingWizard />
+
       <PageHeader
         eyebrow="Accueil"
         title="Bonjour 👋"
@@ -69,6 +74,9 @@ export default function Dashboard() {
           </>
         }
       />
+
+      {/* Pinned checklist — disappears at 100% or on dismiss */}
+      <OnboardingChecklist />
 
       {/* KPI grid — readable in <5s */}
       <KpiGrid cols={4}>
