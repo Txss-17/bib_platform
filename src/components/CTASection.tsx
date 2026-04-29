@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { BrandIcon } from "@/components/Logo";
 
 const CTASection = () => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   return (
     <section className="py-20 lg:py-32 bg-bib-ivory">
@@ -36,6 +36,20 @@ const CTASection = () => {
                   </Link>
                 </Button>
                 <Button variant="hero-outline" size="xl">{t("cta.sales")}</Button>
+              </div>
+
+              {/* Explicit 18+ guard — trust-first */}
+              <div className="mt-6 inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-bib-gold/10 border border-bib-gold/30">
+                <ShieldCheck size={14} className="text-bib-gold shrink-0" />
+                <p className="text-xs sm:text-sm text-primary-foreground/85">
+                  <span className="font-semibold text-bib-gold">
+                    {lang === "fr" ? "Vérification d'âge 18+" : "Age check 18+"}
+                  </span>{" "}
+                  ·{" "}
+                  {lang === "fr"
+                    ? "obligatoire à l'inscription, conforme aux exigences européennes."
+                    : "required at signup, EU-compliant."}
+                </p>
               </div>
 
               <div className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-2 mt-10 text-sm text-primary-foreground/60">
