@@ -11,16 +11,28 @@ import { StorefrontFooter } from "@/components/storefront/StorefrontFooter";
 import { CartDrawer } from "@/components/storefront/CartDrawer";
 import { CartProvider, useCart } from "@/contexts/CartContext";
 import { StorefrontProvider } from "@/contexts/StorefrontContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { RecyclingBadge } from "@/components/storefront/RecyclingBadge";
 import { Loader2, Search, ShoppingCart, Check, ArrowLeft, SlidersHorizontal } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 import type { ThemeSettings } from "@/lib/boutiqueTemplates";
 import { trackStorefrontEvent } from "@/lib/storefrontTracking";
 
+const MARKET_LABELS: Record<string, { fr: string; en: string }> = {
+  EU: { fr: "Europe", en: "Europe" },
+  UAE: { fr: "Émirats", en: "UAE" },
+  AFRICA: { fr: "Afrique", en: "Africa" },
+  WORLDWIDE: { fr: "Monde", en: "Worldwide" },
+};
+
 function AllProductsContent() {
   const { slug } = useParams<{ slug: string }>();
+  const { lang } = useLanguage();
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"popular" | "price-asc" | "price-desc" | "name">("popular");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [marketFilter, setMarketFilter] = useState<string>("all");
 
   const { addItem } = useCart();
 
@@ -45,7 +57,7 @@ function AllProductsContent() {
       if (!boutique?.id) return [];
       const { data, error } = await supabase
         .from("products")
-        .select(`id, public_price, status, cumulative_sales, supplier_products (name, image_url, category)`)
+        .select(`id, public_price, status, cumulative_sales, supplier_products (name, image_url, category, market)`)
         .eq("boutique_id", boutique.id)
         .eq("status", "active")
         .order("cumulative_sales", { ascending: false });
@@ -56,6 +68,7 @@ function AllProductsContent() {
         price: Number(p.public_price),
         image_url: p.supplier_products?.image_url || null,
         category: p.supplier_products?.category || "Autre",
+        market: p.supplier_products?.market || "EU",
         sales: p.cumulative_sales,
         isPopular: i < 3,
       }));
@@ -77,6 +90,10 @@ function AllProductsContent() {
     return cats.sort();
   }, [products]);
 
+  const markets = useMemo(() => {
+    return [...new Set(products.map(p => p.market))].sort();
+  }, [products]);
+
   // Filter & sort
   const filteredProducts = useMemo(() => {
     let result = [...products];
@@ -87,6 +104,9 @@ function AllProductsContent() {
     if (categoryFilter !== "all") {
       result = result.filter(p => p.category === categoryFilter);
     }
+    if (marketFilter !== "all") {
+      result = result.filter(p => p.market === marketFilter);
+    }
     switch (sortBy) {
       case "price-asc": result.sort((a, b) => a.price - b.price); break;
       case "price-desc": result.sort((a, b) => b.price - a.price); break;
@@ -94,7 +114,7 @@ function AllProductsContent() {
       default: result.sort((a, b) => b.sales - a.sales); break;
     }
     return result;
-  }, [products, search, categoryFilter, sortBy]);
+  }, [products, search, categoryFilter, marketFilter, sortBy]);
 
   if (boutiqueLoading || productsLoading) {
     return (
@@ -129,36 +149,52 @@ function AllProductsContent() {
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Rechercher un produit..."
+                placeholder={lang === "fr" ? "Rechercher un produit..." : "Search a product..."}
                 className="pl-10"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {categories.length > 1 && (
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                   <SelectTrigger className="w-[140px]">
                     <SlidersHorizontal className="w-4 h-4 mr-1" />
-                    <SelectValue placeholder="Catégorie" />
+                    <SelectValue placeholder={lang === "fr" ? "Catégorie" : "Category"} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Toutes</SelectItem>
+                    <SelectItem value="all">{lang === "fr" ? "Toutes" : "All"}</SelectItem>
                     {categories.map(cat => (
                       <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               )}
+              {markets.length > 1 && (
+                <Select value={marketFilter} onValueChange={setMarketFilter}>
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue placeholder={lang === "fr" ? "Marché" : "Market"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">
+                      {lang === "fr" ? "Tous marchés" : "All markets"}
+                    </SelectItem>
+                    {markets.map(m => (
+                      <SelectItem key={m} value={m}>{MARKET_LABELS[m]?.[lang] ?? m}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
                 <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Trier par" />
+                  <SelectValue placeholder={lang === "fr" ? "Trier par" : "Sort by"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="popular">Populaires</SelectItem>
-                  <SelectItem value="price-asc">Prix croissant</SelectItem>
-                  <SelectItem value="price-desc">Prix décroissant</SelectItem>
-                  <SelectItem value="name">Nom A-Z</SelectItem>
+                  <SelectItem value="popular">{lang === "fr" ? "Populaires" : "Popular"}</SelectItem>
+                  <SelectItem value="price-asc">{lang === "fr" ? "Prix croissant" : "Price ↑"}</SelectItem>
+                  <SelectItem value="price-desc">{lang === "fr" ? "Prix décroissant" : "Price ↓"}</SelectItem>
+                  <SelectItem value="name">A → Z</SelectItem>
                 </SelectContent>
               </Select>
+              <LanguageSwitcher />
             </div>
           </div>
         </div>
@@ -167,10 +203,29 @@ function AllProductsContent() {
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <Link to={`/boutique/${slug}`} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4">
-            <ArrowLeft className="w-4 h-4" /> Retour à la boutique
+            <ArrowLeft className="w-4 h-4" /> {lang === "fr" ? "Retour à la boutique" : "Back to store"}
           </Link>
 
-          <p className="text-sm text-gray-500 mb-6">{filteredProducts.length} produit{filteredProducts.length !== 1 ? "s" : ""}</p>
+          <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+            <p className="text-sm text-gray-500">
+              {filteredProducts.length} {lang === "fr" ? "produit" : "product"}{filteredProducts.length !== 1 ? "s" : ""}
+            </p>
+            <RecyclingBadge variant="full" primaryColor={primaryColor} className="max-w-md" />
+          </div>
+
+          {categories.length > 1 && (
+            <div className="mb-6 flex flex-wrap gap-2">
+              {categories.map(cat => (
+                <Link
+                  key={cat}
+                  to={`/boutique/${slug}/category/${encodeURIComponent(cat)}`}
+                  className="text-xs px-3 py-1 rounded-full border border-border bg-card hover:bg-muted transition-colors"
+                >
+                  {cat}
+                </Link>
+              ))}
+            </div>
+          )}
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {filteredProducts.map((product) => (
@@ -187,6 +242,9 @@ function AllProductsContent() {
                         <Check className="w-3 h-3 mr-1" /> Populaire
                       </Badge>
                     )}
+                    <div className="absolute bottom-2 left-2">
+                      <RecyclingBadge variant="compact" />
+                    </div>
                   </div>
                 </Link>
                 <h3 className="font-medium text-gray-900 text-sm md:text-base mb-1 line-clamp-2">
