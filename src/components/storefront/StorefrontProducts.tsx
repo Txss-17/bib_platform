@@ -7,6 +7,7 @@ import { useCart } from "@/contexts/CartContext";
 import { TiltCard, ShineCard } from "./Storefront3DEffects";
 import { trackStorefrontEvent } from "@/lib/storefrontTracking";
 import { useStorefrontContext } from "@/contexts/StorefrontContext";
+import { RecyclingBadge } from "./RecyclingBadge";
 
 interface Product {
   id: string;
@@ -62,6 +63,9 @@ export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug
                           <Check className="w-3 h-3 mr-1" /> Populaire
                         </Badge>
                       )}
+                      <div className="absolute bottom-2 left-2">
+                        <RecyclingBadge variant="compact" />
+                      </div>
                     </div>
                   </Link>
                 ) : (
@@ -76,6 +80,9 @@ export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug
                         <Check className="w-3 h-3 mr-1" /> Populaire
                       </Badge>
                     )}
+                    <div className="absolute bottom-2 left-2">
+                      <RecyclingBadge variant="compact" />
+                    </div>
                   </div>
                 )}
 
