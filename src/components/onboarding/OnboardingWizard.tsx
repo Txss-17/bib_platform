@@ -126,11 +126,13 @@ export function OnboardingWizard() {
               {step === 0 && "Faisons connaissance"}
               {step === 1 && "Choisissez votre marché"}
               {step === 2 && "Particulier ou business ?"}
+              {step === 3 && "Choisissez votre plan"}
             </DialogTitle>
             <DialogDescription className="text-primary-foreground/70 text-sm">
               {step === 0 && "Comment souhaitez-vous être appelé sur Brand-In-A-Box ?"}
               {step === 1 && "Le marché principal détermine devises, langues et règles fiscales par défaut."}
               {step === 2 && "Cela conditionne les documents de conformité que nous demanderons."}
+              {step === 3 && "Modifiable à tout moment depuis vos paramètres."}
             </DialogDescription>
           </DialogHeader>
 
