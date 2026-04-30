@@ -611,6 +611,57 @@ export type Database = {
           },
         ]
       }
+      plans: {
+        Row: {
+          annual_monthly_price_eur: number
+          commission_percent: number
+          created_at: string
+          features: Json
+          id: string
+          insurance_addon_price_eur: number
+          insurance_max_disputes_per_month: number | null
+          insurance_per_dispute_cap_eur: number
+          max_boutiques: number
+          max_products: number | null
+          monthly_price_eur: number
+          name: string
+          sort_order: number
+          tier: Database["public"]["Enums"]["plan_tier"]
+        }
+        Insert: {
+          annual_monthly_price_eur: number
+          commission_percent: number
+          created_at?: string
+          features?: Json
+          id?: string
+          insurance_addon_price_eur: number
+          insurance_max_disputes_per_month?: number | null
+          insurance_per_dispute_cap_eur: number
+          max_boutiques: number
+          max_products?: number | null
+          monthly_price_eur: number
+          name: string
+          sort_order?: number
+          tier: Database["public"]["Enums"]["plan_tier"]
+        }
+        Update: {
+          annual_monthly_price_eur?: number
+          commission_percent?: number
+          created_at?: string
+          features?: Json
+          id?: string
+          insurance_addon_price_eur?: number
+          insurance_max_disputes_per_month?: number | null
+          insurance_per_dispute_cap_eur?: number
+          max_boutiques?: number
+          max_products?: number | null
+          monthly_price_eur?: number
+          name?: string
+          sort_order?: number
+          tier?: Database["public"]["Enums"]["plan_tier"]
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           applied_margin: number
@@ -675,9 +726,13 @@ export type Database = {
           business_type: string | null
           created_at: string
           full_name: string | null
+          green_addon_enabled: boolean
           id: string
+          insurance_addon_enabled: boolean
           is_verified: boolean | null
           market: string | null
+          plan_billing_cycle: string
+          plan_tier: Database["public"]["Enums"]["plan_tier"]
           recycling_points: number | null
           trust_score: number | null
           updated_at: string
@@ -689,9 +744,13 @@ export type Database = {
           business_type?: string | null
           created_at?: string
           full_name?: string | null
+          green_addon_enabled?: boolean
           id?: string
+          insurance_addon_enabled?: boolean
           is_verified?: boolean | null
           market?: string | null
+          plan_billing_cycle?: string
+          plan_tier?: Database["public"]["Enums"]["plan_tier"]
           recycling_points?: number | null
           trust_score?: number | null
           updated_at?: string
@@ -703,9 +762,13 @@ export type Database = {
           business_type?: string | null
           created_at?: string
           full_name?: string | null
+          green_addon_enabled?: boolean
           id?: string
+          insurance_addon_enabled?: boolean
           is_verified?: boolean | null
           market?: string | null
+          plan_billing_cycle?: string
+          plan_tier?: Database["public"]["Enums"]["plan_tier"]
           recycling_points?: number | null
           trust_score?: number | null
           updated_at?: string
@@ -936,6 +999,7 @@ export type Database = {
       member_status: "pending" | "active" | "removed"
       moq_status: "reserved" | "confirmed" | "expired" | "cancelled"
       payment_status: "pending" | "completed" | "failed"
+      plan_tier: "starter" | "growth" | "pro"
       product_status: "active" | "paused"
       recycling_source: "qr_scan" | "manual" | "pickup"
       rotation_indicator: "green" | "yellow" | "orange" | "red"
@@ -1086,6 +1150,7 @@ export const Constants = {
       member_status: ["pending", "active", "removed"],
       moq_status: ["reserved", "confirmed", "expired", "cancelled"],
       payment_status: ["pending", "completed", "failed"],
+      plan_tier: ["starter", "growth", "pro"],
       product_status: ["active", "paused"],
       recycling_source: ["qr_scan", "manual", "pickup"],
       rotation_indicator: ["green", "yellow", "orange", "red"],
