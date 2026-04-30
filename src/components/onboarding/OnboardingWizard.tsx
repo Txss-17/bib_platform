@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowRight, ArrowLeft, Check, Globe2, Building2, User, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowLeft, Check, Globe2, Building2, User, Sparkles, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useOnboardingState } from "@/hooks/useOnboardingState";
+import { usePlans, type PlanTier } from "@/hooks/usePlans";
+import { useSearchParams } from "react-router-dom";
 
 /**
  * OnboardingWizard
@@ -44,12 +46,16 @@ const TYPES = [
 export function OnboardingWizard() {
   const { user, profile, refreshProfile } = useAuth();
   const { needsWizard } = useOnboardingState();
+  const { data: plans } = usePlans();
+  const [searchParams] = useSearchParams();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [fullName, setFullName] = useState("");
   const [market, setMarket] = useState<string>("");
   const [businessType, setBusinessType] = useState<string>("");
   const [businessName, setBusinessName] = useState("");
+  const [planTier, setPlanTier] = useState<PlanTier>("starter");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [saving, setSaving] = useState(false);
 
   // Open automatically when conditions are met.
@@ -60,14 +66,21 @@ export function OnboardingWizard() {
       setMarket(profile?.market || "");
       setBusinessType(profile?.business_type || "");
       setBusinessName(profile?.business_name || "");
+      const queryPlan = searchParams.get("plan") as PlanTier | null;
+      const queryCycle = searchParams.get("cycle");
+      setPlanTier((queryPlan && ["starter", "growth", "pro"].includes(queryPlan)
+        ? queryPlan
+        : (profile?.plan_tier as PlanTier) || "starter"));
+      setBillingCycle(queryCycle === "annual" ? "annual" : ((profile?.plan_billing_cycle as "monthly" | "annual") || "monthly"));
     }
-  }, [needsWizard, profile]);
+  }, [needsWizard, profile, searchParams]);
 
-  const totalSteps = 3;
+  const totalSteps = 4;
   const canNext =
     (step === 0 && fullName.trim().length >= 2) ||
     (step === 1 && !!market) ||
-    (step === 2 && !!businessType && (businessType !== "business" || businessName.trim().length >= 2));
+    (step === 2 && !!businessType && (businessType !== "business" || businessName.trim().length >= 2)) ||
+    (step === 3 && !!planTier);
 
   const handleSave = async () => {
     if (!user) return;
@@ -79,6 +92,8 @@ export function OnboardingWizard() {
         market,
         business_type: businessType,
         business_name: businessType === "business" ? businessName.trim() : null,
+        plan_tier: planTier,
+        plan_billing_cycle: billingCycle,
       })
       .eq("user_id", user.id);
 
