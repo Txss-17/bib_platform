@@ -230,6 +230,72 @@ export function OnboardingWizard() {
               )}
             </div>
           )}
+
+          {step === 3 && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <Label className="text-xs text-muted-foreground">Facturation</Label>
+                <div className="inline-flex rounded-full border border-border bg-muted/40 p-0.5 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setBillingCycle("monthly")}
+                    className={`px-3 py-1 rounded-full transition-colors ${
+                      billingCycle === "monthly" ? "bg-bib-marine text-primary-foreground" : "text-muted-foreground"
+                    }`}
+                  >
+                    Mensuel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBillingCycle("annual")}
+                    className={`px-3 py-1 rounded-full transition-colors ${
+                      billingCycle === "annual" ? "bg-bib-marine text-primary-foreground" : "text-muted-foreground"
+                    }`}
+                  >
+                    Annuel −20%
+                  </button>
+                </div>
+              </div>
+              <RadioGroup value={planTier} onValueChange={(v) => setPlanTier(v as PlanTier)} className="space-y-2">
+                {(plans || []).map((p) => {
+                  const price = billingCycle === "annual" ? p.annual_monthly_price_eur : p.monthly_price_eur;
+                  const recommended = p.tier === "growth";
+                  return (
+                    <label
+                      key={p.tier}
+                      htmlFor={`plan-${p.tier}`}
+                      className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-colors ${
+                        planTier === p.tier
+                          ? "border-bib-gold bg-bib-gold/5"
+                          : "border-border hover:border-bib-marine/30 hover:bg-muted/50"
+                      }`}
+                    >
+                      <RadioGroupItem value={p.tier} id={`plan-${p.tier}`} className="mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="font-medium text-foreground flex items-center gap-1.5">
+                            {p.name}
+                            {recommended && <Star size={12} className="text-bib-gold fill-bib-gold" />}
+                          </p>
+                          <p className="text-sm font-semibold text-bib-marine">
+                            {price}€<span className="text-xs text-muted-foreground font-normal">/mois</span>
+                          </p>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Commission {p.commission_percent}% ·{" "}
+                          {p.max_products ? `${p.max_products} produits` : "Catalogue illimité"} ·{" "}
+                          {p.max_boutiques} boutique{p.max_boutiques > 1 ? "s" : ""}
+                        </p>
+                      </div>
+                    </label>
+                  );
+                })}
+              </RadioGroup>
+              <p className="text-[11px] text-muted-foreground">
+                Vous pourrez changer de plan à tout moment. Aucune carte requise pour la phase bêta.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
