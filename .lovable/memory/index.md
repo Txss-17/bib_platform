@@ -45,4 +45,5 @@
 - [Reporting Exports](mem://features/reporting-exports) — CSV/PDF exports include 'Verified by Linksy'
 - [Account Management](mem://features/account-management) — Deletion requires empty stock; Starter/Pro/Scale plans
 - [Team Collaboration](mem://features/team-collaboration) — Roles (Owner, Manager, Marketing, Support), limits by plan
+- [Pricing & plans](mem://features/pricing-plans) — 3 plans (Starter/Growth/Pro), page /tarifs, sélection au wizard, commissions 15/10/8%, add-ons Boutique Verte + Assurance
 - [Data Safety](mem://constraints/data-safety) — Explicit user validation for deleting shops or products
