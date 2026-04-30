@@ -38,6 +38,7 @@ import ResetPassword from "./pages/ResetPassword";
 // Public pages
 import BoutiquePublic from "./pages/BoutiquePublic";
 import BoutiqueAllProducts from "./pages/BoutiqueAllProducts";
+import BoutiqueCategory from "./pages/BoutiqueCategory";
 import ProductPublic from "./pages/ProductPublic";
 import OrderTracking from "./pages/OrderTracking";
 import BoutiqueFAQPage from "./pages/BoutiqueFAQPage";
@@ -192,6 +193,7 @@ const App = () => (
             {/* Public boutique routes */}
             <Route path="/boutique/:slug" element={<BoutiquePublic />} />
             <Route path="/boutique/:slug/products" element={<BoutiqueAllProducts />} />
+            <Route path="/boutique/:slug/category/:category" element={<BoutiqueCategory />} />
             <Route path="/boutique/:slug/product/:productId" element={
               <CartProvider><ProductPublic /></CartProvider>
             } />
