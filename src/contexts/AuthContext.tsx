@@ -13,6 +13,10 @@ interface Profile {
   trust_score: number;
   recycling_points: number;
   is_verified: boolean;
+  plan_tier?: "starter" | "growth" | "pro";
+  plan_billing_cycle?: "monthly" | "annual";
+  green_addon_enabled?: boolean;
+  insurance_addon_enabled?: boolean;
 }
 
 interface AuthContextType {
