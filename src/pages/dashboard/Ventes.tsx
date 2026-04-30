@@ -40,6 +40,7 @@ import { SalesHeatmap } from "@/components/dashboard/sales/SalesHeatmap";
 import { LiveActivity } from "@/components/dashboard/sales/LiveActivity";
 import { RealtimePulseCard } from "@/components/dashboard/sales/RealtimePulseCard";
 import { useSalesKpis } from "@/hooks/useSalesKpis";
+import { PlanCommissionBanner } from "@/components/dashboard/PlanCommissionBanner";
 
 const monthlyData = [
   { month: "Jan", revenue: 4200 },
@@ -144,6 +145,8 @@ export default function Ventes() {
           </>
         }
       />
+
+      <PlanCommissionBanner />
 
       {/* KPI Tiles */}
       <KpiGrid cols={4}>
