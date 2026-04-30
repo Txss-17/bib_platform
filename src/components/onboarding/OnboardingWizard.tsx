@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowRight, ArrowLeft, Check, Globe2, Building2, User, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowLeft, Check, Globe2, Building2, User, Sparkles, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useOnboardingState } from "@/hooks/useOnboardingState";
+import { usePlans, type PlanTier } from "@/hooks/usePlans";
+import { useSearchParams } from "react-router-dom";
 
 /**
  * OnboardingWizard
@@ -44,12 +46,16 @@ const TYPES = [
 export function OnboardingWizard() {
   const { user, profile, refreshProfile } = useAuth();
   const { needsWizard } = useOnboardingState();
+  const { data: plans } = usePlans();
+  const [searchParams] = useSearchParams();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [fullName, setFullName] = useState("");
   const [market, setMarket] = useState<string>("");
   const [businessType, setBusinessType] = useState<string>("");
   const [businessName, setBusinessName] = useState("");
+  const [planTier, setPlanTier] = useState<PlanTier>("starter");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [saving, setSaving] = useState(false);
 
   // Open automatically when conditions are met.
@@ -60,14 +66,21 @@ export function OnboardingWizard() {
       setMarket(profile?.market || "");
       setBusinessType(profile?.business_type || "");
       setBusinessName(profile?.business_name || "");
+      const queryPlan = searchParams.get("plan") as PlanTier | null;
+      const queryCycle = searchParams.get("cycle");
+      setPlanTier((queryPlan && ["starter", "growth", "pro"].includes(queryPlan)
+        ? queryPlan
+        : (profile?.plan_tier as PlanTier) || "starter"));
+      setBillingCycle(queryCycle === "annual" ? "annual" : ((profile?.plan_billing_cycle as "monthly" | "annual") || "monthly"));
     }
-  }, [needsWizard, profile]);
+  }, [needsWizard, profile, searchParams]);
 
-  const totalSteps = 3;
+  const totalSteps = 4;
   const canNext =
     (step === 0 && fullName.trim().length >= 2) ||
     (step === 1 && !!market) ||
-    (step === 2 && !!businessType && (businessType !== "business" || businessName.trim().length >= 2));
+    (step === 2 && !!businessType && (businessType !== "business" || businessName.trim().length >= 2)) ||
+    (step === 3 && !!planTier);
 
   const handleSave = async () => {
     if (!user) return;
@@ -79,6 +92,8 @@ export function OnboardingWizard() {
         market,
         business_type: businessType,
         business_name: businessType === "business" ? businessName.trim() : null,
+        plan_tier: planTier,
+        plan_billing_cycle: billingCycle,
       })
       .eq("user_id", user.id);
 
@@ -111,11 +126,13 @@ export function OnboardingWizard() {
               {step === 0 && "Faisons connaissance"}
               {step === 1 && "Choisissez votre marché"}
               {step === 2 && "Particulier ou business ?"}
+              {step === 3 && "Choisissez votre plan"}
             </DialogTitle>
             <DialogDescription className="text-primary-foreground/70 text-sm">
               {step === 0 && "Comment souhaitez-vous être appelé sur Brand-In-A-Box ?"}
               {step === 1 && "Le marché principal détermine devises, langues et règles fiscales par défaut."}
               {step === 2 && "Cela conditionne les documents de conformité que nous demanderons."}
+              {step === 3 && "Modifiable à tout moment depuis vos paramètres."}
             </DialogDescription>
           </DialogHeader>
 
@@ -211,6 +228,72 @@ export function OnboardingWizard() {
                   />
                 </div>
               )}
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <Label className="text-xs text-muted-foreground">Facturation</Label>
+                <div className="inline-flex rounded-full border border-border bg-muted/40 p-0.5 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setBillingCycle("monthly")}
+                    className={`px-3 py-1 rounded-full transition-colors ${
+                      billingCycle === "monthly" ? "bg-bib-marine text-primary-foreground" : "text-muted-foreground"
+                    }`}
+                  >
+                    Mensuel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBillingCycle("annual")}
+                    className={`px-3 py-1 rounded-full transition-colors ${
+                      billingCycle === "annual" ? "bg-bib-marine text-primary-foreground" : "text-muted-foreground"
+                    }`}
+                  >
+                    Annuel −20%
+                  </button>
+                </div>
+              </div>
+              <RadioGroup value={planTier} onValueChange={(v) => setPlanTier(v as PlanTier)} className="space-y-2">
+                {(plans || []).map((p) => {
+                  const price = billingCycle === "annual" ? p.annual_monthly_price_eur : p.monthly_price_eur;
+                  const recommended = p.tier === "growth";
+                  return (
+                    <label
+                      key={p.tier}
+                      htmlFor={`plan-${p.tier}`}
+                      className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-colors ${
+                        planTier === p.tier
+                          ? "border-bib-gold bg-bib-gold/5"
+                          : "border-border hover:border-bib-marine/30 hover:bg-muted/50"
+                      }`}
+                    >
+                      <RadioGroupItem value={p.tier} id={`plan-${p.tier}`} className="mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="font-medium text-foreground flex items-center gap-1.5">
+                            {p.name}
+                            {recommended && <Star size={12} className="text-bib-gold fill-bib-gold" />}
+                          </p>
+                          <p className="text-sm font-semibold text-bib-marine">
+                            {price}€<span className="text-xs text-muted-foreground font-normal">/mois</span>
+                          </p>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          Commission {p.commission_percent}% ·{" "}
+                          {p.max_products ? `${p.max_products} produits` : "Catalogue illimité"} ·{" "}
+                          {p.max_boutiques} boutique{p.max_boutiques > 1 ? "s" : ""}
+                        </p>
+                      </div>
+                    </label>
+                  );
+                })}
+              </RadioGroup>
+              <p className="text-[11px] text-muted-foreground">
+                Vous pourrez changer de plan à tout moment. Aucune carte requise pour la phase bêta.
+              </p>
             </div>
           )}
         </div>
