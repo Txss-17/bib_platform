@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Check, Sparkles, Recycle, ShieldCheck, Truck, Award } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
