@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Tarifs from "./pages/Tarifs";
+import CheckoutReturn from "./pages/CheckoutReturn";
 import NotFound from "./pages/NotFound";
 import BrandPreview from "./pages/BrandPreview";
 import Marketplace from "./pages/Marketplace";
@@ -62,6 +63,7 @@ const App = () => (
             <Route path="/landing" element={<Index />} />
             <Route path="/tarifs" element={<Tarifs />} />
             <Route path="/pricing" element={<Tarifs />} />
+            <Route path="/checkout/return" element={<CheckoutReturn />} />
             <Route path="/brand-preview" element={<BrandPreview />} />
             <Route path="/store" element={<Marketplace />} />
             <Route path="/marketplace" element={<Marketplace />} />
