@@ -30,6 +30,7 @@
 - [Order Management](mem://features/order-management) — Vendor validation required before shipping, 48h dispute escalation
 - [Order Notifications](mem://features/order-notifications) — Cash register sound on new orders via Web Audio API
 - [Sample Validation](mem://features/sample-validation-system) — Mandatory Stripe sample order before product activation
+- [Payments — Stripe](mem://features/payments-stripe) — Subscriptions (managed_payments) + storefront checkout (automatic_tax), Embedded Checkout
 - [Stock Management](mem://features/stock-management) — MOQ tracking with critical (<=0.1) and low (<=0.3) thresholds
 - [Supplier Catalog](mem://features/supplier-catalog) — Pre-validated products, duplicate prevention, margin simulator
 - [Supplier Insights](mem://features/supplier-product-insights) — Logistics data, 6-month performance chart, margin simulator
