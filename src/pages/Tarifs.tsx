@@ -1,12 +1,16 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Check, Sparkles, Recycle, ShieldCheck, Truck, Award } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { usePlans, type PlanTier } from "@/hooks/usePlans";
+import { useAuth } from "@/contexts/AuthContext";
+import { StripeEmbeddedCheckout } from "@/components/payments/StripeEmbeddedCheckout";
+import { PaymentTestModeBanner } from "@/components/payments/PaymentTestModeBanner";
 import { useSEO } from "@/hooks/useSEO";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +30,10 @@ const GIFT_CARD_TIERS = [
 
 export default function Tarifs() {
   const { data: plans, isLoading } = usePlans();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [annual, setAnnual] = useState(false);
+  const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
 
   useSEO({
     title: "Tarifs Brand-In-A-Box — Plans transparents pour vendre en ligne",
@@ -36,8 +43,19 @@ export default function Tarifs() {
 
   const sorted = (plans || []).slice().sort((a, b) => a.sort_order - b.sort_order);
 
+  function handleSubscribe(tier: string) {
+    const cycle = annual ? "yearly" : "monthly";
+    const priceId = `${tier}_${cycle}`;
+    if (!user) {
+      navigate(`/signup?plan=${tier}&cycle=${annual ? "annual" : "monthly"}`);
+      return;
+    }
+    setCheckoutPriceId(priceId);
+  }
+
   return (
     <div className="min-h-screen bg-background">
+      <PaymentTestModeBanner />
       <Header />
       <main className="pt-24 pb-16">
         {/* Hero */}
@@ -126,13 +144,11 @@ export default function Tarifs() {
                     </div>
 
                     <Button
-                      asChild
                       variant={isFeatured ? "coral" : "outline"}
                       className="w-full"
+                      onClick={() => handleSubscribe(plan.tier)}
                     >
-                      <Link to={`/signup?plan=${plan.tier}&cycle=${annual ? "annual" : "monthly"}`}>
-                        Démarrer avec {plan.name}
-                      </Link>
+                      Démarrer avec {plan.name}
                     </Button>
                   </div>
                 );
@@ -254,6 +270,24 @@ export default function Tarifs() {
         </section>
       </main>
       <Footer />
+
+      <Dialog open={!!checkoutPriceId} onOpenChange={(open) => !open && setCheckoutPriceId(null)}>
+        <DialogContent className="max-w-2xl p-0 overflow-hidden">
+          <DialogHeader className="px-6 pt-5 pb-2">
+            <DialogTitle>Finaliser votre abonnement</DialogTitle>
+          </DialogHeader>
+          {checkoutPriceId && user && (
+            <div className="px-2 pb-2">
+              <StripeEmbeddedCheckout
+                priceId={checkoutPriceId}
+                userId={user.id}
+                customerEmail={user.email ?? undefined}
+                returnUrl={`${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
