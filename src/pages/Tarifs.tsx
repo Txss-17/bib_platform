@@ -270,6 +270,24 @@ export default function Tarifs() {
         </section>
       </main>
       <Footer />
+
+      <Dialog open={!!checkoutPriceId} onOpenChange={(open) => !open && setCheckoutPriceId(null)}>
+        <DialogContent className="max-w-2xl p-0 overflow-hidden">
+          <DialogHeader className="px-6 pt-5 pb-2">
+            <DialogTitle>Finaliser votre abonnement</DialogTitle>
+          </DialogHeader>
+          {checkoutPriceId && user && (
+            <div className="px-2 pb-2">
+              <StripeEmbeddedCheckout
+                priceId={checkoutPriceId}
+                userId={user.id}
+                customerEmail={user.email ?? undefined}
+                returnUrl={`${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
