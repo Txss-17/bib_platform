@@ -685,8 +685,12 @@ export default function BoutiqueEdit() {
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Editor panel */}
         <div className="space-y-4">
-          <Tabs defaultValue="style" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 sm:grid-cols-8 h-auto">
+          <Tabs defaultValue="identity" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-9 h-auto">
+              <TabsTrigger value="identity" className="gap-1">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline text-xs">Identité</span>
+              </TabsTrigger>
               <TabsTrigger value="style" className="gap-1">
                 <Box className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline text-xs">Style</span>
@@ -720,6 +724,20 @@ export default function BoutiqueEdit() {
                 <span className="hidden sm:inline text-xs">Réglages</span>
               </TabsTrigger>
             </TabsList>
+
+            {/* Identity tab — brand foundations + 3-screen preview */}
+            <TabsContent value="identity">
+              <BoutiqueIdentityPanel
+                themeSettings={themeSettings}
+                setThemeSettings={setThemeSettings}
+                boutiqueName={boutique?.name || ""}
+                logoUrl={boutique?.logo_url}
+                tagline={tagline}
+                onTaglineChange={setTagline}
+                voiceTone={voiceTone}
+                onVoiceToneChange={setVoiceTone}
+              />
+            </TabsContent>
 
             {/* Style/Site type tab */}
             <TabsContent value="style">
