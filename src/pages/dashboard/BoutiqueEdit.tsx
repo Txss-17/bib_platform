@@ -35,6 +35,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { BoutiqueIdentityPanel } from "@/components/dashboard/boutique/BoutiqueIdentityPanel";
 
 const colorSchemes = [
   { name: "Moderne", primary: "#3b82f6", secondary: "#1e40af" },
@@ -175,6 +176,8 @@ export default function BoutiqueEdit() {
   });
 
   const [faqItems, setFaqItems] = useState<{ question: string; answer: string }[]>([]);
+  const [tagline, setTagline] = useState("");
+  const [voiceTone, setVoiceTone] = useState("");
 
   // Email template editing state
   const [editingTemplate, setEditingTemplate] = useState<string | null>(null);
@@ -260,6 +263,7 @@ export default function BoutiqueEdit() {
         cgvText: settings.cgvText || "",
       });
       setFaqItems(settings.faqItems || []);
+      setVoiceTone(settings.voiceTone || "");
     } else if (boutique) {
       const template = getTemplateForCategory(boutique.category);
       setThemeSettings({
@@ -273,6 +277,9 @@ export default function BoutiqueEdit() {
         animationLevel: "subtle",
         heroLayout: "text-left",
       });
+    }
+    if (boutique) {
+      setTagline(boutique.tagline || "");
     }
   }, [boutique]);
 
@@ -292,10 +299,11 @@ export default function BoutiqueEdit() {
         faqItems: faqItems.length > 0 ? faqItems : undefined,
         cguText: customTexts.cguText || undefined,
         cgvText: customTexts.cgvText || undefined,
+        voiceTone: voiceTone || undefined,
       };
       const { error } = await supabase
         .from("boutiques")
-        .update({ theme_settings: fullSettings as any })
+        .update({ theme_settings: fullSettings as any, tagline: tagline || null })
         .eq("id", id);
       if (error) throw error;
     },
