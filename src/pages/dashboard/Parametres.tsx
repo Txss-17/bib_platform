@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { User, Bell, Shield, CreditCard, Globe, Loader2, FileCheck, Trash2, Crown, AlertTriangle, Search, Languages, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { BusinessDocuments } from "@/components/dashboard/BusinessDocuments";
+import { SubscriptionPanel } from "@/components/payments/SubscriptionPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -33,28 +34,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
-const plans = [
-  {
-    name: "Starter",
-    price: "Gratuit",
-    features: ["1 boutique", "50 produits", "Support email"],
-    current: true,
-  },
-  {
-    name: "Pro",
-    price: "29€/mois",
-    features: ["5 boutiques", "500 produits", "Support prioritaire", "Analytics avancés"],
-    current: false,
-    popular: true,
-  },
-  {
-    name: "Scale",
-    price: "99€/mois",
-    features: ["Boutiques illimitées", "Produits illimités", "Support dédié", "API access", "White-label"],
-    current: false,
-  },
-];
 
 export default function Parametres() {
   const { profile, refreshProfile, user } = useAuth();
@@ -268,47 +247,7 @@ export default function Parametres() {
 
           {/* Abonnement */}
           <TabsContent value="abonnement" className="mt-4">
-            <SectionCard
-              title="Plans & abonnement"
-              description="Choisissez la formule adaptée à votre échelle"
-              icon={<Crown className="w-4 h-4" />}
-            >
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {plans.map((plan) => (
-                <div
-                  key={plan.name}
-                  className={`relative rounded-2xl border p-5 text-center space-y-3 ${
-                    plan.popular
-                      ? "border-secondary/50 ring-2 ring-secondary/40 bg-secondary/5"
-                      : "border-border/60 bg-card"
-                  }`}
-                >
-                  {plan.popular && (
-                    <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-secondary text-secondary-foreground text-[10px]">
-                      Populaire
-                    </Badge>
-                  )}
-                    <h3 className="font-display font-semibold text-foreground">{plan.name}</h3>
-                    <p className="text-2xl font-display font-bold text-foreground">{plan.price}</p>
-                    <ul className="text-xs text-muted-foreground space-y-1.5 text-left">
-                      {plan.features.map((f, i) => (
-                        <li key={i} className="flex items-center gap-1.5">
-                          <span className="text-secondary">✓</span> {f}
-                        </li>
-                      ))}
-                    </ul>
-                    <Button
-                      variant={plan.current ? "outline" : "default"}
-                      size="sm"
-                      className="w-full"
-                      disabled={plan.current}
-                    >
-                      {plan.current ? "Plan actuel" : "Bientôt disponible"}
-                    </Button>
-                </div>
-              ))}
-              </div>
-            </SectionCard>
+            <SubscriptionPanel />
           </TabsContent>
 
           {/* SEO multilingue */}

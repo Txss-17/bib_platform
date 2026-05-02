@@ -872,6 +872,7 @@ export type Database = {
           current_period_start: string | null
           environment: string
           id: string
+          kind: string
           price_id: string
           product_id: string
           status: string
@@ -887,6 +888,7 @@ export type Database = {
           current_period_start?: string | null
           environment?: string
           id?: string
+          kind?: string
           price_id: string
           product_id: string
           status?: string
@@ -902,6 +904,7 @@ export type Database = {
           current_period_start?: string | null
           environment?: string
           id?: string
+          kind?: string
           price_id?: string
           product_id?: string
           status?: string

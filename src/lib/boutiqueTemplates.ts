@@ -533,4 +533,5 @@ export interface ThemeSettings {
   faqItems?: { question: string; answer: string }[];
   cguText?: string;
   cgvText?: string;
+  voiceTone?: string;
 }
