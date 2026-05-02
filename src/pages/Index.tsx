@@ -10,6 +10,7 @@ import { MarqueeStrip } from "@/components/landing/MarqueeStrip";
 import ComplianceBadgesSection from "@/components/landing/ComplianceBadgesSection";
 import PriceTransparencySection from "@/components/landing/PriceTransparencySection";
 import AiExplainabilitySection from "@/components/landing/AiExplainabilitySection";
+import DiscoverBoutiquesSection from "@/components/landing/DiscoverBoutiquesSection";
 import { useSEO } from "@/hooks/useSEO";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
@@ -60,6 +61,9 @@ const Index = () => {
             "Built on trust.",
           ]}
         />
+
+        {/* Discover boutiques — entry point for end-customers */}
+        <DiscoverBoutiquesSection />
 
         {/* Quick value props (3 columns of pure brand color) */}
         <FeaturesSection />

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Store } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -28,6 +28,9 @@ const Header = () => {
             <Link to="#features" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">{t("nav.features")}</Link>
             <Link to="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">{t("nav.how")}</Link>
             <Link to="/tarifs" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">{t("nav.pricing")}</Link>
+            <Link to="/store" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium inline-flex items-center gap-1.5">
+              <Store className="h-3.5 w-3.5" /> Découvrir les boutiques
+            </Link>
             <Link to="#trust" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">{t("nav.trust")}</Link>
           </div>
 
@@ -57,6 +60,9 @@ const Header = () => {
               <Link to="#features" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium py-2">{t("nav.features")}</Link>
               <Link to="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium py-2">{t("nav.how")}</Link>
               <Link to="/tarifs" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium py-2">{t("nav.pricing")}</Link>
+              <Link to="/store" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium py-2 inline-flex items-center gap-1.5">
+                <Store className="h-3.5 w-3.5" /> Découvrir les boutiques
+              </Link>
               <Link to="#trust" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium py-2">{t("nav.trust")}</Link>
               <div className="flex flex-col gap-2 pt-4 border-t border-border/50">
                 <LanguageSwitcher />
