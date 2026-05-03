@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Sparkles, Mail, Plus, GripVertical, Image, Wand2, Upload, Trash2, FileText, Box, Settings as SettingsIcon } from "lucide-react";
+import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Sparkles, Mail, Plus, GripVertical, Image, Wand2, Upload, Trash2, FileText, Box, Settings as SettingsIcon, ChevronUp, ChevronDown, Shuffle, X, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { BoutiqueSettingsTab } from "@/components/dashboard/boutique/BoutiqueSettingsTab";
 import { useState, useEffect } from "react";
