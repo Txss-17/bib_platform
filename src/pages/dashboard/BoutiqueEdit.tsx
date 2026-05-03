@@ -1272,7 +1272,7 @@ export default function BoutiqueEdit() {
                               onAlignChange={updateSectionAlign}
                               onMoveUp={(t) => moveSection(t, -1)}
                               onMoveDown={(t) => moveSection(t, 1)}
-                              onRemove={removeSection}
+                              onRemove={(t) => removeSection(t as SectionConfig["type"])}
                               canMoveUp={sIdx > 0}
                               canMoveDown={sIdx < sections.length - 1}
                             />
