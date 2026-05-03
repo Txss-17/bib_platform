@@ -1225,6 +1225,15 @@ export default function BoutiqueEdit() {
                           ))}
                       </select>
                       <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={shuffleSections}
+                        className="gap-1.5"
+                      >
+                        <Shuffle className="w-3.5 h-3.5" /> Aléatoire
+                      </Button>
+                      <Button
                       type="button"
                       variant="outline"
                       size="sm"
@@ -1246,7 +1255,7 @@ export default function BoutiqueEdit() {
                   <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                     <SortableContext items={sections.map(s => s.type)} strategy={verticalListSortingStrategy}>
                       <div className="space-y-2">
-                        {sections.map(section => {
+                       {sections.map((section, sIdx) => {
                           const sectionDef = availableSections.find(s => s.type === section.type);
                           if (!sectionDef) return null;
                           return (
@@ -1258,6 +1267,14 @@ export default function BoutiqueEdit() {
                               onToggle={updateSection}
                               onEffectChange={updateSectionEffect}
                               onIntensityChange={updateSectionIntensity}
+                              onWidthChange={updateSectionWidth}
+                              onSpacingChange={updateSectionSpacing}
+                              onAlignChange={updateSectionAlign}
+                              onMoveUp={(t) => moveSection(t, -1)}
+                              onMoveDown={(t) => moveSection(t, 1)}
+                              onRemove={removeSection}
+                              canMoveUp={sIdx > 0}
+                              canMoveDown={sIdx < sections.length - 1}
                             />
                           );
                         })}
