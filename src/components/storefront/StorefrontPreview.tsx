@@ -334,6 +334,7 @@ export function StorefrontPreview({
     const speedMap = { low: 0.08, medium: 0.18, high: 0.35 };
     const tiltMap = { low: 4, medium: 8, high: 14 };
 
+    let result: React.ReactNode = inner;
     if (effect && effect !== "none") {
       const reveal = effectToReveal(effect);
       let wrapped: React.ReactNode = inner;
@@ -345,20 +346,26 @@ export function StorefrontPreview({
         wrapped = <div key={`fx-${section.type}`} className={effectClassMap[effect]}>{inner}</div>;
       }
       if (reveal) {
-        return <ScrollReveal key={`r-${section.type}`} direction={reveal}>{wrapped}</ScrollReveal>;
+        result = <ScrollReveal key={`r-${section.type}`} direction={reveal}>{wrapped}</ScrollReveal>;
+      } else {
+        result = wrapped;
       }
-      return wrapped;
-    }
-
-    // Fallback: legacy 3D wrap when site type is 3D and no explicit effect
-    if (is3D) {
-      return (
+    } else if (is3D) {
+      // Fallback: legacy 3D wrap when site type is 3D and no explicit effect
+      result = (
         <ScrollReveal key={`r-${section.type}`} direction={defaultDir}>
           <ParallaxSection speed={0.15}>{inner}</ParallaxSection>
         </ScrollReveal>
       );
     }
-    return inner;
+
+    // Apply per-section layout: width, vertical spacing, alignment.
+    const layoutCls = `${widthClass(section.width)} ${spacingClass(section.spacing)} ${alignClass(section.align)}`.trim();
+    return (
+      <div key={`layout-${section.type}`} className={layoutCls}>
+        {result}
+      </div>
+    );
   };
 
   return (
