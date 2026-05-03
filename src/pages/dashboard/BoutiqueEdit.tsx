@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Sparkles, Mail, Plus, GripVertical, Image, Wand2, Upload, Trash2, FileText, Box, Settings as SettingsIcon } from "lucide-react";
+import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Sparkles, Mail, Plus, GripVertical, Image, Wand2, Upload, Trash2, FileText, Box, Settings as SettingsIcon, ChevronUp, ChevronDown, Shuffle, X, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { BoutiqueSettingsTab } from "@/components/dashboard/boutique/BoutiqueSettingsTab";
 import { useState, useEffect } from "react";
@@ -69,6 +69,14 @@ function SortableSectionItem({
   onToggle,
   onEffectChange,
   onIntensityChange,
+  onWidthChange,
+  onSpacingChange,
+  onAlignChange,
+  onMoveUp,
+  onMoveDown,
+  onRemove,
+  canMoveUp,
+  canMoveDown,
 }: {
   section: SectionConfig;
   sectionDef: { type: string; label: string; description: string };
@@ -76,6 +84,14 @@ function SortableSectionItem({
   onToggle: (type: string, enabled: boolean) => void;
   onEffectChange: (type: string, effect: SectionEffect) => void;
   onIntensityChange: (type: string, intensity: "low" | "medium" | "high") => void;
+  onWidthChange: (type: string, width: NonNullable<SectionConfig["width"]>) => void;
+  onSpacingChange: (type: string, spacing: NonNullable<SectionConfig["spacing"]>) => void;
+  onAlignChange: (type: string, align: NonNullable<SectionConfig["align"]>) => void;
+  onMoveUp: (type: string) => void;
+  onMoveDown: (type: string) => void;
+  onRemove: (type: string) => void;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: section.type,
@@ -91,6 +107,9 @@ function SortableSectionItem({
   const currentEffect = (section.effect || "none") as SectionEffect;
   const currentIntensity = section.effectIntensity || "medium";
   const showIntensity = currentEffect === "tilt" || currentEffect === "parallax";
+  const currentWidth = section.width || "contained";
+  const currentSpacing = section.spacing || "normal";
+  const currentAlign = section.align || "center";
 
   return (
     <div
@@ -108,10 +127,104 @@ function SortableSectionItem({
             <p className="text-xs text-muted-foreground">{sectionDef.description}</p>
           </div>
         </div>
-        <Switch checked={isEnabled} onCheckedChange={(checked) => onToggle(section.type, checked)} />
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => onMoveUp(section.type)}
+            disabled={!canMoveUp}
+            className="h-7 w-7 inline-flex items-center justify-center rounded hover:bg-muted disabled:opacity-30"
+            aria-label="Monter"
+          >
+            <ChevronUp className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => onMoveDown(section.type)}
+            disabled={!canMoveDown}
+            className="h-7 w-7 inline-flex items-center justify-center rounded hover:bg-muted disabled:opacity-30"
+            aria-label="Descendre"
+          >
+            <ChevronDown className="w-3.5 h-3.5" />
+          </button>
+          <Switch checked={isEnabled} onCheckedChange={(checked) => onToggle(section.type, checked)} />
+          <button
+            type="button"
+            onClick={() => onRemove(section.type)}
+            className="h-7 w-7 inline-flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+            aria-label="Supprimer la section"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
       {isEnabled && (
         <div className="px-3 pb-3 pt-1 border-t border-border/40 space-y-2">
+          {/* Layout: width / spacing / alignment */}
+          <div className="flex items-center gap-2">
+            <Layout className="w-3.5 h-3.5 text-muted-foreground" />
+            <Label className="text-xs text-muted-foreground">Mise en page</Label>
+          </div>
+          <div className="grid grid-cols-3 gap-1">
+            {([
+              { v: "contained" as const, label: "Standard" },
+              { v: "wide" as const, label: "Large" },
+              { v: "full" as const, label: "Pleine" },
+            ]).map(opt => (
+              <button
+                key={opt.v}
+                type="button"
+                onClick={() => onWidthChange(section.type, opt.v)}
+                className={`text-[11px] py-1 rounded border transition-colors ${
+                  currentWidth === opt.v
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border hover:border-primary/40"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-3 gap-1">
+            {([
+              { v: "compact" as const, label: "Compact" },
+              { v: "normal" as const, label: "Normal" },
+              { v: "large" as const, label: "Spacieux" },
+            ]).map(opt => (
+              <button
+                key={opt.v}
+                type="button"
+                onClick={() => onSpacingChange(section.type, opt.v)}
+                className={`text-[11px] py-1 rounded border transition-colors ${
+                  currentSpacing === opt.v
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border hover:border-primary/40"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-3 gap-1">
+            {([
+              { v: "left" as const, Icon: AlignLeft, label: "Gauche" },
+              { v: "center" as const, Icon: AlignCenter, label: "Centre" },
+              { v: "right" as const, Icon: AlignRight, label: "Droite" },
+            ]).map(opt => (
+              <button
+                key={opt.v}
+                type="button"
+                onClick={() => onAlignChange(section.type, opt.v)}
+                className={`text-[11px] py-1 rounded border inline-flex items-center justify-center gap-1 transition-colors ${
+                  currentAlign === opt.v
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border hover:border-primary/40"
+                }`}
+              >
+                <opt.Icon className="w-3 h-3" /> {opt.label}
+              </button>
+            ))}
+          </div>
+          <div className="border-t border-border/40 pt-2" />
           <div className="flex items-center gap-2">
             <Wand2 className="w-3.5 h-3.5 text-muted-foreground" />
             <Label className="text-xs text-muted-foreground">Effet à l'apparition</Label>
@@ -352,6 +465,60 @@ export default function BoutiqueEdit() {
       s.type === sectionType ? { ...s, effectIntensity } : s
     );
     setThemeSettings(prev => ({ ...prev, sections: updated }));
+  };
+
+  const updateSectionWidth = (sectionType: string, width: NonNullable<SectionConfig["width"]>) => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    const updated = currentSections.map(s => s.type === sectionType ? { ...s, width } : s);
+    setThemeSettings(prev => ({ ...prev, sections: updated }));
+  };
+
+  const updateSectionSpacing = (sectionType: string, spacing: NonNullable<SectionConfig["spacing"]>) => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    const updated = currentSections.map(s => s.type === sectionType ? { ...s, spacing } : s);
+    setThemeSettings(prev => ({ ...prev, sections: updated }));
+  };
+
+  const updateSectionAlign = (sectionType: string, align: NonNullable<SectionConfig["align"]>) => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    const updated = currentSections.map(s => s.type === sectionType ? { ...s, align } : s);
+    setThemeSettings(prev => ({ ...prev, sections: updated }));
+  };
+
+  const moveSection = (sectionType: string, direction: -1 | 1) => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    const idx = currentSections.findIndex(s => s.type === sectionType);
+    const newIdx = idx + direction;
+    if (idx < 0 || newIdx < 0 || newIdx >= currentSections.length) return;
+    const reordered = arrayMove(currentSections, idx, newIdx);
+    setThemeSettings(prev => ({ ...prev, sections: reordered }));
+  };
+
+  /** Shuffle the order of sections — keeps hero pinned at the top and announcement/sticky-cta at their special spots. */
+  const shuffleSections = () => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    const pinned = currentSections.filter(s => s.type === "hero" || s.type === "announcement" || s.type === "sticky-cta");
+    const shuffleable = currentSections.filter(s => !pinned.includes(s));
+    for (let i = shuffleable.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffleable[i], shuffleable[j]] = [shuffleable[j], shuffleable[i]];
+    }
+    // Rebuild: announcement first, hero second, others shuffled, sticky-cta last
+    const ordered: SectionConfig[] = [];
+    const ann = pinned.find(s => s.type === "announcement");
+    const hero = pinned.find(s => s.type === "hero");
+    const cta = pinned.find(s => s.type === "sticky-cta");
+    if (ann) ordered.push(ann);
+    if (hero) ordered.push(hero);
+    ordered.push(...shuffleable);
+    if (cta) ordered.push(cta);
+    setThemeSettings(prev => ({ ...prev, sections: ordered }));
+    toast.success("Sections réorganisées aléatoirement");
   };
 
   const updateSection = (sectionType: string, enabled: boolean) => {
@@ -1058,6 +1225,15 @@ export default function BoutiqueEdit() {
                           ))}
                       </select>
                       <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={shuffleSections}
+                        className="gap-1.5"
+                      >
+                        <Shuffle className="w-3.5 h-3.5" /> Aléatoire
+                      </Button>
+                      <Button
                       type="button"
                       variant="outline"
                       size="sm"
@@ -1079,7 +1255,7 @@ export default function BoutiqueEdit() {
                   <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                     <SortableContext items={sections.map(s => s.type)} strategy={verticalListSortingStrategy}>
                       <div className="space-y-2">
-                        {sections.map(section => {
+                       {sections.map((section, sIdx) => {
                           const sectionDef = availableSections.find(s => s.type === section.type);
                           if (!sectionDef) return null;
                           return (
@@ -1091,6 +1267,14 @@ export default function BoutiqueEdit() {
                               onToggle={updateSection}
                               onEffectChange={updateSectionEffect}
                               onIntensityChange={updateSectionIntensity}
+                              onWidthChange={updateSectionWidth}
+                              onSpacingChange={updateSectionSpacing}
+                              onAlignChange={updateSectionAlign}
+                              onMoveUp={(t) => moveSection(t, -1)}
+                              onMoveDown={(t) => moveSection(t, 1)}
+                              onRemove={(t) => removeSection(t as SectionConfig["type"])}
+                              canMoveUp={sIdx > 0}
+                              canMoveDown={sIdx < sections.length - 1}
                             />
                           );
                         })}

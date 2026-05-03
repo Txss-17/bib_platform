@@ -41,6 +41,12 @@ export interface SectionConfig {
   subtitle?: string;
   effect?: SectionEffect;
   effectIntensity?: "low" | "medium" | "high";
+  /** Largeur du conteneur de la section */
+  width?: "contained" | "wide" | "full";
+  /** Espacement vertical (padding haut/bas) */
+  spacing?: "compact" | "normal" | "large";
+  /** Alignement horizontal du contenu */
+  align?: "left" | "center" | "right";
   /** Free-form per-section data (announcement message, countdown end date, etc.) */
   data?: Record<string, any>;
 }

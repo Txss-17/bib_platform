@@ -181,3 +181,39 @@
   mix-blend-mode: overlay;
   z-index: 2;
 }
+
+/* ===== Per-section layout controls (width, spacing, alignment) ===== */
+/* Width affects how much horizontal room the inner section's container should occupy.
+   Sections render their own <section> with internal containers, so we mostly tweak max-width via CSS variables. */
+.sf-w-contained > * {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.sf-w-wide > * {
+  max-width: 1480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.sf-w-full > * {
+  max-width: none;
+}
+
+/* Vertical spacing modifiers (apply only when authors don't override). */
+.sf-sp-compact > * {
+  padding-top: 1.5rem !important;
+  padding-bottom: 1.5rem !important;
+}
+.sf-sp-normal > * {
+  /* Use whatever the section component provides — no override. */
+}
+.sf-sp-large > * {
+  padding-top: 6rem !important;
+  padding-bottom: 6rem !important;
+}
+
+/* Alignment cascades to text and inline-flex content within the section. */
+.text-left,
+.text-right {
+  /* tailwind utilities already exist; keeping for clarity */
+}
