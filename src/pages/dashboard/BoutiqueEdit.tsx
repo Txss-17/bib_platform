@@ -467,6 +467,60 @@ export default function BoutiqueEdit() {
     setThemeSettings(prev => ({ ...prev, sections: updated }));
   };
 
+  const updateSectionWidth = (sectionType: string, width: NonNullable<SectionConfig["width"]>) => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    const updated = currentSections.map(s => s.type === sectionType ? { ...s, width } : s);
+    setThemeSettings(prev => ({ ...prev, sections: updated }));
+  };
+
+  const updateSectionSpacing = (sectionType: string, spacing: NonNullable<SectionConfig["spacing"]>) => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    const updated = currentSections.map(s => s.type === sectionType ? { ...s, spacing } : s);
+    setThemeSettings(prev => ({ ...prev, sections: updated }));
+  };
+
+  const updateSectionAlign = (sectionType: string, align: NonNullable<SectionConfig["align"]>) => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    const updated = currentSections.map(s => s.type === sectionType ? { ...s, align } : s);
+    setThemeSettings(prev => ({ ...prev, sections: updated }));
+  };
+
+  const moveSection = (sectionType: string, direction: -1 | 1) => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    const idx = currentSections.findIndex(s => s.type === sectionType);
+    const newIdx = idx + direction;
+    if (idx < 0 || newIdx < 0 || newIdx >= currentSections.length) return;
+    const reordered = arrayMove(currentSections, idx, newIdx);
+    setThemeSettings(prev => ({ ...prev, sections: reordered }));
+  };
+
+  /** Shuffle the order of sections — keeps hero pinned at the top and announcement/sticky-cta at their special spots. */
+  const shuffleSections = () => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    const pinned = currentSections.filter(s => s.type === "hero" || s.type === "announcement" || s.type === "sticky-cta");
+    const shuffleable = currentSections.filter(s => !pinned.includes(s));
+    for (let i = shuffleable.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffleable[i], shuffleable[j]] = [shuffleable[j], shuffleable[i]];
+    }
+    // Rebuild: announcement first, hero second, others shuffled, sticky-cta last
+    const ordered: SectionConfig[] = [];
+    const ann = pinned.find(s => s.type === "announcement");
+    const hero = pinned.find(s => s.type === "hero");
+    const cta = pinned.find(s => s.type === "sticky-cta");
+    if (ann) ordered.push(ann);
+    if (hero) ordered.push(hero);
+    ordered.push(...shuffleable);
+    if (cta) ordered.push(cta);
+    setThemeSettings(prev => ({ ...prev, sections: ordered }));
+    toast.success("Sections réorganisées aléatoirement");
+  };
+
   const updateSection = (sectionType: string, enabled: boolean) => {
     const template = getTemplateForCategory(boutique?.category || "Mode");
     const currentSections = themeSettings.sections || template.sections;
