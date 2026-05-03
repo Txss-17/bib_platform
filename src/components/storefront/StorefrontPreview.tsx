@@ -36,6 +36,33 @@ function effectToReveal(effect?: SectionEffect): "up" | "left" | "right" | "scal
   }
 }
 
+function widthClass(w?: SectionConfig["width"]): string {
+  switch (w) {
+    case "full": return "sf-w-full";
+    case "wide": return "sf-w-wide";
+    case "contained":
+    default: return "sf-w-contained";
+  }
+}
+
+function spacingClass(s?: SectionConfig["spacing"]): string {
+  switch (s) {
+    case "compact": return "sf-sp-compact";
+    case "large": return "sf-sp-large";
+    case "normal":
+    default: return "sf-sp-normal";
+  }
+}
+
+function alignClass(a?: SectionConfig["align"]): string {
+  switch (a) {
+    case "left": return "text-left";
+    case "right": return "text-right";
+    case "center":
+    default: return "";
+  }
+}
+
 const effectClassMap: Partial<Record<SectionEffect, string>> = {
   flip: "sf-effect-flip",
   rotate: "sf-effect-rotate",
