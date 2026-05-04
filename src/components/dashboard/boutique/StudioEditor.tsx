@@ -665,6 +665,7 @@ export function StudioEditor({
                 onDelete={() => setPendingDeleteId(activeScene.id)}
                 onRemix={() => handleRemix(activeScene)}
                 isRemixing={remixMut.isPending}
+                remixState={stateFromMutation(remixMut)}
               />
             )}
           </TabsContent>
