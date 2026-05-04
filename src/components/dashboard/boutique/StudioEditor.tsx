@@ -613,6 +613,49 @@ export function StudioEditor({
           products={products}
         />
       </div>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!pendingDeleteId} onOpenChange={(o) => !o && setPendingDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer cette scène ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Le contenu de la scène sera définitivement perdu.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Pre-publish validation errors */}
+      <AlertDialog open={showPublishErrors} onOpenChange={setShowPublishErrors}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-warning" />
+              Publication impossible
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Corrigez les éléments suivants avant de publier votre boutique :
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <ul className="text-sm space-y-2 list-disc pl-5 max-h-72 overflow-y-auto">
+            {validation.errors.map((e, i) => (
+              <li key={i} className="text-foreground">{e}</li>
+            ))}
+          </ul>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowPublishErrors(false)}>
+              Compris
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
