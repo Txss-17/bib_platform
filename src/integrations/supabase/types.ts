@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      boutique_brand_dna: {
+        Row: {
+          ambiance: string | null
+          boutique_id: string
+          created_at: string
+          generated_copy: Json
+          generated_palette: Json
+          generated_typography: Json
+          id: string
+          keywords: string[]
+          seed: string
+          studio_answers: Json
+          target_audience: string | null
+          tone: string | null
+          updated_at: string
+        }
+        Insert: {
+          ambiance?: string | null
+          boutique_id: string
+          created_at?: string
+          generated_copy?: Json
+          generated_palette?: Json
+          generated_typography?: Json
+          id?: string
+          keywords?: string[]
+          seed: string
+          studio_answers?: Json
+          target_audience?: string | null
+          tone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ambiance?: string | null
+          boutique_id?: string
+          created_at?: string
+          generated_copy?: Json
+          generated_palette?: Json
+          generated_typography?: Json
+          id?: string
+          keywords?: string[]
+          seed?: string
+          studio_answers?: Json
+          target_audience?: string | null
+          tone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       boutique_members: {
         Row: {
           boutique_id: string
@@ -99,6 +147,45 @@ export type Database = {
           },
         ]
       }
+      boutique_scenes: {
+        Row: {
+          boutique_id: string
+          content: Json
+          created_at: string
+          id: string
+          is_visible: boolean
+          position: number
+          role: string
+          scene_type: string
+          updated_at: string
+          variant: string
+        }
+        Insert: {
+          boutique_id: string
+          content?: Json
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          position?: number
+          role: string
+          scene_type: string
+          updated_at?: string
+          variant?: string
+        }
+        Update: {
+          boutique_id?: string
+          content?: Json
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          position?: number
+          role?: string
+          scene_type?: string
+          updated_at?: string
+          variant?: string
+        }
+        Relationships: []
+      }
       boutiques: {
         Row: {
           category: string
@@ -116,10 +203,12 @@ export type Database = {
           logo_url: string | null
           name: string
           seo_description: string | null
+          seo_jsonld: Json | null
           seo_og_image_url: string | null
           seo_title: string | null
           slug: string
           status: Database["public"]["Enums"]["boutique_status"]
+          studio_completed_at: string | null
           tagline: string | null
           target_markets: string[]
           theme_settings: Json | null
@@ -142,10 +231,12 @@ export type Database = {
           logo_url?: string | null
           name: string
           seo_description?: string | null
+          seo_jsonld?: Json | null
           seo_og_image_url?: string | null
           seo_title?: string | null
           slug: string
           status?: Database["public"]["Enums"]["boutique_status"]
+          studio_completed_at?: string | null
           tagline?: string | null
           target_markets?: string[]
           theme_settings?: Json | null
@@ -168,10 +259,12 @@ export type Database = {
           logo_url?: string | null
           name?: string
           seo_description?: string | null
+          seo_jsonld?: Json | null
           seo_og_image_url?: string | null
           seo_title?: string | null
           slug?: string
           status?: Database["public"]["Enums"]["boutique_status"]
+          studio_completed_at?: string | null
           tagline?: string | null
           target_markets?: string[]
           theme_settings?: Json | null
