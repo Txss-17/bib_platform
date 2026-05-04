@@ -7,16 +7,16 @@
 export const EDITOR_ROUTES = {
   /** Dashboard list of boutiques. */
   boutiquesList: () => "/dashboard/boutiques",
-  /** Editor for a specific boutique. */
-  boutiqueEdit: (id: string) => `/dashboard/boutique/${encodeURIComponent(id)}/edit`,
+  /** Editor for a specific boutique. Must match <Route path="/dashboard/boutiques/edit/:id">. */
+  boutiqueEdit: (id: string) => `/dashboard/boutiques/edit/${encodeURIComponent(id)}`,
   /** Public storefront — MUST match <Route path="/boutique/:slug"> in App.tsx. */
   storefront: (slug: string) => `/boutique/${encodeURIComponent(slug)}`,
   /** Public product page. */
   storefrontProduct: (slug: string, productId: string) =>
     `/boutique/${encodeURIComponent(slug)}/product/${encodeURIComponent(productId)}`,
-  /** Per-boutique analytics studio. */
+  /** Per-boutique analytics studio. Must match <Route path="/dashboard/boutiques/analytics/:id">. */
   analyticsStudio: (id: string) =>
-    `/dashboard/boutique/${encodeURIComponent(id)}/analytics`,
+    `/dashboard/boutiques/analytics/${encodeURIComponent(id)}`,
 } as const;
 
 /** True if the given slug renders a usable storefront URL. */
