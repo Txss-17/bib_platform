@@ -26,6 +26,10 @@ interface StorefrontCheckoutBody {
   notes?: string;
   returnUrl: string;
   environment: StripeEnv;
+  attribution?: {
+    lastScene?: { sceneId?: string; sceneType?: string; at?: number } | null;
+    sessionId?: string;
+  };
 }
 
 function getSupabaseAdmin() {
@@ -117,6 +121,23 @@ async function createStorefrontCheckout(body: StorefrontCheckoutBody) {
     .from("orders")
     .update({ stripe_session_id: session.id })
     .in("id", (orders ?? []).map((o: any) => o.id));
+
+  // Log conversion against the last viewed scene (best-effort, fire-and-forget).
+  const lastScene = body.attribution?.lastScene;
+  if (lastScene?.sceneId && lastScene?.sceneType) {
+    try {
+      await supabase.from("scene_events").insert({
+        boutique_id: body.boutiqueId,
+        scene_id: lastScene.sceneId,
+        scene_type: lastScene.sceneType,
+        event_type: "conversion",
+        session_id: body.attribution?.sessionId ?? null,
+        metadata: { stripe_session_id: session.id },
+      });
+    } catch (e) {
+      console.warn("scene_events conversion insert failed", e);
+    }
+  }
 
   return {
     clientSecret: session.client_secret,
