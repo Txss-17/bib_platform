@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -11,8 +11,10 @@ import {
   ChevronUp,
   ChevronDown,
   Wand2,
-  Save,
   Globe,
+  AlertTriangle,
+  CheckCircle2,
+  Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -29,6 +31,16 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
   useBoutiqueScenes,
@@ -38,12 +50,14 @@ import {
   useAddScene,
   useDeleteScene,
   useGenerateSeo,
+  useSaveSeo,
   type SeoCopilotResult,
 } from "@/hooks/useBrandStudio";
 import {
   STUDIO_SCENES,
   findSceneDefinition,
   type SceneRecord,
+  type SceneRole,
 } from "@/lib/studioScenes";
 import { StudioSceneRenderer } from "@/components/storefront/StudioSceneRenderer";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -56,6 +70,11 @@ interface Props {
   products: Array<{ id: string; name: string; price: number; image_url?: string | null }>;
   publicSlug?: string;
   isPublished: boolean;
+  initialSeo?: {
+    title?: string | null;
+    description?: string | null;
+    jsonld?: { blocks?: Array<Record<string, unknown>>; keywords?: string[]; h1?: string | null } | null;
+  };
 }
 
 export function StudioEditor({
@@ -65,6 +84,7 @@ export function StudioEditor({
   products,
   publicSlug,
   isPublished,
+  initialSeo,
 }: Props) {
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -75,18 +95,88 @@ export function StudioEditor({
   const addScene = useAddScene();
   const removeScene = useDeleteScene();
   const seoMut = useGenerateSeo();
+  const seoSave = useSaveSeo();
 
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
-  const [seoResult, setSeoResult] = useState<SeoCopilotResult | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [showPublishErrors, setShowPublishErrors] = useState(false);
+
+  // SEO local state — editable fields persisted via useSaveSeo
+  const [seoTitle, setSeoTitle] = useState(initialSeo?.title ?? "");
+  const [seoDescription, setSeoDescription] = useState(initialSeo?.description ?? "");
+  const [seoKeywords, setSeoKeywords] = useState<string>(
+    (initialSeo?.jsonld?.keywords ?? []).join(", "),
+  );
+  const [seoH1, setSeoH1] = useState<string>(initialSeo?.jsonld?.h1 ?? "");
+  const [seoJsonld, setSeoJsonld] = useState<Array<Record<string, unknown>>>(
+    initialSeo?.jsonld?.blocks ?? [],
+  );
+  const [seoDirty, setSeoDirty] = useState(false);
+  useEffect(() => {
+    setSeoDirty(false);
+  }, [boutiqueId]);
 
   const activeScene = useMemo(
     () => scenes.find((s) => s.id === activeSceneId) ?? scenes[0] ?? null,
     [scenes, activeSceneId],
   );
 
+  // ---------------- Pre-publish validation ----------------
+  const validation = useMemo(() => {
+    const errors: string[] = [];
+    const visible = scenes.filter((s) => s.is_visible);
+    if (visible.length < 3) {
+      errors.push("Au moins 3 scènes visibles sont requises (Hero, Vitrine, CTA recommandés).");
+    }
+    const requiredRoles: SceneRole[] = ["hero", "showcase", "cta"];
+    for (const r of requiredRoles) {
+      if (!visible.some((s) => s.role === r)) {
+        errors.push(`Scène manquante : ${r === "hero" ? "Hero" : r === "showcase" ? "Vitrine produits" : "Appel à l'action"}.`);
+      }
+    }
+    // Hero content sanity
+    const hero = visible.find((s) => s.role === "hero");
+    if (hero) {
+      const c = hero.content as Record<string, unknown>;
+      if (!c.title || (c.title as string).trim().length < 5)
+        errors.push("Le titre du Hero doit faire au moins 5 caractères.");
+      // If hero has a videoUrl key declared, require it present
+      if ("videoUrl" in c && hero.variant === "fullscreen" && !c.backgroundImage && !c.videoUrl) {
+        errors.push("Hero plein écran : ajoute une image ou une vidéo de fond.");
+      }
+    }
+    // Showcase needs products
+    if (visible.some((s) => s.role === "showcase") && products.length === 0) {
+      errors.push("La Vitrine est activée mais aucun produit actif n'est disponible.");
+    }
+    // SEO
+    if (!seoTitle || seoTitle.trim().length < 10)
+      errors.push("Le titre SEO doit faire au moins 10 caractères.");
+    if (seoTitle.length > 60)
+      errors.push("Le titre SEO ne doit pas dépasser 60 caractères.");
+    if (!seoDescription || seoDescription.trim().length < 50)
+      errors.push("La meta description doit faire au moins 50 caractères.");
+    if (seoDescription.length > 160)
+      errors.push("La meta description ne doit pas dépasser 160 caractères.");
+    return { errors, ok: errors.length === 0 };
+  }, [scenes, products, seoTitle, seoDescription]);
+
   const publish = useMutation({
     mutationFn: async () => {
+      if (!validation.ok) throw new Error("validation_failed");
+      // Persist any pending SEO before publishing
+      if (seoDirty) {
+        await seoSave.mutateAsync({
+          boutiqueId,
+          title: seoTitle,
+          description: seoDescription,
+          h1: seoH1 || undefined,
+          keywords: seoKeywords.split(",").map((k) => k.trim()).filter(Boolean),
+          jsonld: seoJsonld,
+        });
+        setSeoDirty(false);
+      }
       const { error } = await supabase
         .from("boutiques")
         .update({ status: "published" })
@@ -98,20 +188,31 @@ export function StudioEditor({
       qc.invalidateQueries({ queryKey: ["boutique-edit", boutiqueId] });
       qc.invalidateQueries({ queryKey: ["boutiques"] });
     },
-    onError: () => toast.error("Erreur lors de la publication"),
+    onError: (e: unknown) => {
+      if (e instanceof Error && e.message === "validation_failed") {
+        setShowPublishErrors(true);
+      } else {
+        toast.error("Erreur lors de la publication");
+      }
+    },
   });
 
   const handleMove = (sceneId: string, dir: -1 | 1) => {
+    if (reorder.isPending) return;
     const idx = scenes.findIndex((s) => s.id === sceneId);
     const next = idx + dir;
     if (idx < 0 || next < 0 || next >= scenes.length) return;
     const list = scenes.slice();
     const [it] = list.splice(idx, 1);
     list.splice(next, 0, it);
-    reorder.mutate({ boutiqueId, orderedIds: list.map((s) => s.id) });
+    reorder.mutate(
+      { boutiqueId, orderedIds: list.map((s) => s.id) },
+      { onError: () => toast.error("Réorganisation impossible, réessayez.") },
+    );
   };
 
   const handleAdd = (sceneType: string) => {
+    if (addScene.isPending) return;
     addScene.mutate(
       { boutiqueId, sceneType, position: scenes.length },
       {
@@ -122,6 +223,21 @@ export function StudioEditor({
         onError: () => toast.error("Impossible d'ajouter la scène"),
       },
     );
+  };
+
+  const confirmDelete = () => {
+    if (!pendingDeleteId) return;
+    removeScene.mutate(
+      { sceneId: pendingDeleteId, boutiqueId },
+      {
+        onSuccess: () => {
+          toast.success("Scène supprimée");
+          if (activeSceneId === pendingDeleteId) setActiveSceneId(null);
+        },
+        onError: () => toast.error("Suppression impossible"),
+      },
+    );
+    setPendingDeleteId(null);
   };
 
   const handleSeoGenerate = () => {
@@ -140,11 +256,36 @@ export function StudioEditor({
         },
       },
       {
-        onSuccess: (r) => {
-          setSeoResult(r);
+        onSuccess: (r: SeoCopilotResult) => {
+          setSeoTitle(r.title);
+          setSeoDescription(r.description);
+          setSeoH1(r.h1);
+          setSeoKeywords(r.keywords.join(", "));
+          setSeoJsonld(r.jsonld);
+          setSeoDirty(false);
           toast.success("SEO généré et appliqué");
         },
         onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erreur SEO"),
+      },
+    );
+  };
+
+  const handleSeoSave = () => {
+    seoSave.mutate(
+      {
+        boutiqueId,
+        title: seoTitle,
+        description: seoDescription,
+        h1: seoH1 || undefined,
+        keywords: seoKeywords.split(",").map((k) => k.trim()).filter(Boolean),
+        jsonld: seoJsonld,
+      },
+      {
+        onSuccess: () => {
+          setSeoDirty(false);
+          toast.success("SEO enregistré");
+        },
+        onError: () => toast.error("Sauvegarde SEO impossible"),
       },
     );
   };
@@ -166,18 +307,36 @@ export function StudioEditor({
                 </a>
               </Button>
             )}
-            {!isPublished && (
-              <Button size="sm" onClick={() => publish.mutate()} disabled={publish.isPending}>
-                {publish.isPending ? (
-                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                ) : (
-                  <Globe className="w-4 h-4 mr-1" />
-                )}
-                Publier
-              </Button>
-            )}
+            <Button
+              size="sm"
+              onClick={() => publish.mutate()}
+              disabled={publish.isPending}
+              variant={isPublished ? "outline" : "default"}
+            >
+              {publish.isPending ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <Globe className="w-4 h-4 mr-1" />
+              )}
+              {isPublished ? "Republier" : "Publier"}
+            </Button>
           </div>
         </div>
+
+        {validation.errors.length > 0 && (
+          <div className="mx-4 mt-3 rounded-md border border-warning/40 bg-warning/10 p-2 text-xs flex gap-2">
+            <AlertTriangle className="w-3.5 h-3.5 text-warning shrink-0 mt-0.5" />
+            <span>
+              <strong>{validation.errors.length}</strong> point(s) à corriger avant publication.
+            </span>
+          </div>
+        )}
+        {validation.ok && (
+          <div className="mx-4 mt-3 rounded-md border border-success/40 bg-success/10 p-2 text-xs flex gap-2">
+            <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
+            <span>Boutique prête à être publiée.</span>
+          </div>
+        )}
 
         <Tabs defaultValue="scenes" className="flex-1 flex flex-col overflow-hidden">
           <TabsList className="mx-4 mt-3 grid grid-cols-3">
