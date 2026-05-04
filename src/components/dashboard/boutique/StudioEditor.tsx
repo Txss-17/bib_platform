@@ -694,19 +694,70 @@ export function StudioEditor({
                 </div>
                 <div>
                   <Label className="text-xs uppercase tracking-wide opacity-60">Palette</Label>
-                  <div className="flex gap-2 mt-1">
+                  <p className="text-[11px] opacity-60 mb-2">
+                    Cliquez sur une pastille pour modifier la couleur. L'aperçu se met à jour en direct.
+                  </p>
+                  <div className="grid grid-cols-4 gap-2">
                     {(["primary", "accent", "surface", "ink"] as const).map((k) => {
-                      const v = (brandDna.generated_palette as never)[k] as string | undefined;
+                      const v = (brandDna.generated_palette as Record<string, string | undefined>)[k];
+                      const hex = hslStringToHex(v);
                       return (
-                        <div key={k} className="flex-1 text-center">
-                          <div
-                            className="h-10 rounded border"
+                        <label key={k} className="flex flex-col items-center gap-1 cursor-pointer">
+                          <span
+                            className="relative h-10 w-full rounded border border-border overflow-hidden"
                             style={{ background: v ? `hsl(${v})` : "transparent" }}
-                          />
-                          <span className="text-[10px] opacity-60">{k}</span>
-                        </div>
+                          >
+                            <input
+                              type="color"
+                              value={hex}
+                              onChange={(e) => {
+                                const nextHsl = hexToHslString(e.target.value);
+                                updateBrandDna.mutate({
+                                  boutiqueId,
+                                  patch: {
+                                    generated_palette: {
+                                      ...brandDna.generated_palette,
+                                      [k]: nextHsl,
+                                    },
+                                  },
+                                });
+                              }}
+                              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                              aria-label={`Couleur ${k}`}
+                            />
+                          </span>
+                          <span className="text-[10px] opacity-60 capitalize">{k}</span>
+                        </label>
                       );
                     })}
+                  </div>
+                  <div className="mt-3">
+                    <p className="text-[11px] opacity-60 mb-1">Palettes prêtes à l'emploi</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {STUDIO_PALETTE_PRESETS.map((preset) => (
+                        <button
+                          key={preset.name}
+                          type="button"
+                          onClick={() =>
+                            updateBrandDna.mutate({
+                              boutiqueId,
+                              patch: { generated_palette: preset.palette },
+                            })
+                          }
+                          className="flex items-center gap-1 px-2 py-1 rounded-md border border-border hover:border-bib-gold transition-colors text-[10px]"
+                          title={preset.name}
+                        >
+                          {(["primary", "accent", "surface", "ink"] as const).map((k) => (
+                            <span
+                              key={k}
+                              className="h-3 w-3 rounded-sm border border-black/10"
+                              style={{ background: `hsl(${preset.palette[k]})` }}
+                            />
+                          ))}
+                          <span className="ml-1">{preset.name}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
                 <div>
