@@ -872,9 +872,17 @@ export function StudioEditor({
                   <Sparkles className="w-4 h-4 text-primary" />
                   <h3 className="text-sm font-semibold">Content Brief IA</h3>
                 </div>
-                <Button size="sm" variant="outline" onClick={handleBriefGenerate} disabled={briefMut.isPending}>
-                  {briefMut.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
-                </Button>
+                <ActionButton
+                  size="sm"
+                  variant="outline"
+                  onClick={handleBriefGenerate}
+                  state={stateFromMutation(briefMut)}
+                  loadingLabel="…"
+                  successLabel="✓"
+                  errorLabel="!"
+                >
+                  <Wand2 className="w-3 h-3" />
+                </ActionButton>
               </div>
               {!brief ? (
                 <p className="text-xs text-muted-foreground">
@@ -914,15 +922,18 @@ export function StudioEditor({
                     </ul>
                   </div>
                   <p className="text-[10px] opacity-60">Longueur cible : ~{brief.target_word_count} mots</p>
-                  <Button
+                  <ActionButton
                     size="sm"
                     className="w-full mt-2"
                     onClick={applyBrief}
-                    disabled={updateScene.isPending}
+                    state={stateFromMutation(updateScene)}
+                    loadingLabel="Application…"
+                    successLabel="Brief appliqué"
+                    errorLabel="Échec"
                   >
-                    <Wand2 className="w-3.5 h-3.5 mr-2" />
+                    <Wand2 className="w-3.5 h-3.5 mr-2 inline" />
                     Appliquer le brief (H1, plan & questions)
-                  </Button>
+                  </ActionButton>
                 </div>
               )}
             </Card>
@@ -934,9 +945,17 @@ export function StudioEditor({
                   <Sparkles className="w-4 h-4 text-primary" />
                   <h3 className="text-sm font-semibold">Clusters de mots-clés</h3>
                 </div>
-                <Button size="sm" variant="outline" onClick={handleClustersGenerate} disabled={clustersMut.isPending}>
-                  {clustersMut.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
-                </Button>
+                <ActionButton
+                  size="sm"
+                  variant="outline"
+                  onClick={handleClustersGenerate}
+                  state={stateFromMutation(clustersMut)}
+                  loadingLabel="…"
+                  successLabel="✓"
+                  errorLabel="!"
+                >
+                  <Wand2 className="w-3 h-3" />
+                </ActionButton>
               </div>
               {clusters.length === 0 ? (
                 <p className="text-xs text-muted-foreground">
