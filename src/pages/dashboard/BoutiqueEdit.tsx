@@ -795,6 +795,11 @@ export default function BoutiqueEdit() {
         publicSlug={boutique.slug}
         isPublished={boutique.status === "published"}
         products={products}
+        initialSeo={{
+          title: boutique.seo_title,
+          description: boutique.seo_description,
+          jsonld: (boutique.seo_jsonld as never) ?? null,
+        }}
       />
     </DashboardLayout>
   );
