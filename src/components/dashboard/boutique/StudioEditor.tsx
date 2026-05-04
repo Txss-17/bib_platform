@@ -941,26 +941,47 @@ export function StudioEditor({
                       </div>
                       <p className="text-primary font-medium">{c.pillar_keyword}</p>
                       <div className="flex flex-wrap gap-1 pt-1">
-                        {c.supporting_keywords.map((k) => (
-                          <button
-                            key={k}
-                            type="button"
-                            onClick={() => {
-                              const list = seoKeywordsList.includes(k)
-                                ? seoKeywordsList
-                                : [...seoKeywordsList, k];
-                              setSeoKeywords(list.join(", "));
-                              setSeoDirty(true);
-                            }}
-                            className="px-2 py-0.5 rounded-full bg-muted hover:bg-primary/10 text-[10px]"
-                            title="Ajouter aux mots-clés SEO"
-                          >
-                            + {k}
-                          </button>
-                        ))}
+                        {[c.pillar_keyword, ...c.supporting_keywords].map((k) => {
+                          const selected = seoKeywordsList.includes(k);
+                          return (
+                            <button
+                              key={k}
+                              type="button"
+                              onClick={() => (selected ? removeKeyword(k) : addKeyword(k))}
+                              className={`px-2 py-0.5 rounded-full text-[10px] transition border ${
+                                selected
+                                  ? "bg-primary/10 border-primary/40 text-primary"
+                                  : "bg-muted border-transparent hover:bg-primary/10"
+                              }`}
+                              title={selected ? "Retirer des mots-clés SEO" : "Ajouter aux mots-clés SEO"}
+                            >
+                              {selected ? "✓" : "+"} {k}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+              {seoKeywordsList.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-border/40">
+                  <Label className="text-[10px] uppercase opacity-60">
+                    Mots-clés sélectionnés ({seoKeywordsList.length})
+                  </Label>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {seoKeywordsList.map((k) => (
+                      <button
+                        key={k}
+                        type="button"
+                        onClick={() => removeKeyword(k)}
+                        className="px-2 py-0.5 rounded-full text-[10px] bg-primary/10 text-primary border border-primary/30 hover:bg-destructive/10 hover:border-destructive/40 hover:text-destructive transition"
+                        title="Cliquer pour retirer"
+                      >
+                        {k} ×
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </Card>
