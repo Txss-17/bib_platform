@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { defaultStudioBundle, SceneRecord } from "@/lib/studioScenes";
+import { defaultStudioBundle, SceneRecord, findSceneDefinition } from "@/lib/studioScenes";
 
 export interface BrandDNA {
   id: string;
@@ -150,6 +150,144 @@ export function useGenerateBrandDNA() {
       qc.invalidateQueries({ queryKey: ["brand-dna", vars.boutiqueId] });
       qc.invalidateQueries({ queryKey: ["boutique-scenes", vars.boutiqueId] });
       qc.invalidateQueries({ queryKey: ["boutique", vars.boutiqueId] });
+    },
+  });
+}
+
+/* ----------------------------------------------------------------------------
+ * Scene mutations — Tour B
+ * ------------------------------------------------------------------------- */
+
+export function useUpdateScene() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      sceneId: string;
+      boutiqueId: string;
+      patch: Partial<Pick<SceneRecord, "content" | "variant" | "is_visible" | "position">>;
+    }) => {
+      const { error } = await supabase
+        .from("boutique_scenes")
+        .update(params.patch as never)
+        .eq("id", params.sceneId);
+      if (error) throw error;
+    },
+    onSuccess: (_d, vars) =>
+      qc.invalidateQueries({ queryKey: ["boutique-scenes", vars.boutiqueId] }),
+  });
+}
+
+export function useReorderScenes() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      orderedIds: string[];
+    }) => {
+      // Sequential update; small N (~6) so cheap.
+      for (let i = 0; i < params.orderedIds.length; i++) {
+        const { error } = await supabase
+          .from("boutique_scenes")
+          .update({ position: i } as never)
+          .eq("id", params.orderedIds[i]);
+        if (error) throw error;
+      }
+    },
+    onSuccess: (_d, vars) =>
+      qc.invalidateQueries({ queryKey: ["boutique-scenes", vars.boutiqueId] }),
+  });
+}
+
+export function useAddScene() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      sceneType: string;
+      position: number;
+    }) => {
+      const def = findSceneDefinition(params.sceneType);
+      if (!def) throw new Error("scene_type inconnu");
+      const { error } = await supabase.from("boutique_scenes").insert({
+        boutique_id: params.boutiqueId,
+        role: def.role,
+        scene_type: def.id,
+        variant: def.variants[0],
+        content: def.defaultContent,
+        position: params.position,
+        is_visible: true,
+      } as never);
+      if (error) throw error;
+    },
+    onSuccess: (_d, vars) =>
+      qc.invalidateQueries({ queryKey: ["boutique-scenes", vars.boutiqueId] }),
+  });
+}
+
+export function useDeleteScene() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { sceneId: string; boutiqueId: string }) => {
+      const { error } = await supabase
+        .from("boutique_scenes")
+        .delete()
+        .eq("id", params.sceneId);
+      if (error) throw error;
+    },
+    onSuccess: (_d, vars) =>
+      qc.invalidateQueries({ queryKey: ["boutique-scenes", vars.boutiqueId] }),
+  });
+}
+
+/* ----------------------------------------------------------------------------
+ * SEO Copilot — Tour B
+ * ------------------------------------------------------------------------- */
+
+export interface SeoCopilotResult {
+  title: string;
+  description: string;
+  h1: string;
+  keywords: string[];
+  jsonld: Array<Record<string, unknown>>;
+}
+
+export function useGenerateSeo() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      context: Record<string, unknown>;
+      persist?: boolean;
+    }): Promise<SeoCopilotResult> => {
+      const { data, error } = await supabase.functions.invoke("boutique-ai", {
+        body: {
+          action: "generate_seo",
+          boutique_id: params.boutiqueId,
+          payload: params.context,
+        },
+      });
+      if (error) throw error;
+      if (data?.error === "rate_limited")
+        throw new Error("Trop de requêtes IA, réessaie dans 1 min.");
+      if (data?.error === "credits_exhausted")
+        throw new Error("Crédits IA épuisés. Recharge dans Paramètres.");
+      if (data?.error) throw new Error("Erreur IA : " + data.error);
+
+      if (params.persist !== false) {
+        await supabase
+          .from("boutiques")
+          .update({
+            seo_title: data.title,
+            seo_description: data.description,
+            seo_jsonld: { blocks: data.jsonld ?? [], keywords: data.keywords ?? [], h1: data.h1 },
+          } as never)
+          .eq("id", params.boutiqueId);
+      }
+      return data as SeoCopilotResult;
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["boutique-edit", vars.boutiqueId] });
+      qc.invalidateQueries({ queryKey: ["public-boutique"] });
     },
   });
 }

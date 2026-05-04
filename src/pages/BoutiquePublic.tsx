@@ -3,6 +3,13 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StorefrontPreview } from "@/components/storefront/StorefrontPreview";
+import { StudioSceneRenderer } from "@/components/storefront/StudioSceneRenderer";
+import { StorefrontHeader } from "@/components/storefront/StorefrontHeader";
+import { StorefrontFooter } from "@/components/storefront/StorefrontFooter";
+import { CartDrawer } from "@/components/storefront/CartDrawer";
+import { CartProvider } from "@/contexts/CartContext";
+import { StorefrontProvider } from "@/contexts/StorefrontContext";
+import { useBoutiqueScenes, useBrandDNA } from "@/hooks/useBrandStudio";
 import { useSEO, buildLocaleAlternates } from "@/hooks/useSEO";
 import { Loader2 } from "lucide-react";
 import type { ThemeSettings } from "@/lib/boutiqueTemplates";
@@ -29,6 +36,9 @@ export default function BoutiquePublic() {
     },
     enabled: !!slug,
   });
+
+  const { data: scenes = [] } = useBoutiqueScenes(boutique?.id);
+  const { data: brandDna = null } = useBrandDNA(boutique?.id);
 
   const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ["public-boutique-products", boutique?.id],
@@ -131,6 +141,65 @@ export default function BoutiquePublic() {
   }
 
   const themeSettings = (boutique.theme_settings as unknown) as ThemeSettings | null;
+
+  const useStudio = !!boutique.studio_completed_at && scenes.length > 0;
+
+  // Inject studio JSON-LD if SEO Copilot was run
+  // (handled separately via useSEO above for store-level data)
+
+  if (useStudio) {
+    return (
+      <CartProvider>
+        <StorefrontProvider
+          boutiqueId={boutique.id}
+          boutiqueName={boutique.name}
+          boutiqueSlug={boutique.slug}
+        >
+          <StorefrontHeader
+            boutiqueName={boutique.name}
+            boutiqueSlug={boutique.slug}
+            primaryColor={
+              brandDna?.generated_palette?.primary
+                ? `hsl(${brandDna.generated_palette.primary})`
+                : undefined
+            }
+          />
+          <StudioSceneRenderer
+            scenes={scenes}
+            brandDna={brandDna}
+            boutiqueName={boutique.name}
+            products={products}
+          />
+          <StorefrontFooter
+            primaryColor={
+              brandDna?.generated_palette?.primary
+                ? `hsl(${brandDna.generated_palette.primary})`
+                : undefined
+            }
+          />
+          <CartDrawer
+            boutiqueId={boutique.id}
+            boutiqueName={boutique.name}
+            primaryColor={
+              brandDna?.generated_palette?.primary
+                ? `hsl(${brandDna.generated_palette.primary})`
+                : undefined
+            }
+          />
+          <PageSeoInspector
+            visible={!!user && user.id === boutique.user_id}
+            kind="boutique"
+            title={boutique.name}
+            description={
+              boutique.description ||
+              `Découvrez ${boutique.name} sur Brand-In-A-Box.`
+            }
+            ogImage={boutique.cover_image_url || boutique.logo_url}
+          />
+        </StorefrontProvider>
+      </CartProvider>
+    );
+  }
 
   return (
     <>

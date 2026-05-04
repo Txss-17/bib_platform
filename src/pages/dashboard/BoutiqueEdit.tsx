@@ -36,6 +36,8 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { BoutiqueIdentityPanel } from "@/components/dashboard/boutique/BoutiqueIdentityPanel";
+import { BrandStudioWizard } from "@/components/dashboard/boutique/BrandStudioWizard";
+import { StudioEditor } from "@/components/dashboard/boutique/StudioEditor";
 
 const colorSchemes = [
   { name: "Moderne", primary: "#3b82f6", secondary: "#1e40af" },
@@ -749,6 +751,55 @@ export default function BoutiqueEdit() {
   const template = getTemplateForCategory(boutique.category);
   const sections = themeSettings.sections || template.sections;
 
+  // ─────────────────────────────────────────────────────────────────
+  // Tour B: nouveau Studio remplace l'ancien drag-and-drop.
+  // - Si l'onboarding Studio n'est pas fait → wizard.
+  // - Sinon → éditeur de scènes plein écran avec preview live.
+  // ─────────────────────────────────────────────────────────────────
+  if (!boutique.studio_completed_at) {
+    return (
+      <DashboardLayout>
+        <PageHeader
+          eyebrow="Boutiques"
+          title={`Brand Studio : ${boutique.name}`}
+          subtitle="Réponds à 5 questions, l'IA compose ton identité de marque et ta storefront."
+          breadcrumbs={[
+            { label: "Dashboard", href: "/dashboard" },
+            { label: "Boutiques", href: "/dashboard/boutiques" },
+            { label: boutique.name },
+          ]}
+          actions={
+            <Link to="/dashboard/boutiques">
+              <Button variant="outline" size="sm" className="gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Retour
+              </Button>
+            </Link>
+          }
+        />
+        <BrandStudioWizard
+          boutiqueId={boutique.id}
+          category={boutique.category}
+          onComplete={() => queryClient.invalidateQueries({ queryKey: ["boutique-edit", id] })}
+        />
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <DashboardLayout>
+      <StudioEditor
+        boutiqueId={boutique.id}
+        boutiqueName={boutique.name}
+        category={boutique.category}
+        publicSlug={boutique.slug}
+        isPublished={boutique.status === "published"}
+        products={products}
+      />
+    </DashboardLayout>
+  );
+
+  // Legacy editor kept temporarily for fallback; unreachable due to early returns above.
   const mergedTheme: ThemeSettings = {
     ...themeSettings,
     customHeroTitle: customTexts.heroTitle || undefined,
