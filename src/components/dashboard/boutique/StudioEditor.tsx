@@ -900,10 +900,14 @@ function SceneInspector({
   scene,
   onPatch,
   onDelete,
+  onRemix,
+  isRemixing,
 }: {
   scene: SceneRecord;
   onPatch: (patch: Partial<Pick<SceneRecord, "content" | "variant" | "is_visible">>) => void;
   onDelete: () => void;
+  onRemix: () => void;
+  isRemixing: boolean;
 }) {
   const def = findSceneDefinition(scene.scene_type);
   const c = scene.content as Record<string, unknown>;
@@ -919,6 +923,15 @@ function SceneInspector({
           <p className="text-sm font-semibold">{def?.name}</p>
         </div>
         <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onRemix}
+            disabled={isRemixing}
+            title="Remix IA — réécrit le contenu de la scène"
+          >
+            {isRemixing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+          </Button>
           <Switch
             checked={scene.is_visible}
             onCheckedChange={(v) => onPatch({ is_visible: v })}
