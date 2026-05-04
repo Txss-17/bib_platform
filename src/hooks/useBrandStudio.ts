@@ -369,3 +369,137 @@ export function useSaveSeo() {
     },
   });
 }
+
+/* ----------------------------------------------------------------------------
+ * Phase 2 — Remix IA + SEO Pro (briefs + clusters)
+ * ------------------------------------------------------------------------- */
+
+export function useRemixScene() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      sceneId: string;
+      sceneType: string;
+      variant: string;
+      content: Record<string, unknown>;
+      brand?: Partial<BrandDNA> | null;
+    }) => {
+      const { data, error } = await supabase.functions.invoke("boutique-ai", {
+        body: {
+          action: "remix_scene",
+          boutique_id: params.boutiqueId,
+          payload: {
+            scene_type: params.sceneType,
+            variant: params.variant,
+            content: params.content,
+            brand: params.brand
+              ? {
+                  ambiance: params.brand.ambiance,
+                  tone: params.brand.tone,
+                  keywords: params.brand.keywords,
+                  copy: params.brand.generated_copy,
+                }
+              : null,
+          },
+        },
+      });
+      if (error) throw error;
+      if (data?.error === "rate_limited")
+        throw new Error("Trop de requêtes IA, réessaie dans 1 min.");
+      if (data?.error === "credits_exhausted")
+        throw new Error("Crédits IA épuisés. Recharge dans Paramètres.");
+      if (data?.error) throw new Error("Erreur IA : " + data.error);
+
+      // Merge: ne conserve que les clés présentes dans le contenu original
+      const filtered: Record<string, unknown> = { ...params.content };
+      const incoming = (data.content ?? {}) as Record<string, unknown>;
+      for (const k of Object.keys(filtered)) {
+        if (k in incoming) filtered[k] = incoming[k];
+      }
+
+      const { error: upErr } = await supabase
+        .from("boutique_scenes")
+        .update({ content: filtered } as never)
+        .eq("id", params.sceneId);
+      if (upErr) throw upErr;
+      return filtered;
+    },
+    onSuccess: (_d, vars) =>
+      qc.invalidateQueries({ queryKey: ["boutique-scenes", vars.boutiqueId] }),
+  });
+}
+
+export interface ContentBrief {
+  target_query: string;
+  search_intent: string;
+  recommended_h1: string;
+  outline: Array<{ h2: string; talking_points: string[] }>;
+  questions_to_answer: string[];
+  internal_link_suggestions?: string[];
+  target_word_count: number;
+}
+
+export interface KeywordCluster {
+  theme: string;
+  pillar_keyword: string;
+  supporting_keywords: string[];
+  intent: string;
+}
+
+export function useGenerateContentBrief() {
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      context: Record<string, unknown>;
+    }): Promise<ContentBrief> => {
+      const { data, error } = await supabase.functions.invoke("boutique-ai", {
+        body: { action: "seo_brief", boutique_id: params.boutiqueId, payload: params.context },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error("Erreur IA : " + data.error);
+      return data as ContentBrief;
+    },
+  });
+}
+
+export function useGenerateKeywordClusters() {
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      context: Record<string, unknown>;
+    }): Promise<KeywordCluster[]> => {
+      const { data, error } = await supabase.functions.invoke("boutique-ai", {
+        body: {
+          action: "keyword_clusters",
+          boutique_id: params.boutiqueId,
+          payload: params.context,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error("Erreur IA : " + data.error);
+      return (data?.clusters ?? []) as KeywordCluster[];
+    },
+  });
+}
+
+/** Score SEO live (0-100) à partir des champs éditables. */
+export function computeSeoScore(input: {
+  title: string;
+  description: string;
+  h1?: string;
+  keywords: string[];
+  jsonldBlocks: number;
+}): { score: number; checks: Array<{ label: string; ok: boolean; weight: number }> } {
+  const checks = [
+    { label: "Titre 30-60 caractères", ok: input.title.length >= 30 && input.title.length <= 60, weight: 18 },
+    { label: "Description 80-160 caractères", ok: input.description.length >= 80 && input.description.length <= 160, weight: 18 },
+    { label: "H1 défini (≥ 10 car.)", ok: !!input.h1 && input.h1.trim().length >= 10, weight: 12 },
+    { label: "≥ 3 mots-clés", ok: input.keywords.filter((k) => k.trim()).length >= 3, weight: 12 },
+    { label: "Mot-clé principal dans le titre", ok: !!input.keywords[0] && input.title.toLowerCase().includes(input.keywords[0].toLowerCase()), weight: 14 },
+    { label: "Mot-clé principal dans la description", ok: !!input.keywords[0] && input.description.toLowerCase().includes(input.keywords[0].toLowerCase()), weight: 14 },
+    { label: "≥ 2 blocs JSON-LD", ok: input.jsonldBlocks >= 2, weight: 12 },
+  ];
+  const score = Math.round(checks.reduce((sum, c) => sum + (c.ok ? c.weight : 0), 0));
+  return { score, checks };
+}
