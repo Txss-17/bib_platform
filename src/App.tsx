@@ -29,6 +29,7 @@ import SEOAnalytics from "./pages/dashboard/SEOAnalytics";
 import Boutiques from "./pages/dashboard/Boutiques";
 import BoutiqueCreate from "./pages/dashboard/BoutiqueCreate";
 import BoutiqueEdit from "./pages/dashboard/BoutiqueEdit";
+import BoutiqueAnalytics from "./pages/dashboard/BoutiqueAnalytics";
 import Parametres from "./pages/dashboard/Parametres";
 import Aide from "./pages/dashboard/Aide";
 import Rapports from "./pages/dashboard/Rapports";
@@ -152,6 +153,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <BoutiqueEdit />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/boutiques/analytics/:id"
+              element={
+                <ProtectedRoute>
+                  <BoutiqueAnalytics />
                 </ProtectedRoute>
               }
             />
