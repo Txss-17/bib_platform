@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -108,6 +108,7 @@ export function StudioEditor({
 
   const [brief, setBrief] = useState<ContentBrief | null>(null);
   const [clusters, setClusters] = useState<KeywordCluster[]>([]);
+  const SEO_MIN_SCORE = 60;
 
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
@@ -153,10 +154,21 @@ export function StudioEditor({
       const c = hero.content as Record<string, unknown>;
       if (!c.title || (c.title as string).trim().length < 5)
         errors.push("Le titre du Hero doit faire au moins 5 caractères.");
-      // If hero has a videoUrl key declared, require it present
-      if ("videoUrl" in c && hero.variant === "fullscreen" && !c.backgroundImage && !c.videoUrl) {
-        errors.push("Hero plein écran : ajoute une image ou une vidéo de fond.");
+      // Hero plein écran : exige soit une image soit une vidéo de fond
+      if (hero.variant === "fullscreen" && !c.backgroundImage && !c.videoUrl) {
+        errors.push("Hero plein écran : ajoute une image OU une vidéo de fond.");
       }
+      if (!c.ctaLabel || (c.ctaLabel as string).trim().length < 2) {
+        errors.push("Le CTA principal du Hero est requis.");
+      }
+    }
+    // Other scene sanity (mandatory video on lookbook video variant if added later, FAQ requires items, etc.)
+    const faq = visible.find((s) => s.scene_type === "faq-accordion");
+    if (faq) {
+      const items = ((faq.content as any).items ?? []) as Array<{ q: string; a: string }>;
+      if (items.length < 2) errors.push("La FAQ doit contenir au moins 2 questions.");
+      if (items.some((it) => !it.q?.trim() || !it.a?.trim()))
+        errors.push("Toutes les questions FAQ doivent avoir une réponse.");
     }
     // Showcase needs products
     if (visible.some((s) => s.role === "showcase") && products.length === 0) {
@@ -174,9 +186,12 @@ export function StudioEditor({
     return { errors, ok: errors.length === 0 };
   }, [scenes, products, seoTitle, seoDescription]);
 
+  // Ref read by the publish mutation — populated by an effect once `fullValidation` is computed.
+  const publishGateRef = useRef<{ ok: boolean; errors: string[] }>({ ok: false, errors: [] });
+
   const publish = useMutation({
     mutationFn: async () => {
-      if (!validation.ok) throw new Error("validation_failed");
+      if (!publishGateRef.current.ok) throw new Error("validation_failed");
       // Persist any pending SEO before publishing
       if (seoDirty) {
         await seoSave.mutateAsync({
@@ -318,6 +333,21 @@ export function StudioEditor({
     [seoTitle, seoDescription, seoH1, seoKeywordsList, seoJsonld.length],
   );
 
+  // Combine base validation + SEO score threshold for publishing
+  const fullValidation = useMemo(() => {
+    const errors = [...validation.errors];
+    if (seoScore.score < SEO_MIN_SCORE) {
+      errors.push(
+        `Score SEO insuffisant : ${seoScore.score}/100 (minimum requis : ${SEO_MIN_SCORE}). Améliorez les points listés dans l'onglet SEO.`,
+      );
+    }
+    return { errors, ok: errors.length === 0 };
+  }, [validation, seoScore, SEO_MIN_SCORE]);
+
+  useEffect(() => {
+    publishGateRef.current = fullValidation;
+  }, [fullValidation]);
+
   const seoContext = useMemo(
     () => ({
       boutique_name: boutiqueName,
@@ -356,6 +386,101 @@ export function StudioEditor({
         onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erreur clusters"),
       },
     );
+  };
+
+  // ---------------- Keyword cluster add/remove with undo ----------------
+  const addKeyword = (k: string) => {
+    const trimmed = k.trim();
+    if (!trimmed) return;
+    if (seoKeywordsList.includes(trimmed)) return;
+    const next = [...seoKeywordsList, trimmed];
+    setSeoKeywords(next.join(", "));
+    setSeoDirty(true);
+    toast.success(`« ${trimmed} » ajouté`, {
+      action: {
+        label: "Annuler",
+        onClick: () => {
+          setSeoKeywords(next.filter((x) => x !== trimmed).join(", "));
+          setSeoDirty(true);
+        },
+      },
+    });
+  };
+
+  const removeKeyword = (k: string) => {
+    const next = seoKeywordsList.filter((x) => x !== k);
+    setSeoKeywords(next.join(", "));
+    setSeoDirty(true);
+    toast(`« ${k} » retiré`, {
+      action: {
+        label: "Annuler",
+        onClick: () => {
+          setSeoKeywords([...next, k].join(", "));
+          setSeoDirty(true);
+        },
+      },
+    });
+  };
+
+  // ---------------- Apply Content Brief ----------------
+  const applyBrief = () => {
+    if (!brief) return;
+    // 1. SEO H1 + (optional) keyword
+    setSeoH1(brief.recommended_h1);
+    if (brief.target_query) addKeyword(brief.target_query);
+    setSeoDirty(true);
+
+    // 2. Inject plan/questions into the active scene (smart by scene_type)
+    const target =
+      activeScene ??
+      scenes.find((s) => s.scene_type === "story-scrolly") ??
+      scenes.find((s) => s.scene_type === "faq-accordion") ??
+      scenes[0];
+
+    if (target) {
+      const c = { ...(target.content as Record<string, unknown>) };
+      let patched = false;
+
+      if (target.scene_type === "story-scrolly") {
+        c.chapters = brief.outline.slice(0, 5).map((o) => ({
+          eyebrow: "Plan",
+          title: o.h2,
+          body: (o.talking_points ?? []).join(" · "),
+          image: null,
+        }));
+        patched = true;
+      } else if (target.scene_type === "faq-accordion") {
+        c.items = brief.questions_to_answer.slice(0, 8).map((q, i) => ({
+          q,
+          a: brief.outline[i % Math.max(brief.outline.length, 1)]?.talking_points?.[0] ?? "",
+        }));
+        patched = true;
+      } else {
+        // Generic fallback: title = H1, subtitle = first talking point
+        if ("title" in c) c.title = brief.recommended_h1;
+        if ("subtitle" in c)
+          c.subtitle =
+            brief.outline[0]?.talking_points?.[0] ?? brief.search_intent ?? (c.subtitle as string);
+        patched = "title" in c || "subtitle" in c;
+      }
+
+      if (patched) {
+        updateScene.mutate({ sceneId: target.id, boutiqueId, patch: { content: c } });
+      }
+    }
+
+    // 3. Always try to populate (or create-friendly toast for) FAQ scene
+    const faq = scenes.find((s) => s.scene_type === "faq-accordion" && s.id !== target?.id);
+    if (faq) {
+      const fc = { ...(faq.content as Record<string, unknown>) };
+      fc.items = brief.questions_to_answer.slice(0, 8).map((q, i) => ({
+        q,
+        a: brief.outline[i % Math.max(brief.outline.length, 1)]?.talking_points?.[0] ?? "",
+      }));
+      updateScene.mutate({ sceneId: faq.id, boutiqueId, patch: { content: fc } });
+    }
+
+    toast.success("Brief appliqué : H1, plan & questions intégrés");
   };
 
   const handleRemix = (scene: SceneRecord) => {
@@ -408,15 +533,15 @@ export function StudioEditor({
           </div>
         </div>
 
-        {validation.errors.length > 0 && (
+        {fullValidation.errors.length > 0 && (
           <div className="mx-4 mt-3 rounded-md border border-warning/40 bg-warning/10 p-2 text-xs flex gap-2">
             <AlertTriangle className="w-3.5 h-3.5 text-warning shrink-0 mt-0.5" />
             <span>
-              <strong>{validation.errors.length}</strong> point(s) à corriger avant publication.
+              <strong>{fullValidation.errors.length}</strong> point(s) à corriger avant publication.
             </span>
           </div>
         )}
-        {validation.ok && (
+        {fullValidation.ok && (
           <div className="mx-4 mt-3 rounded-md border border-success/40 bg-success/10 p-2 text-xs flex gap-2">
             <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
             <span>Boutique prête à être publiée.</span>
@@ -778,6 +903,15 @@ export function StudioEditor({
                     </ul>
                   </div>
                   <p className="text-[10px] opacity-60">Longueur cible : ~{brief.target_word_count} mots</p>
+                  <Button
+                    size="sm"
+                    className="w-full mt-2"
+                    onClick={applyBrief}
+                    disabled={updateScene.isPending}
+                  >
+                    <Wand2 className="w-3.5 h-3.5 mr-2" />
+                    Appliquer le brief (H1, plan & questions)
+                  </Button>
                 </div>
               )}
             </Card>
@@ -807,26 +941,47 @@ export function StudioEditor({
                       </div>
                       <p className="text-primary font-medium">{c.pillar_keyword}</p>
                       <div className="flex flex-wrap gap-1 pt-1">
-                        {c.supporting_keywords.map((k) => (
-                          <button
-                            key={k}
-                            type="button"
-                            onClick={() => {
-                              const list = seoKeywordsList.includes(k)
-                                ? seoKeywordsList
-                                : [...seoKeywordsList, k];
-                              setSeoKeywords(list.join(", "));
-                              setSeoDirty(true);
-                            }}
-                            className="px-2 py-0.5 rounded-full bg-muted hover:bg-primary/10 text-[10px]"
-                            title="Ajouter aux mots-clés SEO"
-                          >
-                            + {k}
-                          </button>
-                        ))}
+                        {[c.pillar_keyword, ...c.supporting_keywords].map((k) => {
+                          const selected = seoKeywordsList.includes(k);
+                          return (
+                            <button
+                              key={k}
+                              type="button"
+                              onClick={() => (selected ? removeKeyword(k) : addKeyword(k))}
+                              className={`px-2 py-0.5 rounded-full text-[10px] transition border ${
+                                selected
+                                  ? "bg-primary/10 border-primary/40 text-primary"
+                                  : "bg-muted border-transparent hover:bg-primary/10"
+                              }`}
+                              title={selected ? "Retirer des mots-clés SEO" : "Ajouter aux mots-clés SEO"}
+                            >
+                              {selected ? "✓" : "+"} {k}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+              {seoKeywordsList.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-border/40">
+                  <Label className="text-[10px] uppercase opacity-60">
+                    Mots-clés sélectionnés ({seoKeywordsList.length})
+                  </Label>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {seoKeywordsList.map((k) => (
+                      <button
+                        key={k}
+                        type="button"
+                        onClick={() => removeKeyword(k)}
+                        className="px-2 py-0.5 rounded-full text-[10px] bg-primary/10 text-primary border border-primary/30 hover:bg-destructive/10 hover:border-destructive/40 hover:text-destructive transition"
+                        title="Cliquer pour retirer"
+                      >
+                        {k} ×
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </Card>
@@ -879,7 +1034,7 @@ export function StudioEditor({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <ul className="text-sm space-y-2 list-disc pl-5 max-h-72 overflow-y-auto">
-            {validation.errors.map((e, i) => (
+            {fullValidation.errors.map((e, i) => (
               <li key={i} className="text-foreground">{e}</li>
             ))}
           </ul>
