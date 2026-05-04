@@ -90,6 +90,18 @@ function SceneSwitch({
       return <TrustWallScene content={scene.content as never} displayFont={displayFont} />;
     case "cta-sticky":
       return <CtaStickyScene content={scene.content as never} displayFont={displayFont} />;
+    case "faq-accordion":
+      return <FaqScene content={scene.content as never} displayFont={displayFont} />;
+    case "newsletter-editorial":
+      return <NewsletterScene content={scene.content as never} displayFont={displayFont} />;
+    case "press-strip":
+      return <PressStripScene content={scene.content as never} displayFont={displayFont} />;
+    case "comparison-table":
+      return <ComparisonScene content={scene.content as never} displayFont={displayFont} />;
+    case "founder-letter":
+      return <FounderScene content={scene.content as never} displayFont={displayFont} />;
+    case "manifesto-typographic":
+      return <ManifestoScene content={scene.content as never} displayFont={displayFont} />;
     default:
       return null;
   }
