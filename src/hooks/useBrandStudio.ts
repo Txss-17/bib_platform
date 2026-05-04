@@ -2,6 +2,37 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { defaultStudioBundle, SceneRecord, findSceneDefinition } from "@/lib/studioScenes";
 
+/**
+ * Invoke a boutique-ai action and surface a human-readable error.
+ * supabase.functions.invoke sets `error` on any non-2xx, but the JSON body
+ * (containing the real reason: unauthorized / forbidden / rate_limited / ...)
+ * is still returned in `data`. We map it to a friendly French message.
+ */
+async function invokeBoutiqueAi<T = any>(body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke("boutique-ai", { body });
+  const code = (data as any)?.error as string | undefined;
+
+  if (code === "unauthorized")
+    throw new Error("Session expirée. Reconnecte-toi pour générer ton identité.");
+  if (code === "forbidden")
+    throw new Error("Tu n'es pas propriétaire de cette boutique.");
+  if (code === "rate_limited")
+    throw new Error("Trop de requêtes IA, réessaie dans 1 min.");
+  if (code === "credits_exhausted")
+    throw new Error("Crédits IA épuisés. Recharge dans Paramètres → Facturation.");
+  if (code === "missing_params")
+    throw new Error("Paramètres manquants pour la génération.");
+  if (code === "no_tool_call" || code === "invalid_json" || code === "ai_error")
+    throw new Error("L'IA n'a pas pu produire de réponse valide. Réessaie.");
+  if (code) throw new Error("Erreur IA : " + code);
+
+  if (error) {
+    // Network / non-JSON failure — surface what we can.
+    throw new Error(error.message || "Le service IA est indisponible. Réessaie dans un instant.");
+  }
+  return data as T;
+}
+
 export interface BrandDNA {
   id: string;
   boutique_id: string;
@@ -77,20 +108,11 @@ export function useGenerateBrandDNA() {
       boutiqueId: string;
       answers: StudioAnswers;
     }) => {
-      const { data, error } = await supabase.functions.invoke("boutique-ai", {
-        body: {
-          action: "generate_brand_dna",
-          boutique_id: params.boutiqueId,
-          payload: params.answers,
-        },
+      const data = await invokeBoutiqueAi<any>({
+        action: "generate_brand_dna",
+        boutique_id: params.boutiqueId,
+        payload: params.answers,
       });
-      if (error) throw error;
-      if (data?.error === "rate_limited")
-        throw new Error("Trop de requêtes IA, réessaie dans 1 min.");
-      if (data?.error === "credits_exhausted")
-        throw new Error("Crédits IA épuisés. Recharge dans Paramètres.");
-      if (data?.error)
-        throw new Error("Erreur IA : " + data.error);
 
       // Persiste l'ADN
       const upsertPayload = {
@@ -304,19 +326,11 @@ export function useGenerateSeo() {
       context: Record<string, unknown>;
       persist?: boolean;
     }): Promise<SeoCopilotResult> => {
-      const { data, error } = await supabase.functions.invoke("boutique-ai", {
-        body: {
-          action: "generate_seo",
-          boutique_id: params.boutiqueId,
-          payload: params.context,
-        },
+      const data = await invokeBoutiqueAi<any>({
+        action: "generate_seo",
+        boutique_id: params.boutiqueId,
+        payload: params.context,
       });
-      if (error) throw error;
-      if (data?.error === "rate_limited")
-        throw new Error("Trop de requêtes IA, réessaie dans 1 min.");
-      if (data?.error === "credits_exhausted")
-        throw new Error("Crédits IA épuisés. Recharge dans Paramètres.");
-      if (data?.error) throw new Error("Erreur IA : " + data.error);
 
       if (params.persist !== false) {
         await supabase
@@ -385,31 +399,23 @@ export function useRemixScene() {
       content: Record<string, unknown>;
       brand?: Partial<BrandDNA> | null;
     }) => {
-      const { data, error } = await supabase.functions.invoke("boutique-ai", {
-        body: {
-          action: "remix_scene",
-          boutique_id: params.boutiqueId,
-          payload: {
-            scene_type: params.sceneType,
-            variant: params.variant,
-            content: params.content,
-            brand: params.brand
-              ? {
-                  ambiance: params.brand.ambiance,
-                  tone: params.brand.tone,
-                  keywords: params.brand.keywords,
-                  copy: params.brand.generated_copy,
-                }
-              : null,
-          },
+      const data = await invokeBoutiqueAi<any>({
+        action: "remix_scene",
+        boutique_id: params.boutiqueId,
+        payload: {
+          scene_type: params.sceneType,
+          variant: params.variant,
+          content: params.content,
+          brand: params.brand
+            ? {
+                ambiance: params.brand.ambiance,
+                tone: params.brand.tone,
+                keywords: params.brand.keywords,
+                copy: params.brand.generated_copy,
+              }
+            : null,
         },
       });
-      if (error) throw error;
-      if (data?.error === "rate_limited")
-        throw new Error("Trop de requêtes IA, réessaie dans 1 min.");
-      if (data?.error === "credits_exhausted")
-        throw new Error("Crédits IA épuisés. Recharge dans Paramètres.");
-      if (data?.error) throw new Error("Erreur IA : " + data.error);
 
       // Merge: ne conserve que les clés présentes dans le contenu original
       const filtered: Record<string, unknown> = { ...params.content };
@@ -453,12 +459,11 @@ export function useGenerateContentBrief() {
       boutiqueId: string;
       context: Record<string, unknown>;
     }): Promise<ContentBrief> => {
-      const { data, error } = await supabase.functions.invoke("boutique-ai", {
-        body: { action: "seo_brief", boutique_id: params.boutiqueId, payload: params.context },
+      return await invokeBoutiqueAi<ContentBrief>({
+        action: "seo_brief",
+        boutique_id: params.boutiqueId,
+        payload: params.context,
       });
-      if (error) throw error;
-      if (data?.error) throw new Error("Erreur IA : " + data.error);
-      return data as ContentBrief;
     },
   });
 }
@@ -469,15 +474,11 @@ export function useGenerateKeywordClusters() {
       boutiqueId: string;
       context: Record<string, unknown>;
     }): Promise<KeywordCluster[]> => {
-      const { data, error } = await supabase.functions.invoke("boutique-ai", {
-        body: {
-          action: "keyword_clusters",
-          boutique_id: params.boutiqueId,
-          payload: params.context,
-        },
+      const data = await invokeBoutiqueAi<{ clusters?: KeywordCluster[] }>({
+        action: "keyword_clusters",
+        boutique_id: params.boutiqueId,
+        payload: params.context,
       });
-      if (error) throw error;
-      if (data?.error) throw new Error("Erreur IA : " + data.error);
       return (data?.clusters ?? []) as KeywordCluster[];
     },
   });
