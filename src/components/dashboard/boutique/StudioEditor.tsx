@@ -512,7 +512,7 @@ export function StudioEditor({
           <div className="flex items-center gap-2">
             {publicSlug && (
               <Button asChild variant="outline" size="sm">
-                <a href={`/b/${publicSlug}`} target="_blank" rel="noreferrer">
+                <a href={`/boutique/${publicSlug}`} target="_blank" rel="noreferrer">
                   <Eye className="w-4 h-4 mr-1" /> Voir
                 </a>
               </Button>
