@@ -837,27 +837,31 @@ export function StudioEditor({
                 </pre>
               </div>
               <div className="flex gap-2 pt-1">
-                <Button
+                <ActionButton
                   size="sm"
                   onClick={handleSeoSave}
-                  disabled={seoSave.isPending || !seoDirty}
+                  state={stateFromMutation(seoSave)}
+                  disabled={!seoDirty}
+                  loadingLabel="Sauvegarde…"
+                  successLabel="Sauvegardé"
+                  errorLabel="Échec"
                   className="flex-1"
                 >
-                  {seoSave.isPending ? (
-                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sauvegarde…</>
-                  ) : (
-                    <><Save className="w-4 h-4 mr-2" /> {seoDirty ? "Sauvegarder" : "Sauvegardé"}</>
-                  )}
-                </Button>
-                <Button
+                  <Save className="w-4 h-4 mr-2 inline" />
+                  {seoDirty ? "Sauvegarder" : "Sauvegardé"}
+                </ActionButton>
+                <ActionButton
                   size="sm"
                   variant="outline"
                   onClick={handleSeoGenerate}
-                  disabled={seoMut.isPending}
+                  state={stateFromMutation(seoMut)}
+                  loadingLabel="…"
+                  successLabel="✓"
+                  errorLabel="!"
                   title="Régénérer le JSON-LD à partir de l'ADN"
                 >
                   <Wand2 className="w-4 h-4" />
-                </Button>
+                </ActionButton>
               </div>
             </Card>
 
