@@ -25,7 +25,7 @@ export async function logSceneEvent(params: {
   metadata?: Record<string, unknown>;
 }) {
   try {
-    await supabase.from("scene_events").insert({
+    await supabase.from("scene_events" as never).insert({
       boutique_id: params.boutiqueId,
       scene_id: params.sceneId,
       scene_type: params.sceneType,
@@ -33,7 +33,7 @@ export async function logSceneEvent(params: {
       session_id: getSessionId(),
       value: params.value ?? null,
       metadata: params.metadata ?? {},
-    });
+    } as never);
   } catch {
     /* silent */
   }
