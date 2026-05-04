@@ -344,6 +344,10 @@ export function StudioEditor({
     return { errors, ok: errors.length === 0 };
   }, [validation, seoScore, SEO_MIN_SCORE]);
 
+  useEffect(() => {
+    publishGateRef.current = fullValidation;
+  }, [fullValidation]);
+
   const seoContext = useMemo(
     () => ({
       boutique_name: boutiqueName,
