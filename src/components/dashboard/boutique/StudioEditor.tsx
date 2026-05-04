@@ -903,6 +903,15 @@ export function StudioEditor({
                     </ul>
                   </div>
                   <p className="text-[10px] opacity-60">Longueur cible : ~{brief.target_word_count} mots</p>
+                  <Button
+                    size="sm"
+                    className="w-full mt-2"
+                    onClick={applyBrief}
+                    disabled={updateScene.isPending}
+                  >
+                    <Wand2 className="w-3.5 h-3.5 mr-2" />
+                    Appliquer le brief (H1, plan & questions)
+                  </Button>
                 </div>
               )}
             </Card>
