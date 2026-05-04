@@ -172,7 +172,20 @@ export function useUpdateScene() {
         .eq("id", params.sceneId);
       if (error) throw error;
     },
-    onSuccess: (_d, vars) =>
+    // Optimistic — preview must update instantly while typing.
+    onMutate: async (vars) => {
+      const key = ["boutique-scenes", vars.boutiqueId];
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<SceneRecord[]>(key) ?? [];
+      qc.setQueryData<SceneRecord[]>(key, prev.map((s) =>
+        s.id === vars.sceneId ? { ...s, ...vars.patch } as SceneRecord : s,
+      ));
+      return { prev, key };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev && ctx.key) qc.setQueryData(ctx.key, ctx.prev);
+    },
+    onSettled: (_d, _e, vars) =>
       qc.invalidateQueries({ queryKey: ["boutique-scenes", vars.boutiqueId] }),
   });
 }
@@ -184,16 +197,35 @@ export function useReorderScenes() {
       boutiqueId: string;
       orderedIds: string[];
     }) => {
-      // Sequential update; small N (~6) so cheap.
+      // Two-phase to avoid unique-constraint races: shift to negative space, then final.
       for (let i = 0; i < params.orderedIds.length; i++) {
-        const { error } = await supabase
-          .from("boutique_scenes")
-          .update({ position: i } as never)
-          .eq("id", params.orderedIds[i]);
+        await supabase.from("boutique_scenes")
+          .update({ position: -1000 - i } as never).eq("id", params.orderedIds[i]);
+      }
+      for (let i = 0; i < params.orderedIds.length; i++) {
+        const { error } = await supabase.from("boutique_scenes")
+          .update({ position: i } as never).eq("id", params.orderedIds[i]);
         if (error) throw error;
       }
     },
-    onSuccess: (_d, vars) =>
+    onMutate: async (vars) => {
+      const key = ["boutique-scenes", vars.boutiqueId];
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<SceneRecord[]>(key) ?? [];
+      const byId = new Map(prev.map((s) => [s.id, s] as const));
+      const next = vars.orderedIds
+        .map((id, i) => {
+          const s = byId.get(id);
+          return s ? { ...s, position: i } : null;
+        })
+        .filter(Boolean) as SceneRecord[];
+      qc.setQueryData(key, next);
+      return { prev, key };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev && ctx.key) qc.setQueryData(ctx.key, ctx.prev);
+    },
+    onSettled: (_d, _e, vars) =>
       qc.invalidateQueries({ queryKey: ["boutique-scenes", vars.boutiqueId] }),
   });
 }
@@ -234,7 +266,20 @@ export function useDeleteScene() {
         .eq("id", params.sceneId);
       if (error) throw error;
     },
-    onSuccess: (_d, vars) =>
+    onMutate: async (vars) => {
+      const key = ["boutique-scenes", vars.boutiqueId];
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<SceneRecord[]>(key) ?? [];
+      qc.setQueryData<SceneRecord[]>(
+        key,
+        prev.filter((s) => s.id !== vars.sceneId),
+      );
+      return { prev, key };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev && ctx.key) qc.setQueryData(ctx.key, ctx.prev);
+    },
+    onSettled: (_d, _e, vars) =>
       qc.invalidateQueries({ queryKey: ["boutique-scenes", vars.boutiqueId] }),
   });
 }
@@ -284,6 +329,39 @@ export function useGenerateSeo() {
           .eq("id", params.boutiqueId);
       }
       return data as SeoCopilotResult;
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["boutique-edit", vars.boutiqueId] });
+      qc.invalidateQueries({ queryKey: ["public-boutique"] });
+    },
+  });
+}
+
+/** Sauvegarde manuelle du SEO édité par l'utilisateur (titre, meta, keywords, JSON-LD). */
+export function useSaveSeo() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      title: string;
+      description: string;
+      h1?: string;
+      keywords?: string[];
+      jsonld?: Array<Record<string, unknown>>;
+    }) => {
+      const { error } = await supabase
+        .from("boutiques")
+        .update({
+          seo_title: params.title,
+          seo_description: params.description,
+          seo_jsonld: {
+            blocks: params.jsonld ?? [],
+            keywords: params.keywords ?? [],
+            h1: params.h1 ?? null,
+          },
+        } as never)
+        .eq("id", params.boutiqueId);
+      if (error) throw error;
     },
     onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: ["boutique-edit", vars.boutiqueId] });

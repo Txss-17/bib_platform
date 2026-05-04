@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -11,8 +11,10 @@ import {
   ChevronUp,
   ChevronDown,
   Wand2,
-  Save,
   Globe,
+  AlertTriangle,
+  CheckCircle2,
+  Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -29,6 +31,16 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
   useBoutiqueScenes,
@@ -38,12 +50,14 @@ import {
   useAddScene,
   useDeleteScene,
   useGenerateSeo,
+  useSaveSeo,
   type SeoCopilotResult,
 } from "@/hooks/useBrandStudio";
 import {
   STUDIO_SCENES,
   findSceneDefinition,
   type SceneRecord,
+  type SceneRole,
 } from "@/lib/studioScenes";
 import { StudioSceneRenderer } from "@/components/storefront/StudioSceneRenderer";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -56,6 +70,11 @@ interface Props {
   products: Array<{ id: string; name: string; price: number; image_url?: string | null }>;
   publicSlug?: string;
   isPublished: boolean;
+  initialSeo?: {
+    title?: string | null;
+    description?: string | null;
+    jsonld?: { blocks?: Array<Record<string, unknown>>; keywords?: string[]; h1?: string | null } | null;
+  };
 }
 
 export function StudioEditor({
@@ -65,6 +84,7 @@ export function StudioEditor({
   products,
   publicSlug,
   isPublished,
+  initialSeo,
 }: Props) {
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -75,18 +95,88 @@ export function StudioEditor({
   const addScene = useAddScene();
   const removeScene = useDeleteScene();
   const seoMut = useGenerateSeo();
+  const seoSave = useSaveSeo();
 
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
-  const [seoResult, setSeoResult] = useState<SeoCopilotResult | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [showPublishErrors, setShowPublishErrors] = useState(false);
+
+  // SEO local state — editable fields persisted via useSaveSeo
+  const [seoTitle, setSeoTitle] = useState(initialSeo?.title ?? "");
+  const [seoDescription, setSeoDescription] = useState(initialSeo?.description ?? "");
+  const [seoKeywords, setSeoKeywords] = useState<string>(
+    (initialSeo?.jsonld?.keywords ?? []).join(", "),
+  );
+  const [seoH1, setSeoH1] = useState<string>(initialSeo?.jsonld?.h1 ?? "");
+  const [seoJsonld, setSeoJsonld] = useState<Array<Record<string, unknown>>>(
+    initialSeo?.jsonld?.blocks ?? [],
+  );
+  const [seoDirty, setSeoDirty] = useState(false);
+  useEffect(() => {
+    setSeoDirty(false);
+  }, [boutiqueId]);
 
   const activeScene = useMemo(
     () => scenes.find((s) => s.id === activeSceneId) ?? scenes[0] ?? null,
     [scenes, activeSceneId],
   );
 
+  // ---------------- Pre-publish validation ----------------
+  const validation = useMemo(() => {
+    const errors: string[] = [];
+    const visible = scenes.filter((s) => s.is_visible);
+    if (visible.length < 3) {
+      errors.push("Au moins 3 scènes visibles sont requises (Hero, Vitrine, CTA recommandés).");
+    }
+    const requiredRoles: SceneRole[] = ["hero", "showcase", "cta"];
+    for (const r of requiredRoles) {
+      if (!visible.some((s) => s.role === r)) {
+        errors.push(`Scène manquante : ${r === "hero" ? "Hero" : r === "showcase" ? "Vitrine produits" : "Appel à l'action"}.`);
+      }
+    }
+    // Hero content sanity
+    const hero = visible.find((s) => s.role === "hero");
+    if (hero) {
+      const c = hero.content as Record<string, unknown>;
+      if (!c.title || (c.title as string).trim().length < 5)
+        errors.push("Le titre du Hero doit faire au moins 5 caractères.");
+      // If hero has a videoUrl key declared, require it present
+      if ("videoUrl" in c && hero.variant === "fullscreen" && !c.backgroundImage && !c.videoUrl) {
+        errors.push("Hero plein écran : ajoute une image ou une vidéo de fond.");
+      }
+    }
+    // Showcase needs products
+    if (visible.some((s) => s.role === "showcase") && products.length === 0) {
+      errors.push("La Vitrine est activée mais aucun produit actif n'est disponible.");
+    }
+    // SEO
+    if (!seoTitle || seoTitle.trim().length < 10)
+      errors.push("Le titre SEO doit faire au moins 10 caractères.");
+    if (seoTitle.length > 60)
+      errors.push("Le titre SEO ne doit pas dépasser 60 caractères.");
+    if (!seoDescription || seoDescription.trim().length < 50)
+      errors.push("La meta description doit faire au moins 50 caractères.");
+    if (seoDescription.length > 160)
+      errors.push("La meta description ne doit pas dépasser 160 caractères.");
+    return { errors, ok: errors.length === 0 };
+  }, [scenes, products, seoTitle, seoDescription]);
+
   const publish = useMutation({
     mutationFn: async () => {
+      if (!validation.ok) throw new Error("validation_failed");
+      // Persist any pending SEO before publishing
+      if (seoDirty) {
+        await seoSave.mutateAsync({
+          boutiqueId,
+          title: seoTitle,
+          description: seoDescription,
+          h1: seoH1 || undefined,
+          keywords: seoKeywords.split(",").map((k) => k.trim()).filter(Boolean),
+          jsonld: seoJsonld,
+        });
+        setSeoDirty(false);
+      }
       const { error } = await supabase
         .from("boutiques")
         .update({ status: "published" })
@@ -98,20 +188,31 @@ export function StudioEditor({
       qc.invalidateQueries({ queryKey: ["boutique-edit", boutiqueId] });
       qc.invalidateQueries({ queryKey: ["boutiques"] });
     },
-    onError: () => toast.error("Erreur lors de la publication"),
+    onError: (e: unknown) => {
+      if (e instanceof Error && e.message === "validation_failed") {
+        setShowPublishErrors(true);
+      } else {
+        toast.error("Erreur lors de la publication");
+      }
+    },
   });
 
   const handleMove = (sceneId: string, dir: -1 | 1) => {
+    if (reorder.isPending) return;
     const idx = scenes.findIndex((s) => s.id === sceneId);
     const next = idx + dir;
     if (idx < 0 || next < 0 || next >= scenes.length) return;
     const list = scenes.slice();
     const [it] = list.splice(idx, 1);
     list.splice(next, 0, it);
-    reorder.mutate({ boutiqueId, orderedIds: list.map((s) => s.id) });
+    reorder.mutate(
+      { boutiqueId, orderedIds: list.map((s) => s.id) },
+      { onError: () => toast.error("Réorganisation impossible, réessayez.") },
+    );
   };
 
   const handleAdd = (sceneType: string) => {
+    if (addScene.isPending) return;
     addScene.mutate(
       { boutiqueId, sceneType, position: scenes.length },
       {
@@ -122,6 +223,21 @@ export function StudioEditor({
         onError: () => toast.error("Impossible d'ajouter la scène"),
       },
     );
+  };
+
+  const confirmDelete = () => {
+    if (!pendingDeleteId) return;
+    removeScene.mutate(
+      { sceneId: pendingDeleteId, boutiqueId },
+      {
+        onSuccess: () => {
+          toast.success("Scène supprimée");
+          if (activeSceneId === pendingDeleteId) setActiveSceneId(null);
+        },
+        onError: () => toast.error("Suppression impossible"),
+      },
+    );
+    setPendingDeleteId(null);
   };
 
   const handleSeoGenerate = () => {
@@ -140,11 +256,36 @@ export function StudioEditor({
         },
       },
       {
-        onSuccess: (r) => {
-          setSeoResult(r);
+        onSuccess: (r: SeoCopilotResult) => {
+          setSeoTitle(r.title);
+          setSeoDescription(r.description);
+          setSeoH1(r.h1);
+          setSeoKeywords(r.keywords.join(", "));
+          setSeoJsonld(r.jsonld);
+          setSeoDirty(false);
           toast.success("SEO généré et appliqué");
         },
         onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erreur SEO"),
+      },
+    );
+  };
+
+  const handleSeoSave = () => {
+    seoSave.mutate(
+      {
+        boutiqueId,
+        title: seoTitle,
+        description: seoDescription,
+        h1: seoH1 || undefined,
+        keywords: seoKeywords.split(",").map((k) => k.trim()).filter(Boolean),
+        jsonld: seoJsonld,
+      },
+      {
+        onSuccess: () => {
+          setSeoDirty(false);
+          toast.success("SEO enregistré");
+        },
+        onError: () => toast.error("Sauvegarde SEO impossible"),
       },
     );
   };
@@ -166,18 +307,36 @@ export function StudioEditor({
                 </a>
               </Button>
             )}
-            {!isPublished && (
-              <Button size="sm" onClick={() => publish.mutate()} disabled={publish.isPending}>
-                {publish.isPending ? (
-                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                ) : (
-                  <Globe className="w-4 h-4 mr-1" />
-                )}
-                Publier
-              </Button>
-            )}
+            <Button
+              size="sm"
+              onClick={() => publish.mutate()}
+              disabled={publish.isPending}
+              variant={isPublished ? "outline" : "default"}
+            >
+              {publish.isPending ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <Globe className="w-4 h-4 mr-1" />
+              )}
+              {isPublished ? "Republier" : "Publier"}
+            </Button>
           </div>
         </div>
+
+        {validation.errors.length > 0 && (
+          <div className="mx-4 mt-3 rounded-md border border-warning/40 bg-warning/10 p-2 text-xs flex gap-2">
+            <AlertTriangle className="w-3.5 h-3.5 text-warning shrink-0 mt-0.5" />
+            <span>
+              <strong>{validation.errors.length}</strong> point(s) à corriger avant publication.
+            </span>
+          </div>
+        )}
+        {validation.ok && (
+          <div className="mx-4 mt-3 rounded-md border border-success/40 bg-success/10 p-2 text-xs flex gap-2">
+            <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
+            <span>Boutique prête à être publiée.</span>
+          </div>
+        )}
 
         <Tabs defaultValue="scenes" className="flex-1 flex flex-col overflow-hidden">
           <TabsList className="mx-4 mt-3 grid grid-cols-3">
@@ -286,13 +445,7 @@ export function StudioEditor({
                     patch,
                   })
                 }
-                onDelete={() => {
-                  if (!confirm("Supprimer cette scène ?")) return;
-                  removeScene.mutate(
-                    { sceneId: activeScene.id, boutiqueId },
-                    { onSuccess: () => setActiveSceneId(null) },
-                  );
-                }}
+                onDelete={() => setPendingDeleteId(activeScene.id)}
               />
             )}
           </TabsContent>
@@ -369,38 +522,80 @@ export function StudioEditor({
               </Button>
             </Card>
 
-            {seoResult && (
-              <Card className="p-4 space-y-3 text-sm">
-                <div>
-                  <Label className="text-xs uppercase tracking-wide opacity-60">Title ({seoResult.title.length}/60)</Label>
-                  <p className="font-medium">{seoResult.title}</p>
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-wide opacity-60">Meta description ({seoResult.description.length}/160)</Label>
-                  <p className="text-muted-foreground">{seoResult.description}</p>
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-wide opacity-60">H1</Label>
-                  <p>{seoResult.h1}</p>
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-wide opacity-60">Mots-clés</Label>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {seoResult.keywords.map((k) => (
-                      <Badge key={k} variant="outline">{k}</Badge>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-wide opacity-60">
-                    JSON-LD ({seoResult.jsonld.length} bloc{seoResult.jsonld.length > 1 ? "s" : ""})
-                  </Label>
-                  <pre className="text-[10px] bg-muted/50 rounded p-2 max-h-40 overflow-auto mt-1">
-                    {JSON.stringify(seoResult.jsonld, null, 2)}
-                  </pre>
-                </div>
-              </Card>
-            )}
+            <Card className="p-4 space-y-3 text-sm">
+              <div>
+                <Label className="text-xs flex items-center justify-between">
+                  <span>Titre ({seoTitle.length}/60)</span>
+                  {seoTitle.length > 60 && <span className="text-destructive">trop long</span>}
+                </Label>
+                <Input
+                  value={seoTitle}
+                  maxLength={80}
+                  onChange={(e) => { setSeoTitle(e.target.value); setSeoDirty(true); }}
+                />
+              </div>
+              <div>
+                <Label className="text-xs flex items-center justify-between">
+                  <span>Meta description ({seoDescription.length}/160)</span>
+                  {seoDescription.length > 160 && <span className="text-destructive">trop long</span>}
+                </Label>
+                <Textarea
+                  rows={3}
+                  value={seoDescription}
+                  maxLength={200}
+                  onChange={(e) => { setSeoDescription(e.target.value); setSeoDirty(true); }}
+                />
+              </div>
+              <div>
+                <Label className="text-xs">H1</Label>
+                <Input
+                  value={seoH1}
+                  onChange={(e) => { setSeoH1(e.target.value); setSeoDirty(true); }}
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Mots-clés (séparés par des virgules)</Label>
+                <Textarea
+                  rows={2}
+                  value={seoKeywords}
+                  onChange={(e) => { setSeoKeywords(e.target.value); setSeoDirty(true); }}
+                  placeholder="boutique premium, mode éditoriale, ..."
+                />
+              </div>
+              <div>
+                <Label className="text-xs">
+                  JSON-LD ({seoJsonld.length} bloc{seoJsonld.length > 1 ? "s" : ""})
+                </Label>
+                <pre className="text-[10px] bg-muted/50 rounded p-2 max-h-40 overflow-auto mt-1">
+                  {seoJsonld.length === 0
+                    ? "Aucun JSON-LD. Lancez le Copilot pour le générer."
+                    : JSON.stringify(seoJsonld, null, 2)}
+                </pre>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <Button
+                  size="sm"
+                  onClick={handleSeoSave}
+                  disabled={seoSave.isPending || !seoDirty}
+                  className="flex-1"
+                >
+                  {seoSave.isPending ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sauvegarde…</>
+                  ) : (
+                    <><Save className="w-4 h-4 mr-2" /> {seoDirty ? "Sauvegarder" : "Sauvegardé"}</>
+                  )}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleSeoGenerate}
+                  disabled={seoMut.isPending}
+                  title="Régénérer le JSON-LD à partir de l'ADN"
+                >
+                  <Wand2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </Card>
           </TabsContent>
         </Tabs>
       </aside>
@@ -418,6 +613,49 @@ export function StudioEditor({
           products={products}
         />
       </div>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!pendingDeleteId} onOpenChange={(o) => !o && setPendingDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer cette scène ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Le contenu de la scène sera définitivement perdu.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Pre-publish validation errors */}
+      <AlertDialog open={showPublishErrors} onOpenChange={setShowPublishErrors}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-warning" />
+              Publication impossible
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Corrigez les éléments suivants avant de publier votre boutique :
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <ul className="text-sm space-y-2 list-disc pl-5 max-h-72 overflow-y-auto">
+            {validation.errors.map((e, i) => (
+              <li key={i} className="text-foreground">{e}</li>
+            ))}
+          </ul>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowPublishErrors(false)}>
+              Compris
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
