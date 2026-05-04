@@ -160,7 +160,7 @@ export function StudioEditor({
       }
       if (!c.ctaLabel || (c.ctaLabel as string).trim().length < 2) {
         errors.push("Le CTA principal du Hero est requis.");
-    }
+      }
     }
     // Other scene sanity (mandatory video on lookbook video variant if added later, FAQ requires items, etc.)
     const faq = visible.find((s) => s.scene_type === "faq-accordion");
