@@ -25,6 +25,7 @@
 - [Linksy Connect](mem://integration/linksy-connect) — Bidirectional sync via linksy-auto-sync Edge function
 - [Dashboard](mem://features/dashboard) — KPI health dashboard, order status pie chart, weekly bar chart
 - [Boutique Management](mem://features/boutique-management) — Drag-and-drop modular editor, tracking in header
+- [Brand Studio](mem://features/brand-studio) — Refonte éditeur (Phase 1 Tour A): Studio IA guidé + DB scenes/brand_dna + edge function boutique-ai. Tour B = éditeur visuel + SEO Copilot + JSON-LD + suppression drag-and-drop
 - [Public Storefront](mem://features/public-storefront-ecommerce) — 2-step checkout (Identity, Delivery), local customer profile
 - [Order Tracking](mem://features/order-tracking) — Tracking via email and order ID using track_order RPC
 - [Order Management](mem://features/order-management) — Vendor validation required before shipping, 48h dispute escalation
