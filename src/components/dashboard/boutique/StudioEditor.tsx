@@ -61,6 +61,7 @@ import {
   type ContentBrief,
   type KeywordCluster,
   type SeoCopilotResult,
+  useUpdateBrandDNA,
 } from "@/hooks/useBrandStudio";
 import {
   STUDIO_SCENES,
@@ -71,6 +72,59 @@ import {
 import { StudioSceneRenderer } from "@/components/storefront/StudioSceneRenderer";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+
+/* ---------- Color helpers (HSL "h s% l%" <-> #rrggbb) ---------- */
+function hslStringToHex(hsl?: string): string {
+  if (!hsl) return "#000000";
+  const m = hsl.trim().match(/^(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)%\s+(-?\d+(?:\.\d+)?)%$/);
+  if (!m) return "#000000";
+  const h = parseFloat(m[1]) / 360;
+  const s = parseFloat(m[2]) / 100;
+  const l = parseFloat(m[3]) / 100;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => {
+    const k = (n + h * 12) % 12;
+    const c = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    return Math.round(c * 255).toString(16).padStart(2, "0");
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+function hexToHslString(hex: string): string {
+  const m = hex.trim().replace("#", "");
+  if (m.length !== 6) return "0 0% 0%";
+  const r = parseInt(m.slice(0, 2), 16) / 255;
+  const g = parseInt(m.slice(2, 4), 16) / 255;
+  const b = parseInt(m.slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  let h = 0;
+  let s = 0;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)); break;
+      case g: h = ((b - r) / d + 2); break;
+      default: h = ((r - g) / d + 4);
+    }
+    h *= 60;
+  }
+  return `${Math.round(h)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+}
+
+const STUDIO_PALETTE_PRESETS: Array<{
+  name: string;
+  palette: { primary: string; accent: string; surface: string; ink: string };
+}> = [
+  { name: "Marine BIB", palette: { primary: "215 55% 14%", accent: "41 55% 52%", surface: "40 30% 96%", ink: "220 20% 18%" } },
+  { name: "Nature", palette: { primary: "152 45% 22%", accent: "38 60% 55%", surface: "45 35% 96%", ink: "150 15% 18%" } },
+  { name: "Élégant", palette: { primary: "265 45% 25%", accent: "320 50% 60%", surface: "300 20% 97%", ink: "260 15% 20%" } },
+  { name: "Chaleureux", palette: { primary: "20 70% 30%", accent: "35 85% 55%", surface: "30 40% 97%", ink: "20 20% 20%" } },
+  { name: "Minimaliste", palette: { primary: "220 15% 20%", accent: "210 10% 50%", surface: "0 0% 98%", ink: "220 15% 18%" } },
+  { name: "Rose", palette: { primary: "340 60% 30%", accent: "350 70% 60%", surface: "340 30% 97%", ink: "340 20% 22%" } },
+];
 
 interface Props {
   boutiqueId: string;
@@ -108,6 +162,7 @@ export function StudioEditor({
   const briefMut = useGenerateContentBrief();
   const clustersMut = useGenerateKeywordClusters();
   const remixMut = useRemixScene();
+  const updateBrandDna = useUpdateBrandDNA();
 
   const [brief, setBrief] = useState<ContentBrief | null>(null);
   const [clusters, setClusters] = useState<KeywordCluster[]>([]);
@@ -692,19 +747,70 @@ export function StudioEditor({
                 </div>
                 <div>
                   <Label className="text-xs uppercase tracking-wide opacity-60">Palette</Label>
-                  <div className="flex gap-2 mt-1">
+                  <p className="text-[11px] opacity-60 mb-2">
+                    Cliquez sur une pastille pour modifier la couleur. L'aperçu se met à jour en direct.
+                  </p>
+                  <div className="grid grid-cols-4 gap-2">
                     {(["primary", "accent", "surface", "ink"] as const).map((k) => {
-                      const v = (brandDna.generated_palette as never)[k] as string | undefined;
+                      const v = (brandDna.generated_palette as Record<string, string | undefined>)[k];
+                      const hex = hslStringToHex(v);
                       return (
-                        <div key={k} className="flex-1 text-center">
-                          <div
-                            className="h-10 rounded border"
+                        <label key={k} className="flex flex-col items-center gap-1 cursor-pointer">
+                          <span
+                            className="relative h-10 w-full rounded border border-border overflow-hidden"
                             style={{ background: v ? `hsl(${v})` : "transparent" }}
-                          />
-                          <span className="text-[10px] opacity-60">{k}</span>
-                        </div>
+                          >
+                            <input
+                              type="color"
+                              value={hex}
+                              onChange={(e) => {
+                                const nextHsl = hexToHslString(e.target.value);
+                                updateBrandDna.mutate({
+                                  boutiqueId,
+                                  patch: {
+                                    generated_palette: {
+                                      ...brandDna.generated_palette,
+                                      [k]: nextHsl,
+                                    },
+                                  },
+                                });
+                              }}
+                              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                              aria-label={`Couleur ${k}`}
+                            />
+                          </span>
+                          <span className="text-[10px] opacity-60 capitalize">{k}</span>
+                        </label>
                       );
                     })}
+                  </div>
+                  <div className="mt-3">
+                    <p className="text-[11px] opacity-60 mb-1">Palettes prêtes à l'emploi</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {STUDIO_PALETTE_PRESETS.map((preset) => (
+                        <button
+                          key={preset.name}
+                          type="button"
+                          onClick={() =>
+                            updateBrandDna.mutate({
+                              boutiqueId,
+                              patch: { generated_palette: preset.palette },
+                            })
+                          }
+                          className="flex items-center gap-1 px-2 py-1 rounded-md border border-border hover:border-bib-gold transition-colors text-[10px]"
+                          title={preset.name}
+                        >
+                          {(["primary", "accent", "surface", "ink"] as const).map((k) => (
+                            <span
+                              key={k}
+                              className="h-3 w-3 rounded-sm border border-black/10"
+                              style={{ background: `hsl(${preset.palette[k]})` }}
+                            />
+                          ))}
+                          <span className="ml-1">{preset.name}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
                 <div>
