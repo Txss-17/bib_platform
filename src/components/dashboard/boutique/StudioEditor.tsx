@@ -335,7 +335,7 @@ export function StudioEditor({
 
   // Combine base validation + SEO score threshold for publishing
   const fullValidation = useMemo(() => {
-    const errors = [...fullValidation.errors];
+    const errors = [...validation.errors];
     if (seoScore.score < SEO_MIN_SCORE) {
       errors.push(
         `Score SEO insuffisant : ${seoScore.score}/100 (minimum requis : ${SEO_MIN_SCORE}). Améliorez les points listés dans l'onglet SEO.`,
