@@ -336,3 +336,36 @@ export function useGenerateSeo() {
     },
   });
 }
+
+/** Sauvegarde manuelle du SEO édité par l'utilisateur (titre, meta, keywords, JSON-LD). */
+export function useSaveSeo() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      title: string;
+      description: string;
+      h1?: string;
+      keywords?: string[];
+      jsonld?: Array<Record<string, unknown>>;
+    }) => {
+      const { error } = await supabase
+        .from("boutiques")
+        .update({
+          seo_title: params.title,
+          seo_description: params.description,
+          seo_jsonld: {
+            blocks: params.jsonld ?? [],
+            keywords: params.keywords ?? [],
+            h1: params.h1 ?? null,
+          },
+        } as never)
+        .eq("id", params.boutiqueId);
+      if (error) throw error;
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["boutique-edit", vars.boutiqueId] });
+      qc.invalidateQueries({ queryKey: ["public-boutique"] });
+    },
+  });
+}
