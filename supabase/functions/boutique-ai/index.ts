@@ -10,7 +10,12 @@ const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-type Action = "generate_brand_dna" | "generate_seo" | "remix_scene";
+type Action =
+  | "generate_brand_dna"
+  | "generate_seo"
+  | "remix_scene"
+  | "seo_brief"
+  | "keyword_clusters";
 
 interface RequestBody {
   action: Action;
@@ -25,6 +30,17 @@ Tu réponds STRICTEMENT en JSON via tool calling.`;
 
 const SYSTEM_SEO = `Tu es un expert SEO e-commerce francophone.
 Tu génères title (<60 car.), meta description (<160 car.), H1, 5 mots-clés longue traîne et un JSON-LD enrichi (Product, Organization, BreadcrumbList, FAQPage si pertinent) selon Schema.org.
+Tu réponds STRICTEMENT en JSON via tool calling.`;
+
+const SYSTEM_REMIX = `Tu es un copywriter premium pour boutiques e-commerce.
+Tu réécris le contenu d'UNE scène de page en respectant son schéma JSON existant (mêmes clés, mêmes types).
+Tu varies le ton, les formulations et les exemples sans inventer de clés.
+Tu réponds STRICTEMENT en JSON via tool calling.`;
+
+const SYSTEM_BRIEF = `Tu es un consultant SEO senior. Tu rédiges un content brief actionnable.
+Tu réponds STRICTEMENT en JSON via tool calling.`;
+
+const SYSTEM_CLUSTERS = `Tu es un SEO strategist. Tu structures les mots-clés en clusters thématiques (pillar + supporting).
 Tu réponds STRICTEMENT en JSON via tool calling.`;
 
 function makeSeed(): string {
@@ -147,6 +163,90 @@ const SEO_TOOL = {
   },
 };
 
+const REMIX_TOOL = {
+  type: "function",
+  function: {
+    name: "remix_scene_content",
+    description: "Réécrit le contenu d'une scène en gardant le même schéma JSON",
+    parameters: {
+      type: "object",
+      properties: {
+        content: {
+          type: "object",
+          description: "Nouveau contenu, mêmes clés que l'original",
+          additionalProperties: true,
+        },
+      },
+      required: ["content"],
+    },
+  },
+};
+
+const BRIEF_TOOL = {
+  type: "function",
+  function: {
+    name: "compose_content_brief",
+    description: "Content brief SEO actionnable",
+    parameters: {
+      type: "object",
+      properties: {
+        target_query: { type: "string" },
+        search_intent: { type: "string" },
+        recommended_h1: { type: "string" },
+        outline: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              h2: { type: "string" },
+              talking_points: { type: "array", items: { type: "string" } },
+            },
+            required: ["h2", "talking_points"],
+          },
+        },
+        questions_to_answer: { type: "array", items: { type: "string" } },
+        internal_link_suggestions: { type: "array", items: { type: "string" } },
+        target_word_count: { type: "number" },
+      },
+      required: [
+        "target_query",
+        "search_intent",
+        "recommended_h1",
+        "outline",
+        "questions_to_answer",
+        "target_word_count",
+      ],
+    },
+  },
+};
+
+const CLUSTERS_TOOL = {
+  type: "function",
+  function: {
+    name: "compose_keyword_clusters",
+    description: "Clusters de mots-clés (pillar + supporting)",
+    parameters: {
+      type: "object",
+      properties: {
+        clusters: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              theme: { type: "string" },
+              pillar_keyword: { type: "string" },
+              supporting_keywords: { type: "array", items: { type: "string" } },
+              intent: { type: "string", description: "informational | commercial | transactional" },
+            },
+            required: ["theme", "pillar_keyword", "supporting_keywords", "intent"],
+          },
+        },
+      },
+      required: ["clusters"],
+    },
+  },
+};
+
 async function getUserId(req: Request): Promise<string | null> {
   const auth = req.headers.get("Authorization");
   if (!auth) return null;
@@ -218,6 +318,57 @@ Crée une combinaison palette+typo+ton qui n'existe nulle part ailleurs (utilise
 Contexte:
 ${JSON.stringify(body.payload, null, 2)}`;
       const result = await callAI(SYSTEM_SEO, userPrompt, SEO_TOOL);
+      if (result.error) {
+        return new Response(JSON.stringify({ error: result.error }), {
+          status: result.status,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify(result.data), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (body.action === "remix_scene") {
+      const userPrompt = `Réécris le contenu de cette scène (${body.payload?.scene_type}, variante ${body.payload?.variant}).
+Contenu actuel:
+${JSON.stringify(body.payload?.content, null, 2)}
+Identité de marque (ton, ambiance, mots-clés):
+${JSON.stringify(body.payload?.brand ?? {}, null, 2)}
+Garde EXACTEMENT les mêmes clés et types. Varie uniquement les valeurs textuelles.`;
+      const result = await callAI(SYSTEM_REMIX, userPrompt, REMIX_TOOL);
+      if (result.error) {
+        return new Response(JSON.stringify({ error: result.error }), {
+          status: result.status,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify(result.data), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (body.action === "seo_brief") {
+      const userPrompt = `Rédige un content brief SEO pour cette page boutique.
+Contexte:
+${JSON.stringify(body.payload, null, 2)}`;
+      const result = await callAI(SYSTEM_BRIEF, userPrompt, BRIEF_TOOL);
+      if (result.error) {
+        return new Response(JSON.stringify({ error: result.error }), {
+          status: result.status,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify(result.data), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (body.action === "keyword_clusters") {
+      const userPrompt = `Construis 3 à 5 clusters de mots-clés pour cette boutique.
+Contexte:
+${JSON.stringify(body.payload, null, 2)}`;
+      const result = await callAI(SYSTEM_CLUSTERS, userPrompt, CLUSTERS_TOOL);
       if (result.error) {
         return new Response(JSON.stringify({ error: result.error }), {
           status: result.status,
