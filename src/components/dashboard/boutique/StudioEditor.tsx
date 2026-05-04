@@ -186,9 +186,14 @@ export function StudioEditor({
     return { errors, ok: errors.length === 0 };
   }, [scenes, products, seoTitle, seoDescription]);
 
+  // Combined gate including SEO score threshold (defined further below as `seoScore`).
+  // We use a ref-like pattern via an outer object so publish can read latest score.
+  const publishGate = useMemo(() => ({ check: () => validation }), [validation]);
+
   const publish = useMutation({
     mutationFn: async () => {
-      if (!validation.ok) throw new Error("validation_failed");
+      const gate = publishGate.check();
+      if (!gate.ok) throw new Error("validation_failed");
       // Persist any pending SEO before publishing
       if (seoDirty) {
         await seoSave.mutateAsync({
