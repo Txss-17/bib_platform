@@ -107,7 +107,7 @@ export function useGenerateBrandDNA() {
       };
       const { error: upErr } = await supabase
         .from("boutique_brand_dna")
-        .upsert(upsertPayload, { onConflict: "boutique_id" });
+        .upsert(upsertPayload as never, { onConflict: "boutique_id" });
       if (upErr) throw upErr;
 
       // Crée le bundle initial de scènes si la boutique n'en a pas
@@ -134,7 +134,7 @@ export function useGenerateBrandDNA() {
         }));
         const { error: scErr } = await supabase
           .from("boutique_scenes")
-          .insert(bundle);
+          .insert(bundle as never);
         if (scErr) throw scErr;
       }
 
