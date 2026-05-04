@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.owns_boutique(uuid, uuid) TO anon, authenticated;
