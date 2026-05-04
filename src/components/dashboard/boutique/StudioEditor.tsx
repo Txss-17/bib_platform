@@ -445,13 +445,7 @@ export function StudioEditor({
                     patch,
                   })
                 }
-                onDelete={() => {
-                  if (!confirm("Supprimer cette scène ?")) return;
-                  removeScene.mutate(
-                    { sceneId: activeScene.id, boutiqueId },
-                    { onSuccess: () => setActiveSceneId(null) },
-                  );
-                }}
+                onDelete={() => setPendingDeleteId(activeScene.id)}
               />
             )}
           </TabsContent>
