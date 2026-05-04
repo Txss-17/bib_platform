@@ -61,6 +61,7 @@ import {
   type ContentBrief,
   type KeywordCluster,
   type SeoCopilotResult,
+  useUpdateBrandDNA,
 } from "@/hooks/useBrandStudio";
 import {
   STUDIO_SCENES,
