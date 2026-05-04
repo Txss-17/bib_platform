@@ -773,17 +773,16 @@ export function StudioEditor({
               <p className="text-xs text-muted-foreground mb-3">
                 Génère titre, méta, mots-clés longue traîne et JSON-LD enrichi à partir de l'identité de marque et des produits.
               </p>
-              <Button
+              <ActionButton
                 onClick={handleSeoGenerate}
-                disabled={seoMut.isPending}
+                state={stateFromMutation(seoMut)}
+                loadingLabel="Génération…"
+                successLabel="SEO généré"
+                errorLabel="Échec"
                 className="w-full"
               >
-                {seoMut.isPending ? (
-                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Génération…</>
-                ) : (
-                  <><Wand2 className="w-4 h-4 mr-2" /> Générer le SEO de la page</>
-                )}
-              </Button>
+                <Wand2 className="w-4 h-4 mr-2 inline" /> Générer le SEO de la page
+              </ActionButton>
             </Card>
 
             <Card className="p-4 space-y-3 text-sm">
