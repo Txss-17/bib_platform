@@ -799,12 +799,9 @@ export default function BoutiqueEdit() {
     </DashboardLayout>
   );
 
-  // Legacy editor (kept for type safety; unreachable). Will be removed.
-  // eslint-disable-next-line no-unreachable
-  // @ts-expect-error legacy
-  const _legacy = (() => {
-
-  const mergedTheme: ThemeSettings = {
+  // Legacy editor below kept temporarily; unreachable due to early returns above.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _legacyMergedTheme: ThemeSettings = {
     ...themeSettings,
     customHeroTitle: customTexts.heroTitle || undefined,
     customHeroSubtitle: customTexts.heroSubtitle || undefined,
