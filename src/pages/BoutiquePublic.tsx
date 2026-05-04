@@ -157,8 +157,12 @@ export default function BoutiquePublic() {
         >
           <StorefrontHeader
             boutiqueName={boutique.name}
-            logoUrl={boutique.logo_url ?? undefined}
-            primaryColor={brandDna?.generated_palette?.primary ? `hsl(${brandDna.generated_palette.primary})` : undefined}
+            boutiqueSlug={boutique.slug}
+            primaryColor={
+              brandDna?.generated_palette?.primary
+                ? `hsl(${brandDna.generated_palette.primary})`
+                : undefined
+            }
           />
           <StudioSceneRenderer
             scenes={scenes}
@@ -166,8 +170,22 @@ export default function BoutiquePublic() {
             boutiqueName={boutique.name}
             products={products}
           />
-          <StorefrontFooter boutiqueName={boutique.name} />
-          <CartDrawer />
+          <StorefrontFooter
+            primaryColor={
+              brandDna?.generated_palette?.primary
+                ? `hsl(${brandDna.generated_palette.primary})`
+                : undefined
+            }
+          />
+          <CartDrawer
+            boutiqueId={boutique.id}
+            boutiqueName={boutique.name}
+            primaryColor={
+              brandDna?.generated_palette?.primary
+                ? `hsl(${brandDna.generated_palette.primary})`
+                : undefined
+            }
+          />
           <PageSeoInspector
             visible={!!user && user.id === boutique.user_id}
             kind="boutique"
