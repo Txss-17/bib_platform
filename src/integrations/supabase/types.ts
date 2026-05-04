@@ -927,6 +927,42 @@ export type Database = {
           },
         ]
       }
+      scene_events: {
+        Row: {
+          boutique_id: string
+          created_at: string
+          event_type: Database["public"]["Enums"]["scene_event_type"]
+          id: string
+          metadata: Json
+          scene_id: string
+          scene_type: string
+          session_id: string | null
+          value: number | null
+        }
+        Insert: {
+          boutique_id: string
+          created_at?: string
+          event_type: Database["public"]["Enums"]["scene_event_type"]
+          id?: string
+          metadata?: Json
+          scene_id: string
+          scene_type: string
+          session_id?: string | null
+          value?: number | null
+        }
+        Update: {
+          boutique_id?: string
+          created_at?: string
+          event_type?: Database["public"]["Enums"]["scene_event_type"]
+          id?: string
+          metadata?: Json
+          scene_id?: string
+          scene_type?: string
+          session_id?: string | null
+          value?: number | null
+        }
+        Relationships: []
+      }
       storefront_events: {
         Row: {
           boutique_id: string
@@ -1122,6 +1158,20 @@ export type Database = {
           read_ct: number
         }[]
       }
+      scene_analytics_summary: {
+        Args: { _boutique_id: string; _since?: string }
+        Returns: {
+          avg_dwell_ms: number
+          avg_scroll_pct: number
+          conversion_rate: number
+          conversions: number
+          cta_clicks: number
+          ctr: number
+          impressions: number
+          scene_id: string
+          scene_type: string
+        }[]
+      }
       track_order: {
         Args: { _customer_email: string; _order_number: string }
         Returns: {
@@ -1157,6 +1207,12 @@ export type Database = {
       product_status: "active" | "paused"
       recycling_source: "qr_scan" | "manual" | "pickup"
       rotation_indicator: "green" | "yellow" | "orange" | "red"
+      scene_event_type:
+        | "impression"
+        | "cta_click"
+        | "dwell"
+        | "scroll_depth"
+        | "conversion"
       storefront_event_type:
         | "boutique_view"
         | "product_view"
@@ -1308,6 +1364,13 @@ export const Constants = {
       product_status: ["active", "paused"],
       recycling_source: ["qr_scan", "manual", "pickup"],
       rotation_indicator: ["green", "yellow", "orange", "red"],
+      scene_event_type: [
+        "impression",
+        "cta_click",
+        "dwell",
+        "scroll_depth",
+        "conversion",
+      ],
       storefront_event_type: [
         "boutique_view",
         "product_view",
