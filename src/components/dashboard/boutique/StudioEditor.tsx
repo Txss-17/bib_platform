@@ -109,6 +109,7 @@ export function StudioEditor({
   const briefMut = useGenerateContentBrief();
   const clustersMut = useGenerateKeywordClusters();
   const remixMut = useRemixScene();
+  const updateBrandDna = useUpdateBrandDNA();
 
   const [brief, setBrief] = useState<ContentBrief | null>(null);
   const [clusters, setClusters] = useState<KeywordCluster[]>([]);
