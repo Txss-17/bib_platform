@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useSceneAnalytics, trackCtaClick } from "@/hooks/useSceneAnalytics";
 import type { SceneRecord } from "@/lib/studioScenes";
 import type { BrandDNA } from "@/hooks/useBrandStudio";
 
@@ -14,13 +15,24 @@ interface Props {
   brandDna: BrandDNA | null;
   boutiqueName: string;
   products: Product[];
+  /** When provided (public storefront), enables analytics tracking. */
+  boutiqueId?: string;
+  /** When true, disable tracking (editor preview). Default: tracking on if boutiqueId is provided. */
+  disableTracking?: boolean;
 }
 
 /**
  * Rendu storefront des scènes Studio (Tour B).
  * Utilise les tokens BIB (semantic) + couleurs ADN injectées en CSS vars locales.
  */
-export function StudioSceneRenderer({ scenes, brandDna, boutiqueName, products }: Props) {
+export function StudioSceneRenderer({
+  scenes,
+  brandDna,
+  boutiqueName,
+  products,
+  boutiqueId,
+  disableTracking,
+}: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,14 +66,91 @@ export function StudioSceneRenderer({ scenes, brandDna, boutiqueName, products }
       }
     >
       {scenes.filter((s) => s.is_visible).map((scene) => (
-        <SceneSwitch
+        <TrackedScene
           key={scene.id}
           scene={scene}
-          boutiqueName={boutiqueName}
-          products={products}
-          displayFont={display}
-        />
+          enabled={!!boutiqueId && !disableTracking}
+          boutiqueId={boutiqueId ?? ""}
+        >
+          <SceneSwitch
+            scene={scene}
+            boutiqueName={boutiqueName}
+            products={products}
+            displayFont={display}
+          />
+        </TrackedScene>
       ))}
+    </div>
+  );
+}
+
+/**
+ * Wraps a scene in a trackable container that fires impression / dwell /
+ * scroll-depth events and intercepts CTA link clicks.
+ */
+function TrackedScene({
+  scene,
+  enabled,
+  boutiqueId,
+  children,
+}: {
+  scene: SceneRecord;
+  enabled: boolean;
+  boutiqueId: string;
+  children: React.ReactNode;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useSceneAnalytics({
+    enabled,
+    boutiqueId,
+    sceneId: scene.id,
+    sceneType: scene.scene_type,
+    ref,
+  });
+
+  // Persist the last viewed scene for conversion attribution at checkout.
+  useEffect(() => {
+    if (!enabled || typeof window === "undefined") return;
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting && e.intersectionRatio >= 0.5) {
+            try {
+              window.sessionStorage.setItem(
+                "bib_last_scene",
+                JSON.stringify({ sceneId: scene.id, sceneType: scene.scene_type, at: Date.now() }),
+              );
+            } catch { /* ignore */ }
+          }
+        }
+      },
+      { threshold: [0.5] },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [enabled, scene.id, scene.scene_type]);
+
+  const onClickCapture = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!enabled) return;
+    const target = (e.target as HTMLElement).closest("a,button");
+    if (!target) return;
+    const label =
+      target.getAttribute("data-cta") ||
+      target.getAttribute("aria-label") ||
+      (target.textContent ?? "").trim().slice(0, 60);
+    trackCtaClick({
+      boutiqueId,
+      sceneId: scene.id,
+      sceneType: scene.scene_type,
+      label,
+    });
+  };
+
+  return (
+    <div ref={ref} onClickCapture={onClickCapture} data-scene-id={scene.id}>
+      {children}
     </div>
   );
 }
