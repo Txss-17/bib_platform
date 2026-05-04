@@ -169,6 +169,7 @@ export default function BoutiquePublic() {
             brandDna={brandDna}
             boutiqueName={boutique.name}
             products={products}
+            boutiqueId={boutique.id}
           />
           <StorefrontFooter
             primaryColor={
