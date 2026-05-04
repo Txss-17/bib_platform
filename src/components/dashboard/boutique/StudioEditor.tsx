@@ -335,7 +335,7 @@ export function StudioEditor({
 
   // Combine base validation + SEO score threshold for publishing
   const fullValidation = useMemo(() => {
-    const errors = [...validation.errors];
+    const errors = [...fullValidation.errors];
     if (seoScore.score < SEO_MIN_SCORE) {
       errors.push(
         `Score SEO insuffisant : ${seoScore.score}/100 (minimum requis : ${SEO_MIN_SCORE}). Améliorez les points listés dans l'onglet SEO.`,
@@ -533,15 +533,15 @@ export function StudioEditor({
           </div>
         </div>
 
-        {validation.errors.length > 0 && (
+        {fullValidation.errors.length > 0 && (
           <div className="mx-4 mt-3 rounded-md border border-warning/40 bg-warning/10 p-2 text-xs flex gap-2">
             <AlertTriangle className="w-3.5 h-3.5 text-warning shrink-0 mt-0.5" />
             <span>
-              <strong>{validation.errors.length}</strong> point(s) à corriger avant publication.
+              <strong>{fullValidation.errors.length}</strong> point(s) à corriger avant publication.
             </span>
           </div>
         )}
-        {validation.ok && (
+        {fullValidation.ok && (
           <div className="mx-4 mt-3 rounded-md border border-success/40 bg-success/10 p-2 text-xs flex gap-2">
             <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0 mt-0.5" />
             <span>Boutique prête à être publiée.</span>
@@ -1004,7 +1004,7 @@ export function StudioEditor({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <ul className="text-sm space-y-2 list-disc pl-5 max-h-72 overflow-y-auto">
-            {validation.errors.map((e, i) => (
+            {fullValidation.errors.map((e, i) => (
               <li key={i} className="text-foreground">{e}</li>
             ))}
           </ul>
