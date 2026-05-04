@@ -108,6 +108,7 @@ export function StudioEditor({
 
   const [brief, setBrief] = useState<ContentBrief | null>(null);
   const [clusters, setClusters] = useState<KeywordCluster[]>([]);
+  const SEO_MIN_SCORE = 60;
 
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
@@ -153,10 +154,21 @@ export function StudioEditor({
       const c = hero.content as Record<string, unknown>;
       if (!c.title || (c.title as string).trim().length < 5)
         errors.push("Le titre du Hero doit faire au moins 5 caractères.");
-      // If hero has a videoUrl key declared, require it present
-      if ("videoUrl" in c && hero.variant === "fullscreen" && !c.backgroundImage && !c.videoUrl) {
-        errors.push("Hero plein écran : ajoute une image ou une vidéo de fond.");
+      // Hero plein écran : exige soit une image soit une vidéo de fond
+      if (hero.variant === "fullscreen" && !c.backgroundImage && !c.videoUrl) {
+        errors.push("Hero plein écran : ajoute une image OU une vidéo de fond.");
       }
+      if (!c.ctaLabel || (c.ctaLabel as string).trim().length < 2) {
+        errors.push("Le CTA principal du Hero est requis.");
+    }
+    }
+    // Other scene sanity (mandatory video on lookbook video variant if added later, FAQ requires items, etc.)
+    const faq = visible.find((s) => s.scene_type === "faq-accordion");
+    if (faq) {
+      const items = ((faq.content as any).items ?? []) as Array<{ q: string; a: string }>;
+      if (items.length < 2) errors.push("La FAQ doit contenir au moins 2 questions.");
+      if (items.some((it) => !it.q?.trim() || !it.a?.trim()))
+        errors.push("Toutes les questions FAQ doivent avoir une réponse.");
     }
     // Showcase needs products
     if (visible.some((s) => s.role === "showcase") && products.length === 0) {
@@ -356,6 +368,101 @@ export function StudioEditor({
         onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erreur clusters"),
       },
     );
+  };
+
+  // ---------------- Keyword cluster add/remove with undo ----------------
+  const addKeyword = (k: string) => {
+    const trimmed = k.trim();
+    if (!trimmed) return;
+    if (seoKeywordsList.includes(trimmed)) return;
+    const next = [...seoKeywordsList, trimmed];
+    setSeoKeywords(next.join(", "));
+    setSeoDirty(true);
+    toast.success(`« ${trimmed} » ajouté`, {
+      action: {
+        label: "Annuler",
+        onClick: () => {
+          setSeoKeywords(next.filter((x) => x !== trimmed).join(", "));
+          setSeoDirty(true);
+        },
+      },
+    });
+  };
+
+  const removeKeyword = (k: string) => {
+    const next = seoKeywordsList.filter((x) => x !== k);
+    setSeoKeywords(next.join(", "));
+    setSeoDirty(true);
+    toast(`« ${k} » retiré`, {
+      action: {
+        label: "Annuler",
+        onClick: () => {
+          setSeoKeywords([...next, k].join(", "));
+          setSeoDirty(true);
+        },
+      },
+    });
+  };
+
+  // ---------------- Apply Content Brief ----------------
+  const applyBrief = () => {
+    if (!brief) return;
+    // 1. SEO H1 + (optional) keyword
+    setSeoH1(brief.recommended_h1);
+    if (brief.target_query) addKeyword(brief.target_query);
+    setSeoDirty(true);
+
+    // 2. Inject plan/questions into the active scene (smart by scene_type)
+    const target =
+      activeScene ??
+      scenes.find((s) => s.scene_type === "story-scrolly") ??
+      scenes.find((s) => s.scene_type === "faq-accordion") ??
+      scenes[0];
+
+    if (target) {
+      const c = { ...(target.content as Record<string, unknown>) };
+      let patched = false;
+
+      if (target.scene_type === "story-scrolly") {
+        c.chapters = brief.outline.slice(0, 5).map((o) => ({
+          eyebrow: "Plan",
+          title: o.h2,
+          body: (o.talking_points ?? []).join(" · "),
+          image: null,
+        }));
+        patched = true;
+      } else if (target.scene_type === "faq-accordion") {
+        c.items = brief.questions_to_answer.slice(0, 8).map((q, i) => ({
+          q,
+          a: brief.outline[i % Math.max(brief.outline.length, 1)]?.talking_points?.[0] ?? "",
+        }));
+        patched = true;
+      } else {
+        // Generic fallback: title = H1, subtitle = first talking point
+        if ("title" in c) c.title = brief.recommended_h1;
+        if ("subtitle" in c)
+          c.subtitle =
+            brief.outline[0]?.talking_points?.[0] ?? brief.search_intent ?? (c.subtitle as string);
+        patched = "title" in c || "subtitle" in c;
+      }
+
+      if (patched) {
+        updateScene.mutate({ sceneId: target.id, boutiqueId, patch: { content: c } });
+      }
+    }
+
+    // 3. Always try to populate (or create-friendly toast for) FAQ scene
+    const faq = scenes.find((s) => s.scene_type === "faq-accordion" && s.id !== target?.id);
+    if (faq) {
+      const fc = { ...(faq.content as Record<string, unknown>) };
+      fc.items = brief.questions_to_answer.slice(0, 8).map((q, i) => ({
+        q,
+        a: brief.outline[i % Math.max(brief.outline.length, 1)]?.talking_points?.[0] ?? "",
+      }));
+      updateScene.mutate({ sceneId: faq.id, boutiqueId, patch: { content: fc } });
+    }
+
+    toast.success("Brief appliqué : H1, plan & questions intégrés");
   };
 
   const handleRemix = (scene: SceneRecord) => {
