@@ -528,38 +528,80 @@ export function StudioEditor({
               </Button>
             </Card>
 
-            {seoResult && (
-              <Card className="p-4 space-y-3 text-sm">
-                <div>
-                  <Label className="text-xs uppercase tracking-wide opacity-60">Title ({seoResult.title.length}/60)</Label>
-                  <p className="font-medium">{seoResult.title}</p>
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-wide opacity-60">Meta description ({seoResult.description.length}/160)</Label>
-                  <p className="text-muted-foreground">{seoResult.description}</p>
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-wide opacity-60">H1</Label>
-                  <p>{seoResult.h1}</p>
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-wide opacity-60">Mots-clés</Label>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {seoResult.keywords.map((k) => (
-                      <Badge key={k} variant="outline">{k}</Badge>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs uppercase tracking-wide opacity-60">
-                    JSON-LD ({seoResult.jsonld.length} bloc{seoResult.jsonld.length > 1 ? "s" : ""})
-                  </Label>
-                  <pre className="text-[10px] bg-muted/50 rounded p-2 max-h-40 overflow-auto mt-1">
-                    {JSON.stringify(seoResult.jsonld, null, 2)}
-                  </pre>
-                </div>
-              </Card>
-            )}
+            <Card className="p-4 space-y-3 text-sm">
+              <div>
+                <Label className="text-xs flex items-center justify-between">
+                  <span>Titre ({seoTitle.length}/60)</span>
+                  {seoTitle.length > 60 && <span className="text-destructive">trop long</span>}
+                </Label>
+                <Input
+                  value={seoTitle}
+                  maxLength={80}
+                  onChange={(e) => { setSeoTitle(e.target.value); setSeoDirty(true); }}
+                />
+              </div>
+              <div>
+                <Label className="text-xs flex items-center justify-between">
+                  <span>Meta description ({seoDescription.length}/160)</span>
+                  {seoDescription.length > 160 && <span className="text-destructive">trop long</span>}
+                </Label>
+                <Textarea
+                  rows={3}
+                  value={seoDescription}
+                  maxLength={200}
+                  onChange={(e) => { setSeoDescription(e.target.value); setSeoDirty(true); }}
+                />
+              </div>
+              <div>
+                <Label className="text-xs">H1</Label>
+                <Input
+                  value={seoH1}
+                  onChange={(e) => { setSeoH1(e.target.value); setSeoDirty(true); }}
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Mots-clés (séparés par des virgules)</Label>
+                <Textarea
+                  rows={2}
+                  value={seoKeywords}
+                  onChange={(e) => { setSeoKeywords(e.target.value); setSeoDirty(true); }}
+                  placeholder="boutique premium, mode éditoriale, ..."
+                />
+              </div>
+              <div>
+                <Label className="text-xs">
+                  JSON-LD ({seoJsonld.length} bloc{seoJsonld.length > 1 ? "s" : ""})
+                </Label>
+                <pre className="text-[10px] bg-muted/50 rounded p-2 max-h-40 overflow-auto mt-1">
+                  {seoJsonld.length === 0
+                    ? "Aucun JSON-LD. Lancez le Copilot pour le générer."
+                    : JSON.stringify(seoJsonld, null, 2)}
+                </pre>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <Button
+                  size="sm"
+                  onClick={handleSeoSave}
+                  disabled={seoSave.isPending || !seoDirty}
+                  className="flex-1"
+                >
+                  {seoSave.isPending ? (
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sauvegarde…</>
+                  ) : (
+                    <><Save className="w-4 h-4 mr-2" /> {seoDirty ? "Sauvegarder" : "Sauvegardé"}</>
+                  )}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleSeoGenerate}
+                  disabled={seoMut.isPending}
+                  title="Régénérer le JSON-LD à partir de l'ADN"
+                >
+                  <Wand2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </Card>
           </TabsContent>
         </Tabs>
       </aside>
