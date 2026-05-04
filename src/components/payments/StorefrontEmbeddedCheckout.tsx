@@ -25,8 +25,20 @@ interface Props {
 
 export function StorefrontEmbeddedCheckout(props: Props) {
   const fetchClientSecret = async (): Promise<string> => {
+    // Attribution: include the last scene the user viewed before checkout.
+    let lastScene: { sceneId?: string; sceneType?: string; at?: number } | null = null;
+    try {
+      const raw = window.sessionStorage.getItem("bib_last_scene");
+      if (raw) lastScene = JSON.parse(raw);
+    } catch { /* ignore */ }
+    const sessionId = window.sessionStorage.getItem("bib_scene_session") ?? undefined;
+
     const { data, error } = await supabase.functions.invoke("create-storefront-checkout", {
-      body: { ...props, environment: getStripeEnvironment() },
+      body: {
+        ...props,
+        environment: getStripeEnvironment(),
+        attribution: { lastScene, sessionId },
+      },
     });
     if (error || !data?.clientSecret) {
       throw new Error(error?.message || "Failed to create checkout");
