@@ -11,7 +11,13 @@ export type SceneRole =
   | "lookbook"
   | "showcase"
   | "trust"
-  | "cta";
+  | "cta"
+  | "faq"
+  | "newsletter"
+  | "press"
+  | "comparison"
+  | "founder"
+  | "manifesto";
 
 export interface SceneDefinition {
   id: string; // ex: hero-cinema
@@ -29,7 +35,13 @@ export interface SceneDefinition {
     | "lookbook-parallax"
     | "showcase-magazine"
     | "trust-wall"
-    | "cta-sticky";
+    | "cta-sticky"
+    | "faq-accordion"
+    | "newsletter-editorial"
+    | "press-strip"
+    | "comparison-table"
+    | "founder-letter"
+    | "manifesto-typographic";
 }
 
 export const STUDIO_SCENES: SceneDefinition[] = [
@@ -148,6 +160,114 @@ export const STUDIO_SCENES: SceneDefinition[] = [
       ctaLabel: "Commander maintenant",
       ctaSecondaryLabel: "Recevoir la newsletter",
       stickyEnabled: true,
+    },
+  },
+  {
+    id: "faq-accordion",
+    role: "faq",
+    name: "FAQ Éditoriale",
+    tagline: "Questions/réponses dépliables, pensées SEO",
+    description:
+      "Accordéon élégant qui répond aux objections d'achat. Le JSON-LD FAQPage est généré automatiquement à partir du contenu.",
+    variants: ["accordion", "two-column", "list"],
+    previewKey: "faq-accordion",
+    defaultContent: {
+      title: "Vos questions, nos réponses",
+      items: [
+        { q: "Quels sont vos délais de livraison ?", a: "48 à 72h en France métropolitaine, 5 à 7 jours en Europe." },
+        { q: "Quelle est votre politique de retour ?", a: "Retours gratuits sous 30 jours, sans condition." },
+        { q: "Vos produits sont-ils garantis ?", a: "Oui, garantie 2 ans incluse sur toute la collection." },
+      ],
+    },
+  },
+  {
+    id: "newsletter-editorial",
+    role: "newsletter",
+    name: "Newsletter Éditoriale",
+    tagline: "Capture d'email premium au ton magazine",
+    description:
+      "Bloc newsletter avec promesse éditoriale forte, champ email épuré et bénéfices listés. Conçu pour la conversion.",
+    variants: ["centered", "split-image", "minimal"],
+    previewKey: "newsletter-editorial",
+    defaultContent: {
+      eyebrow: "Le journal",
+      title: "Recevez nos exclusivités avant tout le monde",
+      subtitle: "Une lettre éditoriale par mois. Pas de spam, jamais.",
+      placeholder: "Votre email",
+      ctaLabel: "S'abonner",
+      benefits: ["-10% sur la première commande", "Accès anticipé aux drops", "Histoires de la maison"],
+    },
+  },
+  {
+    id: "press-strip",
+    role: "press",
+    name: "Bandeau Presse",
+    tagline: "Logos médias en bande défilante",
+    description:
+      "Bande horizontale présentant les logos presse en monochrome. Anime au scroll pour un rendu vivant.",
+    variants: ["scrolling", "static-grid", "centered"],
+    previewKey: "press-strip",
+    defaultContent: {
+      eyebrow: "Vu dans",
+      logos: [
+        { name: "Vogue", url: null },
+        { name: "ELLE", url: null },
+        { name: "Le Monde", url: null },
+        { name: "Forbes", url: null },
+        { name: "Madame Figaro", url: null },
+      ],
+    },
+  },
+  {
+    id: "comparison-table",
+    role: "comparison",
+    name: "Tableau Comparatif",
+    tagline: "Pourquoi nous choisir vs. la concurrence",
+    description:
+      "Comparaison ligne par ligne pour lever les objections. Très efficace en bas de page produit.",
+    variants: ["check-cross", "stars", "minimal"],
+    previewKey: "comparison-table",
+    defaultContent: {
+      title: "Pourquoi nous choisir",
+      brand_name: "Notre maison",
+      competitor_name: "La concurrence",
+      rows: [
+        { label: "Matières premium", us: true, them: false },
+        { label: "Garantie 2 ans", us: true, them: false },
+        { label: "Livraison neutre carbone", us: true, them: false },
+        { label: "Service client humain", us: true, them: false },
+      ],
+    },
+  },
+  {
+    id: "founder-letter",
+    role: "founder",
+    name: "Lettre du Fondateur",
+    tagline: "Adresse personnelle signée à la main",
+    description:
+      "Format lettre intime — texte centré, signature manuscrite, photo ronde. Crée un attachement émotionnel fort.",
+    variants: ["letter", "portrait-left", "portrait-right"],
+    previewKey: "founder-letter",
+    defaultContent: {
+      eyebrow: "Notre histoire",
+      title: "Un mot du fondateur",
+      body: "Quand j'ai imaginé cette maison, j'avais en tête une seule idée : faire mieux, sans compromis. Chaque pièce qui sort de notre atelier porte cette obsession.",
+      signature: "Antoine, fondateur",
+      portraitUrl: null,
+    },
+  },
+  {
+    id: "manifesto-typographic",
+    role: "manifesto",
+    name: "Manifeste Typographique",
+    tagline: "Statement plein écran, ton manifeste",
+    description:
+      "Typographie monumentale qui affirme la mission. Aucune image, juste la force du verbe.",
+    variants: ["xl", "stacked", "marquee"],
+    previewKey: "manifesto-typographic",
+    defaultContent: {
+      lines: ["Faire moins.", "Faire mieux.", "Faire pour durer."],
+      footnote: "Notre manifeste, depuis le premier jour.",
     },
   },
 ];

@@ -51,6 +51,12 @@ import {
   useDeleteScene,
   useGenerateSeo,
   useSaveSeo,
+  useRemixScene,
+  useGenerateContentBrief,
+  useGenerateKeywordClusters,
+  computeSeoScore,
+  type ContentBrief,
+  type KeywordCluster,
   type SeoCopilotResult,
 } from "@/hooks/useBrandStudio";
 import {
@@ -96,6 +102,12 @@ export function StudioEditor({
   const removeScene = useDeleteScene();
   const seoMut = useGenerateSeo();
   const seoSave = useSaveSeo();
+  const briefMut = useGenerateContentBrief();
+  const clustersMut = useGenerateKeywordClusters();
+  const remixMut = useRemixScene();
+
+  const [brief, setBrief] = useState<ContentBrief | null>(null);
+  const [clusters, setClusters] = useState<KeywordCluster[]>([]);
 
   const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
@@ -290,6 +302,79 @@ export function StudioEditor({
     );
   };
 
+  const seoKeywordsList = useMemo(
+    () => seoKeywords.split(",").map((k) => k.trim()).filter(Boolean),
+    [seoKeywords],
+  );
+  const seoScore = useMemo(
+    () =>
+      computeSeoScore({
+        title: seoTitle,
+        description: seoDescription,
+        h1: seoH1,
+        keywords: seoKeywordsList,
+        jsonldBlocks: seoJsonld.length,
+      }),
+    [seoTitle, seoDescription, seoH1, seoKeywordsList, seoJsonld.length],
+  );
+
+  const seoContext = useMemo(
+    () => ({
+      boutique_name: boutiqueName,
+      category,
+      tagline: brandDna?.generated_copy?.tagline,
+      ambiance: brandDna?.ambiance,
+      tone: brandDna?.tone,
+      target_audience: brandDna?.target_audience,
+      keywords: brandDna?.keywords,
+      products: products.slice(0, 10).map((p) => ({ name: p.name, price: p.price })),
+    }),
+    [boutiqueName, category, brandDna, products],
+  );
+
+  const handleBriefGenerate = () => {
+    briefMut.mutate(
+      { boutiqueId, context: { ...seoContext, page_kind: "store_home", target_keyword: seoKeywordsList[0] } },
+      {
+        onSuccess: (b) => {
+          setBrief(b);
+          toast.success("Content brief généré");
+        },
+        onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erreur brief"),
+      },
+    );
+  };
+
+  const handleClustersGenerate = () => {
+    clustersMut.mutate(
+      { boutiqueId, context: seoContext },
+      {
+        onSuccess: (c) => {
+          setClusters(c);
+          toast.success(`${c.length} clusters générés`);
+        },
+        onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Erreur clusters"),
+      },
+    );
+  };
+
+  const handleRemix = (scene: SceneRecord) => {
+    remixMut.mutate(
+      {
+        boutiqueId,
+        sceneId: scene.id,
+        sceneType: scene.scene_type,
+        variant: scene.variant,
+        content: scene.content as Record<string, unknown>,
+        brand: brandDna ?? null,
+      },
+      {
+        onSuccess: () => toast.success("Scène remixée"),
+        onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Remix impossible"),
+      },
+    );
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-0 h-[calc(100vh-72px)]">
       {/* ---------------- Left rail ---------------- */}
@@ -446,6 +531,8 @@ export function StudioEditor({
                   })
                 }
                 onDelete={() => setPendingDeleteId(activeScene.id)}
+                onRemix={() => handleRemix(activeScene)}
+                isRemixing={remixMut.isPending}
               />
             )}
           </TabsContent>
@@ -501,6 +588,51 @@ export function StudioEditor({
 
           {/* SEO TAB */}
           <TabsContent value="seo" className="flex-1 overflow-y-auto px-4 pb-6 mt-3 space-y-4">
+            {/* Score SEO live */}
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold">Score SEO</span>
+                </div>
+                <span
+                  className={`text-2xl font-bold tabular-nums ${
+                    seoScore.score >= 80
+                      ? "text-success"
+                      : seoScore.score >= 50
+                        ? "text-warning"
+                        : "text-destructive"
+                  }`}
+                >
+                  {seoScore.score}
+                  <span className="text-xs opacity-50">/100</span>
+                </span>
+              </div>
+              <div className="h-1.5 rounded-full bg-muted overflow-hidden mb-3">
+                <div
+                  className={`h-full transition-all ${
+                    seoScore.score >= 80
+                      ? "bg-success"
+                      : seoScore.score >= 50
+                        ? "bg-warning"
+                        : "bg-destructive"
+                  }`}
+                  style={{ width: `${seoScore.score}%` }}
+                />
+              </div>
+              <ul className="space-y-1">
+                {seoScore.checks.map((c) => (
+                  <li key={c.label} className="text-xs flex items-center gap-2">
+                    {c.ok ? (
+                      <CheckCircle2 className="w-3 h-3 text-success shrink-0" />
+                    ) : (
+                      <AlertTriangle className="w-3 h-3 text-warning shrink-0" />
+                    )}
+                    <span className={c.ok ? "opacity-60" : ""}>{c.label}</span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+
             <Card className="p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="w-4 h-4 text-primary" />
@@ -596,6 +728,108 @@ export function StudioEditor({
                 </Button>
               </div>
             </Card>
+
+            {/* Content Brief IA */}
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <h3 className="text-sm font-semibold">Content Brief IA</h3>
+                </div>
+                <Button size="sm" variant="outline" onClick={handleBriefGenerate} disabled={briefMut.isPending}>
+                  {briefMut.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
+                </Button>
+              </div>
+              {!brief ? (
+                <p className="text-xs text-muted-foreground">
+                  Génère un brief actionnable (intent, H1, plan H2, questions à couvrir, longueur cible).
+                </p>
+              ) : (
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <Label className="text-[10px] uppercase opacity-60">Requête cible</Label>
+                    <p className="font-medium">{brief.target_query}</p>
+                  </div>
+                  <div>
+                    <Label className="text-[10px] uppercase opacity-60">Intent</Label>
+                    <p>{brief.search_intent}</p>
+                  </div>
+                  <div>
+                    <Label className="text-[10px] uppercase opacity-60">H1 recommandé</Label>
+                    <p className="italic">{brief.recommended_h1}</p>
+                  </div>
+                  <div>
+                    <Label className="text-[10px] uppercase opacity-60">Plan ({brief.outline.length} H2)</Label>
+                    <ul className="list-disc pl-4 space-y-1 mt-1">
+                      {brief.outline.map((o, i) => (
+                        <li key={i}>
+                          <span className="font-medium">{o.h2}</span>
+                          <ul className="list-[circle] pl-4 opacity-70">
+                            {o.talking_points.map((t, j) => <li key={j}>{t}</li>)}
+                          </ul>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <Label className="text-[10px] uppercase opacity-60">Questions à couvrir</Label>
+                    <ul className="list-disc pl-4 mt-1">
+                      {brief.questions_to_answer.map((q, i) => <li key={i}>{q}</li>)}
+                    </ul>
+                  </div>
+                  <p className="text-[10px] opacity-60">Longueur cible : ~{brief.target_word_count} mots</p>
+                </div>
+              )}
+            </Card>
+
+            {/* Keyword Clusters IA */}
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  <h3 className="text-sm font-semibold">Clusters de mots-clés</h3>
+                </div>
+                <Button size="sm" variant="outline" onClick={handleClustersGenerate} disabled={clustersMut.isPending}>
+                  {clustersMut.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
+                </Button>
+              </div>
+              {clusters.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  Structure tes mots-clés en piliers (pillar) + supports (longue traîne).
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {clusters.map((c, i) => (
+                    <div key={i} className="rounded border border-border/40 p-2 text-xs space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold">{c.theme}</span>
+                        <Badge variant="outline" className="text-[10px]">{c.intent}</Badge>
+                      </div>
+                      <p className="text-primary font-medium">{c.pillar_keyword}</p>
+                      <div className="flex flex-wrap gap-1 pt-1">
+                        {c.supporting_keywords.map((k) => (
+                          <button
+                            key={k}
+                            type="button"
+                            onClick={() => {
+                              const list = seoKeywordsList.includes(k)
+                                ? seoKeywordsList
+                                : [...seoKeywordsList, k];
+                              setSeoKeywords(list.join(", "));
+                              setSeoDirty(true);
+                            }}
+                            className="px-2 py-0.5 rounded-full bg-muted hover:bg-primary/10 text-[10px]"
+                            title="Ajouter aux mots-clés SEO"
+                          >
+                            + {k}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
           </TabsContent>
         </Tabs>
       </aside>
@@ -666,10 +900,14 @@ function SceneInspector({
   scene,
   onPatch,
   onDelete,
+  onRemix,
+  isRemixing,
 }: {
   scene: SceneRecord;
   onPatch: (patch: Partial<Pick<SceneRecord, "content" | "variant" | "is_visible">>) => void;
   onDelete: () => void;
+  onRemix: () => void;
+  isRemixing: boolean;
 }) {
   const def = findSceneDefinition(scene.scene_type);
   const c = scene.content as Record<string, unknown>;
@@ -685,6 +923,15 @@ function SceneInspector({
           <p className="text-sm font-semibold">{def?.name}</p>
         </div>
         <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onRemix}
+            disabled={isRemixing}
+            title="Remix IA — réécrit le contenu de la scène"
+          >
+            {isRemixing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+          </Button>
           <Switch
             checked={scene.is_visible}
             onCheckedChange={(v) => onPatch({ is_visible: v })}

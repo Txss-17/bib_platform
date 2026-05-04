@@ -90,6 +90,18 @@ function SceneSwitch({
       return <TrustWallScene content={scene.content as never} displayFont={displayFont} />;
     case "cta-sticky":
       return <CtaStickyScene content={scene.content as never} displayFont={displayFont} />;
+    case "faq-accordion":
+      return <FaqScene content={scene.content as never} displayFont={displayFont} />;
+    case "newsletter-editorial":
+      return <NewsletterScene content={scene.content as never} displayFont={displayFont} />;
+    case "press-strip":
+      return <PressStripScene content={scene.content as never} displayFont={displayFont} />;
+    case "comparison-table":
+      return <ComparisonScene content={scene.content as never} displayFont={displayFont} />;
+    case "founder-letter":
+      return <FounderScene content={scene.content as never} displayFont={displayFont} />;
+    case "manifesto-typographic":
+      return <ManifestoScene content={scene.content as never} displayFont={displayFont} />;
     default:
       return null;
   }
@@ -309,5 +321,187 @@ function CtaStickyScene({ content, displayFont }: { content: any; displayFont: s
         </div>
       )}
     </>
+  );
+}
+
+/* -------------------------- New scenes (Phase 2) -------------------------- */
+
+function FaqScene({ content, displayFont }: { content: any; displayFont: string }) {
+  const items = (content.items ?? []) as Array<{ q: string; a: string }>;
+  return (
+    <section className="py-20" style={{ background: `hsl(var(--studio-surface))` }}>
+      <div className="max-w-3xl mx-auto px-6">
+        <h2 className="text-3xl md:text-4xl mb-10 text-center" style={{ fontFamily: `${displayFont}, serif` }}>
+          {content.title}
+        </h2>
+        <div className="divide-y divide-border/40 border-y border-border/40">
+          {items.map((it, i) => (
+            <details key={i} className="group py-4">
+              <summary className="flex items-center justify-between cursor-pointer list-none">
+                <span className="font-medium pr-4">{it.q}</span>
+                <span className="text-xl opacity-50 group-open:rotate-45 transition-transform">+</span>
+              </summary>
+              <p className="mt-3 opacity-75 leading-relaxed">{it.a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function NewsletterScene({ content, displayFont }: { content: any; displayFont: string }) {
+  return (
+    <section
+      id="newsletter"
+      className="py-20"
+      style={{ background: `hsl(var(--studio-ink))`, color: "white" }}
+    >
+      <div className="max-w-2xl mx-auto px-6 text-center">
+        {content.eyebrow && (
+          <span className="text-xs uppercase tracking-[0.2em] opacity-60">{content.eyebrow}</span>
+        )}
+        <h2 className="text-3xl md:text-5xl mt-3 mb-3" style={{ fontFamily: `${displayFont}, serif` }}>
+          {content.title}
+        </h2>
+        <p className="opacity-75 mb-6">{content.subtitle}</p>
+        <form
+          onSubmit={(e) => e.preventDefault()}
+          className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto"
+        >
+          <input
+            type="email"
+            required
+            placeholder={content.placeholder ?? "Votre email"}
+            className="flex-1 rounded-full px-5 py-3 text-sm text-foreground bg-white/95"
+          />
+          <button
+            type="submit"
+            className="rounded-full px-6 py-3 text-sm font-medium"
+            style={{ background: `hsl(var(--studio-accent))`, color: `hsl(var(--studio-ink))` }}
+          >
+            {content.ctaLabel}
+          </button>
+        </form>
+        {(content.benefits ?? []).length > 0 && (
+          <ul className="flex flex-wrap gap-3 justify-center mt-6 text-xs opacity-70">
+            {content.benefits.map((b: string) => (
+              <li key={b}>· {b}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function PressStripScene({ content, displayFont }: { content: any; displayFont: string }) {
+  const logos = (content.logos ?? []) as Array<{ name: string; url?: string | null }>;
+  return (
+    <section className="py-12 border-y border-border/40" style={{ background: "white" }}>
+      <div className="max-w-6xl mx-auto px-6 text-center">
+        {content.eyebrow && (
+          <p className="text-[11px] uppercase tracking-[0.25em] opacity-50 mb-5" style={{ fontFamily: `${displayFont}, serif` }}>
+            {content.eyebrow}
+          </p>
+        )}
+        <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 opacity-70">
+          {logos.map((l, i) =>
+            l.url ? (
+              <img key={i} src={l.url} alt={l.name} className="h-6 grayscale" />
+            ) : (
+              <span
+                key={i}
+                className="text-base tracking-widest"
+                style={{ fontFamily: `${displayFont}, serif` }}
+              >
+                {l.name.toUpperCase()}
+              </span>
+            ),
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ComparisonScene({ content, displayFont }: { content: any; displayFont: string }) {
+  const rows = (content.rows ?? []) as Array<{ label: string; us: boolean; them: boolean }>;
+  return (
+    <section className="py-20" style={{ background: `hsl(var(--studio-surface))` }}>
+      <div className="max-w-3xl mx-auto px-6">
+        <h2 className="text-3xl md:text-4xl mb-10 text-center" style={{ fontFamily: `${displayFont}, serif` }}>
+          {content.title}
+        </h2>
+        <div className="rounded-lg overflow-hidden border border-border/40" style={{ background: "white" }}>
+          <div className="grid grid-cols-3 text-sm font-medium">
+            <div className="p-4" />
+            <div className="p-4 text-center" style={{ background: `hsl(var(--studio-primary) / 0.08)` }}>
+              {content.brand_name}
+            </div>
+            <div className="p-4 text-center opacity-60">{content.competitor_name}</div>
+          </div>
+          {rows.map((r, i) => (
+            <div key={i} className="grid grid-cols-3 text-sm border-t border-border/30">
+              <div className="p-4">{r.label}</div>
+              <div className="p-4 text-center" style={{ background: `hsl(var(--studio-primary) / 0.04)` }}>
+                {r.us ? "✓" : "—"}
+              </div>
+              <div className="p-4 text-center opacity-60">{r.them ? "✓" : "—"}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FounderScene({ content, displayFont }: { content: any; displayFont: string }) {
+  return (
+    <section className="py-20" style={{ background: `hsl(var(--studio-surface))` }}>
+      <div className="max-w-3xl mx-auto px-6 text-center">
+        {content.portraitUrl && (
+          <div
+            className="w-24 h-24 rounded-full mx-auto mb-6 bg-cover bg-center"
+            style={{ backgroundImage: `url(${content.portraitUrl})` }}
+          />
+        )}
+        {content.eyebrow && (
+          <span className="text-xs uppercase tracking-[0.2em] opacity-60">{content.eyebrow}</span>
+        )}
+        <h2 className="text-3xl md:text-4xl mt-3 mb-6" style={{ fontFamily: `${displayFont}, serif` }}>
+          {content.title}
+        </h2>
+        <p className="text-lg opacity-80 leading-relaxed italic">« {content.body} »</p>
+        <p className="mt-6 text-sm opacity-60" style={{ fontFamily: `${displayFont}, serif` }}>
+          {content.signature}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function ManifestoScene({ content, displayFont }: { content: any; displayFont: string }) {
+  const lines = (content.lines ?? []) as string[];
+  return (
+    <section
+      className="py-24 md:py-36"
+      style={{ background: `hsl(var(--studio-primary))`, color: "white" }}
+    >
+      <div className="max-w-5xl mx-auto px-6 text-center">
+        {lines.map((l, i) => (
+          <h2
+            key={i}
+            className="text-5xl md:text-7xl lg:text-8xl leading-[1.05]"
+            style={{ fontFamily: `${displayFont}, serif`, opacity: 0.6 + i * 0.15 }}
+          >
+            {l}
+          </h2>
+        ))}
+        {content.footnote && (
+          <p className="text-xs uppercase tracking-[0.3em] opacity-60 mt-10">{content.footnote}</p>
+        )}
+      </div>
+    </section>
   );
 }
