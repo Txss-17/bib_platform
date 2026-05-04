@@ -335,6 +335,17 @@ export function StudioEditor({
     [seoTitle, seoDescription, seoH1, seoKeywordsList, seoJsonld.length],
   );
 
+  // Combine base validation + SEO score threshold for publishing
+  const fullValidation = useMemo(() => {
+    const errors = [...validation.errors];
+    if (seoScore.score < SEO_MIN_SCORE) {
+      errors.push(
+        `Score SEO insuffisant : ${seoScore.score}/100 (minimum requis : ${SEO_MIN_SCORE}). Améliorez les points listés dans l'onglet SEO.`,
+      );
+    }
+    return { errors, ok: errors.length === 0 };
+  }, [validation, seoScore, SEO_MIN_SCORE]);
+
   const seoContext = useMemo(
     () => ({
       boutique_name: boutiqueName,
