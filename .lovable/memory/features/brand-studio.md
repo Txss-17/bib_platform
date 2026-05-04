@@ -20,4 +20,10 @@ type: feature
 
 **UI** `src/components/dashboard/boutique/BrandStudioWizard.tsx` — wizard 5 étapes (audience, ambiance, ton, valeurs, inspiration) avec progress bar, validation par étape, génération IA finale.
 
-**Tour B (à livrer)**: éditeur visuel des scènes, composants de rendu storefront, SEO Copilot, Auto JSON-LD, suppression de l'ancien drag-and-drop dans BoutiqueEdit.tsx.
+**Tour B (livré)**:
+- `StudioSceneRenderer` (`src/components/storefront/StudioSceneRenderer.tsx`) — rend Hero/Story/Lookbook/Showcase/Trust/CTA depuis `boutique_scenes` + injection couleurs ADN en CSS vars.
+- `StudioEditor` (`src/components/dashboard/boutique/StudioEditor.tsx`) — split-screen rail gauche (scènes/identité/SEO) + preview live à droite. Inspector par scène (titre/sous-titre/CTA/chapitres/avis), reorder ↑↓, ajout via bibliothèque, suppression, switch visibilité, sélection variante.
+- Hooks `useUpdateScene` / `useReorderScenes` / `useAddScene` / `useDeleteScene` / `useGenerateSeo` (dans `useBrandStudio.ts`).
+- SEO Copilot via `boutique-ai` action `generate_seo` → persiste `boutiques.seo_title`, `seo_description`, `seo_jsonld` (blocks + keywords + h1).
+- Routing: `BoutiqueEdit` early-return wizard si `!studio_completed_at`, sinon `<StudioEditor>`. L'ancien drag-and-drop reste dans le fichier (unreachable) pour itération future.
+- `BoutiquePublic` route automatiquement vers `StudioSceneRenderer` quand `studio_completed_at` + scènes ≥ 1.
