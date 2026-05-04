@@ -799,9 +799,8 @@ export default function BoutiqueEdit() {
     </DashboardLayout>
   );
 
-  // Legacy editor below kept temporarily; unreachable due to early returns above.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _legacyMergedTheme: ThemeSettings = {
+  // Legacy editor kept temporarily for fallback; unreachable due to early returns above.
+  const mergedTheme: ThemeSettings = {
     ...themeSettings,
     customHeroTitle: customTexts.heroTitle || undefined,
     customHeroSubtitle: customTexts.heroSubtitle || undefined,
