@@ -100,6 +100,41 @@ export function useBoutiqueScenes(boutiqueId: string | undefined) {
   });
 }
 
+/** Met à jour partiellement l'ADN de marque (palette, typo, copy…). */
+export function useUpdateBrandDNA() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      patch: Partial<Pick<BrandDNA, "generated_palette" | "generated_typography" | "generated_copy" | "keywords" | "ambiance" | "tone">>;
+    }) => {
+      const { error } = await supabase
+        .from("boutique_brand_dna")
+        .update(params.patch as never)
+        .eq("boutique_id", params.boutiqueId);
+      if (error) throw error;
+    },
+    onMutate: async (vars) => {
+      const key = ["brand-dna", vars.boutiqueId];
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<BrandDNA | null>(key);
+      if (prev) {
+        qc.setQueryData<BrandDNA>(key, {
+          ...prev,
+          ...vars.patch,
+          generated_palette: { ...prev.generated_palette, ...(vars.patch.generated_palette ?? {}) },
+        } as BrandDNA);
+      }
+      return { prev, key };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev !== undefined && ctx.key) qc.setQueryData(ctx.key, ctx.prev);
+    },
+    onSettled: (_d, _e, vars) =>
+      qc.invalidateQueries({ queryKey: ["brand-dna", vars.boutiqueId] }),
+  });
+}
+
 /** Appelle l'edge function boutique-ai pour générer l'identité de marque. */
 export function useGenerateBrandDNA() {
   const qc = useQueryClient();
