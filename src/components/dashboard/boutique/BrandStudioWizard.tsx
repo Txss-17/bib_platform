@@ -64,7 +64,8 @@ export function BrandStudioWizard({ boutiqueId, category, onComplete }: Props) {
     if (step === 1) return !!answers.ambiance;
     if (step === 2) return !!answers.tone;
     if (step === 3) return answers.values.length >= 1;
-    if (step === 4) return answers.inspiration.trim().length >= 5;
+    // Inspiration is now optional — the AI no longer needs a known brand
+    if (step === 4) return true;
     return true;
   };
 
@@ -206,15 +207,25 @@ export function BrandStudioWizard({ boutiqueId, category, onComplete }: Props) {
       {/* Step 4 — inspiration */}
       {step === 4 && (
         <div className="space-y-3">
-          <Label className="text-base font-display">Une marque qui vous inspire ?</Label>
+          <Label className="text-base font-display">
+            Une marque qui vous inspire ? <span className="text-xs opacity-50">(optionnel)</span>
+          </Label>
           <p className="text-xs text-muted-foreground">
-            Pour donner un repère à l'IA (sans copier).
+            Donne juste un repère stylistique à l'IA. Tu peux écrire n'importe quel nom (connu ou non),
+            décrire un style, ou laisser vide — l'IA générera quand même une identité unique.
           </p>
           <Input
-            placeholder="Ex : Aesop, Sézane, Apple, Patagonia…"
+            placeholder="Ex : Aesop, ma boulangerie de quartier, style scandinave minimal…"
             value={answers.inspiration}
             onChange={(e) => setAnswers({ ...answers, inspiration: e.target.value })}
           />
+          <button
+            type="button"
+            onClick={() => setAnswers({ ...answers, inspiration: "Surprenez-moi" })}
+            className="text-xs text-secondary underline underline-offset-2"
+          >
+            ✨ Surprenez-moi
+          </button>
         </div>
       )}
 
