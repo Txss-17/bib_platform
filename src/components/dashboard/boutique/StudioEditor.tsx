@@ -15,8 +15,11 @@ import {
   AlertTriangle,
   CheckCircle2,
   Save,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ActionButton, stateFromMutation } from "./ActionButton";
+import { EDITOR_ROUTES, canPreviewStorefront } from "@/lib/editorRoutes";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -505,31 +508,35 @@ export function StudioEditor({
       {/* ---------------- Left rail ---------------- */}
       <aside className="border-r border-border/60 bg-muted/30 flex flex-col">
         <div className="p-4 flex items-center justify-between border-b border-border/40">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/dashboard/boutiques")}>
+          <Button variant="ghost" size="sm" onClick={() => navigate(EDITOR_ROUTES.boutiquesList())}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Retour
           </Button>
           <div className="flex items-center gap-2">
-            {publicSlug && (
+            <Button asChild variant="ghost" size="sm" title="Analytics Studio">
+              <a href={EDITOR_ROUTES.analyticsStudio(boutiqueId)}>
+                <BarChart3 className="w-4 h-4 mr-1" /> Stats
+              </a>
+            </Button>
+            {canPreviewStorefront(publicSlug) && (
               <Button asChild variant="outline" size="sm">
-                <a href={`/boutique/${publicSlug}`} target="_blank" rel="noreferrer">
+                <a href={EDITOR_ROUTES.storefront(publicSlug)} target="_blank" rel="noreferrer">
                   <Eye className="w-4 h-4 mr-1" /> Voir
                 </a>
               </Button>
             )}
-            <Button
+            <ActionButton
               size="sm"
               onClick={() => publish.mutate()}
-              disabled={publish.isPending}
+              state={stateFromMutation(publish)}
+              loadingLabel="Publication…"
+              successLabel={isPublished ? "Republié" : "Publié"}
+              errorLabel="Échec"
               variant={isPublished ? "outline" : "default"}
             >
-              {publish.isPending ? (
-                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-              ) : (
-                <Globe className="w-4 h-4 mr-1" />
-              )}
+              <Globe className="w-4 h-4 mr-1 inline" />
               {isPublished ? "Republier" : "Publier"}
-            </Button>
+            </ActionButton>
           </div>
         </div>
 
