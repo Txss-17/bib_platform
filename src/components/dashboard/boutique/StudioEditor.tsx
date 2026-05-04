@@ -504,9 +504,9 @@ export function StudioEditor({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-0 h-[calc(100vh-72px)]">
+    <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-0 lg:h-[calc(100vh-72px)]">
       {/* ---------------- Left rail ---------------- */}
-      <aside className="border-r border-border/60 bg-muted/30 flex flex-col">
+      <aside className="border-r border-border/60 bg-muted/30 flex flex-col lg:h-full max-h-[80vh] lg:max-h-none overflow-hidden">
         <div className="p-4 flex items-center justify-between border-b border-border/40">
           <Button variant="ghost" size="sm" onClick={() => navigate(EDITOR_ROUTES.boutiquesList())}>
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -1020,17 +1020,25 @@ export function StudioEditor({
       </aside>
 
       {/* ---------------- Live preview ---------------- */}
-      <div className="overflow-y-auto bg-background">
+      <div className="lg:overflow-y-auto bg-background min-h-[60vh]">
         <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border-b border-border/40 px-4 py-2 flex items-center justify-between">
-          <span className="text-xs uppercase tracking-wide opacity-60">Aperçu en direct</span>
+          <span className="text-xs uppercase tracking-wide opacity-60">Aperçu en direct {scenes.length === 0 && !isLoading ? "(aucune scène)" : ""}</span>
           <span className="text-xs opacity-50">{scenes.length} scène{scenes.length > 1 ? "s" : ""}</span>
         </div>
+        {isLoading ? (
+          <div className="p-10 text-center text-sm text-muted-foreground">Chargement de l'aperçu…</div>
+        ) : scenes.filter((s) => s.is_visible).length === 0 ? (
+          <div className="p-10 text-center text-sm text-muted-foreground">
+            Aucune scène visible. Ajoute une scène depuis le panneau de gauche pour voir l'aperçu.
+          </div>
+        ) : (
         <StudioSceneRenderer
           scenes={scenes}
           brandDna={brandDna ?? null}
           boutiqueName={boutiqueName}
           products={products}
         />
+        )}
       </div>
 
       {/* Delete confirmation */}
