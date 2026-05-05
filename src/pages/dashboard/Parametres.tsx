@@ -384,6 +384,44 @@ export default function Parametres() {
             </SectionCard>
           </TabsContent>
 
+          {/* Mises en avant marketplace — par boutique */}
+          <TabsContent value="highlights" className="mt-4 space-y-4">
+            <SectionCard
+              title="Mises en avant sur la marketplace"
+              description="Alimentez vos cartes boutique avec des visuels et vidéos (promo, nouvelle collection, événement). Affichées en défilement automatique sur /store."
+              icon={<Sparkles className="w-4 h-4 text-primary" />}
+            >
+              {loadingBoutiques ? (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : boutiques.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-border/60 bg-muted/20 p-6 text-center text-sm text-muted-foreground">
+                  Vous n'avez pas encore de boutique. Créez-en une pour pouvoir y ajouter des mises en avant.
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {boutiques.map((b) => (
+                    <div key={b.id} className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <Store className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold truncate">{b.name}</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {b.status === "published" ? "Publiée" : "Brouillon"} · /{b.slug}
+                          </p>
+                        </div>
+                      </div>
+                      <HighlightsManager boutiqueId={b.id} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </SectionCard>
+          </TabsContent>
+
           {/* Notifications */}
           <TabsContent value="notifications" className="mt-4">
             <SectionCard
