@@ -62,8 +62,7 @@ export default function MesTickets() {
         ) : tickets.length === 0 ? (
           <EmptyStateInline
             variant="no-content"
-            title="Aucun ticket pour l'instant."
-            description="Utilisez le bouton flottant d'aide pour ouvrir une demande."
+            title="Aucun ticket pour l'instant. Utilisez le bouton d'aide flottant pour ouvrir une demande."
           />
         ) : (
           <Table>
