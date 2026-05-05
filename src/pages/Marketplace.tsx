@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useMarketplaceBoutiques } from "@/hooks/useMarketplace";
 import { BoutiqueCard } from "@/components/marketplace/BoutiqueCard";
 import { Logo } from "@/components/Logo";
@@ -24,10 +24,24 @@ const TRUST_BADGES = [
 
 export default function Marketplace() {
   const { data: boutiques = [], isLoading } = useMarketplaceBoutiques();
-  const [search, setSearch] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get("q") ?? "");
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [market, setMarket] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<"recent" | "established" | "impact" | "popular">("recent");
+  const [sortBy, setSortBy] = useState<"relevance" | "recent" | "established" | "impact" | "popular">(
+    searchParams.get("q") ? "relevance" : "recent",
+  );
+
+  // Sync ?q= ↔ input
+  useEffect(() => {
+    const next = new URLSearchParams(searchParams);
+    if (search.trim()) next.set("q", search.trim());
+    else next.delete("q");
+    if (next.toString() !== searchParams.toString()) {
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
 
   useSEO({
     title: "Store BIB — Toutes les boutiques Brand-In-A-Box",
@@ -46,15 +60,16 @@ export default function Marketplace() {
   }, [boutiques]);
 
   const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
     const list = boutiques.filter((b) => {
       if (activeCategory !== "all" && b.category !== activeCategory) return false;
       if (market !== "all" && b.market !== market) return false;
-      if (search.trim()) {
-        const q = search.toLowerCase();
+      if (q) {
         return (
           b.name.toLowerCase().includes(q) ||
           (b.tagline ?? "").toLowerCase().includes(q) ||
-          (b.description ?? "").toLowerCase().includes(q)
+          (b.description ?? "").toLowerCase().includes(q) ||
+          b.product_previews.some((p) => p.name.toLowerCase().includes(q))
         );
       }
       return true;
@@ -62,6 +77,20 @@ export default function Marketplace() {
 
     const sorted = [...list];
     switch (sortBy) {
+      case "relevance": {
+        const scoreOf = (b: typeof list[number]) => {
+          if (!q) return 0;
+          let s = 0;
+          if (b.name.toLowerCase() === q) s += 100;
+          else if (b.name.toLowerCase().startsWith(q)) s += 50;
+          else if (b.name.toLowerCase().includes(q)) s += 25;
+          if ((b.tagline ?? "").toLowerCase().includes(q)) s += 10;
+          s += b.product_previews.filter((p) => p.name.toLowerCase().includes(q)).length * 5;
+          return s;
+        };
+        sorted.sort((a, b) => scoreOf(b) - scoreOf(a));
+        break;
+      }
       case "recent":
         sorted.sort(
           (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -217,6 +246,7 @@ export default function Marketplace() {
                 <SelectValue placeholder="Trier par" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="relevance">🎯 Pertinence</SelectItem>
                 <SelectItem value="recent">🆕 Récemment ajoutées</SelectItem>
                 <SelectItem value="established">⏳ Établies (long terme)</SelectItem>
                 <SelectItem value="impact">♻️ Impact environnemental</SelectItem>
