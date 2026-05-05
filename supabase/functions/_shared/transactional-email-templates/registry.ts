@@ -13,10 +13,12 @@ import { template as sellerWelcome } from './seller-welcome.tsx'
 import { template as kycSubmitted } from './kyc-submitted.tsx'
 import { template as newOrderNotification } from './new-order-notification.tsx'
 import { template as customerOrderConfirmation } from './customer-order-confirmation.tsx'
+import { template as supportTicketStatus } from './support-ticket-status.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'seller-welcome': sellerWelcome,
   'kyc-submitted': kycSubmitted,
   'new-order-notification': newOrderNotification,
   'customer-order-confirmation': customerOrderConfirmation,
+  'support-ticket-status': supportTicketStatus,
 }
