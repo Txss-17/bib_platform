@@ -6,33 +6,16 @@ import { Logo } from "@/components/Logo";
 import { Input } from "@/components/ui/input";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
+import { CustomerPanel, type CustomerPanelTab } from "@/components/marketplace/CustomerPanel";
+import { useCustomerProfile } from "@/hooks/useCustomerProfile";
 import {
   Search,
   Check,
-  Heart,
-  Store,
-  Package,
-  Settings,
   ChevronRight,
   Loader2,
   Sparkles,
-  Menu,
+  User,
 } from "lucide-react";
-
-const ACCOUNT_SHORTCUTS = [
-  { icon: Heart, label: "Mes favoris", to: "/mon-compte?tab=favorites" },
-  { icon: Store, label: "Mes boutiques", to: "/mon-compte?tab=boutiques" },
-  { icon: Package, label: "Mes commandes", to: "/mon-compte?tab=orders" },
-  { icon: Settings, label: "Paramètres", to: "/mon-compte?tab=settings" },
-];
 
 export default function Marketplace() {
   const { data: boutiques = [], isLoading } = useMarketplaceBoutiques();
@@ -40,6 +23,17 @@ export default function Marketplace() {
   const [search, setSearch] = useState(searchParams.get("q") ?? "");
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { data: customer } = useCustomerProfile();
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [panelTab, setPanelTab] = useState<CustomerPanelTab>("favorites");
+
+  const initial =
+    (customer?.full_name || user?.email || "?").trim().charAt(0).toUpperCase();
+
+  const openPanel = (tab: CustomerPanelTab = "favorites") => {
+    setPanelTab(tab);
+    setPanelOpen(true);
+  };
 
   useEffect(() => {
     const next = new URLSearchParams(searchParams);
@@ -99,30 +93,20 @@ export default function Marketplace() {
       {/* Pill header */}
       <header className="sticky top-0 z-40 bg-gradient-to-b from-[hsl(220_25%_6%)] via-[hsl(220_25%_6%)]/95 to-transparent pt-[env(safe-area-inset-top)]">
         <div className="container mx-auto flex items-center justify-between gap-3 px-4 py-3">
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              aria-label="Menu"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 backdrop-blur transition hover:bg-white/15 active:scale-95 outline-none"
-            >
-              <Menu className="h-5 w-5" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuLabel>
-                {user ? "Mon espace" : "Bienvenue"}
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {ACCOUNT_SHORTCUTS.map((s) => (
-                <DropdownMenuItem key={s.label} onClick={() => navigate(s.to)}>
-                  <s.icon className="mr-2 h-4 w-4" />
-                  {s.label}
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate("/")}>
-                Accueil Brand-In-A-Box
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <button
+            onClick={() => openPanel("favorites")}
+            aria-label="Mon espace"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white/10 backdrop-blur text-white text-sm font-semibold transition hover:bg-white/15 active:scale-95 outline-none ring-1 ring-white/10"
+          >
+            {user ? (
+              <span className="font-display">{initial}</span>
+            ) : (
+              <User className="h-5 w-5" />
+            )}
+            {user && (
+              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-[hsl(220_25%_6%)]" />
+            )}
+          </button>
 
           <form
             onSubmit={(e) => e.preventDefault()}
@@ -204,6 +188,8 @@ export default function Marketplace() {
           <Link to="/" className="hover:text-white">Brand-In-A-Box</Link>
         </div>
       </footer>
+
+      <CustomerPanel open={panelOpen} onOpenChange={setPanelOpen} initialTab={panelTab} />
     </div>
   );
 }

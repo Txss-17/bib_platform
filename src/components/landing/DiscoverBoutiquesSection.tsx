@@ -1,11 +1,10 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
+import { useRef } from "react";
 import { useMarketplaceBoutiques } from "@/hooks/useMarketplace";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BoutiqueCard } from "@/components/marketplace/BoutiqueCard";
-import { Search, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
+import { Sparkles, ArrowRight, ShieldCheck, ChevronLeft, ChevronRight } from "lucide-react";
 
 /**
  * Section dédiée sur la landing pour exposer la marketplace aux clients finaux.
@@ -13,32 +12,14 @@ import { Search, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
  */
 export default function DiscoverBoutiquesSection() {
   const { data: boutiques = [], isLoading } = useMarketplaceBoutiques();
-  const [query, setQuery] = useState("");
-  const navigate = useNavigate();
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const items = boutiques.slice(0, 12);
 
-  const filtered = useMemo(() => {
-    const list = query.trim()
-      ? boutiques.filter((b) => {
-          const q = query.toLowerCase();
-          return (
-            b.name.toLowerCase().includes(q) ||
-            (b.tagline ?? "").toLowerCase().includes(q) ||
-            (b.description ?? "").toLowerCase().includes(q) ||
-            (b.category ?? "").toLowerCase().includes(q)
-          );
-        })
-      : boutiques;
-    return list.slice(0, 6);
-  }, [boutiques, query]);
-
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    if (!query.trim()) {
-      navigate("/store");
-      return;
-    }
-    navigate(`/store?q=${encodeURIComponent(query.trim())}`);
-  }
+  const scroll = (dir: 1 | -1) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * el.clientWidth * 0.85, behavior: "smooth" });
+  };
 
   return (
     <section
@@ -60,28 +41,8 @@ export default function DiscoverBoutiquesSection() {
           </p>
         </div>
 
-        {/* Search bar */}
-        <form
-          onSubmit={handleSearch}
-          className="max-w-xl mx-auto mb-10 flex flex-col sm:flex-row gap-2"
-        >
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Rechercher une boutique, une catégorie…"
-              className="pl-9 h-11 bg-card"
-              aria-label="Rechercher une boutique"
-            />
-          </div>
-          <Button type="submit" size="lg" variant="coral" className="shrink-0">
-            Rechercher
-          </Button>
-        </form>
-
         {/* Trust strip */}
-        <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground mb-8">
+        <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground mb-10">
           <span className="inline-flex items-center gap-1.5">
             <ShieldCheck className="h-3.5 w-3.5 text-bib-gold" /> Marques vérifiées
           </span>
@@ -91,34 +52,62 @@ export default function DiscoverBoutiquesSection() {
           <span>♻️ Cartons recyclés = cartes cadeaux</span>
         </div>
 
-        {/* Boutiques grid */}
-        {isLoading ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="aspect-[4/3] rounded-2xl bg-muted/40 animate-pulse" />
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-12 rounded-2xl border border-dashed border-border bg-card/30">
-            <p className="text-base font-semibold text-foreground">Aucune boutique trouvée</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Essayez un autre terme, ou{" "}
-              <Link to="/store" className="text-bib-gold underline">explorez tout le catalogue</Link>.
-            </p>
-          </div>
-        ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((b) => (
-              <BoutiqueCard key={b.id} boutique={b} />
-            ))}
-          </div>
-        )}
+        {/* Horizontal carousel */}
+        <div className="relative">
+          {!isLoading && items.length > 0 && (
+            <>
+              <button
+                type="button"
+                onClick={() => scroll(-1)}
+                aria-label="Précédent"
+                className="hidden lg:flex absolute -left-4 top-1/2 -translate-y-1/2 z-10 h-10 w-10 items-center justify-center rounded-full bg-card border border-border shadow-md hover:bg-bib-marine hover:text-bib-ivory transition"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scroll(1)}
+                aria-label="Suivant"
+                className="hidden lg:flex absolute -right-4 top-1/2 -translate-y-1/2 z-10 h-10 w-10 items-center justify-center rounded-full bg-card border border-border shadow-md hover:bg-bib-marine hover:text-bib-ivory transition"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </>
+          )}
+
+          {isLoading ? (
+            <div className="flex gap-5 overflow-hidden">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="w-[78%] sm:w-[44%] lg:w-[28%] shrink-0 aspect-[4/3] rounded-2xl bg-muted/40 animate-pulse" />
+              ))}
+            </div>
+          ) : items.length === 0 ? (
+            <div className="text-center py-12 rounded-2xl border border-dashed border-border bg-card/30">
+              <p className="text-base font-semibold text-foreground">Aucune boutique pour l'instant</p>
+              <p className="text-sm text-muted-foreground mt-1">Revenez bientôt — de nouvelles marques arrivent chaque semaine.</p>
+            </div>
+          ) : (
+            <div
+              ref={scrollerRef}
+              className="-mx-4 sm:-mx-6 lg:mx-0 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 sm:px-6 lg:px-0 pb-4 scrollbar-none scroll-smooth"
+            >
+              {items.map((b) => (
+                <div
+                  key={b.id}
+                  className="w-[78%] shrink-0 snap-start sm:w-[48%] lg:w-[31%]"
+                >
+                  <BoutiqueCard boutique={b} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* CTA to full marketplace */}
         <div className="text-center mt-10">
-          <Button asChild size="lg" variant="outline" className="gap-2">
+          <Button asChild size="lg" variant="coral" className="gap-2">
             <Link to="/store">
-              Voir toutes les boutiques <ArrowRight className="h-4 w-4" />
+              En savoir plus <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
         </div>
