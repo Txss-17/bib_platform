@@ -1,94 +1,119 @@
 
-# Plan : Commandes avancées + Rôles d'équipe
+# Lot 3 — Architecture email à 2 canaux
 
-## Phase 1 — Base de données (migrations)
+Deux canaux séparés, chacun avec son rôle clair :
 
-### Tables à créer :
+| Canal | Expéditeur | Destinataire | Usage |
+|-------|------------|--------------|-------|
+| **Gmail OAuth (par vendeur)** | Boutique du vendeur | Client final | Confirmation commande, expédition, bienvenue, message manuel |
+| **Lovable Email (plateforme)** | `notify.brand-in-a-box.space` | Vendeur (et admin) | Onboarding, KYC, alertes, factures, escalade litige |
 
-**1. `order_issues` — Signalements clients**
-- `id`, `order_id` (FK orders), `type` (enum: `not_received`, `return_request`, `defective`), `message`, `image_url`, `status` (enum: `pending`, `accepted`, `refused`, `resolved`, `escalated`), `created_at`, `deadline_at` (auto +48h), `customer_email`
-- RLS : lecture pour le propriétaire de la boutique via `owns_boutique`, insertion anonyme (comme orders)
+Le connecteur Gmail mono-tenant actuel sera **désactivé** au profit d'OAuth Google natif où chaque vendeur connecte son propre compte.
 
-**2. `issue_responses` — Réponses vendeur aux signalements**
-- `id`, `issue_id` (FK order_issues), `action` (enum: `accept`, `refuse`, `partial_refund`, `resend`, `other`), `message`, `created_at`
-- RLS : insertion/lecture pour le propriétaire de la boutique
+---
 
-**3. `boutique_members` — Membres d'équipe**
-- `id`, `boutique_id` (FK boutiques), `user_id` (FK auth.users), `role` (enum: `owner`, `manager`, `marketing`, `support`), `invited_email`, `status` (enum: `pending`, `active`, `removed`), `created_at`
-- RLS : lecture/gestion pour le propriétaire, lecture pour les membres actifs
+## Partie A — Gmail OAuth multi-vendeurs
 
-**4. Enum types :**
-- `issue_type`: `not_received`, `return_request`, `defective`
-- `issue_status`: `pending`, `accepted`, `refused`, `resolved`, `escalated`
-- `issue_action`: `accept`, `refuse`, `partial_refund`, `resend`, `other`
-- `team_role`: `owner`, `manager`, `marketing`, `support`
-- `member_status`: `pending`, `active`, `removed`
+### A1. Prérequis (à réaliser par vous une seule fois, je vous guide)
+1. Créer un projet Google Cloud
+2. Activer Gmail API
+3. Configurer OAuth consent screen (External, scope `gmail.send`)
+4. Créer credentials OAuth 2.0 Web → me fournir `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`
+5. Redirect URI à enregistrer : `https://lfsiwtpctqxpzyskakey.supabase.co/functions/v1/gmail-oauth-callback`
 
-### Modifications existantes :
-- Ajouter colonne `has_protection` (boolean, default false) sur `boutiques`
+Je créerai les 2 secrets via `add_secret` quand on y arrive.
 
-## Phase 2 — Pages & composants
+### A2. Schéma DB
+Nouvelle table `boutique_gmail_tokens` :
+- `boutique_id` (unique, FK logique)
+- `gmail_address` (l'adresse réellement connectée)
+- `access_token`, `refresh_token` (chiffrés via service-role only — RLS bloque tout accès client)
+- `expires_at`, `scope`, `connected_at`
 
-### Commandes (amélioration de l'existant)
+RLS : aucun accès client direct (lecture/écriture service_role uniquement). Le statut "connecté" sera exposé via `boutique_email_settings.gmail_connected` + `gmail_address` (lecture owner).
 
-**A. Page Commandes (`Commandes.tsx`)** — déjà existante
-- Ajouter badge "Problème signalé" sur les commandes ayant un issue
-- Ajouter onglet/filtre "Litiges" pour voir uniquement les commandes avec signalements
+### A3. Edge functions
+- **`gmail-oauth-start`** : génère URL d'autorisation Google avec `state = boutique_id` signé
+- **`gmail-oauth-callback`** : échange code → tokens, stocke en DB, marque la boutique connectée, redirige vers `/dashboard/boutique/:id/edit?tab=email&gmail=connected`
+- **`send-boutique-email`** (refonte) : récupère le refresh_token de LA boutique concernée, rafraîchit l'access_token si expiré, appelle Gmail API directement (plus via gateway Lovable)
+- **`gmail-disconnect`** : révoque token + supprime ligne
 
-**B. Détail commande (`OrderDetailDialog.tsx`)** — améliorer
-- Ajouter timeline visuelle : Commande → Expédition → Livraison
-- Ajouter section "Signalements" avec liste des issues
-- Interface de décision vendeur : boutons Accepter / Refuser / Proposer solution
-- Afficher deadline 48h avec countdown
-- Statut clair : En attente / Accepté / Refusé / Résolu / Escaladé
+### A4. UI (BoutiqueEdit > onglet Email)
+- Si non connecté : bouton "Connecter le Gmail de ma boutique" → ouvre `gmail-oauth-start` dans nouvelle fenêtre
+- Si connecté : badge "Connecté en tant que `vendeur@gmail.com`" + bouton "Déconnecter"
+- Settings auto-send (déjà en place) restent identiques
+- Templates par boutique (déjà en place) restent identiques
 
-**C. Page publique signalement (nouveau)**
-- `OrderIssueForm.tsx` — formulaire client accessible depuis le suivi de commande
-- Choix du problème (3 options)
-- Message optionnel + upload image
-- Route : `/boutique/:slug/order-tracking` (ajouter bouton "Signaler un problème")
+### A5. Nettoyage
+- Le connecteur Gmail Lovable mono-tenant sera retiré (`standard_connectors--disconnect`) après validation
+- `GOOGLE_MAIL_API_KEY` + appels gateway supprimés du code
 
-### Équipe (nouveau)
+---
 
-**D. Page Équipe (`Equipe.tsx`)**
-- Liste des membres avec rôle, statut, date d'ajout
-- Bouton "Inviter un membre" → dialog avec email + sélection rôle
-- Bouton supprimer membre
-- Limite selon abonnement (Standard=1, Growth=3, Premium=5+) avec message upgrade
-- Route : `/dashboard/equipe`
+## Partie B — Suite emails plateforme (Lovable Email)
 
-**E. Système de permissions**
-- Hook `useTeamPermissions()` qui retourne les modules accessibles selon le rôle
-- Sidebar filtrée : chaque lien vérifie si le rôle courant y a accès
-- Modules par rôle :
-  - Owner : tout
-  - Manager : produits, commandes, analytics
-  - Marketing : boutique edit, storefront
-  - Support : commandes (litiges uniquement), signalements
+### B1. Setup infra
+- `email_domain--check_email_domain_status` (vérifier si domaine déjà configuré sur `brand-in-a-box.space`)
+- Si non : dialogue de setup pour `notify.brand-in-a-box.space`
+- `email_domain--setup_email_infra` (queue, suppression, unsubscribe)
+- `email_domain--scaffold_transactional_email` (Edge function `send-transactional-email` + registry)
+- `email_domain--scaffold_auth_email_templates` (refonte des emails Supabase Auth aux couleurs BIB)
 
-## Phase 3 — Hooks & logique
+### B2. Templates React Email à créer (charte BIB : marine + or, Playfair + Inter)
+Tous transactionnels (1:1, déclenchés par événement) :
 
-- `useOrderIssues()` — CRUD signalements
-- `useIssueResponses()` — réponses vendeur
-- `useBoutiqueMembers()` — gestion équipe
-- `useTeamPermissions()` — permissions par rôle
+**Vendeur :**
+1. `seller-welcome` — après signup vendeur
+2. `kyc-submitted` — accusé réception docs
+3. `kyc-approved` / `kyc-rejected` — décision admin
+4. `boutique-published` — première publication
+5. `low-stock-alert` — produit critique (<10%)
+6. `new-order-notification` — nouvelle commande reçue
+7. `payout-issued` — versement effectué
+8. `subscription-receipt` — facture Linksy/Stripe
+9. `dispute-escalated` — litige >48h non traité
 
-## Fichiers créés
-- `src/pages/dashboard/Equipe.tsx`
-- `src/components/dashboard/OrderTimeline.tsx`
-- `src/components/dashboard/OrderIssuePanel.tsx`
-- `src/components/dashboard/IssueDecisionPanel.tsx`
-- `src/components/dashboard/TeamMemberList.tsx`
-- `src/components/dashboard/InviteMemberDialog.tsx`
-- `src/components/storefront/OrderIssueForm.tsx`
-- `src/hooks/useOrderIssues.ts`
-- `src/hooks/useIssueResponses.ts`
-- `src/hooks/useBoutiqueMembers.ts`
-- `src/hooks/useTeamPermissions.ts`
+**Admin :**
+10. `admin-new-kyc` — nouvelle vérification à traiter
+11. `admin-dispute-escalation` — litige escaladé
 
-## Fichiers modifiés
-- `src/App.tsx` — nouvelle route `/dashboard/equipe`
-- `src/components/dashboard/DashboardSidebar.tsx` — lien Équipe + filtrage par permissions
-- `src/components/dashboard/OrderDetailDialog.tsx` — timeline + signalements + décisions
-- `src/pages/OrderTracking.tsx` — bouton "Signaler un problème"
-- `src/pages/dashboard/Commandes.tsx` — filtre litiges + badges
+**Client (fallback si Gmail non connecté) :**
+12. `customer-order-confirmation-fallback`
+
+### B3. Câblage
+- Triggers DB → Edge functions → `send-transactional-email`
+- Hook après signup pour `seller-welcome`
+- Trigger sur `boutique_documents` insert pour KYC
+- Trigger sur `orders` insert pour notification vendeur
+- Trigger sur `order_issues` >48h pour escalade
+- Webhook Stripe existant → ajout `payout-issued` + `subscription-receipt`
+
+### B4. Page unsubscribe
+Création `/email-preferences/unsubscribe` aux couleurs BIB.
+
+---
+
+## Détails techniques
+
+### Stockage tokens Gmail
+Tokens stockés en clair dans une table service-role-only (équivalent à la pratique standard Supabase). Pas d'accès client possible via RLS. Si le user veut rotation/chiffrement renforcé, possible en v2.
+
+### Choix expéditeur dans `payments-webhook`
+```text
+SI boutique a Gmail OAuth connecté → send-boutique-email (Gmail vendeur)
+SINON → send-transactional-email (customer-order-confirmation-fallback via Lovable Email)
+```
+Garantit qu'un client reçoit toujours sa confirmation, même si le vendeur n'a pas branché Gmail.
+
+### Mémoire à mettre à jour
+Nouvelle entrée `mem://features/email-system` documentant les 2 canaux, et update `mem://features/email-marketing` pour refléter la refonte.
+
+---
+
+## Ordre d'exécution proposé
+
+1. **Étape 1 (Lovable Email)** — Setup domaine `notify.brand-in-a-box.space` + infra + scaffold transactional + page unsubscribe + 4 templates critiques (welcome, KYC, new-order-notification, fallback client)
+2. **Étape 2 (Gmail OAuth)** — Demande des credentials Google → tables → 4 edge functions → refonte UI + refonte `send-boutique-email` + désactivation connecteur mono-tenant
+3. **Étape 3** — Templates restants (8) + tous les triggers + auth email templates BIB + refonte facture Stripe
+
+Chaque étape est livrable indépendamment. Je commence par l'étape 1 dès approbation (elle ne nécessite aucune action de votre part avant le dialogue de domaine).
