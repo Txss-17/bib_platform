@@ -88,6 +88,48 @@ async function handleCheckoutCompleted(session: any) {
       updated_at: new Date().toISOString(),
     })
     .in("id", orderIds);
+
+  // Auto-send order confirmation emails (Gmail) per boutique settings
+  try {
+    const supabase = getSupabase();
+    const { data: orders } = await supabase
+      .from("orders")
+      .select("id, order_number, customer_email, customer_name, total_amount, boutique_id, product_name")
+      .in("id", orderIds);
+    if (orders?.length) {
+      const boutiqueIds = [...new Set(orders.map((o: any) => o.boutique_id).filter(Boolean))];
+      const { data: settings } = await supabase
+        .from("boutique_email_settings")
+        .select("boutique_id, gmail_connected, auto_send_order_confirmation")
+        .in("boutique_id", boutiqueIds);
+      const enabled = new Set(
+        (settings ?? [])
+          .filter((s: any) => s.gmail_connected && s.auto_send_order_confirmation)
+          .map((s: any) => s.boutique_id)
+      );
+      await Promise.all(
+        orders
+          .filter((o: any) => o.customer_email && enabled.has(o.boutique_id))
+          .map((o: any) =>
+            supabase.functions.invoke("send-boutique-email", {
+              body: {
+                boutique_id: o.boutique_id,
+                type: "order_confirmation",
+                recipient_email: o.customer_email,
+                variables: {
+                  customer_name: o.customer_name ?? "",
+                  order_number: o.order_number ?? "",
+                  product_name: o.product_name ?? "",
+                  amount: String(o.total_amount ?? ""),
+                },
+              },
+            }).catch((e) => console.error("send-boutique-email failed", e))
+          )
+      );
+    }
+  } catch (e) {
+    console.error("Auto email after checkout failed", e);
+  }
 }
 
 async function handleWebhook(req: Request, env: StripeEnv) {
