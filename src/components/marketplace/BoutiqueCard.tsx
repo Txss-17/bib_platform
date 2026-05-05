@@ -106,6 +106,42 @@ export function BoutiqueCard({ boutique }: Props) {
           Visiter →
         </span>
       </div>
+
+      {stories.length > 0 && (
+        <div
+          className="flex gap-2 overflow-x-auto px-4 pb-4 scrollbar-none"
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          {stories.map((p) => (
+            <Link
+              key={p.id}
+              to={`/boutique/${boutique.slug}/product/${p.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="group/p w-20 shrink-0"
+            >
+              <div className="aspect-square overflow-hidden rounded-lg border border-border/60 bg-muted">
+                {p.image_url ? (
+                  <img
+                    src={p.image_url}
+                    alt={p.name}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform group-hover/p:scale-105"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <ImageOff className="h-5 w-5 text-muted-foreground/40" />
+                  </div>
+                )}
+              </div>
+              <p className="mt-1 truncate text-[10px] text-muted-foreground">{p.name}</p>
+              <p className="truncate text-[11px] font-semibold text-foreground/90">
+                {p.price.toFixed(2)} €
+              </p>
+            </Link>
+          ))}
+        </div>
+      )}
     </Link>
   );
 }
