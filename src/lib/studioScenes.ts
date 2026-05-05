@@ -288,17 +288,71 @@ export function findSceneDefinition(sceneType: string): SceneDefinition | undefi
   return STUDIO_SCENES.find((s) => s.id === sceneType);
 }
 
-/** Bundle initial de scènes appliqué après le Brand Studio guidé. */
-export function defaultStudioBundle(): Array<
+/**
+ * Trois templates de structure différents — permet à chaque boutique d'avoir
+ * une page d'accueil non-identique. Le seed (string) sélectionne un template
+ * de manière déterministe pour garantir cohérence si on régénère.
+ */
+export const STUDIO_BUNDLES: Array<{ key: string; name: string; scenes: Array<{ id: string; variant?: string }> }> = [
+  {
+    key: "narrative",
+    name: "Narratif éditorial",
+    scenes: [
+      { id: "hero-cinema", variant: "fullscreen" },
+      { id: "story-scrolly", variant: "alternating" },
+      { id: "showcase-magazine", variant: "3-up" },
+      { id: "founder-letter", variant: "letter" },
+      { id: "trust-wall", variant: "reviews-first" },
+      { id: "cta-sticky", variant: "centered" },
+    ],
+  },
+  {
+    key: "product-first",
+    name: "Produit-first",
+    scenes: [
+      { id: "hero-cinema", variant: "split" },
+      { id: "showcase-magazine", variant: "4-up" },
+      { id: "lookbook-parallax", variant: "asymmetric" },
+      { id: "trust-wall", variant: "badges-row" },
+      { id: "faq-accordion", variant: "accordion" },
+      { id: "cta-sticky", variant: "split-newsletter" },
+    ],
+  },
+  {
+    key: "minimal",
+    name: "Minimal manifeste",
+    scenes: [
+      { id: "hero-cinema", variant: "type-only" },
+      { id: "manifesto-typographic", variant: "stacked" },
+      { id: "showcase-magazine", variant: "3-up" },
+      { id: "newsletter-editorial", variant: "centered" },
+      { id: "cta-sticky", variant: "centered" },
+    ],
+  },
+];
+
+function hashSeed(seed: string): number {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+export function pickStudioBundle(seed?: string) {
+  if (!seed) return STUDIO_BUNDLES[Math.floor(Math.random() * STUDIO_BUNDLES.length)];
+  return STUDIO_BUNDLES[hashSeed(seed) % STUDIO_BUNDLES.length];
+}
+
+/** Bundle initial — varié selon le seed pour ne PAS produire deux sites identiques. */
+export function defaultStudioBundle(seed?: string): Array<
   Pick<SceneRecord, "role" | "scene_type" | "variant" | "content" | "position" | "is_visible">
 > {
-  const ordered = ["hero-cinema", "story-scrolly", "showcase-magazine", "trust-wall", "cta-sticky"];
-  return ordered.map((id, index) => {
-    const def = findSceneDefinition(id)!;
+  const bundle = pickStudioBundle(seed);
+  return bundle.scenes.map((s, index) => {
+    const def = findSceneDefinition(s.id)!;
     return {
       role: def.role,
       scene_type: def.id,
-      variant: def.variants[0],
+      variant: s.variant ?? def.variants[0],
       content: def.defaultContent,
       position: index,
       is_visible: true,
