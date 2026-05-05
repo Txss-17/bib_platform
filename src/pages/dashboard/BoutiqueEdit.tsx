@@ -1675,14 +1675,91 @@ export default function BoutiqueEdit() {
                       </p>
 
                       {/* Email activation config */}
-                      <div className="p-3 rounded-lg border border-border/50 bg-muted/20 mb-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium text-sm">Envoi automatique après commande</p>
-                            <p className="text-xs text-muted-foreground">Envoyer un email de confirmation au client automatiquement</p>
+                      <div className="space-y-3 mb-4">
+                        {/* Gmail status */}
+                        <div className="p-3 rounded-lg border border-border/50 bg-muted/20">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="font-medium text-sm">Canal Gmail</p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {emailSettings?.gmail_connected
+                                  ? "Connecté — vos emails partent depuis votre Gmail"
+                                  : "Connectez votre Gmail pour envoyer depuis votre adresse"}
+                              </p>
+                            </div>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${emailSettings?.gmail_connected ? "bg-success/15 text-success" : "bg-warning/15 text-warning"}`}>
+                              {emailSettings?.gmail_connected ? "Actif" : "À connecter"}
+                            </span>
                           </div>
-                          <Switch defaultChecked />
+                          <div className="mt-3 grid grid-cols-1 gap-2">
+                            <Input
+                              placeholder="Nom expéditeur (ex: Boutique XYZ)"
+                              value={emailSettings?.from_name ?? ""}
+                              onChange={(e) => id && upsertEmailSettings.mutate({ boutique_id: id, from_name: e.target.value })}
+                            />
+                          </div>
                         </div>
+
+                        {/* Auto-send toggles */}
+                        {[
+                          { k: "auto_send_order_confirmation" as const, label: "Confirmation de commande", desc: "À la validation du paiement" },
+                          { k: "auto_send_shipping" as const, label: "Expédition", desc: "Quand le statut passe à expédié" },
+                          { k: "auto_send_welcome" as const, label: "Bienvenue", desc: "À la première commande d'un client" },
+                          { k: "auto_send_promo" as const, label: "Newsletter / Promo", desc: "Envoi manuel uniquement" },
+                        ].map(({ k, label, desc }) => (
+                          <div key={k} className="p-3 rounded-lg border border-border/50 bg-muted/10 flex items-center justify-between">
+                            <div>
+                              <p className="font-medium text-sm">{label}</p>
+                              <p className="text-xs text-muted-foreground">{desc}</p>
+                            </div>
+                            <Switch
+                              checked={!!emailSettings?.[k]}
+                              onCheckedChange={(v) => id && upsertEmailSettings.mutate({ boutique_id: id, [k]: v })}
+                            />
+                          </div>
+                        ))}
+
+                        {/* Test send */}
+                        <div className="p-3 rounded-lg border border-dashed border-border bg-muted/10 space-y-2">
+                          <p className="font-medium text-sm">Envoyer un email test</p>
+                          <div className="flex gap-2">
+                            <Input placeholder="email@exemple.com" value={testEmail} onChange={(e) => setTestEmail(e.target.value)} />
+                            <Button
+                              size="sm"
+                              disabled={!testEmail || !id || sendBoutiqueEmail.isPending}
+                              onClick={async () => {
+                                try {
+                                  await sendBoutiqueEmail.mutateAsync({
+                                    boutique_id: id!,
+                                    type: "welcome",
+                                    recipient_email: testEmail,
+                                    variables: { customer_name: "Test", order_number: "LKS26-TEST", product_name: "Produit test", amount: "0.00" },
+                                  });
+                                  toast.success("Email envoyé !");
+                                } catch (e: any) {
+                                  toast.error(e?.message ?? "Échec");
+                                }
+                              }}
+                            >
+                              {sendBoutiqueEmail.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Envoyer"}
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Recent log */}
+                        {emailLog.length > 0 && (
+                          <div className="p-3 rounded-lg border border-border/50 bg-muted/10">
+                            <p className="font-medium text-sm mb-2">Derniers envois</p>
+                            <div className="space-y-1 max-h-40 overflow-auto">
+                              {emailLog.slice(0, 10).map((l: any) => (
+                                <div key={l.id} className="flex items-center justify-between text-xs">
+                                  <span className="truncate">{l.type} → {l.recipient_email}</span>
+                                  <span className={l.status === "sent" ? "text-success" : "text-destructive"}>{l.status}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Default templates */}
