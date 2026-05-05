@@ -62,6 +62,97 @@ export type Database = {
         }
         Relationships: []
       }
+      boutique_email_log: {
+        Row: {
+          boutique_id: string
+          error: string | null
+          id: string
+          metadata: Json | null
+          recipient_email: string
+          sent_at: string
+          status: string
+          subject: string | null
+          type: string
+        }
+        Insert: {
+          boutique_id: string
+          error?: string | null
+          id?: string
+          metadata?: Json | null
+          recipient_email: string
+          sent_at?: string
+          status?: string
+          subject?: string | null
+          type: string
+        }
+        Update: {
+          boutique_id?: string
+          error?: string | null
+          id?: string
+          metadata?: Json | null
+          recipient_email?: string
+          sent_at?: string
+          status?: string
+          subject?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boutique_email_log_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      boutique_email_settings: {
+        Row: {
+          auto_send_order_confirmation: boolean
+          auto_send_promo: boolean
+          auto_send_shipping: boolean
+          auto_send_welcome: boolean
+          boutique_id: string
+          created_at: string
+          from_name: string | null
+          gmail_connected: boolean
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          auto_send_order_confirmation?: boolean
+          auto_send_promo?: boolean
+          auto_send_shipping?: boolean
+          auto_send_welcome?: boolean
+          boutique_id: string
+          created_at?: string
+          from_name?: string | null
+          gmail_connected?: boolean
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          auto_send_order_confirmation?: boolean
+          auto_send_promo?: boolean
+          auto_send_shipping?: boolean
+          auto_send_welcome?: boolean
+          boutique_id?: string
+          created_at?: string
+          from_name?: string | null
+          gmail_connected?: boolean
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boutique_email_settings_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: true
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       boutique_members: {
         Row: {
           boutique_id: string
