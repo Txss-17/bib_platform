@@ -625,6 +625,35 @@ export function StudioEditor({
 
           {/* SCENES TAB */}
           <TabsContent value="scenes" className="flex-1 overflow-y-auto px-4 pb-6 space-y-2 mt-3">
+            {/* Reshuffle structure */}
+            <Card className="p-2.5 mb-2 flex items-center justify-between gap-2 bg-muted/30">
+              <div className="text-xs">
+                <p className="font-medium">Structure de la page</p>
+                <p className="opacity-60">Change le template global ou tente une nouvelle disposition.</p>
+              </div>
+              <div className="flex gap-1">
+                {STUDIO_BUNDLES.map((b) => (
+                  <button
+                    key={b.key}
+                    type="button"
+                    onClick={() => {
+                      reshuffle.mutate(
+                        { boutiqueId, bundleKey: b.key },
+                        {
+                          onSuccess: () => toast.success(`Structure « ${b.name} » appliquée`),
+                          onError: () => toast.error("Réorganisation impossible"),
+                        },
+                      );
+                    }}
+                    title={b.name}
+                    className="text-[10px] px-2 py-1 rounded border border-border hover:border-primary transition"
+                  >
+                    {b.name.split(" ")[0]}
+                  </button>
+                ))}
+              </div>
+            </Card>
+
             {isLoading && (
               <div className="flex items-center justify-center py-10">
                 <Loader2 className="w-5 h-5 animate-spin opacity-50" />
