@@ -285,6 +285,7 @@ export type Database = {
           default_currency: string
           description: string | null
           has_protection: boolean
+          highlight_media: Json
           id: string
           legal_address: string | null
           legal_business_name: string | null
@@ -313,6 +314,7 @@ export type Database = {
           default_currency?: string
           description?: string | null
           has_protection?: boolean
+          highlight_media?: Json
           id?: string
           legal_address?: string | null
           legal_business_name?: string | null
@@ -341,6 +343,7 @@ export type Database = {
           default_currency?: string
           description?: string | null
           has_protection?: boolean
+          highlight_media?: Json
           id?: string
           legal_address?: string | null
           legal_business_name?: string | null
