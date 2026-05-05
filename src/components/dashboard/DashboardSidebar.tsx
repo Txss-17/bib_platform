@@ -14,6 +14,7 @@ import {
   FileText,
   ShieldCheck,
   Users,
+  LifeBuoy,
 } from "lucide-react";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -37,6 +38,7 @@ const mainNavItems = [
 
 const bottomNavItems = [
   { title: "Paramètres", url: "/dashboard/parametres", icon: Settings },
+  { title: "Mes tickets", url: "/dashboard/tickets", icon: LifeBuoy },
   { title: "Support", url: "/dashboard/aide", icon: HelpCircle },
 ];
 

@@ -32,6 +32,7 @@ import BoutiqueEdit from "./pages/dashboard/BoutiqueEdit";
 import BoutiqueAnalytics from "./pages/dashboard/BoutiqueAnalytics";
 import Parametres from "./pages/dashboard/Parametres";
 import Aide from "./pages/dashboard/Aide";
+import MesTickets from "./pages/dashboard/MesTickets";
 import Rapports from "./pages/dashboard/Rapports";
 import AdminDocuments from "./pages/dashboard/AdminDocuments";
 import Equipe from "./pages/dashboard/Equipe";
@@ -187,6 +188,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Aide />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/tickets"
+              element={
+                <ProtectedRoute>
+                  <MesTickets />
                 </ProtectedRoute>
               }
             />
