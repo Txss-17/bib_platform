@@ -62,9 +62,12 @@ import {
   type KeywordCluster,
   type SeoCopilotResult,
   useUpdateBrandDNA,
+  useReshuffleStructure,
+  useGenerateBrandDNA,
 } from "@/hooks/useBrandStudio";
 import {
   STUDIO_SCENES,
+  STUDIO_BUNDLES,
   findSceneDefinition,
   type SceneRecord,
   type SceneRole,
@@ -72,6 +75,7 @@ import {
 import { StudioSceneRenderer } from "@/components/storefront/StudioSceneRenderer";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { SceneInspectorPro } from "./SceneInspectorPro";
 
 /* ---------- Color helpers (HSL "h s% l%" <-> #rrggbb) ---------- */
 function hslStringToHex(hsl?: string): string {
