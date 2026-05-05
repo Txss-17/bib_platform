@@ -1183,6 +1183,79 @@ export type Database = {
         }
         Relationships: []
       }
+      support_ticket_attachments: {
+        Row: {
+          byte_size: number | null
+          created_at: string
+          file_name: string
+          id: string
+          mime_type: string | null
+          storage_path: string
+          ticket_id: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          byte_size?: number | null
+          created_at?: string
+          file_name: string
+          id?: string
+          mime_type?: string | null
+          storage_path: string
+          ticket_id: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          byte_size?: number | null
+          created_at?: string
+          file_name?: string
+          id?: string
+          mime_type?: string | null
+          storage_path?: string
+          ticket_id?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_ticket_attachments_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_ticket_responses: {
+        Row: {
+          author_id: string
+          created_at: string
+          id: string
+          message: string
+          ticket_id: string
+        }
+        Insert: {
+          author_id: string
+          created_at?: string
+          id?: string
+          message: string
+          ticket_id: string
+        }
+        Update: {
+          author_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_ticket_responses_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_tickets: {
         Row: {
           ai_conversation: Json | null
