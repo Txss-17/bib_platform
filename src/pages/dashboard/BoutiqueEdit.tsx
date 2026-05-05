@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { StorefrontPreview } from "@/components/storefront/StorefrontPreview";
 import { getTemplateForCategory, availableSections, animationLevels, heroLayouts, siteTypes, sectionEffects, conversionTemplates, type ThemeSettings, type SectionConfig, type AnimationLevel, type HeroLayout, type SiteType, type SectionEffect, type ConversionTemplate } from "@/lib/boutiqueTemplates";
 import { useEmailTemplates, useUpsertEmailTemplate, DEFAULT_TEMPLATES } from "@/hooks/useEmailTemplates";
+import { useEmailSettings, useUpsertEmailSettings, useEmailLog, useSendBoutiqueEmail } from "@/hooks/useBoutiqueEmail";
 import {
   DndContext,
   closestCenter,
@@ -349,6 +350,11 @@ export default function BoutiqueEdit() {
   // Email templates
   const { data: emailTemplates = [] } = useEmailTemplates(id);
   const upsertTemplate = useUpsertEmailTemplate();
+  const { data: emailSettings } = useEmailSettings(id);
+  const upsertEmailSettings = useUpsertEmailSettings();
+  const { data: emailLog = [] } = useEmailLog(id);
+  const sendBoutiqueEmail = useSendBoutiqueEmail();
+  const [testEmail, setTestEmail] = useState("");
 
   // Initialize from boutique data
   useEffect(() => {
