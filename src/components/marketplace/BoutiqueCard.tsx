@@ -15,8 +15,17 @@ type Story =
 export function BoutiqueCard({ boutique }: Props) {
   // Stories: highlights first (owner-curated promo/news), then product previews.
   const stories: Story[] = useMemo(() => {
+    const now = Date.now();
     const fromHighlights: Story[] = (boutique.highlights ?? [])
-      .filter((h) => !!h.url)
+      .filter((h) => {
+        if (!h.url) return false;
+        if ((h as any).enabled === false) return false;
+        const s = (h as any).starts_at ? Date.parse((h as any).starts_at) : NaN;
+        const e = (h as any).ends_at ? Date.parse((h as any).ends_at) : NaN;
+        if (!isNaN(s) && now < s) return false;
+        if (!isNaN(e) && now > e) return false;
+        return true;
+      })
       .map((h) => ({
         kind: "highlight",
         id: h.id,
