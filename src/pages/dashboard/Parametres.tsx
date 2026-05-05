@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { User, Bell, Shield, CreditCard, Globe, Loader2, FileCheck, Trash2, Crown, AlertTriangle, Search, Languages, Star } from "lucide-react";
+import { User, Bell, Shield, CreditCard, Globe, Loader2, FileCheck, Trash2, Crown, AlertTriangle, Search, Languages, Star, Sparkles, Store } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { BusinessDocuments } from "@/components/dashboard/BusinessDocuments";
 import { SubscriptionPanel } from "@/components/payments/SubscriptionPanel";
@@ -13,6 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useProducts } from "@/hooks/useProducts";
+import { useBoutiques } from "@/hooks/useBoutiques";
+import { HighlightsManager } from "@/components/dashboard/boutique/HighlightsManager";
 import { PageHeader, SectionCard } from "@/components/dashboard/shared";
 import {
   ALL_LOCALES,
@@ -38,6 +40,7 @@ import {
 export default function Parametres() {
   const { profile, refreshProfile, user } = useAuth();
   const { data: products = [] } = useProducts();
+  const { data: boutiques = [], isLoading: loadingBoutiques } = useBoutiques();
   const { settings: seoSettings, update: updateSeoSettings } = useSeoSettings();
   const [fullName, setFullName] = useState("");
   const [businessName, setBusinessName] = useState("");
@@ -131,6 +134,10 @@ export default function Parametres() {
             <TabsTrigger value="seo" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
               <Search className="w-3.5 h-3.5" />
               <span>SEO</span>
+            </TabsTrigger>
+            <TabsTrigger value="highlights" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Mises en avant</span>
             </TabsTrigger>
             <TabsTrigger value="notifications" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
               <Bell className="w-3.5 h-3.5" />

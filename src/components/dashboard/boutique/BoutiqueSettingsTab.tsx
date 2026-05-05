@@ -54,7 +54,6 @@ import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
 import { OgImageCropperDialog } from "./OgImageCropperDialog";
-import { HighlightsManager } from "./HighlightsManager";
 
 type Boutique = {
   id: string;
@@ -1088,9 +1087,6 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
           )}
         </CardContent>
       </Card>
-
-      {/* Mises en avant marketplace */}
-      <HighlightsManager boutiqueId={boutiqueId} />
 
       <div className="flex justify-end">
         <Button
