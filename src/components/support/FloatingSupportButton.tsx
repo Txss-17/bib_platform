@@ -153,6 +153,33 @@ export function FloatingSupportButton({
         </div>
 
         <div className="border-t p-3 flex items-end gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            multiple
+            accept="image/*,application/pdf,.doc,.docx,.txt"
+            onChange={(e) => {
+              const files = Array.from(e.target.files ?? []);
+              const max = 5 * 1024 * 1024; // 5 MB
+              const ok = files.filter((f) => f.size <= max);
+              if (ok.length < files.length) {
+                toast.error("Fichier trop volumineux (>5 Mo)");
+              }
+              setPendingFiles((prev) => [...prev, ...ok].slice(0, 5));
+              if (fileInputRef.current) fileInputRef.current.value = "";
+            }}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={loading}
+            aria-label="Joindre un fichier"
+          >
+            <Paperclip className="w-4 h-4" />
+          </Button>
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -169,6 +196,32 @@ export function FloatingSupportButton({
             <Send className="w-4 h-4" />
           </Button>
         </div>
+        {pendingFiles.length > 0 && (
+          <div className="border-t px-3 py-2 flex flex-wrap gap-1.5">
+            {pendingFiles.map((f, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center gap-1 text-xs bg-muted rounded-full px-2 py-0.5"
+              >
+                <Paperclip className="w-3 h-3" />
+                <span className="max-w-[140px] truncate">{f.name}</span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPendingFiles((prev) => prev.filter((_, idx) => idx !== i))
+                  }
+                  className="ml-1 hover:text-destructive"
+                  aria-label="Retirer"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+            <span className="text-[10px] text-muted-foreground self-center">
+              Les fichiers seront envoyés dès la création du ticket.
+            </span>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );
