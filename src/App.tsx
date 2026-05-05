@@ -47,6 +47,7 @@ import OrderTracking from "./pages/OrderTracking";
 import BoutiqueFAQPage from "./pages/BoutiqueFAQPage";
 import { BoutiqueCGVPage, BoutiqueCGUPage, BoutiqueAboutPage } from "./pages/BoutiqueLegalPages";
 import { CartProvider } from "@/contexts/CartContext";
+import Unsubscribe from "./pages/Unsubscribe";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +75,7 @@ const App = () => (
             <Route path="/suivi-commande" element={<OrderTracking />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route
