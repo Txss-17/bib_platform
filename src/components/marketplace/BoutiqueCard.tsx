@@ -1,22 +1,50 @@
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, ImageOff } from "lucide-react";
+import { ShieldCheck, ImageOff, Sparkles } from "lucide-react";
 import type { MarketplaceBoutique } from "@/hooks/useMarketplace";
 
 interface Props {
   boutique: MarketplaceBoutique;
 }
 
+type Story =
+  | { kind: "highlight"; id: string; mediaKind: "image" | "video"; url: string; label?: string; cta_url?: string }
+  | { kind: "product"; id: string; mediaKind: "image"; url: string; name: string; price: number };
+
 export function BoutiqueCard({ boutique }: Props) {
-  const stories = useShuffled(boutique.product_previews);
+  // Stories: highlights first (owner-curated promo/news), then product previews.
+  const stories: Story[] = useMemo(() => {
+    const fromHighlights: Story[] = (boutique.highlights ?? [])
+      .filter((h) => !!h.url)
+      .map((h) => ({
+        kind: "highlight",
+        id: h.id,
+        mediaKind: h.kind,
+        url: h.url,
+        label: h.label,
+        cta_url: h.cta_url,
+      }));
+    const fromProducts: Story[] = boutique.product_previews
+      .filter((p) => !!p.image_url)
+      .map((p) => ({
+        kind: "product",
+        id: p.id,
+        mediaKind: "image",
+        url: p.image_url as string,
+        name: p.name,
+        price: p.price,
+      }));
+    return [...fromHighlights, ...fromProducts];
+  }, [boutique.highlights, boutique.product_previews]);
+
   const [activeIdx, setActiveIdx] = useState(0);
 
   useEffect(() => {
     if (stories.length < 2) return;
     const id = window.setInterval(() => {
       setActiveIdx((i) => (i + 1) % stories.length);
-    }, 2500);
+    }, 3200);
     return () => window.clearInterval(id);
   }, [stories.length]);
 
@@ -28,14 +56,26 @@ export function BoutiqueCard({ boutique }: Props) {
       className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl hover:border-primary/30"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-        {current?.image_url ? (
-          <img
-            key={current.id}
-            src={current.image_url}
-            alt={current.name}
-            loading="lazy"
-            className="h-full w-full object-cover animate-in fade-in duration-700"
-          />
+        {current ? (
+          current.mediaKind === "video" ? (
+            <video
+              key={current.id}
+              src={current.url}
+              muted
+              loop
+              playsInline
+              autoPlay
+              className="h-full w-full object-cover animate-in fade-in duration-700"
+            />
+          ) : (
+            <img
+              key={current.id}
+              src={current.url}
+              alt={current.kind === "product" ? current.name : current.label ?? boutique.name}
+              loading="lazy"
+              className="h-full w-full object-cover animate-in fade-in duration-700"
+            />
+          )
         ) : boutique.cover_image_url ? (
           <img src={boutique.cover_image_url} alt={boutique.name} className="h-full w-full object-cover" />
         ) : (
@@ -57,6 +97,13 @@ export function BoutiqueCard({ boutique }: Props) {
               />
             ))}
           </div>
+        )}
+
+        {current?.kind === "highlight" && (
+          <Badge className="absolute left-3 top-6 gap-1 border-0 bg-accent/90 text-accent-foreground backdrop-blur">
+            <Sparkles className="h-3 w-3" />
+            {current.label || "À la une"}
+          </Badge>
         )}
 
         {boutique.has_protection && (
@@ -83,10 +130,13 @@ export function BoutiqueCard({ boutique }: Props) {
               <p className="truncate font-display text-base font-semibold leading-tight">
                 {boutique.name}
               </p>
-              {current && (
+              {current?.kind === "product" && (
                 <p className="truncate text-xs text-white/80">
                   {current.name} · {current.price.toFixed(2)} €
                 </p>
+              )}
+              {current?.kind === "highlight" && current.label && (
+                <p className="truncate text-xs text-white/80">{current.label}</p>
               )}
             </div>
           </div>
@@ -107,13 +157,13 @@ export function BoutiqueCard({ boutique }: Props) {
         </span>
       </div>
 
-      {stories.length > 0 && (
+      {boutique.product_previews.length > 0 && (
         <div
           className="flex gap-2 overflow-x-auto px-4 pb-4 scrollbar-none"
           onClick={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
         >
-          {stories.map((p) => (
+          {boutique.product_previews.map((p) => (
             <Link
               key={p.id}
               to={`/boutique/${boutique.slug}/product/${p.id}`}
@@ -146,14 +196,3 @@ export function BoutiqueCard({ boutique }: Props) {
   );
 }
 
-function useShuffled<T>(items: T[]): T[] {
-  const [shuffled] = useState(() => {
-    const arr = [...items];
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  });
-  return shuffled;
-}

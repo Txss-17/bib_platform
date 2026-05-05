@@ -8,6 +8,14 @@ export interface MarketplaceProductPreview {
   price: number;
 }
 
+export interface MarketplaceHighlight {
+  id: string;
+  kind: "image" | "video";
+  url: string;
+  label?: string;
+  cta_url?: string;
+}
+
 export interface MarketplaceBoutique {
   id: string;
   name: string;
@@ -20,6 +28,7 @@ export interface MarketplaceBoutique {
   has_protection: boolean;
   product_count: number;
   product_previews: MarketplaceProductPreview[];
+  highlights: MarketplaceHighlight[];
   market: string;
   created_at: string;
   total_sales: number;
@@ -38,7 +47,7 @@ export function useMarketplaceBoutiques() {
         .from("boutiques")
         .select(`
           id, name, slug, category, description, tagline,
-          logo_url, cover_image_url, has_protection,
+          logo_url, cover_image_url, has_protection, highlight_media,
           created_at,
           products!inner (
             id,
@@ -89,6 +98,7 @@ export function useMarketplaceBoutiques() {
           has_protection: b.has_protection,
           product_count: (b.products ?? []).length,
           product_previews: previews,
+          highlights: Array.isArray(b.highlight_media) ? (b.highlight_media as MarketplaceHighlight[]) : [],
           market,
           created_at: b.created_at,
           total_sales,

@@ -16,7 +16,6 @@ import CheckoutReturn from "./pages/CheckoutReturn";
 import NotFound from "./pages/NotFound";
 import BrandPreview from "./pages/BrandPreview";
 import Marketplace from "./pages/Marketplace";
-import MonCompte from "./pages/customer/MonCompte";
 import Recycler from "./pages/customer/Recycler";
 
 // Dashboard pages
@@ -70,7 +69,6 @@ const App = () => (
             <Route path="/brand-preview" element={<BrandPreview />} />
             <Route path="/store" element={<Marketplace />} />
             <Route path="/marketplace" element={<Marketplace />} />
-            <Route path="/mon-compte" element={<MonCompte />} />
             <Route path="/recycler" element={<Recycler />} />
             <Route path="/recycler/:slug" element={<Recycler />} />
             <Route path="/suivi-commande" element={<OrderTracking />} />
