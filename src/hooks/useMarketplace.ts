@@ -14,6 +14,9 @@ export interface MarketplaceHighlight {
   url: string;
   label?: string;
   cta_url?: string;
+  enabled?: boolean;
+  starts_at?: string | null;
+  ends_at?: string | null;
 }
 
 export interface MarketplaceBoutique {
