@@ -38,7 +38,6 @@ import {
 export default function Parametres() {
   const { profile, refreshProfile, user } = useAuth();
   const { data: products = [] } = useProducts();
-  const { data: boutiques = [], isLoading: loadingBoutiques } = useBoutiques();
   const { settings: seoSettings, update: updateSeoSettings } = useSeoSettings();
   const [fullName, setFullName] = useState("");
   const [businessName, setBusinessName] = useState("");
