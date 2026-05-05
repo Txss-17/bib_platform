@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { User, Bell, Shield, CreditCard, Globe, Loader2, FileCheck, Trash2, Crown, AlertTriangle, Search, Languages, Star } from "lucide-react";
+import { User, Bell, Shield, CreditCard, Globe, Loader2, FileCheck, Trash2, Crown, AlertTriangle, Search, Languages, Star, Sparkles, Store } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { BusinessDocuments } from "@/components/dashboard/BusinessDocuments";
 import { SubscriptionPanel } from "@/components/payments/SubscriptionPanel";
@@ -13,6 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useProducts } from "@/hooks/useProducts";
+import { useBoutiques } from "@/hooks/useBoutiques";
+import { HighlightsManager } from "@/components/dashboard/boutique/HighlightsManager";
 import { PageHeader, SectionCard } from "@/components/dashboard/shared";
 import {
   ALL_LOCALES,
@@ -38,6 +40,7 @@ import {
 export default function Parametres() {
   const { profile, refreshProfile, user } = useAuth();
   const { data: products = [] } = useProducts();
+  const { data: boutiques = [], isLoading: loadingBoutiques } = useBoutiques();
   const { settings: seoSettings, update: updateSeoSettings } = useSeoSettings();
   const [fullName, setFullName] = useState("");
   const [businessName, setBusinessName] = useState("");
@@ -131,6 +134,10 @@ export default function Parametres() {
             <TabsTrigger value="seo" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
               <Search className="w-3.5 h-3.5" />
               <span>SEO</span>
+            </TabsTrigger>
+            <TabsTrigger value="highlights" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Mises en avant</span>
             </TabsTrigger>
             <TabsTrigger value="notifications" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
               <Bell className="w-3.5 h-3.5" />
@@ -374,6 +381,44 @@ export default function Parametres() {
                   /boutique/exemple?lang={seoSettings.defaultLocale}" /&gt;
                 </div>
               </div>
+            </SectionCard>
+          </TabsContent>
+
+          {/* Mises en avant marketplace — par boutique */}
+          <TabsContent value="highlights" className="mt-4 space-y-4">
+            <SectionCard
+              title="Mises en avant sur la marketplace"
+              description="Alimentez vos cartes boutique avec des visuels et vidéos (promo, nouvelle collection, événement). Affichées en défilement automatique sur /store."
+              icon={<Sparkles className="w-4 h-4 text-primary" />}
+            >
+              {loadingBoutiques ? (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : boutiques.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-border/60 bg-muted/20 p-6 text-center text-sm text-muted-foreground">
+                  Vous n'avez pas encore de boutique. Créez-en une pour pouvoir y ajouter des mises en avant.
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {boutiques.map((b) => (
+                    <div key={b.id} className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <Store className="h-4 w-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold truncate">{b.name}</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {b.status === "published" ? "Publiée" : "Brouillon"} · /{b.slug}
+                          </p>
+                        </div>
+                      </div>
+                      <HighlightsManager boutiqueId={b.id} />
+                    </div>
+                  ))}
+                </div>
+              )}
             </SectionCard>
           </TabsContent>
 
