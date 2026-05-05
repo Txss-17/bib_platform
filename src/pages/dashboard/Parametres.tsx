@@ -132,10 +132,6 @@ export default function Parametres() {
               <Search className="w-3.5 h-3.5" />
               <span>SEO</span>
             </TabsTrigger>
-            <TabsTrigger value="highlights" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Mises en avant</span>
-            </TabsTrigger>
             <TabsTrigger value="notifications" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
               <Bell className="w-3.5 h-3.5" />
               <span>Notifs</span>
