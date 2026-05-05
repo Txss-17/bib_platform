@@ -16,7 +16,7 @@ export default function Signup() {
   const next = searchParams.get("next") || "/dashboard";
   const prefilledEmail = searchParams.get("email") || "";
   // Customer flow = anyone redirected to the customer area (Store BIB)
-  const isCustomer = next.startsWith("/mon-compte") || next.startsWith("/recycler");
+  const isCustomer = next.startsWith("/store") || next.startsWith("/marketplace") || next.startsWith("/recycler");
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState(prefilledEmail);

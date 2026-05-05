@@ -46,7 +46,7 @@ export default function Recycler() {
     e.preventDefault();
     if (!profile) {
       toast.error("Activez votre compte client pour cumuler des points.");
-      navigate("/mon-compte");
+      navigate("/store");
       return;
     }
     if (points <= 0) {
@@ -173,7 +173,7 @@ export default function Recycler() {
                   +{confirmation.points} pts crédités sur {confirmation.boutique} (≈ {(confirmation.points * 0.1).toFixed(2)} €).
                 </div>
                 <Button asChild variant="link" className="px-0 h-auto mt-1">
-                  <Link to="/mon-compte">Voir mes cartes cadeaux</Link>
+                  <Link to="/store">Voir mes cartes cadeaux</Link>
                 </Button>
               </div>
             </CardContent>
@@ -250,7 +250,7 @@ export default function Recycler() {
                 </div>
               </div>
               <Button asChild variant="outline">
-                <Link to="/mon-compte">Mon compte</Link>
+                <Link to="/store">Mon espace</Link>
               </Button>
             </CardContent>
           </Card>

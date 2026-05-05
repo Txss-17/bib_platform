@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   useCustomerProfile,
@@ -309,7 +309,6 @@ function SettingsTab({ onSignOut }: { onSignOut: () => void }) {
   const { data: customer } = useCustomerProfile();
   const { data: orders = [] } = useCustomerOrders();
   const { data: scans = [] } = useRecyclingHistory();
-  const navigate = useNavigate();
 
   return (
     <div className="space-y-4">
@@ -325,14 +324,6 @@ function SettingsTab({ onSignOut }: { onSignOut: () => void }) {
         <Stat label="Scans" value={scans.length} />
         <Stat label="Points" value={customer?.total_recycling_points ?? 0} accent />
       </div>
-
-      <Button
-        variant="outline"
-        className="w-full border-white/15 bg-white/5 text-white hover:bg-white/10"
-        onClick={() => navigate("/mon-compte")}
-      >
-        Vue détaillée du compte
-      </Button>
 
       <Button variant="ghost" className="w-full text-white/70 hover:text-white hover:bg-white/10" onClick={onSignOut}>
         <LogOut className="h-4 w-4 mr-2" /> Se déconnecter

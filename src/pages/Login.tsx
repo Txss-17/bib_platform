@@ -27,7 +27,7 @@ export default function Login() {
     searchParams.get("next") ||
     location.state?.from?.pathname ||
     "/dashboard";
-  const isCustomer = from.startsWith("/mon-compte") || from.startsWith("/recycler");
+  const isCustomer = from.startsWith("/store") || from.startsWith("/marketplace") || from.startsWith("/recycler");
 
   const getErrorMessage = (errorMsg: string) => {
     if (errorMsg === "Load failed" || errorMsg.includes("fetch") || errorMsg.includes("network") || errorMsg.includes("Failed to fetch")) {
