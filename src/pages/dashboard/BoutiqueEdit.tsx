@@ -1691,6 +1691,16 @@ export default function BoutiqueEdit() {
                               {emailSettings?.gmail_connected ? "Actif" : "À connecter"}
                             </span>
                           </div>
+                          {!emailSettings?.gmail_connected && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="mt-3 w-full"
+                              onClick={() => id && upsertEmailSettings.mutate({ boutique_id: id, gmail_connected: true })}
+                            >
+                              Activer le canal Gmail
+                            </Button>
+                          )}
                           <div className="mt-3 grid grid-cols-1 gap-2">
                             <Input
                               placeholder="Nom expéditeur (ex: Boutique XYZ)"
