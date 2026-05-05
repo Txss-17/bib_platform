@@ -7,7 +7,14 @@ import { Input } from "@/components/ui/input";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  ArrowLeft,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
   Search,
   Check,
   Heart,
@@ -17,6 +24,7 @@ import {
   ChevronRight,
   Loader2,
   Sparkles,
+  Menu,
 } from "lucide-react";
 
 const ACCOUNT_SHORTCUTS = [
@@ -91,13 +99,30 @@ export default function Marketplace() {
       {/* Pill header */}
       <header className="sticky top-0 z-40 bg-gradient-to-b from-[hsl(220_25%_6%)] via-[hsl(220_25%_6%)]/95 to-transparent pt-[env(safe-area-inset-top)]">
         <div className="container mx-auto flex items-center justify-between gap-3 px-4 py-3">
-          <button
-            onClick={() => navigate(-1)}
-            aria-label="Retour"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 backdrop-blur transition hover:bg-white/15 active:scale-95"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              aria-label="Menu"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 backdrop-blur transition hover:bg-white/15 active:scale-95 outline-none"
+            >
+              <Menu className="h-5 w-5" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuLabel>
+                {user ? "Mon espace" : "Bienvenue"}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {ACCOUNT_SHORTCUTS.map((s) => (
+                <DropdownMenuItem key={s.label} onClick={() => navigate(s.to)}>
+                  <s.icon className="mr-2 h-4 w-4" />
+                  {s.label}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate("/")}>
+                Accueil Brand-In-A-Box
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <form
             onSubmit={(e) => e.preventDefault()}
@@ -125,36 +150,6 @@ export default function Marketplace() {
       </header>
 
       <main className="container mx-auto px-4 pb-20">
-        {/* Account shortcuts panel */}
-        <section className="mt-2 rounded-3xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-wider text-white/50">Mon espace</p>
-              <h2 className="font-display text-lg font-semibold">
-                {user ? "Bon retour 👋" : "Bienvenue sur le Store"}
-              </h2>
-            </div>
-            <Logo iconSize={24} asLink={false} />
-          </div>
-
-          <ul className="space-y-1">
-            {ACCOUNT_SHORTCUTS.map((s) => (
-              <li key={s.label}>
-                <Link
-                  to={s.to}
-                  className="group flex items-center gap-3 rounded-xl px-2 py-3 text-sm transition hover:bg-white/5"
-                >
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/80 group-hover:bg-primary/20 group-hover:text-primary">
-                    <s.icon className="h-4 w-4" />
-                  </span>
-                  <span className="flex-1 font-medium text-white/90">{s.label}</span>
-                  <ChevronRight className="h-4 w-4 text-white/40 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-
         {/* States */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center gap-3 py-24 text-white/60">
