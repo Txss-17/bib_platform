@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { defaultStudioBundle, SceneRecord, findSceneDefinition } from "@/lib/studioScenes";
+import { defaultStudioBundle, SceneRecord, findSceneDefinition, pickStudioBundle } from "@/lib/studioScenes";
 
 /**
  * Invoke a boutique-ai action and surface a human-readable error.
@@ -175,7 +175,7 @@ export function useGenerateBrandDNA() {
         .limit(1);
 
       if (!existing || existing.length === 0) {
-        const bundle = defaultStudioBundle().map((s) => ({
+        const bundle = defaultStudioBundle(data.seed).map((s) => ({
           ...s,
           boutique_id: params.boutiqueId,
           // Injecte la copy générée dans le hero
@@ -207,6 +207,99 @@ export function useGenerateBrandDNA() {
       qc.invalidateQueries({ queryKey: ["brand-dna", vars.boutiqueId] });
       qc.invalidateQueries({ queryKey: ["boutique-scenes", vars.boutiqueId] });
       qc.invalidateQueries({ queryKey: ["boutique", vars.boutiqueId] });
+    },
+  });
+}
+
+/**
+ * Réorganise complètement les scènes d'une boutique selon un nouveau template
+ * (narrative / product-first / minimal). Conserve le contenu existant des
+ * scènes communes pour ne pas écraser le travail utilisateur.
+ */
+export function useReshuffleStructure() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { boutiqueId: string; bundleKey?: string }) => {
+      const { STUDIO_BUNDLES } = await import("@/lib/studioScenes");
+      const bundle =
+        STUDIO_BUNDLES.find((b) => b.key === params.bundleKey) ??
+        pickStudioBundle(crypto.randomUUID());
+
+      // Charge l'existant pour conserver le contenu utilisateur quand possible.
+      const { data: existing } = await supabase
+        .from("boutique_scenes")
+        .select("*")
+        .eq("boutique_id", params.boutiqueId);
+      const byType = new Map<string, SceneRecord>();
+      (existing as SceneRecord[] | null)?.forEach((s) => byType.set(s.scene_type, s));
+
+      // Supprime tout
+      await supabase.from("boutique_scenes").delete().eq("boutique_id", params.boutiqueId);
+
+      // Réinsère selon le bundle, en réutilisant le contenu existant si dispo.
+      const rows = bundle.scenes.map((s, index) => {
+        const def = findSceneDefinition(s.id)!;
+        const prior = byType.get(s.id);
+        return {
+          boutique_id: params.boutiqueId,
+          role: def.role,
+          scene_type: def.id,
+          variant: s.variant ?? prior?.variant ?? def.variants[0],
+          content: prior?.content ?? def.defaultContent,
+          position: index,
+          is_visible: true,
+        };
+      });
+      const { error } = await supabase.from("boutique_scenes").insert(rows as never);
+      if (error) throw error;
+      return bundle.key;
+    },
+    onSuccess: (_d, vars) =>
+      qc.invalidateQueries({ queryKey: ["boutique-scenes", vars.boutiqueId] }),
+  });
+}
+
+/**
+ * Génère une image IA pour une scène ou un chapitre via l'edge function
+ * studio-image-gen, l'upload dans le bucket boutique-media et renvoie l'URL.
+ */
+export function useGenerateSceneImage() {
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      prompt: string;
+      aspect?: "1:1" | "3:4" | "4:3" | "16:9" | "9:16";
+    }): Promise<string> => {
+      const { data, error } = await supabase.functions.invoke("studio-image-gen", {
+        body: {
+          boutique_id: params.boutiqueId,
+          prompt: params.prompt,
+          aspect: params.aspect ?? "4:3",
+        },
+      });
+      if (error) throw new Error(error.message || "Génération image impossible");
+      const url = (data as any)?.url as string | undefined;
+      if (!url) throw new Error((data as any)?.error || "Pas d'image générée");
+      return url;
+    },
+  });
+}
+
+/** Upload direct d'un fichier (input file) vers boutique-media → URL publique. */
+export function useUploadSceneAsset() {
+  return useMutation({
+    mutationFn: async (params: { boutiqueId: string; file: File }) => {
+      const ext = params.file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const { data: u } = await supabase.auth.getUser();
+      const uid = u?.user?.id;
+      if (!uid) throw new Error("Session expirée");
+      const path = `${uid}/scenes/${params.boutiqueId}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("boutique-media")
+        .upload(path, params.file, { contentType: params.file.type, upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from("boutique-media").getPublicUrl(path);
+      return data.publicUrl;
     },
   });
 }

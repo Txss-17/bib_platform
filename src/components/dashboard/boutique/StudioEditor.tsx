@@ -62,9 +62,12 @@ import {
   type KeywordCluster,
   type SeoCopilotResult,
   useUpdateBrandDNA,
+  useReshuffleStructure,
+  useGenerateBrandDNA,
 } from "@/hooks/useBrandStudio";
 import {
   STUDIO_SCENES,
+  STUDIO_BUNDLES,
   findSceneDefinition,
   type SceneRecord,
   type SceneRole,
@@ -72,6 +75,7 @@ import {
 import { StudioSceneRenderer } from "@/components/storefront/StudioSceneRenderer";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { SceneInspectorPro } from "./SceneInspectorPro";
 
 /* ---------- Color helpers (HSL "h s% l%" <-> #rrggbb) ---------- */
 function hslStringToHex(hsl?: string): string {
@@ -163,6 +167,8 @@ export function StudioEditor({
   const clustersMut = useGenerateKeywordClusters();
   const remixMut = useRemixScene();
   const updateBrandDna = useUpdateBrandDNA();
+  const reshuffle = useReshuffleStructure();
+  const regenIdentity = useGenerateBrandDNA();
 
   const [brief, setBrief] = useState<ContentBrief | null>(null);
   const [clusters, setClusters] = useState<KeywordCluster[]>([]);
@@ -619,6 +625,35 @@ export function StudioEditor({
 
           {/* SCENES TAB */}
           <TabsContent value="scenes" className="flex-1 overflow-y-auto px-4 pb-6 space-y-2 mt-3">
+            {/* Reshuffle structure */}
+            <Card className="p-2.5 mb-2 flex items-center justify-between gap-2 bg-muted/30">
+              <div className="text-xs">
+                <p className="font-medium">Structure de la page</p>
+                <p className="opacity-60">Change le template global ou tente une nouvelle disposition.</p>
+              </div>
+              <div className="flex gap-1">
+                {STUDIO_BUNDLES.map((b) => (
+                  <button
+                    key={b.key}
+                    type="button"
+                    onClick={() => {
+                      reshuffle.mutate(
+                        { boutiqueId, bundleKey: b.key },
+                        {
+                          onSuccess: () => toast.success(`Structure « ${b.name} » appliquée`),
+                          onError: () => toast.error("Réorganisation impossible"),
+                        },
+                      );
+                    }}
+                    title={b.name}
+                    className="text-[10px] px-2 py-1 rounded border border-border hover:border-primary transition"
+                  >
+                    {b.name.split(" ")[0]}
+                  </button>
+                ))}
+              </div>
+            </Card>
+
             {isLoading && (
               <div className="flex items-center justify-center py-10">
                 <Loader2 className="w-5 h-5 animate-spin opacity-50" />
@@ -707,9 +742,10 @@ export function StudioEditor({
             )}
 
             {activeScene && (
-              <SceneInspector
+              <SceneInspectorPro
                 key={activeScene.id}
                 scene={activeScene}
+                boutiqueId={boutiqueId}
                 onPatch={(patch) =>
                   updateScene.mutate({
                     sceneId: activeScene.id,
@@ -719,7 +755,6 @@ export function StudioEditor({
                 }
                 onDelete={() => setPendingDeleteId(activeScene.id)}
                 onRemix={() => handleRemix(activeScene)}
-                isRemixing={remixMut.isPending}
                 remixState={stateFromMutation(remixMut)}
               />
             )}
@@ -733,17 +768,143 @@ export function StudioEditor({
               </p>
             ) : (
               <div className="space-y-4 text-sm">
+                <Card className="p-3 flex items-center justify-between gap-2 bg-muted/30">
+                  <div className="text-xs">
+                    <p className="font-medium">Régénérer l'identité</p>
+                    <p className="opacity-60">Crée une nouvelle palette + copy à partir de tes réponses initiales.</p>
+                  </div>
+                  <ActionButton
+                    size="sm"
+                    variant="outline"
+                    state={stateFromMutation(regenIdentity)}
+                    loadingLabel="…"
+                    successLabel="✓"
+                    errorLabel="!"
+                    onClick={() => {
+                      const answers = (brandDna.studio_answers ?? {}) as any;
+                      if (!answers.audience) {
+                        toast.error("Réponds d'abord au Brand Studio.");
+                        return;
+                      }
+                      regenIdentity.mutate(
+                        { boutiqueId, answers },
+                        {
+                          onSuccess: () => toast.success("Identité régénérée"),
+                          onError: (e) =>
+                            toast.error(e instanceof Error ? e.message : "Échec"),
+                        },
+                      );
+                    }}
+                  >
+                    <Wand2 className="w-3.5 h-3.5" />
+                  </ActionButton>
+                </Card>
+
                 <div>
                   <Label className="text-xs uppercase tracking-wide opacity-60">Tagline</Label>
-                  <p className="font-medium">{brandDna.generated_copy?.tagline}</p>
+                  <Input
+                    value={brandDna.generated_copy?.tagline ?? ""}
+                    onChange={(e) =>
+                      updateBrandDna.mutate({
+                        boutiqueId,
+                        patch: {
+                          generated_copy: {
+                            ...brandDna.generated_copy,
+                            tagline: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                  />
                 </div>
                 <div>
                   <Label className="text-xs uppercase tracking-wide opacity-60">Ambiance</Label>
-                  <p>{brandDna.ambiance}</p>
+                  <Input
+                    value={brandDna.ambiance ?? ""}
+                    onChange={(e) =>
+                      updateBrandDna.mutate({ boutiqueId, patch: { ambiance: e.target.value } })
+                    }
+                  />
                 </div>
                 <div>
                   <Label className="text-xs uppercase tracking-wide opacity-60">Ton</Label>
-                  <p>{brandDna.tone}</p>
+                  <Input
+                    value={brandDna.tone ?? ""}
+                    onChange={(e) =>
+                      updateBrandDna.mutate({ boutiqueId, patch: { tone: e.target.value } })
+                    }
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-xs uppercase tracking-wide opacity-60">Police titres</Label>
+                    <Input
+                      value={brandDna.generated_typography?.display ?? ""}
+                      onChange={(e) =>
+                        updateBrandDna.mutate({
+                          boutiqueId,
+                          patch: {
+                            generated_typography: {
+                              ...brandDna.generated_typography,
+                              display: e.target.value,
+                            },
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs uppercase tracking-wide opacity-60">Police corps</Label>
+                    <Input
+                      value={brandDna.generated_typography?.body ?? ""}
+                      onChange={(e) =>
+                        updateBrandDna.mutate({
+                          boutiqueId,
+                          patch: {
+                            generated_typography: {
+                              ...brandDna.generated_typography,
+                              body: e.target.value,
+                            },
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs uppercase tracking-wide opacity-60">Hero — Titre</Label>
+                  <Input
+                    value={brandDna.generated_copy?.hero_title ?? ""}
+                    onChange={(e) =>
+                      updateBrandDna.mutate({
+                        boutiqueId,
+                        patch: {
+                          generated_copy: {
+                            ...brandDna.generated_copy,
+                            hero_title: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase tracking-wide opacity-60">Hero — Sous-titre</Label>
+                  <Textarea
+                    rows={2}
+                    value={brandDna.generated_copy?.hero_subtitle ?? ""}
+                    onChange={(e) =>
+                      updateBrandDna.mutate({
+                        boutiqueId,
+                        patch: {
+                          generated_copy: {
+                            ...brandDna.generated_copy,
+                            hero_subtitle: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                  />
                 </div>
                 <div>
                   <Label className="text-xs uppercase tracking-wide opacity-60">Palette</Label>
