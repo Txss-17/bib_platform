@@ -28,3 +28,6 @@ verify_jwt = false
 
 [functions.handle-email-suppression]
 verify_jwt = false
+
+[functions.support-ai]
+verify_jwt = false

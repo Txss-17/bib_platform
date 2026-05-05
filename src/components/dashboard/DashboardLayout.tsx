@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
+import { FloatingSupportButton } from "@/components/support/FloatingSupportButton";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -66,6 +67,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {children}
       </main>
+      <FloatingSupportButton source="dashboard_ai" />
     </div>
   );
 }

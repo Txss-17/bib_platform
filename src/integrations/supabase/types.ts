@@ -1183,6 +1183,54 @@ export type Database = {
         }
         Relationships: []
       }
+      support_tickets: {
+        Row: {
+          ai_conversation: Json | null
+          ai_summary: string | null
+          boutique_id: string | null
+          contact_email: string
+          contact_name: string | null
+          created_at: string
+          id: string
+          message: string
+          source: Database["public"]["Enums"]["support_ticket_source"]
+          status: Database["public"]["Enums"]["support_ticket_status"]
+          subject: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          ai_conversation?: Json | null
+          ai_summary?: string | null
+          boutique_id?: string | null
+          contact_email: string
+          contact_name?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          source?: Database["public"]["Enums"]["support_ticket_source"]
+          status?: Database["public"]["Enums"]["support_ticket_status"]
+          subject: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          ai_conversation?: Json | null
+          ai_summary?: string | null
+          boutique_id?: string | null
+          contact_email?: string
+          contact_name?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          source?: Database["public"]["Enums"]["support_ticket_source"]
+          status?: Database["public"]["Enums"]["support_ticket_status"]
+          subject?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -1309,6 +1357,8 @@ export type Database = {
         | "product_view"
         | "add_to_cart"
         | "checkout_start"
+      support_ticket_source: "dashboard_ai" | "dashboard_form" | "storefront"
+      support_ticket_status: "open" | "in_progress" | "resolved" | "closed"
       team_role: "owner" | "manager" | "marketing" | "support"
     }
     CompositeTypes: {
@@ -1468,6 +1518,8 @@ export const Constants = {
         "add_to_cart",
         "checkout_start",
       ],
+      support_ticket_source: ["dashboard_ai", "dashboard_form", "storefront"],
+      support_ticket_status: ["open", "in_progress", "resolved", "closed"],
       team_role: ["owner", "manager", "marketing", "support"],
     },
   },

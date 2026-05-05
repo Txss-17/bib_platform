@@ -8,6 +8,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ThemeSettings } from "@/lib/boutiqueTemplates";
+import { FloatingSupportButton } from "@/components/support/FloatingSupportButton";
 
 export default function BoutiqueFAQPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -61,6 +62,11 @@ export default function BoutiqueFAQPage() {
           <StorefrontFAQ primaryColor={primaryColor} items={faqItems} />
         </div>
         <StorefrontFooter primaryColor={primaryColor} />
+        <FloatingSupportButton
+          source="storefront"
+          boutiqueId={boutique.id}
+          contactEmail={boutique.legal_email ?? undefined}
+        />
       </div>
     </CartProvider>
   );
