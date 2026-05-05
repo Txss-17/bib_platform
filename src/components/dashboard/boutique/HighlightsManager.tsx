@@ -17,6 +17,7 @@ import {
   ChevronUp,
   ChevronDown,
   ExternalLink,
+  Wand2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -54,6 +55,8 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
   const [uploading, setUploading] = useState(false);
   const [draftLabel, setDraftLabel] = useState("");
   const [draftCta, setDraftCta] = useState("");
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [generating, setGenerating] = useState(false);
 
   const { data: boutique, isLoading } = useQuery({
     queryKey: ["boutique-highlights", boutiqueId],
@@ -158,6 +161,43 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const handleGenerate = async () => {
+    if (!user) return toast.error("Session expirée");
+    const prompt = aiPrompt.trim();
+    if (prompt.length < 4) {
+      toast.error("Décris ton visuel (ex: promo soldes été, ambiance plage doré)");
+      return;
+    }
+    if (highlights.length >= MAX_HIGHLIGHTS) {
+      toast.error(`Limite de ${MAX_HIGHLIGHTS} mises en avant atteinte.`);
+      return;
+    }
+    setGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("studio-image-gen", {
+        body: { boutique_id: boutiqueId, prompt },
+      });
+      if (error) throw error;
+      const url = (data as { url?: string })?.url;
+      if (!url) throw new Error("Génération échouée");
+      addHighlight({
+        id: uid(),
+        kind: "image",
+        url,
+        label: draftLabel.trim() || undefined,
+        cta_url: draftCta.trim() || undefined,
+      });
+      setAiPrompt("");
+      setDraftLabel("");
+      setDraftCta("");
+      toast.success("Visuel généré et ajouté");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erreur de génération");
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -290,22 +330,43 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
                     if (f) handleFile(f);
                   }}
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => fileRef.current?.click()}
-                  disabled={uploading || saveMutation.isPending}
-                >
-                  {uploading ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Upload className="w-4 h-4 mr-2" />
-                  )}
-                  Ajouter image ou vidéo
-                </Button>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileRef.current?.click()}
+                    disabled={uploading || generating || saveMutation.isPending}
+                  >
+                    {uploading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4 mr-2" />
+                    )}
+                    Uploader image / vidéo
+                  </Button>
+                  <div className="flex gap-2">
+                    <Input
+                      value={aiPrompt}
+                      onChange={(e) => setAiPrompt(e.target.value)}
+                      placeholder="Décrire un visuel à générer…"
+                      className="h-9 text-sm"
+                      disabled={generating}
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleGenerate}
+                      disabled={generating || uploading || saveMutation.isPending}
+                    >
+                      {generating ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Wand2 className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Recommandé : portrait 3:4 (1080×1440). Image ≤ 6 Mo · Vidéo ≤ 30 Mo, 5–10 s.
+                  Jusqu'à {MAX_HIGHLIGHTS} éléments. Recommandé portrait 3:4. Image ≤ 6 Mo · Vidéo ≤ 30 Mo (5–10 s). La génération IA produit une image cohérente avec votre actualité (promo, nouveauté…).
                 </p>
               </div>
             )}

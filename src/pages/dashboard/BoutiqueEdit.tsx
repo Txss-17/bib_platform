@@ -39,6 +39,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { BoutiqueIdentityPanel } from "@/components/dashboard/boutique/BoutiqueIdentityPanel";
 import { BrandStudioWizard } from "@/components/dashboard/boutique/BrandStudioWizard";
 import { StudioEditor } from "@/components/dashboard/boutique/StudioEditor";
+import { HighlightsManager } from "@/components/dashboard/boutique/HighlightsManager";
 
 const colorSchemes = [
   { name: "Moderne", primary: "#3b82f6", secondary: "#1e40af" },
@@ -915,7 +916,7 @@ export default function BoutiqueEdit() {
         {/* Editor panel */}
         <div className="space-y-4">
           <Tabs defaultValue="identity" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-9 h-auto">
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-10 h-auto">
               <TabsTrigger value="identity" className="gap-1">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline text-xs">Identité</span>
@@ -947,6 +948,10 @@ export default function BoutiqueEdit() {
               <TabsTrigger value="emails" className="gap-1">
                 <Mail className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline text-xs">Emails</span>
+              </TabsTrigger>
+              <TabsTrigger value="highlights" className="gap-1">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline text-xs">Marketplace</span>
               </TabsTrigger>
               <TabsTrigger value="settings" className="gap-1">
                 <SettingsIcon className="w-3.5 h-3.5" />
@@ -1835,6 +1840,11 @@ export default function BoutiqueEdit() {
             {/* Settings tab — SEO per boutique, legal info, commerce, team, danger zone */}
             <TabsContent value="settings">
               {id && <BoutiqueSettingsTab boutiqueId={id} />}
+            </TabsContent>
+
+            {/* Marketplace highlights — promo / new collection visuals shown on /store */}
+            <TabsContent value="highlights">
+              {id && <HighlightsManager boutiqueId={id} />}
             </TabsContent>
           </Tabs>
         </div>
