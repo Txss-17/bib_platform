@@ -4,11 +4,12 @@ import { Input } from "@/components/ui/input";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
 } from "@/components/ui/sheet";
-import { LifeBuoy, Send, Sparkles, Ticket, Loader2 } from "lucide-react";
+import { LifeBuoy, Send, Sparkles, Ticket, Loader2, Paperclip, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { uploadTicketAttachment } from "@/hooks/useSupportTickets";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -43,7 +44,9 @@ export function FloatingSupportButton({
         "Bonjour 👋 Je suis l'assistant Brand-In-A-Box. Posez votre question — si je ne peux pas répondre, je crée un ticket pour l'équipe humaine.",
     },
   ]);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -73,8 +76,19 @@ export function FloatingSupportButton({
       const reply = data?.reply ?? "…";
       setMessages((m) => [...m, { role: "assistant", content: reply }]);
       if (data?.ticket?.id) {
+        // Upload any pending attachments now that we have a ticket id
+        if (pendingFiles.length > 0) {
+          for (const f of pendingFiles) {
+            try {
+              await uploadTicketAttachment(data.ticket.id, f, user?.id ?? null);
+            } catch (e) {
+              console.warn("attachment upload failed", e);
+            }
+          }
+          setPendingFiles([]);
+        }
         toast.success("Ticket créé", {
-          description: `« ${data.ticket.subject } » — réponse sous 24 h ouvrées.`,
+          description: `« ${data.ticket.subject} » — réponse sous 24 h ouvrées.`,
           icon: <Ticket className="w-4 h-4" />,
         });
       }
