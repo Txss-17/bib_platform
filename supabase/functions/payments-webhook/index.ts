@@ -94,7 +94,7 @@ async function handleCheckoutCompleted(session: any) {
     const supabase = getSupabase();
     const { data: orders } = await supabase
       .from("orders")
-      .select("id, order_number, customer_email, customer_name, total_amount, boutique_id, product_name")
+        .select("id, order_number, customer_email, customer_name, amount, boutique_id, product_id, products(name)")
       .in("id", orderIds);
     if (orders?.length) {
       const boutiqueIds = [...new Set(orders.map((o: any) => o.boutique_id).filter(Boolean))];
@@ -119,8 +119,8 @@ async function handleCheckoutCompleted(session: any) {
                 variables: {
                   customer_name: o.customer_name ?? "",
                   order_number: o.order_number ?? "",
-                  product_name: o.product_name ?? "",
-                  amount: String(o.total_amount ?? ""),
+                  product_name: (o as any).products?.name ?? "",
+                  amount: String(o.amount ?? ""),
                 },
               },
             }).catch((e) => console.error("send-boutique-email failed", e))
