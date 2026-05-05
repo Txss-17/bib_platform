@@ -713,9 +713,10 @@ export function StudioEditor({
             )}
 
             {activeScene && (
-              <SceneInspector
+              <SceneInspectorPro
                 key={activeScene.id}
                 scene={activeScene}
+                boutiqueId={boutiqueId}
                 onPatch={(patch) =>
                   updateScene.mutate({
                     sceneId: activeScene.id,
@@ -725,7 +726,6 @@ export function StudioEditor({
                 }
                 onDelete={() => setPendingDeleteId(activeScene.id)}
                 onRemix={() => handleRemix(activeScene)}
-                isRemixing={remixMut.isPending}
                 remixState={stateFromMutation(remixMut)}
               />
             )}
