@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Sparkles, Mail, Plus, GripVertical, Image, Wand2, Upload, Trash2, FileText, Box, Settings as SettingsIcon, ChevronUp, ChevronDown, Shuffle, X, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
+import { ArrowLeft, Eye, Save, Loader2, ExternalLink, Type, Palette, Layout, Sparkles, Mail, Plus, GripVertical, Image, Wand2, Upload, Trash2, FileText, Box, Settings as SettingsIcon, ChevronUp, ChevronDown, Shuffle, X, AlignLeft, AlignCenter, AlignRight, Store } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { BoutiqueSettingsTab } from "@/components/dashboard/boutique/BoutiqueSettingsTab";
 import { useState, useEffect } from "react";
@@ -950,7 +950,7 @@ export default function BoutiqueEdit() {
                 <span className="hidden sm:inline text-xs">Emails</span>
               </TabsTrigger>
               <TabsTrigger value="highlights" className="gap-1">
-                <Sparkles className="w-3.5 h-3.5" />
+                <Store className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline text-xs">Marketplace</span>
               </TabsTrigger>
               <TabsTrigger value="settings" className="gap-1">
