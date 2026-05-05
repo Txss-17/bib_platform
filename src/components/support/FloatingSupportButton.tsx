@@ -4,11 +4,12 @@ import { Input } from "@/components/ui/input";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
 } from "@/components/ui/sheet";
-import { LifeBuoy, Send, Sparkles, Ticket, Loader2 } from "lucide-react";
+import { LifeBuoy, Send, Sparkles, Ticket, Loader2, Paperclip, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { uploadTicketAttachment } from "@/hooks/useSupportTickets";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -43,7 +44,9 @@ export function FloatingSupportButton({
         "Bonjour 👋 Je suis l'assistant Brand-In-A-Box. Posez votre question — si je ne peux pas répondre, je crée un ticket pour l'équipe humaine.",
     },
   ]);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -73,8 +76,19 @@ export function FloatingSupportButton({
       const reply = data?.reply ?? "…";
       setMessages((m) => [...m, { role: "assistant", content: reply }]);
       if (data?.ticket?.id) {
+        // Upload any pending attachments now that we have a ticket id
+        if (pendingFiles.length > 0) {
+          for (const f of pendingFiles) {
+            try {
+              await uploadTicketAttachment(data.ticket.id, f, user?.id ?? null);
+            } catch (e) {
+              console.warn("attachment upload failed", e);
+            }
+          }
+          setPendingFiles([]);
+        }
         toast.success("Ticket créé", {
-          description: `« ${data.ticket.subject } » — réponse sous 24 h ouvrées.`,
+          description: `« ${data.ticket.subject} » — réponse sous 24 h ouvrées.`,
           icon: <Ticket className="w-4 h-4" />,
         });
       }
@@ -139,6 +153,33 @@ export function FloatingSupportButton({
         </div>
 
         <div className="border-t p-3 flex items-end gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            multiple
+            accept="image/*,application/pdf,.doc,.docx,.txt"
+            onChange={(e) => {
+              const files = Array.from(e.target.files ?? []);
+              const max = 5 * 1024 * 1024; // 5 MB
+              const ok = files.filter((f) => f.size <= max);
+              if (ok.length < files.length) {
+                toast.error("Fichier trop volumineux (>5 Mo)");
+              }
+              setPendingFiles((prev) => [...prev, ...ok].slice(0, 5));
+              if (fileInputRef.current) fileInputRef.current.value = "";
+            }}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={loading}
+            aria-label="Joindre un fichier"
+          >
+            <Paperclip className="w-4 h-4" />
+          </Button>
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -155,6 +196,32 @@ export function FloatingSupportButton({
             <Send className="w-4 h-4" />
           </Button>
         </div>
+        {pendingFiles.length > 0 && (
+          <div className="border-t px-3 py-2 flex flex-wrap gap-1.5">
+            {pendingFiles.map((f, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center gap-1 text-xs bg-muted rounded-full px-2 py-0.5"
+              >
+                <Paperclip className="w-3 h-3" />
+                <span className="max-w-[140px] truncate">{f.name}</span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPendingFiles((prev) => prev.filter((_, idx) => idx !== i))
+                  }
+                  className="ml-1 hover:text-destructive"
+                  aria-label="Retirer"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+            <span className="text-[10px] text-muted-foreground self-center">
+              Les fichiers seront envoyés dès la création du ticket.
+            </span>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );
