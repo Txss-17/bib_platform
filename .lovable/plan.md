@@ -1,119 +1,90 @@
+# Lot 3 — Étape 2 : Gmail OAuth multi-vendeurs
 
-# Lot 3 — Architecture email à 2 canaux
-
-Deux canaux séparés, chacun avec son rôle clair :
-
-| Canal | Expéditeur | Destinataire | Usage |
-|-------|------------|--------------|-------|
-| **Gmail OAuth (par vendeur)** | Boutique du vendeur | Client final | Confirmation commande, expédition, bienvenue, message manuel |
-| **Lovable Email (plateforme)** | `notify.brand-in-a-box.space` | Vendeur (et admin) | Onboarding, KYC, alertes, factures, escalade litige |
-
-Le connecteur Gmail mono-tenant actuel sera **désactivé** au profit d'OAuth Google natif où chaque vendeur connecte son propre compte.
+Chaque vendeur connecte **son propre compte Gmail / Google Workspace** à sa boutique. Les emails clients (confirmation commande, expédition, bienvenue…) partent depuis l'adresse réelle du vendeur, sur **son domaine**. Aucun partage de compte, aucune usurpation.
 
 ---
 
-## Partie A — Gmail OAuth multi-vendeurs
+## Action requise de votre côté (une seule fois)
 
-### A1. Prérequis (à réaliser par vous une seule fois, je vous guide)
-1. Créer un projet Google Cloud
-2. Activer Gmail API
-3. Configurer OAuth consent screen (External, scope `gmail.send`)
-4. Créer credentials OAuth 2.0 Web → me fournir `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`
-5. Redirect URI à enregistrer : `https://lfsiwtpctqxpzyskakey.supabase.co/functions/v1/gmail-oauth-callback`
+Avant que je puisse coder, vous devez créer les credentials OAuth Google :
 
-Je créerai les 2 secrets via `add_secret` quand on y arrive.
+1. Aller sur https://console.cloud.google.com/ → créer le projet **"Brand-In-A-Box"**
+2. **APIs & Services → Library** → activer **Gmail API**
+3. **OAuth consent screen** :
+   - User Type : **External**
+   - App name : Brand-In-A-Box
+   - Support email + developer email : le vôtre
+   - Scopes : ajouter `https://www.googleapis.com/auth/gmail.send`
+   - Test users : votre email (tant que l'app est en mode "Testing")
+4. **Credentials → Create Credentials → OAuth Client ID** :
+   - Type : **Web application**
+   - Name : Brand-In-A-Box Web
+   - **Authorized redirect URIs** :
+     `https://lfsiwtpctqxpzyskakey.supabase.co/functions/v1/gmail-oauth-callback`
+5. Récupérer **Client ID** + **Client Secret**
 
-### A2. Schéma DB
+Quand vous avez les 2 valeurs, dites « ok j'ai les credentials » et je vous demanderai de les coller via le dialogue secrets sécurisé.
+
+> Note : tant que l'app est "in Testing", seuls les emails Test users peuvent connecter. Pour ouvrir aux vrais vendeurs, il faudra basculer en "In production" (pas de revue Google nécessaire pour le scope `gmail.send` non sensible si vous restez sous 100 users, sinon vérification requise — j'expliquerai en temps voulu).
+
+---
+
+## Ce que je vais construire
+
+### 1. Base de données
 Nouvelle table `boutique_gmail_tokens` :
-- `boutique_id` (unique, FK logique)
-- `gmail_address` (l'adresse réellement connectée)
-- `access_token`, `refresh_token` (chiffrés via service-role only — RLS bloque tout accès client)
-- `expires_at`, `scope`, `connected_at`
+- `boutique_id` (unique)
+- `gmail_address` (l'adresse réellement connectée, ex. `contact@maboutique.fr`)
+- `access_token`, `refresh_token`, `expires_at`, `scope`, `connected_at`
+- **RLS** : aucun accès client (lecture/écriture `service_role` uniquement). Le statut "connecté" reste exposé via `boutique_email_settings.gmail_connected` + `gmail_address` (lecture owner).
 
-RLS : aucun accès client direct (lecture/écriture service_role uniquement). Le statut "connecté" sera exposé via `boutique_email_settings.gmail_connected` + `gmail_address` (lecture owner).
+### 2. Quatre Edge Functions
+| Fonction | Rôle |
+|----------|------|
+| `gmail-oauth-start` | Génère l'URL d'autorisation Google avec `state = boutique_id` signé (JWT) |
+| `gmail-oauth-callback` | Échange code → tokens, stocke en DB, marque la boutique connectée, redirige vers `/dashboard/boutique/:id/edit?tab=email&gmail=connected` |
+| `send-boutique-email` (refonte) | Récupère le refresh_token de LA boutique, rafraîchit l'access_token si expiré, appelle **Gmail API directement** (plus le gateway Lovable mono-tenant) |
+| `gmail-disconnect` | Révoque le token côté Google + supprime la ligne DB |
 
-### A3. Edge functions
-- **`gmail-oauth-start`** : génère URL d'autorisation Google avec `state = boutique_id` signé
-- **`gmail-oauth-callback`** : échange code → tokens, stocke en DB, marque la boutique connectée, redirige vers `/dashboard/boutique/:id/edit?tab=email&gmail=connected`
-- **`send-boutique-email`** (refonte) : récupère le refresh_token de LA boutique concernée, rafraîchit l'access_token si expiré, appelle Gmail API directement (plus via gateway Lovable)
-- **`gmail-disconnect`** : révoque token + supprime ligne
-
-### A4. UI (BoutiqueEdit > onglet Email)
-- Si non connecté : bouton "Connecter le Gmail de ma boutique" → ouvre `gmail-oauth-start` dans nouvelle fenêtre
-- Si connecté : badge "Connecté en tant que `vendeur@gmail.com`" + bouton "Déconnecter"
+### 3. UI (BoutiqueEdit → onglet Email)
+- **Si non connecté** : bouton "Connecter le Gmail de ma boutique" → ouvre `gmail-oauth-start` dans une nouvelle fenêtre
+- **Si connecté** : badge "Connecté en tant que `contact@maboutique.fr`" + bouton "Déconnecter"
 - Settings auto-send (déjà en place) restent identiques
 - Templates par boutique (déjà en place) restent identiques
+- Toast de succès quand `?gmail=connected` est présent dans l'URL au retour
 
-### A5. Nettoyage
-- Le connecteur Gmail Lovable mono-tenant sera retiré (`standard_connectors--disconnect`) après validation
-- `GOOGLE_MAIL_API_KEY` + appels gateway supprimés du code
+### 4. Refonte du choix expéditeur dans `payments-webhook`
+```text
+SI boutique a Gmail OAuth connecté → send-boutique-email (Gmail vendeur)
+SINON → send-transactional-email (customer-order-confirmation fallback BIB)
+```
+Garantit qu'un client reçoit toujours sa confirmation, même si le vendeur n'a pas branché Gmail.
 
----
+### 5. Nettoyage
+- Désactivation du connecteur Gmail Lovable mono-tenant (`standard_connectors--disconnect`)
+- Suppression des appels au gateway `connector-gateway.lovable.dev/google_mail/...` et de l'usage de `GOOGLE_MAIL_API_KEY` dans le code
 
-## Partie B — Suite emails plateforme (Lovable Email)
-
-### B1. Setup infra
-- `email_domain--check_email_domain_status` (vérifier si domaine déjà configuré sur `brand-in-a-box.space`)
-- Si non : dialogue de setup pour `notify.brand-in-a-box.space`
-- `email_domain--setup_email_infra` (queue, suppression, unsubscribe)
-- `email_domain--scaffold_transactional_email` (Edge function `send-transactional-email` + registry)
-- `email_domain--scaffold_auth_email_templates` (refonte des emails Supabase Auth aux couleurs BIB)
-
-### B2. Templates React Email à créer (charte BIB : marine + or, Playfair + Inter)
-Tous transactionnels (1:1, déclenchés par événement) :
-
-**Vendeur :**
-1. `seller-welcome` — après signup vendeur
-2. `kyc-submitted` — accusé réception docs
-3. `kyc-approved` / `kyc-rejected` — décision admin
-4. `boutique-published` — première publication
-5. `low-stock-alert` — produit critique (<10%)
-6. `new-order-notification` — nouvelle commande reçue
-7. `payout-issued` — versement effectué
-8. `subscription-receipt` — facture Linksy/Stripe
-9. `dispute-escalated` — litige >48h non traité
-
-**Admin :**
-10. `admin-new-kyc` — nouvelle vérification à traiter
-11. `admin-dispute-escalation` — litige escaladé
-
-**Client (fallback si Gmail non connecté) :**
-12. `customer-order-confirmation-fallback`
-
-### B3. Câblage
-- Triggers DB → Edge functions → `send-transactional-email`
-- Hook après signup pour `seller-welcome`
-- Trigger sur `boutique_documents` insert pour KYC
-- Trigger sur `orders` insert pour notification vendeur
-- Trigger sur `order_issues` >48h pour escalade
-- Webhook Stripe existant → ajout `payout-issued` + `subscription-receipt`
-
-### B4. Page unsubscribe
-Création `/email-preferences/unsubscribe` aux couleurs BIB.
+### 6. Mémoire
+Création de `mem://features/gmail-oauth-multi-vendeurs` documentant l'architecture (table, redirect URI, flow, choix expéditeur).
 
 ---
 
 ## Détails techniques
 
-### Stockage tokens Gmail
-Tokens stockés en clair dans une table service-role-only (équivalent à la pratique standard Supabase). Pas d'accès client possible via RLS. Si le user veut rotation/chiffrement renforcé, possible en v2.
-
-### Choix expéditeur dans `payments-webhook`
-```text
-SI boutique a Gmail OAuth connecté → send-boutique-email (Gmail vendeur)
-SINON → send-transactional-email (customer-order-confirmation-fallback via Lovable Email)
-```
-Garantit qu'un client reçoit toujours sa confirmation, même si le vendeur n'a pas branché Gmail.
-
-### Mémoire à mettre à jour
-Nouvelle entrée `mem://features/email-system` documentant les 2 canaux, et update `mem://features/email-marketing` pour refléter la refonte.
+- **Tokens stockés en clair** dans une table service-role-only (pratique standard Supabase). Pas d'accès client possible via RLS.
+- **Refresh automatique** : `send-boutique-email` vérifie `expires_at` ; si expiré, POST vers `oauth2.googleapis.com/token` avec le `refresh_token` et met à jour la DB.
+- **Google Workspace** (`contact@maboutique.fr`) : OAuth fonctionne identiquement, SPF/DKIM venant du vrai domaine du vendeur, **aucune config DNS requise** côté plateforme.
+- **Gmail perso** (`@gmail.com`) : fonctionne aussi, mais moins pro pour les clients.
+- **Pas d'usurpation possible** : Google n'autorise l'envoi que depuis l'adresse connectée (ou alias vérifié dans Workspace).
 
 ---
 
-## Ordre d'exécution proposé
+## Ordre d'exécution
 
-1. **Étape 1 (Lovable Email)** — Setup domaine `notify.brand-in-a-box.space` + infra + scaffold transactional + page unsubscribe + 4 templates critiques (welcome, KYC, new-order-notification, fallback client)
-2. **Étape 2 (Gmail OAuth)** — Demande des credentials Google → tables → 4 edge functions → refonte UI + refonte `send-boutique-email` + désactivation connecteur mono-tenant
-3. **Étape 3** — Templates restants (8) + tous les triggers + auth email templates BIB + refonte facture Stripe
+1. Vous créez les credentials Google (étapes ci-dessus)
+2. Vous me dites « ok », je lance le dialogue `add_secret` pour `GOOGLE_OAUTH_CLIENT_ID` + `GOOGLE_OAUTH_CLIENT_SECRET`
+3. Je crée la table + les 4 edge functions + l'UI + la refonte `payments-webhook`
+4. Je désactive le connecteur Gmail mono-tenant
+5. Vous testez en connectant un Gmail sur une boutique
 
-Chaque étape est livrable indépendamment. Je commence par l'étape 1 dès approbation (elle ne nécessite aucune action de votre part avant le dialogue de domaine).
+Dites-moi quand vous êtes prêt à créer les credentials Google, ou si vous voulez que je vous guide pas-à-pas dans la console Google Cloud.
