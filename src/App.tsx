@@ -67,6 +67,7 @@ const App = () => (
             <Route path="/pricing" element={<Tarifs />} />
             <Route path="/checkout/return" element={<CheckoutReturn />} />
             <Route path="/brand-preview" element={<BrandPreview />} />
+            <Route path="/store" element={<Marketplace />} />
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/recycler" element={<Recycler />} />
             <Route path="/recycler/:slug" element={<Recycler />} />
