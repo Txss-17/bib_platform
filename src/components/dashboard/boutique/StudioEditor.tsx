@@ -768,17 +768,143 @@ export function StudioEditor({
               </p>
             ) : (
               <div className="space-y-4 text-sm">
+                <Card className="p-3 flex items-center justify-between gap-2 bg-muted/30">
+                  <div className="text-xs">
+                    <p className="font-medium">Régénérer l'identité</p>
+                    <p className="opacity-60">Crée une nouvelle palette + copy à partir de tes réponses initiales.</p>
+                  </div>
+                  <ActionButton
+                    size="sm"
+                    variant="outline"
+                    state={stateFromMutation(regenIdentity)}
+                    loadingLabel="…"
+                    successLabel="✓"
+                    errorLabel="!"
+                    onClick={() => {
+                      const answers = (brandDna.studio_answers ?? {}) as any;
+                      if (!answers.audience) {
+                        toast.error("Réponds d'abord au Brand Studio.");
+                        return;
+                      }
+                      regenIdentity.mutate(
+                        { boutiqueId, answers },
+                        {
+                          onSuccess: () => toast.success("Identité régénérée"),
+                          onError: (e) =>
+                            toast.error(e instanceof Error ? e.message : "Échec"),
+                        },
+                      );
+                    }}
+                  >
+                    <Wand2 className="w-3.5 h-3.5" />
+                  </ActionButton>
+                </Card>
+
                 <div>
                   <Label className="text-xs uppercase tracking-wide opacity-60">Tagline</Label>
-                  <p className="font-medium">{brandDna.generated_copy?.tagline}</p>
+                  <Input
+                    value={brandDna.generated_copy?.tagline ?? ""}
+                    onChange={(e) =>
+                      updateBrandDna.mutate({
+                        boutiqueId,
+                        patch: {
+                          generated_copy: {
+                            ...brandDna.generated_copy,
+                            tagline: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                  />
                 </div>
                 <div>
                   <Label className="text-xs uppercase tracking-wide opacity-60">Ambiance</Label>
-                  <p>{brandDna.ambiance}</p>
+                  <Input
+                    value={brandDna.ambiance ?? ""}
+                    onChange={(e) =>
+                      updateBrandDna.mutate({ boutiqueId, patch: { ambiance: e.target.value } })
+                    }
+                  />
                 </div>
                 <div>
                   <Label className="text-xs uppercase tracking-wide opacity-60">Ton</Label>
-                  <p>{brandDna.tone}</p>
+                  <Input
+                    value={brandDna.tone ?? ""}
+                    onChange={(e) =>
+                      updateBrandDna.mutate({ boutiqueId, patch: { tone: e.target.value } })
+                    }
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-xs uppercase tracking-wide opacity-60">Police titres</Label>
+                    <Input
+                      value={brandDna.generated_typography?.display ?? ""}
+                      onChange={(e) =>
+                        updateBrandDna.mutate({
+                          boutiqueId,
+                          patch: {
+                            generated_typography: {
+                              ...brandDna.generated_typography,
+                              display: e.target.value,
+                            },
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs uppercase tracking-wide opacity-60">Police corps</Label>
+                    <Input
+                      value={brandDna.generated_typography?.body ?? ""}
+                      onChange={(e) =>
+                        updateBrandDna.mutate({
+                          boutiqueId,
+                          patch: {
+                            generated_typography: {
+                              ...brandDna.generated_typography,
+                              body: e.target.value,
+                            },
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs uppercase tracking-wide opacity-60">Hero — Titre</Label>
+                  <Input
+                    value={brandDna.generated_copy?.hero_title ?? ""}
+                    onChange={(e) =>
+                      updateBrandDna.mutate({
+                        boutiqueId,
+                        patch: {
+                          generated_copy: {
+                            ...brandDna.generated_copy,
+                            hero_title: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase tracking-wide opacity-60">Hero — Sous-titre</Label>
+                  <Textarea
+                    rows={2}
+                    value={brandDna.generated_copy?.hero_subtitle ?? ""}
+                    onChange={(e) =>
+                      updateBrandDna.mutate({
+                        boutiqueId,
+                        patch: {
+                          generated_copy: {
+                            ...brandDna.generated_copy,
+                            hero_subtitle: e.target.value,
+                          },
+                        },
+                      })
+                    }
+                  />
                 </div>
                 <div>
                   <Label className="text-xs uppercase tracking-wide opacity-60">Palette</Label>
