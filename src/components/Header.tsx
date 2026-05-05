@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Logo } from "@/components/Logo";
+import { BoutiqueSearchBar } from "@/components/search/BoutiqueSearchBar";
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -24,7 +25,7 @@ const Header = () => {
           <span className="lg:hidden"><Logo iconSize={36} /></span>
           <span className="hidden lg:inline-flex"><Logo iconSize={44} /></span>
 
-          <div className="hidden lg:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-6">
             <Link to="#features" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">{t("nav.features")}</Link>
             <Link to="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">{t("nav.how")}</Link>
             <Link to="/tarifs" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">{t("nav.pricing")}</Link>
@@ -34,7 +35,8 @@ const Header = () => {
             <Link to="#trust" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">{t("nav.trust")}</Link>
           </div>
 
-          <div className="hidden lg:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-3">
+            <BoutiqueSearchBar compact className="w-64" placeholder="Boutique ou produit…" />
             <LanguageSwitcher />
             <Button variant="ghost" size="sm" asChild>
               <Link to="/login">{t("nav.signin")}</Link>
@@ -57,6 +59,7 @@ const Header = () => {
         {mobileMenuOpen && (
           <div className="lg:hidden py-4 border-t border-border/50 animate-fade-in">
             <div className="flex flex-col gap-4">
+              <BoutiqueSearchBar compact placeholder="Boutique ou produit…" />
               <Link to="#features" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium py-2">{t("nav.features")}</Link>
               <Link to="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium py-2">{t("nav.how")}</Link>
               <Link to="/tarifs" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium py-2">{t("nav.pricing")}</Link>
