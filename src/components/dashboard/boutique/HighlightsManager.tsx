@@ -64,7 +64,7 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
         .eq("id", boutiqueId)
         .single();
       if (error) throw error;
-      return data as { id: string; highlight_media: Highlight[] | null };
+      return data as unknown as { id: string; highlight_media: Highlight[] | null };
     },
   });
 
