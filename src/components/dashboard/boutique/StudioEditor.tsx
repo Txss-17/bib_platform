@@ -34,6 +34,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { HighlightsManager } from "./HighlightsManager";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -617,10 +618,11 @@ export function StudioEditor({
         )}
 
         <Tabs defaultValue="scenes" className="flex-1 flex flex-col overflow-hidden">
-          <TabsList className="mx-4 mt-3 grid grid-cols-3">
+          <TabsList className="mx-4 mt-3 grid grid-cols-4">
             <TabsTrigger value="scenes">Scènes</TabsTrigger>
             <TabsTrigger value="brand">Identité</TabsTrigger>
             <TabsTrigger value="seo">SEO</TabsTrigger>
+            <TabsTrigger value="highlights">Marketplace</TabsTrigger>
           </TabsList>
 
           {/* SCENES TAB */}
@@ -1282,6 +1284,11 @@ export function StudioEditor({
                 </div>
               )}
             </Card>
+          </TabsContent>
+
+          {/* MARKETPLACE HIGHLIGHTS TAB */}
+          <TabsContent value="highlights" className="flex-1 overflow-y-auto px-4 pb-6 mt-3">
+            <HighlightsManager boutiqueId={boutiqueId} />
           </TabsContent>
         </Tabs>
       </aside>
