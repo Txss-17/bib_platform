@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,6 +7,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   Sparkles,
   Upload,
@@ -14,37 +32,165 @@ import {
   Trash2,
   ImageIcon,
   Video,
-  ChevronUp,
-  ChevronDown,
   ExternalLink,
   Wand2,
+  GripVertical,
+  CalendarClock,
 } from "lucide-react";
 import { toast } from "sonner";
 
-/**
- * Marketing "highlights" displayed in a horizontal carousel on the marketplace
- * boutique card. Each highlight is a short story-style image or video the
- * boutique owner can use to promote a sale, a new collection, an event, etc.
- */
 export interface Highlight {
   id: string;
   kind: "image" | "video";
   url: string;
   label?: string;
   cta_url?: string;
+  enabled?: boolean;
+  starts_at?: string | null;
+  ends_at?: string | null;
 }
 
 const MAX_HIGHLIGHTS = 8;
 const ALLOWED_IMAGE = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const ALLOWED_VIDEO = ["video/mp4", "video/webm", "video/quicktime"];
-const MAX_IMAGE_BYTES = 6 * 1024 * 1024; // 6 MB
-const MAX_VIDEO_BYTES = 30 * 1024 * 1024; // 30 MB
+const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 30 * 1024 * 1024;
 
 function uid() {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : Math.random().toString(36).slice(2);
+}
+
+function currentSeason(): string {
+  const m = new Date().getMonth() + 1;
+  if (m >= 3 && m <= 5) return "printemps";
+  if (m >= 6 && m <= 8) return "été";
+  if (m >= 9 && m <= 11) return "automne";
+  return "hiver";
+}
+
+function toLocalInput(iso?: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const off = d.getTimezoneOffset();
+  const local = new Date(d.getTime() - off * 60000);
+  return local.toISOString().slice(0, 16);
+}
+
+function fromLocalInput(v: string): string | null {
+  if (!v) return null;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d.toISOString();
+}
+
+function SortableHighlight({
+  h,
+  idx,
+  onPatch,
+  onRemove,
+}: {
+  h: Highlight;
+  idx: number;
+  onPatch: (id: string, patch: Partial<Highlight>) => void;
+  onRemove: (id: string) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: h.id,
+  });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : 0,
+  };
+  const enabled = h.enabled !== false;
+
   return (
-    typeof crypto !== "undefined" && "randomUUID" in crypto
-      ? crypto.randomUUID()
-      : Math.random().toString(36).slice(2)
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="group relative overflow-hidden rounded-lg border border-border/60 bg-muted/30"
+    >
+      <div className="relative aspect-[3/4] bg-muted">
+        {h.kind === "video" ? (
+          <video src={h.url} muted loop playsInline autoPlay className="h-full w-full object-cover" />
+        ) : (
+          <img src={h.url} alt={h.label ?? "Mise en avant"} className="h-full w-full object-cover" />
+        )}
+        <Badge className="absolute left-1.5 top-1.5 gap-1 bg-black/60 text-white border-0 text-[10px]">
+          {h.kind === "video" ? <Video className="h-3 w-3" /> : <ImageIcon className="h-3 w-3" />}
+          {idx + 1}
+        </Badge>
+        <button
+          {...attributes}
+          {...listeners}
+          className="absolute right-1.5 top-1.5 inline-flex h-6 w-6 items-center justify-center rounded bg-black/60 text-white cursor-grab active:cursor-grabbing touch-none"
+          aria-label="Réordonner"
+          type="button"
+        >
+          <GripVertical className="h-3.5 w-3.5" />
+        </button>
+        {!enabled && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-[11px] font-medium text-white">
+            Désactivée
+          </div>
+        )}
+      </div>
+      <div className="space-y-1.5 p-2">
+        <div className="flex items-center justify-between gap-2">
+          <Label className="text-[11px] text-muted-foreground">Active</Label>
+          <Switch
+            checked={enabled}
+            onCheckedChange={(v) => onPatch(h.id, { enabled: v })}
+          />
+        </div>
+        <Input
+          value={h.label ?? ""}
+          onChange={(e) => onPatch(h.id, { label: e.target.value })}
+          placeholder="Titre (ex: -20% été)"
+          className="h-7 text-xs"
+        />
+        <Input
+          value={h.cta_url ?? ""}
+          onChange={(e) => onPatch(h.id, { cta_url: e.target.value })}
+          placeholder="Lien CTA (optionnel)"
+          className="h-7 text-xs"
+        />
+        <div className="grid grid-cols-2 gap-1">
+          <div className="space-y-0.5">
+            <Label className="text-[10px] text-muted-foreground">Début</Label>
+            <Input
+              type="datetime-local"
+              value={toLocalInput(h.starts_at)}
+              onChange={(e) => onPatch(h.id, { starts_at: fromLocalInput(e.target.value) })}
+              className="h-7 text-[11px] px-1"
+            />
+          </div>
+          <div className="space-y-0.5">
+            <Label className="text-[10px] text-muted-foreground">Fin</Label>
+            <Input
+              type="datetime-local"
+              value={toLocalInput(h.ends_at)}
+              onChange={(e) => onPatch(h.id, { ends_at: fromLocalInput(e.target.value) })}
+              className="h-7 text-[11px] px-1"
+            />
+          </div>
+        </div>
+        <div className="flex items-center justify-end pt-1">
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-6 w-6 text-muted-foreground hover:text-destructive"
+            onClick={() => onRemove(h.id)}
+            aria-label="Supprimer"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -58,20 +204,28 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
   const [aiPrompt, setAiPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
   const { data: boutique, isLoading } = useQuery({
     queryKey: ["boutique-highlights", boutiqueId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("boutiques")
-        .select("id, highlight_media")
+        .select("id, name, category, description, tagline, target_markets, highlight_media")
         .eq("id", boutiqueId)
         .single();
       if (error) throw error;
-      return data as unknown as { id: string; highlight_media: Highlight[] | null };
+      return data as any;
     },
   });
 
-  const highlights: Highlight[] = (boutique?.highlight_media as Highlight[] | null) ?? [];
+  const highlights: Highlight[] = useMemo(
+    () => (Array.isArray(boutique?.highlight_media) ? boutique.highlight_media : []),
+    [boutique]
+  );
 
   const saveMutation = useMutation({
     mutationFn: async (next: Highlight[]) => {
@@ -93,7 +247,7 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
       toast.error(`Limite de ${MAX_HIGHLIGHTS} mises en avant atteinte.`);
       return;
     }
-    saveMutation.mutate([...highlights, h]);
+    saveMutation.mutate([...highlights, { enabled: true, ...h }]);
   };
 
   const updateHighlight = (id: string, patch: Partial<Highlight>) => {
@@ -103,7 +257,6 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
   const removeHighlight = (id: string) => {
     const target = highlights.find((h) => h.id === id);
     saveMutation.mutate(highlights.filter((h) => h.id !== id));
-    // Best-effort storage cleanup for files we uploaded ourselves.
     if (target) {
       const marker = "/boutique-media/";
       const i = target.url.indexOf(marker);
@@ -114,14 +267,13 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
     }
   };
 
-  const move = (id: string, dir: -1 | 1) => {
-    const idx = highlights.findIndex((h) => h.id === id);
-    if (idx === -1) return;
-    const target = idx + dir;
-    if (target < 0 || target >= highlights.length) return;
-    const next = [...highlights];
-    [next[idx], next[target]] = [next[target], next[idx]];
-    saveMutation.mutate(next);
+  const handleDragEnd = (e: DragEndEvent) => {
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+    const oldIdx = highlights.findIndex((h) => h.id === active.id);
+    const newIdx = highlights.findIndex((h) => h.id === over.id);
+    if (oldIdx === -1 || newIdx === -1) return;
+    saveMutation.mutate(arrayMove(highlights, oldIdx, newIdx));
   };
 
   const handleFile = async (file: File) => {
@@ -129,7 +281,7 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
     const isImage = ALLOWED_IMAGE.includes(file.type);
     const isVideo = ALLOWED_VIDEO.includes(file.type);
     if (!isImage && !isVideo) {
-      toast.error("Format non supporté. JPG/PNG/WebP/GIF ou MP4/WebM.");
+      toast.error("Format non supporté.");
       return;
     }
     const maxBytes = isImage ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES;
@@ -152,6 +304,7 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
         url: pub.publicUrl,
         label: draftLabel.trim() || undefined,
         cta_url: draftCta.trim() || undefined,
+        enabled: true,
       });
       setDraftLabel("");
       setDraftCta("");
@@ -166,19 +319,31 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
 
   const handleGenerate = async () => {
     if (!user) return toast.error("Session expirée");
-    const prompt = aiPrompt.trim();
-    if (prompt.length < 4) {
-      toast.error("Décris ton visuel (ex: promo soldes été, ambiance plage doré)");
+    const userPrompt = aiPrompt.trim();
+    if (userPrompt.length < 4) {
+      toast.error("Décris ton actualité (ex: soldes été, nouvelle collection capsule)");
       return;
     }
     if (highlights.length >= MAX_HIGHLIGHTS) {
       toast.error(`Limite de ${MAX_HIGHLIGHTS} mises en avant atteinte.`);
       return;
     }
+    const ctxParts = [
+      boutique?.name && `Boutique: ${boutique.name}`,
+      boutique?.category && `Catégorie: ${boutique.category}`,
+      Array.isArray(boutique?.target_markets) && boutique.target_markets.length
+        ? `Marché: ${boutique.target_markets.join(", ")}`
+        : null,
+      boutique?.tagline && `Positionnement: ${boutique.tagline}`,
+      `Saison: ${currentSeason()} ${new Date().getFullYear()}`,
+      `Actualité: ${userPrompt}`,
+    ].filter(Boolean);
+    const enrichedPrompt = ctxParts.join(" · ");
+
     setGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke("studio-image-gen", {
-        body: { boutique_id: boutiqueId, prompt },
+        body: { boutique_id: boutiqueId, prompt: enrichedPrompt },
       });
       if (error) throw error;
       const url = (data as { url?: string })?.url;
@@ -187,13 +352,14 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
         id: uid(),
         kind: "image",
         url,
-        label: draftLabel.trim() || undefined,
+        label: draftLabel.trim() || userPrompt.slice(0, 40),
         cta_url: draftCta.trim() || undefined,
+        enabled: true,
       });
       setAiPrompt("");
       setDraftLabel("");
       setDraftCta("");
-      toast.success("Visuel généré et ajouté");
+      toast.success("Visuel IA généré (cohérent avec votre boutique)");
     } catch (e: any) {
       toast.error(e?.message ?? "Erreur de génération");
     } finally {
@@ -209,9 +375,8 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
           Mises en avant marketplace
         </CardTitle>
         <CardDescription>
-          Alimentez votre carte boutique sur la marketplace avec des visuels et vidéos
-          (promo, nouvelle collection, événement). Affichées en défilement automatique
-          comme des stories. Jusqu'à {MAX_HIGHLIGHTS} éléments.
+          1 à {MAX_HIGHLIGHTS} visuels/vidéos affichés en story sur votre carte boutique. Activez,
+          planifiez (date début/fin) et glissez-déposez pour réordonner — l'ordre est respecté sur la marketplace.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -221,80 +386,23 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-              {highlights.map((h, idx) => (
-                <div
-                  key={h.id}
-                  className="group relative overflow-hidden rounded-lg border border-border/60 bg-muted/30"
-                >
-                  <div className="relative aspect-[3/4] bg-muted">
-                    {h.kind === "video" ? (
-                      <video
-                        src={h.url}
-                        muted
-                        loop
-                        playsInline
-                        autoPlay
-                        className="h-full w-full object-cover"
+            {highlights.length > 0 && (
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={highlights.map((h) => h.id)} strategy={verticalListSortingStrategy}>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                    {highlights.map((h, idx) => (
+                      <SortableHighlight
+                        key={h.id}
+                        h={h}
+                        idx={idx}
+                        onPatch={updateHighlight}
+                        onRemove={removeHighlight}
                       />
-                    ) : (
-                      <img src={h.url} alt={h.label ?? "Mise en avant"} className="h-full w-full object-cover" />
-                    )}
-                    <Badge className="absolute left-1.5 top-1.5 gap-1 bg-black/60 text-white border-0 text-[10px]">
-                      {h.kind === "video" ? <Video className="h-3 w-3" /> : <ImageIcon className="h-3 w-3" />}
-                      {idx + 1}
-                    </Badge>
+                    ))}
                   </div>
-                  <div className="space-y-1.5 p-2">
-                    <Input
-                      value={h.label ?? ""}
-                      onChange={(e) => updateHighlight(h.id, { label: e.target.value })}
-                      placeholder="Titre (ex: -20% été)"
-                      className="h-7 text-xs"
-                    />
-                    <Input
-                      value={h.cta_url ?? ""}
-                      onChange={(e) => updateHighlight(h.id, { cta_url: e.target.value })}
-                      placeholder="Lien (optionnel)"
-                      className="h-7 text-xs"
-                    />
-                    <div className="flex items-center justify-between gap-1">
-                      <div className="flex gap-1">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-6 w-6"
-                          onClick={() => move(h.id, -1)}
-                          disabled={idx === 0}
-                          aria-label="Monter"
-                        >
-                          <ChevronUp className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-6 w-6"
-                          onClick={() => move(h.id, 1)}
-                          disabled={idx === highlights.length - 1}
-                          aria-label="Descendre"
-                        >
-                          <ChevronDown className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                        onClick={() => removeHighlight(h.id)}
-                        aria-label="Supprimer"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                </SortableContext>
+              </DndContext>
+            )}
 
             {highlights.length < MAX_HIGHLIGHTS && (
               <div className="space-y-3 rounded-lg border border-dashed border-border/60 bg-muted/20 p-3">
@@ -348,7 +456,7 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
                     <Input
                       value={aiPrompt}
                       onChange={(e) => setAiPrompt(e.target.value)}
-                      placeholder="Décrire un visuel à générer…"
+                      placeholder="Actualité (promo, nouveauté…)"
                       className="h-9 text-sm"
                       disabled={generating}
                     />
@@ -356,6 +464,7 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
                       type="button"
                       onClick={handleGenerate}
                       disabled={generating || uploading || saveMutation.isPending}
+                      title="Générer avec l'IA selon votre boutique"
                     >
                       {generating ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -365,8 +474,9 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
                     </Button>
                   </div>
                 </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Jusqu'à {MAX_HIGHLIGHTS} éléments. Recommandé portrait 3:4. Image ≤ 6 Mo · Vidéo ≤ 30 Mo (5–10 s). La génération IA produit une image cohérente avec votre actualité (promo, nouveauté…).
+                <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
+                  <CalendarClock className="h-3 w-3 mt-0.5 shrink-0" />
+                  L'IA s'appuie sur votre catégorie ({boutique?.category ?? "—"}), votre marché et la saison ({currentSeason()}). Image ≤ 6 Mo · Vidéo ≤ 30 Mo.
                 </p>
               </div>
             )}
