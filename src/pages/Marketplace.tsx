@@ -1,38 +1,38 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { useMarketplaceBoutiques } from "@/hooks/useMarketplace";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useMarketplaceBoutiques, type MarketplaceBoutique } from "@/hooks/useMarketplace";
 import { BoutiqueCard } from "@/components/marketplace/BoutiqueCard";
 import { Logo } from "@/components/Logo";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useSEO } from "@/hooks/useSEO";
-import { Search, ShieldCheck, Truck, Recycle, Loader2, Package } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  ArrowLeft,
+  Search,
+  Check,
+  Heart,
+  Store,
+  Package,
+  Settings,
+  ChevronRight,
+  Loader2,
+  Sparkles,
+} from "lucide-react";
 
-const TRUST_BADGES = [
-  { icon: Truck, label: "0 stock, 0 logistique", desc: "Expédition gérée par Brand-In-A-Box" },
-  { icon: ShieldCheck, label: "Produits audités", desc: "Échantillons validés, qualité conforme" },
-  { icon: Recycle, label: "Recyclage récompensé", desc: "Vos cartons = cartes cadeaux boutiques" },
+const ACCOUNT_SHORTCUTS = [
+  { icon: Heart, label: "Mes favoris", to: "/mon-compte?tab=favorites" },
+  { icon: Store, label: "Mes boutiques", to: "/mon-compte?tab=boutiques" },
+  { icon: Package, label: "Mes commandes", to: "/mon-compte?tab=orders" },
+  { icon: Settings, label: "Paramètres", to: "/mon-compte?tab=settings" },
 ];
 
 export default function Marketplace() {
   const { data: boutiques = [], isLoading } = useMarketplaceBoutiques();
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("q") ?? "");
-  const [activeCategory, setActiveCategory] = useState<string>("all");
-  const [market, setMarket] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<"relevance" | "recent" | "established" | "impact" | "popular">(
-    searchParams.get("q") ? "relevance" : "recent",
-  );
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
-  // Sync ?q= ↔ input
   useEffect(() => {
     const next = new URLSearchParams(searchParams);
     if (search.trim()) next.set("q", search.trim());
@@ -44,261 +44,237 @@ export default function Marketplace() {
   }, [search]);
 
   useSEO({
-    title: "Store BIB — Toutes les boutiques Brand-In-A-Box",
+    title: "Store BIB — Recherche boutiques Brand-In-A-Box",
     description:
-      "Store BIB : la marketplace officielle de Brand-In-A-Box. Filtrez par catégorie, marché ou impact environnemental. Produits audités, livraison incluse.",
+      "Trouvez vos boutiques préférées sur Brand-In-A-Box. Catégories, nouveautés, tendances — tout pour explorer la marketplace.",
   });
 
-  const categories = useMemo(() => {
-    const set = new Set(boutiques.map((b) => b.category).filter(Boolean));
-    return ["all", ...Array.from(set)];
-  }, [boutiques]);
-
-  const markets = useMemo(() => {
-    const set = new Set(boutiques.map((b) => b.market).filter(Boolean));
-    return ["all", ...Array.from(set)];
-  }, [boutiques]);
+  const q = search.trim().toLowerCase();
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    const list = boutiques.filter((b) => {
-      if (activeCategory !== "all" && b.category !== activeCategory) return false;
-      if (market !== "all" && b.market !== market) return false;
-      if (q) {
-        return (
-          b.name.toLowerCase().includes(q) ||
-          (b.tagline ?? "").toLowerCase().includes(q) ||
-          (b.description ?? "").toLowerCase().includes(q) ||
-          b.product_previews.some((p) => p.name.toLowerCase().includes(q))
-        );
-      }
-      return true;
-    });
+    if (!q) return boutiques;
+    return boutiques.filter(
+      (b) =>
+        b.name.toLowerCase().includes(q) ||
+        (b.tagline ?? "").toLowerCase().includes(q) ||
+        b.product_previews.some((p) => p.name.toLowerCase().includes(q)),
+    );
+  }, [boutiques, q]);
 
-    const sorted = [...list];
-    switch (sortBy) {
-      case "relevance": {
-        const scoreOf = (b: typeof list[number]) => {
-          if (!q) return 0;
-          let s = 0;
-          if (b.name.toLowerCase() === q) s += 100;
-          else if (b.name.toLowerCase().startsWith(q)) s += 50;
-          else if (b.name.toLowerCase().includes(q)) s += 25;
-          if ((b.tagline ?? "").toLowerCase().includes(q)) s += 10;
-          s += b.product_previews.filter((p) => p.name.toLowerCase().includes(q)).length * 5;
-          return s;
-        };
-        sorted.sort((a, b) => scoreOf(b) - scoreOf(a));
-        break;
-      }
-      case "recent":
-        sorted.sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-        break;
-      case "established":
-        sorted.sort(
-          (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        );
-        break;
-      case "impact":
-        sorted.sort((a, b) => b.recycling_points - a.recycling_points);
-        break;
-      case "popular":
-        sorted.sort((a, b) => b.total_sales - a.total_sales);
-        break;
+  // Group by category for horizontal rails
+  const byCategory = useMemo(() => {
+    const map = new Map<string, MarketplaceBoutique[]>();
+    for (const b of filtered) {
+      const k = b.category || "Autres";
+      if (!map.has(k)) map.set(k, []);
+      map.get(k)!.push(b);
     }
-    return sorted;
-  }, [boutiques, activeCategory, market, search, sortBy]);
+    return Array.from(map.entries());
+  }, [filtered]);
+
+  const trending = useMemo(
+    () => [...filtered].sort((a, b) => b.total_sales - a.total_sales).slice(0, 12),
+    [filtered],
+  );
+  const newest = useMemo(
+    () =>
+      [...filtered]
+        .sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        )
+        .slice(0, 12),
+    [filtered],
+  );
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <Link to="/store" className="flex items-center gap-2">
-            <Logo iconSize={28} />
-            <span className="hidden font-display text-sm font-semibold text-muted-foreground sm:inline">
-              · Store
-            </span>
-          </Link>
-          <div className="hidden flex-1 max-w-md mx-8 md:block">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Rechercher une boutique, un produit…"
-                className="pl-9"
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
-              <Link to="/suivi-commande" className="gap-1.5">
-                <Package className="h-4 w-4" /> Suivi commande
-              </Link>
-            </Button>
-            <Button asChild variant="ghost" size="sm">
-              <Link to="/mon-compte">Mon compte</Link>
-            </Button>
-            <Button asChild size="sm" className="hidden sm:inline-flex">
-              <Link to="/vendre">Vendre sur BIB</Link>
-            </Button>
-          </div>
+    <div className="min-h-screen bg-[hsl(220_25%_6%)] text-white">
+      {/* Pill header */}
+      <header className="sticky top-0 z-40 bg-gradient-to-b from-[hsl(220_25%_6%)] via-[hsl(220_25%_6%)]/95 to-transparent pt-[env(safe-area-inset-top)]">
+        <div className="container mx-auto flex items-center justify-between gap-3 px-4 py-3">
+          <button
+            onClick={() => navigate(-1)}
+            aria-label="Retour"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 backdrop-blur transition hover:bg-white/15 active:scale-95"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+
+          <form
+            onSubmit={(e) => e.preventDefault()}
+            className="relative flex-1"
+          >
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Rechercher une boutique, un produit…"
+              className="h-10 rounded-full border-white/10 bg-white/10 pl-10 text-sm text-white placeholder:text-white/50 focus-visible:ring-primary/40 backdrop-blur"
+            />
+          </form>
+
+          <button
+            onClick={() => {
+              if (search.trim()) navigate(`/store?q=${encodeURIComponent(search.trim())}`);
+            }}
+            aria-label="Valider"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition hover:brightness-110 active:scale-95"
+          >
+            <Check className="h-5 w-5" />
+          </button>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="border-b border-border/60 bg-gradient-to-b from-primary/5 to-background">
-        <div className="container mx-auto px-4 py-10 md:py-16">
-          <div className="mx-auto max-w-3xl text-center">
-            <Badge variant="outline" className="mb-4 border-primary/30 bg-primary/5 text-primary">
-              Store BIB · marketplace officiel Brand-In-A-Box
-            </Badge>
-            <h1 className="font-display text-3xl font-bold leading-tight md:text-5xl">
-              Toutes vos marques préférées,{" "}
-              <span className="text-primary">une seule expérience.</span>
-            </h1>
-            <p className="mt-4 text-base text-muted-foreground md:text-lg">
-              Produits sélectionnés et audités. Livraison incluse. Recyclez vos cartons,
-              cumulez des cartes cadeaux sur vos boutiques préférées.
-            </p>
-
-            {/* Mobile search */}
-            <div className="relative mt-6 md:hidden">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Rechercher…"
-                className="pl-9"
-              />
+      <main className="container mx-auto px-4 pb-20">
+        {/* Account shortcuts panel */}
+        <section className="mt-2 rounded-3xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-wider text-white/50">Mon espace</p>
+              <h2 className="font-display text-lg font-semibold">
+                {user ? "Bon retour 👋" : "Bienvenue sur le Store"}
+              </h2>
             </div>
-
-            {/* Mobile quick links */}
-            <div className="mt-4 flex justify-center gap-2 md:hidden">
-              <Button asChild variant="outline" size="sm">
-                <Link to="/suivi-commande" className="gap-1.5">
-                  <Package className="h-4 w-4" /> Suivi commande
-                </Link>
-              </Button>
-            </div>
+            <Logo iconSize={24} asLink={false} />
           </div>
 
-          {/* Trust badges */}
-          <div className="mx-auto mt-10 grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-3">
-            {TRUST_BADGES.map(({ icon: Icon, label, desc }) => (
-              <div
-                key={label}
-                className="flex items-start gap-3 rounded-xl border border-border/60 bg-card p-4"
-              >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">{label}</p>
-                  <p className="text-xs text-muted-foreground">{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Filters bar */}
-      <div className="sticky top-16 z-30 border-b border-border/60 bg-background/95 backdrop-blur">
-        <div className="container mx-auto px-4 py-3 space-y-3">
-          {categories.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto scrollbar-none">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`shrink-0 rounded-full border px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
-                    activeCategory === cat
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                  }`}
+          <ul className="space-y-1">
+            {ACCOUNT_SHORTCUTS.map((s) => (
+              <li key={s.label}>
+                <Link
+                  to={s.to}
+                  className="group flex items-center gap-3 rounded-xl px-2 py-3 text-sm transition hover:bg-white/5"
                 >
-                  {cat === "all" ? "Toutes catégories" : cat}
-                </button>
-              ))}
-            </div>
-          )}
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/80 group-hover:bg-primary/20 group-hover:text-primary">
+                    <s.icon className="h-4 w-4" />
+                  </span>
+                  <span className="flex-1 font-medium text-white/90">{s.label}</span>
+                  <ChevronRight className="h-4 w-4 text-white/40 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <Select value={market} onValueChange={setMarket}>
-              <SelectTrigger className="h-9 w-[150px]">
-                <SelectValue placeholder="Marché" />
-              </SelectTrigger>
-              <SelectContent>
-                {markets.map((m) => (
-                  <SelectItem key={m} value={m}>
-                    {m === "all" ? "Tous les marchés" : m}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-              <SelectTrigger className="h-9 w-[200px]">
-                <SelectValue placeholder="Trier par" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="relevance">🎯 Pertinence</SelectItem>
-                <SelectItem value="recent">🆕 Récemment ajoutées</SelectItem>
-                <SelectItem value="established">⏳ Établies (long terme)</SelectItem>
-                <SelectItem value="impact">♻️ Impact environnemental</SelectItem>
-                <SelectItem value="popular">🔥 Plus populaires</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
-
-      {/* Boutiques grid */}
-      <main className="container mx-auto px-4 py-10">
+        {/* States */}
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-20 text-muted-foreground">
+          <div className="flex flex-col items-center justify-center gap-3 py-24 text-white/60">
             <Loader2 className="h-6 w-6 animate-spin" />
             <p className="text-sm">Chargement des boutiques…</p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border bg-card/50 py-20 text-center">
-            <p className="text-lg font-semibold">Aucune boutique trouvée</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Essayez une autre recherche ou catégorie.
-            </p>
+          <div className="mt-8 rounded-3xl border border-dashed border-white/15 bg-white/[0.03] py-16 text-center">
+            <p className="text-lg font-semibold">Aucun résultat</p>
+            <p className="mt-2 text-sm text-white/60">Essayez un autre mot-clé.</p>
           </div>
         ) : (
           <>
-            <div className="mb-6 flex items-baseline justify-between">
-              <h2 className="font-display text-2xl font-semibold">
-                {filtered.length} boutique{filtered.length > 1 ? "s" : ""}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Mises à jour en continu
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filtered.map((b) => (
-                <BoutiqueCard key={b.id} boutique={b} />
-              ))}
-            </div>
+            {/* Search results take over */}
+            {q ? (
+              <Rail
+                title={`Résultats pour "${search.trim()}"`}
+                subtitle={`${filtered.length} boutique${filtered.length > 1 ? "s" : ""}`}
+                items={filtered}
+              />
+            ) : (
+              <>
+                <Rail
+                  title="✨ Tendances"
+                  subtitle="Les plus populaires en ce moment"
+                  items={trending}
+                  accent
+                />
+                <Rail
+                  title="🆕 Nouveautés"
+                  subtitle="Boutiques fraîchement lancées"
+                  items={newest}
+                />
+                {byCategory.map(([cat, items]) => (
+                  <Rail
+                    key={cat}
+                    title={cat}
+                    subtitle={`${items.length} boutique${items.length > 1 ? "s" : ""}`}
+                    items={items}
+                  />
+                ))}
+              </>
+            )}
           </>
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="mt-12 border-t border-border/60 bg-card/30">
-        <div className="container mx-auto flex flex-col items-center gap-4 px-4 py-8 text-center text-sm text-muted-foreground sm:flex-row sm:justify-between sm:text-left">
-          <Logo iconSize={28} asLink={false} />
+      <footer className="border-t border-white/5 bg-black/40">
+        <div className="container mx-auto flex flex-col items-center gap-2 px-4 py-6 text-center text-xs text-white/50 sm:flex-row sm:justify-between sm:text-left">
+          <Logo iconSize={20} asLink={false} />
           <p>© {new Date().getFullYear()} Brand-In-A-Box · Marketplace officiel</p>
-          <Link to="/" className="hover:text-foreground">Brand-In-A-Box</Link>
+          <Link to="/" className="hover:text-white">Brand-In-A-Box</Link>
         </div>
       </footer>
     </div>
   );
 }
+
+/* ---------------------------- horizontal rail ---------------------------- */
+
+interface RailProps {
+  title: string;
+  subtitle?: string;
+  items: MarketplaceBoutique[];
+  accent?: boolean;
+}
+
+function Rail({ title, subtitle, items, accent }: RailProps) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  if (items.length === 0) return null;
+
+  const scroll = (dir: 1 | -1) => {
+    const el = ref.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * el.clientWidth * 0.85, behavior: "smooth" });
+  };
+
+  return (
+    <section className="mt-10">
+      <div className="mb-4 flex items-end justify-between gap-3">
+        <div>
+          <h3
+            className={`font-display text-xl font-semibold leading-tight ${
+              accent ? "text-primary" : "text-white"
+            }`}
+          >
+            {title}
+          </h3>
+          {subtitle && <p className="text-xs text-white/55">{subtitle}</p>}
+        </div>
+        <button
+          onClick={() => scroll(1)}
+          aria-label="Suivant"
+          className="hidden h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/80 transition hover:bg-white/20 sm:flex"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div className="relative">
+        <div
+          ref={ref}
+          className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 scrollbar-none"
+        >
+          {items.map((b) => (
+            <div
+              key={b.id}
+              className="w-[78%] shrink-0 snap-start sm:w-[44%] md:w-[32%] lg:w-[24%]"
+            >
+              <div className="[&_a]:bg-white/[0.03] [&_a]:border-white/10 [&_p.text-foreground\\/80]:text-white/80 [&_.text-muted-foreground]:text-white/55">
+                <BoutiqueCard boutique={b} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* utility: hint of brand sparkle (unused now but kept for accent rails) */
+export const _unused = Sparkles;
