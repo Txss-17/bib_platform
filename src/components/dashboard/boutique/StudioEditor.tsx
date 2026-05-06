@@ -714,55 +714,39 @@ export function StudioEditor({
                 <Loader2 className="w-5 h-5 animate-spin opacity-50" />
               </div>
             )}
-            {scenes.map((s, i) => {
-              const def = findSceneDefinition(s.scene_type);
-              const isActive = activeScene?.id === s.id;
-              return (
-                <div
-                  key={s.id}
-                  onClick={() => setActiveSceneId(s.id)}
-                  className={`group cursor-pointer rounded-lg border p-3 flex items-start gap-2 transition ${
-                    isActive
-                      ? "border-primary bg-primary/5"
-                      : "border-border/50 hover:border-border bg-card"
-                  }`}
-                >
-                  <GripVertical className="w-4 h-4 mt-0.5 opacity-30" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium truncate">{def?.name ?? s.scene_type}</span>
-                      <Badge variant="outline" className="text-[10px] capitalize">
-                        {s.role}
-                      </Badge>
-                      {!s.is_visible && (
-                        <Badge variant="secondary" className="text-[10px]">Masqué</Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {def?.tagline}
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition">
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); handleMove(s.id, -1); }}
-                      disabled={i === 0}
-                      className="p-0.5 hover:bg-muted rounded disabled:opacity-30"
-                    >
-                      <ChevronUp className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); handleMove(s.id, 1); }}
-                      disabled={i === scenes.length - 1}
-                      className="p-0.5 hover:bg-muted rounded disabled:opacity-30"
-                    >
-                      <ChevronDown className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={scenes.map((s) => s.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {scenes.map((s) => (
+                  <SortableSceneRow
+                    key={s.id}
+                    scene={s}
+                    isActive={activeScene?.id === s.id}
+                    onSelect={() => setActiveSceneId(s.id)}
+                    onToggleVisible={() =>
+                      updateScene.mutate({
+                        sceneId: s.id,
+                        boutiqueId,
+                        patch: { is_visible: !s.is_visible },
+                      })
+                    }
+                    onDuplicate={() => handleDuplicate(s)}
+                    onDelete={() => setPendingDeleteId(s.id)}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
+            {scenes.length > 0 && (
+              <p className="text-[10px] text-muted-foreground text-center pt-1">
+                Glisse les scènes pour les réorganiser. Sections illimitées.
+              </p>
+            )}
 
             {!showAdd ? (
               <Button
