@@ -16,7 +16,25 @@ import {
   CheckCircle2,
   Save,
   BarChart3,
+  Copy,
 } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
 import { ActionButton, stateFromMutation } from "./ActionButton";
 import { EDITOR_ROUTES, canPreviewStorefront } from "@/lib/editorRoutes";
