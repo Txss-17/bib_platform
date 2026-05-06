@@ -387,6 +387,8 @@ export function useAddScene() {
       boutiqueId: string;
       sceneType: string;
       position: number;
+      variant?: string;
+      content?: Record<string, unknown>;
     }) => {
       const def = findSceneDefinition(params.sceneType);
       if (!def) throw new Error("scene_type inconnu");
@@ -394,8 +396,8 @@ export function useAddScene() {
         boutique_id: params.boutiqueId,
         role: def.role,
         scene_type: def.id,
-        variant: def.variants[0],
-        content: def.defaultContent,
+        variant: params.variant ?? def.variants[0],
+        content: params.content ?? def.defaultContent,
         position: params.position,
         is_visible: true,
       } as never);

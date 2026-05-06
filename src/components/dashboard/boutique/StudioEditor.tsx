@@ -16,7 +16,25 @@ import {
   CheckCircle2,
   Save,
   BarChart3,
+  Copy,
 } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
 import { ActionButton, stateFromMutation } from "./ActionButton";
 import { EDITOR_ROUTES, canPreviewStorefront } from "@/lib/editorRoutes";
@@ -300,6 +318,41 @@ export function StudioEditor({
     reorder.mutate(
       { boutiqueId, orderedIds: list.map((s) => s.id) },
       { onError: () => toast.error("Réorganisation impossible, réessayez.") },
+    );
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIdx = scenes.findIndex((s) => s.id === active.id);
+    const newIdx = scenes.findIndex((s) => s.id === over.id);
+    if (oldIdx < 0 || newIdx < 0) return;
+    const next = arrayMove(scenes, oldIdx, newIdx);
+    reorder.mutate(
+      { boutiqueId, orderedIds: next.map((s) => s.id) },
+      { onError: () => toast.error("Réorganisation impossible, réessayez.") },
+    );
+  };
+
+  const handleDuplicate = (s: SceneRecord) => {
+    if (addScene.isPending) return;
+    addScene.mutate(
+      {
+        boutiqueId,
+        sceneType: s.scene_type,
+        position: scenes.length,
+        variant: s.variant,
+        content: s.content,
+      },
+      {
+        onSuccess: () => toast.success("Scène dupliquée"),
+        onError: () => toast.error("Duplication impossible"),
+      },
     );
   };
 
@@ -661,55 +714,39 @@ export function StudioEditor({
                 <Loader2 className="w-5 h-5 animate-spin opacity-50" />
               </div>
             )}
-            {scenes.map((s, i) => {
-              const def = findSceneDefinition(s.scene_type);
-              const isActive = activeScene?.id === s.id;
-              return (
-                <div
-                  key={s.id}
-                  onClick={() => setActiveSceneId(s.id)}
-                  className={`group cursor-pointer rounded-lg border p-3 flex items-start gap-2 transition ${
-                    isActive
-                      ? "border-primary bg-primary/5"
-                      : "border-border/50 hover:border-border bg-card"
-                  }`}
-                >
-                  <GripVertical className="w-4 h-4 mt-0.5 opacity-30" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium truncate">{def?.name ?? s.scene_type}</span>
-                      <Badge variant="outline" className="text-[10px] capitalize">
-                        {s.role}
-                      </Badge>
-                      {!s.is_visible && (
-                        <Badge variant="secondary" className="text-[10px]">Masqué</Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {def?.tagline}
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition">
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); handleMove(s.id, -1); }}
-                      disabled={i === 0}
-                      className="p-0.5 hover:bg-muted rounded disabled:opacity-30"
-                    >
-                      <ChevronUp className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); handleMove(s.id, 1); }}
-                      disabled={i === scenes.length - 1}
-                      className="p-0.5 hover:bg-muted rounded disabled:opacity-30"
-                    >
-                      <ChevronDown className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={scenes.map((s) => s.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {scenes.map((s) => (
+                  <SortableSceneRow
+                    key={s.id}
+                    scene={s}
+                    isActive={activeScene?.id === s.id}
+                    onSelect={() => setActiveSceneId(s.id)}
+                    onToggleVisible={() =>
+                      updateScene.mutate({
+                        sceneId: s.id,
+                        boutiqueId,
+                        patch: { is_visible: !s.is_visible },
+                      })
+                    }
+                    onDuplicate={() => handleDuplicate(s)}
+                    onDelete={() => setPendingDeleteId(s.id)}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
+            {scenes.length > 0 && (
+              <p className="text-[10px] text-muted-foreground text-center pt-1">
+                Glisse les scènes pour les réorganiser. Sections illimitées.
+              </p>
+            )}
 
             {!showAdd ? (
               <Button
@@ -1558,4 +1595,97 @@ function ContentFields({
   }
 
   return <div className="space-y-3">{generic}</div>;
+}
+
+/* ---------- Sortable scene row (drag & drop, illimité) ---------- */
+function SortableSceneRow({
+  scene,
+  isActive,
+  onSelect,
+  onToggleVisible,
+  onDuplicate,
+  onDelete,
+}: {
+  scene: SceneRecord;
+  isActive: boolean;
+  onSelect: () => void;
+  onToggleVisible: () => void;
+  onDuplicate: () => void;
+  onDelete: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: scene.id });
+  const def = findSceneDefinition(scene.scene_type);
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+  };
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      onClick={onSelect}
+      className={`group cursor-pointer rounded-lg border p-3 flex items-start gap-2 transition ${
+        isActive
+          ? "border-primary bg-primary/5"
+          : "border-border/50 hover:border-border bg-card"
+      } ${isDragging ? "shadow-lg" : ""}`}
+    >
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        onClick={(e) => e.stopPropagation()}
+        className="touch-none cursor-grab active:cursor-grabbing p-0.5 -ml-0.5 mt-0.5 opacity-40 hover:opacity-100"
+        aria-label="Réorganiser"
+      >
+        <GripVertical className="w-4 h-4" />
+      </button>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium truncate">
+            {def?.name ?? scene.scene_type}
+          </span>
+          <Badge variant="outline" className="text-[10px] capitalize">
+            {scene.role}
+          </Badge>
+          {!scene.is_visible && (
+            <Badge variant="secondary" className="text-[10px]">Masqué</Badge>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground truncate">{def?.tagline}</p>
+      </div>
+      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition">
+        <Switch
+          checked={scene.is_visible}
+          onClick={(e) => e.stopPropagation()}
+          onCheckedChange={onToggleVisible}
+          aria-label="Afficher/Masquer"
+        />
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDuplicate();
+          }}
+          className="p-1 hover:bg-muted rounded"
+          title="Dupliquer"
+        >
+          <Copy className="w-3.5 h-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          className="p-1 hover:bg-destructive/10 text-destructive rounded"
+          title="Supprimer"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  );
 }
