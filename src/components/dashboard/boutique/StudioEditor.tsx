@@ -321,6 +321,41 @@ export function StudioEditor({
     );
   };
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIdx = scenes.findIndex((s) => s.id === active.id);
+    const newIdx = scenes.findIndex((s) => s.id === over.id);
+    if (oldIdx < 0 || newIdx < 0) return;
+    const next = arrayMove(scenes, oldIdx, newIdx);
+    reorder.mutate(
+      { boutiqueId, orderedIds: next.map((s) => s.id) },
+      { onError: () => toast.error("Réorganisation impossible, réessayez.") },
+    );
+  };
+
+  const handleDuplicate = (s: SceneRecord) => {
+    if (addScene.isPending) return;
+    addScene.mutate(
+      {
+        boutiqueId,
+        sceneType: s.scene_type,
+        position: scenes.length,
+        variant: s.variant,
+        content: s.content,
+      },
+      {
+        onSuccess: () => toast.success("Scène dupliquée"),
+        onError: () => toast.error("Duplication impossible"),
+      },
+    );
+  };
+
   const handleAdd = (sceneType: string) => {
     if (addScene.isPending) return;
     addScene.mutate(
