@@ -473,11 +473,21 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
                       className="h-9 text-sm"
                       disabled={generating}
                     />
+                    <Input
+                      type="number"
+                      min={1}
+                      max={Math.max(1, MAX_HIGHLIGHTS - highlights.length)}
+                      value={aiCount}
+                      onChange={(e) => setAiCount(Math.max(1, Math.min(MAX_HIGHLIGHTS - highlights.length, Number(e.target.value) || 1)))}
+                      className="h-9 w-14 text-sm"
+                      disabled={generating}
+                      title="Nombre de visuels à générer (1-8)"
+                    />
                     <Button
                       type="button"
                       onClick={handleGenerate}
                       disabled={generating || uploading || saveMutation.isPending}
-                      title="Générer avec l'IA selon votre boutique"
+                      title={`Générer ${aiCount} visuel(s) IA cohérent(s) avec votre boutique`}
                     >
                       {generating ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -489,7 +499,7 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
                 </div>
                 <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
                   <CalendarClock className="h-3 w-3 mt-0.5 shrink-0" />
-                  L'IA s'appuie sur votre catégorie ({boutique?.category ?? "—"}), votre marché et la saison ({currentSeason()}). Image ≤ 6 Mo · Vidéo ≤ 30 Mo.
+                  L'IA s'appuie sur votre identité (palette, ambiance, mots-clés), votre catégorie ({boutique?.category ?? "—"}), votre marché et la saison ({currentSeason()}). Génération en lot 1–8. Image ≤ 6 Mo · Vidéo ≤ 30 Mo.
                 </p>
               </div>
             )}
