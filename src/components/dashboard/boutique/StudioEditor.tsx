@@ -1596,3 +1596,96 @@ function ContentFields({
 
   return <div className="space-y-3">{generic}</div>;
 }
+
+/* ---------- Sortable scene row (drag & drop, illimité) ---------- */
+function SortableSceneRow({
+  scene,
+  isActive,
+  onSelect,
+  onToggleVisible,
+  onDuplicate,
+  onDelete,
+}: {
+  scene: SceneRecord;
+  isActive: boolean;
+  onSelect: () => void;
+  onToggleVisible: () => void;
+  onDuplicate: () => void;
+  onDelete: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: scene.id });
+  const def = findSceneDefinition(scene.scene_type);
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+  };
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      onClick={onSelect}
+      className={`group cursor-pointer rounded-lg border p-3 flex items-start gap-2 transition ${
+        isActive
+          ? "border-primary bg-primary/5"
+          : "border-border/50 hover:border-border bg-card"
+      } ${isDragging ? "shadow-lg" : ""}`}
+    >
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        onClick={(e) => e.stopPropagation()}
+        className="touch-none cursor-grab active:cursor-grabbing p-0.5 -ml-0.5 mt-0.5 opacity-40 hover:opacity-100"
+        aria-label="Réorganiser"
+      >
+        <GripVertical className="w-4 h-4" />
+      </button>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium truncate">
+            {def?.name ?? scene.scene_type}
+          </span>
+          <Badge variant="outline" className="text-[10px] capitalize">
+            {scene.role}
+          </Badge>
+          {!scene.is_visible && (
+            <Badge variant="secondary" className="text-[10px]">Masqué</Badge>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground truncate">{def?.tagline}</p>
+      </div>
+      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition">
+        <Switch
+          checked={scene.is_visible}
+          onClick={(e) => e.stopPropagation()}
+          onCheckedChange={onToggleVisible}
+          aria-label="Afficher/Masquer"
+        />
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDuplicate();
+          }}
+          className="p-1 hover:bg-muted rounded"
+          title="Dupliquer"
+        >
+          <Copy className="w-3.5 h-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+          className="p-1 hover:bg-destructive/10 text-destructive rounded"
+          title="Supprimer"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+}
