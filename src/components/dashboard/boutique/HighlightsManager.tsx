@@ -203,6 +203,7 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
   const [draftCta, setDraftCta] = useState("");
   const [aiPrompt, setAiPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [aiCount, setAiCount] = useState(1);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -340,26 +341,38 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
     ].filter(Boolean);
     const enrichedPrompt = ctxParts.join(" · ");
 
+    const remaining = MAX_HIGHLIGHTS - highlights.length;
+    const wanted = Math.min(Math.max(aiCount, 1), remaining);
+
     setGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke("studio-image-gen", {
-        body: { boutique_id: boutiqueId, prompt: enrichedPrompt },
+        body: { boutique_id: boutiqueId, prompt: enrichedPrompt, count: wanted },
       });
       if (error) throw error;
-      const url = (data as { url?: string })?.url;
-      if (!url) throw new Error("Génération échouée");
-      addHighlight({
-        id: uid(),
-        kind: "image",
-        url,
-        label: draftLabel.trim() || userPrompt.slice(0, 40),
-        cta_url: draftCta.trim() || undefined,
-        enabled: true,
+      const urls = ((data as { urls?: string[]; url?: string })?.urls) ??
+        ((data as { url?: string })?.url ? [(data as { url: string }).url] : []);
+      if (urls.length === 0) throw new Error("Génération échouée");
+      const baseLabel = draftLabel.trim() || userPrompt.slice(0, 40);
+      const next = [...highlights];
+      urls.forEach((url, i) => {
+        if (next.length >= MAX_HIGHLIGHTS) return;
+        next.push({
+          id: uid(),
+          kind: "image",
+          url,
+          label: urls.length > 1 ? `${baseLabel} (${i + 1})` : baseLabel,
+          cta_url: draftCta.trim() || undefined,
+          enabled: true,
+        });
       });
+      saveMutation.mutate(next);
       setAiPrompt("");
       setDraftLabel("");
       setDraftCta("");
-      toast.success("Visuel IA généré (cohérent avec votre boutique)");
+      toast.success(
+        `${urls.length} visuel${urls.length > 1 ? "s" : ""} IA généré${urls.length > 1 ? "s" : ""} (identité boutique respectée)`
+      );
     } catch (e: any) {
       toast.error(e?.message ?? "Erreur de génération");
     } finally {
@@ -460,11 +473,21 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
                       className="h-9 text-sm"
                       disabled={generating}
                     />
+                    <Input
+                      type="number"
+                      min={1}
+                      max={Math.max(1, MAX_HIGHLIGHTS - highlights.length)}
+                      value={aiCount}
+                      onChange={(e) => setAiCount(Math.max(1, Math.min(MAX_HIGHLIGHTS - highlights.length, Number(e.target.value) || 1)))}
+                      className="h-9 w-14 text-sm"
+                      disabled={generating}
+                      title="Nombre de visuels à générer (1-8)"
+                    />
                     <Button
                       type="button"
                       onClick={handleGenerate}
                       disabled={generating || uploading || saveMutation.isPending}
-                      title="Générer avec l'IA selon votre boutique"
+                      title={`Générer ${aiCount} visuel(s) IA cohérent(s) avec votre boutique`}
                     >
                       {generating ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -476,7 +499,7 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
                 </div>
                 <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
                   <CalendarClock className="h-3 w-3 mt-0.5 shrink-0" />
-                  L'IA s'appuie sur votre catégorie ({boutique?.category ?? "—"}), votre marché et la saison ({currentSeason()}). Image ≤ 6 Mo · Vidéo ≤ 30 Mo.
+                  L'IA s'appuie sur votre identité (palette, ambiance, mots-clés), votre catégorie ({boutique?.category ?? "—"}), votre marché et la saison ({currentSeason()}). Génération en lot 1–8. Image ≤ 6 Mo · Vidéo ≤ 30 Mo.
                 </p>
               </div>
             )}
