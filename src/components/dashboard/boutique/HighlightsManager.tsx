@@ -203,6 +203,7 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
   const [draftCta, setDraftCta] = useState("");
   const [aiPrompt, setAiPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [aiCount, setAiCount] = useState(1);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -340,26 +341,38 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
     ].filter(Boolean);
     const enrichedPrompt = ctxParts.join(" · ");
 
+    const remaining = MAX_HIGHLIGHTS - highlights.length;
+    const wanted = Math.min(Math.max(aiCount, 1), remaining);
+
     setGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke("studio-image-gen", {
-        body: { boutique_id: boutiqueId, prompt: enrichedPrompt },
+        body: { boutique_id: boutiqueId, prompt: enrichedPrompt, count: wanted },
       });
       if (error) throw error;
-      const url = (data as { url?: string })?.url;
-      if (!url) throw new Error("Génération échouée");
-      addHighlight({
-        id: uid(),
-        kind: "image",
-        url,
-        label: draftLabel.trim() || userPrompt.slice(0, 40),
-        cta_url: draftCta.trim() || undefined,
-        enabled: true,
+      const urls = ((data as { urls?: string[]; url?: string })?.urls) ??
+        ((data as { url?: string })?.url ? [(data as { url: string }).url] : []);
+      if (urls.length === 0) throw new Error("Génération échouée");
+      const baseLabel = draftLabel.trim() || userPrompt.slice(0, 40);
+      const next = [...highlights];
+      urls.forEach((url, i) => {
+        if (next.length >= MAX_HIGHLIGHTS) return;
+        next.push({
+          id: uid(),
+          kind: "image",
+          url,
+          label: urls.length > 1 ? `${baseLabel} (${i + 1})` : baseLabel,
+          cta_url: draftCta.trim() || undefined,
+          enabled: true,
+        });
       });
+      saveMutation.mutate(next);
       setAiPrompt("");
       setDraftLabel("");
       setDraftCta("");
-      toast.success("Visuel IA généré (cohérent avec votre boutique)");
+      toast.success(
+        `${urls.length} visuel${urls.length > 1 ? "s" : ""} IA généré${urls.length > 1 ? "s" : ""} (identité boutique respectée)`
+      );
     } catch (e: any) {
       toast.error(e?.message ?? "Erreur de génération");
     } finally {
