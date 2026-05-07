@@ -238,6 +238,60 @@ export type Database = {
           },
         ]
       }
+      boutique_pages: {
+        Row: {
+          boutique_id: string
+          content: string | null
+          created_at: string
+          hero_image_url: string | null
+          id: string
+          is_visible: boolean
+          mode: string
+          position: number
+          scenes: Json
+          seo_description: string | null
+          seo_title: string | null
+          show_in_nav: boolean
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          boutique_id: string
+          content?: string | null
+          created_at?: string
+          hero_image_url?: string | null
+          id?: string
+          is_visible?: boolean
+          mode?: string
+          position?: number
+          scenes?: Json
+          seo_description?: string | null
+          seo_title?: string | null
+          show_in_nav?: boolean
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          boutique_id?: string
+          content?: string | null
+          created_at?: string
+          hero_image_url?: string | null
+          id?: string
+          is_visible?: boolean
+          mode?: string
+          position?: number
+          scenes?: Json
+          seo_description?: string | null
+          seo_title?: string | null
+          show_in_nav?: boolean
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       boutique_scenes: {
         Row: {
           boutique_id: string
