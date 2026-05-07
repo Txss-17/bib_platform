@@ -46,6 +46,7 @@ import ProductPublic from "./pages/ProductPublic";
 import OrderTracking from "./pages/OrderTracking";
 import BoutiqueFAQPage from "./pages/BoutiqueFAQPage";
 import { BoutiqueCGVPage, BoutiqueCGUPage, BoutiqueAboutPage } from "./pages/BoutiqueLegalPages";
+import BoutiqueCustomPage from "./pages/BoutiqueCustomPage";
 import { CartProvider } from "@/contexts/CartContext";
 import Unsubscribe from "./pages/Unsubscribe";
 
@@ -225,6 +226,7 @@ const App = () => (
             <Route path="/boutique/:slug/cgv" element={<BoutiqueCGVPage />} />
             <Route path="/boutique/:slug/cgu" element={<BoutiqueCGUPage />} />
             <Route path="/boutique/:slug/about" element={<BoutiqueAboutPage />} />
+            <Route path="/boutique/:slug/p/:pageSlug" element={<BoutiqueCustomPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
