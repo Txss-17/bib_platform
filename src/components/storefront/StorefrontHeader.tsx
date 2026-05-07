@@ -2,10 +2,12 @@ import { ShoppingCart, Menu, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useCart } from "@/contexts/CartContext";
+import { useStorefrontContext } from "@/contexts/StorefrontContext";
+import { usePublicBoutiquePages } from "@/hooks/useBoutiquePages";
 
 interface StorefrontHeaderProps {
   boutiqueName: string;
-  primaryColor: string;
+  primaryColor?: string;
   navLinks?: { label: string; href: string }[];
   boutiqueSlug?: string;
 }
@@ -13,6 +15,9 @@ interface StorefrontHeaderProps {
 export function StorefrontHeader({ boutiqueName, primaryColor, navLinks, boutiqueSlug }: StorefrontHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { totalItems, setIsOpen } = useCart();
+  const ctx = useStorefrontContext();
+  const { data: customPages = [] } = usePublicBoutiquePages(ctx?.boutiqueId);
+  const accent = primaryColor || "#0f172a";
 
   const defaultLinks = [
     { label: "Accueil", href: "#" },
@@ -21,7 +26,14 @@ export function StorefrontHeader({ boutiqueName, primaryColor, navLinks, boutiqu
     { label: "Contact", href: "#contact" },
   ];
 
-  const links = navLinks || defaultLinks;
+  const baseLinks = navLinks || defaultLinks;
+  const dynamicLinks = (customPages as any[])
+    .filter((p) => p.show_in_nav)
+    .map((p) => ({
+      label: p.title as string,
+      href: boutiqueSlug ? `/boutique/${boutiqueSlug}/p/${p.slug}` : `#${p.slug}`,
+    }));
+  const links = [...baseLinks, ...dynamicLinks];
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
@@ -29,9 +41,9 @@ export function StorefrontHeader({ boutiqueName, primaryColor, navLinks, boutiqu
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <h1 
+            <h1
               className="text-xl md:text-2xl font-semibold tracking-tight"
-              style={{ color: primaryColor }}
+              style={{ color: accent }}
             >
               {boutiqueName}
             </h1>
@@ -68,7 +80,7 @@ export function StorefrontHeader({ boutiqueName, primaryColor, navLinks, boutiqu
               {totalItems > 0 && (
                 <span 
                   className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-xs flex items-center justify-center"
-                  style={{ backgroundColor: primaryColor }}
+                  style={{ backgroundColor: accent }}
                 >
                   {totalItems}
                 </span>
