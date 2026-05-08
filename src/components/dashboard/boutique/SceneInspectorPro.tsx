@@ -13,6 +13,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Trash2, Plus, Wand2, Image as ImageIcon, Upload, Loader2, Sparkles } from "lucide-react";
+import { ALL_FONTS, loadGoogleFont } from "@/lib/googleFonts";
 import { toast } from "sonner";
 import { findSceneDefinition, type SceneRecord } from "@/lib/studioScenes";
 import {
