@@ -880,37 +880,53 @@ export function StudioEditor({
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <Label className="text-xs uppercase tracking-wide opacity-60">Police titres</Label>
-                    <Input
+                    <Select
                       value={brandDna.generated_typography?.display ?? ""}
-                      onChange={(e) =>
+                      onValueChange={(v) => {
+                        loadGoogleFont(v);
                         updateBrandDna.mutate({
                           boutiqueId,
                           patch: {
                             generated_typography: {
                               ...brandDna.generated_typography,
-                              display: e.target.value,
+                              display: v,
                             },
                           },
-                        })
-                      }
-                    />
+                        });
+                      }}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Choisir…" /></SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {ALL_FONTS.map((f) => (
+                          <SelectItem key={f} value={f} style={{ fontFamily: f }}>{f}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <Label className="text-xs uppercase tracking-wide opacity-60">Police corps</Label>
-                    <Input
+                    <Select
                       value={brandDna.generated_typography?.body ?? ""}
-                      onChange={(e) =>
+                      onValueChange={(v) => {
+                        loadGoogleFont(v);
                         updateBrandDna.mutate({
                           boutiqueId,
                           patch: {
                             generated_typography: {
                               ...brandDna.generated_typography,
-                              body: e.target.value,
+                              body: v,
                             },
                           },
-                        })
-                      }
-                    />
+                        });
+                      }}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Choisir…" /></SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {ALL_FONTS.map((f) => (
+                          <SelectItem key={f} value={f} style={{ fontFamily: f }}>{f}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div>
