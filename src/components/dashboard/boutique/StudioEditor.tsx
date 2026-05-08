@@ -1336,7 +1336,12 @@ export function StudioEditor({
       <div className="lg:overflow-y-auto bg-background min-h-[60vh]">
         <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border-b border-border/40 px-4 py-2 flex items-center justify-between">
           <span className="text-xs uppercase tracking-wide opacity-60">Aperçu en direct {scenes.length === 0 && !isLoading ? "(aucune scène)" : ""}</span>
-          <span className="text-xs opacity-50">{scenes.length} scène{scenes.length > 1 ? "s" : ""}</span>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => setShowPagesManager(true)} className="h-7 text-xs">
+              <Plus className="w-3.5 h-3.5 mr-1" /> Page
+            </Button>
+            <span className="text-xs opacity-50">{scenes.length} scène{scenes.length > 1 ? "s" : ""}</span>
+          </div>
         </div>
         {isLoading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">Chargement de l'aperçu…</div>
