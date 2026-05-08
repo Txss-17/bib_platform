@@ -71,6 +71,8 @@ export const STUDIO_SCENES: SceneDefinition[] = [
       backgroundImage: null,
       videoUrl: null,
       overlayOpacity: 0.45,
+      fullPageBackground: false,
+      textAlign: "center",
     },
   },
   {
@@ -134,6 +136,8 @@ export const STUDIO_SCENES: SceneDefinition[] = [
       subtitle: "Les indispensables à porter dès maintenant.",
       productIds: [],
       layout: "3-up",
+      cardShape: "rounded",
+      cardStyle: "minimal",
     },
   },
   {
