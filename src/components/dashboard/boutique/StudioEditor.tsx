@@ -54,6 +54,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { HighlightsManager } from "./HighlightsManager";
 import { PagesManager } from "./PagesManager";
+import { ALL_FONTS, loadGoogleFont } from "@/lib/googleFonts";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -672,12 +673,11 @@ export function StudioEditor({
         )}
 
         <Tabs defaultValue="scenes" className="flex-1 flex flex-col overflow-hidden">
-          <TabsList className="mx-4 mt-3 grid grid-cols-5">
+          <TabsList className="mx-4 mt-3 grid grid-cols-4">
             <TabsTrigger value="scenes">Scènes</TabsTrigger>
             <TabsTrigger value="brand">Identité</TabsTrigger>
             <TabsTrigger value="seo">SEO</TabsTrigger>
             <TabsTrigger value="highlights">Marketplace</TabsTrigger>
-            <TabsTrigger value="pages">Pages</TabsTrigger>
           </TabsList>
 
           {/* SCENES TAB */}
