@@ -337,6 +337,16 @@ function ShowcaseScene({ content, products, displayFont }: { content: any; produ
   const layout = content.layout || "3-up";
   const cols = layout === "4-up" ? "md:grid-cols-4" : "md:grid-cols-3";
   const visible = products.slice(0, layout === "4-up" ? 4 : 3);
+  const shapeMap: Record<string, string> = {
+    square: "rounded-none",
+    rounded: "rounded-md",
+    "rounded-xl": "rounded-2xl",
+    circle: "rounded-full aspect-square",
+    arch: "rounded-t-full",
+  };
+  const shapeClass = shapeMap[content.cardShape] ?? "rounded-md";
+  const isCircle = content.cardShape === "circle";
+  const cardStyle = content.cardStyle || "minimal";
   return (
     <section id="shop" className="py-20" style={{ background: `hsl(var(--studio-surface))` }}>
       <div className="max-w-6xl mx-auto px-6">
@@ -348,9 +358,12 @@ function ShowcaseScene({ content, products, displayFont }: { content: any; produ
         </div>
         <div className={`grid grid-cols-2 ${cols} gap-6`}>
           {visible.map((p) => (
-            <article key={p.id} className="group">
+            <article
+              key={p.id}
+              className={`group ${cardStyle === "card" ? "p-3 bg-white shadow-sm rounded-lg" : ""} ${cardStyle === "bordered" ? "p-3 border border-border rounded-lg" : ""}`}
+            >
               <div
-                className="aspect-[4/5] rounded mb-3 overflow-hidden"
+                className={`${isCircle ? "" : "aspect-[4/5]"} ${shapeClass} mb-3 overflow-hidden`}
                 style={{
                   background: p.image_url
                     ? `url(${p.image_url}) center/cover`
