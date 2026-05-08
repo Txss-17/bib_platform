@@ -1329,11 +1329,6 @@ export function StudioEditor({
           <TabsContent value="highlights" className="flex-1 overflow-y-auto px-4 pb-6 mt-3">
             <HighlightsManager boutiqueId={boutiqueId} />
           </TabsContent>
-
-          {/* CUSTOM PAGES TAB */}
-          <TabsContent value="pages" className="flex-1 overflow-y-auto px-4 pb-6 mt-3">
-            <PagesManager boutiqueId={boutiqueId} boutiqueSlug={publicSlug} />
-          </TabsContent>
         </Tabs>
       </aside>
 
