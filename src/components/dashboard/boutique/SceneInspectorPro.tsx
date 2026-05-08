@@ -334,6 +334,250 @@ export function SceneInspectorPro({
               onChange={(e) => setField("videoUrl", e.target.value || null)}
             />
           </div>
+          <div className="flex items-center justify-between rounded-md border border-border/40 px-2 py-1.5">
+            <div>
+              <Label className="text-xs">Image de fond pleine page</Label>
+              <p className="text-[10px] opacity-60">Étend l'image à toute la home (pas seulement le hero).</p>
+            </div>
+            <Switch
+              checked={!!c.fullPageBackground}
+              onCheckedChange={(v) => setField("fullPageBackground", v)}
+            />
+          </div>
+          <div>
+            <Label className="text-xs">Alignement du texte</Label>
+            <Select
+              value={c.textAlign ?? "center"}
+              onValueChange={(v) => setField("textAlign", v)}
+            >
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="left">Gauche</SelectItem>
+                <SelectItem value="center">Centré</SelectItem>
+                <SelectItem value="right">Droite</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
+
+      {/* SHOWCASE MAGAZINE */}
+      {scene.scene_type === "showcase-magazine" && (
+        <>
+          {generic}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">Forme des cadres</Label>
+              <Select
+                value={c.cardShape ?? "rounded"}
+                onValueChange={(v) => setField("cardShape", v)}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="square">Carré</SelectItem>
+                  <SelectItem value="rounded">Arrondi</SelectItem>
+                  <SelectItem value="rounded-xl">Très arrondi</SelectItem>
+                  <SelectItem value="circle">Cercle</SelectItem>
+                  <SelectItem value="arch">Arche</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Style cadre</Label>
+              <Select
+                value={c.cardStyle ?? "minimal"}
+                onValueChange={(v) => setField("cardStyle", v)}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="minimal">Minimal</SelectItem>
+                  <SelectItem value="card">Carte (ombre)</SelectItem>
+                  <SelectItem value="bordered">Avec bordure</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* MARQUEE STRIP */}
+      {scene.scene_type === "marquee-strip" && (
+        <>
+          <div>
+            <Label className="text-xs">Texte défilant</Label>
+            <Textarea
+              rows={2}
+              value={c.text ?? ""}
+              onChange={(e) => setField("text", e.target.value)}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">Séparateur</Label>
+              <Input value={c.separator ?? "·"} onChange={(e) => setField("separator", e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">Vitesse (s)</Label>
+              <Input
+                type="number"
+                value={c.speed ?? 30}
+                onChange={(e) => setField("speed", Number(e.target.value))}
+              />
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">Police</Label>
+            <Select
+              value={c.fontFamily || "__inherit"}
+              onValueChange={(v) => {
+                const val = v === "__inherit" ? "" : v;
+                setField("fontFamily", val);
+                if (val) loadGoogleFont(val);
+              }}
+            >
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent className="max-h-60">
+                <SelectItem value="__inherit">— Hériter de l'identité —</SelectItem>
+                {ALL_FONTS.map((f) => (
+                  <SelectItem key={f} value={f} style={{ fontFamily: f }}>{f}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">Taille (px)</Label>
+              <Input
+                type="number"
+                value={c.fontSize ?? 18}
+                onChange={(e) => setField("fontSize", Number(e.target.value))}
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Direction</Label>
+              <Select value={c.direction ?? "left"} onValueChange={(v) => setField("direction", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="left">← Gauche</SelectItem>
+                  <SelectItem value="right">Droite →</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex items-center justify-between rounded-md border border-border/40 px-2 py-1.5">
+            <Label className="text-xs">MAJUSCULES</Label>
+            <Switch
+              checked={!!c.uppercase}
+              onCheckedChange={(v) => setField("uppercase", v)}
+            />
+          </div>
+        </>
+      )}
+
+      {/* GALLERY MOSAIC */}
+      {scene.scene_type === "gallery-mosaic" && (
+        <>
+          {generic}
+          <div>
+            <Label className="text-xs mb-2 block">Visuels (jusqu'à 12)</Label>
+            <ListEditor
+              items={((c.images ?? []) as string[]).map((url) => ({ url }))}
+              factory={() => ({ url: "" })}
+              addLabel="Ajouter un visuel"
+              onChange={(next) => setField("images", next.map((x) => x.url).filter(Boolean))}
+              renderItem={(item, update) => (
+                <ImageField
+                  boutiqueId={boutiqueId}
+                  label="Visuel"
+                  value={item.url}
+                  onChange={(url) => update({ url: url ?? "" })}
+                  aspect="1:1"
+                  promptHint="Visuel mosaïque éditorial"
+                />
+              )}
+            />
+          </div>
+        </>
+      )}
+
+      {/* STATS */}
+      {scene.scene_type === "stats-counter" && (
+        <>
+          {"title" in c && (
+            <div>
+              <Label className="text-xs">Titre</Label>
+              <Input value={c.title ?? ""} onChange={(e) => setField("title", e.target.value)} />
+            </div>
+          )}
+          <div>
+            <Label className="text-xs mb-2 block">Statistiques</Label>
+            <ListEditor
+              items={(c.stats ?? []) as Array<Record<string, any>>}
+              factory={() => ({ value: "", label: "" })}
+              addLabel="Ajouter un chiffre"
+              onChange={(next) => setField("stats", next)}
+              renderItem={(s, update) => (
+                <>
+                  <Input placeholder="ex. 10K+" value={s.value ?? ""} onChange={(e) => update({ value: e.target.value })} />
+                  <Input placeholder="ex. Clients" value={s.label ?? ""} onChange={(e) => update({ label: e.target.value })} />
+                </>
+              )}
+            />
+          </div>
+        </>
+      )}
+
+      {/* VIDEO FULLSCREEN */}
+      {scene.scene_type === "video-fullscreen" && (
+        <>
+          {generic}
+          <div>
+            <Label className="text-xs">URL vidéo (mp4 / webm)</Label>
+            <Input
+              placeholder="https://…/video.mp4"
+              value={c.videoUrl ?? ""}
+              onChange={(e) => setField("videoUrl", e.target.value)}
+            />
+          </div>
+          <ImageField
+            boutiqueId={boutiqueId}
+            label="Image poster (avant lecture)"
+            value={c.poster}
+            onChange={(url) => setField("poster", url)}
+            aspect="16:9"
+            promptHint="Aperçu fixe de la vidéo"
+          />
+        </>
+      )}
+
+      {/* BANNER PROMO */}
+      {scene.scene_type === "banner-promo" && (
+        <>
+          <div>
+            <Label className="text-xs">Texte</Label>
+            <Input value={c.text ?? ""} onChange={(e) => setField("text", e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">Libellé CTA</Label>
+              <Input value={c.ctaLabel ?? ""} onChange={(e) => setField("ctaLabel", e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">URL CTA</Label>
+              <Input value={c.ctaUrl ?? ""} onChange={(e) => setField("ctaUrl", e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">Couleur</Label>
+            <Select value={c.bgColor ?? "primary"} onValueChange={(v) => setField("bgColor", v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="primary">Primaire</SelectItem>
+                <SelectItem value="accent">Accent</SelectItem>
+                <SelectItem value="ink">Encre (foncé)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </>
       )}
 
