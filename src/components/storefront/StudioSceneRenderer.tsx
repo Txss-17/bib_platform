@@ -227,16 +227,28 @@ function SceneSwitch({
 /* -------------------------- Scene primitives -------------------------- */
 
 function HeroCinemaScene({ content, displayFont }: { content: any; displayFont: string }) {
+  const fullPage = !!content.fullPageBackground;
+  const align = content.textAlign === "left" ? "text-left items-start" : content.textAlign === "right" ? "text-right items-end" : "text-center items-center";
   return (
     <section
       className="relative min-h-[88vh] flex items-center justify-center overflow-hidden"
       style={{
-        background: content.backgroundImage
+        background: fullPage
+          ? "transparent"
+          : content.backgroundImage
           ? `linear-gradient(hsl(var(--studio-ink) / ${content.overlayOpacity ?? 0.45}), hsl(var(--studio-ink) / ${content.overlayOpacity ?? 0.45})), url(${content.backgroundImage}) center/cover`
           : `linear-gradient(135deg, hsl(var(--studio-primary)), hsl(var(--studio-accent)))`,
       }}
     >
-      <div className="relative z-10 max-w-3xl px-6 text-center text-white">
+      {fullPage && content.backgroundImage && (
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(hsl(var(--studio-ink) / ${content.overlayOpacity ?? 0.45}), hsl(var(--studio-ink) / ${content.overlayOpacity ?? 0.45}))`,
+          }}
+        />
+      )}
+      <div className={`relative z-10 max-w-3xl px-6 flex flex-col text-white ${align}`}>
         <h1
           className="text-4xl md:text-6xl lg:text-7xl leading-tight mb-6"
           style={{ fontFamily: `${displayFont}, serif` }}
