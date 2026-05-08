@@ -199,6 +199,7 @@ export function StudioEditor({
   const [showAdd, setShowAdd] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [showPublishErrors, setShowPublishErrors] = useState(false);
+  const [showPagesManager, setShowPagesManager] = useState(false);
 
   // SEO local state — editable fields persisted via useSaveSeo
   const [seoTitle, setSeoTitle] = useState(initialSeo?.title ?? "");
