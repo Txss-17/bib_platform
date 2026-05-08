@@ -17,7 +17,12 @@ export type SceneRole =
   | "press"
   | "comparison"
   | "founder"
-  | "manifesto";
+  | "manifesto"
+  | "marquee"
+  | "gallery"
+  | "stats"
+  | "video"
+  | "banner";
 
 export interface SceneDefinition {
   id: string; // ex: hero-cinema
@@ -41,7 +46,12 @@ export interface SceneDefinition {
     | "press-strip"
     | "comparison-table"
     | "founder-letter"
-    | "manifesto-typographic";
+  | "manifesto-typographic"
+  | "marquee-strip"
+  | "gallery-mosaic"
+  | "stats-counter"
+  | "video-fullscreen"
+  | "banner-promo";
 }
 
 export const STUDIO_SCENES: SceneDefinition[] = [
@@ -61,6 +71,8 @@ export const STUDIO_SCENES: SceneDefinition[] = [
       backgroundImage: null,
       videoUrl: null,
       overlayOpacity: 0.45,
+      fullPageBackground: false,
+      textAlign: "center",
     },
   },
   {
@@ -124,6 +136,8 @@ export const STUDIO_SCENES: SceneDefinition[] = [
       subtitle: "Les indispensables à porter dès maintenant.",
       productIds: [],
       layout: "3-up",
+      cardShape: "rounded",
+      cardStyle: "minimal",
     },
   },
   {
@@ -268,6 +282,93 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     defaultContent: {
       lines: ["Faire moins.", "Faire mieux.", "Faire pour durer."],
       footnote: "Notre manifeste, depuis le premier jour.",
+    },
+  },
+  {
+    id: "marquee-strip",
+    role: "marquee",
+    name: "Bande défilante",
+    tagline: "Texte qui défile en boucle, personnalisable",
+    description:
+      "Bandeau horizontal animé : écris ce que tu veux (slogan, promo, valeurs) avec ta police, ta couleur et ta vitesse.",
+    variants: ["dark", "light", "accent", "outline"],
+    previewKey: "marquee-strip",
+    defaultContent: {
+      text: "Livraison offerte dès 50€ · Retours gratuits · Garantie 2 ans",
+      separator: "·",
+      speed: 30,
+      fontFamily: "",
+      fontSize: 18,
+      uppercase: true,
+      direction: "left",
+    },
+  },
+  {
+    id: "gallery-mosaic",
+    role: "gallery",
+    name: "Galerie Mosaïque",
+    tagline: "Grille libre de visuels (jusqu'à 12)",
+    description:
+      "Grille mosaïque éditoriale : ajoute jusqu'à 12 visuels, ratios mixtes, hover zoom.",
+    variants: ["mosaic", "uniform", "masonry"],
+    previewKey: "gallery-mosaic",
+    defaultContent: {
+      title: "Notre univers",
+      subtitle: "",
+      images: [],
+    },
+  },
+  {
+    id: "stats-counter",
+    role: "stats",
+    name: "Chiffres clés",
+    tagline: "3-4 KPIs animés (clients, années, pays…)",
+    description:
+      "Bloc compteurs avec chiffres en gros, idéal pour rassurer.",
+    variants: ["centered", "split", "minimal"],
+    previewKey: "stats-counter",
+    defaultContent: {
+      title: "Quelques chiffres",
+      stats: [
+        { value: "10K+", label: "Clients satisfaits" },
+        { value: "98%", label: "Avis 5 étoiles" },
+        { value: "48h", label: "Livraison moyenne" },
+        { value: "2 ans", label: "Garantie" },
+      ],
+    },
+  },
+  {
+    id: "video-fullscreen",
+    role: "video",
+    name: "Vidéo immersive",
+    tagline: "Vidéo plein écran avec overlay et CTA",
+    description:
+      "Section vidéo plein écran (autoplay muet) avec titre, sous-titre et appel à l'action.",
+    variants: ["fullscreen", "boxed", "split"],
+    previewKey: "video-fullscreen",
+    defaultContent: {
+      videoUrl: "",
+      poster: null,
+      title: "Découvrez notre savoir-faire",
+      subtitle: "Une vidéo vaut mille mots.",
+      ctaLabel: "Explorer",
+      overlayOpacity: 0.4,
+    },
+  },
+  {
+    id: "banner-promo",
+    role: "banner",
+    name: "Bandeau promo",
+    tagline: "Bande haute pour annonces, codes promo",
+    description:
+      "Petit bandeau supérieur (annonce, code promo, livraison gratuite). Couleur et texte au choix.",
+    variants: ["solid", "gradient", "outline"],
+    previewKey: "banner-promo",
+    defaultContent: {
+      text: "🎁 -10% sur la première commande avec le code BIENVENUE",
+      ctaLabel: "Profiter",
+      ctaUrl: "#shop",
+      bgColor: "primary",
     },
   },
 ];

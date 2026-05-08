@@ -54,6 +54,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { HighlightsManager } from "./HighlightsManager";
 import { PagesManager } from "./PagesManager";
+import { ALL_FONTS, loadGoogleFont } from "@/lib/googleFonts";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -198,6 +199,7 @@ export function StudioEditor({
   const [showAdd, setShowAdd] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [showPublishErrors, setShowPublishErrors] = useState(false);
+  const [showPagesManager, setShowPagesManager] = useState(false);
 
   // SEO local state — editable fields persisted via useSaveSeo
   const [seoTitle, setSeoTitle] = useState(initialSeo?.title ?? "");
@@ -672,12 +674,11 @@ export function StudioEditor({
         )}
 
         <Tabs defaultValue="scenes" className="flex-1 flex flex-col overflow-hidden">
-          <TabsList className="mx-4 mt-3 grid grid-cols-5">
+          <TabsList className="mx-4 mt-3 grid grid-cols-4">
             <TabsTrigger value="scenes">Scènes</TabsTrigger>
             <TabsTrigger value="brand">Identité</TabsTrigger>
             <TabsTrigger value="seo">SEO</TabsTrigger>
             <TabsTrigger value="highlights">Marketplace</TabsTrigger>
-            <TabsTrigger value="pages">Pages</TabsTrigger>
           </TabsList>
 
           {/* SCENES TAB */}
@@ -879,37 +880,53 @@ export function StudioEditor({
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <Label className="text-xs uppercase tracking-wide opacity-60">Police titres</Label>
-                    <Input
+                    <Select
                       value={brandDna.generated_typography?.display ?? ""}
-                      onChange={(e) =>
+                      onValueChange={(v) => {
+                        loadGoogleFont(v);
                         updateBrandDna.mutate({
                           boutiqueId,
                           patch: {
                             generated_typography: {
                               ...brandDna.generated_typography,
-                              display: e.target.value,
+                              display: v,
                             },
                           },
-                        })
-                      }
-                    />
+                        });
+                      }}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Choisir…" /></SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {ALL_FONTS.map((f) => (
+                          <SelectItem key={f} value={f} style={{ fontFamily: f }}>{f}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <Label className="text-xs uppercase tracking-wide opacity-60">Police corps</Label>
-                    <Input
+                    <Select
                       value={brandDna.generated_typography?.body ?? ""}
-                      onChange={(e) =>
+                      onValueChange={(v) => {
+                        loadGoogleFont(v);
                         updateBrandDna.mutate({
                           boutiqueId,
                           patch: {
                             generated_typography: {
                               ...brandDna.generated_typography,
-                              body: e.target.value,
+                              body: v,
                             },
                           },
-                        })
-                      }
-                    />
+                        });
+                      }}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Choisir…" /></SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {ALL_FONTS.map((f) => (
+                          <SelectItem key={f} value={f} style={{ fontFamily: f }}>{f}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div>
@@ -1329,11 +1346,6 @@ export function StudioEditor({
           <TabsContent value="highlights" className="flex-1 overflow-y-auto px-4 pb-6 mt-3">
             <HighlightsManager boutiqueId={boutiqueId} />
           </TabsContent>
-
-          {/* CUSTOM PAGES TAB */}
-          <TabsContent value="pages" className="flex-1 overflow-y-auto px-4 pb-6 mt-3">
-            <PagesManager boutiqueId={boutiqueId} boutiqueSlug={publicSlug} />
-          </TabsContent>
         </Tabs>
       </aside>
 
@@ -1341,7 +1353,12 @@ export function StudioEditor({
       <div className="lg:overflow-y-auto bg-background min-h-[60vh]">
         <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border-b border-border/40 px-4 py-2 flex items-center justify-between">
           <span className="text-xs uppercase tracking-wide opacity-60">Aperçu en direct {scenes.length === 0 && !isLoading ? "(aucune scène)" : ""}</span>
-          <span className="text-xs opacity-50">{scenes.length} scène{scenes.length > 1 ? "s" : ""}</span>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => setShowPagesManager(true)} className="h-7 text-xs">
+              <Plus className="w-3.5 h-3.5 mr-1" /> Page
+            </Button>
+            <span className="text-xs opacity-50">{scenes.length} scène{scenes.length > 1 ? "s" : ""}</span>
+          </div>
         </div>
         {isLoading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">Chargement de l'aperçu…</div>
@@ -1401,6 +1418,24 @@ export function StudioEditor({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Pages manager dialog (triggered from preview "+ Page" button) */}
+      {showPagesManager && (
+        <AlertDialog open={showPagesManager} onOpenChange={setShowPagesManager}>
+          <AlertDialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Pages personnalisées</AlertDialogTitle>
+              <AlertDialogDescription>
+                Crée et gère les pages additionnelles de ta boutique (à propos, blog…).
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <PagesManager boutiqueId={boutiqueId} boutiqueSlug={publicSlug} />
+            <AlertDialogFooter>
+              <AlertDialogAction onClick={() => setShowPagesManager(false)}>Fermer</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }
