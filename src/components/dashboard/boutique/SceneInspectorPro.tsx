@@ -915,6 +915,12 @@ export function SceneInspectorPro({
         "manifesto-typographic",
         "press-strip",
         "newsletter-editorial",
+        "showcase-magazine",
+        "marquee-strip",
+        "gallery-mosaic",
+        "stats-counter",
+        "video-fullscreen",
+        "banner-promo",
       ].includes(scene.scene_type) && generic}
     </Card>
   );
