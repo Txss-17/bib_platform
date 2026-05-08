@@ -1402,6 +1402,24 @@ export function StudioEditor({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Pages manager dialog (triggered from preview "+ Page" button) */}
+      {showPagesManager && (
+        <AlertDialog open={showPagesManager} onOpenChange={setShowPagesManager}>
+          <AlertDialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Pages personnalisées</AlertDialogTitle>
+              <AlertDialogDescription>
+                Crée et gère les pages additionnelles de ta boutique (à propos, blog…).
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <PagesManager boutiqueId={boutiqueId} boutiqueSlug={publicSlug} />
+            <AlertDialogFooter>
+              <AlertDialogAction onClick={() => setShowPagesManager(false)}>Fermer</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }
