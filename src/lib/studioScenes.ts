@@ -17,7 +17,12 @@ export type SceneRole =
   | "press"
   | "comparison"
   | "founder"
-  | "manifesto";
+  | "manifesto"
+  | "marquee"
+  | "gallery"
+  | "stats"
+  | "video"
+  | "banner";
 
 export interface SceneDefinition {
   id: string; // ex: hero-cinema
@@ -41,7 +46,12 @@ export interface SceneDefinition {
     | "press-strip"
     | "comparison-table"
     | "founder-letter"
-    | "manifesto-typographic";
+  | "manifesto-typographic"
+  | "marquee-strip"
+  | "gallery-mosaic"
+  | "stats-counter"
+  | "video-fullscreen"
+  | "banner-promo";
 }
 
 export const STUDIO_SCENES: SceneDefinition[] = [
