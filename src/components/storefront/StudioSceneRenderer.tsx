@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useSceneAnalytics, trackCtaClick } from "@/hooks/useSceneAnalytics";
 import type { SceneRecord } from "@/lib/studioScenes";
 import type { BrandDNA } from "@/hooks/useBrandStudio";
+import { loadGoogleFont } from "@/lib/googleFonts";
 
 interface Product {
   id: string;
@@ -48,6 +49,23 @@ export function StudioSceneRenderer({
   const display = brandDna?.generated_typography?.display ?? "Playfair Display";
   const body = brandDna?.generated_typography?.body ?? "Inter";
 
+  useEffect(() => {
+    loadGoogleFont(display);
+    loadGoogleFont(body);
+  }, [display, body]);
+
+  // Detect a hero scene with full-page background → applied to whole root
+  const heroFull = scenes.find(
+    (s) =>
+      s.is_visible &&
+      s.scene_type === "hero-cinema" &&
+      (s.content as any)?.fullPageBackground &&
+      (s.content as any)?.backgroundImage,
+  );
+  const fullBg = heroFull
+    ? `url(${(heroFull.content as any).backgroundImage}) center/cover fixed`
+    : undefined;
+
   return (
     <div
       ref={rootRef}
@@ -61,7 +79,7 @@ export function StudioSceneRenderer({
           ["--studio-ink" as never]: brandDna?.generated_palette?.ink || "220 20% 18%",
           fontFamily: `${body}, ui-sans-serif, system-ui`,
           color: `hsl(var(--studio-ink))`,
-          background: `hsl(var(--studio-surface))`,
+          background: fullBg ?? `hsl(var(--studio-surface))`,
         } as React.CSSProperties
       }
     >
@@ -191,6 +209,16 @@ function SceneSwitch({
       return <FounderScene content={scene.content as never} displayFont={displayFont} />;
     case "manifesto-typographic":
       return <ManifestoScene content={scene.content as never} displayFont={displayFont} />;
+    case "marquee-strip":
+      return <MarqueeScene content={scene.content as never} displayFont={displayFont} />;
+    case "gallery-mosaic":
+      return <GalleryMosaicScene content={scene.content as never} displayFont={displayFont} />;
+    case "stats-counter":
+      return <StatsCounterScene content={scene.content as never} displayFont={displayFont} />;
+    case "video-fullscreen":
+      return <VideoFullscreenScene content={scene.content as never} displayFont={displayFont} />;
+    case "banner-promo":
+      return <BannerPromoScene content={scene.content as never} />;
     default:
       return null;
   }
