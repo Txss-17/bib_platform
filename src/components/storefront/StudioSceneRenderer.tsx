@@ -647,3 +647,175 @@ function ManifestoScene({ content, displayFont }: { content: any; displayFont: s
     </section>
   );
 }
+
+/* -------------------------- New scenes -------------------------- */
+
+function MarqueeScene({ content, displayFont }: { content: any; displayFont: string }) {
+  useEffect(() => {
+    if (content.fontFamily) loadGoogleFont(content.fontFamily);
+  }, [content.fontFamily]);
+  const variant = content.variant ?? "dark";
+  const bg =
+    variant === "light"
+      ? "hsl(var(--studio-surface))"
+      : variant === "accent"
+        ? "hsl(var(--studio-accent))"
+        : variant === "outline"
+          ? "transparent"
+          : "hsl(var(--studio-primary))";
+  const color = variant === "light" ? "hsl(var(--studio-ink))" : variant === "accent" ? "hsl(var(--studio-ink))" : "white";
+  const items = Array.from({ length: 8 }, (_, i) => i);
+  const text = (content.text ?? "").toString();
+  const sep = content.separator ?? "·";
+  const speed = Math.max(8, Math.min(120, Number(content.speed) || 30));
+  return (
+    <section
+      className="overflow-hidden py-3 border-y border-border/30"
+      style={{ background: bg, color }}
+    >
+      <div
+        className="flex whitespace-nowrap"
+        style={{
+          animation: `bib-marquee ${speed}s linear infinite`,
+          animationDirection: content.direction === "right" ? "reverse" : "normal",
+        }}
+      >
+        {items.map((i) => (
+          <span
+            key={i}
+            className="px-6"
+            style={{
+              fontFamily: `${content.fontFamily || displayFont}, serif`,
+              fontSize: `${content.fontSize ?? 18}px`,
+              textTransform: content.uppercase ? "uppercase" : "none",
+              letterSpacing: content.uppercase ? "0.15em" : "normal",
+            }}
+          >
+            {text} <span className="opacity-50 mx-3">{sep}</span>
+          </span>
+        ))}
+      </div>
+      <style>{`@keyframes bib-marquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }`}</style>
+    </section>
+  );
+}
+
+function GalleryMosaicScene({ content, displayFont }: { content: any; displayFont: string }) {
+  const images = (content.images ?? []) as string[];
+  return (
+    <section className="py-20" style={{ background: `hsl(var(--studio-surface))` }}>
+      <div className="max-w-6xl mx-auto px-6">
+        {content.title && (
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl" style={{ fontFamily: `${displayFont}, serif` }}>
+              {content.title}
+            </h2>
+            {content.subtitle && <p className="opacity-70 mt-2">{content.subtitle}</p>}
+          </div>
+        )}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {images.slice(0, 12).map((src, i) => (
+            <div
+              key={i}
+              className={`overflow-hidden rounded-md ${i % 5 === 0 ? "row-span-2 aspect-[3/5]" : "aspect-square"}`}
+              style={{ background: `url(${src}) center/cover` }}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StatsCounterScene({ content, displayFont }: { content: any; displayFont: string }) {
+  const stats = (content.stats ?? []) as Array<{ value: string; label: string }>;
+  return (
+    <section className="py-16" style={{ background: `hsl(var(--studio-primary))`, color: "white" }}>
+      <div className="max-w-5xl mx-auto px-6 text-center">
+        {content.title && (
+          <h2 className="text-2xl md:text-3xl mb-10" style={{ fontFamily: `${displayFont}, serif` }}>
+            {content.title}
+          </h2>
+        )}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          {stats.map((s, i) => (
+            <div key={i}>
+              <div
+                className="text-4xl md:text-5xl mb-1"
+                style={{ fontFamily: `${displayFont}, serif`, color: "hsl(var(--studio-accent))" }}
+              >
+                {s.value}
+              </div>
+              <p className="text-xs uppercase tracking-[0.2em] opacity-80">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function VideoFullscreenScene({ content, displayFont }: { content: any; displayFont: string }) {
+  return (
+    <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
+      {content.videoUrl ? (
+        <video
+          src={content.videoUrl}
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster={content.poster ?? undefined}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      ) : (
+        <div
+          className="absolute inset-0"
+          style={{ background: `linear-gradient(135deg, hsl(var(--studio-primary)), hsl(var(--studio-accent)))` }}
+        />
+      )}
+      <div
+        className="absolute inset-0"
+        style={{ background: `hsl(var(--studio-ink) / ${content.overlayOpacity ?? 0.4})` }}
+      />
+      <div className="relative z-10 max-w-3xl px-6 text-center text-white">
+        <h2 className="text-3xl md:text-5xl mb-4" style={{ fontFamily: `${displayFont}, serif` }}>
+          {content.title}
+        </h2>
+        <p className="opacity-90 mb-6">{content.subtitle}</p>
+        {content.ctaLabel && (
+          <a
+            href="#shop"
+            className="inline-block rounded-full px-7 py-3 text-sm font-medium"
+            style={{ background: `hsl(var(--studio-accent))`, color: `hsl(var(--studio-ink))` }}
+          >
+            {content.ctaLabel}
+          </a>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function BannerPromoScene({ content }: { content: any }) {
+  const bg =
+    content.bgColor === "accent"
+      ? "hsl(var(--studio-accent))"
+      : content.bgColor === "ink"
+        ? "hsl(var(--studio-ink))"
+        : "hsl(var(--studio-primary))";
+  const color = content.bgColor === "accent" ? "hsl(var(--studio-ink))" : "white";
+  return (
+    <div
+      className="px-4 py-2.5 text-center text-sm flex items-center justify-center gap-3 flex-wrap"
+      style={{ background: bg, color }}
+    >
+      <span>{content.text}</span>
+      {content.ctaLabel && content.ctaUrl && (
+        <a href={content.ctaUrl} className="underline font-medium">
+          {content.ctaLabel}
+        </a>
+      )}
+    </div>
+  );
+}
