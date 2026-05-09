@@ -90,16 +90,48 @@ export function StudioSceneRenderer({
           enabled={!!boutiqueId && !disableTracking}
           boutiqueId={boutiqueId ?? ""}
         >
-          <SceneSwitch
-            scene={scene}
-            boutiqueName={boutiqueName}
-            products={products}
-            displayFont={display}
-          />
+          <SceneStyleScope scene={scene}>
+            <SceneSwitch
+              scene={scene}
+              boutiqueName={boutiqueName}
+              products={products}
+              displayFont={resolveDisplay(scene, display)}
+            />
+          </SceneStyleScope>
         </TrackedScene>
       ))}
     </div>
   );
+}
+
+/** Returns the heading font effective for a scene (override > inherited). */
+function resolveDisplay(scene: SceneRecord, fallback: string): string {
+  return scene.style_overrides?.fonts?.display || fallback;
+}
+
+/**
+ * Wraps a scene with local CSS variable overrides so palette/fonts of a single
+ * scene can deviate from the brand identity without leaking to siblings.
+ */
+function SceneStyleScope({
+  scene,
+  children,
+}: {
+  scene: SceneRecord;
+  children: React.ReactNode;
+}) {
+  const ov = scene.style_overrides ?? null;
+  const style: React.CSSProperties = {};
+  if (ov?.palette?.primary) (style as any)["--studio-primary"] = ov.palette.primary;
+  if (ov?.palette?.accent) (style as any)["--studio-accent"] = ov.palette.accent;
+  if (ov?.palette?.surface) (style as any)["--studio-surface"] = ov.palette.surface;
+  if (ov?.palette?.ink) (style as any)["--studio-ink"] = ov.palette.ink;
+  if (ov?.fonts?.body) style.fontFamily = `${ov.fonts.body}, ui-sans-serif, system-ui`;
+  useEffect(() => {
+    if (ov?.fonts?.display) loadGoogleFont(ov.fonts.display);
+    if (ov?.fonts?.body) loadGoogleFont(ov.fonts.body);
+  }, [ov?.fonts?.display, ov?.fonts?.body]);
+  return <div style={style}>{children}</div>;
 }
 
 /**
