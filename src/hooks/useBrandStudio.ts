@@ -92,12 +92,12 @@ export function useBoutiqueScenes(
     queryKey: ["boutique-scenes", boutiqueId, pageId],
     enabled: !!boutiqueId,
     queryFn: async () => {
-      let q = supabase
+      let q: any = supabase
         .from("boutique_scenes")
         .select("*")
         .eq("boutique_id", boutiqueId!)
         .order("position", { ascending: true });
-      q = pageId ? q.eq("page_id" as any, pageId) : q.is("page_id" as any, null);
+      q = pageId ? q.eq("page_id", pageId) : q.is("page_id", null);
       const { data, error } = await q;
       if (error) throw error;
       return (data as SceneRecord[]) ?? [];
