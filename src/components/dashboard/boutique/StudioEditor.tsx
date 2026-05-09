@@ -56,6 +56,13 @@ import { HighlightsManager } from "./HighlightsManager";
 import { PagesManager } from "./PagesManager";
 import { ALL_FONTS, loadGoogleFont } from "@/lib/googleFonts";
 import {
+  useBoutiquePages,
+  useCreateBoutiquePage,
+  useUpdateBoutiquePage,
+  useDeleteBoutiquePage,
+  useReorderBoutiquePages,
+} from "@/hooks/useBoutiquePages";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -200,6 +207,16 @@ export function StudioEditor({
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [showPublishErrors, setShowPublishErrors] = useState(false);
   const [showPagesManager, setShowPagesManager] = useState(false);
+  /** Active page in the editor — null = home (scenes with page_id IS NULL). */
+  const [activePageId, setActivePageId] = useState<string | null>(null);
+  const [renamingPageId, setRenamingPageId] = useState<string | null>(null);
+  const [renameDraft, setRenameDraft] = useState("");
+
+  const { data: pages = [] } = useBoutiquePages(boutiqueId);
+  const createPage = useCreateBoutiquePage();
+  const updatePage = useUpdateBoutiquePage();
+  const deletePage = useDeleteBoutiquePage();
+  const reorderPages = useReorderBoutiquePages();
 
   // SEO local state — editable fields persisted via useSaveSeo
   const [seoTitle, setSeoTitle] = useState(initialSeo?.title ?? "");
