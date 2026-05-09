@@ -184,7 +184,7 @@ export function StudioEditor({
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { data: brandDna } = useBrandDNA(boutiqueId);
-  const { data: scenes = [], isLoading } = useBoutiqueScenes(boutiqueId);
+  const { data: scenes = [], isLoading } = useBoutiqueScenes(boutiqueId, activePageId);
   const updateScene = useUpdateScene();
   const reorder = useReorderScenes();
   const addScene = useAddScene();
@@ -368,6 +368,7 @@ export function StudioEditor({
         position: scenes.length,
         variant: s.variant,
         content: s.content,
+        pageId: activePageId,
       },
       {
         onSuccess: () => toast.success("Scène dupliquée"),
@@ -379,7 +380,7 @@ export function StudioEditor({
   const handleAdd = (sceneType: string) => {
     if (addScene.isPending) return;
     addScene.mutate(
-      { boutiqueId, sceneType, position: scenes.length },
+      { boutiqueId, sceneType, position: scenes.length, pageId: activePageId },
       {
         onSuccess: () => {
           toast.success("Scène ajoutée");
