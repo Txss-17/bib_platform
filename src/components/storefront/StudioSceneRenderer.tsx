@@ -871,3 +871,322 @@ function BannerPromoScene({ content }: { content: any }) {
     </div>
   );
 }
+
+/* -------------------------- Page-specific scenes -------------------------- */
+
+function ProductsGridScene({ content, products, displayFont }: { content: any; products: Product[]; displayFont: string }) {
+  const layout = content.layout || "3-up";
+  const cols = layout === "4-up" ? "md:grid-cols-4" : layout === "compact" ? "md:grid-cols-3 lg:grid-cols-5" : "md:grid-cols-3";
+  const shapeMap: Record<string, string> = {
+    square: "rounded-none",
+    rounded: "rounded-md",
+    "rounded-xl": "rounded-2xl",
+    circle: "rounded-full aspect-square",
+    arch: "rounded-t-full",
+  };
+  const shapeClass = shapeMap[content.cardShape] ?? "rounded-md";
+  return (
+    <section className="py-16" style={{ background: `hsl(var(--studio-surface))` }}>
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl md:text-4xl" style={{ fontFamily: `${displayFont}, serif` }}>
+            {content.title}
+          </h2>
+          {content.subtitle && <p className="opacity-70 mt-2">{content.subtitle}</p>}
+        </div>
+        {products.length === 0 ? (
+          <p className="text-center opacity-60 italic">Aucun produit pour le moment.</p>
+        ) : (
+          <div className={`grid grid-cols-2 ${cols} gap-6`}>
+            {products.map((p) => (
+              <article key={p.id}>
+                <div
+                  className={`aspect-[4/5] ${shapeClass} mb-3 overflow-hidden`}
+                  style={{
+                    background: p.image_url
+                      ? `url(${p.image_url}) center/cover`
+                      : `linear-gradient(135deg, hsl(var(--studio-primary) / 0.2), hsl(var(--studio-accent) / 0.2))`,
+                  }}
+                />
+                <h3 className="text-base">{p.name}</h3>
+                <p className="text-sm opacity-70">{p.price.toFixed(2)} €</p>
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function ProductSpotlightScene({ content, products, displayFont }: { content: any; products: Product[]; displayFont: string }) {
+  const product = products.find((p) => p.id === content.productId) ?? products[0];
+  const reverse = content.variant === "image-right";
+  const centered = content.variant === "centered";
+  return (
+    <section className="py-20" style={{ background: `hsl(var(--studio-surface))` }}>
+      <div className={`max-w-6xl mx-auto px-6 ${centered ? "text-center" : `grid md:grid-cols-2 gap-10 items-center ${reverse ? "md:[&>*:first-child]:order-2" : ""}`}`}>
+        <div
+          className={`${centered ? "max-w-xl mx-auto aspect-[4/3] rounded-lg" : "aspect-[4/5] rounded-lg"} overflow-hidden`}
+          style={{
+            background:
+              (product?.image_url && `url(${product.image_url}) center/cover`) ||
+              (content.backgroundImage && `url(${content.backgroundImage}) center/cover`) ||
+              `linear-gradient(135deg, hsl(var(--studio-primary) / 0.2), hsl(var(--studio-accent) / 0.2))`,
+          }}
+        />
+        <div>
+          <h2 className="text-3xl md:text-5xl mb-3" style={{ fontFamily: `${displayFont}, serif` }}>
+            {content.title || product?.name}
+          </h2>
+          {content.subtitle && <p className="opacity-80 mb-6">{content.subtitle}</p>}
+          {product && (
+            <p className="text-xl mb-6 opacity-80">{product.price.toFixed(2)} €</p>
+          )}
+          {content.ctaLabel && (
+            <a
+              href="#shop"
+              className="inline-block rounded-full px-7 py-3 text-sm font-medium"
+              style={{ background: `hsl(var(--studio-accent))`, color: `hsl(var(--studio-ink))` }}
+            >
+              {content.ctaLabel}
+            </a>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BlogListScene({ content, displayFont }: { content: any; displayFont: string }) {
+  const articles = (content.articles ?? []) as Array<{ title: string; excerpt: string; image?: string | null; url?: string }>;
+  return (
+    <section className="py-16">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="mb-10 text-center">
+          <h2 className="text-3xl md:text-4xl" style={{ fontFamily: `${displayFont}, serif` }}>{content.title}</h2>
+          {content.subtitle && <p className="opacity-70 mt-2">{content.subtitle}</p>}
+        </div>
+        <div className="grid md:grid-cols-3 gap-6">
+          {articles.map((a, i) => (
+            <a key={i} href={a.url || "#"} className="group rounded-lg overflow-hidden border border-border/40 bg-white hover:shadow-md transition">
+              <div
+                className="aspect-[16/10] bg-cover bg-center"
+                style={{
+                  background: a.image
+                    ? `url(${a.image}) center/cover`
+                    : `linear-gradient(135deg, hsl(var(--studio-primary) / 0.15), hsl(var(--studio-accent) / 0.15))`,
+                }}
+              />
+              <div className="p-4">
+                <h3 className="font-medium" style={{ fontFamily: `${displayFont}, serif` }}>{a.title}</h3>
+                <p className="text-sm opacity-70 mt-1">{a.excerpt}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CartSummaryScene({ content, displayFont }: { content: any; displayFont: string }) {
+  return (
+    <section className="py-20" style={{ background: `hsl(var(--studio-surface))` }}>
+      <div className="max-w-2xl mx-auto px-6 text-center">
+        <h2 className="text-3xl md:text-4xl mb-6" style={{ fontFamily: `${displayFont}, serif` }}>{content.title}</h2>
+        <p className="opacity-70 mb-6">{content.emptyText}</p>
+        <a href="#shop" className="inline-block rounded-full px-7 py-3 text-sm font-medium"
+          style={{ background: `hsl(var(--studio-accent))`, color: `hsl(var(--studio-ink))` }}>
+          {content.ctaLabel}
+        </a>
+      </div>
+    </section>
+  );
+}
+
+function ContactFormScene({ content, displayFont }: { content: any; displayFont: string }) {
+  return (
+    <section className="py-16" id="contact">
+      <div className="max-w-3xl mx-auto px-6">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl md:text-4xl" style={{ fontFamily: `${displayFont}, serif` }}>{content.title}</h2>
+          {content.subtitle && <p className="opacity-70 mt-2">{content.subtitle}</p>}
+        </div>
+        <form onSubmit={(e) => e.preventDefault()} className="grid gap-3 max-w-xl mx-auto">
+          <input className="rounded-md border border-border/60 px-4 py-3 text-sm bg-white" placeholder="Votre nom" />
+          <input type="email" className="rounded-md border border-border/60 px-4 py-3 text-sm bg-white" placeholder="Votre email" />
+          <textarea rows={5} className="rounded-md border border-border/60 px-4 py-3 text-sm bg-white" placeholder="Votre message" />
+          <button type="submit" className="rounded-full px-7 py-3 text-sm font-medium mx-auto"
+            style={{ background: `hsl(var(--studio-accent))`, color: `hsl(var(--studio-ink))` }}>
+            {content.ctaLabel}
+          </button>
+        </form>
+        {(content.contactEmail || content.contactPhone || content.contactAddress) && (
+          <div className="mt-8 grid sm:grid-cols-3 gap-4 text-center text-sm opacity-80">
+            {content.contactEmail && <div>{content.contactEmail}</div>}
+            {content.contactPhone && <div>{content.contactPhone}</div>}
+            {content.contactAddress && <div>{content.contactAddress}</div>}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function TeamGridScene({ content, displayFont }: { content: any; displayFont: string }) {
+  const members = (content.members ?? []) as Array<{ name: string; role: string; photo?: string | null; bio?: string }>;
+  const variant = content.variant || "3-up";
+  const cols = variant === "4-up" ? "md:grid-cols-4" : "md:grid-cols-3";
+  const isCircle = variant === "circle";
+  return (
+    <section className="py-16" style={{ background: `hsl(var(--studio-surface))` }}>
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl md:text-4xl" style={{ fontFamily: `${displayFont}, serif` }}>{content.title}</h2>
+          {content.subtitle && <p className="opacity-70 mt-2">{content.subtitle}</p>}
+        </div>
+        <div className={`grid grid-cols-2 ${cols} gap-6`}>
+          {members.map((m, i) => (
+            <div key={i} className="text-center">
+              <div
+                className={`${isCircle ? "rounded-full aspect-square w-32 mx-auto" : "aspect-[4/5] rounded-md"} mb-3 overflow-hidden`}
+                style={{
+                  background: m.photo
+                    ? `url(${m.photo}) center/cover`
+                    : `linear-gradient(135deg, hsl(var(--studio-primary) / 0.2), hsl(var(--studio-accent) / 0.2))`,
+                }}
+              />
+              <h3 className="font-medium">{m.name}</h3>
+              <p className="text-xs uppercase tracking-[0.18em] opacity-60 mt-0.5">{m.role}</p>
+              {m.bio && <p className="text-sm opacity-70 mt-2">{m.bio}</p>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PricingTableScene({ content, displayFont }: { content: any; displayFont: string }) {
+  const plans = (content.plans ?? []) as Array<{ name: string; price: string; period?: string; features: string[]; cta?: string; featured?: boolean }>;
+  const cols = plans.length === 4 ? "md:grid-cols-4" : plans.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3";
+  return (
+    <section className="py-16">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl md:text-4xl" style={{ fontFamily: `${displayFont}, serif` }}>{content.title}</h2>
+          {content.subtitle && <p className="opacity-70 mt-2">{content.subtitle}</p>}
+        </div>
+        <div className={`grid grid-cols-1 ${cols} gap-4`}>
+          {plans.map((p, i) => (
+            <div key={i} className={`rounded-xl border p-6 flex flex-col ${p.featured ? "ring-2" : ""}`}
+              style={{
+                background: "white",
+                borderColor: p.featured ? "hsl(var(--studio-accent))" : "hsl(var(--studio-ink) / 0.1)",
+                ["--tw-ring-color" as any]: "hsl(var(--studio-accent))",
+              }}>
+              <h3 className="text-xl mb-1" style={{ fontFamily: `${displayFont}, serif` }}>{p.name}</h3>
+              <div className="mb-4">
+                <span className="text-3xl font-semibold">{p.price}</span>
+                {p.period && <span className="opacity-60 text-sm">{p.period}</span>}
+              </div>
+              <ul className="space-y-1.5 text-sm flex-1">
+                {p.features.map((f, j) => (<li key={j}>· {f}</li>))}
+              </ul>
+              {p.cta && (
+                <a href="#" className="mt-6 rounded-full px-5 py-2.5 text-sm font-medium text-center"
+                  style={{
+                    background: p.featured ? "hsl(var(--studio-accent))" : "hsl(var(--studio-primary))",
+                    color: p.featured ? "hsl(var(--studio-ink))" : "white",
+                  }}>
+                  {p.cta}
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ImageTextSplitScene({ content, displayFont }: { content: any; displayFont: string }) {
+  const reverse = content.variant === "image-right";
+  const stacked = content.variant === "image-top";
+  return (
+    <section className="py-16">
+      <div className={`max-w-6xl mx-auto px-6 ${stacked ? "" : `grid md:grid-cols-2 gap-10 items-center ${reverse ? "md:[&>*:first-child]:order-2" : ""}`}`}>
+        <div
+          className={`${stacked ? "aspect-[16/9] mb-8" : "aspect-[4/5]"} rounded-lg overflow-hidden`}
+          style={{
+            background: content.image
+              ? `url(${content.image}) center/cover`
+              : `linear-gradient(135deg, hsl(var(--studio-primary) / 0.2), hsl(var(--studio-accent) / 0.2))`,
+          }}
+        />
+        <div>
+          <h2 className="text-3xl md:text-4xl mb-3" style={{ fontFamily: `${displayFont}, serif` }}>{content.title}</h2>
+          {content.subtitle && <p className="opacity-80 mb-5">{content.subtitle}</p>}
+          {content.ctaLabel && (
+            <a href={content.ctaUrl || "#"} className="inline-block rounded-full px-6 py-2.5 text-sm font-medium"
+              style={{ background: `hsl(var(--studio-accent))`, color: `hsl(var(--studio-ink))` }}>
+              {content.ctaLabel}
+            </a>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TimelineScene({ content, displayFont }: { content: any; displayFont: string }) {
+  const events = (content.events ?? []) as Array<{ year: string; title: string; body: string }>;
+  return (
+    <section className="py-16" style={{ background: `hsl(var(--studio-surface))` }}>
+      <div className="max-w-3xl mx-auto px-6">
+        <h2 className="text-3xl md:text-4xl mb-10 text-center" style={{ fontFamily: `${displayFont}, serif` }}>{content.title}</h2>
+        <ol className="relative border-l-2 pl-6 space-y-8" style={{ borderColor: "hsl(var(--studio-accent))" }}>
+          {events.map((e, i) => (
+            <li key={i} className="relative">
+              <span className="absolute -left-[33px] top-1 w-4 h-4 rounded-full" style={{ background: "hsl(var(--studio-accent))" }} />
+              <p className="text-xs uppercase tracking-[0.2em] opacity-60">{e.year}</p>
+              <h3 className="text-xl mt-1" style={{ fontFamily: `${displayFont}, serif` }}>{e.title}</h3>
+              <p className="opacity-80 mt-1">{e.body}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+function MapLocationScene({ content, displayFont }: { content: any; displayFont: string }) {
+  return (
+    <section className="py-16">
+      <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-8 items-center">
+        <div>
+          <h2 className="text-3xl md:text-4xl mb-4" style={{ fontFamily: `${displayFont}, serif` }}>{content.title}</h2>
+          <p className="opacity-80">{content.address}</p>
+          {content.hours && <p className="opacity-70 mt-2 text-sm">{content.hours}</p>}
+        </div>
+        <div className="aspect-[4/3] rounded-lg overflow-hidden border border-border/40">
+          {content.mapEmbedUrl ? (
+            <iframe
+              src={content.mapEmbedUrl}
+              className="w-full h-full"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Carte"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-sm opacity-60"
+              style={{ background: `hsl(var(--studio-surface))` }}>
+              (Ajoute une URL d'intégration Google Maps)
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
