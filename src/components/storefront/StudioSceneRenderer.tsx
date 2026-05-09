@@ -251,6 +251,26 @@ function SceneSwitch({
       return <VideoFullscreenScene content={scene.content as never} displayFont={displayFont} />;
     case "banner-promo":
       return <BannerPromoScene content={scene.content as never} />;
+    case "products-grid":
+      return <ProductsGridScene content={scene.content as never} products={products} displayFont={displayFont} />;
+    case "product-spotlight":
+      return <ProductSpotlightScene content={scene.content as never} products={products} displayFont={displayFont} />;
+    case "blog-list":
+      return <BlogListScene content={scene.content as never} displayFont={displayFont} />;
+    case "cart-summary":
+      return <CartSummaryScene content={scene.content as never} displayFont={displayFont} />;
+    case "contact-form":
+      return <ContactFormScene content={scene.content as never} displayFont={displayFont} />;
+    case "team-grid":
+      return <TeamGridScene content={scene.content as never} displayFont={displayFont} />;
+    case "pricing-table":
+      return <PricingTableScene content={scene.content as never} displayFont={displayFont} />;
+    case "image-text-split":
+      return <ImageTextSplitScene content={scene.content as never} displayFont={displayFont} />;
+    case "timeline":
+      return <TimelineScene content={scene.content as never} displayFont={displayFont} />;
+    case "map-location":
+      return <MapLocationScene content={scene.content as never} displayFont={displayFont} />;
     default:
       return null;
   }
