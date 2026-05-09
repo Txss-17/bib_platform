@@ -22,7 +22,16 @@ export type SceneRole =
   | "gallery"
   | "stats"
   | "video"
-  | "banner";
+  | "banner"
+  | "products"
+  | "blog"
+  | "cart"
+  | "contact"
+  | "team"
+  | "pricing"
+  | "split"
+  | "timeline"
+  | "map";
 
 export interface SceneDefinition {
   id: string; // ex: hero-cinema
@@ -51,7 +60,17 @@ export interface SceneDefinition {
   | "gallery-mosaic"
   | "stats-counter"
   | "video-fullscreen"
-  | "banner-promo";
+  | "banner-promo"
+  | "products-grid"
+  | "product-spotlight"
+  | "blog-list"
+  | "cart-summary"
+  | "contact-form"
+  | "team-grid"
+  | "pricing-table"
+  | "image-text-split"
+  | "timeline"
+  | "map-location";
 }
 
 export const STUDIO_SCENES: SceneDefinition[] = [
@@ -383,6 +402,14 @@ export interface SceneRecord {
   content: Record<string, unknown>;
   position: number;
   is_visible: boolean;
+  /** Page custom à laquelle la scène appartient. null = page d'accueil. */
+  page_id?: string | null;
+  /** Surcharges de style (palette/typo/tailles) — null = hérite de l'identité. */
+  style_overrides?: {
+    palette?: { primary?: string; accent?: string; surface?: string; ink?: string };
+    fonts?: { display?: string; body?: string };
+    sizes?: { h1?: number; body?: number };
+  } | null;
 }
 
 export function findSceneDefinition(sceneType: string): SceneDefinition | undefined {
