@@ -299,9 +299,11 @@ export type Database = {
           created_at: string
           id: string
           is_visible: boolean
+          page_id: string | null
           position: number
           role: string
           scene_type: string
+          style_overrides: Json | null
           updated_at: string
           variant: string
         }
@@ -311,9 +313,11 @@ export type Database = {
           created_at?: string
           id?: string
           is_visible?: boolean
+          page_id?: string | null
           position?: number
           role: string
           scene_type: string
+          style_overrides?: Json | null
           updated_at?: string
           variant?: string
         }
@@ -323,9 +327,11 @@ export type Database = {
           created_at?: string
           id?: string
           is_visible?: boolean
+          page_id?: string | null
           position?: number
           role?: string
           scene_type?: string
+          style_overrides?: Json | null
           updated_at?: string
           variant?: string
         }
