@@ -22,7 +22,16 @@ export type SceneRole =
   | "gallery"
   | "stats"
   | "video"
-  | "banner";
+  | "banner"
+  | "products"
+  | "blog"
+  | "cart"
+  | "contact"
+  | "team"
+  | "pricing"
+  | "split"
+  | "timeline"
+  | "map";
 
 export interface SceneDefinition {
   id: string; // ex: hero-cinema
@@ -51,7 +60,17 @@ export interface SceneDefinition {
   | "gallery-mosaic"
   | "stats-counter"
   | "video-fullscreen"
-  | "banner-promo";
+  | "banner-promo"
+  | "products-grid"
+  | "product-spotlight"
+  | "blog-list"
+  | "cart-summary"
+  | "contact-form"
+  | "team-grid"
+  | "pricing-table"
+  | "image-text-split"
+  | "timeline"
+  | "map-location";
 }
 
 export const STUDIO_SCENES: SceneDefinition[] = [
@@ -371,6 +390,170 @@ export const STUDIO_SCENES: SceneDefinition[] = [
       bgColor: "primary",
     },
   },
+  {
+    id: "products-grid",
+    role: "products",
+    name: "Grille produits",
+    tagline: "Tous tes produits affichés en grille",
+    description:
+      "Affiche tous les produits actifs de la boutique en grille (filtrable par catégorie).",
+    variants: ["3-up", "4-up", "compact"],
+    previewKey: "products-grid",
+    defaultContent: {
+      title: "Nos produits",
+      subtitle: "L'intégralité de la collection.",
+      layout: "3-up",
+      cardShape: "rounded",
+    },
+  },
+  {
+    id: "product-spotlight",
+    role: "products",
+    name: "Produit phare",
+    tagline: "Met un produit à l'honneur",
+    description: "Met en scène un produit unique avec image grand format, descriptif et CTA achat.",
+    variants: ["image-left", "image-right", "centered"],
+    previewKey: "product-spotlight",
+    defaultContent: {
+      productId: null,
+      title: "Notre coup de cœur",
+      subtitle: "Pourquoi vous allez l'adorer.",
+      ctaLabel: "Voir le produit",
+      backgroundImage: null,
+    },
+  },
+  {
+    id: "blog-list",
+    role: "blog",
+    name: "Articles de blog",
+    tagline: "Liste éditoriale d'articles",
+    description: "Cartes d'articles (titre + image + extrait + lien).",
+    variants: ["grid", "list", "featured"],
+    previewKey: "blog-list",
+    defaultContent: {
+      title: "Le journal",
+      subtitle: "",
+      articles: [
+        { title: "Notre engagement éco-responsable", excerpt: "Découvrez nos coulisses…", image: null, url: "#" },
+        { title: "Comment choisir sa pièce signature", excerpt: "Guide en 3 étapes.", image: null, url: "#" },
+      ],
+    },
+  },
+  {
+    id: "cart-summary",
+    role: "cart",
+    name: "Récap panier",
+    tagline: "Bloc panier stylisé",
+    description: "Affiche le panier de l'utilisateur (utile pour une page panier dédiée).",
+    variants: ["full", "compact"],
+    previewKey: "cart-summary",
+    defaultContent: {
+      title: "Votre panier",
+      ctaLabel: "Passer commande",
+      emptyText: "Votre panier est vide pour le moment.",
+    },
+  },
+  {
+    id: "contact-form",
+    role: "contact",
+    name: "Formulaire de contact",
+    tagline: "Nom, email et message",
+    description: "Formulaire de contact générique (envoyé en ticket support).",
+    variants: ["centered", "split"],
+    previewKey: "contact-form",
+    defaultContent: {
+      title: "Contactez-nous",
+      subtitle: "Une question ? Notre équipe vous répond sous 24h.",
+      ctaLabel: "Envoyer",
+      contactEmail: "",
+      contactPhone: "",
+      contactAddress: "",
+    },
+  },
+  {
+    id: "team-grid",
+    role: "team",
+    name: "L'équipe",
+    tagline: "Cartes membres avec photo et rôle",
+    description: "Présente les membres de l'équipe ou les artisans.",
+    variants: ["3-up", "4-up", "circle"],
+    previewKey: "team-grid",
+    defaultContent: {
+      title: "L'équipe",
+      subtitle: "Les visages derrière la maison.",
+      members: [
+        { name: "Camille", role: "Fondatrice", photo: null, bio: "" },
+        { name: "Hugo", role: "Direction artistique", photo: null, bio: "" },
+        { name: "Léa", role: "Production", photo: null, bio: "" },
+      ],
+    },
+  },
+  {
+    id: "pricing-table",
+    role: "pricing",
+    name: "Tarifs / formules",
+    tagline: "Cartes de tarification",
+    description: "Présente 2 à 4 formules tarifaires avec mise en avant possible.",
+    variants: ["2-cols", "3-cols", "4-cols"],
+    previewKey: "pricing-table",
+    defaultContent: {
+      title: "Nos formules",
+      subtitle: "",
+      plans: [
+        { name: "Starter", price: "29€", period: "/mois", features: ["1 boutique", "Support email"], cta: "Choisir", featured: false },
+        { name: "Pro", price: "79€", period: "/mois", features: ["5 boutiques", "Support prioritaire", "Analytics avancé"], cta: "Choisir", featured: true },
+        { name: "Scale", price: "199€", period: "/mois", features: ["Illimité", "Account manager"], cta: "Contact", featured: false },
+      ],
+    },
+  },
+  {
+    id: "image-text-split",
+    role: "split",
+    name: "Image + Texte 50/50",
+    tagline: "Bloc moitié image, moitié texte",
+    description: "Section divisée : image d'un côté, texte + CTA de l'autre. Inversable.",
+    variants: ["image-left", "image-right", "image-top"],
+    previewKey: "image-text-split",
+    defaultContent: {
+      title: "Notre histoire en image",
+      subtitle: "Un petit aperçu de ce qui nous passionne au quotidien.",
+      ctaLabel: "En savoir plus",
+      ctaUrl: "#",
+      image: null,
+    },
+  },
+  {
+    id: "timeline",
+    role: "timeline",
+    name: "Frise chronologique",
+    tagline: "Étapes / dates clés",
+    description: "Frise verticale avec dates et descriptifs (idéal page À propos).",
+    variants: ["vertical", "horizontal"],
+    previewKey: "timeline",
+    defaultContent: {
+      title: "Notre parcours",
+      events: [
+        { year: "2022", title: "La première idée", body: "Tout commence dans un petit atelier." },
+        { year: "2023", title: "Premier produit", body: "Lancement de la collection signature." },
+        { year: "2024", title: "100 clients", body: "Une communauté qui grandit." },
+      ],
+    },
+  },
+  {
+    id: "map-location",
+    role: "map",
+    name: "Adresse + carte",
+    tagline: "Localise ta boutique sur une carte",
+    description: "Affiche une carte intégrée et tes infos de contact.",
+    variants: ["split", "centered"],
+    previewKey: "map-location",
+    defaultContent: {
+      title: "Nous trouver",
+      address: "12 rue de l'Atelier, 75001 Paris",
+      mapEmbedUrl: "",
+      hours: "Du lundi au samedi · 10h–19h",
+    },
+  },
 ];
 
 /** Configuration de scène persistée dans la table boutique_scenes. */
@@ -383,6 +566,14 @@ export interface SceneRecord {
   content: Record<string, unknown>;
   position: number;
   is_visible: boolean;
+  /** Page custom à laquelle la scène appartient. null = page d'accueil. */
+  page_id?: string | null;
+  /** Surcharges de style (palette/typo/tailles) — null = hérite de l'identité. */
+  style_overrides?: {
+    palette?: { primary?: string; accent?: string; surface?: string; ink?: string };
+    fonts?: { display?: string; body?: string };
+    sizes?: { h1?: number; body?: number };
+  } | null;
 }
 
 export function findSceneDefinition(sceneType: string): SceneDefinition | undefined {

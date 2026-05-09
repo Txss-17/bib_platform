@@ -84,16 +84,21 @@ export function useBrandDNA(boutiqueId: string | undefined) {
   });
 }
 
-export function useBoutiqueScenes(boutiqueId: string | undefined) {
+export function useBoutiqueScenes(
+  boutiqueId: string | undefined,
+  pageId: string | null = null,
+) {
   return useQuery({
-    queryKey: ["boutique-scenes", boutiqueId],
+    queryKey: ["boutique-scenes", boutiqueId, pageId],
     enabled: !!boutiqueId,
     queryFn: async () => {
-      const { data, error } = await supabase
+      let q: any = supabase
         .from("boutique_scenes")
         .select("*")
         .eq("boutique_id", boutiqueId!)
         .order("position", { ascending: true });
+      q = pageId ? q.eq("page_id", pageId) : q.is("page_id", null);
+      const { data, error } = await q;
       if (error) throw error;
       return (data as SceneRecord[]) ?? [];
     },
@@ -314,7 +319,7 @@ export function useUpdateScene() {
     mutationFn: async (params: {
       sceneId: string;
       boutiqueId: string;
-      patch: Partial<Pick<SceneRecord, "content" | "variant" | "is_visible" | "position">>;
+      patch: Partial<Pick<SceneRecord, "content" | "variant" | "is_visible" | "position" | "style_overrides">>;
     }) => {
       const { error } = await supabase
         .from("boutique_scenes")
@@ -324,16 +329,20 @@ export function useUpdateScene() {
     },
     // Optimistic — preview must update instantly while typing.
     onMutate: async (vars) => {
-      const key = ["boutique-scenes", vars.boutiqueId];
-      await qc.cancelQueries({ queryKey: key });
-      const prev = qc.getQueryData<SceneRecord[]>(key) ?? [];
-      qc.setQueryData<SceneRecord[]>(key, prev.map((s) =>
-        s.id === vars.sceneId ? { ...s, ...vars.patch } as SceneRecord : s,
-      ));
-      return { prev, key };
+      // Update every cached page (we don't know which one this scene belongs to)
+      const queries = qc.getQueriesData<SceneRecord[]>({ queryKey: ["boutique-scenes", vars.boutiqueId] });
+      const snapshots: Array<{ key: any; prev: SceneRecord[] }> = [];
+      for (const [key, prev] of queries) {
+        if (!prev) continue;
+        snapshots.push({ key, prev });
+        qc.setQueryData<SceneRecord[]>(key, prev.map((s) =>
+          s.id === vars.sceneId ? { ...s, ...vars.patch } as SceneRecord : s,
+        ));
+      }
+      return { snapshots };
     },
     onError: (_e, _v, ctx) => {
-      if (ctx?.prev && ctx.key) qc.setQueryData(ctx.key, ctx.prev);
+      ctx?.snapshots?.forEach(({ key, prev }) => qc.setQueryData(key, prev));
     },
     onSettled: (_d, _e, vars) =>
       qc.invalidateQueries({ queryKey: ["boutique-scenes", vars.boutiqueId] }),
@@ -389,6 +398,7 @@ export function useAddScene() {
       position: number;
       variant?: string;
       content?: Record<string, unknown>;
+      pageId?: string | null;
     }) => {
       const def = findSceneDefinition(params.sceneType);
       if (!def) throw new Error("scene_type inconnu");
@@ -400,6 +410,7 @@ export function useAddScene() {
         content: params.content ?? def.defaultContent,
         position: params.position,
         is_visible: true,
+        page_id: params.pageId ?? null,
       } as never);
       if (error) throw error;
     },
@@ -419,17 +430,17 @@ export function useDeleteScene() {
       if (error) throw error;
     },
     onMutate: async (vars) => {
-      const key = ["boutique-scenes", vars.boutiqueId];
-      await qc.cancelQueries({ queryKey: key });
-      const prev = qc.getQueryData<SceneRecord[]>(key) ?? [];
-      qc.setQueryData<SceneRecord[]>(
-        key,
-        prev.filter((s) => s.id !== vars.sceneId),
-      );
-      return { prev, key };
+      const queries = qc.getQueriesData<SceneRecord[]>({ queryKey: ["boutique-scenes", vars.boutiqueId] });
+      const snapshots: Array<{ key: any; prev: SceneRecord[] }> = [];
+      for (const [key, prev] of queries) {
+        if (!prev) continue;
+        snapshots.push({ key, prev });
+        qc.setQueryData<SceneRecord[]>(key, prev.filter((s) => s.id !== vars.sceneId));
+      }
+      return { snapshots };
     },
     onError: (_e, _v, ctx) => {
-      if (ctx?.prev && ctx.key) qc.setQueryData(ctx.key, ctx.prev);
+      ctx?.snapshots?.forEach(({ key, prev }) => qc.setQueryData(key, prev));
     },
     onSettled: (_d, _e, vars) =>
       qc.invalidateQueries({ queryKey: ["boutique-scenes", vars.boutiqueId] }),

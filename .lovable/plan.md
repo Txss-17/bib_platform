@@ -1,90 +1,116 @@
-# Lot 3 — Étape 2 : Gmail OAuth multi-vendeurs
+## Objectif
 
-Chaque vendeur connecte **son propre compte Gmail / Google Workspace** à sa boutique. Les emails clients (confirmation commande, expédition, bienvenue…) partent depuis l'adresse réelle du vendeur, sur **son domaine**. Aucun partage de compte, aucune usurpation.
-
----
-
-## Action requise de votre côté (une seule fois)
-
-Avant que je puisse coder, vous devez créer les credentials OAuth Google :
-
-1. Aller sur https://console.cloud.google.com/ → créer le projet **"Brand-In-A-Box"**
-2. **APIs & Services → Library** → activer **Gmail API**
-3. **OAuth consent screen** :
-   - User Type : **External**
-   - App name : Brand-In-A-Box
-   - Support email + developer email : le vôtre
-   - Scopes : ajouter `https://www.googleapis.com/auth/gmail.send`
-   - Test users : votre email (tant que l'app est en mode "Testing")
-4. **Credentials → Create Credentials → OAuth Client ID** :
-   - Type : **Web application**
-   - Name : Brand-In-A-Box Web
-   - **Authorized redirect URIs** :
-     `https://lfsiwtpctqxpzyskakey.supabase.co/functions/v1/gmail-oauth-callback`
-5. Récupérer **Client ID** + **Client Secret**
-
-Quand vous avez les 2 valeurs, dites « ok j'ai les credentials » et je vous demanderai de les coller via le dialogue secrets sécurisé.
-
-> Note : tant que l'app est "in Testing", seuls les emails Test users peuvent connecter. Pour ouvrir aux vrais vendeurs, il faudra basculer en "In production" (pas de revue Google nécessaire pour le scope `gmail.send` non sensible si vous restez sous 100 users, sinon vérification requise — j'expliquerai en temps voulu).
+Transformer l'éditeur boutique en un véritable "page builder multi-pages" où :
+1. L'identité (palette, polices, tailles) s'applique automatiquement à toutes les scènes, avec un override par scène.
+2. Un bouton **+** à côté de l'aperçu crée une nouvelle page vierge éditable avec les mêmes scènes.
+3. Les pages créées apparaissent automatiquement dans le menu de la boutique (avec drag pour réordonner).
+4. De nouvelles scènes adaptées à des pages spécifiques (produits, blog, panier, contact…) sont disponibles.
 
 ---
 
-## Ce que je vais construire
+## 1. Identité héritée + override par scène
 
-### 1. Base de données
-Nouvelle table `boutique_gmail_tokens` :
-- `boutique_id` (unique)
-- `gmail_address` (l'adresse réellement connectée, ex. `contact@maboutique.fr`)
-- `access_token`, `refresh_token`, `expires_at`, `scope`, `connected_at`
-- **RLS** : aucun accès client (lecture/écriture `service_role` uniquement). Le statut "connecté" reste exposé via `boutique_email_settings.gmail_connected` + `gmail_address` (lecture owner).
+**Modèle**
+- Ajouter un champ `style_overrides` (JSONB nullable) sur `boutique_scenes` : `{ palette?: {...}, fonts?: {...}, sizes?: {...} }`.
+- Par défaut `null` → la scène hérite de `boutique_brand_dna`.
 
-### 2. Quatre Edge Functions
-| Fonction | Rôle |
-|----------|------|
-| `gmail-oauth-start` | Génère l'URL d'autorisation Google avec `state = boutique_id` signé (JWT) |
-| `gmail-oauth-callback` | Échange code → tokens, stocke en DB, marque la boutique connectée, redirige vers `/dashboard/boutique/:id/edit?tab=email&gmail=connected` |
-| `send-boutique-email` (refonte) | Récupère le refresh_token de LA boutique, rafraîchit l'access_token si expiré, appelle **Gmail API directement** (plus le gateway Lovable mono-tenant) |
-| `gmail-disconnect` | Révoque le token côté Google + supprime la ligne DB |
+**Renderer (`StudioSceneRenderer.tsx`)**
+- Calculer pour chaque scène un `effectiveStyle = merge(brandDNA, scene.style_overrides)`.
+- Injecter via CSS vars locales (`--scene-primary`, `--scene-font-heading`, `--scene-h1-size`…) sur le wrapper de la scène, pas globalement.
 
-### 3. UI (BoutiqueEdit → onglet Email)
-- **Si non connecté** : bouton "Connecter le Gmail de ma boutique" → ouvre `gmail-oauth-start` dans une nouvelle fenêtre
-- **Si connecté** : badge "Connecté en tant que `contact@maboutique.fr`" + bouton "Déconnecter"
-- Settings auto-send (déjà en place) restent identiques
-- Templates par boutique (déjà en place) restent identiques
-- Toast de succès quand `?gmail=connected` est présent dans l'URL au retour
-
-### 4. Refonte du choix expéditeur dans `payments-webhook`
-```text
-SI boutique a Gmail OAuth connecté → send-boutique-email (Gmail vendeur)
-SINON → send-transactional-email (customer-order-confirmation fallback BIB)
-```
-Garantit qu'un client reçoit toujours sa confirmation, même si le vendeur n'a pas branché Gmail.
-
-### 5. Nettoyage
-- Désactivation du connecteur Gmail Lovable mono-tenant (`standard_connectors--disconnect`)
-- Suppression des appels au gateway `connector-gateway.lovable.dev/google_mail/...` et de l'usage de `GOOGLE_MAIL_API_KEY` dans le code
-
-### 6. Mémoire
-Création de `mem://features/gmail-oauth-multi-vendeurs` documentant l'architecture (table, redirect URI, flow, choix expéditeur).
+**Inspector (`SceneInspectorPro.tsx`)**
+- Nouveau panneau "Style" par scène avec :
+  - Toggle "Hériter de l'identité" (par défaut ON).
+  - Si OFF : pickers couleurs (primary/accent/bg/text), selects polices (réutiliser `googleFonts.ts`), sliders tailles titres/corps.
+- Reset rapide → remet `style_overrides = null`.
 
 ---
 
-## Détails techniques
+## 2. Bouton **+** à côté de l'aperçu — création de pages
 
-- **Tokens stockés en clair** dans une table service-role-only (pratique standard Supabase). Pas d'accès client possible via RLS.
-- **Refresh automatique** : `send-boutique-email` vérifie `expires_at` ; si expiré, POST vers `oauth2.googleapis.com/token` avec le `refresh_token` et met à jour la DB.
-- **Google Workspace** (`contact@maboutique.fr`) : OAuth fonctionne identiquement, SPF/DKIM venant du vrai domaine du vendeur, **aucune config DNS requise** côté plateforme.
-- **Gmail perso** (`@gmail.com`) : fonctionne aussi, mais moins pro pour les clients.
-- **Pas d'usurpation possible** : Google n'autorise l'envoi que depuis l'adresse connectée (ou alias vérifié dans Workspace).
+**UI (`StudioEditor.tsx`)**
+- Au-dessus de l'aperçu : barre d'onglets-pages (chaque page = un onglet avec le titre éditable inline).
+- À droite de la barre : bouton **+** → crée une page vierge (mode `rich`, scènes vides) et l'active.
+- Clic sur un onglet = bascule l'éditeur sur cette page (scènes affichées + inspector).
+- Drag&drop horizontal des onglets → met à jour `position` (impacte l'ordre dans le menu boutique).
+- Inline edit du titre depuis l'onglet (double-clic ou icône ✏️).
+- Suppression depuis menu contextuel (sauf page "Accueil" qui reste protégée).
+
+**Suppression onglet "Pages" du rail gauche** (déjà existant via PagesManager) — fonctionnalité déplacée dans la barre d'onglets de l'aperçu.
+
+**Génération initiale**
+- À la complétion du Brand Studio Wizard : ne plus créer aucune page custom (uniquement la page "Accueil" implicite avec ses scènes). L'utilisateur ajoute ce qu'il veut via **+**.
+
+**Données**
+- Réutiliser `boutique_pages` existant. Ajouter colonne `scenes_page_id` sur `boutique_scenes` (nullable) :
+  - `null` = scènes de la page d'accueil.
+  - sinon = scènes appartenant à une page custom.
+- Hook `useBoutiqueScenes(boutiqueId, pageId?)` filtre par page.
 
 ---
 
-## Ordre d'exécution
+## 3. Menu storefront dynamique
 
-1. Vous créez les credentials Google (étapes ci-dessus)
-2. Vous me dites « ok », je lance le dialogue `add_secret` pour `GOOGLE_OAUTH_CLIENT_ID` + `GOOGLE_OAUTH_CLIENT_SECRET`
-3. Je crée la table + les 4 edge functions + l'UI + la refonte `payments-webhook`
-4. Je désactive le connecteur Gmail mono-tenant
-5. Vous testez en connectant un Gmail sur une boutique
+`StorefrontHeader.tsx` (déjà adapté en phase 3) :
+- Lire `boutique_pages` ordonnées par `position`.
+- Rendre les liens `/boutique/:slug/p/:pageSlug`.
+- L'ordre dans l'éditeur (drag onglets) = ordre menu en temps réel.
 
-Dites-moi quand vous êtes prêt à créer les credentials Google, ou si vous voulez que je vous guide pas-à-pas dans la console Google Cloud.
+---
+
+## 4. Nouvelles scènes "page-spécifiques"
+
+Étendre `studioScenes.ts` + `StudioSceneRenderer.tsx` + `SceneInspectorPro.tsx` :
+
+| Scène | Cas d'usage |
+|---|---|
+| `products-grid` | Page "Nos produits" — grille filtrable des produits boutique |
+| `product-spotlight` | Met un produit en avant (image + descriptif + CTA) |
+| `blog-list` | Liste articles (titre + image + extrait) — contenu éditable JSON |
+| `blog-article` | Article unique (titre, hero, markdown body) |
+| `cart-summary` | Résumé panier stylisé pour page panier custom |
+| `contact-form` | Formulaire de contact (nom, email, message) |
+| `team-grid` | "L'équipe" — cartes membres |
+| `pricing-table` | Tarifs / formules |
+| `image-text-split` | Bloc image+texte alternable (50/50) |
+| `accordion-faq` | FAQ accordéon (variante de l'existant si manquant) |
+| `map-location` | Adresse + carte intégrée |
+| `timeline` | Frise chronologique (notre histoire) |
+
+Chaque scène : type + `defaultContent` + variants + champs inspector.
+
+---
+
+## Plan d'exécution (séquentiel)
+
+1. Migration DB : `style_overrides` sur `boutique_scenes`, `scenes_page_id` sur `boutique_scenes`.
+2. Hook `useBoutiqueScenes` + mutations adaptés à `pageId`.
+3. Renderer : merge identité + overrides via CSS vars locales.
+4. Inspector : panneau Style (hériter / override).
+5. UI barre d'onglets-pages au-dessus de l'aperçu (+ drag, + inline rename, + bouton +).
+6. Retirer l'onglet "Pages" du rail gauche (l'edit avancé reste dispo via "⋯ → métadonnées").
+7. Stop la création initiale de pages (wizard).
+8. Ajouter les ~12 nouvelles scènes (def + render + inspector minimal).
+9. Vérifier menu storefront + page publique custom rendent bien les nouvelles scènes.
+
+---
+
+## Fichiers principaux impactés
+
+- **Migration** : nouvelle migration `boutique_scenes`.
+- `src/lib/studioScenes.ts` (+ nouvelles scènes)
+- `src/hooks/useBrandStudio.ts` (scope par pageId, mutation overrides)
+- `src/hooks/useBoutiquePages.ts` (reorder)
+- `src/components/dashboard/boutique/StudioEditor.tsx` (barre onglets + bouton +)
+- `src/components/dashboard/boutique/SceneInspectorPro.tsx` (panneau Style)
+- `src/components/storefront/StudioSceneRenderer.tsx` (merge + nouvelles scènes)
+- `src/components/storefront/StorefrontHeader.tsx` (déjà OK, vérifier ordre)
+- `src/pages/BoutiqueCustomPage.tsx` (rendre scènes custom de la page)
+
+---
+
+## Hors scope (proposition pour plus tard)
+
+- Bibliothèque de templates de pages "prêts à l'emploi" (1 clic → page Contact prête).
+- Versioning / brouillons de pages.
+- A/B testing par page.

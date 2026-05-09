@@ -158,3 +158,29 @@ export function useDeleteBoutiquePage() {
     },
   });
 }
+
+/** Reorder pages — applies new positions in two passes to avoid unique races. */
+export function useReorderBoutiquePages() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { boutiqueId: string; orderedIds: string[] }) => {
+      for (let i = 0; i < params.orderedIds.length; i++) {
+        await supabase
+          .from("boutique_pages" as any)
+          .update({ position: -1000 - i } as never)
+          .eq("id", params.orderedIds[i]);
+      }
+      for (let i = 0; i < params.orderedIds.length; i++) {
+        const { error } = await supabase
+          .from("boutique_pages" as any)
+          .update({ position: i } as never)
+          .eq("id", params.orderedIds[i]);
+        if (error) throw error;
+      }
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["boutique-pages", vars.boutiqueId] });
+      qc.invalidateQueries({ queryKey: ["public-boutique-pages", vars.boutiqueId] });
+    },
+  });
+}
