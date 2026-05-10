@@ -184,6 +184,8 @@ export function StudioEditor({
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { data: brandDna } = useBrandDNA(boutiqueId);
+  /** Active page in the editor — null = home (scenes with page_id IS NULL). */
+  const [activePageId, setActivePageId] = useState<string | null>(null);
   const { data: scenes = [], isLoading } = useBoutiqueScenes(boutiqueId, activePageId);
   const updateScene = useUpdateScene();
   const reorder = useReorderScenes();
@@ -206,9 +208,6 @@ export function StudioEditor({
   const [showAdd, setShowAdd] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [showPublishErrors, setShowPublishErrors] = useState(false);
-  const [showPagesManager, setShowPagesManager] = useState(false);
-  /** Active page in the editor — null = home (scenes with page_id IS NULL). */
-  const [activePageId, setActivePageId] = useState<string | null>(null);
   const [renamingPageId, setRenamingPageId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
 
