@@ -1368,12 +1368,148 @@ export function StudioEditor({
 
       {/* ---------------- Live preview ---------------- */}
       <div className="lg:overflow-y-auto bg-background min-h-[60vh]">
-        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border-b border-border/40 px-4 py-2 flex items-center justify-between">
-          <span className="text-xs uppercase tracking-wide opacity-60">Aperçu en direct {scenes.length === 0 && !isLoading ? "(aucune scène)" : ""}</span>
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => setShowPagesManager(true)} className="h-7 text-xs">
+        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border-b border-border/40">
+          {/* Page tabs strip */}
+          <div className="flex items-center gap-1 px-3 pt-2 pb-1 overflow-x-auto">
+            {/* Home tab (always present, not deletable, not renameable) */}
+            <button
+              type="button"
+              onClick={() => setActivePageId(null)}
+              className={`shrink-0 px-3 py-1.5 rounded-t-md text-xs font-medium border-b-2 transition-colors ${
+                activePageId === null
+                  ? "border-primary text-foreground bg-muted/50"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Accueil
+            </button>
+            {pages.map((p, idx) => {
+              const active = activePageId === p.id;
+              const isRenaming = renamingPageId === p.id;
+              return (
+                <div
+                  key={p.id}
+                  className={`shrink-0 group flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-t-md border-b-2 transition-colors ${
+                    active
+                      ? "border-primary bg-muted/50"
+                      : "border-transparent hover:bg-muted/30"
+                  }`}
+                >
+                  {isRenaming ? (
+                    <Input
+                      autoFocus
+                      value={renameDraft}
+                      onChange={(e) => setRenameDraft(e.target.value)}
+                      onBlur={() => {
+                        const t = renameDraft.trim();
+                        if (t && t !== p.title) {
+                          updatePage.mutate({ pageId: p.id, boutiqueId, patch: { title: t } });
+                        }
+                        setRenamingPageId(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                        if (e.key === "Escape") setRenamingPageId(null);
+                      }}
+                      className="h-6 text-xs w-32"
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setActivePageId(p.id)}
+                      onDoubleClick={() => {
+                        setRenamingPageId(p.id);
+                        setRenameDraft(p.title);
+                      }}
+                      className={`text-xs font-medium px-1 ${active ? "text-foreground" : "text-muted-foreground"}`}
+                      title="Double-clic pour renommer"
+                    >
+                      {p.title}
+                    </button>
+                  )}
+                  {active && (
+                    <>
+                      <button
+                        type="button"
+                        disabled={idx === 0 || reorderPages.isPending}
+                        onClick={() => {
+                          const ids = pages.map((x) => x.id);
+                          [ids[idx - 1], ids[idx]] = [ids[idx], ids[idx - 1]];
+                          reorderPages.mutate({ boutiqueId, orderedIds: ids });
+                        }}
+                        className="opacity-60 hover:opacity-100 disabled:opacity-20 p-0.5"
+                        title="Déplacer à gauche"
+                      >
+                        <ChevronUp className="w-3 h-3 -rotate-90" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={idx === pages.length - 1 || reorderPages.isPending}
+                        onClick={() => {
+                          const ids = pages.map((x) => x.id);
+                          [ids[idx + 1], ids[idx]] = [ids[idx], ids[idx + 1]];
+                          reorderPages.mutate({ boutiqueId, orderedIds: ids });
+                        }}
+                        className="opacity-60 hover:opacity-100 disabled:opacity-20 p-0.5"
+                        title="Déplacer à droite"
+                      >
+                        <ChevronDown className="w-3 h-3 -rotate-90" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!confirm(`Supprimer la page "${p.title}" et toutes ses scènes ?`)) return;
+                          deletePage.mutate(
+                            { pageId: p.id, boutiqueId },
+                            {
+                              onSuccess: () => {
+                                toast.success("Page supprimée");
+                                setActivePageId(null);
+                              },
+                              onError: () => toast.error("Suppression impossible"),
+                            },
+                          );
+                        }}
+                        className="opacity-60 hover:opacity-100 hover:text-destructive p-0.5"
+                        title="Supprimer la page"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={createPage.isPending}
+              onClick={() => {
+                const baseTitle = `Nouvelle page ${pages.length + 1}`;
+                createPage.mutate(
+                  { boutiqueId, title: baseTitle, mode: "rich" },
+                  {
+                    onSuccess: (p) => {
+                      setActivePageId(p.id);
+                      setRenamingPageId(p.id);
+                      setRenameDraft(p.title);
+                      toast.success("Page créée — donne-lui un titre");
+                    },
+                    onError: () => toast.error("Création de page impossible"),
+                  },
+                );
+              }}
+              className="shrink-0 h-7 px-2 text-xs"
+              title="Ajouter une page"
+            >
               <Plus className="w-3.5 h-3.5 mr-1" /> Page
             </Button>
+          </div>
+          <div className="flex items-center justify-between px-4 py-1.5 border-t border-border/30">
+            <span className="text-xs uppercase tracking-wide opacity-60">
+              Aperçu : {activePageId === null ? "Accueil" : pages.find((p) => p.id === activePageId)?.title ?? "Page"}
+              {scenes.length === 0 && !isLoading ? " (aucune scène)" : ""}
+            </span>
             <span className="text-xs opacity-50">{scenes.length} scène{scenes.length > 1 ? "s" : ""}</span>
           </div>
         </div>
@@ -1436,23 +1572,6 @@ export function StudioEditor({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Pages manager dialog (triggered from preview "+ Page" button) */}
-      {showPagesManager && (
-        <AlertDialog open={showPagesManager} onOpenChange={setShowPagesManager}>
-          <AlertDialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Pages personnalisées</AlertDialogTitle>
-              <AlertDialogDescription>
-                Crée et gère les pages additionnelles de ta boutique (à propos, blog…).
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <PagesManager boutiqueId={boutiqueId} boutiqueSlug={publicSlug} />
-            <AlertDialogFooter>
-              <AlertDialogAction onClick={() => setShowPagesManager(false)}>Fermer</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
     </div>
   );
 }
