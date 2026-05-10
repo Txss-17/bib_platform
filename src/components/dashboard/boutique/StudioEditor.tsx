@@ -53,7 +53,6 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { HighlightsManager } from "./HighlightsManager";
-import { PagesManager } from "./PagesManager";
 import { ALL_FONTS, loadGoogleFont } from "@/lib/googleFonts";
 import {
   useBoutiquePages,
