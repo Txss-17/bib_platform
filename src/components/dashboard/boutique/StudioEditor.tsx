@@ -898,6 +898,7 @@ export function StudioEditor({
                 key={activeScene.id}
                 scene={activeScene}
                 boutiqueId={boutiqueId}
+                products={products}
                 onPatch={(patch) =>
                   updateScene.mutate({
                     sceneId: activeScene.id,
@@ -1476,7 +1477,7 @@ export function StudioEditor({
             >
               Accueil
             </button>
-            {pages.map((p, idx) => {
+            {pages.filter((p) => p.slug !== PRODUCT_PAGE_SLUG).map((p, idx) => {
               const active = activePageId === p.id;
               const isRenaming = renamingPageId === p.id;
               return (
@@ -1969,6 +1970,9 @@ function SortableSceneRow({
           </Badge>
           {!scene.is_visible && (
             <Badge variant="secondary" className="text-[10px]">Masqué</Badge>
+          )}
+          {scene.style_overrides && (
+            <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">Style</Badge>
           )}
         </div>
         <p className="text-xs text-muted-foreground truncate">{def?.tagline}</p>
