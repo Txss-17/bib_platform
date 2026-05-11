@@ -31,7 +31,8 @@ export type SceneRole =
   | "pricing"
   | "split"
   | "timeline"
-  | "map";
+  | "map"
+  | "product";
 
 export interface SceneDefinition {
   id: string; // ex: hero-cinema
@@ -70,7 +71,11 @@ export interface SceneDefinition {
   | "pricing-table"
   | "image-text-split"
   | "timeline"
-  | "map-location";
+  | "map-location"
+  | "product-hero"
+  | "product-description"
+  | "product-specs"
+  | "product-related";
 }
 
 export const STUDIO_SCENES: SceneDefinition[] = [
@@ -552,6 +557,65 @@ export const STUDIO_SCENES: SceneDefinition[] = [
       address: "12 rue de l'Atelier, 75001 Paris",
       mapEmbedUrl: "",
       hours: "Du lundi au samedi · 10h–19h",
+    },
+  },
+  {
+    id: "product-hero",
+    role: "product",
+    name: "Produit — Hero",
+    tagline: "Galerie + prix + CTA panier",
+    description:
+      "Bloc principal d'une page produit : grande image (ou galerie), nom, prix, CTA d'achat.",
+    variants: ["image-left", "image-right", "split-tall"],
+    previewKey: "product-hero",
+    defaultContent: {
+      ctaLabel: "Ajouter au panier",
+      showSku: true,
+      showCategory: true,
+    },
+  },
+  {
+    id: "product-description",
+    role: "product",
+    name: "Produit — Description",
+    tagline: "Texte long et histoire du produit",
+    description: "Section éditoriale détaillant le produit (matières, fabrication, usages).",
+    variants: ["centered", "two-column"],
+    previewKey: "product-description",
+    defaultContent: {
+      title: "À propos de ce produit",
+      fallbackBody:
+        "Décrivez ici l'histoire, la fabrication et les bénéfices de ce produit. Ce texte est utilisé si la fiche produit n'a pas de description.",
+    },
+  },
+  {
+    id: "product-specs",
+    role: "product",
+    name: "Produit — Caractéristiques",
+    tagline: "Liste de spécifications",
+    description: "Tableau de spécifications (matière, dimensions, garantie, etc.).",
+    variants: ["table", "list"],
+    previewKey: "product-specs",
+    defaultContent: {
+      title: "Caractéristiques",
+      rows: [
+        { label: "Matière", value: "Premium" },
+        { label: "Garantie", value: "2 ans" },
+        { label: "Livraison", value: "Incluse" },
+      ],
+    },
+  },
+  {
+    id: "product-related",
+    role: "product",
+    name: "Produit — Recommandés",
+    tagline: "Autres produits de la boutique",
+    description: "Suggère 3 à 4 autres produits pour augmenter le panier moyen.",
+    variants: ["3-up", "4-up", "carousel"],
+    previewKey: "product-related",
+    defaultContent: {
+      title: "Vous aimerez aussi",
+      limit: 4,
     },
   },
 ];
