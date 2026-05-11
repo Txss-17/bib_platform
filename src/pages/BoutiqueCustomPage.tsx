@@ -7,9 +7,11 @@ import { StorefrontProvider } from "@/contexts/StorefrontContext";
 import { StorefrontHeader } from "@/components/storefront/StorefrontHeader";
 import { StorefrontFooter } from "@/components/storefront/StorefrontFooter";
 import { CartDrawer } from "@/components/storefront/CartDrawer";
-import { useBrandDNA } from "@/hooks/useBrandStudio";
+import { useBrandDNA, useBoutiqueScenes } from "@/hooks/useBrandStudio";
 import { usePublicBoutiquePage } from "@/hooks/useBoutiquePages";
 import { useSEO } from "@/hooks/useSEO";
+import { StudioSceneRenderer } from "@/components/storefront/StudioSceneRenderer";
+import { useQuery as useRQ } from "@tanstack/react-query";
 
 /** Tiny safe markdown -> HTML (bold/italic/headings/links/paragraphs). */
 function renderMarkdown(src: string): string {
@@ -55,6 +57,24 @@ export default function BoutiqueCustomPage() {
 
   const { data: page, isLoading: pLoading } = usePublicBoutiquePage(boutique?.id, pageSlug);
   const { data: brandDna } = useBrandDNA(boutique?.id);
+  const { data: scenes = [] } = useBoutiqueScenes(boutique?.id, page?.id ?? null);
+
+  /** Pull active products so scenes that reference them (grids, related…) render. */
+  const { data: products = [] } = useRQ({
+    queryKey: ["public-boutique-products-for-page", boutique?.id],
+    enabled: !!boutique?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select(
+          "id,public_price,status,supplier_products(name,image_url,description)",
+        )
+        .eq("boutique_id", boutique!.id)
+        .eq("status", "active");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
 
   useSEO({
     title: page?.seo_title || page?.title || "Page",
@@ -89,6 +109,8 @@ export default function BoutiqueCustomPage() {
     ? `hsl(${brandDna.generated_palette.primary})`
     : "#0f172a";
 
+  const isRich = page.mode === "rich";
+
   return (
     <CartProvider>
       <StorefrontProvider
@@ -102,6 +124,16 @@ export default function BoutiqueCustomPage() {
           primaryColor={primaryColor}
         />
         <main className="min-h-[60vh] bg-background">
+          {isRich ? (
+            <StudioSceneRenderer
+              scenes={scenes}
+              brandDna={brandDna}
+              boutiqueName={boutique.name}
+              products={products as any[]}
+              boutiqueId={boutique.id}
+            />
+          ) : (
+            <>
           {page.hero_image_url && (
             <div
               className="relative h-64 md:h-96 w-full bg-cover bg-center"
@@ -129,6 +161,8 @@ export default function BoutiqueCustomPage() {
               <p className="text-muted-foreground italic">Aucun contenu pour le moment.</p>
             )}
           </article>
+            </>
+          )}
         </main>
         <StorefrontFooter primaryColor={primaryColor} />
         <CartDrawer
