@@ -20,6 +20,7 @@ import { useBrandDNA } from "@/hooks/useBrandStudio";
 import { PRODUCT_PAGE_SLUG } from "@/lib/pageTemplates";
 import type { SceneRecord } from "@/lib/studioScenes";
 import { StorefrontAmbientAudio } from "@/components/storefront/StorefrontAmbientAudio";
+import { usePublicProductMedia } from "@/hooks/useProductMedia";
 
 export default function ProductPublic() {
   const { slug, productId } = useParams<{ slug: string; productId: string }>();
