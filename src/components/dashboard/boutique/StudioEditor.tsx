@@ -1737,7 +1737,28 @@ export function StudioEditor({
             />
           )}
         </div>
-        {isLoading ? (
+        {activePage && activePage.mode === "simple" ? (
+          <PreviewViewportFrame device={previewDevice}>
+            <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 prose prose-slate prose-headings:font-semibold prose-a:text-primary">
+              {activePage.hero_image_url && (
+                <div
+                  className="not-prose relative h-48 md:h-64 w-full bg-cover bg-center rounded-lg mb-6"
+                  style={{ backgroundImage: `url(${activePage.hero_image_url})` }}
+                />
+              )}
+              <h1 className="text-3xl md:text-4xl font-bold mb-6">{activePage.title}</h1>
+              {activePage.content ? (
+                <div
+                  dangerouslySetInnerHTML={{ __html: renderSimpleMarkdown(activePage.content) }}
+                />
+              ) : (
+                <p className="text-muted-foreground italic">
+                  Aucun contenu. Utilise le panneau « Métadonnées de la page » pour rédiger.
+                </p>
+              )}
+            </article>
+          </PreviewViewportFrame>
+        ) : isLoading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">Chargement de l'aperçu…</div>
         ) : scenes.filter((s) => s.is_visible).length === 0 ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
