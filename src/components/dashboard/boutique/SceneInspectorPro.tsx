@@ -260,11 +260,32 @@ export function SceneInspectorPro({
   onDelete,
   onRemix,
   remixState,
+  products = [],
 }: Props) {
   const def = findSceneDefinition(scene.scene_type);
   const c = scene.content as Record<string, any>;
   const setField = (key: string, value: unknown) =>
     onPatch({ content: { ...c, [key]: value } });
+
+  const ov = scene.style_overrides ?? null;
+  const hasOverrides = !!ov && (
+    !!ov.palette?.primary || !!ov.palette?.accent || !!ov.palette?.surface || !!ov.palette?.ink ||
+    !!ov.fonts?.display || !!ov.fonts?.body
+  );
+  const setOv = (next: SceneRecord["style_overrides"]) =>
+    onPatch({ style_overrides: next });
+  const setOvPalette = (k: "primary" | "accent" | "surface" | "ink", hsl: string) =>
+    setOv({
+      ...(ov ?? {}),
+      palette: { ...(ov?.palette ?? {}), [k]: hsl },
+    });
+  const setOvFont = (k: "display" | "body", value: string) => {
+    if (value) loadGoogleFont(value);
+    setOv({
+      ...(ov ?? {}),
+      fonts: { ...(ov?.fonts ?? {}), [k]: value || undefined },
+    });
+  };
 
   const generic = (
     <>
