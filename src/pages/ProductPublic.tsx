@@ -15,6 +15,10 @@ import type { ThemeSettings } from "@/lib/boutiqueTemplates";
 import { trackStorefrontEvent } from "@/lib/storefrontTracking";
 import { PageSeoInspector } from "@/components/storefront/PageSeoInspector";
 import { useAuth } from "@/contexts/AuthContext";
+import { StudioSceneRenderer } from "@/components/storefront/StudioSceneRenderer";
+import { useBrandDNA } from "@/hooks/useBrandStudio";
+import { PRODUCT_PAGE_SLUG } from "@/lib/pageTemplates";
+import type { SceneRecord } from "@/lib/studioScenes";
 
 export default function ProductPublic() {
   const { slug, productId } = useParams<{ slug: string; productId: string }>();
