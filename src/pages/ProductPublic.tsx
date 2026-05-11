@@ -298,6 +298,10 @@ export default function ProductPublic() {
       </main>
 
       <StorefrontFooter primaryColor={primaryColor} />
+      <StorefrontAmbientAudio
+        src={themeSettings?.backgroundAudioUrl}
+        volume={themeSettings?.backgroundAudioVolume ?? 0.4}
+      />
       <PageSeoInspector
         visible={!!user && !!boutique && user.id === boutique.user_id}
         kind="product"
