@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -17,6 +17,10 @@ import {
   Save,
   BarChart3,
   Copy,
+  Smartphone,
+  Tablet,
+  Monitor,
+  Link2,
 } from "lucide-react";
 import {
   DndContext,
@@ -103,6 +107,19 @@ import { StudioSceneRenderer } from "@/components/storefront/StudioSceneRenderer
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SceneInspectorPro } from "./SceneInspectorPro";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
+import {
+  PAGE_TEMPLATES,
+  recommendedSceneTypesForPage,
+  type PageTemplate,
+} from "@/lib/pageTemplates";
 
 /* ---------- Color helpers (HSL "h s% l%" <-> #rrggbb) ---------- */
 function hslStringToHex(hsl?: string): string {
@@ -210,11 +227,59 @@ export function StudioEditor({
   const [renamingPageId, setRenamingPageId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
 
+  /** Preview viewport simulator. */
+  const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
+
   const { data: pages = [] } = useBoutiquePages(boutiqueId);
   const createPage = useCreateBoutiquePage();
   const updatePage = useUpdateBoutiquePage();
   const deletePage = useDeleteBoutiquePage();
   const reorderPages = useReorderBoutiquePages();
+
+  const activePage = useMemo(
+    () => pages.find((p) => p.id === activePageId) ?? null,
+    [pages, activePageId],
+  );
+
+  /** Create a page from a template, then seed its scenes sequentially. */
+  const handleCreatePageFromTemplate = async (tpl: PageTemplate) => {
+    try {
+      const page = await createPage.mutateAsync({
+        boutiqueId,
+        title: tpl.defaultTitle,
+        mode: "rich",
+      });
+      // Patch SEO metadata on the page if the template provides defaults.
+      if (tpl.seoTitle || tpl.seoDescription) {
+        await updatePage.mutateAsync({
+          pageId: page.id,
+          boutiqueId,
+          patch: {
+            seo_title: tpl.seoTitle ?? null,
+            seo_description: tpl.seoDescription ?? null,
+          },
+        });
+      }
+      // Seed scenes for this page.
+      for (let i = 0; i < tpl.scenes.length; i++) {
+        const s = tpl.scenes[i];
+        const def = findSceneDefinition(s.sceneType);
+        const baseContent = (def?.defaultContent ?? {}) as Record<string, unknown>;
+        await addScene.mutateAsync({
+          boutiqueId,
+          sceneType: s.sceneType,
+          position: i,
+          variant: s.variant,
+          content: { ...baseContent, ...(s.contentPatch ?? {}) },
+          pageId: page.id,
+        });
+      }
+      setActivePageId(page.id);
+      toast.success(`Page « ${tpl.defaultTitle} » créée${tpl.scenes.length > 0 ? ` avec ${tpl.scenes.length} scène${tpl.scenes.length > 1 ? "s" : ""}` : ""}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Création impossible");
+    }
+  };
 
   // SEO local state — editable fields persisted via useSaveSeo
   const [seoTitle, setSeoTitle] = useState(initialSeo?.title ?? "");
@@ -780,19 +845,47 @@ export function StudioEditor({
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Bibliothèque
                 </p>
-                {STUDIO_SCENES.map((d) => (
-                  <button
-                    key={d.id}
-                    onClick={() => handleAdd(d.id)}
-                    className="w-full text-left p-2 rounded hover:bg-muted text-sm flex items-center justify-between"
-                  >
-                    <span>
-                      <span className="font-medium block">{d.name}</span>
-                      <span className="text-xs text-muted-foreground">{d.tagline}</span>
-                    </span>
-                    <Plus className="w-4 h-4 opacity-50" />
-                  </button>
-                ))}
+                {(() => {
+                  const recs = recommendedSceneTypesForPage(
+                    activePage?.title ?? (activePageId === null ? "accueil" : null),
+                    activePage?.slug,
+                  );
+                  const recSet = new Set(recs);
+                  const recommended = recs
+                    .map((id) => STUDIO_SCENES.find((s) => s.id === id))
+                    .filter((d): d is (typeof STUDIO_SCENES)[number] => Boolean(d));
+                  const others = STUDIO_SCENES.filter((d) => !recSet.has(d.id));
+                  const renderRow = (d: (typeof STUDIO_SCENES)[number]) => (
+                    <button
+                      key={d.id}
+                      onClick={() => handleAdd(d.id)}
+                      className="w-full text-left p-2 rounded hover:bg-muted text-sm flex items-center justify-between"
+                    >
+                      <span>
+                        <span className="font-medium block">{d.name}</span>
+                        <span className="text-xs text-muted-foreground">{d.tagline}</span>
+                      </span>
+                      <Plus className="w-4 h-4 opacity-50" />
+                    </button>
+                  );
+                  return (
+                    <>
+                      {recommended.length > 0 && (
+                        <>
+                          <p className="text-[10px] uppercase tracking-wide text-primary/80 pt-1 flex items-center gap-1">
+                            <Sparkles className="w-3 h-3" /> Recommandées pour cette page
+                          </p>
+                          {recommended.map(renderRow)}
+                          <div className="h-px bg-border/40 my-2" />
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                            Toutes les scènes
+                          </p>
+                        </>
+                      )}
+                      {others.map(renderRow)}
+                    </>
+                  );
+                })()}
                 <Button variant="ghost" size="sm" className="w-full" onClick={() => setShowAdd(false)}>
                   Annuler
                 </Button>
@@ -1479,38 +1572,82 @@ export function StudioEditor({
                 </div>
               );
             })}
-            <Button
-              size="sm"
-              variant="ghost"
-              disabled={createPage.isPending}
-              onClick={() => {
-                const baseTitle = `Nouvelle page ${pages.length + 1}`;
-                createPage.mutate(
-                  { boutiqueId, title: baseTitle, mode: "rich" },
-                  {
-                    onSuccess: (p) => {
-                      setActivePageId(p.id);
-                      setRenamingPageId(p.id);
-                      setRenameDraft(p.title);
-                      toast.success("Page créée — donne-lui un titre");
-                    },
-                    onError: () => toast.error("Création de page impossible"),
-                  },
-                );
-              }}
-              className="shrink-0 h-7 px-2 text-xs"
-              title="Ajouter une page"
-            >
-              <Plus className="w-3.5 h-3.5 mr-1" /> Page
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={createPage.isPending || addScene.isPending}
+                  className="shrink-0 h-7 px-2 text-xs"
+                  title="Ajouter une page"
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1" /> Page
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-64">
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-wide opacity-60">
+                  Créer une page
+                </DropdownMenuLabel>
+                {PAGE_TEMPLATES.map((tpl, i) => (
+                  <div key={tpl.key}>
+                    {i === 1 && <DropdownMenuSeparator />}
+                    <DropdownMenuItem
+                      onClick={() => handleCreatePageFromTemplate(tpl)}
+                      className="flex items-start gap-2 cursor-pointer"
+                    >
+                      <span className="text-base leading-none mt-0.5">{tpl.emoji}</span>
+                      <span className="flex-1 min-w-0">
+                        <span className="block text-sm font-medium">{tpl.label}</span>
+                        <span className="block text-[11px] text-muted-foreground truncate">
+                          {tpl.description}
+                        </span>
+                      </span>
+                    </DropdownMenuItem>
+                  </div>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <div className="flex items-center justify-between px-4 py-1.5 border-t border-border/30">
             <span className="text-xs uppercase tracking-wide opacity-60">
               Aperçu : {activePageId === null ? "Accueil" : pages.find((p) => p.id === activePageId)?.title ?? "Page"}
               {scenes.length === 0 && !isLoading ? " (aucune scène)" : ""}
             </span>
-            <span className="text-xs opacity-50">{scenes.length} scène{scenes.length > 1 ? "s" : ""}</span>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center rounded-md border border-border/50 overflow-hidden">
+                {([
+                  { k: "mobile", icon: Smartphone, label: "Mobile (375)" },
+                  { k: "tablet", icon: Tablet, label: "Tablette (768)" },
+                  { k: "desktop", icon: Monitor, label: "Desktop (1280)" },
+                ] as const).map(({ k, icon: Icon, label }) => (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => setPreviewDevice(k)}
+                    title={label}
+                    aria-label={label}
+                    className={`p-1.5 transition ${
+                      previewDevice === k
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                  </button>
+                ))}
+              </div>
+              <span className="text-xs opacity-50">{scenes.length} scène{scenes.length > 1 ? "s" : ""}</span>
+            </div>
           </div>
+          {activePage && (
+            <PageMetadataPanel
+              page={activePage}
+              boutiqueSlug={publicSlug}
+              onPatch={(patch) =>
+                updatePage.mutate({ pageId: activePage.id, boutiqueId, patch })
+              }
+            />
+          )}
         </div>
         {isLoading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">Chargement de l'aperçu…</div>
@@ -1519,12 +1656,14 @@ export function StudioEditor({
             Aucune scène visible. Ajoute une scène depuis le panneau de gauche pour voir l'aperçu.
           </div>
         ) : (
-        <StudioSceneRenderer
-          scenes={scenes}
-          brandDna={brandDna ?? null}
-          boutiqueName={boutiqueName}
-          products={products}
-        />
+        <PreviewViewportFrame device={previewDevice}>
+          <StudioSceneRenderer
+            scenes={scenes}
+            brandDna={brandDna ?? null}
+            boutiqueName={boutiqueName}
+            products={products}
+          />
+        </PreviewViewportFrame>
         )}
       </div>
 
@@ -1862,6 +2001,185 @@ function SortableSceneRow({
         >
           <Trash2 className="w-3.5 h-3.5" />
         </button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Page metadata (slug + SEO) inline panel ---------- */
+function slugifyClient(s: string) {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 60);
+}
+
+function PageMetadataPanel({
+  page,
+  boutiqueSlug,
+  onPatch,
+}: {
+  page: { id: string; title: string; slug: string; seo_title: string | null; seo_description: string | null };
+  boutiqueSlug?: string;
+  onPatch: (
+    patch: Partial<{ title: string; slug: string; seo_title: string | null; seo_description: string | null }>,
+  ) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState(page.title);
+  const [slug, setSlug] = useState(page.slug);
+  const [seoTitle, setSeoTitle] = useState(page.seo_title ?? "");
+  const [seoDesc, setSeoDesc] = useState(page.seo_description ?? "");
+
+  // Re-sync if active page changes externally.
+  useEffect(() => {
+    setTitle(page.title);
+    setSlug(page.slug);
+    setSeoTitle(page.seo_title ?? "");
+    setSeoDesc(page.seo_description ?? "");
+  }, [page.id, page.title, page.slug, page.seo_title, page.seo_description]);
+
+  const publicUrl =
+    boutiqueSlug && typeof window !== "undefined"
+      ? `${window.location.origin}/boutique/${boutiqueSlug}/p/${slug}`
+      : `/boutique/${boutiqueSlug ?? "…"}/p/${slug}`;
+
+  return (
+    <div className="border-t border-border/30 bg-muted/20 px-4 py-2">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between text-xs uppercase tracking-wide opacity-70 hover:opacity-100"
+      >
+        <span className="flex items-center gap-1.5">
+          <Link2 className="w-3 h-3" /> Métadonnées de la page
+        </span>
+        {open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+      </button>
+      {open && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 text-sm">
+          <div>
+            <Label className="text-[10px]">Titre de la page</Label>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={() => {
+                const t = title.trim();
+                if (t && t !== page.title) onPatch({ title: t });
+              }}
+              className="h-8 text-xs"
+            />
+          </div>
+          <div>
+            <Label className="text-[10px] flex items-center justify-between">
+              <span>Slug (URL)</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const auto = slugifyClient(title);
+                  setSlug(auto);
+                  if (auto && auto !== page.slug) onPatch({ slug: auto });
+                }}
+                className="text-[10px] text-primary hover:underline"
+              >
+                Auto
+              </button>
+            </Label>
+            <Input
+              value={slug}
+              onChange={(e) => setSlug(slugifyClient(e.target.value))}
+              onBlur={() => {
+                const s = slug.trim();
+                if (s && s !== page.slug) onPatch({ slug: s });
+              }}
+              className="h-8 text-xs font-mono"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <Label className="text-[10px]">Lien public</Label>
+            <div className="flex items-center gap-1">
+              <Input
+                value={publicUrl}
+                readOnly
+                className="h-8 text-xs font-mono opacity-70"
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-8 px-2"
+                onClick={() => {
+                  navigator.clipboard?.writeText(publicUrl);
+                  toast.success("Lien copié");
+                }}
+              >
+                <Copy className="w-3 h-3" />
+              </Button>
+            </div>
+          </div>
+          <div>
+            <Label className="text-[10px] flex items-center justify-between">
+              <span>Titre SEO ({seoTitle.length}/60)</span>
+              {seoTitle.length > 60 && <span className="text-destructive">trop long</span>}
+            </Label>
+            <Input
+              value={seoTitle}
+              maxLength={80}
+              onChange={(e) => setSeoTitle(e.target.value)}
+              onBlur={() => {
+                if ((seoTitle || null) !== page.seo_title) onPatch({ seo_title: seoTitle || null });
+              }}
+              className="h-8 text-xs"
+              placeholder="Titre dans les résultats Google"
+            />
+          </div>
+          <div>
+            <Label className="text-[10px] flex items-center justify-between">
+              <span>Meta description ({seoDesc.length}/160)</span>
+              {seoDesc.length > 160 && <span className="text-destructive">trop long</span>}
+            </Label>
+            <Textarea
+              value={seoDesc}
+              maxLength={200}
+              onChange={(e) => setSeoDesc(e.target.value)}
+              onBlur={() => {
+                if ((seoDesc || null) !== page.seo_description)
+                  onPatch({ seo_description: seoDesc || null });
+              }}
+              rows={2}
+              className="text-xs"
+              placeholder="Description affichée dans les résultats de recherche"
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------- Preview viewport frame (mobile / tablet / desktop) ---------- */
+function PreviewViewportFrame({
+  device,
+  children,
+}: {
+  device: "desktop" | "tablet" | "mobile";
+  children: ReactNode;
+}) {
+  if (device === "desktop") {
+    return <>{children}</>;
+  }
+  const widthMap = { mobile: 375, tablet: 768 } as const;
+  const w = widthMap[device];
+  return (
+    <div className="flex justify-center bg-muted/30 py-4 px-2">
+      <div
+        className="bg-background border border-border/60 rounded-2xl shadow-xl overflow-hidden"
+        style={{ width: w, maxWidth: "100%" }}
+      >
+        {children}
       </div>
     </div>
   );
