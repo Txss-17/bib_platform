@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,14 +9,32 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Sparkles, Check, Trash2 } from "lucide-react";
+import { Loader2, Sparkles, Check, Trash2, Star, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import {
   useProductMedia,
   useGenerateProductMedia,
   useToggleProductMedia,
   useDeleteProductMedia,
+  useReorderProductMedia,
+  useSetPrimaryProductMedia,
+  type ProductMedia,
 } from "@/hooks/useProductMedia";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  rectSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface Props {
   open: boolean;
@@ -50,8 +68,24 @@ export function ProductMediaDialog({
   const generate = useGenerateProductMedia();
   const toggle = useToggleProductMedia();
   const remove = useDeleteProductMedia();
+  const reorder = useReorderProductMedia();
+  const setPrimary = useSetPrimaryProductMedia();
 
-  const selectedCount = media.filter((m) => m.is_selected).length;
+  const selected = useMemo(() => media.filter((m) => m.is_selected), [media]);
+  const unselected = useMemo(() => media.filter((m) => !m.is_selected), [media]);
+  const selectedCount = selected.length;
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
+
+  const handleDragEnd = (e: DragEndEvent) => {
+    const { active, over } = e;
+    if (!over || active.id === over.id) return;
+    const oldIdx = selected.findIndex((m) => m.id === active.id);
+    const newIdx = selected.findIndex((m) => m.id === over.id);
+    if (oldIdx === -1 || newIdx === -1) return;
+    const next = arrayMove(selected, oldIdx, newIdx).map((m) => m.id);
+    reorder.mutate({ productId, orderedIds: next });
+  };
 
   const handleGenerate = async () => {
     if (prompt.trim().length < 6) {
