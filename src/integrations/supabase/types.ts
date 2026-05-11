@@ -915,6 +915,42 @@ export type Database = {
         }
         Relationships: []
       }
+      product_media: {
+        Row: {
+          boutique_id: string
+          created_at: string
+          id: string
+          is_selected: boolean
+          position: number
+          product_id: string
+          prompt: string | null
+          url: string
+          user_id: string
+        }
+        Insert: {
+          boutique_id: string
+          created_at?: string
+          id?: string
+          is_selected?: boolean
+          position?: number
+          product_id: string
+          prompt?: string | null
+          url: string
+          user_id: string
+        }
+        Update: {
+          boutique_id?: string
+          created_at?: string
+          id?: string
+          is_selected?: boolean
+          position?: number
+          product_id?: string
+          prompt?: string | null
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           applied_margin: number
