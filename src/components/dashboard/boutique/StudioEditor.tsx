@@ -123,6 +123,26 @@ import {
   type PageTemplate,
 } from "@/lib/pageTemplates";
 
+/** Tiny safe markdown -> HTML for the simple-page preview (mirrors public renderer). */
+function renderSimpleMarkdown(src: string): string {
+  const escape = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  let html = escape(src);
+  html = html.replace(/^### (.*)$/gm, "<h3>$1</h3>");
+  html = html.replace(/^## (.*)$/gm, "<h2>$1</h2>");
+  html = html.replace(/^# (.*)$/gm, "<h1>$1</h1>");
+  html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/\*(.+?)\*/g, "<em>$1</em>");
+  html = html.replace(
+    /\[([^\]]+)\]\((https?:[^\s)]+)\)/g,
+    '<a href="$2" target="_blank" rel="noreferrer">$1</a>',
+  );
+  return html
+    .split(/\n{2,}/)
+    .map((b) => (/^<h[1-6]>/.test(b.trim()) ? b : `<p>${b.replace(/\n/g, "<br/>")}</p>`))
+    .join("\n");
+}
+
 /* ---------- Color helpers (HSL "h s% l%" <-> #rrggbb) ---------- */
 function hslStringToHex(hsl?: string): string {
   if (!hsl) return "#000000";
@@ -1737,7 +1757,28 @@ export function StudioEditor({
             />
           )}
         </div>
-        {isLoading ? (
+        {activePage && activePage.mode === "simple" ? (
+          <PreviewViewportFrame device={previewDevice}>
+            <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 prose prose-slate prose-headings:font-semibold prose-a:text-primary">
+              {activePage.hero_image_url && (
+                <div
+                  className="not-prose relative h-48 md:h-64 w-full bg-cover bg-center rounded-lg mb-6"
+                  style={{ backgroundImage: `url(${activePage.hero_image_url})` }}
+                />
+              )}
+              <h1 className="text-3xl md:text-4xl font-bold mb-6">{activePage.title}</h1>
+              {activePage.content ? (
+                <div
+                  dangerouslySetInnerHTML={{ __html: renderSimpleMarkdown(activePage.content) }}
+                />
+              ) : (
+                <p className="text-muted-foreground italic">
+                  Aucun contenu. Utilise le panneau « Métadonnées de la page » pour rédiger.
+                </p>
+              )}
+            </article>
+          </PreviewViewportFrame>
+        ) : isLoading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">Chargement de l'aperçu…</div>
         ) : scenes.filter((s) => s.is_visible).length === 0 ? (
           <div className="p-10 text-center text-sm text-muted-foreground">
@@ -2113,10 +2154,31 @@ function PageMetadataPanel({
   boutiqueSlug,
   onPatch,
 }: {
-  page: { id: string; title: string; slug: string; seo_title: string | null; seo_description: string | null };
+  page: {
+    id: string;
+    title: string;
+    slug: string;
+    seo_title: string | null;
+    seo_description: string | null;
+    mode: "simple" | "rich";
+    show_in_nav: boolean;
+    is_visible: boolean;
+    hero_image_url: string | null;
+    content: string | null;
+  };
   boutiqueSlug?: string;
   onPatch: (
-    patch: Partial<{ title: string; slug: string; seo_title: string | null; seo_description: string | null }>,
+    patch: Partial<{
+      title: string;
+      slug: string;
+      seo_title: string | null;
+      seo_description: string | null;
+      mode: "simple" | "rich";
+      show_in_nav: boolean;
+      is_visible: boolean;
+      hero_image_url: string | null;
+      content: string | null;
+    }>,
   ) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -2124,6 +2186,8 @@ function PageMetadataPanel({
   const [slug, setSlug] = useState(page.slug);
   const [seoTitle, setSeoTitle] = useState(page.seo_title ?? "");
   const [seoDesc, setSeoDesc] = useState(page.seo_description ?? "");
+  const [hero, setHero] = useState(page.hero_image_url ?? "");
+  const [content, setContent] = useState(page.content ?? "");
 
   // Re-sync if active page changes externally.
   useEffect(() => {
@@ -2131,7 +2195,17 @@ function PageMetadataPanel({
     setSlug(page.slug);
     setSeoTitle(page.seo_title ?? "");
     setSeoDesc(page.seo_description ?? "");
-  }, [page.id, page.title, page.slug, page.seo_title, page.seo_description]);
+    setHero(page.hero_image_url ?? "");
+    setContent(page.content ?? "");
+  }, [
+    page.id,
+    page.title,
+    page.slug,
+    page.seo_title,
+    page.seo_description,
+    page.hero_image_url,
+    page.content,
+  ]);
 
   const publicUrl =
     boutiqueSlug && typeof window !== "undefined"
@@ -2140,6 +2214,49 @@ function PageMetadataPanel({
 
   return (
     <div className="border-t border-border/30 bg-muted/20 px-4 py-2">
+      {/* Always-visible mode toggle + visibility row — drives the preview immediately. */}
+      <div className="flex flex-wrap items-center gap-3 pb-2">
+        <div className="flex items-center rounded-md border border-border/50 overflow-hidden text-xs">
+          <button
+            type="button"
+            onClick={() => page.mode !== "rich" && onPatch({ mode: "rich" })}
+            className={`px-2.5 py-1 transition ${
+              page.mode === "rich"
+                ? "bg-primary/10 text-primary font-medium"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            title="Mode scènes : composez la page avec des blocs visuels."
+          >
+            Rich (scènes)
+          </button>
+          <button
+            type="button"
+            onClick={() => page.mode !== "simple" && onPatch({ mode: "simple" })}
+            className={`px-2.5 py-1 transition border-l border-border/50 ${
+              page.mode === "simple"
+                ? "bg-primary/10 text-primary font-medium"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            title="Mode simple : un titre, une image et du markdown."
+          >
+            Simple (markdown)
+          </button>
+        </div>
+        <label className="flex items-center gap-1.5 text-xs">
+          <Switch
+            checked={page.show_in_nav}
+            onCheckedChange={(v) => onPatch({ show_in_nav: v })}
+          />
+          <span className="opacity-70">Afficher dans le menu</span>
+        </label>
+        <label className="flex items-center gap-1.5 text-xs">
+          <Switch
+            checked={page.is_visible}
+            onCheckedChange={(v) => onPatch({ is_visible: v })}
+          />
+          <span className="opacity-70">Page publique</span>
+        </label>
+      </div>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -2245,6 +2362,39 @@ function PageMetadataPanel({
               placeholder="Description affichée dans les résultats de recherche"
             />
           </div>
+          {page.mode === "simple" && (
+            <>
+              <div className="md:col-span-2">
+                <Label className="text-[10px]">Image héro (URL)</Label>
+                <Input
+                  value={hero}
+                  onChange={(e) => setHero(e.target.value)}
+                  onBlur={() => {
+                    if ((hero || null) !== page.hero_image_url)
+                      onPatch({ hero_image_url: hero || null });
+                  }}
+                  className="h-8 text-xs"
+                  placeholder="https://…"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Label className="text-[10px]">
+                  Contenu (markdown) — # Titre, **gras**, *italique*, [lien](url)
+                </Label>
+                <Textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  onBlur={() => {
+                    if ((content || null) !== page.content)
+                      onPatch({ content: content || null });
+                  }}
+                  rows={8}
+                  className="text-xs font-mono"
+                  placeholder={"# À propos\n\nNotre histoire commence…"}
+                />
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
