@@ -237,36 +237,7 @@ export function StudioEditor({
   const updatePage = useUpdateBoutiquePage();
   const deletePage = useDeleteBoutiquePage();
   const reorderPages = useReorderBoutiquePages();
-
-  /**
-   * Auto-seed standard pages (Boutique, À propos, Contact) the first time the
-   * editor opens for a boutique that has none. The home page lives in
-   * `boutique_scenes` with `page_id IS NULL` and isn't created here.
-   * Guarded by a ref so the effect can't double-run during a single session.
-   */
   const seededRef = useRef(false);
-  useEffect(() => {
-    if (!boutiqueId) return;
-    if (seededRef.current) return;
-    if (pages.length > 0) return;
-    seededRef.current = true;
-    (async () => {
-      const standardKeys: Array<typeof PAGE_TEMPLATES[number]["key"]> = [
-        "products",
-        "about",
-        "contact",
-      ];
-      for (const key of standardKeys) {
-        const tpl = PAGE_TEMPLATES.find((t) => t.key === key);
-        if (!tpl) continue;
-        try {
-          await handleCreatePageFromTemplate(tpl);
-        } catch {
-          /* keep going — a single failure shouldn't block the others */
-        }
-      }
-    })();
-  }, [boutiqueId, pages.length]);
 
   const activePage = useMemo(
     () => pages.find((p) => p.id === activePageId) ?? null,
