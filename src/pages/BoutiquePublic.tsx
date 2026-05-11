@@ -16,6 +16,7 @@ import type { ThemeSettings } from "@/lib/boutiqueTemplates";
 import { trackStorefrontEvent } from "@/lib/storefrontTracking";
 import { PageSeoInspector } from "@/components/storefront/PageSeoInspector";
 import { useAuth } from "@/contexts/AuthContext";
+import { StorefrontAmbientAudio } from "@/components/storefront/StorefrontAmbientAudio";
 
 export default function BoutiquePublic() {
   const { slug } = useParams<{ slug: string }>();
@@ -141,6 +142,8 @@ export default function BoutiquePublic() {
   }
 
   const themeSettings = (boutique.theme_settings as unknown) as ThemeSettings | null;
+  const ambientAudioUrl = themeSettings?.backgroundAudioUrl;
+  const ambientVolume = themeSettings?.backgroundAudioVolume ?? 0.4;
 
   const useStudio = !!boutique.studio_completed_at && scenes.length > 0;
 
@@ -197,6 +200,7 @@ export default function BoutiquePublic() {
             }
             ogImage={boutique.cover_image_url || boutique.logo_url}
           />
+          <StorefrontAmbientAudio src={ambientAudioUrl} volume={ambientVolume} />
         </StorefrontProvider>
       </CartProvider>
     );
@@ -212,6 +216,7 @@ export default function BoutiquePublic() {
       themeSettings={themeSettings}
       products={products}
     />
+    <StorefrontAmbientAudio src={ambientAudioUrl} volume={ambientVolume} />
     <PageSeoInspector
       visible={!!user && user.id === boutique.user_id}
       kind="boutique"

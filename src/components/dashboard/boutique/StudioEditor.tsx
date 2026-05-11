@@ -119,6 +119,7 @@ import {
   PAGE_TEMPLATES,
   recommendedSceneTypesForPage,
   PRODUCT_PAGE_SLUG,
+  PRODUCT_PAGE_SCENES,
   type PageTemplate,
 } from "@/lib/pageTemplates";
 
@@ -279,6 +280,46 @@ export function StudioEditor({
       toast.success(`Page « ${tpl.defaultTitle} » créée${tpl.scenes.length > 0 ? ` avec ${tpl.scenes.length} scène${tpl.scenes.length > 1 ? "s" : ""}` : ""}`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Création impossible");
+    }
+  };
+
+  /**
+   * Open (or create on first call) the reserved Product Page template.
+   * This page is hidden from the public nav (slug = "__product__") and serves
+   * as the layout used by every product detail page on the storefront.
+   */
+  const handleOpenProductPageTemplate = async () => {
+    const existing = pages.find((p) => p.slug === PRODUCT_PAGE_SLUG);
+    if (existing) {
+      setActivePageId(existing.id);
+      toast.success("Modèle de page produit ouvert");
+      return;
+    }
+    try {
+      const page = await createPage.mutateAsync({
+        boutiqueId,
+        title: "Modèle fiche produit",
+        mode: "rich",
+        slug: PRODUCT_PAGE_SLUG,
+        showInNav: false,
+      });
+      for (let i = 0; i < PRODUCT_PAGE_SCENES.length; i++) {
+        const s = PRODUCT_PAGE_SCENES[i];
+        const def = findSceneDefinition(s.sceneType);
+        const baseContent = (def?.defaultContent ?? {}) as Record<string, unknown>;
+        await addScene.mutateAsync({
+          boutiqueId,
+          sceneType: s.sceneType,
+          position: i,
+          variant: s.variant,
+          content: { ...baseContent, ...(s.contentPatch ?? {}) },
+          pageId: page.id,
+        });
+      }
+      setActivePageId(page.id);
+      toast.success("Modèle de page produit initialisé");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Ouverture impossible");
     }
   };
 
@@ -1607,6 +1648,26 @@ export function StudioEditor({
                     </DropdownMenuItem>
                   </div>
                 ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-wide opacity-60">
+                  Modèle global
+                </DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={handleOpenProductPageTemplate}
+                  className="flex items-start gap-2 cursor-pointer"
+                >
+                  <span className="text-base leading-none mt-0.5">📦</span>
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-sm font-medium">
+                      {pages.some((p) => p.slug === PRODUCT_PAGE_SLUG)
+                        ? "Éditer le modèle de fiche produit"
+                        : "Créer le modèle de fiche produit"}
+                    </span>
+                    <span className="block text-[11px] text-muted-foreground truncate">
+                      Utilisé pour toutes les pages produit du storefront
+                    </span>
+                  </span>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

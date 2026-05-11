@@ -540,4 +540,8 @@ export interface ThemeSettings {
   cguText?: string;
   cgvText?: string;
   voiceTone?: string;
+  /** Optional ambient soundtrack played on the storefront (toggle-able by visitor). */
+  backgroundAudioUrl?: string;
+  /** Default volume 0..1. Defaults to 0.4. */
+  backgroundAudioVolume?: number;
 }

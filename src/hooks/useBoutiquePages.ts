@@ -89,8 +89,12 @@ export function useCreateBoutiquePage() {
       boutiqueId: string;
       title: string;
       mode: "simple" | "rich";
+      /** Optional reserved slug (e.g. "__product__"). When set, slug isn't suffixed. */
+      slug?: string;
+      /** Optional override — defaults to true. */
+      showInNav?: boolean;
     }) => {
-      const baseSlug = slugify(params.title) || "page";
+      const baseSlug = params.slug ?? (slugify(params.title) || "page");
       // Find next position
       const { data: existing } = await supabase
         .from("boutique_pages" as any)
@@ -98,8 +102,13 @@ export function useCreateBoutiquePage() {
         .eq("boutique_id", params.boutiqueId);
       const used = new Set(((existing as any[]) ?? []).map((p) => p.slug));
       let slug = baseSlug;
-      let n = 2;
-      while (used.has(slug)) slug = `${baseSlug}-${n++}`;
+      if (!params.slug) {
+        let n = 2;
+        while (used.has(slug)) slug = `${baseSlug}-${n++}`;
+      } else if (used.has(slug)) {
+        // Reserved slug already exists — surface a typed error so caller can react.
+        throw new Error(`reserved_slug_exists:${slug}`);
+      }
       const position = ((existing as any[]) ?? []).length;
 
       const { data, error } = await supabase
@@ -110,6 +119,7 @@ export function useCreateBoutiquePage() {
           slug,
           mode: params.mode,
           position,
+          show_in_nav: params.showInNav ?? true,
         } as never)
         .select()
         .single();

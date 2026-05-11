@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { Palette, Type, Eye, ShoppingCart, Home, Package } from "lucide-react";
+import { Palette, Type, Eye, ShoppingCart, Home, Package, Music, Loader2, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SectionCard } from "@/components/dashboard/shared";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ThemeSettings } from "@/lib/boutiqueTemplates";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const COLOR_PALETTES = [
   { name: "Marine BIB", primary: "#1B2A41", secondary: "#C9A961" },
@@ -206,6 +210,11 @@ export function BoutiqueIdentityPanel({
             rows={3}
           />
         </SectionCard>
+
+        <AmbientAudioSection
+          themeSettings={themeSettings}
+          setThemeSettings={setThemeSettings}
+        />
       </div>
 
       {/* Live preview */}
@@ -363,5 +372,123 @@ function PreviewCheckout({
         </button>
       </div>
     </div>
+  );
+}
+
+/* ---------- Ambient audio uploader ---------- */
+
+function AmbientAudioSection({
+  themeSettings,
+  setThemeSettings,
+}: {
+  themeSettings: ThemeSettings;
+  setThemeSettings: React.Dispatch<React.SetStateAction<ThemeSettings>>;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const url = themeSettings.backgroundAudioUrl;
+  const volume = themeSettings.backgroundAudioVolume ?? 0.4;
+
+  const handleUpload = async (file: File) => {
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error("Fichier trop lourd (max 8 Mo). Privilégiez un MP3 court (boucle).");
+      return;
+    }
+    setUploading(true);
+    try {
+      const { data: u } = await supabase.auth.getUser();
+      const uid = u?.user?.id;
+      if (!uid) throw new Error("Session expirée");
+      const ext = file.name.split(".").pop()?.toLowerCase() || "mp3";
+      const path = `${uid}/audio/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("boutique-media")
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from("boutique-media").getPublicUrl(path);
+      setThemeSettings((prev) => ({ ...prev, backgroundAudioUrl: data.publicUrl }));
+      toast.success("Ambiance sonore chargée");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Upload impossible");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <SectionCard
+      title="Ambiance sonore"
+      description="Une boucle douce, jouée seulement après clic du visiteur"
+      icon={<Music className="w-4 h-4" />}
+    >
+      <div className="space-y-3">
+        {url ? (
+          <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-2">
+            <audio src={url} controls className="flex-1 h-8" />
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7"
+              title="Retirer l'ambiance sonore"
+              onClick={() =>
+                setThemeSettings((prev) => ({ ...prev, backgroundAudioUrl: undefined }))
+              }
+            >
+              <X className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            Aucune ambiance. Importez un MP3 court (≤ 8 Mo, idéalement en boucle).
+          </p>
+        )}
+
+        <div>
+          <Label htmlFor="ambient-audio-input" className="sr-only">
+            Importer un fichier audio
+          </Label>
+          <input
+            id="ambient-audio-input"
+            type="file"
+            accept="audio/mpeg,audio/mp3,audio/ogg,audio/wav"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void handleUpload(f);
+              e.target.value = "";
+            }}
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={uploading}
+            onClick={() => document.getElementById("ambient-audio-input")?.click()}
+          >
+            {uploading ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Envoi…
+              </>
+            ) : (
+              <>{url ? "Remplacer le fichier" : "Importer un fichier audio"}</>
+            )}
+          </Button>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs">Volume par défaut · {Math.round(volume * 100)}%</Label>
+          <Slider
+            value={[Math.round(volume * 100)]}
+            min={0}
+            max={100}
+            step={5}
+            onValueChange={(v) =>
+              setThemeSettings((prev) => ({
+                ...prev,
+                backgroundAudioVolume: (v[0] ?? 40) / 100,
+              }))
+            }
+          />
+        </div>
+      </div>
+    </SectionCard>
   );
 }

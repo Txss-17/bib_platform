@@ -15,6 +15,11 @@ import type { ThemeSettings } from "@/lib/boutiqueTemplates";
 import { trackStorefrontEvent } from "@/lib/storefrontTracking";
 import { PageSeoInspector } from "@/components/storefront/PageSeoInspector";
 import { useAuth } from "@/contexts/AuthContext";
+import { StudioSceneRenderer } from "@/components/storefront/StudioSceneRenderer";
+import { useBrandDNA } from "@/hooks/useBrandStudio";
+import { PRODUCT_PAGE_SLUG } from "@/lib/pageTemplates";
+import type { SceneRecord } from "@/lib/studioScenes";
+import { StorefrontAmbientAudio } from "@/components/storefront/StorefrontAmbientAudio";
 
 export default function ProductPublic() {
   const { slug, productId } = useParams<{ slug: string; productId: string }>();
@@ -69,6 +74,31 @@ export default function ProductPublic() {
   const productDesc = product?.supplier_products?.description || "";
   const productImage = product?.supplier_products?.image_url;
   const productPrice = Number(product?.public_price || 0);
+
+  /* ---------- Studio: optional product page template ---------- */
+  const { data: brandDna } = useBrandDNA(boutique?.id);
+  const { data: productPageScenes = [] } = useQuery({
+    queryKey: ["product-page-template", boutique?.id],
+    enabled: !!boutique?.id,
+    queryFn: async () => {
+      const { data: page } = await supabase
+        .from("boutique_pages" as any)
+        .select("id")
+        .eq("boutique_id", boutique!.id)
+        .eq("slug", PRODUCT_PAGE_SLUG)
+        .maybeSingle();
+      const pageId = (page as any)?.id as string | undefined;
+      if (!pageId) return [] as SceneRecord[];
+      const { data: scenes } = await supabase
+        .from("boutique_scenes")
+        .select("*")
+        .eq("boutique_id", boutique!.id)
+        .eq("page_id", pageId)
+        .eq("is_visible", true)
+        .order("position", { ascending: true });
+      return (scenes as unknown as SceneRecord[]) ?? [];
+    },
+  });
 
   useSEO({
     title: boutique ? `${productName} — ${boutique.name}` : productName,
@@ -166,6 +196,22 @@ export default function ProductPublic() {
       )}
 
       <main className="flex-1">
+        {productPageScenes.length > 0 ? (
+          <StudioSceneRenderer
+            scenes={productPageScenes}
+            brandDna={brandDna ?? null}
+            boutiqueName={boutique?.name ?? ""}
+            products={[
+              {
+                id: product.id,
+                name: productName,
+                price: productPrice,
+                image_url: productImage ?? null,
+              },
+            ]}
+            boutiqueId={boutique?.id}
+          />
+        ) : (
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
           {/* Breadcrumb */}
           {slug && (
@@ -248,9 +294,14 @@ export default function ProductPublic() {
             </div>
           </div>
         </div>
+        )}
       </main>
 
       <StorefrontFooter primaryColor={primaryColor} />
+      <StorefrontAmbientAudio
+        src={themeSettings?.backgroundAudioUrl}
+        volume={themeSettings?.backgroundAudioVolume ?? 0.4}
+      />
       <PageSeoInspector
         visible={!!user && !!boutique && user.id === boutique.user_id}
         kind="product"
