@@ -1058,6 +1058,176 @@ export function SceneInspectorPro({
         </>
       )}
 
+      {/* PRODUCTS GRID */}
+      {scene.scene_type === "products-grid" && (
+        <>
+          {generic}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">Disposition</Label>
+              <Select value={c.layout || "3-up"} onValueChange={(v) => setField("layout", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2-up">2 colonnes</SelectItem>
+                  <SelectItem value="3-up">3 colonnes</SelectItem>
+                  <SelectItem value="4-up">4 colonnes</SelectItem>
+                  <SelectItem value="compact">Compact (5 col)</SelectItem>
+                  <SelectItem value="masonry">Masonry</SelectItem>
+                  <SelectItem value="carousel">Carrousel</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Forme du cadre</Label>
+              <Select value={c.cardShape ?? "rounded"} onValueChange={(v) => setField("cardShape", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="square">Carré</SelectItem>
+                  <SelectItem value="rounded">Arrondi</SelectItem>
+                  <SelectItem value="rounded-xl">Très arrondi</SelectItem>
+                  <SelectItem value="circle">Cercle</SelectItem>
+                  <SelectItem value="arch">Arche</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">Effet au survol</Label>
+            <Select value={c.hoverEffect ?? "zoom"} onValueChange={(v) => setField("hoverEffect", v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Aucun</SelectItem>
+                <SelectItem value="zoom">Zoom doux</SelectItem>
+                <SelectItem value="shine">Brillance</SelectItem>
+                <SelectItem value="tilt">Tilt 3D</SelectItem>
+                <SelectItem value="lift">Soulèvement</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {products.length > 0 && (
+            <div>
+              <Label className="text-xs flex items-center justify-between mb-1">
+                <span>Produits affichés</span>
+                <button
+                  type="button"
+                  onClick={() => setField("productIds", [])}
+                  className="text-[10px] text-primary hover:underline"
+                >
+                  Tout afficher
+                </button>
+              </Label>
+              <div className="max-h-48 overflow-auto rounded border border-border/40 p-2 space-y-1">
+                {products.map((p) => {
+                  const ids = (c.productIds ?? []) as string[];
+                  const allSelected = ids.length === 0;
+                  const checked = allSelected || ids.includes(p.id);
+                  return (
+                    <label key={p.id} className="flex items-center gap-2 text-xs cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) => {
+                          const current = allSelected ? products.map((x) => x.id) : ids;
+                          const next = e.target.checked
+                            ? Array.from(new Set([...current, p.id]))
+                            : current.filter((x) => x !== p.id);
+                          // If next == all, store [] (= afficher tout)
+                          setField("productIds", next.length === products.length ? [] : next);
+                        }}
+                      />
+                      {p.image_url && (
+                        <span
+                          className="w-6 h-6 rounded bg-muted bg-cover bg-center shrink-0"
+                          style={{ backgroundImage: `url(${p.image_url})` }}
+                        />
+                      )}
+                      <span className="truncate">{p.name}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] opacity-50 mt-1">
+                Décoche pour limiter à une sélection. Vide = tout afficher.
+              </p>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* PRODUCT — DESCRIPTION */}
+      {scene.scene_type === "product-description" && (
+        <>
+          <div>
+            <Label className="text-xs">Titre</Label>
+            <Input value={c.title ?? ""} onChange={(e) => setField("title", e.target.value)} />
+          </div>
+          <div>
+            <Label className="text-xs">Texte de secours</Label>
+            <Textarea
+              rows={4}
+              value={c.fallbackBody ?? ""}
+              onChange={(e) => setField("fallbackBody", e.target.value)}
+            />
+            <p className="text-[10px] opacity-50 mt-1">Affiché si la fiche produit n'a pas de description.</p>
+          </div>
+        </>
+      )}
+
+      {/* PRODUCT — SPECS */}
+      {scene.scene_type === "product-specs" && (
+        <>
+          <div>
+            <Label className="text-xs">Titre</Label>
+            <Input value={c.title ?? ""} onChange={(e) => setField("title", e.target.value)} />
+          </div>
+          <div>
+            <Label className="text-xs mb-2 block">Lignes (label / valeur)</Label>
+            <ListEditor
+              items={(c.rows ?? []) as Array<Record<string, any>>}
+              factory={() => ({ label: "", value: "" })}
+              addLabel="Ajouter une ligne"
+              onChange={(next) => setField("rows", next)}
+              renderItem={(r, update) => (
+                <>
+                  <Input placeholder="Label" value={r.label ?? ""} onChange={(e) => update({ label: e.target.value })} />
+                  <Input placeholder="Valeur" value={r.value ?? ""} onChange={(e) => update({ value: e.target.value })} />
+                </>
+              )}
+            />
+          </div>
+        </>
+      )}
+
+      {/* PRODUCT — HERO / RELATED — generic only */}
+      {(scene.scene_type === "product-hero" || scene.scene_type === "product-related") && (
+        <>
+          {"title" in c && (
+            <div>
+              <Label className="text-xs">Titre</Label>
+              <Input value={c.title ?? ""} onChange={(e) => setField("title", e.target.value)} />
+            </div>
+          )}
+          {"ctaLabel" in c && (
+            <div>
+              <Label className="text-xs">CTA</Label>
+              <Input value={c.ctaLabel ?? ""} onChange={(e) => setField("ctaLabel", e.target.value)} />
+            </div>
+          )}
+          {scene.scene_type === "product-related" && (
+            <div>
+              <Label className="text-xs">Nombre de produits</Label>
+              <Input
+                type="number"
+                min={2}
+                max={12}
+                value={c.limit ?? 4}
+                onChange={(e) => setField("limit", Math.max(2, Math.min(12, Number(e.target.value) || 4)))}
+              />
+            </div>
+          )}
+        </>
+      )}
+
       {/* Default — generic only */}
       {![
         "hero-cinema",
@@ -1076,6 +1246,11 @@ export function SceneInspectorPro({
         "stats-counter",
         "video-fullscreen",
         "banner-promo",
+        "products-grid",
+        "product-description",
+        "product-specs",
+        "product-hero",
+        "product-related",
       ].includes(scene.scene_type) && generic}
     </Card>
   );
