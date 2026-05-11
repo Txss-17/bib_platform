@@ -1648,6 +1648,26 @@ export function StudioEditor({
                     </DropdownMenuItem>
                   </div>
                 ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-wide opacity-60">
+                  Modèle global
+                </DropdownMenuLabel>
+                <DropdownMenuItem
+                  onClick={handleOpenProductPageTemplate}
+                  className="flex items-start gap-2 cursor-pointer"
+                >
+                  <span className="text-base leading-none mt-0.5">📦</span>
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-sm font-medium">
+                      {pages.some((p) => p.slug === PRODUCT_PAGE_SLUG)
+                        ? "Éditer le modèle de fiche produit"
+                        : "Créer le modèle de fiche produit"}
+                    </span>
+                    <span className="block text-[11px] text-muted-foreground truncate">
+                      Utilisé pour toutes les pages produit du storefront
+                    </span>
+                  </span>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
