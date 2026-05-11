@@ -107,6 +107,7 @@ import { StudioSceneRenderer } from "@/components/storefront/StudioSceneRenderer
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SceneInspectorPro } from "./SceneInspectorPro";
+import { ImageField } from "./SceneInspectorPro";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
