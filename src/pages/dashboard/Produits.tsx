@@ -476,6 +476,26 @@ export default function Produits() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Product visuals AI studio */}
+      {mediaProductId &&
+        (() => {
+          const p = products?.find((x) => x.id === mediaProductId);
+          if (!p) return null;
+          return (
+            <ProductMediaDialog
+              open={!!mediaProductId}
+              onOpenChange={(o) => !o && setMediaProductId(null)}
+              productId={p.id}
+              boutiqueId={p.boutique_id}
+              productName={p.supplier_products?.name || "Produit"}
+              defaultPrompt={
+                p.supplier_products?.description ||
+                `Mise en scène premium du produit « ${p.supplier_products?.name || "Produit"} ».`
+              }
+            />
+          );
+        })()}
     </DashboardLayout>
   );
 }
