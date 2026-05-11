@@ -72,7 +72,22 @@ export function useGenerateProductMedia() {
           count,
         },
       });
-      if (error) throw new Error(error.message || "Génération impossible");
+      if (error) {
+        // supabase.functions.invoke wraps non-2xx responses; the actual
+        // body lives on `error.context`. Surface the function's own error
+        // code so the UI can show a localized toast.
+        let code: string | undefined;
+        try {
+          const ctx: any = (error as any)?.context;
+          if (ctx && typeof ctx.json === "function") {
+            const body = await ctx.json();
+            code = body?.error;
+          }
+        } catch {
+          /* ignore */
+        }
+        throw new Error(code || error.message || "Génération impossible");
+      }
       const urls = ((data as any)?.urls as string[] | undefined) ?? [];
       if (urls.length === 0) throw new Error("Aucune image générée");
 
