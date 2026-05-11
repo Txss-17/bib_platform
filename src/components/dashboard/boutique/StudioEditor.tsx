@@ -2005,3 +2005,182 @@ function SortableSceneRow({
     </div>
   );
 }
+
+/* ---------- Page metadata (slug + SEO) inline panel ---------- */
+function slugifyClient(s: string) {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 60);
+}
+
+function PageMetadataPanel({
+  page,
+  boutiqueSlug,
+  onPatch,
+}: {
+  page: { id: string; title: string; slug: string; seo_title: string | null; seo_description: string | null };
+  boutiqueSlug?: string;
+  onPatch: (
+    patch: Partial<{ title: string; slug: string; seo_title: string | null; seo_description: string | null }>,
+  ) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState(page.title);
+  const [slug, setSlug] = useState(page.slug);
+  const [seoTitle, setSeoTitle] = useState(page.seo_title ?? "");
+  const [seoDesc, setSeoDesc] = useState(page.seo_description ?? "");
+
+  // Re-sync if active page changes externally.
+  useEffect(() => {
+    setTitle(page.title);
+    setSlug(page.slug);
+    setSeoTitle(page.seo_title ?? "");
+    setSeoDesc(page.seo_description ?? "");
+  }, [page.id, page.title, page.slug, page.seo_title, page.seo_description]);
+
+  const publicUrl =
+    boutiqueSlug && typeof window !== "undefined"
+      ? `${window.location.origin}/boutique/${boutiqueSlug}/p/${slug}`
+      : `/boutique/${boutiqueSlug ?? "…"}/p/${slug}`;
+
+  return (
+    <div className="border-t border-border/30 bg-muted/20 px-4 py-2">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between text-xs uppercase tracking-wide opacity-70 hover:opacity-100"
+      >
+        <span className="flex items-center gap-1.5">
+          <Link2 className="w-3 h-3" /> Métadonnées de la page
+        </span>
+        {open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+      </button>
+      {open && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 text-sm">
+          <div>
+            <Label className="text-[10px]">Titre de la page</Label>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={() => {
+                const t = title.trim();
+                if (t && t !== page.title) onPatch({ title: t });
+              }}
+              className="h-8 text-xs"
+            />
+          </div>
+          <div>
+            <Label className="text-[10px] flex items-center justify-between">
+              <span>Slug (URL)</span>
+              <button
+                type="button"
+                onClick={() => {
+                  const auto = slugifyClient(title);
+                  setSlug(auto);
+                  if (auto && auto !== page.slug) onPatch({ slug: auto });
+                }}
+                className="text-[10px] text-primary hover:underline"
+              >
+                Auto
+              </button>
+            </Label>
+            <Input
+              value={slug}
+              onChange={(e) => setSlug(slugifyClient(e.target.value))}
+              onBlur={() => {
+                const s = slug.trim();
+                if (s && s !== page.slug) onPatch({ slug: s });
+              }}
+              className="h-8 text-xs font-mono"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <Label className="text-[10px]">Lien public</Label>
+            <div className="flex items-center gap-1">
+              <Input
+                value={publicUrl}
+                readOnly
+                className="h-8 text-xs font-mono opacity-70"
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-8 px-2"
+                onClick={() => {
+                  navigator.clipboard?.writeText(publicUrl);
+                  toast.success("Lien copié");
+                }}
+              >
+                <Copy className="w-3 h-3" />
+              </Button>
+            </div>
+          </div>
+          <div>
+            <Label className="text-[10px] flex items-center justify-between">
+              <span>Titre SEO ({seoTitle.length}/60)</span>
+              {seoTitle.length > 60 && <span className="text-destructive">trop long</span>}
+            </Label>
+            <Input
+              value={seoTitle}
+              maxLength={80}
+              onChange={(e) => setSeoTitle(e.target.value)}
+              onBlur={() => {
+                if ((seoTitle || null) !== page.seo_title) onPatch({ seo_title: seoTitle || null });
+              }}
+              className="h-8 text-xs"
+              placeholder="Titre dans les résultats Google"
+            />
+          </div>
+          <div>
+            <Label className="text-[10px] flex items-center justify-between">
+              <span>Meta description ({seoDesc.length}/160)</span>
+              {seoDesc.length > 160 && <span className="text-destructive">trop long</span>}
+            </Label>
+            <Textarea
+              value={seoDesc}
+              maxLength={200}
+              onChange={(e) => setSeoDesc(e.target.value)}
+              onBlur={() => {
+                if ((seoDesc || null) !== page.seo_description)
+                  onPatch({ seo_description: seoDesc || null });
+              }}
+              rows={2}
+              className="text-xs"
+              placeholder="Description affichée dans les résultats de recherche"
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------- Preview viewport frame (mobile / tablet / desktop) ---------- */
+function PreviewViewportFrame({
+  device,
+  children,
+}: {
+  device: "desktop" | "tablet" | "mobile";
+  children: React.ReactNode;
+}) {
+  if (device === "desktop") {
+    return <>{children}</>;
+  }
+  const widthMap = { mobile: 375, tablet: 768 } as const;
+  const w = widthMap[device];
+  return (
+    <div className="flex justify-center bg-muted/30 py-4 px-2">
+      <div
+        className="bg-background border border-border/60 rounded-2xl shadow-xl overflow-hidden"
+        style={{ width: w, maxWidth: "100%" }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
