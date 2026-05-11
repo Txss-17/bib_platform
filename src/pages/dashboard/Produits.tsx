@@ -102,6 +102,7 @@ export default function Produits() {
   const [sortOrder, setSortOrder] = useState<string>("recent");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [mediaProductId, setMediaProductId] = useState<string | null>(null);
 
   // Live updates from the supplier catalogue (new products, MOQ changes, retirement).
   useSupplierProductsRealtime();
