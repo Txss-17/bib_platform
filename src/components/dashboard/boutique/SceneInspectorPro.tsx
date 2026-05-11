@@ -12,7 +12,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Trash2, Plus, Wand2, Image as ImageIcon, Upload, Loader2, Sparkles } from "lucide-react";
+import { Trash2, Plus, Wand2, Image as ImageIcon, Upload, Loader2, Sparkles, Palette, RotateCcw } from "lucide-react";
 import { ALL_FONTS, loadGoogleFont } from "@/lib/googleFonts";
 import { toast } from "sonner";
 import { findSceneDefinition, type SceneRecord } from "@/lib/studioScenes";
@@ -22,7 +22,45 @@ import {
 } from "@/hooks/useBrandStudio";
 import { ActionButton, stateFromMutation } from "./ActionButton";
 
-type Patch = Partial<Pick<SceneRecord, "content" | "variant" | "is_visible">>;
+type Patch = Partial<Pick<SceneRecord, "content" | "variant" | "is_visible" | "style_overrides">>;
+
+/* ---------- HSL <-> hex helpers (local copy) ---------- */
+function hslToHex(hsl?: string | null): string {
+  if (!hsl) return "#000000";
+  const m = hsl.trim().match(/^(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)%\s+(-?\d+(?:\.\d+)?)%$/);
+  if (!m) return "#000000";
+  const h = parseFloat(m[1]) / 360;
+  const s = parseFloat(m[2]) / 100;
+  const l = parseFloat(m[3]) / 100;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => {
+    const k = (n + h * 12) % 12;
+    const c = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    return Math.round(c * 255).toString(16).padStart(2, "0");
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+function hexToHsl(hex: string): string {
+  const m = hex.trim().replace("#", "");
+  if (m.length !== 6) return "0 0% 0%";
+  const r = parseInt(m.slice(0, 2), 16) / 255;
+  const g = parseInt(m.slice(2, 4), 16) / 255;
+  const b = parseInt(m.slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  let h = 0, s = 0;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)); break;
+      case g: h = ((b - r) / d + 2); break;
+      default: h = ((r - g) / d + 4);
+    }
+    h *= 60;
+  }
+  return `${Math.round(h)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+}
 
 interface Props {
   scene: SceneRecord;
@@ -31,6 +69,7 @@ interface Props {
   onDelete: () => void;
   onRemix: () => void;
   remixState?: "idle" | "loading" | "success" | "error";
+  products?: Array<{ id: string; name: string; image_url?: string | null }>;
 }
 
 /** Champ image avec upload + génération IA. */
