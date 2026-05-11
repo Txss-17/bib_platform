@@ -37,3 +37,43 @@ export function renderSafeMarkdown(src: string | null | undefined): string {
     FORBID_ATTR: ["style", "onerror", "onload", "onclick"],
   });
 }
+
+/**
+ * Validate links inside the markdown source.
+ * Returns a list of human-readable error messages (FR) for any link whose
+ * URL is not http(s). Empty array means everything is fine.
+ *
+ * Catches all `[text](url)` occurrences (even malformed ones) so we can
+ * surface an error in the editor instead of silently dropping them at render.
+ */
+export function validateMarkdownLinks(
+  src: string | null | undefined,
+): Array<{ raw: string; url: string; message: string }> {
+  if (!src) return [];
+  const errors: Array<{ raw: string; url: string; message: string }> = [];
+  const re = /\[([^\]]+)\]\(([^)]*)\)/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(src)) !== null) {
+    const url = (m[2] ?? "").trim();
+    if (!url) {
+      errors.push({ raw: m[0], url, message: "Lien vide — ajoute une URL ou supprime le lien." });
+      continue;
+    }
+    if (/^javascript:/i.test(url) || /^data:/i.test(url) || /^vbscript:/i.test(url)) {
+      errors.push({
+        raw: m[0],
+        url,
+        message: `URL bloquée pour des raisons de sécurité : ${url}. Utilise un lien https://`,
+      });
+      continue;
+    }
+    if (!/^https?:\/\//i.test(url)) {
+      errors.push({
+        raw: m[0],
+        url,
+        message: `Lien invalide « ${url} » — seuls les liens http(s) sont acceptés (ex : https://exemple.com).`,
+      });
+    }
+  }
+  return errors;
+}
