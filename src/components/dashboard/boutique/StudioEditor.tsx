@@ -125,6 +125,7 @@ import {
   type PageTemplate,
 } from "@/lib/pageTemplates";
 import { renderSafeMarkdown } from "@/lib/safeMarkdown";
+import { validateMarkdownLinks } from "@/lib/safeMarkdown";
 
 /* ---------- Color helpers (HSL "h s% l%" <-> #rrggbb) ---------- */
 function hslStringToHex(hsl?: string): string {
