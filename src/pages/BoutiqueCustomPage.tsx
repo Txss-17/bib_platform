@@ -12,30 +12,7 @@ import { usePublicBoutiquePage } from "@/hooks/useBoutiquePages";
 import { useSEO } from "@/hooks/useSEO";
 import { StudioSceneRenderer } from "@/components/storefront/StudioSceneRenderer";
 import { useQuery as useRQ } from "@tanstack/react-query";
-
-/** Tiny safe markdown -> HTML (bold/italic/headings/links/paragraphs). */
-function renderMarkdown(src: string): string {
-  const escape = (s: string) =>
-    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  let html = escape(src);
-  html = html.replace(/^### (.*)$/gm, "<h3>$1</h3>");
-  html = html.replace(/^## (.*)$/gm, "<h2>$1</h2>");
-  html = html.replace(/^# (.*)$/gm, "<h1>$1</h1>");
-  html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  html = html.replace(/\*(.+?)\*/g, "<em>$1</em>");
-  html = html.replace(
-    /\[([^\]]+)\]\((https?:[^\s)]+)\)/g,
-    '<a href="$2" target="_blank" rel="noreferrer">$1</a>',
-  );
-  // paragraphs
-  html = html
-    .split(/\n{2,}/)
-    .map((block) =>
-      /^<h[1-6]>/.test(block.trim()) ? block : `<p>${block.replace(/\n/g, "<br/>")}</p>`,
-    )
-    .join("\n");
-  return html;
-}
+import { renderSafeMarkdown } from "@/lib/safeMarkdown";
 
 export default function BoutiqueCustomPage() {
   const { slug, pageSlug } = useParams<{ slug: string; pageSlug: string }>();
@@ -155,7 +132,7 @@ export default function BoutiqueCustomPage() {
             )}
             {page.content ? (
               <div
-                dangerouslySetInnerHTML={{ __html: renderMarkdown(page.content) }}
+                dangerouslySetInnerHTML={{ __html: renderSafeMarkdown(page.content) }}
               />
             ) : (
               <p className="text-muted-foreground italic">Aucun contenu pour le moment.</p>
