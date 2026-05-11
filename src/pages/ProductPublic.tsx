@@ -73,7 +73,9 @@ export default function ProductPublic() {
 
   const productName = product?.supplier_products?.name || "Produit";
   const productDesc = product?.supplier_products?.description || "";
-  const productImage = product?.supplier_products?.image_url;
+  const { data: customMedia = [] } = usePublicProductMedia(product?.id);
+  const heroMedia = customMedia[0]?.url ?? product?.supplier_products?.image_url;
+  const productImage = heroMedia;
   const productPrice = Number(product?.public_price || 0);
 
   /* ---------- Studio: optional product page template ---------- */
