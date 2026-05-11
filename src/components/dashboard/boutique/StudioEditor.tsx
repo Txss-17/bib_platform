@@ -1572,38 +1572,82 @@ export function StudioEditor({
                 </div>
               );
             })}
-            <Button
-              size="sm"
-              variant="ghost"
-              disabled={createPage.isPending}
-              onClick={() => {
-                const baseTitle = `Nouvelle page ${pages.length + 1}`;
-                createPage.mutate(
-                  { boutiqueId, title: baseTitle, mode: "rich" },
-                  {
-                    onSuccess: (p) => {
-                      setActivePageId(p.id);
-                      setRenamingPageId(p.id);
-                      setRenameDraft(p.title);
-                      toast.success("Page créée — donne-lui un titre");
-                    },
-                    onError: () => toast.error("Création de page impossible"),
-                  },
-                );
-              }}
-              className="shrink-0 h-7 px-2 text-xs"
-              title="Ajouter une page"
-            >
-              <Plus className="w-3.5 h-3.5 mr-1" /> Page
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={createPage.isPending || addScene.isPending}
+                  className="shrink-0 h-7 px-2 text-xs"
+                  title="Ajouter une page"
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1" /> Page
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-64">
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-wide opacity-60">
+                  Créer une page
+                </DropdownMenuLabel>
+                {PAGE_TEMPLATES.map((tpl, i) => (
+                  <div key={tpl.key}>
+                    {i === 1 && <DropdownMenuSeparator />}
+                    <DropdownMenuItem
+                      onClick={() => handleCreatePageFromTemplate(tpl)}
+                      className="flex items-start gap-2 cursor-pointer"
+                    >
+                      <span className="text-base leading-none mt-0.5">{tpl.emoji}</span>
+                      <span className="flex-1 min-w-0">
+                        <span className="block text-sm font-medium">{tpl.label}</span>
+                        <span className="block text-[11px] text-muted-foreground truncate">
+                          {tpl.description}
+                        </span>
+                      </span>
+                    </DropdownMenuItem>
+                  </div>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <div className="flex items-center justify-between px-4 py-1.5 border-t border-border/30">
             <span className="text-xs uppercase tracking-wide opacity-60">
               Aperçu : {activePageId === null ? "Accueil" : pages.find((p) => p.id === activePageId)?.title ?? "Page"}
               {scenes.length === 0 && !isLoading ? " (aucune scène)" : ""}
             </span>
-            <span className="text-xs opacity-50">{scenes.length} scène{scenes.length > 1 ? "s" : ""}</span>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center rounded-md border border-border/50 overflow-hidden">
+                {([
+                  { k: "mobile", icon: Smartphone, label: "Mobile (375)" },
+                  { k: "tablet", icon: Tablet, label: "Tablette (768)" },
+                  { k: "desktop", icon: Monitor, label: "Desktop (1280)" },
+                ] as const).map(({ k, icon: Icon, label }) => (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => setPreviewDevice(k)}
+                    title={label}
+                    aria-label={label}
+                    className={`p-1.5 transition ${
+                      previewDevice === k
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                  </button>
+                ))}
+              </div>
+              <span className="text-xs opacity-50">{scenes.length} scène{scenes.length > 1 ? "s" : ""}</span>
+            </div>
           </div>
+          {activePage && (
+            <PageMetadataPanel
+              page={activePage}
+              boutiqueSlug={publicSlug}
+              onPatch={(patch) =>
+                updatePage.mutate({ pageId: activePage.id, boutiqueId, patch })
+              }
+            />
+          )}
         </div>
         {isLoading ? (
           <div className="p-10 text-center text-sm text-muted-foreground">Chargement de l'aperçu…</div>
@@ -1612,12 +1656,14 @@ export function StudioEditor({
             Aucune scène visible. Ajoute une scène depuis le panneau de gauche pour voir l'aperçu.
           </div>
         ) : (
-        <StudioSceneRenderer
-          scenes={scenes}
-          brandDna={brandDna ?? null}
-          boutiqueName={boutiqueName}
-          products={products}
-        />
+        <PreviewViewportFrame device={previewDevice}>
+          <StudioSceneRenderer
+            scenes={scenes}
+            brandDna={brandDna ?? null}
+            boutiqueName={boutiqueName}
+            products={products}
+          />
+        </PreviewViewportFrame>
         )}
       </div>
 
