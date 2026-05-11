@@ -16,6 +16,7 @@ import type { ThemeSettings } from "@/lib/boutiqueTemplates";
 import { trackStorefrontEvent } from "@/lib/storefrontTracking";
 import { PageSeoInspector } from "@/components/storefront/PageSeoInspector";
 import { useAuth } from "@/contexts/AuthContext";
+import { StorefrontAmbientAudio } from "@/components/storefront/StorefrontAmbientAudio";
 
 export default function BoutiquePublic() {
   const { slug } = useParams<{ slug: string }>();
