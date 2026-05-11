@@ -365,6 +365,10 @@ export default function Produits() {
                                 <Edit className="w-4 h-4 mr-2" />
                                 Modifier le prix
                               </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setMediaProductId(product.id)}>
+                                <Sparkles className="w-4 h-4 mr-2" />
+                                Visuels IA
+                              </DropdownMenuItem>
                               <DropdownMenuItem>
                                 <Copy className="w-4 h-4 mr-2" />
                                 Dupliquer
@@ -410,6 +414,9 @@ export default function Produits() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem><Edit className="w-4 h-4 mr-2" />Modifier</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setMediaProductId(product.id)}>
+                              <Sparkles className="w-4 h-4 mr-2" />Visuels IA
+                            </DropdownMenuItem>
                             <DropdownMenuItem><Copy className="w-4 h-4 mr-2" />Dupliquer</DropdownMenuItem>
                             <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(product.id)}>
                               <Trash2 className="w-4 h-4 mr-2" />Supprimer
