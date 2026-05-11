@@ -17,6 +17,10 @@ import {
   Save,
   BarChart3,
   Copy,
+  Smartphone,
+  Tablet,
+  Monitor,
+  Link2,
 } from "lucide-react";
 import {
   DndContext,
@@ -103,6 +107,19 @@ import { StudioSceneRenderer } from "@/components/storefront/StudioSceneRenderer
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SceneInspectorPro } from "./SceneInspectorPro";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
+import {
+  PAGE_TEMPLATES,
+  recommendedSceneTypesForPage,
+  type PageTemplate,
+} from "@/lib/pageTemplates";
 
 /* ---------- Color helpers (HSL "h s% l%" <-> #rrggbb) ---------- */
 function hslStringToHex(hsl?: string): string {
