@@ -21,6 +21,7 @@ import {
   useUploadSceneAsset,
 } from "@/hooks/useBrandStudio";
 import { ActionButton, stateFromMutation } from "./ActionButton";
+import { resizeImageFile } from "@/lib/imageResize";
 
 type Patch = Partial<Pick<SceneRecord, "content" | "variant" | "is_visible" | "style_overrides">>;
 
@@ -72,8 +73,8 @@ interface Props {
   products?: Array<{ id: string; name: string; image_url?: string | null }>;
 }
 
-/** Champ image avec upload + génération IA. */
-function ImageField({
+/** Champ image avec upload + génération IA. Exporté pour réutilisation (ex: hero de page). */
+export function ImageField({
   boutiqueId,
   label,
   value,
@@ -101,7 +102,10 @@ function ImageField({
       return;
     }
     try {
-      const url = await upload.mutateAsync({ boutiqueId, file: f });
+      // Redimensionne côté client (max 1920px, JPEG/PNG/WebP) pour garder
+      // le bucket léger et le storefront rapide.
+      const optimized = await resizeImageFile(f).catch(() => f);
+      const url = await upload.mutateAsync({ boutiqueId, file: optimized });
       onChange(url);
       toast.success("Image téléversée");
     } catch (e) {
