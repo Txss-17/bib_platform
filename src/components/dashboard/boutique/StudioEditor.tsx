@@ -1751,6 +1751,7 @@ export function StudioEditor({
           {activePage && (
             <PageMetadataPanel
               page={activePage}
+              boutiqueId={boutiqueId}
               boutiqueSlug={publicSlug}
               onPatch={(patch) =>
                 updatePage.mutate({ pageId: activePage.id, boutiqueId, patch })
