@@ -194,3 +194,58 @@ export function useReorderBoutiquePages() {
     },
   });
 }
+
+/**
+ * Generate SEO (title + description) for a single boutique page via the
+ * `boutique-ai` edge function (`generate_seo`), then persist on the page.
+ * Returns the generated values so callers can surface them in the UI.
+ */
+export function useGeneratePageSeo() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      pageId: string;
+      pageTitle: string;
+      pageSlug: string;
+      mode: "simple" | "rich";
+      contentSnippet?: string | null;
+      brandContext?: Record<string, unknown> | null;
+    }) => {
+      const { data, error } = await supabase.functions.invoke("boutique-ai", {
+        body: {
+          action: "generate_seo",
+          boutique_id: params.boutiqueId,
+          payload: {
+            scope: "page",
+            page_title: params.pageTitle,
+            page_slug: params.pageSlug,
+            page_mode: params.mode,
+            page_content: (params.contentSnippet ?? "").slice(0, 1500),
+            brand: params.brandContext ?? null,
+          },
+        },
+      });
+      const code = (data as any)?.error as string | undefined;
+      if (code === "credits_exhausted")
+        throw new Error("Crédits IA épuisés. Recharge dans Paramètres → Facturation.");
+      if (code === "rate_limited") throw new Error("Trop de requêtes IA, réessaie dans 1 min.");
+      if (code) throw new Error("Erreur IA : " + code);
+      if (error) throw new Error(error.message || "Service IA indisponible");
+
+      const title = (data?.title as string | undefined)?.slice(0, 60) ?? "";
+      const description = (data?.description as string | undefined)?.slice(0, 160) ?? "";
+      const { error: upErr } = await supabase
+        .from("boutique_pages" as any)
+        .update({ seo_title: title, seo_description: description } as never)
+        .eq("id", params.pageId);
+      if (upErr) throw upErr;
+      return { title, description };
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["boutique-pages", vars.boutiqueId] });
+      qc.invalidateQueries({ queryKey: ["public-boutique-pages", vars.boutiqueId] });
+      qc.invalidateQueries({ queryKey: ["public-boutique-page", vars.boutiqueId] });
+    },
+  });
+}
