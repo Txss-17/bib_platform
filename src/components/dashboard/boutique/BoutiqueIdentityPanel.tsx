@@ -210,6 +210,11 @@ export function BoutiqueIdentityPanel({
             rows={3}
           />
         </SectionCard>
+
+        <AmbientAudioSection
+          themeSettings={themeSettings}
+          setThemeSettings={setThemeSettings}
+        />
       </div>
 
       {/* Live preview */}
