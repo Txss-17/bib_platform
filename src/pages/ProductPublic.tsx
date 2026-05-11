@@ -224,16 +224,17 @@ export default function ProductPublic() {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-            {/* Product image */}
-            <div className="aspect-square bg-gray-50 rounded-2xl overflow-hidden">
-              {productImage ? (
-                <img src={productImage} alt={productName} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-300">
-                  <span className="text-lg">Image du produit</span>
-                </div>
-              )}
-            </div>
+            {/* Product image (+ AI gallery) */}
+            <ProductImageGallery
+              images={
+                customMedia.length > 0
+                  ? customMedia.map((m) => m.url)
+                  : productImage
+                  ? [productImage]
+                  : []
+              }
+              alt={productName}
+            />
 
             {/* Product details */}
             <div className="flex flex-col">
