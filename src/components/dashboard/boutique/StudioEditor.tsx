@@ -2348,6 +2348,43 @@ function PageMetadataPanel({
               placeholder="Description affichée dans les résultats de recherche"
             />
           </div>
+          <div className="md:col-span-2 flex items-center justify-between gap-2 border-t border-border/30 pt-2">
+            <span className="text-[10px] text-muted-foreground">
+              Génère un titre + une meta description optimisés pour cette page.
+            </span>
+            <ActionButton
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs"
+              state={stateFromMutation(genSeo)}
+              loadingLabel="Génération…"
+              successLabel="Généré"
+              errorLabel="Échec"
+              onClick={() => {
+                genSeo.mutate(
+                  {
+                    boutiqueId,
+                    pageId: page.id,
+                    pageTitle: page.title,
+                    pageSlug: page.slug,
+                    mode: page.mode,
+                    contentSnippet: page.content,
+                  },
+                  {
+                    onSuccess: ({ title, description }) => {
+                      setSeoTitle(title);
+                      setSeoDesc(description);
+                      toast.success("SEO généré pour cette page");
+                    },
+                    onError: (e) =>
+                      toast.error(e instanceof Error ? e.message : "Génération impossible"),
+                  },
+                );
+              }}
+            >
+              <Sparkles className="w-3 h-3 mr-1 inline" /> Générer le SEO
+            </ActionButton>
+          </div>
           {page.mode === "simple" && (
             <>
               <div className="md:col-span-2">
