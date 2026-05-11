@@ -64,6 +64,7 @@ import {
   useUpdateBoutiquePage,
   useDeleteBoutiquePage,
   useReorderBoutiquePages,
+  useGeneratePageSeo,
 } from "@/hooks/useBoutiquePages";
 import {
   AlertDialog,
