@@ -227,6 +227,14 @@ export function StudioEditor({
   const [renamingPageId, setRenamingPageId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
 
+  /** Preview viewport simulator. */
+  const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
+
+  const activePage = useMemo(
+    () => pages.find((p) => p.id === activePageId) ?? null,
+    [pages, activePageId],
+  );
+
   const { data: pages = [] } = useBoutiquePages(boutiqueId);
   const createPage = useCreateBoutiquePage();
   const updatePage = useUpdateBoutiquePage();
