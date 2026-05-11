@@ -118,6 +118,8 @@ import {
 import {
   PAGE_TEMPLATES,
   recommendedSceneTypesForPage,
+  PRODUCT_PAGE_SLUG,
+  PRODUCT_PAGE_SCENES,
   type PageTemplate,
 } from "@/lib/pageTemplates";
 
