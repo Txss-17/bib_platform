@@ -89,26 +89,78 @@ export default function BoutiquePublic() {
     ].filter(Boolean) as string[],
     alternates: buildLocaleAlternates(),
     jsonLd: boutique
-      ? {
-          "@context": "https://schema.org",
-          "@type": "Store",
-          name: boutique.name,
-          description: boutique.description || undefined,
-          image: boutique.cover_image_url || boutique.logo_url || undefined,
-          logo: boutique.logo_url || undefined,
-          slogan: boutique.tagline || undefined,
-          url:
-            typeof window !== "undefined"
-              ? `${window.location.origin}${window.location.pathname}`
-              : undefined,
-          makesOffer: products?.slice(0, 12).map((p) => ({
-            "@type": "Offer",
-            name: p.name,
-            price: p.price,
-            priceCurrency: "EUR",
-            image: p.image_url || undefined,
-          })),
-        }
+      ? [
+          {
+            "@context": "https://schema.org",
+            "@type": "Store",
+            name: boutique.name,
+            description: boutique.description || undefined,
+            image: boutique.cover_image_url || boutique.logo_url || undefined,
+            logo: boutique.logo_url || undefined,
+            slogan: boutique.tagline || undefined,
+            url:
+              typeof window !== "undefined"
+                ? `${window.location.origin}${window.location.pathname}`
+                : undefined,
+            makesOffer: products?.slice(0, 12).map((p) => ({
+              "@type": "Offer",
+              name: p.name,
+              price: p.price,
+              priceCurrency: "EUR",
+              image: p.image_url || undefined,
+            })),
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: boutique.name,
+            url:
+              typeof window !== "undefined"
+                ? `${window.location.origin}${window.location.pathname}`
+                : undefined,
+            logo: boutique.logo_url || undefined,
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: boutique.name,
+            url:
+              typeof window !== "undefined"
+                ? `${window.location.origin}${window.location.pathname}`
+                : undefined,
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Brand-In-A-Box",
+                item:
+                  typeof window !== "undefined" ? window.location.origin : undefined,
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Marketplace",
+                item:
+                  typeof window !== "undefined"
+                    ? `${window.location.origin}/marketplace`
+                    : undefined,
+              },
+              {
+                "@type": "ListItem",
+                position: 3,
+                name: boutique.name,
+                item:
+                  typeof window !== "undefined"
+                    ? `${window.location.origin}${window.location.pathname}`
+                    : undefined,
+              },
+            ],
+          },
+        ]
       : undefined,
   });
 

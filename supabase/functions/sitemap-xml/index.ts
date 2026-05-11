@@ -133,6 +133,40 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Boutique custom pages (visible only, mapped to boutique slug)
+    const { data: pages, error: pgErr } = boutiqueIds.length
+      ? await supabase
+          .from("boutique_pages")
+          .select("slug, updated_at, boutique_id, boutiques!inner(slug, status)")
+          .in("boutique_id", boutiqueIds)
+          .eq("is_visible", true)
+      : { data: [], error: null };
+    if (pgErr) throw pgErr;
+
+    for (const pg of pages ?? []) {
+      // @ts-ignore - join shape
+      const bSlug = pg.boutiques?.slug;
+      const pSlug = (pg as any).slug as string | undefined;
+      if (!bSlug || !pSlug) continue;
+      // Skip reserved/internal templates (e.g. "__product__")
+      if (pSlug.startsWith("__")) continue;
+      const base = `${siteOrigin}/boutique/${bSlug}/p/${pSlug}`;
+      const alternates = LOCALES.map((l) => ({
+        hreflang: l,
+        href: `${base}?lang=${l}`,
+      }));
+      alternates.push({ hreflang: "x-default", href: base });
+      entries.push(
+        urlEntry(
+          base,
+          ((pg as any).updated_at ?? "").split("T")[0] || null,
+          alternates,
+          "weekly",
+          "0.7",
+        ),
+      );
+    }
+
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">

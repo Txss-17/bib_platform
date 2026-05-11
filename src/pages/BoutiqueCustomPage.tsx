@@ -59,6 +59,75 @@ export default function BoutiqueCustomPage() {
       page?.seo_description ||
       `Découvrez ${page?.title || "cette page"} sur ${boutique?.name || "la boutique"}.`,
     image: page?.hero_image_url || boutique?.cover_image_url || undefined,
+    jsonLd:
+      boutique && page
+        ? [
+            {
+              "@context": "https://schema.org",
+              "@type": "WebPage",
+              name: page.seo_title || page.title,
+              description:
+                page.seo_description ||
+                `Découvrez ${page.title} sur ${boutique.name}.`,
+              url:
+                typeof window !== "undefined"
+                  ? `${window.location.origin}${window.location.pathname}`
+                  : undefined,
+              image: page.hero_image_url || boutique.cover_image_url || undefined,
+              isPartOf: {
+                "@type": "WebSite",
+                name: boutique.name,
+                url:
+                  typeof window !== "undefined"
+                    ? `${window.location.origin}/boutique/${boutique.slug}`
+                    : undefined,
+              },
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: boutique.name,
+              logo: boutique.logo_url || undefined,
+              url:
+                typeof window !== "undefined"
+                  ? `${window.location.origin}/boutique/${boutique.slug}`
+                  : undefined,
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: "Brand-In-A-Box",
+                  item:
+                    typeof window !== "undefined"
+                      ? window.location.origin
+                      : undefined,
+                },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: boutique.name,
+                  item:
+                    typeof window !== "undefined"
+                      ? `${window.location.origin}/boutique/${boutique.slug}`
+                      : undefined,
+                },
+                {
+                  "@type": "ListItem",
+                  position: 3,
+                  name: page.title,
+                  item:
+                    typeof window !== "undefined"
+                      ? `${window.location.origin}${window.location.pathname}`
+                      : undefined,
+                },
+              ],
+            },
+          ]
+        : undefined,
   });
 
   if (bLoading || pLoading) {

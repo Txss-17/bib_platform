@@ -125,6 +125,7 @@ import {
   type PageTemplate,
 } from "@/lib/pageTemplates";
 import { renderSafeMarkdown } from "@/lib/safeMarkdown";
+import { validateMarkdownLinks } from "@/lib/safeMarkdown";
 
 /* ---------- Color helpers (HSL "h s% l%" <-> #rrggbb) ---------- */
 function hslStringToHex(hsl?: string): string {
@@ -2176,6 +2177,48 @@ function PageMetadataPanel({
   const [content, setContent] = useState(page.content ?? "");
   const genSeo = useGeneratePageSeo();
 
+  // Realtime validation of markdown links (no silent drops anymore).
+  const linkErrors = useMemo(() => validateMarkdownLinks(content), [content]);
+
+  /**
+   * Wrap onPatch: when title / slug / content change, persist the patch then
+   * automatically regenerate the page SEO based on the new values, unless
+   * the user is currently typing them (handled by onBlur upstream).
+   */
+  const patchAndMaybeRegenSeo = (
+    patch: Parameters<typeof onPatch>[0],
+  ) => {
+    onPatch(patch);
+    const seoTriggers: Array<keyof typeof patch> = ["title", "slug", "content"];
+    const triggered = seoTriggers.some((k) => k in patch);
+    if (!triggered) return;
+    // Don't auto-regen if SEO fields were also explicitly patched in the same call.
+    if ("seo_title" in patch || "seo_description" in patch) return;
+    const nextTitle = (patch.title as string | undefined) ?? page.title;
+    const nextSlug = (patch.slug as string | undefined) ?? page.slug;
+    const nextContent =
+      ("content" in patch ? (patch.content as string | null | undefined) : page.content) ?? null;
+    genSeo.mutate(
+      {
+        boutiqueId,
+        pageId: page.id,
+        pageTitle: nextTitle,
+        pageSlug: nextSlug,
+        mode: page.mode,
+        contentSnippet: nextContent,
+      },
+      {
+        onSuccess: ({ title: t, description: d }) => {
+          setSeoTitle(t);
+          setSeoDesc(d);
+          toast.success("SEO regénéré automatiquement");
+        },
+        // Silent on error — manual button still available.
+        onError: () => {},
+      },
+    );
+  };
+
   // Re-sync if active page changes externally.
   useEffect(() => {
     setTitle(page.title);
@@ -2263,7 +2306,7 @@ function PageMetadataPanel({
               onChange={(e) => setTitle(e.target.value)}
               onBlur={() => {
                 const t = title.trim();
-                if (t && t !== page.title) onPatch({ title: t });
+                if (t && t !== page.title) patchAndMaybeRegenSeo({ title: t });
               }}
               className="h-8 text-xs"
             />
@@ -2288,7 +2331,7 @@ function PageMetadataPanel({
               onChange={(e) => setSlug(slugifyClient(e.target.value))}
               onBlur={() => {
                 const s = slug.trim();
-                if (s && s !== page.slug) onPatch({ slug: s });
+                if (s && s !== page.slug) patchAndMaybeRegenSeo({ slug: s });
               }}
               className="h-8 text-xs font-mono"
             />
@@ -2348,6 +2391,23 @@ function PageMetadataPanel({
               className="text-xs"
               placeholder="Description affichée dans les résultats de recherche"
             />
+          </div>
+          <div className="md:col-span-2">
+            <Label className="text-[10px] mb-1 block">Aperçu Google</Label>
+            <div className="rounded-md border border-border/50 bg-background p-3 text-left">
+              <div className="text-[11px] text-muted-foreground truncate">
+                {publicUrl}
+              </div>
+              <div className="text-[15px] leading-tight text-[#1a0dab] dark:text-[#8ab4f8] truncate font-medium mt-0.5">
+                {(seoTitle || page.title || "Titre de la page").slice(0, 60)}
+                {(seoTitle || page.title || "").length > 60 ? "…" : ""}
+              </div>
+              <div className="text-[12px] leading-snug text-[#4d5156] dark:text-muted-foreground line-clamp-2 mt-0.5">
+                {(seoDesc ||
+                  "Ajoute une meta description pour contrôler l'extrait affiché dans les résultats de recherche.").slice(0, 160)}
+                {(seoDesc || "").length > 160 ? "…" : ""}
+              </div>
+            </div>
           </div>
           <div className="md:col-span-2 flex items-center justify-between gap-2 border-t border-border/30 pt-2">
             <span className="text-[10px] text-muted-foreground">
@@ -2410,12 +2470,24 @@ function PageMetadataPanel({
                   onChange={(e) => setContent(e.target.value)}
                   onBlur={() => {
                     if ((content || null) !== page.content)
-                      onPatch({ content: content || null });
+                      patchAndMaybeRegenSeo({ content: content || null });
                   }}
                   rows={8}
                   className="text-xs font-mono"
                   placeholder={"# À propos\n\nNotre histoire commence…"}
                 />
+                {linkErrors.length > 0 && (
+                  <ul className="mt-1.5 space-y-1 rounded-md border border-destructive/30 bg-destructive/5 p-2 text-[11px] text-destructive">
+                    {linkErrors.map((err, i) => (
+                      <li key={i} className="flex items-start gap-1.5">
+                        <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" />
+                        <span>
+                          <code className="font-mono opacity-80">{err.raw}</code> — {err.message}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </>
           )}
