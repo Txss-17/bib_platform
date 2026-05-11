@@ -374,6 +374,101 @@ export function SceneInspectorPro({
         </div>
       )}
 
+      {/* STYLE — hériter / personnaliser */}
+      <details className="rounded-md border border-border/40 bg-muted/20 px-2 py-1.5" open={hasOverrides}>
+        <summary className="cursor-pointer text-xs flex items-center justify-between">
+          <span className="flex items-center gap-1.5 font-medium">
+            <Palette className="w-3.5 h-3.5" />
+            Style — {hasOverrides ? "Personnalisé" : "Hérite de l'identité"}
+          </span>
+          {hasOverrides && (
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); setOv(null); }}
+              className="text-[10px] text-primary hover:underline flex items-center gap-1"
+              title="Réinitialiser → hériter"
+            >
+              <RotateCcw className="w-3 h-3" /> Réinit.
+            </button>
+          )}
+        </summary>
+        <div className="mt-2 space-y-2">
+          <div className="flex items-center justify-between">
+            <Label className="text-[11px]">Hériter de l'identité</Label>
+            <Switch
+              checked={!hasOverrides}
+              onCheckedChange={(checked) => {
+                if (checked) setOv(null);
+                else setOv({ palette: {}, fonts: {} });
+              }}
+            />
+          </div>
+          {hasOverrides && (
+            <>
+              <div>
+                <Label className="text-[10px] uppercase opacity-60">Palette (override)</Label>
+                <div className="grid grid-cols-4 gap-2 mt-1">
+                  {(["primary", "accent", "surface", "ink"] as const).map((k) => {
+                    const v = ov?.palette?.[k];
+                    const hex = hslToHex(v);
+                    return (
+                      <label key={k} className="flex flex-col items-center gap-1 cursor-pointer">
+                        <span
+                          className="relative h-7 w-full rounded border border-border overflow-hidden"
+                          style={{ background: v ? `hsl(${v})` : "repeating-linear-gradient(45deg, transparent 0 4px, hsl(var(--muted)) 4px 8px)" }}
+                        >
+                          <input
+                            type="color"
+                            value={hex}
+                            onChange={(e) => setOvPalette(k, hexToHsl(e.target.value))}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                            aria-label={`Override ${k}`}
+                          />
+                        </span>
+                        <span className="text-[10px] opacity-60 capitalize">{k}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+                <p className="text-[10px] opacity-50 mt-1">Vide = hérite de l'identité.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-[10px] uppercase opacity-60">Police titres</Label>
+                  <Select
+                    value={ov?.fonts?.display || "__inherit"}
+                    onValueChange={(v) => setOvFont("display", v === "__inherit" ? "" : v)}
+                  >
+                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      <SelectItem value="__inherit">— Hériter —</SelectItem>
+                      {ALL_FONTS.map((f) => (
+                        <SelectItem key={f} value={f} style={{ fontFamily: f }}>{f}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] uppercase opacity-60">Police corps</Label>
+                  <Select
+                    value={ov?.fonts?.body || "__inherit"}
+                    onValueChange={(v) => setOvFont("body", v === "__inherit" ? "" : v)}
+                  >
+                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      <SelectItem value="__inherit">— Hériter —</SelectItem>
+                      {ALL_FONTS.map((f) => (
+                        <SelectItem key={f} value={f} style={{ fontFamily: f }}>{f}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </details>
+
       {/* HERO CINEMA */}
       {scene.scene_type === "hero-cinema" && (
         <>
