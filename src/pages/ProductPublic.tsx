@@ -195,6 +195,22 @@ export default function ProductPublic() {
       )}
 
       <main className="flex-1">
+        {productPageScenes.length > 0 ? (
+          <StudioSceneRenderer
+            scenes={productPageScenes}
+            brandDna={brandDna ?? null}
+            boutiqueName={boutique?.name ?? ""}
+            products={[
+              {
+                id: product.id,
+                name: productName,
+                price: productPrice,
+                image_url: productImage ?? null,
+              },
+            ]}
+            boutiqueId={boutique?.id}
+          />
+        ) : (
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
           {/* Breadcrumb */}
           {slug && (
@@ -277,6 +293,7 @@ export default function ProductPublic() {
             </div>
           </div>
         </div>
+        )}
       </main>
 
       <StorefrontFooter primaryColor={primaryColor} />
