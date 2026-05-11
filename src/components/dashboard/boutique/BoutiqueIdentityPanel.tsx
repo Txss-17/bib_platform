@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { Palette, Type, Eye, ShoppingCart, Home, Package } from "lucide-react";
+import { Palette, Type, Eye, ShoppingCart, Home, Package, Music, Loader2, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SectionCard } from "@/components/dashboard/shared";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ThemeSettings } from "@/lib/boutiqueTemplates";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const COLOR_PALETTES = [
   { name: "Marine BIB", primary: "#1B2A41", secondary: "#C9A961" },
