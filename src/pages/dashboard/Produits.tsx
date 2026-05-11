@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   Clock,
   TrendingUp,
+  Sparkles,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useProducts, useUpdateProduct, useDeleteProduct } from "@/hooks/useProducts";
@@ -28,6 +29,7 @@ import {
 } from "@/hooks/useSampleValidation";
 import { useSupplierProductsRealtime } from "@/hooks/useSupplierProducts";
 import { SampleValidationPanel } from "@/components/dashboard/SampleValidationPanel";
+import { ProductMediaDialog } from "@/components/dashboard/products/ProductMediaDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog";
