@@ -285,6 +285,30 @@ export function StudioEditor({
   };
 
   /**
+   * Auto-seed standard pages (Boutique, À propos, Contact) the first time the
+   * editor opens for a boutique that has none, so the user has something to
+   * edit instead of a blank slate. The home page lives in `boutique_scenes`
+   * with `page_id IS NULL` and isn't created here.
+   */
+  useEffect(() => {
+    if (!boutiqueId || seededRef.current || pages.length > 0) return;
+    seededRef.current = true;
+    (async () => {
+      for (const key of ["products", "about", "contact"] as const) {
+        const tpl = PAGE_TEMPLATES.find((t) => t.key === key);
+        if (tpl) {
+          try {
+            await handleCreatePageFromTemplate(tpl);
+          } catch {
+            /* don't block remaining seeds on a single failure */
+          }
+        }
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boutiqueId, pages.length]);
+
+  /**
    * Open (or create on first call) the reserved Product Page template.
    * This page is hidden from the public nav (slug = "__product__") and serves
    * as the layout used by every product detail page on the storefront.
