@@ -2153,6 +2153,7 @@ function slugifyClient(s: string) {
 
 function PageMetadataPanel({
   page,
+  boutiqueId,
   boutiqueSlug,
   onPatch,
 }: {
@@ -2168,6 +2169,7 @@ function PageMetadataPanel({
     hero_image_url: string | null;
     content: string | null;
   };
+  boutiqueId: string;
   boutiqueSlug?: string;
   onPatch: (
     patch: Partial<{
