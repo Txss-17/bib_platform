@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +20,7 @@ import { useBrandDNA } from "@/hooks/useBrandStudio";
 import { PRODUCT_PAGE_SLUG } from "@/lib/pageTemplates";
 import type { SceneRecord } from "@/lib/studioScenes";
 import { StorefrontAmbientAudio } from "@/components/storefront/StorefrontAmbientAudio";
+import { usePublicProductMedia } from "@/hooks/useProductMedia";
 
 export default function ProductPublic() {
   const { slug, productId } = useParams<{ slug: string; productId: string }>();
@@ -72,7 +73,9 @@ export default function ProductPublic() {
 
   const productName = product?.supplier_products?.name || "Produit";
   const productDesc = product?.supplier_products?.description || "";
-  const productImage = product?.supplier_products?.image_url;
+  const { data: customMedia = [] } = usePublicProductMedia(product?.id);
+  const heroMedia = customMedia[0]?.url ?? product?.supplier_products?.image_url;
+  const productImage = heroMedia;
   const productPrice = Number(product?.public_price || 0);
 
   /* ---------- Studio: optional product page template ---------- */
@@ -221,16 +224,17 @@ export default function ProductPublic() {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-            {/* Product image */}
-            <div className="aspect-square bg-gray-50 rounded-2xl overflow-hidden">
-              {productImage ? (
-                <img src={productImage} alt={productName} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-300">
-                  <span className="text-lg">Image du produit</span>
-                </div>
-              )}
-            </div>
+            {/* Product image (+ AI gallery) */}
+            <ProductImageGallery
+              images={
+                customMedia.length > 0
+                  ? customMedia.map((m) => m.url)
+                  : productImage
+                  ? [productImage]
+                  : []
+              }
+              alt={productName}
+            />
 
             {/* Product details */}
             <div className="flex flex-col">
@@ -316,5 +320,44 @@ export default function ProductPublic() {
       />
     </div>
     </StorefrontProvider>
+  );
+}
+
+/* ---------- Inline gallery (hero + thumbnail strip) ---------- */
+
+function ProductImageGallery({ images, alt }: { images: string[]; alt: string }) {
+  const [active, setActive] = useState(0);
+  const safeIdx = Math.min(active, Math.max(images.length - 1, 0));
+  const hero = images[safeIdx];
+
+  return (
+    <div className="space-y-3">
+      <div className="aspect-square bg-gray-50 rounded-2xl overflow-hidden">
+        {hero ? (
+          <img src={hero} alt={alt} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-300">
+            <span className="text-lg">Image du produit</span>
+          </div>
+        )}
+      </div>
+      {images.length > 1 && (
+        <div className="grid grid-cols-4 gap-2">
+          {images.map((url, i) => (
+            <button
+              key={`${url}-${i}`}
+              type="button"
+              onClick={() => setActive(i)}
+              aria-label={`Visuel ${i + 1}`}
+              className={`aspect-square rounded-lg overflow-hidden border-2 transition ${
+                i === safeIdx ? "border-gray-900" : "border-transparent hover:border-gray-300"
+              }`}
+            >
+              <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

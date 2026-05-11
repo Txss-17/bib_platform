@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   Clock,
   TrendingUp,
+  Sparkles,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useProducts, useUpdateProduct, useDeleteProduct } from "@/hooks/useProducts";
@@ -28,6 +29,7 @@ import {
 } from "@/hooks/useSampleValidation";
 import { useSupplierProductsRealtime } from "@/hooks/useSupplierProducts";
 import { SampleValidationPanel } from "@/components/dashboard/SampleValidationPanel";
+import { ProductMediaDialog } from "@/components/dashboard/products/ProductMediaDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog";
@@ -100,6 +102,7 @@ export default function Produits() {
   const [sortOrder, setSortOrder] = useState<string>("recent");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [mediaProductId, setMediaProductId] = useState<string | null>(null);
 
   // Live updates from the supplier catalogue (new products, MOQ changes, retirement).
   useSupplierProductsRealtime();
@@ -362,6 +365,10 @@ export default function Produits() {
                                 <Edit className="w-4 h-4 mr-2" />
                                 Modifier le prix
                               </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setMediaProductId(product.id)}>
+                                <Sparkles className="w-4 h-4 mr-2" />
+                                Visuels IA
+                              </DropdownMenuItem>
                               <DropdownMenuItem>
                                 <Copy className="w-4 h-4 mr-2" />
                                 Dupliquer
@@ -407,6 +414,9 @@ export default function Produits() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem><Edit className="w-4 h-4 mr-2" />Modifier</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setMediaProductId(product.id)}>
+                              <Sparkles className="w-4 h-4 mr-2" />Visuels IA
+                            </DropdownMenuItem>
                             <DropdownMenuItem><Copy className="w-4 h-4 mr-2" />Dupliquer</DropdownMenuItem>
                             <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(product.id)}>
                               <Trash2 className="w-4 h-4 mr-2" />Supprimer
@@ -466,6 +476,26 @@ export default function Produits() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Product visuals AI studio */}
+      {mediaProductId &&
+        (() => {
+          const p = products?.find((x) => x.id === mediaProductId);
+          if (!p) return null;
+          return (
+            <ProductMediaDialog
+              open={!!mediaProductId}
+              onOpenChange={(o) => !o && setMediaProductId(null)}
+              productId={p.id}
+              boutiqueId={p.boutique_id}
+              productName={p.supplier_products?.name || "Produit"}
+              defaultPrompt={
+                p.supplier_products?.description ||
+                `Mise en scène premium du produit « ${p.supplier_products?.name || "Produit"} ».`
+              }
+            />
+          );
+        })()}
     </DashboardLayout>
   );
 }
