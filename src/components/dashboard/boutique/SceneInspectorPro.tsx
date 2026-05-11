@@ -12,7 +12,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Trash2, Plus, Wand2, Image as ImageIcon, Upload, Loader2, Sparkles } from "lucide-react";
+import { Trash2, Plus, Wand2, Image as ImageIcon, Upload, Loader2, Sparkles, Palette, RotateCcw } from "lucide-react";
 import { ALL_FONTS, loadGoogleFont } from "@/lib/googleFonts";
 import { toast } from "sonner";
 import { findSceneDefinition, type SceneRecord } from "@/lib/studioScenes";
@@ -22,7 +22,45 @@ import {
 } from "@/hooks/useBrandStudio";
 import { ActionButton, stateFromMutation } from "./ActionButton";
 
-type Patch = Partial<Pick<SceneRecord, "content" | "variant" | "is_visible">>;
+type Patch = Partial<Pick<SceneRecord, "content" | "variant" | "is_visible" | "style_overrides">>;
+
+/* ---------- HSL <-> hex helpers (local copy) ---------- */
+function hslToHex(hsl?: string | null): string {
+  if (!hsl) return "#000000";
+  const m = hsl.trim().match(/^(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)%\s+(-?\d+(?:\.\d+)?)%$/);
+  if (!m) return "#000000";
+  const h = parseFloat(m[1]) / 360;
+  const s = parseFloat(m[2]) / 100;
+  const l = parseFloat(m[3]) / 100;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => {
+    const k = (n + h * 12) % 12;
+    const c = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    return Math.round(c * 255).toString(16).padStart(2, "0");
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+function hexToHsl(hex: string): string {
+  const m = hex.trim().replace("#", "");
+  if (m.length !== 6) return "0 0% 0%";
+  const r = parseInt(m.slice(0, 2), 16) / 255;
+  const g = parseInt(m.slice(2, 4), 16) / 255;
+  const b = parseInt(m.slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  let h = 0, s = 0;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)); break;
+      case g: h = ((b - r) / d + 2); break;
+      default: h = ((r - g) / d + 4);
+    }
+    h *= 60;
+  }
+  return `${Math.round(h)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+}
 
 interface Props {
   scene: SceneRecord;
@@ -31,6 +69,7 @@ interface Props {
   onDelete: () => void;
   onRemix: () => void;
   remixState?: "idle" | "loading" | "success" | "error";
+  products?: Array<{ id: string; name: string; image_url?: string | null }>;
 }
 
 /** Champ image avec upload + génération IA. */
@@ -221,11 +260,32 @@ export function SceneInspectorPro({
   onDelete,
   onRemix,
   remixState,
+  products = [],
 }: Props) {
   const def = findSceneDefinition(scene.scene_type);
   const c = scene.content as Record<string, any>;
   const setField = (key: string, value: unknown) =>
     onPatch({ content: { ...c, [key]: value } });
+
+  const ov = scene.style_overrides ?? null;
+  const hasOverrides = !!ov && (
+    !!ov.palette?.primary || !!ov.palette?.accent || !!ov.palette?.surface || !!ov.palette?.ink ||
+    !!ov.fonts?.display || !!ov.fonts?.body
+  );
+  const setOv = (next: SceneRecord["style_overrides"]) =>
+    onPatch({ style_overrides: next });
+  const setOvPalette = (k: "primary" | "accent" | "surface" | "ink", hsl: string) =>
+    setOv({
+      ...(ov ?? {}),
+      palette: { ...(ov?.palette ?? {}), [k]: hsl },
+    });
+  const setOvFont = (k: "display" | "body", value: string) => {
+    if (value) loadGoogleFont(value);
+    setOv({
+      ...(ov ?? {}),
+      fonts: { ...(ov?.fonts ?? {}), [k]: value || undefined },
+    });
+  };
 
   const generic = (
     <>
@@ -313,6 +373,101 @@ export function SceneInspectorPro({
           </Select>
         </div>
       )}
+
+      {/* STYLE — hériter / personnaliser */}
+      <details className="rounded-md border border-border/40 bg-muted/20 px-2 py-1.5" open={hasOverrides}>
+        <summary className="cursor-pointer text-xs flex items-center justify-between">
+          <span className="flex items-center gap-1.5 font-medium">
+            <Palette className="w-3.5 h-3.5" />
+            Style — {hasOverrides ? "Personnalisé" : "Hérite de l'identité"}
+          </span>
+          {hasOverrides && (
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); setOv(null); }}
+              className="text-[10px] text-primary hover:underline flex items-center gap-1"
+              title="Réinitialiser → hériter"
+            >
+              <RotateCcw className="w-3 h-3" /> Réinit.
+            </button>
+          )}
+        </summary>
+        <div className="mt-2 space-y-2">
+          <div className="flex items-center justify-between">
+            <Label className="text-[11px]">Hériter de l'identité</Label>
+            <Switch
+              checked={!hasOverrides}
+              onCheckedChange={(checked) => {
+                if (checked) setOv(null);
+                else setOv({ palette: {}, fonts: {} });
+              }}
+            />
+          </div>
+          {hasOverrides && (
+            <>
+              <div>
+                <Label className="text-[10px] uppercase opacity-60">Palette (override)</Label>
+                <div className="grid grid-cols-4 gap-2 mt-1">
+                  {(["primary", "accent", "surface", "ink"] as const).map((k) => {
+                    const v = ov?.palette?.[k];
+                    const hex = hslToHex(v);
+                    return (
+                      <label key={k} className="flex flex-col items-center gap-1 cursor-pointer">
+                        <span
+                          className="relative h-7 w-full rounded border border-border overflow-hidden"
+                          style={{ background: v ? `hsl(${v})` : "repeating-linear-gradient(45deg, transparent 0 4px, hsl(var(--muted)) 4px 8px)" }}
+                        >
+                          <input
+                            type="color"
+                            value={hex}
+                            onChange={(e) => setOvPalette(k, hexToHsl(e.target.value))}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                            aria-label={`Override ${k}`}
+                          />
+                        </span>
+                        <span className="text-[10px] opacity-60 capitalize">{k}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+                <p className="text-[10px] opacity-50 mt-1">Vide = hérite de l'identité.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-[10px] uppercase opacity-60">Police titres</Label>
+                  <Select
+                    value={ov?.fonts?.display || "__inherit"}
+                    onValueChange={(v) => setOvFont("display", v === "__inherit" ? "" : v)}
+                  >
+                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      <SelectItem value="__inherit">— Hériter —</SelectItem>
+                      {ALL_FONTS.map((f) => (
+                        <SelectItem key={f} value={f} style={{ fontFamily: f }}>{f}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-[10px] uppercase opacity-60">Police corps</Label>
+                  <Select
+                    value={ov?.fonts?.body || "__inherit"}
+                    onValueChange={(v) => setOvFont("body", v === "__inherit" ? "" : v)}
+                  >
+                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      <SelectItem value="__inherit">— Hériter —</SelectItem>
+                      {ALL_FONTS.map((f) => (
+                        <SelectItem key={f} value={f} style={{ fontFamily: f }}>{f}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </details>
 
       {/* HERO CINEMA */}
       {scene.scene_type === "hero-cinema" && (
@@ -903,6 +1058,176 @@ export function SceneInspectorPro({
         </>
       )}
 
+      {/* PRODUCTS GRID */}
+      {scene.scene_type === "products-grid" && (
+        <>
+          {generic}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">Disposition</Label>
+              <Select value={c.layout || "3-up"} onValueChange={(v) => setField("layout", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2-up">2 colonnes</SelectItem>
+                  <SelectItem value="3-up">3 colonnes</SelectItem>
+                  <SelectItem value="4-up">4 colonnes</SelectItem>
+                  <SelectItem value="compact">Compact (5 col)</SelectItem>
+                  <SelectItem value="masonry">Masonry</SelectItem>
+                  <SelectItem value="carousel">Carrousel</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Forme du cadre</Label>
+              <Select value={c.cardShape ?? "rounded"} onValueChange={(v) => setField("cardShape", v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="square">Carré</SelectItem>
+                  <SelectItem value="rounded">Arrondi</SelectItem>
+                  <SelectItem value="rounded-xl">Très arrondi</SelectItem>
+                  <SelectItem value="circle">Cercle</SelectItem>
+                  <SelectItem value="arch">Arche</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">Effet au survol</Label>
+            <Select value={c.hoverEffect ?? "zoom"} onValueChange={(v) => setField("hoverEffect", v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Aucun</SelectItem>
+                <SelectItem value="zoom">Zoom doux</SelectItem>
+                <SelectItem value="shine">Brillance</SelectItem>
+                <SelectItem value="tilt">Tilt 3D</SelectItem>
+                <SelectItem value="lift">Soulèvement</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {products.length > 0 && (
+            <div>
+              <Label className="text-xs flex items-center justify-between mb-1">
+                <span>Produits affichés</span>
+                <button
+                  type="button"
+                  onClick={() => setField("productIds", [])}
+                  className="text-[10px] text-primary hover:underline"
+                >
+                  Tout afficher
+                </button>
+              </Label>
+              <div className="max-h-48 overflow-auto rounded border border-border/40 p-2 space-y-1">
+                {products.map((p) => {
+                  const ids = (c.productIds ?? []) as string[];
+                  const allSelected = ids.length === 0;
+                  const checked = allSelected || ids.includes(p.id);
+                  return (
+                    <label key={p.id} className="flex items-center gap-2 text-xs cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) => {
+                          const current = allSelected ? products.map((x) => x.id) : ids;
+                          const next = e.target.checked
+                            ? Array.from(new Set([...current, p.id]))
+                            : current.filter((x) => x !== p.id);
+                          // If next == all, store [] (= afficher tout)
+                          setField("productIds", next.length === products.length ? [] : next);
+                        }}
+                      />
+                      {p.image_url && (
+                        <span
+                          className="w-6 h-6 rounded bg-muted bg-cover bg-center shrink-0"
+                          style={{ backgroundImage: `url(${p.image_url})` }}
+                        />
+                      )}
+                      <span className="truncate">{p.name}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] opacity-50 mt-1">
+                Décoche pour limiter à une sélection. Vide = tout afficher.
+              </p>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* PRODUCT — DESCRIPTION */}
+      {scene.scene_type === "product-description" && (
+        <>
+          <div>
+            <Label className="text-xs">Titre</Label>
+            <Input value={c.title ?? ""} onChange={(e) => setField("title", e.target.value)} />
+          </div>
+          <div>
+            <Label className="text-xs">Texte de secours</Label>
+            <Textarea
+              rows={4}
+              value={c.fallbackBody ?? ""}
+              onChange={(e) => setField("fallbackBody", e.target.value)}
+            />
+            <p className="text-[10px] opacity-50 mt-1">Affiché si la fiche produit n'a pas de description.</p>
+          </div>
+        </>
+      )}
+
+      {/* PRODUCT — SPECS */}
+      {scene.scene_type === "product-specs" && (
+        <>
+          <div>
+            <Label className="text-xs">Titre</Label>
+            <Input value={c.title ?? ""} onChange={(e) => setField("title", e.target.value)} />
+          </div>
+          <div>
+            <Label className="text-xs mb-2 block">Lignes (label / valeur)</Label>
+            <ListEditor
+              items={(c.rows ?? []) as Array<Record<string, any>>}
+              factory={() => ({ label: "", value: "" })}
+              addLabel="Ajouter une ligne"
+              onChange={(next) => setField("rows", next)}
+              renderItem={(r, update) => (
+                <>
+                  <Input placeholder="Label" value={r.label ?? ""} onChange={(e) => update({ label: e.target.value })} />
+                  <Input placeholder="Valeur" value={r.value ?? ""} onChange={(e) => update({ value: e.target.value })} />
+                </>
+              )}
+            />
+          </div>
+        </>
+      )}
+
+      {/* PRODUCT — HERO / RELATED — generic only */}
+      {(scene.scene_type === "product-hero" || scene.scene_type === "product-related") && (
+        <>
+          {"title" in c && (
+            <div>
+              <Label className="text-xs">Titre</Label>
+              <Input value={c.title ?? ""} onChange={(e) => setField("title", e.target.value)} />
+            </div>
+          )}
+          {"ctaLabel" in c && (
+            <div>
+              <Label className="text-xs">CTA</Label>
+              <Input value={c.ctaLabel ?? ""} onChange={(e) => setField("ctaLabel", e.target.value)} />
+            </div>
+          )}
+          {scene.scene_type === "product-related" && (
+            <div>
+              <Label className="text-xs">Nombre de produits</Label>
+              <Input
+                type="number"
+                min={2}
+                max={12}
+                value={c.limit ?? 4}
+                onChange={(e) => setField("limit", Math.max(2, Math.min(12, Number(e.target.value) || 4)))}
+              />
+            </div>
+          )}
+        </>
+      )}
+
       {/* Default — generic only */}
       {![
         "hero-cinema",
@@ -921,6 +1246,11 @@ export function SceneInspectorPro({
         "stats-counter",
         "video-fullscreen",
         "banner-promo",
+        "products-grid",
+        "product-description",
+        "product-specs",
+        "product-hero",
+        "product-related",
       ].includes(scene.scene_type) && generic}
     </Card>
   );

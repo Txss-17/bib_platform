@@ -29,6 +29,18 @@ export interface PageTemplate {
   scenes: PageTemplateScene[];
 }
 
+/** Slug réservé pour la page modèle d'une fiche produit. */
+export const PRODUCT_PAGE_SLUG = "__product__";
+
+/** Bundle de scènes par défaut pour le modèle de page produit. */
+export const PRODUCT_PAGE_SCENES: PageTemplateScene[] = [
+  { sceneType: "product-hero", variant: "image-left" },
+  { sceneType: "product-description", variant: "centered" },
+  { sceneType: "product-specs", variant: "table" },
+  { sceneType: "trust-wall", variant: "badges-row", contentPatch: { title: "Achetez en confiance" } },
+  { sceneType: "product-related", variant: "3-up" },
+];
+
 export const PAGE_TEMPLATES: PageTemplate[] = [
   {
     key: "blank",

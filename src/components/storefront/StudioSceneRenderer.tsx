@@ -271,6 +271,14 @@ function SceneSwitch({
       return <TimelineScene content={scene.content as never} displayFont={displayFont} />;
     case "map-location":
       return <MapLocationScene content={scene.content as never} displayFont={displayFont} />;
+    case "product-hero":
+      return <ProductHeroScene content={scene.content as never} products={products} displayFont={displayFont} />;
+    case "product-description":
+      return <ProductDescriptionScene content={scene.content as never} displayFont={displayFont} />;
+    case "product-specs":
+      return <ProductSpecsScene content={scene.content as never} displayFont={displayFont} />;
+    case "product-related":
+      return <ProductRelatedScene content={scene.content as never} products={products} displayFont={displayFont} />;
     default:
       return null;
   }
@@ -876,7 +884,11 @@ function BannerPromoScene({ content }: { content: any }) {
 
 function ProductsGridScene({ content, products, displayFont }: { content: any; products: Product[]; displayFont: string }) {
   const layout = content.layout || "3-up";
-  const cols = layout === "4-up" ? "md:grid-cols-4" : layout === "compact" ? "md:grid-cols-3 lg:grid-cols-5" : "md:grid-cols-3";
+  const cols =
+    layout === "4-up" ? "md:grid-cols-4" :
+    layout === "compact" ? "md:grid-cols-3 lg:grid-cols-5" :
+    layout === "2-up" ? "md:grid-cols-2" :
+    "md:grid-cols-3";
   const shapeMap: Record<string, string> = {
     square: "rounded-none",
     rounded: "rounded-md",
@@ -885,6 +897,17 @@ function ProductsGridScene({ content, products, displayFont }: { content: any; p
     arch: "rounded-t-full",
   };
   const shapeClass = shapeMap[content.cardShape] ?? "rounded-md";
+  const ids = (content.productIds ?? []) as string[];
+  const filtered = ids.length > 0 ? products.filter((p) => ids.includes(p.id)) : products;
+  const hover = (content.hoverEffect ?? "zoom") as string;
+  const hoverImg =
+    hover === "zoom" ? "transition-transform duration-500 group-hover:scale-105" :
+    hover === "shine" ? "transition duration-500 group-hover:brightness-110" :
+    "";
+  const hoverCard =
+    hover === "lift" ? "transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-xl" :
+    hover === "tilt" ? "transition-transform duration-300 group-hover:[transform:perspective(800px)_rotateX(2deg)_rotateY(-2deg)]" :
+    "";
   return (
     <section className="py-16" style={{ background: `hsl(var(--studio-surface))` }}>
       <div className="max-w-6xl mx-auto px-6">
@@ -894,18 +917,16 @@ function ProductsGridScene({ content, products, displayFont }: { content: any; p
           </h2>
           {content.subtitle && <p className="opacity-70 mt-2">{content.subtitle}</p>}
         </div>
-        {products.length === 0 ? (
+        {filtered.length === 0 ? (
           <p className="text-center opacity-60 italic">Aucun produit pour le moment.</p>
-        ) : (
-          <div className={`grid grid-cols-2 ${cols} gap-6`}>
-            {products.map((p) => (
-              <article key={p.id}>
+        ) : layout === "carousel" ? (
+          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-3 -mx-2 px-2">
+            {filtered.map((p) => (
+              <article key={p.id} className={`group snap-start shrink-0 w-56 ${hoverCard}`}>
                 <div
                   className={`aspect-[4/5] ${shapeClass} mb-3 overflow-hidden`}
                   style={{
-                    background: p.image_url
-                      ? `url(${p.image_url}) center/cover`
-                      : `linear-gradient(135deg, hsl(var(--studio-primary) / 0.2), hsl(var(--studio-accent) / 0.2))`,
+                    background: p.image_url ? `url(${p.image_url}) center/cover` : `linear-gradient(135deg, hsl(var(--studio-primary) / 0.2), hsl(var(--studio-accent) / 0.2))`,
                   }}
                 />
                 <h3 className="text-base">{p.name}</h3>
@@ -913,7 +934,143 @@ function ProductsGridScene({ content, products, displayFont }: { content: any; p
               </article>
             ))}
           </div>
+        ) : layout === "masonry" ? (
+          <div className="columns-2 md:columns-3 lg:columns-4 gap-4 [&>*]:mb-4 [&>*]:break-inside-avoid">
+            {filtered.map((p, i) => (
+              <article key={p.id} className={`group ${hoverCard}`}>
+                <div
+                  className={`${shapeClass} overflow-hidden mb-2`}
+                  style={{
+                    aspectRatio: i % 3 === 0 ? "3 / 4" : i % 3 === 1 ? "1 / 1" : "4 / 5",
+                    background: p.image_url ? `url(${p.image_url}) center/cover` : `linear-gradient(135deg, hsl(var(--studio-primary) / 0.2), hsl(var(--studio-accent) / 0.2))`,
+                  }}
+                >
+                  <div className={`w-full h-full ${hoverImg}`} />
+                </div>
+                <h3 className="text-base">{p.name}</h3>
+                <p className="text-sm opacity-70">{p.price.toFixed(2)} €</p>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className={`grid grid-cols-2 ${cols} gap-6`}>
+            {filtered.map((p) => (
+              <article key={p.id} className={`group ${hoverCard}`}>
+                <div
+                  className={`aspect-[4/5] ${shapeClass} mb-3 overflow-hidden`}
+                  style={{
+                    background: p.image_url
+                      ? `url(${p.image_url}) center/cover`
+                      : `linear-gradient(135deg, hsl(var(--studio-primary) / 0.2), hsl(var(--studio-accent) / 0.2))`,
+                  }}
+                >
+                  <div className={`w-full h-full ${hoverImg}`} />
+                </div>
+                <h3 className="text-base">{p.name}</h3>
+                <p className="text-sm opacity-70">{p.price.toFixed(2)} €</p>
+              </article>
+            ))}
+          </div>
         )}
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------- Product page scenes -------------------------- */
+
+function ProductHeroScene({ content, products, displayFont }: { content: any; products: Product[]; displayFont: string }) {
+  const p = products[0];
+  return (
+    <section className="py-12 md:py-20" style={{ background: `hsl(var(--studio-surface))` }}>
+      <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+        <div
+          className="aspect-square rounded-xl"
+          style={{
+            background: p?.image_url
+              ? `url(${p.image_url}) center/cover`
+              : `linear-gradient(135deg, hsl(var(--studio-primary) / 0.2), hsl(var(--studio-accent) / 0.2))`,
+          }}
+        />
+        <div>
+          <h1 className="text-3xl md:text-5xl mb-4" style={{ fontFamily: `${displayFont}, serif` }}>
+            {p?.name ?? "Aperçu produit"}
+          </h1>
+          <p className="text-2xl mb-6" style={{ color: `hsl(var(--studio-primary))` }}>
+            {p ? `${p.price.toFixed(2)} €` : "—"}
+          </p>
+          <a
+            href="#shop"
+            className="inline-block rounded-full px-7 py-3 text-sm font-medium"
+            style={{ background: `hsl(var(--studio-accent))`, color: `hsl(var(--studio-ink))` }}
+          >
+            {content.ctaLabel ?? "Ajouter au panier"}
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ProductDescriptionScene({ content, displayFont }: { content: any; displayFont: string }) {
+  return (
+    <section className="py-16">
+      <div className="max-w-3xl mx-auto px-6 text-center">
+        <h2 className="text-2xl md:text-3xl mb-6" style={{ fontFamily: `${displayFont}, serif` }}>
+          {content.title}
+        </h2>
+        <p className="opacity-80 leading-relaxed whitespace-pre-line">{content.fallbackBody}</p>
+      </div>
+    </section>
+  );
+}
+
+function ProductSpecsScene({ content, displayFont }: { content: any; displayFont: string }) {
+  const rows = (content.rows ?? []) as Array<{ label: string; value: string }>;
+  return (
+    <section className="py-16" style={{ background: `hsl(var(--studio-surface))` }}>
+      <div className="max-w-3xl mx-auto px-6">
+        <h2 className="text-2xl md:text-3xl mb-6 text-center" style={{ fontFamily: `${displayFont}, serif` }}>
+          {content.title}
+        </h2>
+        <div className="rounded-lg border border-border/40 overflow-hidden" style={{ background: "white" }}>
+          {rows.map((r, i) => (
+            <div key={i} className="grid grid-cols-2 text-sm border-t first:border-t-0 border-border/30">
+              <div className="p-3 opacity-70">{r.label}</div>
+              <div className="p-3 font-medium">{r.value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ProductRelatedScene({ content, products, displayFont }: { content: any; products: Product[]; displayFont: string }) {
+  const limit = Math.max(2, Math.min(12, Number(content.limit) || 4));
+  const list = products.slice(0, limit);
+  return (
+    <section className="py-16">
+      <div className="max-w-6xl mx-auto px-6">
+        <h2 className="text-2xl md:text-3xl mb-8 text-center" style={{ fontFamily: `${displayFont}, serif` }}>
+          {content.title}
+        </h2>
+        <div className={`grid grid-cols-2 md:grid-cols-${Math.min(limit, 4)} gap-6`}>
+          {list.map((p) => (
+            <article key={p.id}>
+              <div
+                className="aspect-[4/5] rounded-md overflow-hidden mb-2"
+                style={{
+                  background: p.image_url
+                    ? `url(${p.image_url}) center/cover`
+                    : `linear-gradient(135deg, hsl(var(--studio-primary) / 0.2), hsl(var(--studio-accent) / 0.2))`,
+                }}
+              />
+              <h3 className="text-sm">{p.name}</h3>
+              <p className="text-xs opacity-70">{p.price.toFixed(2)} €</p>
+            </article>
+          ))}
+        </div>
       </div>
     </section>
   );
