@@ -845,19 +845,47 @@ export function StudioEditor({
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Bibliothèque
                 </p>
-                {STUDIO_SCENES.map((d) => (
-                  <button
-                    key={d.id}
-                    onClick={() => handleAdd(d.id)}
-                    className="w-full text-left p-2 rounded hover:bg-muted text-sm flex items-center justify-between"
-                  >
-                    <span>
-                      <span className="font-medium block">{d.name}</span>
-                      <span className="text-xs text-muted-foreground">{d.tagline}</span>
-                    </span>
-                    <Plus className="w-4 h-4 opacity-50" />
-                  </button>
-                ))}
+                {(() => {
+                  const recs = recommendedSceneTypesForPage(
+                    activePage?.title ?? (activePageId === null ? "accueil" : null),
+                    activePage?.slug,
+                  );
+                  const recSet = new Set(recs);
+                  const recommended = recs
+                    .map((id) => STUDIO_SCENES.find((s) => s.id === id))
+                    .filter((d): d is (typeof STUDIO_SCENES)[number] => Boolean(d));
+                  const others = STUDIO_SCENES.filter((d) => !recSet.has(d.id));
+                  const renderRow = (d: (typeof STUDIO_SCENES)[number]) => (
+                    <button
+                      key={d.id}
+                      onClick={() => handleAdd(d.id)}
+                      className="w-full text-left p-2 rounded hover:bg-muted text-sm flex items-center justify-between"
+                    >
+                      <span>
+                        <span className="font-medium block">{d.name}</span>
+                        <span className="text-xs text-muted-foreground">{d.tagline}</span>
+                      </span>
+                      <Plus className="w-4 h-4 opacity-50" />
+                    </button>
+                  );
+                  return (
+                    <>
+                      {recommended.length > 0 && (
+                        <>
+                          <p className="text-[10px] uppercase tracking-wide text-primary/80 pt-1 flex items-center gap-1">
+                            <Sparkles className="w-3 h-3" /> Recommandées pour cette page
+                          </p>
+                          {recommended.map(renderRow)}
+                          <div className="h-px bg-border/40 my-2" />
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                            Toutes les scènes
+                          </p>
+                        </>
+                      )}
+                      {others.map(renderRow)}
+                    </>
+                  );
+                })()}
                 <Button variant="ghost" size="sm" className="w-full" onClick={() => setShowAdd(false)}>
                   Annuler
                 </Button>
