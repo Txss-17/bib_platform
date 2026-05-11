@@ -2113,10 +2113,31 @@ function PageMetadataPanel({
   boutiqueSlug,
   onPatch,
 }: {
-  page: { id: string; title: string; slug: string; seo_title: string | null; seo_description: string | null };
+  page: {
+    id: string;
+    title: string;
+    slug: string;
+    seo_title: string | null;
+    seo_description: string | null;
+    mode: "simple" | "rich";
+    show_in_nav: boolean;
+    is_visible: boolean;
+    hero_image_url: string | null;
+    content: string | null;
+  };
   boutiqueSlug?: string;
   onPatch: (
-    patch: Partial<{ title: string; slug: string; seo_title: string | null; seo_description: string | null }>,
+    patch: Partial<{
+      title: string;
+      slug: string;
+      seo_title: string | null;
+      seo_description: string | null;
+      mode: "simple" | "rich";
+      show_in_nav: boolean;
+      is_visible: boolean;
+      hero_image_url: string | null;
+      content: string | null;
+    }>,
   ) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -2124,6 +2145,8 @@ function PageMetadataPanel({
   const [slug, setSlug] = useState(page.slug);
   const [seoTitle, setSeoTitle] = useState(page.seo_title ?? "");
   const [seoDesc, setSeoDesc] = useState(page.seo_description ?? "");
+  const [hero, setHero] = useState(page.hero_image_url ?? "");
+  const [content, setContent] = useState(page.content ?? "");
 
   // Re-sync if active page changes externally.
   useEffect(() => {
@@ -2131,7 +2154,17 @@ function PageMetadataPanel({
     setSlug(page.slug);
     setSeoTitle(page.seo_title ?? "");
     setSeoDesc(page.seo_description ?? "");
-  }, [page.id, page.title, page.slug, page.seo_title, page.seo_description]);
+    setHero(page.hero_image_url ?? "");
+    setContent(page.content ?? "");
+  }, [
+    page.id,
+    page.title,
+    page.slug,
+    page.seo_title,
+    page.seo_description,
+    page.hero_image_url,
+    page.content,
+  ]);
 
   const publicUrl =
     boutiqueSlug && typeof window !== "undefined"
@@ -2140,6 +2173,49 @@ function PageMetadataPanel({
 
   return (
     <div className="border-t border-border/30 bg-muted/20 px-4 py-2">
+      {/* Always-visible mode toggle + visibility row — drives the preview immediately. */}
+      <div className="flex flex-wrap items-center gap-3 pb-2">
+        <div className="flex items-center rounded-md border border-border/50 overflow-hidden text-xs">
+          <button
+            type="button"
+            onClick={() => page.mode !== "rich" && onPatch({ mode: "rich" })}
+            className={`px-2.5 py-1 transition ${
+              page.mode === "rich"
+                ? "bg-primary/10 text-primary font-medium"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            title="Mode scènes : composez la page avec des blocs visuels."
+          >
+            Rich (scènes)
+          </button>
+          <button
+            type="button"
+            onClick={() => page.mode !== "simple" && onPatch({ mode: "simple" })}
+            className={`px-2.5 py-1 transition border-l border-border/50 ${
+              page.mode === "simple"
+                ? "bg-primary/10 text-primary font-medium"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            title="Mode simple : un titre, une image et du markdown."
+          >
+            Simple (markdown)
+          </button>
+        </div>
+        <label className="flex items-center gap-1.5 text-xs">
+          <Switch
+            checked={page.show_in_nav}
+            onCheckedChange={(v) => onPatch({ show_in_nav: v })}
+          />
+          <span className="opacity-70">Afficher dans le menu</span>
+        </label>
+        <label className="flex items-center gap-1.5 text-xs">
+          <Switch
+            checked={page.is_visible}
+            onCheckedChange={(v) => onPatch({ is_visible: v })}
+          />
+          <span className="opacity-70">Page publique</span>
+        </label>
+      </div>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -2245,6 +2321,39 @@ function PageMetadataPanel({
               placeholder="Description affichée dans les résultats de recherche"
             />
           </div>
+          {page.mode === "simple" && (
+            <>
+              <div className="md:col-span-2">
+                <Label className="text-[10px]">Image héro (URL)</Label>
+                <Input
+                  value={hero}
+                  onChange={(e) => setHero(e.target.value)}
+                  onBlur={() => {
+                    if ((hero || null) !== page.hero_image_url)
+                      onPatch({ hero_image_url: hero || null });
+                  }}
+                  className="h-8 text-xs"
+                  placeholder="https://…"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Label className="text-[10px]">
+                  Contenu (markdown) — # Titre, **gras**, *italique*, [lien](url)
+                </Label>
+                <Textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  onBlur={() => {
+                    if ((content || null) !== page.content)
+                      onPatch({ content: content || null });
+                  }}
+                  rows={8}
+                  className="text-xs font-mono"
+                  placeholder={"# À propos\n\nNotre histoire commence…"}
+                />
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>
