@@ -23,3 +23,5 @@ Disallow: /signup
 Disallow: /forgot-password
 Disallow: /reset-password
 Disallow: /mon-compte
+# Disallow internal page templates (reserved slugs prefixed with __)
+Disallow: /boutique/*/p/__*
