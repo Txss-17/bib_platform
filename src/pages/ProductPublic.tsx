@@ -322,3 +322,42 @@ export default function ProductPublic() {
     </StorefrontProvider>
   );
 }
+
+/* ---------- Inline gallery (hero + thumbnail strip) ---------- */
+
+function ProductImageGallery({ images, alt }: { images: string[]; alt: string }) {
+  const [active, setActive] = useState(0);
+  const safeIdx = Math.min(active, Math.max(images.length - 1, 0));
+  const hero = images[safeIdx];
+
+  return (
+    <div className="space-y-3">
+      <div className="aspect-square bg-gray-50 rounded-2xl overflow-hidden">
+        {hero ? (
+          <img src={hero} alt={alt} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-300">
+            <span className="text-lg">Image du produit</span>
+          </div>
+        )}
+      </div>
+      {images.length > 1 && (
+        <div className="grid grid-cols-4 gap-2">
+          {images.map((url, i) => (
+            <button
+              key={`${url}-${i}`}
+              type="button"
+              onClick={() => setActive(i)}
+              aria-label={`Visuel ${i + 1}`}
+              className={`aspect-square rounded-lg overflow-hidden border-2 transition ${
+                i === safeIdx ? "border-gray-900" : "border-transparent hover:border-gray-300"
+              }`}
+            >
+              <img src={url} alt="" className="w-full h-full object-cover" loading="lazy" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
