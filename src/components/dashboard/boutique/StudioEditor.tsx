@@ -123,6 +123,26 @@ import {
   type PageTemplate,
 } from "@/lib/pageTemplates";
 
+/** Tiny safe markdown -> HTML for the simple-page preview (mirrors public renderer). */
+function renderSimpleMarkdown(src: string): string {
+  const escape = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  let html = escape(src);
+  html = html.replace(/^### (.*)$/gm, "<h3>$1</h3>");
+  html = html.replace(/^## (.*)$/gm, "<h2>$1</h2>");
+  html = html.replace(/^# (.*)$/gm, "<h1>$1</h1>");
+  html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/\*(.+?)\*/g, "<em>$1</em>");
+  html = html.replace(
+    /\[([^\]]+)\]\((https?:[^\s)]+)\)/g,
+    '<a href="$2" target="_blank" rel="noreferrer">$1</a>',
+  );
+  return html
+    .split(/\n{2,}/)
+    .map((b) => (/^<h[1-6]>/.test(b.trim()) ? b : `<p>${b.replace(/\n/g, "<br/>")}</p>`))
+    .join("\n");
+}
+
 /* ---------- Color helpers (HSL "h s% l%" <-> #rrggbb) ---------- */
 function hslStringToHex(hsl?: string): string {
   if (!hsl) return "#000000";
