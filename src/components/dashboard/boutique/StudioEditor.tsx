@@ -283,6 +283,46 @@ export function StudioEditor({
     }
   };
 
+  /**
+   * Open (or create on first call) the reserved Product Page template.
+   * This page is hidden from the public nav (slug = "__product__") and serves
+   * as the layout used by every product detail page on the storefront.
+   */
+  const handleOpenProductPageTemplate = async () => {
+    const existing = pages.find((p) => p.slug === PRODUCT_PAGE_SLUG);
+    if (existing) {
+      setActivePageId(existing.id);
+      toast.success("Modèle de page produit ouvert");
+      return;
+    }
+    try {
+      const page = await createPage.mutateAsync({
+        boutiqueId,
+        title: "Modèle fiche produit",
+        mode: "rich",
+        slug: PRODUCT_PAGE_SLUG,
+        showInNav: false,
+      });
+      for (let i = 0; i < PRODUCT_PAGE_SCENES.length; i++) {
+        const s = PRODUCT_PAGE_SCENES[i];
+        const def = findSceneDefinition(s.sceneType);
+        const baseContent = (def?.defaultContent ?? {}) as Record<string, unknown>;
+        await addScene.mutateAsync({
+          boutiqueId,
+          sceneType: s.sceneType,
+          position: i,
+          variant: s.variant,
+          content: { ...baseContent, ...(s.contentPatch ?? {}) },
+          pageId: page.id,
+        });
+      }
+      setActivePageId(page.id);
+      toast.success("Modèle de page produit initialisé");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Ouverture impossible");
+    }
+  };
+
   // SEO local state — editable fields persisted via useSaveSeo
   const [seoTitle, setSeoTitle] = useState(initialSeo?.title ?? "");
   const [seoDescription, setSeoDescription] = useState(initialSeo?.description ?? "");
