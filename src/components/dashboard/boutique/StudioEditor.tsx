@@ -2369,16 +2369,16 @@ function PageMetadataPanel({
           {page.mode === "simple" && (
             <>
               <div className="md:col-span-2">
-                <Label className="text-[10px]">Image héro (URL)</Label>
-                <Input
-                  value={hero}
-                  onChange={(e) => setHero(e.target.value)}
-                  onBlur={() => {
-                    if ((hero || null) !== page.hero_image_url)
-                      onPatch({ hero_image_url: hero || null });
+                <ImageField
+                  boutiqueId={boutiqueId}
+                  label="Image héro"
+                  value={page.hero_image_url}
+                  onChange={(url) => {
+                    setHero(url ?? "");
+                    onPatch({ hero_image_url: url });
                   }}
-                  className="h-8 text-xs"
-                  placeholder="https://…"
+                  promptHint={`Image héro pour la page « ${page.title} »`}
+                  aspect="16:9"
                 />
               </div>
               <div className="md:col-span-2">
