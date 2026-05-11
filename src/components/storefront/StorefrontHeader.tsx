@@ -19,21 +19,29 @@ export function StorefrontHeader({ boutiqueName, primaryColor, navLinks, boutiqu
   const { data: customPages = [] } = usePublicBoutiquePages(ctx?.boutiqueId);
   const accent = primaryColor || "#0f172a";
 
-  const defaultLinks = [
-    { label: "Accueil", href: "#" },
-    { label: "Boutique", href: "#products" },
-    { label: "À Propos", href: "#about" },
-    { label: "Contact", href: "#contact" },
-  ];
+  // "Accueil" always points to the boutique root (or "#" when slug unknown).
+  const homeLink = { label: "Accueil", href: boutiqueSlug ? `/boutique/${boutiqueSlug}` : "#" };
 
-  const baseLinks = navLinks || defaultLinks;
+  // Dynamic links come from `boutique_pages` (Boutique, À propos, Contact + custom pages).
+  // Titles + slugs are fully editable in the Studio so the menu stays in sync.
   const dynamicLinks = (customPages as any[])
     .filter((p) => p.show_in_nav)
     .map((p) => ({
       label: p.title as string,
       href: boutiqueSlug ? `/boutique/${boutiqueSlug}/p/${p.slug}` : `#${p.slug}`,
     }));
-  const links = [...baseLinks, ...dynamicLinks];
+
+  // If the parent passed explicit navLinks, honor them (used by previews/legacy callers).
+  // Otherwise build from Accueil + dynamic pages, with a minimal fallback when there are none yet.
+  const fallback =
+    dynamicLinks.length === 0
+      ? [
+          { label: "Boutique", href: "#products" },
+          { label: "À Propos", href: "#about" },
+          { label: "Contact", href: "#contact" },
+        ]
+      : [];
+  const links = navLinks ?? [homeLink, ...dynamicLinks, ...fallback];
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
