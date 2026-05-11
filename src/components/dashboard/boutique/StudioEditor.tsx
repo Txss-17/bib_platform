@@ -2306,7 +2306,7 @@ function PageMetadataPanel({
               onChange={(e) => setTitle(e.target.value)}
               onBlur={() => {
                 const t = title.trim();
-                if (t && t !== page.title) onPatch({ title: t });
+                if (t && t !== page.title) patchAndMaybeRegenSeo({ title: t });
               }}
               className="h-8 text-xs"
             />
@@ -2331,7 +2331,7 @@ function PageMetadataPanel({
               onChange={(e) => setSlug(slugifyClient(e.target.value))}
               onBlur={() => {
                 const s = slug.trim();
-                if (s && s !== page.slug) onPatch({ slug: s });
+                if (s && s !== page.slug) patchAndMaybeRegenSeo({ slug: s });
               }}
               className="h-8 text-xs font-mono"
             />
@@ -2453,12 +2453,24 @@ function PageMetadataPanel({
                   onChange={(e) => setContent(e.target.value)}
                   onBlur={() => {
                     if ((content || null) !== page.content)
-                      onPatch({ content: content || null });
+                      patchAndMaybeRegenSeo({ content: content || null });
                   }}
                   rows={8}
                   className="text-xs font-mono"
                   placeholder={"# À propos\n\nNotre histoire commence…"}
                 />
+                {linkErrors.length > 0 && (
+                  <ul className="mt-1.5 space-y-1 rounded-md border border-destructive/30 bg-destructive/5 p-2 text-[11px] text-destructive">
+                    {linkErrors.map((err, i) => (
+                      <li key={i} className="flex items-start gap-1.5">
+                        <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" />
+                        <span>
+                          <code className="font-mono opacity-80">{err.raw}</code> — {err.message}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </>
           )}
