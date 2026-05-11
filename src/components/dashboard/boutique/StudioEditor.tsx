@@ -2174,6 +2174,7 @@ function PageMetadataPanel({
   const [seoDesc, setSeoDesc] = useState(page.seo_description ?? "");
   const [hero, setHero] = useState(page.hero_image_url ?? "");
   const [content, setContent] = useState(page.content ?? "");
+  const genSeo = useGeneratePageSeo();
 
   // Re-sync if active page changes externally.
   useEffect(() => {
