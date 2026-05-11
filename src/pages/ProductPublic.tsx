@@ -74,6 +74,31 @@ export default function ProductPublic() {
   const productImage = product?.supplier_products?.image_url;
   const productPrice = Number(product?.public_price || 0);
 
+  /* ---------- Studio: optional product page template ---------- */
+  const { data: brandDna } = useBrandDNA(boutique?.id);
+  const { data: productPageScenes = [] } = useQuery({
+    queryKey: ["product-page-template", boutique?.id],
+    enabled: !!boutique?.id,
+    queryFn: async () => {
+      const { data: page } = await supabase
+        .from("boutique_pages" as any)
+        .select("id")
+        .eq("boutique_id", boutique!.id)
+        .eq("slug", PRODUCT_PAGE_SLUG)
+        .maybeSingle();
+      const pageId = (page as any)?.id as string | undefined;
+      if (!pageId) return [] as SceneRecord[];
+      const { data: scenes } = await supabase
+        .from("boutique_scenes")
+        .select("*")
+        .eq("boutique_id", boutique!.id)
+        .eq("page_id", pageId)
+        .eq("is_visible", true)
+        .order("position", { ascending: true });
+      return (scenes as unknown as SceneRecord[]) ?? [];
+    },
+  });
+
   useSEO({
     title: boutique ? `${productName} — ${boutique.name}` : productName,
     description:
