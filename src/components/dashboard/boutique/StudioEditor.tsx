@@ -2177,6 +2177,48 @@ function PageMetadataPanel({
   const [content, setContent] = useState(page.content ?? "");
   const genSeo = useGeneratePageSeo();
 
+  // Realtime validation of markdown links (no silent drops anymore).
+  const linkErrors = useMemo(() => validateMarkdownLinks(content), [content]);
+
+  /**
+   * Wrap onPatch: when title / slug / content change, persist the patch then
+   * automatically regenerate the page SEO based on the new values, unless
+   * the user is currently typing them (handled by onBlur upstream).
+   */
+  const patchAndMaybeRegenSeo = (
+    patch: Parameters<typeof onPatch>[0],
+  ) => {
+    onPatch(patch);
+    const seoTriggers: Array<keyof typeof patch> = ["title", "slug", "content"];
+    const triggered = seoTriggers.some((k) => k in patch);
+    if (!triggered) return;
+    // Don't auto-regen if SEO fields were also explicitly patched in the same call.
+    if ("seo_title" in patch || "seo_description" in patch) return;
+    const nextTitle = (patch.title as string | undefined) ?? page.title;
+    const nextSlug = (patch.slug as string | undefined) ?? page.slug;
+    const nextContent =
+      ("content" in patch ? (patch.content as string | null | undefined) : page.content) ?? null;
+    genSeo.mutate(
+      {
+        boutiqueId,
+        pageId: page.id,
+        pageTitle: nextTitle,
+        pageSlug: nextSlug,
+        mode: page.mode,
+        contentSnippet: nextContent,
+      },
+      {
+        onSuccess: ({ title: t, description: d }) => {
+          setSeoTitle(t);
+          setSeoDesc(d);
+          toast.success("SEO regénéré automatiquement");
+        },
+        // Silent on error — manual button still available.
+        onError: () => {},
+      },
+    );
+  };
+
   // Re-sync if active page changes externally.
   useEffect(() => {
     setTitle(page.title);
