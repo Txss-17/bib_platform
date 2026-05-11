@@ -236,6 +236,51 @@ export function StudioEditor({
   const deletePage = useDeleteBoutiquePage();
   const reorderPages = useReorderBoutiquePages();
 
+  const activePage = useMemo(
+    () => pages.find((p) => p.id === activePageId) ?? null,
+    [pages, activePageId],
+  );
+
+  /** Create a page from a template, then seed its scenes sequentially. */
+  const handleCreatePageFromTemplate = async (tpl: PageTemplate) => {
+    try {
+      const page = await createPage.mutateAsync({
+        boutiqueId,
+        title: tpl.defaultTitle,
+        mode: "rich",
+      });
+      // Patch SEO metadata on the page if the template provides defaults.
+      if (tpl.seoTitle || tpl.seoDescription) {
+        await updatePage.mutateAsync({
+          pageId: page.id,
+          boutiqueId,
+          patch: {
+            seo_title: tpl.seoTitle ?? null,
+            seo_description: tpl.seoDescription ?? null,
+          },
+        });
+      }
+      // Seed scenes for this page.
+      for (let i = 0; i < tpl.scenes.length; i++) {
+        const s = tpl.scenes[i];
+        const def = findSceneDefinition(s.sceneType);
+        const baseContent = (def?.defaultContent ?? {}) as Record<string, unknown>;
+        await addScene.mutateAsync({
+          boutiqueId,
+          sceneType: s.sceneType,
+          position: i,
+          variant: s.variant,
+          content: { ...baseContent, ...(s.contentPatch ?? {}) },
+          pageId: page.id,
+        });
+      }
+      setActivePageId(page.id);
+      toast.success(`Page « ${tpl.defaultTitle} » créée${tpl.scenes.length > 0 ? ` avec ${tpl.scenes.length} scène${tpl.scenes.length > 1 ? "s" : ""}` : ""}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Création impossible");
+    }
+  };
+
   // SEO local state — editable fields persisted via useSaveSeo
   const [seoTitle, setSeoTitle] = useState(initialSeo?.title ?? "");
   const [seoDescription, setSeoDescription] = useState(initialSeo?.description ?? "");
