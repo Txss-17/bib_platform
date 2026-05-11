@@ -23,6 +23,8 @@ export function useProductMedia(productId: string | undefined) {
         .from("product_media" as any)
         .select("*")
         .eq("product_id", productId!)
+        .order("is_selected", { ascending: false })
+        .order("position", { ascending: true })
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data as unknown as ProductMedia[]) ?? [];
@@ -130,6 +132,66 @@ export function useDeleteProductMedia() {
         .delete()
         .eq("id", params.mediaId);
       if (error) throw error;
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["product-media", vars.productId] });
+      qc.invalidateQueries({ queryKey: ["public-product-media", vars.productId] });
+    },
+  });
+}
+
+/**
+ * Persist a new ordering for the selected media of a product.
+ * Positions are reassigned 0..n-1 in the given orderedIds order.
+ */
+export function useReorderProductMedia() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: { productId: string; orderedIds: string[] }) => {
+      // Apply sequentially — small N (selected visuals only).
+      for (let i = 0; i < params.orderedIds.length; i++) {
+        const { error } = await supabase
+          .from("product_media" as any)
+          .update({ position: i } as never)
+          .eq("id", params.orderedIds[i]);
+        if (error) throw error;
+      }
+    },
+    onSuccess: (_d, vars) => {
+      qc.invalidateQueries({ queryKey: ["product-media", vars.productId] });
+      qc.invalidateQueries({ queryKey: ["public-product-media", vars.productId] });
+    },
+  });
+}
+
+/**
+ * Promote a visual to "hero" (first position) without deselecting the others.
+ * Ensures the target is selected, set to position 0, and other selected
+ * visuals are pushed down by one slot.
+ */
+export function useSetPrimaryProductMedia() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      mediaId: string;
+      productId: string;
+      currentSelectedIds: string[]; // current order of selected media
+    }) => {
+      const others = params.currentSelectedIds.filter((id) => id !== params.mediaId);
+      const newOrder = [params.mediaId, ...others];
+      // Ensure the primary is selected.
+      const { error: selErr } = await supabase
+        .from("product_media" as any)
+        .update({ is_selected: true, position: 0 } as never)
+        .eq("id", params.mediaId);
+      if (selErr) throw selErr;
+      for (let i = 1; i < newOrder.length; i++) {
+        const { error } = await supabase
+          .from("product_media" as any)
+          .update({ position: i } as never)
+          .eq("id", newOrder[i]);
+        if (error) throw error;
+      }
     },
     onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: ["product-media", vars.productId] });
