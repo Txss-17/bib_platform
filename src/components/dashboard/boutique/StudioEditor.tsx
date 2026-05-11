@@ -2392,6 +2392,23 @@ function PageMetadataPanel({
               placeholder="Description affichée dans les résultats de recherche"
             />
           </div>
+          <div className="md:col-span-2">
+            <Label className="text-[10px] mb-1 block">Aperçu Google</Label>
+            <div className="rounded-md border border-border/50 bg-background p-3 text-left">
+              <div className="text-[11px] text-muted-foreground truncate">
+                {publicUrl}
+              </div>
+              <div className="text-[15px] leading-tight text-[#1a0dab] dark:text-[#8ab4f8] truncate font-medium mt-0.5">
+                {(seoTitle || page.title || "Titre de la page").slice(0, 60)}
+                {(seoTitle || page.title || "").length > 60 ? "…" : ""}
+              </div>
+              <div className="text-[12px] leading-snug text-[#4d5156] dark:text-muted-foreground line-clamp-2 mt-0.5">
+                {(seoDesc ||
+                  "Ajoute une meta description pour contrôler l'extrait affiché dans les résultats de recherche.").slice(0, 160)}
+                {(seoDesc || "").length > 160 ? "…" : ""}
+              </div>
+            </div>
+          </div>
           <div className="md:col-span-2 flex items-center justify-between gap-2 border-t border-border/30 pt-2">
             <span className="text-[10px] text-muted-foreground">
               Génère un titre + une meta description optimisés pour cette page.
