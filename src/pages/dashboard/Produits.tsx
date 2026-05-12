@@ -17,6 +17,10 @@ import {
   Clock,
   TrendingUp,
   Sparkles,
+  Search,
+  X,
+  AlertTriangle,
+  Store,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useProducts, useUpdateProduct, useDeleteProduct } from "@/hooks/useProducts";
@@ -36,6 +40,8 @@ import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog"
 import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PageHeader, SectionCard, KpiTile, KpiTileSkeleton, EmptyState, KpiGrid } from "@/components/dashboard/shared";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 function ProductsTableSkeleton() {
   return (
@@ -101,6 +107,7 @@ export default function Produits() {
   const [boutiqueFilter, setBoutiqueFilter] = useState<string>("all");
   const [sortOrder, setSortOrder] = useState<string>("recent");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [search, setSearch] = useState<string>("");
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [mediaProductId, setMediaProductId] = useState<string | null>(null);
 
@@ -121,13 +128,42 @@ export default function Produits() {
     } else if (statusFilter === "none" || statusFilter === "ordered" || statusFilter === "received" || statusFilter === "validated") {
       result = result.filter(p => getSampleStatus(p.id) === statusFilter);
     }
+    const q = search.trim().toLowerCase();
+    if (q.length > 0) {
+      result = result.filter((p) =>
+        (p.supplier_products?.name || "").toLowerCase().includes(q),
+      );
+    }
     if (sortOrder === "recent") {
       result = [...result].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     } else if (sortOrder === "sales") {
       result = [...result].sort((a, b) => b.cumulative_sales - a.cumulative_sales);
     }
     return result;
-  }, [products, boutiqueFilter, sortOrder, statusFilter, sampleValidations]);
+  }, [products, boutiqueFilter, sortOrder, statusFilter, sampleValidations, search]);
+
+  const boutiqueNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    boutiques?.forEach((b) => map.set(b.id, b.name));
+    return map;
+  }, [boutiques]);
+
+  const stockTone = (qty: number, threshold: number): "ok" | "low" | "out" => {
+    if (qty <= 0) return "out";
+    if (qty <= Math.max(threshold, 1)) return "low";
+    return "ok";
+  };
+
+  const activeFiltersCount =
+    (boutiqueFilter !== "all" ? 1 : 0) +
+    (statusFilter !== "all" ? 1 : 0) +
+    (search.trim() ? 1 : 0);
+
+  const resetFilters = () => {
+    setBoutiqueFilter("all");
+    setStatusFilter("all");
+    setSearch("");
+  };
 
   const selectedProduct = products?.find(p => p.id === selectedProductId);
 
