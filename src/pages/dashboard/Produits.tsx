@@ -17,6 +17,10 @@ import {
   Clock,
   TrendingUp,
   Sparkles,
+  Search,
+  X,
+  AlertTriangle,
+  Store,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useProducts, useUpdateProduct, useDeleteProduct } from "@/hooks/useProducts";
@@ -36,6 +40,8 @@ import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog"
 import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PageHeader, SectionCard, KpiTile, KpiTileSkeleton, EmptyState, KpiGrid } from "@/components/dashboard/shared";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 function ProductsTableSkeleton() {
   return (
@@ -101,6 +107,7 @@ export default function Produits() {
   const [boutiqueFilter, setBoutiqueFilter] = useState<string>("all");
   const [sortOrder, setSortOrder] = useState<string>("recent");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [search, setSearch] = useState<string>("");
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [mediaProductId, setMediaProductId] = useState<string | null>(null);
 
@@ -121,13 +128,42 @@ export default function Produits() {
     } else if (statusFilter === "none" || statusFilter === "ordered" || statusFilter === "received" || statusFilter === "validated") {
       result = result.filter(p => getSampleStatus(p.id) === statusFilter);
     }
+    const q = search.trim().toLowerCase();
+    if (q.length > 0) {
+      result = result.filter((p) =>
+        (p.supplier_products?.name || "").toLowerCase().includes(q),
+      );
+    }
     if (sortOrder === "recent") {
       result = [...result].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     } else if (sortOrder === "sales") {
       result = [...result].sort((a, b) => b.cumulative_sales - a.cumulative_sales);
     }
     return result;
-  }, [products, boutiqueFilter, sortOrder, statusFilter, sampleValidations]);
+  }, [products, boutiqueFilter, sortOrder, statusFilter, sampleValidations, search]);
+
+  const boutiqueNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    boutiques?.forEach((b) => map.set(b.id, b.name));
+    return map;
+  }, [boutiques]);
+
+  const stockTone = (qty: number, threshold: number): "ok" | "low" | "out" => {
+    if (qty <= 0) return "out";
+    if (qty <= Math.max(threshold, 1)) return "low";
+    return "ok";
+  };
+
+  const activeFiltersCount =
+    (boutiqueFilter !== "all" ? 1 : 0) +
+    (statusFilter !== "all" ? 1 : 0) +
+    (search.trim() ? 1 : 0);
+
+  const resetFilters = () => {
+    setBoutiqueFilter("all");
+    setStatusFilter("all");
+    setSearch("");
+  };
 
   const selectedProduct = products?.find(p => p.id === selectedProductId);
 
@@ -259,8 +295,17 @@ export default function Produits() {
           flush
         >
           {/* Filters Bar */}
-          <div className="flex flex-col sm:flex-row sm:flex-wrap justify-between items-start sm:items-center gap-3 p-4 border-b border-border/50">
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          <div className="sticky top-0 z-10 flex flex-col lg:flex-row lg:flex-wrap justify-between items-stretch lg:items-center gap-3 p-3 sm:p-4 border-b border-border/60 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 flex-1 min-w-0">
+              <div className="relative flex-1 min-w-[180px] max-w-xs">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Rechercher un produit…"
+                  className="h-9 pl-8 text-sm"
+                />
+              </div>
               <Select value={boutiqueFilter} onValueChange={setBoutiqueFilter}>
                 <SelectTrigger className="w-full sm:w-44 h-9 text-sm">
                   <SelectValue placeholder="Toutes les boutiques" />
@@ -294,6 +339,23 @@ export default function Produits() {
                   <SelectItem value="sales">Meilleures ventes</SelectItem>
                 </SelectContent>
               </Select>
+              {activeFiltersCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={resetFilters}
+                  className="h-9 text-xs gap-1 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  Réinitialiser ({activeFiltersCount})
+                </Button>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
+              <span className="font-mono tabular-nums font-semibold text-foreground">
+                {filteredProducts.length}
+              </span>
+              <span>résultat{filteredProducts.length > 1 ? "s" : ""}</span>
             </div>
           </div>
 
@@ -301,23 +363,64 @@ export default function Produits() {
           <div className="hidden md:block">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">Actif</TableHead>
-                      <TableHead>Produit</TableHead>
-                      <TableHead>Validation</TableHead>
-                      <TableHead>Prix public</TableHead>
-                      <TableHead>Marge</TableHead>
-                      <TableHead>Ventes</TableHead>
-                      <TableHead className="w-12"></TableHead>
+                    <TableRow className="bg-muted/30 hover:bg-muted/30">
+                      <TableHead className="w-12 h-10 text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">
+                        Actif
+                      </TableHead>
+                      <TableHead className="h-10 text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">
+                        Produit
+                      </TableHead>
+                      <TableHead className="h-10 text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">
+                        Validation
+                      </TableHead>
+                      <TableHead className="h-10 text-[11px] uppercase tracking-wider font-semibold text-muted-foreground text-right">
+                        Prix
+                      </TableHead>
+                      <TableHead className="h-10 text-[11px] uppercase tracking-wider font-semibold text-muted-foreground text-right">
+                        Marge
+                      </TableHead>
+                      <TableHead className="h-10 text-[11px] uppercase tracking-wider font-semibold text-muted-foreground text-right">
+                        Stock
+                      </TableHead>
+                      <TableHead className="h-10 text-[11px] uppercase tracking-wider font-semibold text-muted-foreground text-right">
+                        Ventes
+                      </TableHead>
+                      <TableHead className="w-[140px] h-10"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
+                    {filteredProducts.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={8} className="h-24 text-center text-sm text-muted-foreground">
+                          Aucun produit ne correspond à ces filtres.
+                          {activeFiltersCount > 0 && (
+                            <Button variant="link" size="sm" onClick={resetFilters} className="ml-2 h-auto p-0 text-sm">
+                              Réinitialiser
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    )}
                     {filteredProducts.map((product) => {
                       const sampleStatus = getSampleStatus(product.id);
                       const canToggle = sampleStatus === "validated";
+                      const isActive = product.status === "active";
+                      const stockStatus = stockTone(
+                        product.stock_quantity ?? 0,
+                        product.low_stock_threshold ?? 5,
+                      );
+                      const boutiqueName = boutiqueNameById.get(product.boutique_id);
                       return (
-                        <TableRow key={product.id}>
-                          <TableCell>
+                        <TableRow
+                          key={product.id}
+                          className={cn(
+                            "group h-14 transition-colors",
+                            isActive
+                              ? "border-l-2 border-l-accent"
+                              : "border-l-2 border-l-transparent opacity-95",
+                          )}
+                        >
+                          <TableCell className="py-2">
                             <Switch
                               checked={product.status === "active"}
                               onCheckedChange={() => toggleStatus(product.id, product.status)}
@@ -325,41 +428,90 @@ export default function Produits() {
                               title={!canToggle ? "Validez l'échantillon d'abord" : undefined}
                             />
                           </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <img 
-                                src={product.supplier_products?.image_url || "/placeholder.svg"} 
+                          <TableCell className="py-2">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <img
+                                src={product.supplier_products?.image_url || "/placeholder.svg"}
                                 alt={product.supplier_products?.name || "Produit"}
-                                className="w-10 h-10 rounded-lg object-cover bg-muted"
+                                className="w-9 h-9 rounded-md object-cover bg-muted shrink-0 ring-1 ring-border/40"
                               />
-                              <span className="font-medium">
-                                {product.supplier_products?.name || "Produit inconnu"}
-                              </span>
+                              <div className="min-w-0">
+                                <div className="font-medium text-sm truncate leading-tight">
+                                  {product.supplier_products?.name || "Produit inconnu"}
+                                </div>
+                                {boutiqueName && (
+                                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground mt-0.5">
+                                    <Store className="w-3 h-3" />
+                                    <span className="truncate">{boutiqueName}</span>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="py-2">
                             <button onClick={() => setSelectedProductId(product.id)}>
                               <Badge className={`text-[10px] border cursor-pointer ${getSampleStatusColor(sampleStatus)}`}>
                                 {getSampleStatusLabel(sampleStatus)}
                               </Badge>
                             </button>
                           </TableCell>
-                          <TableCell className="font-medium">
+                          <TableCell className="py-2 text-right font-mono tabular-nums text-sm font-semibold">
                             {Number(product.public_price).toFixed(2)} €
                           </TableCell>
-                          <TableCell>
-                            <Badge variant="secondary" className="font-mono">
+                          <TableCell className="py-2 text-right">
+                            <Badge variant="secondary" className="font-mono tabular-nums">
                               {Number(product.applied_margin).toFixed(0)}%
                             </Badge>
                           </TableCell>
-                          <TableCell>{product.cumulative_sales}</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreVertical className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
+                          <TableCell className="py-2 text-right">
+                            <span
+                              className={cn(
+                                "inline-flex items-center gap-1.5 font-mono tabular-nums text-xs px-2 py-0.5 rounded-full",
+                                stockStatus === "ok" && "bg-success/10 text-success",
+                                stockStatus === "low" && "bg-warning/15 text-warning-foreground",
+                                stockStatus === "out" && "bg-destructive/10 text-destructive",
+                              )}
+                              title={
+                                stockStatus === "out"
+                                  ? "Rupture de stock"
+                                  : stockStatus === "low"
+                                    ? `Stock bas (seuil ${product.low_stock_threshold})`
+                                    : "Stock OK"
+                              }
+                            >
+                              {stockStatus !== "ok" && <AlertTriangle className="w-3 h-3" />}
+                              {product.stock_quantity ?? 0}
+                            </span>
+                          </TableCell>
+                          <TableCell className="py-2 text-right font-mono tabular-nums text-sm">
+                            {product.cumulative_sales}
+                          </TableCell>
+                        <TableCell className="py-2 text-right">
+                          <div className="flex items-center justify-end gap-0.5">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => setMediaProductId(product.id)}
+                              title="Visuels IA"
+                            >
+                              <Sparkles className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                              onClick={() => setDeleteId(product.id)}
+                              title="Supprimer"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <MoreVertical className="w-4 h-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem>
                                 <Edit className="w-4 h-4 mr-2" />
@@ -382,6 +534,7 @@ export default function Produits() {
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
+                          </div>
                         </TableCell>
                       </TableRow>
                       );
