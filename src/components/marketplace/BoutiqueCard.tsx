@@ -74,7 +74,7 @@ export function BoutiqueCard({ boutique }: Props) {
             <img
               key={current.id}
               src={current.url}
-              alt={current.kind === "product" ? current.name : current.label ?? boutique.name}
+              alt={current.label ?? boutique.name}
               loading="lazy"
               className="h-full w-full object-cover animate-in fade-in duration-700"
             />
