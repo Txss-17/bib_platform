@@ -9,6 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
   DndContext,
   closestCenter,
   PointerSensor,
@@ -51,6 +59,7 @@ export interface Highlight {
 }
 
 const MAX_HIGHLIGHTS = 8;
+const MAX_AI_VARIANTS = 4;
 const ALLOWED_IMAGE = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const ALLOWED_VIDEO = ["video/mp4", "video/webm", "video/quicktime"];
 const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
@@ -203,7 +212,13 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
   const [draftCta, setDraftCta] = useState("");
   const [aiPrompt, setAiPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
-  const [aiCount, setAiCount] = useState(1);
+  const [aiCount, setAiCount] = useState(4);
+  const [variantPicker, setVariantPicker] = useState<{
+    urls: string[];
+    selected: Set<string>;
+    label: string;
+    cta?: string;
+  } | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -342,7 +357,7 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
     const enrichedPrompt = ctxParts.join(" · ");
 
     const remaining = MAX_HIGHLIGHTS - highlights.length;
-    const wanted = Math.min(Math.max(aiCount, 1), remaining);
+    const wanted = Math.min(Math.max(aiCount, 1), MAX_AI_VARIANTS, remaining);
 
     setGenerating(true);
     try {
@@ -354,30 +369,69 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
         ((data as { url?: string })?.url ? [(data as { url: string }).url] : []);
       if (urls.length === 0) throw new Error("Génération échouée");
       const baseLabel = draftLabel.trim() || userPrompt.slice(0, 40);
-      const next = [...highlights];
-      urls.forEach((url, i) => {
-        if (next.length >= MAX_HIGHLIGHTS) return;
-        next.push({
-          id: uid(),
-          kind: "image",
-          url,
-          label: urls.length > 1 ? `${baseLabel} (${i + 1})` : baseLabel,
-          cta_url: draftCta.trim() || undefined,
-          enabled: true,
-        });
+      // Ouvre le sélecteur : l'utilisateur choisit la/les variante(s) à conserver.
+      setVariantPicker({
+        urls,
+        selected: new Set<string>(urls.length === 1 ? urls : []),
+        label: baseLabel,
+        cta: draftCta.trim() || undefined,
       });
-      saveMutation.mutate(next);
-      setAiPrompt("");
-      setDraftLabel("");
-      setDraftCta("");
-      toast.success(
-        `${urls.length} visuel${urls.length > 1 ? "s" : ""} IA généré${urls.length > 1 ? "s" : ""} (identité boutique respectée)`
-      );
     } catch (e: any) {
       toast.error(e?.message ?? "Erreur de génération");
     } finally {
       setGenerating(false);
     }
+  };
+
+  const confirmVariantPick = () => {
+    if (!variantPicker) return;
+    const chosen = variantPicker.urls.filter((u) => variantPicker.selected.has(u));
+    if (chosen.length === 0) {
+      toast.error("Sélectionnez au moins une variante");
+      return;
+    }
+    const next = [...highlights];
+    const remaining = MAX_HIGHLIGHTS - next.length;
+    chosen.slice(0, remaining).forEach((url, i) => {
+      next.push({
+        id: uid(),
+        kind: "image",
+        url,
+        label: chosen.length > 1 ? `${variantPicker.label} (${i + 1})` : variantPicker.label,
+        cta_url: variantPicker.cta,
+        enabled: true,
+      });
+    });
+    // Nettoie les variantes non retenues du storage pour éviter les fichiers orphelins.
+    const discarded = variantPicker.urls.filter((u) => !variantPicker.selected.has(u));
+    discarded.forEach((url) => {
+      const marker = "/boutique-media/";
+      const i = url.indexOf(marker);
+      if (i !== -1) {
+        const path = decodeURIComponent(url.slice(i + marker.length).split("?")[0]);
+        supabase.storage.from("boutique-media").remove([path]).catch(() => {});
+      }
+    });
+    saveMutation.mutate(next);
+    setVariantPicker(null);
+    setAiPrompt("");
+    setDraftLabel("");
+    setDraftCta("");
+    toast.success(`${chosen.length} visuel${chosen.length > 1 ? "s" : ""} ajouté${chosen.length > 1 ? "s" : ""}`);
+  };
+
+  const cancelVariantPick = () => {
+    if (!variantPicker) return;
+    // Toutes les variantes générées sont rejetées → suppression du storage.
+    variantPicker.urls.forEach((url) => {
+      const marker = "/boutique-media/";
+      const i = url.indexOf(marker);
+      if (i !== -1) {
+        const path = decodeURIComponent(url.slice(i + marker.length).split("?")[0]);
+        supabase.storage.from("boutique-media").remove([path]).catch(() => {});
+      }
+    });
+    setVariantPicker(null);
   };
 
   return (
