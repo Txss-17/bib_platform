@@ -530,18 +530,18 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
                     <Input
                       type="number"
                       min={1}
-                      max={Math.max(1, MAX_HIGHLIGHTS - highlights.length)}
+                      max={Math.min(MAX_AI_VARIANTS, Math.max(1, MAX_HIGHLIGHTS - highlights.length))}
                       value={aiCount}
-                      onChange={(e) => setAiCount(Math.max(1, Math.min(MAX_HIGHLIGHTS - highlights.length, Number(e.target.value) || 1)))}
+                      onChange={(e) => setAiCount(Math.max(1, Math.min(MAX_AI_VARIANTS, MAX_HIGHLIGHTS - highlights.length, Number(e.target.value) || 1)))}
                       className="h-9 w-14 text-sm"
                       disabled={generating}
-                      title="Nombre de visuels à générer (1-8)"
+                      title="Nombre de variantes à générer (1-4)"
                     />
                     <Button
                       type="button"
                       onClick={handleGenerate}
                       disabled={generating || uploading || saveMutation.isPending}
-                      title={`Générer ${aiCount} visuel(s) IA cohérent(s) avec votre boutique`}
+                      title={`Générer ${aiCount} variante(s) — vous choisirez ensuite celle(s) à conserver`}
                     >
                       {generating ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -553,7 +553,7 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
                 </div>
                 <p className="text-[11px] text-muted-foreground flex items-start gap-1.5">
                   <CalendarClock className="h-3 w-3 mt-0.5 shrink-0" />
-                  L'IA s'appuie sur votre identité (palette, ambiance, mots-clés), votre catégorie ({boutique?.category ?? "—"}), votre marché et la saison ({currentSeason()}). Génération en lot 1–8. Image ≤ 6 Mo · Vidéo ≤ 30 Mo.
+                  L'IA s'appuie sur votre identité (palette, ambiance, mots-clés), votre catégorie ({boutique?.category ?? "—"}), votre marché et la saison ({currentSeason()}). Jusqu'à 4 variantes — vous choisissez celle(s) à conserver. Image ≤ 6 Mo · Vidéo ≤ 30 Mo.
                 </p>
               </div>
             )}
@@ -572,6 +572,67 @@ export function HighlightsManager({ boutiqueId }: { boutiqueId: string }) {
           </>
         )}
       </CardContent>
+
+      <Dialog open={!!variantPicker} onOpenChange={(o) => { if (!o) cancelVariantPick(); }}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              Choisir vos variantes
+            </DialogTitle>
+            <DialogDescription>
+              Cliquez pour sélectionner. Les variantes non retenues sont supprimées.
+            </DialogDescription>
+          </DialogHeader>
+          {variantPicker && (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {variantPicker.urls.map((u, i) => {
+                const isSel = variantPicker.selected.has(u);
+                return (
+                  <button
+                    key={u}
+                    type="button"
+                    onClick={() => {
+                      const next = new Set(variantPicker.selected);
+                      if (next.has(u)) next.delete(u);
+                      else next.add(u);
+                      setVariantPicker({ ...variantPicker, selected: next });
+                    }}
+                    className={`group relative aspect-[4/5] overflow-hidden rounded-lg border-2 transition-all ${
+                      isSel ? "border-primary ring-2 ring-primary/30" : "border-border/60 hover:border-primary/40"
+                    }`}
+                    aria-pressed={isSel}
+                  >
+                    <img src={u} alt={`Variante ${i + 1}`} className="h-full w-full object-cover" />
+                    <div className="absolute left-1.5 top-1.5">
+                      <Badge variant={isSel ? "default" : "secondary"} className="text-[10px]">
+                        {isSel ? "✓ Sélectionnée" : `Variante ${i + 1}`}
+                      </Badge>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" onClick={cancelVariantPick}>
+              Tout rejeter
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() =>
+                variantPicker &&
+                setVariantPicker({ ...variantPicker, selected: new Set(variantPicker.urls) })
+              }
+            >
+              Tout sélectionner
+            </Button>
+            <Button onClick={confirmVariantPick} disabled={!variantPicker?.selected.size}>
+              Ajouter ({variantPicker?.selected.size ?? 0})
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
