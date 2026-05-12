@@ -8,15 +8,20 @@ interface Props {
   boutique: MarketplaceBoutique;
 }
 
-type Story =
-  | { kind: "highlight"; id: string; mediaKind: "image" | "video"; url: string; label?: string; cta_url?: string }
-  | { kind: "product"; id: string; mediaKind: "image"; url: string; name: string; price: number };
+type Story = {
+  kind: "highlight";
+  id: string;
+  mediaKind: "image" | "video";
+  url: string;
+  label?: string;
+  cta_url?: string;
+};
 
 export function BoutiqueCard({ boutique }: Props) {
-  // Stories: highlights first (owner-curated promo/news), then product previews.
+  // Stories : uniquement les médias ajoutés (mises en avant). Si aucun, fallback hero.
   const stories: Story[] = useMemo(() => {
     const now = Date.now();
-    const fromHighlights: Story[] = (boutique.highlights ?? [])
+    return (boutique.highlights ?? [])
       .filter((h) => {
         if (!h.url) return false;
         if ((h as any).enabled === false) return false;
@@ -34,18 +39,7 @@ export function BoutiqueCard({ boutique }: Props) {
         label: h.label,
         cta_url: h.cta_url,
       }));
-    const fromProducts: Story[] = boutique.product_previews
-      .filter((p) => !!p.image_url)
-      .map((p) => ({
-        kind: "product",
-        id: p.id,
-        mediaKind: "image",
-        url: p.image_url as string,
-        name: p.name,
-        price: p.price,
-      }));
-    return [...fromHighlights, ...fromProducts];
-  }, [boutique.highlights, boutique.product_previews]);
+  }, [boutique.highlights]);
 
   const [activeIdx, setActiveIdx] = useState(0);
 
@@ -139,11 +133,6 @@ export function BoutiqueCard({ boutique }: Props) {
               <p className="truncate font-display text-base font-semibold leading-tight">
                 {boutique.name}
               </p>
-              {current?.kind === "product" && (
-                <p className="truncate text-xs text-white/80">
-                  {current.name} · {current.price.toFixed(2)} €
-                </p>
-              )}
               {current?.kind === "highlight" && current.label && (
                 <p className="truncate text-xs text-white/80">{current.label}</p>
               )}
