@@ -295,8 +295,17 @@ export default function Produits() {
           flush
         >
           {/* Filters Bar */}
-          <div className="flex flex-col sm:flex-row sm:flex-wrap justify-between items-start sm:items-center gap-3 p-4 border-b border-border/50">
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          <div className="sticky top-0 z-10 flex flex-col lg:flex-row lg:flex-wrap justify-between items-stretch lg:items-center gap-3 p-3 sm:p-4 border-b border-border/60 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 flex-1 min-w-0">
+              <div className="relative flex-1 min-w-[180px] max-w-xs">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Rechercher un produit…"
+                  className="h-9 pl-8 text-sm"
+                />
+              </div>
               <Select value={boutiqueFilter} onValueChange={setBoutiqueFilter}>
                 <SelectTrigger className="w-full sm:w-44 h-9 text-sm">
                   <SelectValue placeholder="Toutes les boutiques" />
@@ -330,6 +339,23 @@ export default function Produits() {
                   <SelectItem value="sales">Meilleures ventes</SelectItem>
                 </SelectContent>
               </Select>
+              {activeFiltersCount > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={resetFilters}
+                  className="h-9 text-xs gap-1 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  Réinitialiser ({activeFiltersCount})
+                </Button>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground shrink-0">
+              <span className="font-mono tabular-nums font-semibold text-foreground">
+                {filteredProducts.length}
+              </span>
+              <span>résultat{filteredProducts.length > 1 ? "s" : ""}</span>
             </div>
           </div>
 
