@@ -22,7 +22,6 @@ import {
 } from "@/hooks/useBrandStudio";
 import { ActionButton, stateFromMutation } from "./ActionButton";
 import { resizeImageFile } from "@/lib/imageResize";
-import { VariantPicker } from "./VariantSchematic";
 
 type Patch = Partial<Pick<SceneRecord, "content" | "variant" | "is_visible" | "style_overrides">>;
 
@@ -363,15 +362,19 @@ export function SceneInspectorPro({
 
       {def && def.variants.length > 1 && (
         <div>
-          <Label className="text-xs">Variante visuelle</Label>
-          <p className="mb-1.5 text-[10px] text-muted-foreground">
-            Choisissez la disposition pour ce type de scène.
-          </p>
-          <VariantPicker
-            variants={def.variants}
-            value={scene.variant}
-            onChange={(v) => onPatch({ variant: v })}
-          />
+          <Label className="text-xs">Variante</Label>
+          <Select value={scene.variant} onValueChange={(v) => onPatch({ variant: v })}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {def.variants.map((v) => (
+                <SelectItem key={v} value={v}>
+                  {v}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       )}
 
