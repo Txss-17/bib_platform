@@ -156,15 +156,29 @@ export function useDeleteBoutiquePage() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (params: { pageId: string; boutiqueId: string }) => {
-      const { error } = await supabase
+      // Cleanup orphan scenes first (no FK cascade in DB).
+      await supabase
+        .from("boutique_scenes" as any)
+        .delete()
+        .eq("page_id", params.pageId);
+      // Use .select() so PostgREST returns the deleted rows; we can detect
+      // RLS-silenced no-ops (success with zero rows) and surface a real error.
+      const { data, error } = await supabase
         .from("boutique_pages" as any)
         .delete()
-        .eq("id", params.pageId);
+        .eq("id", params.pageId)
+        .select("id");
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error(
+          "Suppression refusée — vérifie que tu es bien propriétaire de la boutique.",
+        );
+      }
     },
     onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: ["boutique-pages", vars.boutiqueId] });
       qc.invalidateQueries({ queryKey: ["public-boutique-pages", vars.boutiqueId] });
+      qc.refetchQueries({ queryKey: ["boutique-pages", vars.boutiqueId] });
     },
   });
 }
