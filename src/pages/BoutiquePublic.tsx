@@ -173,10 +173,10 @@ export default function BoutiquePublic() {
 
   if (boutiqueLoading || productsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted/40">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-          <p className="text-gray-600">Chargement de la boutique...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+          <p className="text-muted-foreground">Chargement de la boutique...</p>
         </div>
       </div>
     );
@@ -184,10 +184,10 @@ export default function BoutiquePublic() {
 
   if (error || !boutique) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted/40">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Boutique introuvable</h1>
-          <p className="text-gray-600">Cette boutique n'existe pas ou n'est pas encore publiée.</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Boutique introuvable</h1>
+          <p className="text-muted-foreground">Cette boutique n'existe pas ou n'est pas encore publiée.</p>
         </div>
       </div>
     );

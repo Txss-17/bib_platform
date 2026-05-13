@@ -64,7 +64,7 @@ function LegalPageContent({ type }: LegalPageProps) {
 
   return (
     <CartProvider>
-      <div className="bg-white min-h-screen">
+      <div className="bg-background min-h-screen">
         <StorefrontHeader boutiqueName={boutique.name} primaryColor={primaryColor} boutiqueSlug={slug} />
         <div className="max-w-3xl mx-auto px-4 py-8">
           <Link to={`/boutique/${slug}`}>
@@ -72,13 +72,13 @@ function LegalPageContent({ type }: LegalPageProps) {
               <ArrowLeft className="w-4 h-4" /> Retour
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">{titles[type]}</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-6">{titles[type]}</h1>
           {content ? (
-            <div className="prose prose-gray max-w-none whitespace-pre-wrap text-gray-700">
+            <div className="prose prose-gray max-w-none whitespace-pre-wrap text-foreground/80">
               {content}
             </div>
           ) : (
-            <p className="text-gray-500">Cette page n'a pas encore été renseignée par le propriétaire de la boutique.</p>
+            <p className="text-muted-foreground">Cette page n'a pas encore été renseignée par le propriétaire de la boutique.</p>
           )}
         </div>
         <StorefrontFooter primaryColor={primaryColor} />
