@@ -152,7 +152,7 @@ function CategoryContent() {
 
   if (boutiqueLoading || productsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -160,7 +160,7 @@ function CategoryContent() {
 
   if (!boutique) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <h1 className="text-2xl font-bold">Boutique introuvable</h1>
           <p className="text-muted-foreground mt-2">
@@ -177,11 +177,11 @@ function CategoryContent() {
       boutiqueName={boutique.name}
       boutiqueSlug={boutique.slug ?? slug}
     >
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-background flex flex-col">
         <StorefrontHeader boutiqueName={boutique.name} primaryColor={primaryColor} />
 
         {/* Sticky filter bar */}
-        <div className="sticky top-0 z-30 bg-white border-b border-border/60 shadow-sm">
+        <div className="sticky top-0 z-30 bg-background border-b border-border/60 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">

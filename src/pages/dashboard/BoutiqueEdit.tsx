@@ -1648,7 +1648,7 @@ export default function BoutiqueEdit() {
                       <div>
                         <Label>Aperçu</Label>
                         <div
-                          className="mt-1 p-4 border border-border rounded-lg bg-white text-sm max-h-60 overflow-auto"
+                          className="mt-1 p-4 border border-border rounded-lg bg-card text-sm max-h-60 overflow-auto"
                           dangerouslySetInnerHTML={{
                             __html: emailBody
                               .replace(/\{\{boutique_name\}\}/g, boutique.name)

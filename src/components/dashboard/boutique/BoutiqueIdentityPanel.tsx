@@ -265,7 +265,7 @@ function PreviewFrame({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-white overflow-hidden shadow-sm">
+    <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
       <div className="flex items-center gap-1 px-3 py-1.5 border-b border-border bg-muted/30">
         <span className="h-2 w-2 rounded-full bg-muted-foreground/30" />
         <span className="h-2 w-2 rounded-full bg-muted-foreground/30" />
