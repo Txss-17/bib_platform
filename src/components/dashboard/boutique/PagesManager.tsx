@@ -175,7 +175,17 @@ export function PagesManager({ boutiqueId, boutiqueSlug }: Props) {
                   title="Supprimer"
                   onClick={() => {
                     if (confirm(`Supprimer la page « ${p.title} » ?`)) {
-                      deletePage.mutate({ pageId: p.id, boutiqueId });
+                      deletePage.mutate(
+                        { pageId: p.id, boutiqueId },
+                        {
+                          onSuccess: () => toast.success(`Page « ${p.title} » supprimée`),
+                          onError: (e: any) =>
+                            toast.error(
+                              "Suppression impossible : " +
+                                (e?.message || "erreur inconnue"),
+                            ),
+                        },
+                      );
                     }
                   }}
                 >
