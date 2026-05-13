@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { FloatingSupportButton } from "@/components/support/FloatingSupportButton";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -53,6 +54,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 />
               </div>
             )}
+            <ThemeToggle />
             <Button variant="outline" size="icon" className="relative h-8 w-8 sm:h-9 sm:w-9">
               <Bell className="w-4 h-4" />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
