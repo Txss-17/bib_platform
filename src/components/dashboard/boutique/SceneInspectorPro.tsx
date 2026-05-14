@@ -474,6 +474,13 @@ export function SceneInspectorPro({
         </div>
       </details>
 
+      {/* MODE PRO — layout, fond, boutons, animation */}
+      <ProModePanel
+        scene={scene}
+        boutiqueId={boutiqueId}
+        onPatch={onPatch}
+      />
+
       {/* HERO CINEMA */}
       {scene.scene_type === "hero-cinema" && (
         <>
