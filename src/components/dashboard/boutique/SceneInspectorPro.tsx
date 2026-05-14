@@ -12,7 +12,8 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Trash2, Plus, Wand2, Image as ImageIcon, Upload, Loader2, Sparkles, Palette, RotateCcw } from "lucide-react";
+import { Trash2, Plus, Wand2, Image as ImageIcon, Upload, Loader2, Sparkles, Palette, RotateCcw, Layout as LayoutIcon, Sliders, Film } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 import { ALL_FONTS, loadGoogleFont } from "@/lib/googleFonts";
 import { toast } from "sonner";
 import { findSceneDefinition, type SceneRecord } from "@/lib/studioScenes";
