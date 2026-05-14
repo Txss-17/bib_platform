@@ -1,0 +1,161 @@
+/* Studio Scene — Mode Pro CSS
+ * Frame presets, layout helpers, button overrides, entry animations.
+ * Scoped via .studio-scope wrapper from <SceneStyleScope>.
+ */
+
+.studio-scope {
+  position: relative;
+  isolation: isolate;
+}
+
+/* ---------- Frame presets (apply on first <section> child) ---------- */
+.studio-frame-rounded > section,
+.studio-frame-rounded > div > section { border-radius: 1rem; overflow: hidden; }
+.studio-frame-rounded-xl > section,
+.studio-frame-rounded-xl > div > section { border-radius: 2rem; overflow: hidden; }
+.studio-frame-sharp > section,
+.studio-frame-sharp > div > section { border-radius: 0; }
+.studio-frame-inset {
+  padding: 1.25rem;
+}
+.studio-frame-inset > section,
+.studio-frame-inset > div > section {
+  border-radius: 1.25rem;
+  overflow: hidden;
+  box-shadow: 0 1px 0 hsl(var(--studio-ink) / 0.08), 0 30px 60px -30px hsl(var(--studio-ink) / 0.25);
+}
+.studio-frame-blob > section,
+.studio-frame-blob > div > section {
+  border-radius: 42% 58% 60% 40% / 50% 45% 55% 50%;
+  overflow: hidden;
+}
+.studio-frame-ticket > section,
+.studio-frame-ticket > div > section {
+  --notch: 18px;
+  -webkit-mask:
+    radial-gradient(circle var(--notch) at 0 50%, transparent 98%, #000) ,
+    radial-gradient(circle var(--notch) at 100% 50%, transparent 98%, #000);
+  -webkit-mask-composite: source-in;
+          mask-composite: intersect;
+}
+.studio-frame-tilt {
+  transform: rotate(-1.2deg);
+  transition: transform .4s ease;
+}
+.studio-frame-tilt:hover { transform: rotate(0); }
+
+/* ---------- Padding ---------- */
+.studio-pad-compact > section,
+.studio-pad-compact > div > section { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+.studio-pad-spacious > section,
+.studio-pad-spacious > div > section { padding-top: 6rem !important; padding-bottom: 6rem !important; }
+
+/* ---------- Background overlays ---------- */
+.studio-bg-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+}
+.studio-bg-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  pointer-events: none;
+}
+.studio-bg-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: hsl(var(--studio-ink) / var(--studio-bg-overlay, 0.4));
+}
+.studio-scope.has-bg-media > * { position: relative; z-index: 2; }
+.studio-scope.has-bg-media > .studio-bg-layer,
+.studio-scope.has-bg-media > .studio-bg-video,
+.studio-scope.has-bg-media > .studio-bg-overlay { z-index: 0; }
+.studio-scope.has-bg-media > .studio-bg-overlay { z-index: 1; }
+/* Make inner section transparent so our background shows */
+.studio-scope.has-bg-media > section,
+.studio-scope.has-bg-media > div > section {
+  background: transparent !important;
+}
+.studio-scope.has-bg-media > section,
+.studio-scope.has-bg-media > div > section { color: #fff; }
+
+/* ---------- Button shape overrides ---------- */
+.studio-btn-pill a[href]:not(.no-studio-btn),
+.studio-btn-pill button:not(.no-studio-btn):not([class*="ghost"]) {
+  border-radius: 9999px !important;
+}
+.studio-btn-rounded a[href]:not(.no-studio-btn),
+.studio-btn-rounded button:not(.no-studio-btn):not([class*="ghost"]) {
+  border-radius: 0.75rem !important;
+}
+.studio-btn-square a[href]:not(.no-studio-btn),
+.studio-btn-square button:not(.no-studio-btn):not([class*="ghost"]) {
+  border-radius: 0 !important;
+}
+.studio-btn-floating a[href]:not(.no-studio-btn),
+.studio-btn-floating button:not(.no-studio-btn):not([class*="ghost"]) {
+  box-shadow: 0 14px 40px hsl(var(--studio-ink) / 0.35);
+  transform: translateY(0);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.studio-btn-floating a[href]:not(.no-studio-btn):hover,
+.studio-btn-floating button:not(.no-studio-btn):not([class*="ghost"]):hover {
+  transform: translateY(-3px);
+  box-shadow: 0 22px 55px hsl(var(--studio-ink) / 0.45);
+}
+.studio-btn-outline a[href]:not(.no-studio-btn),
+.studio-btn-outline button:not(.no-studio-btn):not([class*="ghost"]) {
+  background: transparent !important;
+  border: 1.5px solid currentColor !important;
+}
+.studio-btn-ghost a[href]:not(.no-studio-btn),
+.studio-btn-ghost button:not(.no-studio-btn) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.studio-btn-size-sm a[href]:not(.no-studio-btn),
+.studio-btn-size-sm button:not(.no-studio-btn):not([class*="ghost"]) {
+  padding: 0.5rem 1rem !important;
+  font-size: 0.8rem !important;
+}
+.studio-btn-size-lg a[href]:not(.no-studio-btn),
+.studio-btn-size-lg button:not(.no-studio-btn):not([class*="ghost"]) {
+  padding: 1rem 2.25rem !important;
+  font-size: 1.05rem !important;
+}
+
+/* ---------- Entry animations ---------- */
+.studio-anim {
+  opacity: 0;
+  transition:
+    opacity var(--studio-anim-dur, .8s) ease,
+    transform var(--studio-anim-dur, .8s) cubic-bezier(.2,.7,.2,1),
+    filter var(--studio-anim-dur, .8s) ease;
+  transition-delay: var(--studio-anim-delay, 0ms);
+  will-change: opacity, transform, filter;
+}
+.studio-anim-fade-up { transform: translateY(40px); }
+.studio-anim-slide-left { transform: translateX(-60px); }
+.studio-anim-slide-right { transform: translateX(60px); }
+.studio-anim-zoom { transform: scale(.94); }
+.studio-anim-blur { filter: blur(14px); }
+.studio-anim.is-visible {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+/* Reduced motion respect */
+@media (prefers-reduced-motion: reduce) {
+  .studio-anim { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }
+  .studio-frame-tilt { transform: none !important; }
+}
