@@ -12,7 +12,8 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Trash2, Plus, Wand2, Image as ImageIcon, Upload, Loader2, Sparkles, Palette, RotateCcw } from "lucide-react";
+import { Trash2, Plus, Wand2, Image as ImageIcon, Upload, Loader2, Sparkles, Palette, RotateCcw, Layout as LayoutIcon, Sliders, Film } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 import { ALL_FONTS, loadGoogleFont } from "@/lib/googleFonts";
 import { toast } from "sonner";
 import { findSceneDefinition, type SceneRecord } from "@/lib/studioScenes";
@@ -472,6 +473,13 @@ export function SceneInspectorPro({
           )}
         </div>
       </details>
+
+      {/* MODE PRO — layout, fond, boutons, animation */}
+      <ProModePanel
+        scene={scene}
+        boutiqueId={boutiqueId}
+        onPatch={onPatch}
+      />
 
       {/* HERO CINEMA */}
       {scene.scene_type === "hero-cinema" && (
@@ -1257,5 +1265,321 @@ export function SceneInspectorPro({
         "product-related",
       ].includes(scene.scene_type) && generic}
     </Card>
+  );
+}
+/* ===========================================================================
+ * Mode Pro — contrôles avancés par scène (layout, fond, boutons, animation).
+ * Persiste dans scene.style_overrides (JSONB), pas de migration nécessaire.
+ * ======================================================================== */
+
+type Ov = NonNullable<SceneRecord["style_overrides"]>;
+
+function ProModePanel({
+  scene,
+  boutiqueId,
+  onPatch,
+}: {
+  scene: SceneRecord;
+  boutiqueId: string;
+  onPatch: (p: Patch) => void;
+}) {
+  const ov: Ov = (scene.style_overrides ?? {}) as Ov;
+  const layout = ov.layout ?? {};
+  const bg = ov.background ?? {};
+  const btn = ov.button ?? {};
+  const anim = ov.animation ?? {};
+
+  const hasPro =
+    Object.keys(layout).length > 0 ||
+    Object.keys(bg).length > 0 ||
+    Object.keys(btn).length > 0 ||
+    Object.keys(anim).length > 0;
+
+  const upload = useUploadSceneAsset();
+  const videoInput = useRef<HTMLInputElement>(null);
+
+  const setOv = (next: Ov | null) => onPatch({ style_overrides: next });
+  const patchKey = <K extends keyof Ov>(key: K, val: Ov[K]) => {
+    const next: Ov = { ...ov, [key]: val };
+    // Strip empty objects to keep payload clean
+    (Object.keys(next) as Array<keyof Ov>).forEach((k) => {
+      const v = next[k];
+      if (v && typeof v === "object" && !Array.isArray(v) && Object.keys(v as object).length === 0) {
+        delete next[k];
+      }
+    });
+    setOv(Object.keys(next).length === 0 ? null : next);
+  };
+
+  const setLayout = (k: keyof NonNullable<Ov["layout"]>, v: any) => {
+    const nl = { ...(layout || {}) };
+    if (v == null || v === "" || v === "default") delete (nl as any)[k];
+    else (nl as any)[k] = v;
+    patchKey("layout", Object.keys(nl).length ? nl : undefined);
+  };
+  const setBg = (k: keyof NonNullable<Ov["background"]>, v: any) => {
+    const nb = { ...(bg || {}) };
+    if (v == null || v === "") delete (nb as any)[k];
+    else (nb as any)[k] = v;
+    patchKey("background", Object.keys(nb).length ? nb : undefined);
+  };
+  const setBtn = (k: keyof NonNullable<Ov["button"]>, v: any) => {
+    const nb = { ...(btn || {}) };
+    if (v == null || v === "" || v === "default") delete (nb as any)[k];
+    else (nb as any)[k] = v;
+    patchKey("button", Object.keys(nb).length ? nb : undefined);
+  };
+  const setAnim = (k: keyof NonNullable<Ov["animation"]>, v: any) => {
+    const na = { ...(anim || {}) };
+    if (v == null || v === "" || v === "default") delete (na as any)[k];
+    else (na as any)[k] = v;
+    patchKey("animation", Object.keys(na).length ? na : undefined);
+  };
+
+  const handleVideo = async (f: File | null) => {
+    if (!f) return;
+    if (f.size > 25 * 1024 * 1024) {
+      toast.error("Vidéo > 25 Mo, choisis un fichier plus léger.");
+      return;
+    }
+    try {
+      const url = await upload.mutateAsync({ boutiqueId, file: f });
+      setBg("videoUrl", url);
+      toast.success("Vidéo téléversée");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Upload impossible");
+    }
+  };
+
+  const resetPro = () => {
+    const cleaned: Ov = { ...ov };
+    delete cleaned.layout;
+    delete cleaned.background;
+    delete cleaned.button;
+    delete cleaned.animation;
+    setOv(Object.keys(cleaned).length === 0 ? null : cleaned);
+  };
+
+  return (
+    <details className="rounded-md border border-border/40 bg-muted/20 px-2 py-1.5" open={hasPro}>
+      <summary className="cursor-pointer text-xs flex items-center justify-between">
+        <span className="flex items-center gap-1.5 font-medium">
+          <Sliders className="w-3.5 h-3.5" />
+          Mode Pro {hasPro && <span className="ml-1 text-[10px] rounded px-1 bg-primary/15 text-primary">actif</span>}
+        </span>
+        {hasPro && (
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); resetPro(); }}
+            className="text-[10px] text-primary hover:underline flex items-center gap-1"
+            title="Réinitialiser le Mode Pro"
+          >
+            <RotateCcw className="w-3 h-3" /> Réinit.
+          </button>
+        )}
+      </summary>
+
+      <div className="mt-2 space-y-4">
+        {/* ---------- Mise en page ---------- */}
+        <section className="space-y-2">
+          <p className="text-[10px] uppercase tracking-wide opacity-60 flex items-center gap-1">
+            <LayoutIcon className="w-3 h-3" /> Mise en page
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-[10px] opacity-70">Cadre</Label>
+              <Select value={layout.frame ?? "none"} onValueChange={(v) => setLayout("frame", v === "none" ? null : v)}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— Aucun —</SelectItem>
+                  <SelectItem value="rounded">Arrondi</SelectItem>
+                  <SelectItem value="rounded-xl">Très arrondi</SelectItem>
+                  <SelectItem value="sharp">Net (carré)</SelectItem>
+                  <SelectItem value="inset">Inset (carte)</SelectItem>
+                  <SelectItem value="blob">Blob organique</SelectItem>
+                  <SelectItem value="ticket">Ticket</SelectItem>
+                  <SelectItem value="tilt">Inclinée</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-[10px] opacity-70">Espacement</Label>
+              <Select value={layout.padding ?? "normal"} onValueChange={(v) => setLayout("padding", v === "normal" ? null : v)}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="compact">Compact</SelectItem>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="spacious">Aéré</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </section>
+
+        {/* ---------- Fond personnalisé ---------- */}
+        <section className="space-y-2">
+          <p className="text-[10px] uppercase tracking-wide opacity-60 flex items-center gap-1">
+            <ImageIcon className="w-3 h-3" /> Fond personnalisé
+          </p>
+          <ImageField
+            boutiqueId={boutiqueId}
+            label="Image de fond"
+            value={bg.imageUrl}
+            onChange={(url) => setBg("imageUrl", url)}
+            aspect="16:9"
+            promptHint="Visuel de fond ambiance pour la section"
+          />
+          <div className="space-y-1.5">
+            <Label className="text-[10px] opacity-70">Vidéo de fond (mp4/webm, autoplay muet)</Label>
+            <input
+              ref={videoInput}
+              type="file"
+              accept="video/mp4,video/webm,video/quicktime"
+              className="hidden"
+              onChange={(e) => handleVideo(e.target.files?.[0] ?? null)}
+            />
+            <div className="flex flex-wrap gap-1.5 items-center">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => videoInput.current?.click()}
+                disabled={upload.isPending}
+                className="h-7 text-xs"
+              >
+                {upload.isPending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Film className="w-3 h-3 mr-1" />}
+                {bg.videoUrl ? "Remplacer la vidéo" : "Téléverser une vidéo"}
+              </Button>
+              {bg.videoUrl && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setBg("videoUrl", null)}
+                  className="h-7 text-xs text-destructive"
+                >
+                  Retirer
+                </Button>
+              )}
+            </div>
+            <Input
+              placeholder="ou colle une URL https://…/clip.mp4"
+              value={bg.videoUrl ?? ""}
+              onChange={(e) => setBg("videoUrl", e.target.value || null)}
+              className="h-8 text-xs"
+            />
+          </div>
+          {(bg.imageUrl || bg.videoUrl) && (
+            <div>
+              <Label className="text-[10px] opacity-70">
+                Voile sombre — {Math.round((bg.overlayOpacity ?? 0.4) * 100)}%
+              </Label>
+              <Slider
+                min={0}
+                max={100}
+                step={5}
+                value={[Math.round((bg.overlayOpacity ?? 0.4) * 100)]}
+                onValueChange={([v]) => setBg("overlayOpacity", v / 100)}
+              />
+            </div>
+          )}
+        </section>
+
+        {/* ---------- Boutons ---------- */}
+        <section className="space-y-2">
+          <p className="text-[10px] uppercase tracking-wide opacity-60">Boutons CTA</p>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-[10px] opacity-70">Forme</Label>
+              <Select value={btn.shape ?? "default"} onValueChange={(v) => setBtn("shape", v === "default" ? null : v)}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Par défaut" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">Par défaut</SelectItem>
+                  <SelectItem value="pill">Pilule</SelectItem>
+                  <SelectItem value="rounded">Arrondi</SelectItem>
+                  <SelectItem value="square">Carré</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-[10px] opacity-70">Style</Label>
+              <Select value={btn.variant ?? "solid"} onValueChange={(v) => setBtn("variant", v === "solid" ? null : v)}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="solid">Plein</SelectItem>
+                  <SelectItem value="outline">Contour</SelectItem>
+                  <SelectItem value="ghost">Fantôme</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-[10px] opacity-70">Taille</Label>
+              <Select value={btn.size ?? "md"} onValueChange={(v) => setBtn("size", v === "md" ? null : v)}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sm">Compact</SelectItem>
+                  <SelectItem value="md">Normal</SelectItem>
+                  <SelectItem value="lg">Grand</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-end justify-between rounded-md border border-border/40 px-2 py-1.5">
+              <Label className="text-[10px] opacity-70">Flottant (ombre)</Label>
+              <Switch
+                checked={!!btn.floating}
+                onCheckedChange={(v) => setBtn("floating", v || null)}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* ---------- Animation d'entrée ---------- */}
+        <section className="space-y-2">
+          <p className="text-[10px] uppercase tracking-wide opacity-60">Animation d'entrée</p>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-[10px] opacity-70">Effet</Label>
+              <Select value={anim.entry ?? "none"} onValueChange={(v) => setAnim("entry", v === "none" ? null : v)}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— Aucun —</SelectItem>
+                  <SelectItem value="fade">Fondu</SelectItem>
+                  <SelectItem value="fade-up">Fondu vers le haut</SelectItem>
+                  <SelectItem value="slide-left">Glisse depuis la gauche</SelectItem>
+                  <SelectItem value="slide-right">Glisse depuis la droite</SelectItem>
+                  <SelectItem value="zoom">Zoom</SelectItem>
+                  <SelectItem value="blur">Flou cinéma</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-[10px] opacity-70">Durée</Label>
+              <Select value={anim.duration ?? "normal"} onValueChange={(v) => setAnim("duration", v === "normal" ? null : v)}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="fast">Rapide</SelectItem>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="slow">Lent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          {anim.entry && anim.entry !== "none" && (
+            <div>
+              <Label className="text-[10px] opacity-70">
+                Délai — {anim.delay ?? 0}ms
+              </Label>
+              <Slider
+                min={0}
+                max={1500}
+                step={50}
+                value={[anim.delay ?? 0]}
+                onValueChange={([v]) => setAnim("delay", v || null)}
+              />
+            </div>
+          )}
+        </section>
+      </div>
+    </details>
   );
 }

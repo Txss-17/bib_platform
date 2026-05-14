@@ -3,6 +3,7 @@ import { useSceneAnalytics, trackCtaClick } from "@/hooks/useSceneAnalytics";
 import type { SceneRecord } from "@/lib/studioScenes";
 import type { BrandDNA } from "@/hooks/useBrandStudio";
 import { loadGoogleFont } from "@/lib/googleFonts";
+import "./studioScene.css";
 
 interface Product {
   id: string;
@@ -121,17 +122,87 @@ function SceneStyleScope({
   children: React.ReactNode;
 }) {
   const ov = scene.style_overrides ?? null;
+  const ref = useRef<HTMLDivElement>(null);
   const style: React.CSSProperties = {};
   if (ov?.palette?.primary) (style as any)["--studio-primary"] = ov.palette.primary;
   if (ov?.palette?.accent) (style as any)["--studio-accent"] = ov.palette.accent;
   if (ov?.palette?.surface) (style as any)["--studio-surface"] = ov.palette.surface;
   if (ov?.palette?.ink) (style as any)["--studio-ink"] = ov.palette.ink;
   if (ov?.fonts?.body) style.fontFamily = `${ov.fonts.body}, ui-sans-serif, system-ui`;
+
+  // Mode Pro — layout / background / button / animation
+  const layout = ov?.layout;
+  const bg = ov?.background;
+  const btn = ov?.button;
+  const anim = ov?.animation;
+  const hasBgMedia = !!(bg?.imageUrl || bg?.videoUrl);
+
+  const classes: string[] = ["studio-scope"];
+  if (layout?.frame && layout.frame !== "none") classes.push(`studio-frame-${layout.frame}`);
+  if (layout?.padding === "compact") classes.push("studio-pad-compact");
+  if (layout?.padding === "spacious") classes.push("studio-pad-spacious");
+  if (btn?.shape) classes.push(`studio-btn-${btn.shape}`);
+  if (btn?.variant && btn.variant !== "solid") classes.push(`studio-btn-${btn.variant}`);
+  if (btn?.floating) classes.push("studio-btn-floating");
+  if (btn?.size && btn.size !== "md") classes.push(`studio-btn-size-${btn.size}`);
+  if (anim?.entry && anim.entry !== "none") {
+    classes.push("studio-anim");
+    if (anim.entry !== "fade") classes.push(`studio-anim-${anim.entry}`);
+  }
+  if (hasBgMedia) classes.push("has-bg-media");
+
+  if (bg?.color) (style as any).background = `hsl(${bg.color})`;
+  if (anim?.duration) {
+    (style as any)["--studio-anim-dur"] =
+      anim.duration === "fast" ? "0.4s" : anim.duration === "slow" ? "1.2s" : "0.8s";
+  }
+  if (anim?.delay) (style as any)["--studio-anim-delay"] = `${anim.delay}ms`;
+  if (bg?.overlayOpacity != null) (style as any)["--studio-bg-overlay"] = String(bg.overlayOpacity);
+
+  // Trigger entry animation when in viewport
+  useEffect(() => {
+    if (!anim?.entry || anim.entry === "none") return;
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            el.classList.add("is-visible");
+            obs.disconnect();
+            break;
+          }
+        }
+      },
+      { threshold: 0.15 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [anim?.entry]);
+
   useEffect(() => {
     if (ov?.fonts?.display) loadGoogleFont(ov.fonts.display);
     if (ov?.fonts?.body) loadGoogleFont(ov.fonts.body);
   }, [ov?.fonts?.display, ov?.fonts?.body]);
-  return <div style={style}>{children}</div>;
+  return (
+    <div ref={ref} className={classes.join(" ")} style={style}>
+      {bg?.imageUrl && (
+        <div className="studio-bg-layer" style={{ backgroundImage: `url(${bg.imageUrl})` }} />
+      )}
+      {bg?.videoUrl && (
+        <video
+          className="studio-bg-video"
+          src={bg.videoUrl}
+          autoPlay
+          muted
+          loop
+          playsInline
+        />
+      )}
+      {hasBgMedia && <div className="studio-bg-overlay" />}
+      {children}
+    </div>
+  );
 }
 
 /**

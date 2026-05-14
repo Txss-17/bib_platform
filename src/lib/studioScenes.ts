@@ -637,6 +637,48 @@ export interface SceneRecord {
     palette?: { primary?: string; accent?: string; surface?: string; ink?: string };
     fonts?: { display?: string; body?: string };
     sizes?: { h1?: number; body?: number };
+    /** Mode Pro — mise en page de la section. */
+    layout?: {
+      padding?: "compact" | "normal" | "spacious";
+      maxWidth?: "narrow" | "normal" | "wide" | "full";
+      align?: "left" | "center" | "right";
+      frame?:
+        | "none"
+        | "rounded"
+        | "rounded-xl"
+        | "sharp"
+        | "blob"
+        | "inset"
+        | "ticket"
+        | "tilt";
+    };
+    /** Mode Pro — fond personnalisé (image, vidéo, couleur, overlay). */
+    background?: {
+      color?: string | null;        // HSL "h s% l%"
+      imageUrl?: string | null;     // URL publique
+      videoUrl?: string | null;     // URL publique (mp4/webm)
+      overlayOpacity?: number;      // 0 → 1
+    };
+    /** Mode Pro — apparence des boutons CTA dans la scène. */
+    button?: {
+      shape?: "pill" | "rounded" | "square";
+      variant?: "solid" | "outline" | "ghost";
+      floating?: boolean;
+      size?: "sm" | "md" | "lg";
+    };
+    /** Mode Pro — animation d'entrée (déclenchée à l'intersection). */
+    animation?: {
+      entry?:
+        | "none"
+        | "fade"
+        | "fade-up"
+        | "slide-left"
+        | "slide-right"
+        | "zoom"
+        | "blur";
+      duration?: "fast" | "normal" | "slow";
+      delay?: number; // ms
+    };
   } | null;
 }
 
