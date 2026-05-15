@@ -1734,6 +1734,76 @@ function ProModePanel({
               </Select>
             </div>
           </div>
+
+          {/* Presets professionnels — un clic */}
+          <div className="space-y-1.5">
+            <Label className="text-[10px] opacity-70">Style de cadre (presets pro)</Label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {([
+                { id: "none", label: "Aucun" },
+                { id: "flat", label: "Plat" },
+                { id: "soft", label: "Doux" },
+                { id: "elevated", label: "Élevé" },
+                { id: "outline", label: "Contour" },
+                { id: "glass", label: "Verre" },
+                { id: "spotlight", label: "Spotlight" },
+                { id: "polaroid", label: "Polaroid" },
+                { id: "neo", label: "Néo-brut" },
+              ] as const).map((p) => {
+                const active = (layout.preset ?? "none") === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setLayout("preset", p.id === "none" ? null : p.id)}
+                    className={`text-[11px] py-1.5 rounded-md border transition ${
+                      active
+                        ? "border-primary bg-primary/10 text-primary font-medium"
+                        : "border-border/50 hover:border-border hover:bg-muted/50"
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Arrondi personnalisable — global + par côté + avancé */}
+          <CornerRadiusControl
+            radii={layout.radii ?? {}}
+            onChange={(r) => setLayout("radii", Object.keys(r).length ? r : null)}
+          />
+
+          {/* Bordure & ombre fines */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label className="text-[10px] opacity-70 flex justify-between">
+                <span>Bordure</span>
+                <span className="opacity-60">{layout.borderWidth ?? 0}px</span>
+              </Label>
+              <Slider
+                min={0}
+                max={6}
+                step={1}
+                value={[layout.borderWidth ?? 0]}
+                onValueChange={([v]) => setLayout("borderWidth", v ? v : null)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] opacity-70 flex justify-between">
+                <span>Ombre</span>
+                <span className="opacity-60">{layout.shadow ?? 0}/5</span>
+              </Label>
+              <Slider
+                min={0}
+                max={5}
+                step={1}
+                value={[layout.shadow ?? 0]}
+                onValueChange={([v]) => setLayout("shadow", v ? v : null)}
+              />
+            </div>
+          </div>
         </section>
 
         {/* ---------- Fond personnalisé ---------- */}
