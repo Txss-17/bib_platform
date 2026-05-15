@@ -1240,6 +1240,316 @@ export function SceneInspectorPro({
         </>
       )}
 
+      {/* CTA STICKY */}
+      {scene.scene_type === "cta-sticky" && (
+        <>
+          {generic}
+          <div className="flex items-center justify-between rounded-md border border-border/40 px-2 py-1.5">
+            <div>
+              <Label className="text-xs">Barre fixe mobile</Label>
+              <p className="text-[10px] opacity-60">Affiche un bouton d'achat permanent en bas d'écran sur mobile.</p>
+            </div>
+            <Switch
+              checked={!!c.stickyEnabled}
+              onCheckedChange={(v) => setField("stickyEnabled", v)}
+            />
+          </div>
+        </>
+      )}
+
+      {/* PRODUCT SPOTLIGHT */}
+      {scene.scene_type === "product-spotlight" && (
+        <>
+          {generic}
+          {products.length > 0 && (
+            <div>
+              <Label className="text-xs">Produit mis en avant</Label>
+              <Select
+                value={c.productId ?? "__first"}
+                onValueChange={(v) => setField("productId", v === "__first" ? null : v)}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent className="max-h-60">
+                  <SelectItem value="__first">— Premier produit —</SelectItem>
+                  {products.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <ImageField
+            boutiqueId={boutiqueId}
+            label="Visuel de remplacement (si pas de photo produit)"
+            value={c.backgroundImage}
+            onChange={(url) => setField("backgroundImage", url)}
+            aspect="4:3"
+            promptHint="Mise en scène produit éditoriale"
+          />
+        </>
+      )}
+
+      {/* BLOG LIST */}
+      {scene.scene_type === "blog-list" && (
+        <>
+          {generic}
+          <div>
+            <Label className="text-xs mb-2 block">Articles</Label>
+            <ListEditor
+              items={(c.articles ?? []) as Array<Record<string, any>>}
+              factory={() => ({ title: "", excerpt: "", image: null, url: "#" })}
+              addLabel="Ajouter un article"
+              onChange={(next) => setField("articles", next)}
+              renderItem={(a, update) => (
+                <>
+                  <Input placeholder="Titre" value={a.title ?? ""} onChange={(e) => update({ title: e.target.value })} />
+                  <Textarea rows={2} placeholder="Extrait" value={a.excerpt ?? ""} onChange={(e) => update({ excerpt: e.target.value })} />
+                  <Input placeholder="URL (#)" value={a.url ?? ""} onChange={(e) => update({ url: e.target.value })} />
+                  <ImageField
+                    boutiqueId={boutiqueId}
+                    label="Image de couverture"
+                    value={a.image}
+                    onChange={(url) => update({ image: url })}
+                    aspect="16:9"
+                    promptHint={a.title || "Couverture d'article éditoriale"}
+                  />
+                </>
+              )}
+            />
+          </div>
+        </>
+      )}
+
+      {/* CART SUMMARY */}
+      {scene.scene_type === "cart-summary" && (
+        <>
+          {generic}
+          <div>
+            <Label className="text-xs">Texte « panier vide »</Label>
+            <Textarea
+              rows={2}
+              value={c.emptyText ?? ""}
+              onChange={(e) => setField("emptyText", e.target.value)}
+            />
+          </div>
+        </>
+      )}
+
+      {/* CONTACT FORM */}
+      {scene.scene_type === "contact-form" && (
+        <>
+          {generic}
+          <div>
+            <Label className="text-xs">Email de contact</Label>
+            <Input
+              type="email"
+              placeholder="hello@maboutique.com"
+              value={c.contactEmail ?? ""}
+              onChange={(e) => setField("contactEmail", e.target.value)}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">Téléphone</Label>
+              <Input
+                value={c.contactPhone ?? ""}
+                onChange={(e) => setField("contactPhone", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Adresse</Label>
+              <Input
+                value={c.contactAddress ?? ""}
+                onChange={(e) => setField("contactAddress", e.target.value)}
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* TEAM GRID */}
+      {scene.scene_type === "team-grid" && (
+        <>
+          {generic}
+          <div>
+            <Label className="text-xs mb-2 block">Membres de l'équipe</Label>
+            <ListEditor
+              items={(c.members ?? []) as Array<Record<string, any>>}
+              factory={() => ({ name: "", role: "", photo: null, bio: "" })}
+              addLabel="Ajouter un membre"
+              onChange={(next) => setField("members", next)}
+              renderItem={(m, update) => (
+                <>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input placeholder="Nom" value={m.name ?? ""} onChange={(e) => update({ name: e.target.value })} />
+                    <Input placeholder="Rôle" value={m.role ?? ""} onChange={(e) => update({ role: e.target.value })} />
+                  </div>
+                  <Textarea rows={2} placeholder="Bio (facultatif)" value={m.bio ?? ""} onChange={(e) => update({ bio: e.target.value })} />
+                  <ImageField
+                    boutiqueId={boutiqueId}
+                    label="Photo"
+                    value={m.photo}
+                    onChange={(url) => update({ photo: url })}
+                    aspect="1:1"
+                    promptHint={`Portrait pro de ${m.name || "membre équipe"}`}
+                  />
+                </>
+              )}
+            />
+          </div>
+        </>
+      )}
+
+      {/* PRICING TABLE */}
+      {scene.scene_type === "pricing-table" && (
+        <>
+          {generic}
+          <div>
+            <Label className="text-xs mb-2 block">Formules tarifaires</Label>
+            <ListEditor
+              items={(c.plans ?? []) as Array<Record<string, any>>}
+              factory={() => ({ name: "Nouvelle offre", price: "0€", period: "/mois", features: [], cta: "Choisir", featured: false })}
+              addLabel="Ajouter une formule"
+              onChange={(next) => setField("plans", next)}
+              renderItem={(p, update) => (
+                <>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input placeholder="Nom (ex. Pro)" value={p.name ?? ""} onChange={(e) => update({ name: e.target.value })} />
+                    <Input placeholder="Prix (ex. 79€)" value={p.price ?? ""} onChange={(e) => update({ price: e.target.value })} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input placeholder="Période (/mois)" value={p.period ?? ""} onChange={(e) => update({ period: e.target.value })} />
+                    <Input placeholder="Texte CTA" value={p.cta ?? ""} onChange={(e) => update({ cta: e.target.value })} />
+                  </div>
+                  <Textarea
+                    rows={3}
+                    placeholder="Une fonctionnalité par ligne"
+                    value={(p.features ?? []).join("\n")}
+                    onChange={(e) =>
+                      update({
+                        features: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean),
+                      })
+                    }
+                  />
+                  <label className="flex items-center justify-between text-xs rounded-md border border-border/40 px-2 py-1.5">
+                    <span>Mettre en avant (badge)</span>
+                    <Switch
+                      checked={!!p.featured}
+                      onCheckedChange={(v) => update({ featured: v })}
+                    />
+                  </label>
+                </>
+              )}
+            />
+          </div>
+        </>
+      )}
+
+      {/* IMAGE + TEXT SPLIT */}
+      {scene.scene_type === "image-text-split" && (
+        <>
+          {generic}
+          <div>
+            <Label className="text-xs">URL du CTA</Label>
+            <Input
+              placeholder="#shop"
+              value={c.ctaUrl ?? ""}
+              onChange={(e) => setField("ctaUrl", e.target.value)}
+            />
+          </div>
+          <ImageField
+            boutiqueId={boutiqueId}
+            label="Image"
+            value={c.image}
+            onChange={(url) => setField("image", url)}
+            aspect="4:3"
+            promptHint={c.title || "Visuel éditorial"}
+          />
+        </>
+      )}
+
+      {/* TIMELINE */}
+      {scene.scene_type === "timeline" && (
+        <>
+          {"title" in c && (
+            <div>
+              <Label className="text-xs">Titre</Label>
+              <Input value={c.title ?? ""} onChange={(e) => setField("title", e.target.value)} />
+            </div>
+          )}
+          <div>
+            <Label className="text-xs mb-2 block">Étapes</Label>
+            <ListEditor
+              items={(c.events ?? []) as Array<Record<string, any>>}
+              factory={() => ({ year: "", title: "", body: "" })}
+              addLabel="Ajouter une étape"
+              onChange={(next) => setField("events", next)}
+              renderItem={(ev, update) => (
+                <>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Input
+                      placeholder="Année"
+                      value={ev.year ?? ""}
+                      onChange={(e) => update({ year: e.target.value })}
+                    />
+                    <div className="col-span-2">
+                      <Input
+                        placeholder="Titre"
+                        value={ev.title ?? ""}
+                        onChange={(e) => update({ title: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <Textarea
+                    rows={2}
+                    placeholder="Description"
+                    value={ev.body ?? ""}
+                    onChange={(e) => update({ body: e.target.value })}
+                  />
+                </>
+              )}
+            />
+          </div>
+        </>
+      )}
+
+      {/* MAP LOCATION */}
+      {scene.scene_type === "map-location" && (
+        <>
+          {"title" in c && (
+            <div>
+              <Label className="text-xs">Titre</Label>
+              <Input value={c.title ?? ""} onChange={(e) => setField("title", e.target.value)} />
+            </div>
+          )}
+          <div>
+            <Label className="text-xs">Adresse</Label>
+            <Input
+              value={c.address ?? ""}
+              onChange={(e) => setField("address", e.target.value)}
+            />
+          </div>
+          <div>
+            <Label className="text-xs">Horaires</Label>
+            <Input
+              value={c.hours ?? ""}
+              onChange={(e) => setField("hours", e.target.value)}
+            />
+          </div>
+          <div>
+            <Label className="text-xs">URL d'intégration Google Maps</Label>
+            <Input
+              placeholder="https://www.google.com/maps/embed?…"
+              value={c.mapEmbedUrl ?? ""}
+              onChange={(e) => setField("mapEmbedUrl", e.target.value)}
+            />
+            <p className="text-[10px] opacity-50 mt-1">
+              Sur Google Maps : Partager → Intégrer une carte → copie l'URL <code>src</code>.
+            </p>
+          </div>
+        </>
+      )}
+
       {/* Default — generic only */}
       {![
         "hero-cinema",
@@ -1263,6 +1573,16 @@ export function SceneInspectorPro({
         "product-specs",
         "product-hero",
         "product-related",
+        "cta-sticky",
+        "product-spotlight",
+        "blog-list",
+        "cart-summary",
+        "contact-form",
+        "team-grid",
+        "pricing-table",
+        "image-text-split",
+        "timeline",
+        "map-location",
       ].includes(scene.scene_type) && generic}
     </Card>
   );
