@@ -44,6 +44,35 @@
 }
 .studio-frame-tilt:hover { transform: rotate(0); }
 
+/* ---------- Pro frame variables (set by inspector presets / per-corner radii) ---------- */
+.studio-scope.has-frame-vars > section,
+.studio-scope.has-frame-vars > div > section {
+  border-top-left-radius: var(--studio-r-tl, 0px);
+  border-top-right-radius: var(--studio-r-tr, 0px);
+  border-bottom-right-radius: var(--studio-r-br, 0px);
+  border-bottom-left-radius: var(--studio-r-bl, 0px);
+  border-style: solid;
+  border-width: var(--studio-border-w, 0px);
+  border-color: var(--studio-border-c, hsl(var(--studio-ink) / 0.18));
+  box-shadow: var(--studio-shadow, none);
+  overflow: hidden;
+  transition: box-shadow .3s ease, transform .3s ease;
+}
+
+/* Pro presets — set CSS vars consumed by the rule above */
+.studio-preset-flat       { --studio-r-tl: 0px;   --studio-r-tr: 0px;   --studio-r-br: 0px;   --studio-r-bl: 0px;   --studio-border-w: 0px;   --studio-shadow: none; }
+.studio-preset-soft       { --studio-r-tl: 18px;  --studio-r-tr: 18px;  --studio-r-br: 18px;  --studio-r-bl: 18px;  --studio-border-w: 0px;   --studio-shadow: 0 8px 24px -10px hsl(var(--studio-ink) / 0.18); }
+.studio-preset-elevated   { --studio-r-tl: 22px;  --studio-r-tr: 22px;  --studio-r-br: 22px;  --studio-r-bl: 22px;  --studio-border-w: 0px;   --studio-shadow: 0 30px 70px -25px hsl(var(--studio-ink) / 0.35), 0 10px 25px -10px hsl(var(--studio-ink) / 0.18); }
+.studio-preset-outline    { --studio-r-tl: 14px;  --studio-r-tr: 14px;  --studio-r-br: 14px;  --studio-r-bl: 14px;  --studio-border-w: 1.5px; --studio-shadow: none; }
+.studio-preset-glass      { --studio-r-tl: 26px;  --studio-r-tr: 26px;  --studio-r-br: 26px;  --studio-r-bl: 26px;  --studio-border-w: 1px;   --studio-border-c: hsl(0 0% 100% / 0.35); --studio-shadow: 0 20px 60px -20px hsl(var(--studio-ink) / 0.35); }
+.studio-preset-glass > section,
+.studio-preset-glass > div > section { backdrop-filter: blur(14px) saturate(140%); }
+.studio-preset-spotlight  { --studio-r-tl: 24px;  --studio-r-tr: 24px;  --studio-r-br: 24px;  --studio-r-bl: 24px;  --studio-border-w: 0px;   --studio-shadow: 0 0 0 1px hsl(var(--studio-ink) / 0.06), 0 50px 90px -40px hsl(var(--studio-primary, var(--studio-ink)) / 0.45); }
+.studio-preset-polaroid   { --studio-r-tl: 6px;   --studio-r-tr: 6px;   --studio-r-br: 6px;   --studio-r-bl: 6px;   --studio-border-w: 0px;   --studio-shadow: 0 1px 0 hsl(var(--studio-ink) / 0.08), 0 18px 40px -18px hsl(var(--studio-ink) / 0.4); }
+.studio-preset-polaroid > section,
+.studio-preset-polaroid > div > section { padding-bottom: 3.5rem !important; background: hsl(0 0% 100%); }
+.studio-preset-neo        { --studio-r-tl: 16px;  --studio-r-tr: 16px;  --studio-r-br: 16px;  --studio-r-bl: 16px;  --studio-border-w: 2px;   --studio-border-c: hsl(var(--studio-ink) / 0.95); --studio-shadow: 8px 8px 0 0 hsl(var(--studio-ink) / 0.95); }
+
 /* ---------- Padding ---------- */
 .studio-pad-compact > section,
 .studio-pad-compact > div > section { padding-top: 2rem !important; padding-bottom: 2rem !important; }
