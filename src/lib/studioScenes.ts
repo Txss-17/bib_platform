@@ -651,6 +651,30 @@ export interface SceneRecord {
         | "inset"
         | "ticket"
         | "tilt";
+      /** Mode Pro — preset professionnel (bordures + ombre + arrondi) appliqué d'un clic. */
+      preset?:
+        | "none"
+        | "flat"
+        | "soft"
+        | "elevated"
+        | "outline"
+        | "glass"
+        | "spotlight"
+        | "polaroid"
+        | "neo";
+      /** Rayon de bordure personnalisable (0–80 px). Si défini, override le frame preset. */
+      radii?: {
+        tl?: number;
+        tr?: number;
+        br?: number;
+        bl?: number;
+      };
+      /** Épaisseur de bordure (px). 0 = pas de bordure. */
+      borderWidth?: number;
+      /** Couleur de bordure HSL "h s% l%" (sinon ink/30). */
+      borderColor?: string;
+      /** Intensité de l'ombre 0 (aucune) → 5 (XL). */
+      shadow?: 0 | 1 | 2 | 3 | 4 | 5;
     };
     /** Mode Pro — fond personnalisé (image, vidéo, couleur, overlay). */
     background?: {

@@ -141,6 +141,37 @@ function SceneStyleScope({
   if (layout?.frame && layout.frame !== "none") classes.push(`studio-frame-${layout.frame}`);
   if (layout?.padding === "compact") classes.push("studio-pad-compact");
   if (layout?.padding === "spacious") classes.push("studio-pad-spacious");
+
+  // Pro preset (border + shadow + radius bundle)
+  const preset = layout?.preset;
+  if (preset && preset !== "none") {
+    classes.push(`studio-preset-${preset}`, "has-frame-vars");
+  }
+
+  // Per-corner radii override (also enables has-frame-vars even without preset)
+  const radii = layout?.radii;
+  const hasRadii = !!(radii && (radii.tl != null || radii.tr != null || radii.br != null || radii.bl != null));
+  if (hasRadii || layout?.borderWidth != null || layout?.shadow != null || layout?.borderColor) {
+    if (!classes.includes("has-frame-vars")) classes.push("has-frame-vars");
+  }
+  if (radii?.tl != null) (style as any)["--studio-r-tl"] = `${radii.tl}px`;
+  if (radii?.tr != null) (style as any)["--studio-r-tr"] = `${radii.tr}px`;
+  if (radii?.br != null) (style as any)["--studio-r-br"] = `${radii.br}px`;
+  if (radii?.bl != null) (style as any)["--studio-r-bl"] = `${radii.bl}px`;
+  if (layout?.borderWidth != null) (style as any)["--studio-border-w"] = `${layout.borderWidth}px`;
+  if (layout?.borderColor) (style as any)["--studio-border-c"] = `hsl(${layout.borderColor})`;
+  if (layout?.shadow != null) {
+    const map = [
+      "none",
+      "0 4px 12px -6px hsl(var(--studio-ink) / 0.18)",
+      "0 10px 28px -12px hsl(var(--studio-ink) / 0.25)",
+      "0 22px 50px -20px hsl(var(--studio-ink) / 0.32)",
+      "0 36px 80px -28px hsl(var(--studio-ink) / 0.42)",
+      "0 50px 110px -30px hsl(var(--studio-ink) / 0.55), 0 12px 30px -12px hsl(var(--studio-ink) / 0.25)",
+    ];
+    (style as any)["--studio-shadow"] = map[layout.shadow] ?? map[0];
+  }
+
   if (btn?.shape) classes.push(`studio-btn-${btn.shape}`);
   if (btn?.variant && btn.variant !== "solid") classes.push(`studio-btn-${btn.variant}`);
   if (btn?.floating) classes.push("studio-btn-floating");
