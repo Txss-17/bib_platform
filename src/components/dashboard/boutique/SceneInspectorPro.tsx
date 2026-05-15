@@ -1594,6 +1594,125 @@ export function SceneInspectorPro({
 
 type Ov = NonNullable<SceneRecord["style_overrides"]>;
 
+type Radii = { tl?: number; tr?: number; br?: number; bl?: number };
+
+function CornerRadiusControl({
+  radii,
+  onChange,
+}: {
+  radii: Radii;
+  onChange: (r: Radii) => void;
+}) {
+  const [mode, setMode] = useState<"all" | "sides" | "advanced">(() => {
+    const vals = [radii.tl, radii.tr, radii.br, radii.bl];
+    const set = vals.filter((v) => v != null);
+    if (set.length === 0) return "all";
+    const allEq = set.every((v) => v === set[0]) && set.length === 4;
+    if (allEq) return "all";
+    const topEq = radii.tl === radii.tr;
+    const botEq = radii.bl === radii.br;
+    if (topEq && botEq) return "sides";
+    return "advanced";
+  });
+
+  const all = radii.tl ?? radii.tr ?? radii.br ?? radii.bl ?? 0;
+  const top = radii.tl ?? radii.tr ?? 0;
+  const bot = radii.bl ?? radii.br ?? 0;
+  const left = radii.tl ?? radii.bl ?? 0;
+  const right = radii.tr ?? radii.br ?? 0;
+
+  const setAll = (v: number) => {
+    if (!v) onChange({});
+    else onChange({ tl: v, tr: v, br: v, bl: v });
+  };
+  const setTop = (v: number) => onChange({ ...radii, tl: v || undefined, tr: v || undefined });
+  const setBot = (v: number) => onChange({ ...radii, bl: v || undefined, br: v || undefined });
+  const setLeft = (v: number) => onChange({ ...radii, tl: v || undefined, bl: v || undefined });
+  const setRight = (v: number) => onChange({ ...radii, tr: v || undefined, br: v || undefined });
+  const setOne = (k: keyof Radii, v: number) =>
+    onChange({ ...radii, [k]: v || undefined });
+
+  const tabs: Array<{ id: typeof mode; label: string }> = [
+    { id: "all", label: "Global" },
+    { id: "sides", label: "Côtés" },
+    { id: "advanced", label: "Par coin" },
+  ];
+
+  return (
+    <div className="space-y-2 rounded-md border border-border/40 bg-background/60 p-2">
+      <div className="flex items-center justify-between">
+        <Label className="text-[10px] opacity-70">Arrondi (rayon de courbure)</Label>
+        <div className="flex rounded-md border border-border/50 overflow-hidden">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setMode(t.id)}
+              className={`text-[10px] px-2 py-0.5 ${
+                mode === t.id ? "bg-primary text-primary-foreground" : "hover:bg-muted/60"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {mode === "all" && (
+        <RadiusSlider label="Tous les coins" value={all} onChange={setAll} />
+      )}
+
+      {mode === "sides" && (
+        <div className="grid grid-cols-2 gap-2">
+          <RadiusSlider label="Haut" value={top} onChange={setTop} />
+          <RadiusSlider label="Bas" value={bot} onChange={setBot} />
+          <RadiusSlider label="Gauche" value={left} onChange={setLeft} />
+          <RadiusSlider label="Droite" value={right} onChange={setRight} />
+        </div>
+      )}
+
+      {mode === "advanced" && (
+        <div className="grid grid-cols-2 gap-2">
+          <RadiusSlider label="↖ Haut-G" value={radii.tl ?? 0} onChange={(v) => setOne("tl", v)} />
+          <RadiusSlider label="↗ Haut-D" value={radii.tr ?? 0} onChange={(v) => setOne("tr", v)} />
+          <RadiusSlider label="↙ Bas-G" value={radii.bl ?? 0} onChange={(v) => setOne("bl", v)} />
+          <RadiusSlider label="↘ Bas-D" value={radii.br ?? 0} onChange={(v) => setOne("br", v)} />
+        </div>
+      )}
+
+      {(radii.tl != null || radii.tr != null || radii.br != null || radii.bl != null) && (
+        <button
+          type="button"
+          onClick={() => onChange({})}
+          className="text-[10px] text-primary hover:underline flex items-center gap-1"
+        >
+          <RotateCcw className="w-3 h-3" /> Réinitialiser l'arrondi
+        </button>
+      )}
+    </div>
+  );
+}
+
+function RadiusSlider({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <div className="space-y-1">
+      <Label className="text-[10px] opacity-70 flex justify-between">
+        <span>{label}</span>
+        <span className="opacity-60">{value}px</span>
+      </Label>
+      <Slider min={0} max={80} step={1} value={[value]} onValueChange={([v]) => onChange(v)} />
+    </div>
+  );
+}
+
 function ProModePanel({
   scene,
   boutiqueId,
