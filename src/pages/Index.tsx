@@ -2,46 +2,23 @@ import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import Footer from "@/components/Footer";
 import CTASection from "@/components/CTASection";
-import FeaturesSection from "@/components/FeaturesSection";
 import HowItWorksSection from "@/components/HowItWorksSection";
-import TrustSection from "@/components/TrustSection";
 import { RevealRow } from "@/components/landing/RevealRow";
 import { MarqueeStrip } from "@/components/landing/MarqueeStrip";
-import ComplianceBadgesSection from "@/components/landing/ComplianceBadgesSection";
-import PriceTransparencySection from "@/components/landing/PriceTransparencySection";
-import AiExplainabilitySection from "@/components/landing/AiExplainabilitySection";
 import DiscoverBoutiquesSection from "@/components/landing/DiscoverBoutiquesSection";
 import { useSEO } from "@/hooks/useSEO";
-import { useLanguage } from "@/contexts/LanguageContext";
-import {
-  BarChart3,
-  ShieldCheck,
-  Recycle,
-  Globe2,
-  Headphones,
-  Boxes,
-  Sparkles,
-  Layers,
-  TrendingUp,
-  Truck,
-  CheckCircle2,
-} from "lucide-react";
+import { ShieldCheck, Boxes, CheckCircle2 } from "lucide-react";
 
 /**
- * New landing page model:
- *  - Hero with the OFFICIAL Brand-In-A-Box logo (B drops into the box)
- *  - Marquee strip (text scrolls horizontally)
- *  - Alternating "RevealRow" sections that slide in from the left/right on scroll
- *  - Each row has its own visual built from clean BIB tokens (no marine/gold blend)
- *  - CTA + Footer preserved
+ * Landing — version épurée :
+ * Hero → Marquee → Marketplace → Boutique → How it works → Dashboard → Trust → CTA.
+ * On laisse les visuels parler ; copies réduites au strict minimum.
  */
 const Index = () => {
-  const { t } = useLanguage();
-
   useSEO({
     title: "Brand-In-A-Box — Your brand. Ready to launch.",
     description:
-      "Lancez, gérez et développez votre marque en ligne avec Brand-In-A-Box. Boutiques modulaires, intelligence produit, dashboard live — premium par défaut.",
+      "Lancez votre marque en ligne en quelques minutes. Boutique premium, logistique incluse.",
   });
 
   return (
@@ -52,125 +29,53 @@ const Index = () => {
 
         <MarqueeStrip
           tone="marine"
-          items={[
-            "Your brand.",
-            "Ready to launch.",
-            "Premium by default.",
-            "Conversion-first.",
-            "Multi-market.",
-            "Built on trust.",
-          ]}
+          items={["Your brand.", "Ready to launch.", "Premium by default."]}
         />
 
-        {/* Discover boutiques — entry point for end-customers */}
         <DiscoverBoutiquesSection />
 
-        {/* Quick value props (3 columns of pure brand color) */}
-        <FeaturesSection />
-
-        {/* === TRUST PROOF #1 — Compliance badges (marine, full-bleed) === */}
-        <ComplianceBadgesSection />
-
-        {/* ROW 1 — slide from LEFT — Modular boutiques */}
         <RevealRow
           side="left"
           tone="ivory"
-          eyebrow={t("features.badge") || "Modular boutiques"}
+          eyebrow="Boutique"
           title={
             <>
-              Construisez votre boutique <span className="text-bib-gold">comme un studio.</span>
+              Votre boutique, <span className="text-bib-gold">en un clic.</span>
             </>
           }
-          description="Sections drag-and-drop, templates pensés pour la conversion, branding 100% personnalisable. Vous gardez le contrôle, sans toucher au code."
-          bullets={[
-            { icon: <Layers className="w-3.5 h-3.5" />, label: "Sections modulaires (Hero, FAQ, Bundle, Lookbook…)" },
-            { icon: <Sparkles className="w-3.5 h-3.5" />, label: "Templates premium par catégorie (Mode, Tech, Fitness…)" },
-            { icon: <CheckCircle2 className="w-3.5 h-3.5" />, label: "Aperçu live et publication en un clic" },
-          ]}
+          description="Templates premium, sans code."
+          bullets={[]}
           visual={<MockupBoutique />}
         />
 
-        {/* How it works — 4 steps */}
         <HowItWorksSection />
 
-        {/* === TRUST PROOF #2 — Live price/margin simulator === */}
-        <PriceTransparencySection />
-
-        {/* ROW 2 — slide from RIGHT — Live dashboard */}
         <RevealRow
           side="right"
           tone="ivory"
-          eyebrow="Dashboard live"
+          eyebrow="Dashboard"
           title={
             <>
-              Pilotez votre activité <span className="text-bib-gold">en temps réel.</span>
+              Pilotage <span className="text-bib-gold">temps réel.</span>
             </>
           }
-          description="KPIs essentiels, sessions actives, carte des ventes, alertes stocks. Toute la santé de votre business, lisible en moins de 5 secondes."
-          bullets={[
-            { icon: <TrendingUp className="w-3.5 h-3.5" />, label: "Revenus, panier moyen, taux de conversion" },
-            { icon: <Globe2 className="w-3.5 h-3.5" />, label: "Carte 3D des ventes par région" },
-            { icon: <BarChart3 className="w-3.5 h-3.5" />, label: "Alertes contextuelles (stocks, conformité, fraude)" },
-          ]}
+          description="Toute votre activité, lisible en 5 secondes."
+          bullets={[]}
           visual={<MockupDashboard />}
         />
 
-        {/* Trust block (stats + 6 cards) */}
-        <TrustSection />
-
-        {/* === TRUST PROOF #3 — Explainable AI === */}
-        <AiExplainabilitySection />
-
-        {/* ROW 3 — slide from LEFT — Trust & Compliance highlight */}
         <RevealRow
           side="left"
           tone="ivory"
-          eyebrow="Trust-first"
+          eyebrow="Confiance"
           title={
             <>
-              La confiance, <span className="text-bib-gold">par défaut.</span>
+              Marques <span className="text-bib-gold">vérifiées.</span>
             </>
           }
-          description="Vérification d'âge, audits fournisseurs, validation d'échantillons obligatoire et intégration Trustpilot. Votre réputation est protégée à chaque étape."
-          bullets={[
-            { icon: <ShieldCheck className="w-3.5 h-3.5" />, label: "Validation d'échantillon avant activation produit" },
-            { icon: <CheckCircle2 className="w-3.5 h-3.5" />, label: "Conformité KYC & RGPD intégrée" },
-            { icon: <Sparkles className="w-3.5 h-3.5" />, label: "Mention « Verified by Brand-In-A-Box »" },
-          ]}
+          description="KYC, audits, échantillons validés."
+          bullets={[]}
           visual={<MockupTrust />}
-        />
-
-        {/* ROW 4 — slide from RIGHT — Logistics & ops */}
-        <RevealRow
-          side="right"
-          tone="ivory"
-          eyebrow="Logistics OS"
-          title={
-            <>
-              On expédie. <span className="text-bib-gold">Vous vendez.</span>
-            </>
-          }
-          description="Brand-In-A-Box prend en charge la logistique centralisée pendant que vous gérez la relation client. Escalade automatique des litiges sous 48h."
-          bullets={[
-            { icon: <Truck className="w-3.5 h-3.5" />, label: "Suivi de commande pour vos clients (LKS26-XXXXXX)" },
-            { icon: <Recycle className="w-3.5 h-3.5" />, label: "Système de recyclage emballages + points fidélité" },
-            { icon: <Headphones className="w-3.5 h-3.5" />, label: "Support Pôle 12 — alertes et recommandations" },
-          ]}
-          visual={<MockupLogistics />}
-        />
-
-        <MarqueeStrip
-          tone="gold"
-          items={[
-            "Fashion.",
-            "Tech.",
-            "Fitness.",
-            "Beauty.",
-            "Home.",
-            "One-product.",
-            "Bundle.",
-            "Premium templates.",
-          ]}
         />
 
         <CTASection />
@@ -183,7 +88,6 @@ const Index = () => {
 export default Index;
 
 /* ----------------------------- VISUAL MOCKUPS ----------------------------- */
-/* Each mockup uses ONLY one accent (marine OR gold) per element — never blended. */
 
 function MockupBoutique() {
   return (
@@ -214,7 +118,7 @@ function MockupBoutique() {
       </div>
       <div className="absolute -bottom-4 -right-4 bg-card border border-bib-gold/30 rounded-xl shadow-lg px-3 py-2 flex items-center gap-2">
         <Boxes size={16} className="text-bib-gold" />
-        <span className="text-xs font-semibold text-bib-marine">12 sections actives</span>
+        <span className="text-xs font-semibold text-bib-marine">12 sections</span>
       </div>
     </div>
   );
@@ -240,11 +144,6 @@ function MockupDashboard() {
             />
           ))}
         </div>
-        <div className="grid grid-cols-3 gap-3 mt-4">
-          <Stat label="Sessions" value="1 284" />
-          <Stat label="Conversion" value="3.8%" tone="gold" />
-          <Stat label="Panier moy." value="€ 64" />
-        </div>
       </div>
       <div className="absolute -top-4 -left-4 bg-bib-marine text-primary-foreground rounded-xl shadow-lg px-3 py-2 flex items-center gap-2">
         <span className="w-2 h-2 rounded-full bg-bib-gold animate-pulse" />
@@ -267,12 +166,7 @@ function MockupTrust() {
         </div>
       </div>
       <div className="space-y-2.5">
-        {[
-          "Vérification d'identité (KYC)",
-          "Validation d'échantillon produit",
-          "Audit fournisseur passé",
-          "Conformité RGPD active",
-        ].map((line) => (
+        {["Identité KYC", "Échantillon validé", "Audit fournisseur", "RGPD"].map((line) => (
           <div key={line} className="flex items-center gap-2 text-sm text-bib-marine">
             <CheckCircle2 size={16} className="text-bib-gold shrink-0" />
             {line}
@@ -282,43 +176,6 @@ function MockupTrust() {
       <div className="mt-5 h-2 rounded-full bg-bib-marine/10 overflow-hidden">
         <div className="h-full w-[98%] bg-bib-gold" />
       </div>
-    </div>
-  );
-}
-
-function MockupLogistics() {
-  return (
-    <div className="rounded-2xl border border-bib-marine/10 bg-card shadow-premium p-5 lg:p-6">
-      <div className="flex items-center justify-between mb-4">
-        <p className="font-display font-semibold text-bib-marine">Commande #LKS26-048720</p>
-        <span className="px-2 py-1 rounded bg-bib-gold/15 text-bib-gold text-xs font-semibold">En transit</span>
-      </div>
-      <div className="relative pl-3">
-        <div className="absolute left-[6px] top-1 bottom-1 w-px bg-bib-marine/20" />
-        {[
-          { label: "Confirmée", done: true },
-          { label: "Préparée — entrepôt UE", done: true },
-          { label: "Expédiée", done: true },
-          { label: "Livraison estimée — demain", done: false },
-        ].map((s, i) => (
-          <div key={i} className="flex items-start gap-3 py-2 relative">
-            <span className={`w-3 h-3 mt-1.5 rounded-full ${s.done ? "bg-bib-gold" : "bg-bib-marine/20 border border-bib-marine/30"}`} />
-            <div>
-              <p className="text-sm text-bib-marine font-medium">{s.label}</p>
-              {s.done && <p className="text-xs text-muted-foreground">Aujourd'hui · 14:32</p>}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function Stat({ label, value, tone = "marine" }: { label: string; value: string; tone?: "marine" | "gold" }) {
-  return (
-    <div className="rounded-lg border border-bib-marine/10 p-2.5">
-      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className={`font-display font-bold text-base ${tone === "gold" ? "text-bib-gold" : "text-bib-marine"}`}>{value}</p>
     </div>
   );
 }
