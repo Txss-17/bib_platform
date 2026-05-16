@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check, Star } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { BrandBoxLogo3D } from "@/components/BrandBoxLogo3D";
 import { useRef } from "react";
 
@@ -12,7 +11,6 @@ import { useRef } from "react";
  * Signature animation: scroll-driven B-drops-into-the-box, then bounces gently.
  */
 const HeroSection = () => {
-  const { t } = useLanguage();
   const sectionRef = useRef<HTMLElement>(null);
 
   return (
