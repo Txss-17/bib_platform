@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check, Star } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { BrandBoxLogo } from "@/components/BrandBoxLogo";
-import { useEffect, useRef, useState } from "react";
+import { BrandBoxLogo3D } from "@/components/BrandBoxLogo3D";
+import { useRef } from "react";
 
 /**
  * Hero — Brand-In-A-Box
@@ -12,37 +11,7 @@ import { useEffect, useRef, useState } from "react";
  * Signature animation: scroll-driven B-drops-into-the-box, then bounces gently.
  */
 const HeroSection = () => {
-  const { t } = useLanguage();
   const sectionRef = useRef<HTMLElement>(null);
-  // `progress` drives the B's vertical position INSIDE the box.
-  //   1 = B fully inside (resting at the bottom of the box opening)
-  //   0 = B fully OUT, lifted above the box
-  // We oscillate with scroll so the B continuously comes out and goes back in.
-  const [progress, setProgress] = useState(1);
-
-  useEffect(() => {
-    const compute = () => {
-      // Total scrollable height of the page
-      const scrolled = window.scrollY;
-      // One full out-and-in cycle every ~600px of scroll → feels lively but not frantic
-      const cycle = 600;
-      const phase = (scrolled % cycle) / cycle; // 0 → 1
-      // Sine wave: starts at 1 (inside), rises out, comes back in.
-      //   sin(0)=0 → progress=1 (inside)
-      //   sin(π/2)=1 → progress=0 (fully out)
-      //   sin(π)=0 → progress=1 (back inside)
-      const wave = Math.sin(phase * Math.PI * 2); // -1 → 1
-      // Map wave (-1..1) to progress (1..0..1..2..1) but clamp:
-      // We want symmetric behaviour: B goes out then back in. Use |sin|.
-      const out = Math.abs(wave); // 0 → 1 → 0
-      setProgress(1 - out); // 1 (inside) → 0 (out) → 1 (inside)
-    };
-    compute();
-    window.addEventListener("scroll", compute, { passive: true });
-    return () => window.removeEventListener("scroll", compute);
-  }, []);
-
-  const landed = progress >= 0.85;
 
   return (
     <section
@@ -81,16 +50,14 @@ const HeroSection = () => {
               <span className="text-bib-gold">Prête à décoller.</span>
             </h1>
 
-            <p className="text-lg lg:text-xl text-muted-foreground leading-relaxed mb-8 font-sans">
-              Lancez une boutique premium, pilotez vos commandes en temps réel
-              et gagnez la confiance de vos clients — le tout depuis une seule
-              plateforme. Pas de code. Pas de friction.
+            <p className="text-base lg:text-lg text-muted-foreground leading-relaxed mb-8 font-sans">
+              Boutique premium. Logistique incluse. Aucune ligne de code.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 mb-8">
               <Button variant="premium" size="xl" className="group shadow-lg" asChild>
                 <Link to="/signup">
-                  Lancer ma boutique
+                  Créer ma boutique gratuitement
                   <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
@@ -98,14 +65,14 @@ const HeroSection = () => {
                 variant="outline"
                 size="xl"
                 className="border-bib-marine/25 text-bib-marine hover:bg-bib-marine hover:text-primary-foreground"
+                asChild
               >
-                Voir une démo (2 min)
+                <Link to="/store">Explorer les boutiques</Link>
               </Button>
             </div>
 
-            {/* Trust row — gold checks (no gradient dots) */}
             <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-bib-marine/80">
-              {["Sans carte bancaire", "Conformité RGPD", "Support FR/EN 24/7"].map((label) => (
+              {["Sans CB", "RGPD", "Support 24/7"].map((label) => (
                 <li key={label} className="flex items-center gap-2">
                   <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-bib-gold/15">
                     <Check size={11} className="text-bib-gold" strokeWidth={3} />
@@ -115,8 +82,7 @@ const HeroSection = () => {
               ))}
             </ul>
 
-            {/* Mini social proof */}
-            <div className="mt-10 flex items-center gap-4">
+            <div className="mt-8 flex items-center gap-4">
               <div className="flex -space-x-2">
                 {[
                   "hsl(var(--bib-marine))",
@@ -139,36 +105,23 @@ const HeroSection = () => {
                   ))}
                   <span className="ml-1.5 text-bib-marine font-semibold text-sm">4.9/5</span>
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  +1 200 marques lancées avec Brand-In-A-Box
-                </span>
+                <span className="text-xs text-muted-foreground">+1 200 marques lancées</span>
               </div>
             </div>
           </div>
 
-          {/* RIGHT — official mark with scroll-driven B-drop animation */}
+          {/* RIGHT — true 3D B-drops-into-box animation */}
           <div className="relative flex items-center justify-center">
-            {/* Marine "stage" frame — never gradient */}
             <div className="relative">
               <div
                 className="absolute -inset-10 rounded-[2.25rem] bg-card border border-bib-marine/10 shadow-premium"
                 aria-hidden
               />
-              <div className="relative px-10 py-12">
-                <BrandBoxLogo
-                  size={280}
-                  variant="icon"
-                  progress={progress}
-                  replayOnScroll={false}
-                />
+              <div className="relative w-[280px] h-[280px] sm:w-[340px] sm:h-[340px] lg:w-[400px] lg:h-[400px]">
+                <BrandBoxLogo3D />
               </div>
 
-              {/* Floating chip — order live */}
-              <div
-                className={`absolute -left-6 -bottom-6 bg-card rounded-xl shadow-lg border border-bib-marine/10 px-3 py-2.5 transition-all duration-700 ${
-                  landed ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
-                }`}
-              >
+              <div className="absolute -left-6 -bottom-6 bg-card rounded-xl shadow-lg border border-bib-marine/10 px-3 py-2.5">
                 <div className="flex items-center gap-3">
                   <span className="relative flex w-2.5 h-2.5">
                     <span className="absolute inset-0 rounded-full bg-bib-gold animate-ping opacity-60" />
@@ -176,21 +129,16 @@ const HeroSection = () => {
                   </span>
                   <div>
                     <p className="text-[11px] uppercase tracking-wider text-muted-foreground leading-none">
-                      Commande #LKS26-048720
+                      Commande live
                     </p>
                     <p className="text-sm font-semibold text-bib-marine leading-tight mt-1">
-                      €128 · livrée 🇫🇷
+                      €128 · 🇫🇷
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Floating chip — trust */}
-              <div
-                className={`absolute -right-6 -top-6 bg-bib-marine text-primary-foreground rounded-xl shadow-lg px-3 py-2.5 transition-all duration-700 delay-150 ${
-                  landed ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-3"
-                }`}
-              >
+              <div className="absolute -right-6 -top-6 bg-bib-marine text-primary-foreground rounded-xl shadow-lg px-3 py-2.5">
                 <div className="flex items-center gap-2">
                   <span className="w-7 h-7 rounded-md bg-bib-gold flex items-center justify-center">
                     <Check size={14} className="text-bib-marine" strokeWidth={3} />
@@ -208,11 +156,8 @@ const HeroSection = () => {
         </div>
       </div>
 
-      {/* Scroll indicator */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-bib-marine/60">
-        <span className="text-[10px] uppercase tracking-[0.3em] font-semibold">
-          {progress < 0.5 ? "Scroll · le B tombe" : "Continuez"}
-        </span>
+        <span className="text-[10px] uppercase tracking-[0.3em] font-semibold">Découvrir</span>
         <span className="w-px h-10 bg-bib-marine/30 animate-bib-scroll-line" />
       </div>
 
