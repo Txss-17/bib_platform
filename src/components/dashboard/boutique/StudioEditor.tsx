@@ -236,7 +236,7 @@ export function StudioEditor({
   /** Preview viewport simulator. */
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
 
-  const { data: pages = [] } = useBoutiquePages(boutiqueId);
+  const { data: pages = [], isFetched: pagesFetched } = useBoutiquePages(boutiqueId);
   const createPage = useCreateBoutiquePage();
   const updatePage = useUpdateBoutiquePage();
   const deletePage = useDeleteBoutiquePage();
@@ -295,8 +295,24 @@ export function StudioEditor({
    * with `page_id IS NULL` and isn't created here.
    */
   useEffect(() => {
-    if (!boutiqueId || seededRef.current || pages.length > 0) return;
+    if (!boutiqueId || seededRef.current) return;
+    // Wait for the query to actually resolve before deciding to seed —
+    // otherwise the initial empty array triggers seeding on every refresh
+    // and re-creates pages the user just deleted.
+    if (!pagesFetched) return;
+    if (pages.length > 0) {
+      seededRef.current = true;
+      return;
+    }
+    // Persist a per-boutique flag so a fast refresh while pages are still
+    // empty (e.g. just after the user wiped them all) doesn't re-seed.
+    const flagKey = `bib:studio-seeded:${boutiqueId}`;
+    if (typeof window !== "undefined" && window.localStorage.getItem(flagKey)) {
+      seededRef.current = true;
+      return;
+    }
     seededRef.current = true;
+    if (typeof window !== "undefined") window.localStorage.setItem(flagKey, "1");
     (async () => {
       for (const key of ["products", "about", "contact"] as const) {
         const tpl = PAGE_TEMPLATES.find((t) => t.key === key);
@@ -310,7 +326,7 @@ export function StudioEditor({
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [boutiqueId, pages.length]);
+  }, [boutiqueId, pagesFetched, pages.length]);
 
   /**
    * Open (or create on first call) the reserved Product Page template.
