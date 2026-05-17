@@ -32,7 +32,6 @@ import BoutiqueAnalytics from "./pages/dashboard/BoutiqueAnalytics";
 import Parametres from "./pages/dashboard/Parametres";
 import Aide from "./pages/dashboard/Aide";
 import MesTickets from "./pages/dashboard/MesTickets";
-import Rapports from "./pages/dashboard/Rapports";
 import AdminDocuments from "./pages/dashboard/AdminDocuments";
 import Equipe from "./pages/dashboard/Equipe";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -49,6 +48,11 @@ import { BoutiqueCGVPage, BoutiqueCGUPage, BoutiqueAboutPage } from "./pages/Bou
 import BoutiqueCustomPage from "./pages/BoutiqueCustomPage";
 import { CartProvider } from "@/contexts/CartContext";
 import Unsubscribe from "./pages/Unsubscribe";
+
+// Marketing/info pages
+import Carrieres from "./pages/Carrieres";
+import APropos from "./pages/APropos";
+import { MentionsLegales, CGU, Confidentialite, Cookies } from "./pages/LegalPages";
 
 const queryClient = new QueryClient();
 
@@ -78,6 +82,12 @@ const App = () => (
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/carrieres" element={<Carrieres />} />
+            <Route path="/a-propos" element={<APropos />} />
+            <Route path="/mentions-legales" element={<MentionsLegales />} />
+            <Route path="/cgu" element={<CGU />} />
+            <Route path="/confidentialite" element={<Confidentialite />} />
+            <Route path="/cookies" element={<Cookies />} />
             <Route
               path="/dashboard"
               element={
@@ -171,14 +181,6 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Parametres />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard/rapports"
-              element={
-                <ProtectedRoute>
-                  <Rapports />
                 </ProtectedRoute>
               }
             />

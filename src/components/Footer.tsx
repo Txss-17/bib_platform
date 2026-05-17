@@ -26,36 +26,38 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider text-primary-foreground/80">{t("footer.product")}</h4>
             <ul className="space-y-3">
-              {["features", "dashboard", "intelligence", "recycling", "pricing"].map(k => (
-                <li key={k}><Link to="#" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm">{t(`footer.${k}`)}</Link></li>
-              ))}
+              <li><Link to="/vendre" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm">Vendre sur BIB</Link></li>
+              <li><Link to="/marketplace" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm">Marketplace</Link></li>
+              <li><Link to="/tarifs" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm">Tarifs</Link></li>
+              <li><Link to="/suivi-commande" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm">Suivi commande</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider text-primary-foreground/80">{t("footer.company")}</h4>
             <ul className="space-y-3">
-              {["about", "careers", "press", "partners", "contact"].map(k => (
-                <li key={k}><Link to="#" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm">{t(`footer.${k}`)}</Link></li>
-              ))}
+              <li><Link to="/a-propos" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm">À propos</Link></li>
+              <li><Link to="/carrieres" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm">Carrières</Link></li>
+              <li><Link to="/dashboard/aide" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm">Support</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider text-primary-foreground/80">{t("footer.resources")}</h4>
             <ul className="space-y-3">
-              {["help", "docs", "academy", "webinars", "blog"].map(k => (
-                <li key={k}><Link to="#" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm">{t(`footer.${k}`)}</Link></li>
-              ))}
+              <li><Link to="/dashboard/aide" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm">Centre d'aide</Link></li>
+              <li><Link to="/suivi-commande" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm">Suivi commande</Link></li>
+              <li><Link to="/recycler" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm">Recyclage</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider text-primary-foreground/80">{t("footer.legal")}</h4>
             <ul className="space-y-3">
-              {["privacy", "terms", "cookies", "compliance", "gdpr"].map(k => (
-                <li key={k}><Link to="#" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm">{t(`footer.${k}`)}</Link></li>
-              ))}
+              <li><Link to="/mentions-legales" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm">Mentions légales</Link></li>
+              <li><Link to="/cgu" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm">CGU</Link></li>
+              <li><Link to="/confidentialite" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm">Confidentialité</Link></li>
+              <li><Link to="/cookies" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-sm">Cookies</Link></li>
             </ul>
           </div>
         </div>
