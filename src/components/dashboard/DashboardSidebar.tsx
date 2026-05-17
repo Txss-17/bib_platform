@@ -32,7 +32,6 @@ const mainNavItems = [
   { title: "Ventes", url: "/dashboard/ventes", icon: TrendingUp },
   { title: "Paiements", url: "/dashboard/paiements", icon: CreditCard },
   { title: "Analytics", url: "/dashboard/seo-analytics", icon: BarChart3 },
-  { title: "Rapports", url: "/dashboard/rapports", icon: FileText },
   { title: "Équipe", url: "/dashboard/equipe", icon: Users },
 ];
 

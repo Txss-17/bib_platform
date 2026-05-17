@@ -30,7 +30,7 @@ const ROLE_DESCRIPTIONS: Record<TeamRole, string> = {
 };
 
 const ROLE_PERMISSIONS: Record<TeamRole, string[]> = {
-  owner: ["dashboard", "boutiques", "produits", "catalogue", "commandes", "ventes", "paiements", "analytics", "rapports", "parametres", "equipe"],
+  owner: ["dashboard", "boutiques", "produits", "catalogue", "commandes", "ventes", "paiements", "analytics", "parametres", "equipe"],
   manager: ["dashboard", "produits", "commandes", "analytics"],
   marketing: ["boutiques", "analytics"],
   support: ["commandes"],
