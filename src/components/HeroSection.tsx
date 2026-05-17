@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check, Star } from "lucide-react";
 import { Link } from "react-router-dom";
-import { BrandBoxLogo3D } from "@/components/BrandBoxLogo3D";
+import { BoxWithProductsHero3D } from "@/components/BoxWithProductsHero3D";
 import { useRef } from "react";
 
 /**
@@ -117,8 +117,8 @@ const HeroSection = () => {
                 className="absolute -inset-10 rounded-[2.25rem] bg-card border border-bib-marine/10 shadow-premium"
                 aria-hidden
               />
-              <div className="relative w-[280px] h-[280px] sm:w-[340px] sm:h-[340px] lg:w-[400px] lg:h-[400px]">
-                <BrandBoxLogo3D />
+              <div className="relative w-[300px] h-[300px] sm:w-[380px] sm:h-[380px] lg:w-[460px] lg:h-[460px]">
+                <BoxWithProductsHero3D />
               </div>
 
               <div className="absolute -left-6 -bottom-6 bg-card rounded-xl shadow-lg border border-bib-marine/10 px-3 py-2.5">
