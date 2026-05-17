@@ -96,8 +96,8 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['"Playfair Display"', 'Georgia', 'serif'],
+        sans: ['Figtree', 'Inter', 'system-ui', 'sans-serif'],
+        display: ['Outfit', '"Playfair Display"', 'Georgia', 'sans-serif'],
       },
       boxShadow: {
         'sm': 'var(--shadow-sm)',
