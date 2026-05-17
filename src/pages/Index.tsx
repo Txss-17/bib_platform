@@ -7,7 +7,10 @@ import { MarqueeStrip } from "@/components/landing/MarqueeStrip";
 import DiscoverBoutiquesSection from "@/components/landing/DiscoverBoutiquesSection";
 import { Button } from "@/components/ui/button";
 import { useSEO } from "@/hooks/useSEO";
-import { ArrowRight, ShieldCheck, Sparkles, Truck } from "lucide-react";
+import {
+  ArrowRight, ShieldCheck, Sparkles, Truck, Package, Palette, BarChart3, Globe2,
+  CreditCard, Headphones, Layers, Zap,
+} from "lucide-react";
 import dashboardImg from "@/assets/landing-dashboard.jpg";
 import unboxingImg from "@/assets/landing-unboxing.jpg";
 import founderImg from "@/assets/landing-founder.jpg";
@@ -35,6 +38,12 @@ const Index = () => {
           tone="marine"
           items={["Boutique premium.", "Logistique incluse.", "Sans code."]}
         />
+
+        {/* — Mini explainer 3-step — */}
+        <HowItWorksStrip />
+
+        {/* — Mini features grid (8 petits éléments) — */}
+        <FeatureGridMini />
 
         {/* — Visual 1 — Founder */}
         <VisualSection
@@ -105,6 +114,109 @@ const Index = () => {
 };
 
 export default Index;
+
+/* ------------ HOW IT WORKS — 3 steps mini ------------ */
+
+function HowItWorksStrip() {
+  const steps = [
+    {
+      icon: Palette,
+      n: "01",
+      title: "Créez votre boutique",
+      desc: "Choisissez un template, vos couleurs et votre nom de marque.",
+    },
+    {
+      icon: Package,
+      n: "02",
+      title: "Piochez dans le catalogue",
+      desc: "Produits pré-validés, marges paramétrables, échantillon Stripe.",
+    },
+    {
+      icon: BarChart3,
+      n: "03",
+      title: "Vendez, on expédie",
+      desc: "Logistique opérée, suivi temps réel, encaissement instantané.",
+    },
+  ];
+  return (
+    <section className="bg-bib-ivory py-16 sm:py-20">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl mb-10">
+          <span className="inline-block px-3 py-1 rounded-full bg-bib-marine/5 text-bib-marine text-[11px] font-semibold uppercase tracking-[0.18em] mb-4">
+            En 3 étapes
+          </span>
+          <h2 className="font-display text-3xl sm:text-4xl font-bold text-bib-marine leading-tight">
+            De zéro à votre première vente, <span className="text-bib-gold">sans friction</span>.
+          </h2>
+        </div>
+        <div className="grid sm:grid-cols-3 gap-4">
+          {steps.map(({ icon: Icon, n, title, desc }) => (
+            <div
+              key={n}
+              className="relative rounded-2xl border border-bib-marine/10 bg-card p-6 hover:border-bib-gold/40 hover:shadow-md transition-all"
+            >
+              <span className="absolute top-4 right-5 font-display text-3xl font-bold text-bib-gold/30 tabular-nums">
+                {n}
+              </span>
+              <div className="w-11 h-11 rounded-xl bg-bib-marine text-bib-ivory flex items-center justify-center mb-4">
+                <Icon className="h-5 w-5" />
+              </div>
+              <h3 className="font-display text-lg font-semibold text-bib-marine">{title}</h3>
+              <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------ FEATURES MINI GRID — petits éléments ------------ */
+
+function FeatureGridMini() {
+  const items = [
+    { icon: Layers, label: "4 templates conversion" },
+    { icon: Package, label: "Catalogue pré-validé" },
+    { icon: Truck, label: "Logistique opérée" },
+    { icon: CreditCard, label: "Paiements Stripe" },
+    { icon: ShieldCheck, label: "Verified by BIB" },
+    { icon: Globe2, label: "Multi-marché FR/EN" },
+    { icon: Headphones, label: "Support 24/7" },
+    { icon: Zap, label: "Sans code" },
+  ];
+  return (
+    <section className="bg-bib-marine text-bib-ivory py-16 sm:py-20">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
+          <div className="max-w-xl">
+            <span className="inline-block px-3 py-1 rounded-full bg-bib-ivory/10 text-[11px] font-semibold uppercase tracking-[0.18em] mb-4">
+              Tout est inclus
+            </span>
+            <h2 className="font-display text-3xl sm:text-4xl font-bold leading-tight">
+              Une plateforme <span className="text-bib-gold">complète</span>, pas un patchwork d'outils.
+            </h2>
+          </div>
+          <Button asChild variant="premium" size="lg">
+            <Link to="/tarifs">Voir les plans <ArrowRight className="ml-1 h-4 w-4" /></Link>
+          </Button>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {items.map(({ icon: Icon, label }) => (
+            <div
+              key={label}
+              className="rounded-xl border border-bib-ivory/15 bg-bib-ivory/[0.04] p-4 hover:bg-bib-ivory/[0.08] transition-colors flex items-center gap-3"
+            >
+              <span className="w-9 h-9 rounded-lg bg-bib-gold/20 text-bib-gold flex items-center justify-center shrink-0">
+                <Icon className="h-4 w-4" />
+              </span>
+              <span className="text-sm font-medium text-bib-ivory leading-tight">{label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 /* ------------ Section template — IMAGE first, text minimal ----------- */
 
