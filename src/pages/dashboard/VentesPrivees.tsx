@@ -93,9 +93,9 @@ export default function VentesPrivees() {
     return (
       <DashboardLayout>
         <PageHeader
+          eyebrow="Plan Pro"
           title="Ventes privées"
-          description="Lancez des ventes flash réservées à vos clients VIP, avec code d'accès et remise dédiée."
-          icon={<Crown className="h-5 w-5" />}
+          subtitle="Lancez des ventes flash réservées à vos clients VIP, avec code d'accès et remise dédiée."
         />
         <SectionCard>
           <div className="text-center py-12 max-w-md mx-auto">
@@ -118,9 +118,9 @@ export default function VentesPrivees() {
   return (
     <DashboardLayout>
       <PageHeader
+        eyebrow="Plan Pro"
         title="Ventes privées"
-        description="Organisez des ventes flash sur invitation : code d'accès, fenêtre temporelle, plafond d'utilisations."
-        icon={<Crown className="h-5 w-5" />}
+        subtitle="Organisez des ventes flash sur invitation : code d'accès, fenêtre temporelle, plafond d'utilisations."
         actions={
           <Button onClick={() => setOpen(true)} className="bg-bib-marine hover:bg-bib-marine/90">
             <Plus className="h-4 w-4 mr-1.5" /> Nouvelle vente privée
