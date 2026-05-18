@@ -34,6 +34,7 @@ import Aide from "./pages/dashboard/Aide";
 import MesTickets from "./pages/dashboard/MesTickets";
 import AdminDocuments from "./pages/dashboard/AdminDocuments";
 import Equipe from "./pages/dashboard/Equipe";
+import VentesPrivees from "./pages/dashboard/VentesPrivees";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
@@ -52,6 +53,7 @@ import Unsubscribe from "./pages/Unsubscribe";
 // Marketing/info pages
 import Carrieres from "./pages/Carrieres";
 import APropos from "./pages/APropos";
+import PackLegal from "./pages/PackLegal";
 import { MentionsLegales, CGU, Confidentialite, Cookies } from "./pages/LegalPages";
 
 const queryClient = new QueryClient();
@@ -84,6 +86,8 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/carrieres" element={<Carrieres />} />
             <Route path="/a-propos" element={<APropos />} />
+            <Route path="/pack-legal" element={<PackLegal />} />
+            <Route path="/legal" element={<PackLegal />} />
             <Route path="/mentions-legales" element={<MentionsLegales />} />
             <Route path="/cgu" element={<CGU />} />
             <Route path="/confidentialite" element={<Confidentialite />} />
@@ -205,6 +209,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Equipe />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/ventes-privees"
+              element={
+                <ProtectedRoute>
+                  <VentesPrivees />
                 </ProtectedRoute>
               }
             />
