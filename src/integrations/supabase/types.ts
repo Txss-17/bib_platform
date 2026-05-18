@@ -915,6 +915,62 @@ export type Database = {
         }
         Relationships: []
       }
+      private_sales: {
+        Row: {
+          access_code: string
+          active: boolean
+          boutique_id: string
+          created_at: string
+          discount_percent: number
+          ends_at: string
+          id: string
+          max_uses: number | null
+          name: string
+          starts_at: string
+          updated_at: string
+          user_id: string
+          uses_count: number
+        }
+        Insert: {
+          access_code: string
+          active?: boolean
+          boutique_id: string
+          created_at?: string
+          discount_percent?: number
+          ends_at: string
+          id?: string
+          max_uses?: number | null
+          name: string
+          starts_at?: string
+          updated_at?: string
+          user_id: string
+          uses_count?: number
+        }
+        Update: {
+          access_code?: string
+          active?: boolean
+          boutique_id?: string
+          created_at?: string
+          discount_percent?: number
+          ends_at?: string
+          id?: string
+          max_uses?: number | null
+          name?: string
+          starts_at?: string
+          updated_at?: string
+          user_id?: string
+          uses_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "private_sales_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_media: {
         Row: {
           boutique_id: string
@@ -1492,6 +1548,16 @@ export type Database = {
           logistics_status: string
           order_number: string
           product_name: string
+        }[]
+      }
+      validate_private_sale: {
+        Args: { _access_code: string; _boutique_slug: string }
+        Returns: {
+          boutique_id: string
+          discount_percent: number
+          ends_at: string
+          id: string
+          name: string
         }[]
       }
     }

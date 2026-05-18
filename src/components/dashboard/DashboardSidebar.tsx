@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Users,
   LifeBuoy,
+  Crown,
 } from "lucide-react";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -33,6 +34,7 @@ const mainNavItems = [
   { title: "Paiements", url: "/dashboard/paiements", icon: CreditCard },
   { title: "Analytics", url: "/dashboard/seo-analytics", icon: BarChart3 },
   { title: "Équipe", url: "/dashboard/equipe", icon: Users },
+  { title: "Ventes privées", url: "/dashboard/ventes-privees", icon: Crown },
 ];
 
 const bottomNavItems = [
