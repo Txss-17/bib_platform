@@ -18,6 +18,7 @@ import {
 import { Crown, Plus, Lock, Copy, Trash2, Link2, Sparkles, CalendarClock, Tag, Users, Smartphone } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { PosSessionJournal } from "@/components/dashboard/PosSessionJournal";
 
 function randomCode(len = 8) {
   const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
@@ -236,6 +237,9 @@ export default function VentesPrivees() {
                       </Button>
                     </div>
                   </div>
+                {boutiqueId && (
+                  <PosSessionJournal boutiqueId={boutiqueId} startsAt={s.starts_at} endsAt={s.ends_at} />
+                )}
                 </div>
               );
             })}
