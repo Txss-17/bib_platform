@@ -35,6 +35,7 @@ import MesTickets from "./pages/dashboard/MesTickets";
 import AdminDocuments from "./pages/dashboard/AdminDocuments";
 import Equipe from "./pages/dashboard/Equipe";
 import VentesPrivees from "./pages/dashboard/VentesPrivees";
+import VentesPriveesPOS from "./pages/dashboard/VentesPriveesPOS";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
@@ -217,6 +218,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <VentesPrivees />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/ventes-privees/:id/pos"
+              element={
+                <ProtectedRoute>
+                  <VentesPriveesPOS />
                 </ProtectedRoute>
               }
             />
