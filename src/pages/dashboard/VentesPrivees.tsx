@@ -15,7 +15,8 @@ import { useCurrentPlan } from "@/hooks/usePlans";
 import {
   usePrivateSales, useCreatePrivateSale, useUpdatePrivateSale, useDeletePrivateSale,
 } from "@/hooks/usePrivateSales";
-import { Crown, Plus, Lock, Copy, Trash2, Link2, Sparkles, CalendarClock, Tag, Users } from "lucide-react";
+import { Crown, Plus, Lock, Copy, Trash2, Link2, Sparkles, CalendarClock, Tag, Users, Smartphone } from "lucide-react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 function randomCode(len = 8) {
@@ -204,6 +205,11 @@ export default function VentesPrivees() {
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(url); toast.success("Lien VIP copié"); }}>
                           <Link2 className="h-3.5 w-3.5 mr-1" /> Lien
+                        </Button>
+                        <Button asChild size="sm" className="bg-bib-marine hover:bg-bib-marine/90">
+                          <Link to={`/dashboard/ventes-privees/${s.id}/pos`}>
+                            <Smartphone className="h-3.5 w-3.5 mr-1" /> Ouvrir POS
+                          </Link>
                         </Button>
                       </div>
                     </div>
