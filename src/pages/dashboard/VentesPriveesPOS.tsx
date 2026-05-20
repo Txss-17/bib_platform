@@ -9,7 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { supabase } from "@/integrations/supabase/client";
 import { useBoutiques } from "@/hooks/useBoutiques";
 import { useProducts } from "@/hooks/useProducts";
-import { usePrivateSales } from "@/hooks/usePrivateSales";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { toast } from "sonner";
 import { ArrowLeft, Minus, Plus, ShoppingCart, Smartphone, CheckCircle2, Loader2, Tag, RefreshCcw } from "lucide-react";
@@ -22,8 +21,6 @@ export default function VentesPriveesPOS() {
   const { data: boutiques = [] } = useBoutiques();
   const { data: products = [] } = useProducts();
 
-  // Resolve sale + boutique
-  const allSales = boutiques.flatMap((b) => usePrivateSalesSafe(b.id));
   const [sale, setSale] = useState<any | null>(null);
   useEffect(() => {
     let mounted = true;
@@ -287,6 +284,3 @@ export default function VentesPriveesPOS() {
     </DashboardLayout>
   );
 }
-
-// Avoid TS warning for unused import
-function usePrivateSalesSafe(_id: string) { return [] as any[]; }
