@@ -84,7 +84,7 @@ async function createPosCheckout(body: PosBody) {
 
   await supabase
     .from("orders")
-    .update({ stripe_session_id: session.id })
+    .update({ stripe_session_id: session.id, pos_qr_url: session.url })
     .in("id", (orders ?? []).map((o: any) => o.id));
 
   return {

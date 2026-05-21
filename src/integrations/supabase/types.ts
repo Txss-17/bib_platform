@@ -760,7 +760,9 @@ export type Database = {
           logistics_status: Database["public"]["Enums"]["logistics_status"]
           market: string
           order_number: string
+          payment_completed_at: string | null
           payment_status: string | null
+          pos_qr_url: string | null
           product_id: string
           stripe_session_id: string | null
         }
@@ -776,7 +778,9 @@ export type Database = {
           logistics_status?: Database["public"]["Enums"]["logistics_status"]
           market?: string
           order_number: string
+          payment_completed_at?: string | null
           payment_status?: string | null
+          pos_qr_url?: string | null
           product_id: string
           stripe_session_id?: string | null
         }
@@ -792,7 +796,9 @@ export type Database = {
           logistics_status?: Database["public"]["Enums"]["logistics_status"]
           market?: string
           order_number?: string
+          payment_completed_at?: string | null
           payment_status?: string | null
+          pos_qr_url?: string | null
           product_id?: string
           stripe_session_id?: string | null
         }
@@ -1172,6 +1178,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sample_validations: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          ordered_at: string | null
+          photo_url: string | null
+          product_id: string
+          status: string
+          user_id: string
+          validated_at: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          ordered_at?: string | null
+          photo_url?: string | null
+          product_id: string
+          status?: string
+          user_id: string
+          validated_at?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          ordered_at?: string | null
+          photo_url?: string | null
+          product_id?: string
+          status?: string
+          user_id?: string
+          validated_at?: string | null
+        }
+        Relationships: []
       }
       scene_events: {
         Row: {

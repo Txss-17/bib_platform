@@ -39,7 +39,7 @@ import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog";
 import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { PageHeader, SectionCard, KpiTile, KpiTileSkeleton, EmptyState, KpiGrid } from "@/components/dashboard/shared";
+import { PageHeader, SectionCard, EmptyState } from "@/components/dashboard/shared";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -239,46 +239,6 @@ export default function Produits() {
         subtitle="Pilotez les produits actifs sur vos boutiques et leur statut de validation."
         actions={headerActions}
       />
-
-      {/* KPI strip */}
-      <KpiGrid cols={4}>
-        {isLoading ? (
-          <>
-            <KpiTileSkeleton />
-            <KpiTileSkeleton />
-            <KpiTileSkeleton />
-            <KpiTileSkeleton tone="gold" />
-          </>
-        ) : (
-          <>
-            <KpiTile
-              label="Produits"
-              value={kpis.total}
-              icon={<Package className="w-4 h-4" />}
-              hint={`${kpis.active} actifs`}
-            />
-            <KpiTile
-              label="Validés"
-              value={kpis.validated}
-              icon={<CheckCircle2 className="w-4 h-4" />}
-              hint={`${kpis.pendingValidation} en attente`}
-            />
-            <KpiTile
-              label="Ventes cumulées"
-              value={kpis.sales}
-              icon={<TrendingUp className="w-4 h-4" />}
-              hint="Toutes boutiques"
-            />
-            <KpiTile
-              label="À valider"
-              value={kpis.pendingValidation}
-              tone="gold"
-              icon={<Clock className="w-4 h-4" />}
-              hint="Échantillon requis"
-            />
-          </>
-        )}
-      </KpiGrid>
 
       {isLoading ? (
         <Card className="bg-card border-border/50">
