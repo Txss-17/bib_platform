@@ -62,16 +62,35 @@ function AllProductsContent() {
         .eq("status", "active")
         .order("cumulative_sales", { ascending: false });
       if (error) throw error;
-      return data.map((p, i) => ({
-        id: p.id,
-        name: p.supplier_products?.name || "Produit",
-        price: Number(p.public_price),
-        image_url: p.supplier_products?.image_url || null,
-        category: p.supplier_products?.category || "Autre",
-        market: p.supplier_products?.market || "EU",
-        sales: p.cumulative_sales,
-        isPopular: i < 3,
-      }));
+      const ids = data.map((p) => p.id);
+      const mediaByProduct: Record<string, string[]> = {};
+      if (ids.length) {
+        const { data: media } = await supabase
+          .from("product_media" as any)
+          .select("product_id,url,position")
+          .in("product_id", ids)
+          .eq("is_selected", true)
+          .order("position", { ascending: true });
+        for (const m of (media as any[] | null) ?? []) {
+          (mediaByProduct[m.product_id] ||= []).push(m.url);
+        }
+      }
+      return data.map((p, i) => {
+        const gallery = mediaByProduct[p.id] || [];
+        const fallback = p.supplier_products?.image_url || null;
+        const images = gallery.length ? gallery : fallback ? [fallback] : [];
+        return {
+          id: p.id,
+          name: p.supplier_products?.name || "Produit",
+          price: Number(p.public_price),
+          image_url: images[0] || fallback,
+          images,
+          category: p.supplier_products?.category || "Autre",
+          market: p.supplier_products?.market || "EU",
+          sales: p.cumulative_sales,
+          isPopular: i < 3,
+        };
+      });
     },
     enabled: !!boutique?.id,
   });
@@ -233,7 +252,12 @@ function AllProductsContent() {
                 <Link to={`/boutique/${slug}/product/${product.id}`}>
                   <div className="relative aspect-square mb-3 bg-gray-100 rounded-lg overflow-hidden">
                     {product.image_url ? (
-                      <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      <>
+                        <img src={product.image_url} alt={product.name} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        {product.images && product.images[1] && (
+                          <img src={product.images[1]} alt="" aria-hidden loading="lazy" className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        )}
+                      </>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400"><span className="text-sm">Image</span></div>
                     )}
@@ -241,6 +265,13 @@ function AllProductsContent() {
                       <Badge className="absolute top-2 left-2 text-white" style={{ backgroundColor: primaryColor }}>
                         <Check className="w-3 h-3 mr-1" /> Populaire
                       </Badge>
+                    )}
+                    {product.images && product.images.length > 1 && (
+                      <div className="absolute bottom-2 right-2 flex gap-1">
+                        {product.images.slice(0, 4).map((_, i) => (
+                          <span key={i} className="block w-1.5 h-1.5 rounded-full bg-white/80 ring-1 ring-black/10" />
+                        ))}
+                      </div>
                     )}
                     <div className="absolute bottom-2 left-2">
                       <RecyclingBadge variant="compact" />

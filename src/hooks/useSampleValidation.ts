@@ -2,7 +2,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-export type SampleStatus = "none" | "ordered" | "received" | "validated";
+export type SampleStatus =
+  | "none"
+  | "ordered"
+  | "received"
+  | "validated"
+  | "to_validate"
+  | "rejected";
 
 export interface SampleValidation {
   id: string;
@@ -145,12 +151,63 @@ export function useValidateSample() {
   });
 }
 
+/**
+ * Mark a product sample as "À valider" or "Rejeté" with an optional
+ * comment. Stores the moderation timestamp in `validated_at` so the UI
+ * can show exactly when the decision was taken.
+ */
+export function useReviewSample() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({
+      productId,
+      status,
+      comment,
+    }: {
+      productId: string;
+      status: "to_validate" | "rejected";
+      comment?: string;
+    }) => {
+      const { error } = await supabase
+        .from("sample_validations" as any)
+        .upsert(
+          {
+            product_id: productId,
+            user_id: user!.id,
+            status,
+            comment: comment ?? null,
+            validated_at: new Date().toISOString(),
+          } as any,
+          { onConflict: "product_id,user_id" },
+        );
+      if (error) throw error;
+
+      // Rejected products must not stay published.
+      if (status === "rejected") {
+        await supabase
+          .from("products")
+          .update({ status: "paused" })
+          .eq("id", productId);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sample-validation"] });
+      queryClient.invalidateQueries({ queryKey: ["sample-validations"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+}
+
 export function getSampleStatusLabel(status: SampleStatus): string {
   switch (status) {
     case "none": return "Échantillon requis";
     case "ordered": return "Échantillon commandé";
     case "received": return "Échantillon reçu";
     case "validated": return "Validé ✓";
+    case "to_validate": return "À valider";
+    case "rejected": return "Rejeté";
   }
 }
 
@@ -160,5 +217,7 @@ export function getSampleStatusColor(status: SampleStatus): string {
     case "ordered": return "text-blue-600 bg-blue-100 border-blue-200";
     case "received": return "text-yellow-600 bg-yellow-100 border-yellow-200";
     case "validated": return "text-green-600 bg-green-100 border-green-200";
+    case "to_validate": return "text-amber-700 bg-amber-100 border-amber-200";
+    case "rejected": return "text-red-700 bg-red-100 border-red-200";
   }
 }
