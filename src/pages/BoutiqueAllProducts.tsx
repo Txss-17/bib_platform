@@ -252,7 +252,12 @@ function AllProductsContent() {
                 <Link to={`/boutique/${slug}/product/${product.id}`}>
                   <div className="relative aspect-square mb-3 bg-gray-100 rounded-lg overflow-hidden">
                     {product.image_url ? (
-                      <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      <>
+                        <img src={product.image_url} alt={product.name} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        {product.images && product.images[1] && (
+                          <img src={product.images[1]} alt="" aria-hidden loading="lazy" className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        )}
+                      </>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400"><span className="text-sm">Image</span></div>
                     )}
@@ -260,6 +265,13 @@ function AllProductsContent() {
                       <Badge className="absolute top-2 left-2 text-white" style={{ backgroundColor: primaryColor }}>
                         <Check className="w-3 h-3 mr-1" /> Populaire
                       </Badge>
+                    )}
+                    {product.images && product.images.length > 1 && (
+                      <div className="absolute bottom-2 right-2 flex gap-1">
+                        {product.images.slice(0, 4).map((_, i) => (
+                          <span key={i} className="block w-1.5 h-1.5 rounded-full bg-white/80 ring-1 ring-black/10" />
+                        ))}
+                      </div>
                     )}
                     <div className="absolute bottom-2 left-2">
                       <RecyclingBadge variant="compact" />
