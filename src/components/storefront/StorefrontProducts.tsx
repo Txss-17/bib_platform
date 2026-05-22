@@ -14,6 +14,7 @@ interface Product {
   name: string;
   price: number;
   image_url: string | null;
+  images?: string[];
   isPopular?: boolean;
 }
 
@@ -48,13 +49,23 @@ export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug
         {/* Mobile: 2 columns, show mobileLimit items; Desktop: 4 columns, show all */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {products.map((product, index) => {
+            const gallery = (product.images && product.images.length > 0)
+              ? product.images
+              : product.image_url ? [product.image_url] : [];
+            const main = gallery[0] || null;
+            const hover = gallery[1] || null;
             const cardContent = (
               <>
                 {boutiqueSlug ? (
                   <Link to={`/boutique/${boutiqueSlug}/product/${product.id}`}>
                     <div className="relative aspect-square mb-3 bg-gray-100 rounded-lg overflow-hidden">
-                      {product.image_url ? (
-                        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      {main ? (
+                        <>
+                          <img src={main} alt={product.name} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          {hover && (
+                            <img src={hover} alt="" aria-hidden loading="lazy" className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          )}
+                        </>
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-400"><span className="text-sm">Image</span></div>
                       )}
@@ -63,6 +74,13 @@ export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug
                           <Check className="w-3 h-3 mr-1" /> Populaire
                         </Badge>
                       )}
+                      {gallery.length > 1 && (
+                        <div className="absolute bottom-2 right-2 flex gap-1">
+                          {gallery.slice(0, 4).map((_, i) => (
+                            <span key={i} className="block w-1.5 h-1.5 rounded-full bg-white/80 ring-1 ring-black/10" />
+                          ))}
+                        </div>
+                      )}
                       <div className="absolute bottom-2 left-2">
                         <RecyclingBadge variant="compact" />
                       </div>
@@ -70,8 +88,13 @@ export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug
                   </Link>
                 ) : (
                   <div className="relative aspect-square mb-3 bg-gray-100 rounded-lg overflow-hidden">
-                    {product.image_url ? (
-                      <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    {main ? (
+                      <>
+                        <img src={main} alt={product.name} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        {hover && (
+                          <img src={hover} alt="" aria-hidden loading="lazy" className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        )}
+                      </>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400"><span className="text-sm">Image</span></div>
                     )}
@@ -79,6 +102,13 @@ export function StorefrontProducts({ title, products, primaryColor, boutiqueSlug
                       <Badge className="absolute top-2 left-2 text-white" style={{ backgroundColor: primaryColor }}>
                         <Check className="w-3 h-3 mr-1" /> Populaire
                       </Badge>
+                    )}
+                    {gallery.length > 1 && (
+                      <div className="absolute bottom-2 right-2 flex gap-1">
+                        {gallery.slice(0, 4).map((_, i) => (
+                          <span key={i} className="block w-1.5 h-1.5 rounded-full bg-white/80 ring-1 ring-black/10" />
+                        ))}
+                      </div>
                     )}
                     <div className="absolute bottom-2 left-2">
                       <RecyclingBadge variant="compact" />
