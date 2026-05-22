@@ -34,6 +34,9 @@ import {
 import { useSupplierProductsRealtime } from "@/hooks/useSupplierProducts";
 import { SampleValidationPanel } from "@/components/dashboard/SampleValidationPanel";
 import { ProductMediaDialog } from "@/components/dashboard/products/ProductMediaDialog";
+import { EditProductDialog } from "@/components/dashboard/products/EditProductDialog";
+import { ReviewSampleDialog } from "@/components/dashboard/products/ReviewSampleDialog";
+import { ShieldCheck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog";
@@ -110,6 +113,8 @@ export default function Produits() {
   const [search, setSearch] = useState<string>("");
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [mediaProductId, setMediaProductId] = useState<string | null>(null);
+  const [editProductId, setEditProductId] = useState<string | null>(null);
+  const [reviewProductId, setReviewProductId] = useState<string | null>(null);
 
   // Live updates from the supplier catalogue (new products, MOQ changes, retirement).
   useSupplierProductsRealtime();
@@ -460,6 +465,24 @@ export default function Produits() {
                             <Button
                               variant="ghost"
                               size="icon"
+                              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => setEditProductId(product.id)}
+                              title="Modifier"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => setReviewProductId(product.id)}
+                              title="Modérer (À valider / Rejeté)"
+                            >
+                              <ShieldCheck className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
                               onClick={() => setDeleteId(product.id)}
                               title="Supprimer"
@@ -473,13 +496,17 @@ export default function Produits() {
                                 </Button>
                               </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setEditProductId(product.id)}>
                                 <Edit className="w-4 h-4 mr-2" />
-                                Modifier le prix
+                                Modifier
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => setMediaProductId(product.id)}>
                                 <Sparkles className="w-4 h-4 mr-2" />
                                 Visuels IA
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setReviewProductId(product.id)}>
+                                <ShieldCheck className="w-4 h-4 mr-2" />
+                                Marquer À valider / Rejeté
                               </DropdownMenuItem>
                               <DropdownMenuItem>
                                 <Copy className="w-4 h-4 mr-2" />
@@ -526,9 +553,14 @@ export default function Produits() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem><Edit className="w-4 h-4 mr-2" />Modifier</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setEditProductId(product.id)}>
+                              <Edit className="w-4 h-4 mr-2" />Modifier
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setMediaProductId(product.id)}>
                               <Sparkles className="w-4 h-4 mr-2" />Visuels IA
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setReviewProductId(product.id)}>
+                              <ShieldCheck className="w-4 h-4 mr-2" />À valider / Rejeté
                             </DropdownMenuItem>
                             <DropdownMenuItem><Copy className="w-4 h-4 mr-2" />Dupliquer</DropdownMenuItem>
                             <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(product.id)}>
@@ -606,6 +638,35 @@ export default function Produits() {
                 p.supplier_products?.description ||
                 `Mise en scène premium du produit « ${p.supplier_products?.name || "Produit"} ».`
               }
+            />
+          );
+        })()}
+
+      {/* Edit product (price/stock) */}
+      {editProductId &&
+        (() => {
+          const p = products?.find((x) => x.id === editProductId);
+          if (!p) return null;
+          return (
+            <EditProductDialog
+              open={!!editProductId}
+              onOpenChange={(o) => !o && setEditProductId(null)}
+              product={p as any}
+            />
+          );
+        })()}
+
+      {/* Review sample (À valider / Rejeté) */}
+      {reviewProductId &&
+        (() => {
+          const p = products?.find((x) => x.id === reviewProductId);
+          if (!p) return null;
+          return (
+            <ReviewSampleDialog
+              open={!!reviewProductId}
+              onOpenChange={(o) => !o && setReviewProductId(null)}
+              productId={p.id}
+              productName={p.supplier_products?.name || "Produit"}
             />
           );
         })()}
