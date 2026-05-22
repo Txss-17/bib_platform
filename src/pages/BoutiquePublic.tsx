@@ -62,13 +62,32 @@ export default function BoutiquePublic() {
         .order("cumulative_sales", { ascending: false })
         .limit(8);
       if (error) throw error;
-      return data.map((p, index) => ({
-        id: p.id,
-        name: p.supplier_products?.name || "Produit",
-        price: Number(p.public_price),
-        image_url: p.supplier_products?.image_url,
-        isPopular: index < 2,
-      }));
+      const ids = data.map((p) => p.id);
+      let mediaByProduct: Record<string, string[]> = {};
+      if (ids.length) {
+        const { data: media } = await supabase
+          .from("product_media" as any)
+          .select("product_id,url,position")
+          .in("product_id", ids)
+          .eq("is_selected", true)
+          .order("position", { ascending: true });
+        for (const m of (media as any[] | null) ?? []) {
+          (mediaByProduct[m.product_id] ||= []).push(m.url);
+        }
+      }
+      return data.map((p, index) => {
+        const gallery = mediaByProduct[p.id] || [];
+        const fallback = p.supplier_products?.image_url || null;
+        const images = gallery.length ? gallery : fallback ? [fallback] : [];
+        return {
+          id: p.id,
+          name: p.supplier_products?.name || "Produit",
+          price: Number(p.public_price),
+          image_url: images[0] || fallback,
+          images,
+          isPopular: index < 2,
+        };
+      });
     },
     enabled: !!boutique?.id,
   });
