@@ -62,16 +62,35 @@ function AllProductsContent() {
         .eq("status", "active")
         .order("cumulative_sales", { ascending: false });
       if (error) throw error;
-      return data.map((p, i) => ({
-        id: p.id,
-        name: p.supplier_products?.name || "Produit",
-        price: Number(p.public_price),
-        image_url: p.supplier_products?.image_url || null,
-        category: p.supplier_products?.category || "Autre",
-        market: p.supplier_products?.market || "EU",
-        sales: p.cumulative_sales,
-        isPopular: i < 3,
-      }));
+      const ids = data.map((p) => p.id);
+      const mediaByProduct: Record<string, string[]> = {};
+      if (ids.length) {
+        const { data: media } = await supabase
+          .from("product_media" as any)
+          .select("product_id,url,position")
+          .in("product_id", ids)
+          .eq("is_selected", true)
+          .order("position", { ascending: true });
+        for (const m of (media as any[] | null) ?? []) {
+          (mediaByProduct[m.product_id] ||= []).push(m.url);
+        }
+      }
+      return data.map((p, i) => {
+        const gallery = mediaByProduct[p.id] || [];
+        const fallback = p.supplier_products?.image_url || null;
+        const images = gallery.length ? gallery : fallback ? [fallback] : [];
+        return {
+          id: p.id,
+          name: p.supplier_products?.name || "Produit",
+          price: Number(p.public_price),
+          image_url: images[0] || fallback,
+          images,
+          category: p.supplier_products?.category || "Autre",
+          market: p.supplier_products?.market || "EU",
+          sales: p.cumulative_sales,
+          isPopular: i < 3,
+        };
+      });
     },
     enabled: !!boutique?.id,
   });
