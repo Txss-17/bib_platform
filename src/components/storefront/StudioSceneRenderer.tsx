@@ -502,7 +502,7 @@ function LookbookScene({ content, displayFont, products }: { content: any; displ
   );
 }
 
-function ShowcaseScene({ content, products, displayFont }: { content: any; products: Product[]; displayFont: string }) {
+function ShowcaseScene({ content, products, displayFont, boutiqueSlug }: { content: any; products: Product[]; displayFont: string; boutiqueSlug?: string }) {
   const layout = content.layout || "3-up";
   const cols = layout === "4-up" ? "md:grid-cols-4" : "md:grid-cols-3";
   const visible = products.slice(0, layout === "4-up" ? 4 : 3);
@@ -527,9 +527,11 @@ function ShowcaseScene({ content, products, displayFont }: { content: any; produ
         </div>
         <div className={`grid grid-cols-2 ${cols} gap-6`}>
           {visible.map((p) => (
-            <article
+            <ProductLink
+              slug={boutiqueSlug}
+              productId={p.id}
               key={p.id}
-              className={`group ${cardStyle === "card" ? "p-3 bg-white shadow-sm rounded-lg" : ""} ${cardStyle === "bordered" ? "p-3 border border-border rounded-lg" : ""}`}
+              className={`group block ${cardStyle === "card" ? "p-3 bg-white shadow-sm rounded-lg" : ""} ${cardStyle === "bordered" ? "p-3 border border-border rounded-lg" : ""}`}
             >
               <div
                 className={`${isCircle ? "" : "aspect-[4/5]"} ${shapeClass} mb-3 overflow-hidden`}
@@ -542,7 +544,7 @@ function ShowcaseScene({ content, products, displayFont }: { content: any; produ
               <span className="text-[11px] uppercase tracking-[0.18em] opacity-50">Signature</span>
               <h3 className="text-base mt-1">{p.name}</h3>
               <p className="text-sm opacity-70">{p.price.toFixed(2)} €</p>
-            </article>
+            </ProductLink>
           ))}
         </div>
       </div>
