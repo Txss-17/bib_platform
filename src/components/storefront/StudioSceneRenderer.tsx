@@ -395,6 +395,27 @@ function SceneSwitch({
 
 /* -------------------------- Scene primitives -------------------------- */
 
+function ProductLink({
+  slug,
+  productId,
+  className,
+  children,
+}: {
+  slug?: string;
+  productId: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  if (slug) {
+    return (
+      <Link to={`/boutique/${slug}/product/${productId}`} className={className}>
+        {children}
+      </Link>
+    );
+  }
+  return <article className={className}>{children}</article>;
+}
+
 function HeroCinemaScene({ content, displayFont }: { content: any; displayFont: string }) {
   const fullPage = !!content.fullPageBackground;
   const align = content.textAlign === "left" ? "text-left items-start" : content.textAlign === "right" ? "text-right items-end" : "text-center items-center";
