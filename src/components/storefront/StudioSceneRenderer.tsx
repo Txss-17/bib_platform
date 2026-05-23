@@ -317,11 +317,13 @@ function SceneSwitch({
   boutiqueName,
   products,
   displayFont,
+  boutiqueSlug,
 }: {
   scene: SceneRecord;
   boutiqueName: string;
   products: Product[];
   displayFont: string;
+  boutiqueSlug?: string;
 }) {
   switch (scene.scene_type) {
     case "hero-cinema":
@@ -331,7 +333,7 @@ function SceneSwitch({
     case "lookbook-parallax":
       return <LookbookScene content={scene.content as never} displayFont={displayFont} products={products} />;
     case "showcase-magazine":
-      return <ShowcaseScene content={scene.content as never} products={products} displayFont={displayFont} />;
+      return <ShowcaseScene content={scene.content as never} products={products} displayFont={displayFont} boutiqueSlug={boutiqueSlug} />;
     case "trust-wall":
       return <TrustWallScene content={scene.content as never} displayFont={displayFont} />;
     case "cta-sticky":
@@ -359,9 +361,9 @@ function SceneSwitch({
     case "banner-promo":
       return <BannerPromoScene content={scene.content as never} />;
     case "products-grid":
-      return <ProductsGridScene content={scene.content as never} products={products} displayFont={displayFont} />;
+      return <ProductsGridScene content={scene.content as never} products={products} displayFont={displayFont} boutiqueSlug={boutiqueSlug} />;
     case "product-spotlight":
-      return <ProductSpotlightScene content={scene.content as never} products={products} displayFont={displayFont} />;
+      return <ProductSpotlightScene content={scene.content as never} products={products} displayFont={displayFont} boutiqueSlug={boutiqueSlug} />;
     case "blog-list":
       return <BlogListScene content={scene.content as never} displayFont={displayFont} />;
     case "cart-summary":
@@ -385,7 +387,7 @@ function SceneSwitch({
     case "product-specs":
       return <ProductSpecsScene content={scene.content as never} displayFont={displayFont} />;
     case "product-related":
-      return <ProductRelatedScene content={scene.content as never} products={products} displayFont={displayFont} />;
+      return <ProductRelatedScene content={scene.content as never} products={products} displayFont={displayFont} boutiqueSlug={boutiqueSlug} />;
     default:
       return null;
   }
