@@ -177,6 +177,7 @@ export default function BoutiqueCustomPage() {
               boutiqueName={boutique.name}
               products={products as any[]}
               boutiqueId={boutique.id}
+              boutiqueSlug={boutique.slug}
             />
           ) : (
             <>
