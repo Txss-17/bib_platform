@@ -993,7 +993,7 @@ function BannerPromoScene({ content }: { content: any }) {
 
 /* -------------------------- Page-specific scenes -------------------------- */
 
-function ProductsGridScene({ content, products, displayFont }: { content: any; products: Product[]; displayFont: string }) {
+function ProductsGridScene({ content, products, displayFont, boutiqueSlug }: { content: any; products: Product[]; displayFont: string; boutiqueSlug?: string }) {
   const layout = content.layout || "3-up";
   const cols =
     layout === "4-up" ? "md:grid-cols-4" :
@@ -1033,7 +1033,7 @@ function ProductsGridScene({ content, products, displayFont }: { content: any; p
         ) : layout === "carousel" ? (
           <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-3 -mx-2 px-2">
             {filtered.map((p) => (
-              <article key={p.id} className={`group snap-start shrink-0 w-56 ${hoverCard}`}>
+              <ProductLink slug={boutiqueSlug} productId={p.id} key={p.id} className={`group block snap-start shrink-0 w-56 ${hoverCard}`}>
                 <div
                   className={`aspect-[4/5] ${shapeClass} mb-3 overflow-hidden`}
                   style={{
@@ -1042,13 +1042,13 @@ function ProductsGridScene({ content, products, displayFont }: { content: any; p
                 />
                 <h3 className="text-base">{p.name}</h3>
                 <p className="text-sm opacity-70">{p.price.toFixed(2)} €</p>
-              </article>
+              </ProductLink>
             ))}
           </div>
         ) : layout === "masonry" ? (
           <div className="columns-2 md:columns-3 lg:columns-4 gap-4 [&>*]:mb-4 [&>*]:break-inside-avoid">
             {filtered.map((p, i) => (
-              <article key={p.id} className={`group ${hoverCard}`}>
+              <ProductLink slug={boutiqueSlug} productId={p.id} key={p.id} className={`group block ${hoverCard}`}>
                 <div
                   className={`${shapeClass} overflow-hidden mb-2`}
                   style={{
@@ -1060,13 +1060,13 @@ function ProductsGridScene({ content, products, displayFont }: { content: any; p
                 </div>
                 <h3 className="text-base">{p.name}</h3>
                 <p className="text-sm opacity-70">{p.price.toFixed(2)} €</p>
-              </article>
+              </ProductLink>
             ))}
           </div>
         ) : (
           <div className={`grid grid-cols-2 ${cols} gap-6`}>
             {filtered.map((p) => (
-              <article key={p.id} className={`group ${hoverCard}`}>
+              <ProductLink slug={boutiqueSlug} productId={p.id} key={p.id} className={`group block ${hoverCard}`}>
                 <div
                   className={`aspect-[4/5] ${shapeClass} mb-3 overflow-hidden`}
                   style={{
@@ -1079,7 +1079,7 @@ function ProductsGridScene({ content, products, displayFont }: { content: any; p
                 </div>
                 <h3 className="text-base">{p.name}</h3>
                 <p className="text-sm opacity-70">{p.price.toFixed(2)} €</p>
-              </article>
+              </ProductLink>
             ))}
           </div>
         )}
@@ -1157,7 +1157,7 @@ function ProductSpecsScene({ content, displayFont }: { content: any; displayFont
   );
 }
 
-function ProductRelatedScene({ content, products, displayFont }: { content: any; products: Product[]; displayFont: string }) {
+function ProductRelatedScene({ content, products, displayFont, boutiqueSlug }: { content: any; products: Product[]; displayFont: string; boutiqueSlug?: string }) {
   const limit = Math.max(2, Math.min(12, Number(content.limit) || 4));
   const list = products.slice(0, limit);
   return (
@@ -1168,7 +1168,7 @@ function ProductRelatedScene({ content, products, displayFont }: { content: any;
         </h2>
         <div className={`grid grid-cols-2 md:grid-cols-${Math.min(limit, 4)} gap-6`}>
           {list.map((p) => (
-            <article key={p.id}>
+            <ProductLink slug={boutiqueSlug} productId={p.id} key={p.id} className="block">
               <div
                 className="aspect-[4/5] rounded-md overflow-hidden mb-2"
                 style={{
@@ -1179,7 +1179,7 @@ function ProductRelatedScene({ content, products, displayFont }: { content: any;
               />
               <h3 className="text-sm">{p.name}</h3>
               <p className="text-xs opacity-70">{p.price.toFixed(2)} €</p>
-            </article>
+            </ProductLink>
           ))}
         </div>
       </div>
@@ -1187,7 +1187,7 @@ function ProductRelatedScene({ content, products, displayFont }: { content: any;
   );
 }
 
-function ProductSpotlightScene({ content, products, displayFont }: { content: any; products: Product[]; displayFont: string }) {
+function ProductSpotlightScene({ content, products, displayFont, boutiqueSlug: _bs }: { content: any; products: Product[]; displayFont: string; boutiqueSlug?: string }) {
   const product = products.find((p) => p.id === content.productId) ?? products[0];
   const reverse = content.variant === "image-right";
   const centered = content.variant === "centered";
