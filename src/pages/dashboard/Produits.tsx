@@ -456,7 +456,7 @@ export default function Produits() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="h-8 w-8"
                               onClick={() => setMediaProductId(product.id)}
                               title="Visuels IA"
                             >
@@ -465,7 +465,7 @@ export default function Produits() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="h-8 w-8"
                               onClick={() => setEditProductId(product.id)}
                               title="Modifier"
                             >
@@ -474,7 +474,7 @@ export default function Produits() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="h-8 w-8"
                               onClick={() => setReviewProductId(product.id)}
                               title="Modérer (À valider / Rejeté)"
                             >
@@ -483,7 +483,7 @@ export default function Produits() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
                               onClick={() => setDeleteId(product.id)}
                               title="Supprimer"
                             >

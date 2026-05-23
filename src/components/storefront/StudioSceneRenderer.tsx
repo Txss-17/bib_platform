@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { useSceneAnalytics, trackCtaClick } from "@/hooks/useSceneAnalytics";
 import type { SceneRecord } from "@/lib/studioScenes";
 import type { BrandDNA } from "@/hooks/useBrandStudio";
@@ -19,6 +20,8 @@ interface Props {
   products: Product[];
   /** When provided (public storefront), enables analytics tracking. */
   boutiqueId?: string;
+  /** When provided, product cards inside scenes link to /boutique/:slug/product/:id. */
+  boutiqueSlug?: string;
   /** When true, disable tracking (editor preview). Default: tracking on if boutiqueId is provided. */
   disableTracking?: boolean;
 }
@@ -33,6 +36,7 @@ export function StudioSceneRenderer({
   boutiqueName,
   products,
   boutiqueId,
+  boutiqueSlug,
   disableTracking,
 }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -97,6 +101,7 @@ export function StudioSceneRenderer({
               boutiqueName={boutiqueName}
               products={products}
               displayFont={resolveDisplay(scene, display)}
+              boutiqueSlug={boutiqueSlug}
             />
           </SceneStyleScope>
         </TrackedScene>
@@ -312,11 +317,13 @@ function SceneSwitch({
   boutiqueName,
   products,
   displayFont,
+  boutiqueSlug,
 }: {
   scene: SceneRecord;
   boutiqueName: string;
   products: Product[];
   displayFont: string;
+  boutiqueSlug?: string;
 }) {
   switch (scene.scene_type) {
     case "hero-cinema":
@@ -326,7 +333,7 @@ function SceneSwitch({
     case "lookbook-parallax":
       return <LookbookScene content={scene.content as never} displayFont={displayFont} products={products} />;
     case "showcase-magazine":
-      return <ShowcaseScene content={scene.content as never} products={products} displayFont={displayFont} />;
+      return <ShowcaseScene content={scene.content as never} products={products} displayFont={displayFont} boutiqueSlug={boutiqueSlug} />;
     case "trust-wall":
       return <TrustWallScene content={scene.content as never} displayFont={displayFont} />;
     case "cta-sticky":
@@ -354,9 +361,9 @@ function SceneSwitch({
     case "banner-promo":
       return <BannerPromoScene content={scene.content as never} />;
     case "products-grid":
-      return <ProductsGridScene content={scene.content as never} products={products} displayFont={displayFont} />;
+      return <ProductsGridScene content={scene.content as never} products={products} displayFont={displayFont} boutiqueSlug={boutiqueSlug} />;
     case "product-spotlight":
-      return <ProductSpotlightScene content={scene.content as never} products={products} displayFont={displayFont} />;
+      return <ProductSpotlightScene content={scene.content as never} products={products} displayFont={displayFont} boutiqueSlug={boutiqueSlug} />;
     case "blog-list":
       return <BlogListScene content={scene.content as never} displayFont={displayFont} />;
     case "cart-summary":
@@ -380,13 +387,34 @@ function SceneSwitch({
     case "product-specs":
       return <ProductSpecsScene content={scene.content as never} displayFont={displayFont} />;
     case "product-related":
-      return <ProductRelatedScene content={scene.content as never} products={products} displayFont={displayFont} />;
+      return <ProductRelatedScene content={scene.content as never} products={products} displayFont={displayFont} boutiqueSlug={boutiqueSlug} />;
     default:
       return null;
   }
 }
 
 /* -------------------------- Scene primitives -------------------------- */
+
+function ProductLink({
+  slug,
+  productId,
+  className,
+  children,
+}: {
+  slug?: string;
+  productId: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  if (slug) {
+    return (
+      <Link to={`/boutique/${slug}/product/${productId}`} className={className}>
+        {children}
+      </Link>
+    );
+  }
+  return <article className={className}>{children}</article>;
+}
 
 function HeroCinemaScene({ content, displayFont }: { content: any; displayFont: string }) {
   const fullPage = !!content.fullPageBackground;
@@ -495,7 +523,7 @@ function LookbookScene({ content, displayFont, products }: { content: any; displ
   );
 }
 
-function ShowcaseScene({ content, products, displayFont }: { content: any; products: Product[]; displayFont: string }) {
+function ShowcaseScene({ content, products, displayFont, boutiqueSlug }: { content: any; products: Product[]; displayFont: string; boutiqueSlug?: string }) {
   const layout = content.layout || "3-up";
   const cols = layout === "4-up" ? "md:grid-cols-4" : "md:grid-cols-3";
   const visible = products.slice(0, layout === "4-up" ? 4 : 3);
@@ -520,9 +548,11 @@ function ShowcaseScene({ content, products, displayFont }: { content: any; produ
         </div>
         <div className={`grid grid-cols-2 ${cols} gap-6`}>
           {visible.map((p) => (
-            <article
+            <ProductLink
+              slug={boutiqueSlug}
+              productId={p.id}
               key={p.id}
-              className={`group ${cardStyle === "card" ? "p-3 bg-white shadow-sm rounded-lg" : ""} ${cardStyle === "bordered" ? "p-3 border border-border rounded-lg" : ""}`}
+              className={`group block ${cardStyle === "card" ? "p-3 bg-white shadow-sm rounded-lg" : ""} ${cardStyle === "bordered" ? "p-3 border border-border rounded-lg" : ""}`}
             >
               <div
                 className={`${isCircle ? "" : "aspect-[4/5]"} ${shapeClass} mb-3 overflow-hidden`}
@@ -535,7 +565,7 @@ function ShowcaseScene({ content, products, displayFont }: { content: any; produ
               <span className="text-[11px] uppercase tracking-[0.18em] opacity-50">Signature</span>
               <h3 className="text-base mt-1">{p.name}</h3>
               <p className="text-sm opacity-70">{p.price.toFixed(2)} €</p>
-            </article>
+            </ProductLink>
           ))}
         </div>
       </div>
@@ -984,7 +1014,7 @@ function BannerPromoScene({ content }: { content: any }) {
 
 /* -------------------------- Page-specific scenes -------------------------- */
 
-function ProductsGridScene({ content, products, displayFont }: { content: any; products: Product[]; displayFont: string }) {
+function ProductsGridScene({ content, products, displayFont, boutiqueSlug }: { content: any; products: Product[]; displayFont: string; boutiqueSlug?: string }) {
   const layout = content.layout || "3-up";
   const cols =
     layout === "4-up" ? "md:grid-cols-4" :
@@ -1024,7 +1054,7 @@ function ProductsGridScene({ content, products, displayFont }: { content: any; p
         ) : layout === "carousel" ? (
           <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-3 -mx-2 px-2">
             {filtered.map((p) => (
-              <article key={p.id} className={`group snap-start shrink-0 w-56 ${hoverCard}`}>
+              <ProductLink slug={boutiqueSlug} productId={p.id} key={p.id} className={`group block snap-start shrink-0 w-56 ${hoverCard}`}>
                 <div
                   className={`aspect-[4/5] ${shapeClass} mb-3 overflow-hidden`}
                   style={{
@@ -1033,13 +1063,13 @@ function ProductsGridScene({ content, products, displayFont }: { content: any; p
                 />
                 <h3 className="text-base">{p.name}</h3>
                 <p className="text-sm opacity-70">{p.price.toFixed(2)} €</p>
-              </article>
+              </ProductLink>
             ))}
           </div>
         ) : layout === "masonry" ? (
           <div className="columns-2 md:columns-3 lg:columns-4 gap-4 [&>*]:mb-4 [&>*]:break-inside-avoid">
             {filtered.map((p, i) => (
-              <article key={p.id} className={`group ${hoverCard}`}>
+              <ProductLink slug={boutiqueSlug} productId={p.id} key={p.id} className={`group block ${hoverCard}`}>
                 <div
                   className={`${shapeClass} overflow-hidden mb-2`}
                   style={{
@@ -1051,13 +1081,13 @@ function ProductsGridScene({ content, products, displayFont }: { content: any; p
                 </div>
                 <h3 className="text-base">{p.name}</h3>
                 <p className="text-sm opacity-70">{p.price.toFixed(2)} €</p>
-              </article>
+              </ProductLink>
             ))}
           </div>
         ) : (
           <div className={`grid grid-cols-2 ${cols} gap-6`}>
             {filtered.map((p) => (
-              <article key={p.id} className={`group ${hoverCard}`}>
+              <ProductLink slug={boutiqueSlug} productId={p.id} key={p.id} className={`group block ${hoverCard}`}>
                 <div
                   className={`aspect-[4/5] ${shapeClass} mb-3 overflow-hidden`}
                   style={{
@@ -1070,7 +1100,7 @@ function ProductsGridScene({ content, products, displayFont }: { content: any; p
                 </div>
                 <h3 className="text-base">{p.name}</h3>
                 <p className="text-sm opacity-70">{p.price.toFixed(2)} €</p>
-              </article>
+              </ProductLink>
             ))}
           </div>
         )}
@@ -1148,7 +1178,7 @@ function ProductSpecsScene({ content, displayFont }: { content: any; displayFont
   );
 }
 
-function ProductRelatedScene({ content, products, displayFont }: { content: any; products: Product[]; displayFont: string }) {
+function ProductRelatedScene({ content, products, displayFont, boutiqueSlug }: { content: any; products: Product[]; displayFont: string; boutiqueSlug?: string }) {
   const limit = Math.max(2, Math.min(12, Number(content.limit) || 4));
   const list = products.slice(0, limit);
   return (
@@ -1159,7 +1189,7 @@ function ProductRelatedScene({ content, products, displayFont }: { content: any;
         </h2>
         <div className={`grid grid-cols-2 md:grid-cols-${Math.min(limit, 4)} gap-6`}>
           {list.map((p) => (
-            <article key={p.id}>
+            <ProductLink slug={boutiqueSlug} productId={p.id} key={p.id} className="block">
               <div
                 className="aspect-[4/5] rounded-md overflow-hidden mb-2"
                 style={{
@@ -1170,7 +1200,7 @@ function ProductRelatedScene({ content, products, displayFont }: { content: any;
               />
               <h3 className="text-sm">{p.name}</h3>
               <p className="text-xs opacity-70">{p.price.toFixed(2)} €</p>
-            </article>
+            </ProductLink>
           ))}
         </div>
       </div>
@@ -1178,7 +1208,7 @@ function ProductRelatedScene({ content, products, displayFont }: { content: any;
   );
 }
 
-function ProductSpotlightScene({ content, products, displayFont }: { content: any; products: Product[]; displayFont: string }) {
+function ProductSpotlightScene({ content, products, displayFont, boutiqueSlug: _bs }: { content: any; products: Product[]; displayFont: string; boutiqueSlug?: string }) {
   const product = products.find((p) => p.id === content.productId) ?? products[0];
   const reverse = content.variant === "image-right";
   const centered = content.variant === "centered";
