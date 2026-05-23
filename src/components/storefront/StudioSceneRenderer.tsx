@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { useSceneAnalytics, trackCtaClick } from "@/hooks/useSceneAnalytics";
 import type { SceneRecord } from "@/lib/studioScenes";
 import type { BrandDNA } from "@/hooks/useBrandStudio";
@@ -19,6 +20,8 @@ interface Props {
   products: Product[];
   /** When provided (public storefront), enables analytics tracking. */
   boutiqueId?: string;
+  /** When provided, product cards inside scenes link to /boutique/:slug/product/:id. */
+  boutiqueSlug?: string;
   /** When true, disable tracking (editor preview). Default: tracking on if boutiqueId is provided. */
   disableTracking?: boolean;
 }
@@ -33,6 +36,7 @@ export function StudioSceneRenderer({
   boutiqueName,
   products,
   boutiqueId,
+  boutiqueSlug,
   disableTracking,
 }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -97,6 +101,7 @@ export function StudioSceneRenderer({
               boutiqueName={boutiqueName}
               products={products}
               displayFont={resolveDisplay(scene, display)}
+              boutiqueSlug={boutiqueSlug}
             />
           </SceneStyleScope>
         </TrackedScene>
