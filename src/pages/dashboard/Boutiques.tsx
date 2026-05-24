@@ -208,12 +208,10 @@ export default function Boutiques() {
         actions={headerActions}
       />
 
-      {/* KPI strip */}
-      <KpiGrid cols={4}>
+      {/* KPI strip — essentiels uniquement */}
+      <KpiGrid cols={2}>
         {isLoading ? (
           <>
-            <KpiTileSkeleton />
-            <KpiTileSkeleton />
             <KpiTileSkeleton />
             <KpiTileSkeleton tone="gold" />
           </>
@@ -222,19 +220,8 @@ export default function Boutiques() {
             <KpiTile
               label="Boutiques"
               value={portfolio.total}
-              hint={`${portfolio.published} en ligne`}
+              hint={`${portfolio.published} en ligne · ${portfolio.totalPending} à traiter`}
               icon={<Store className="w-4 h-4" />}
-            />
-            <KpiTile
-              label="Produits actifs"
-              value={portfolio.totalProducts}
-              icon={<Package className="w-4 h-4" />}
-            />
-            <KpiTile
-              label="À traiter"
-              value={portfolio.totalPending}
-              icon={<Truck className="w-4 h-4" />}
-              hint="Toutes boutiques"
             />
             <KpiTile
               label="Score moyen"
