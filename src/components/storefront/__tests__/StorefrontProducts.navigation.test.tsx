@@ -45,9 +45,12 @@ describe("StorefrontProducts navigation", () => {
         .getAllByRole("link")
         .filter((a) => (a as HTMLAnchorElement).getAttribute("href") === expected);
       expect(matches.length, `link for ${p.id} → ${expected}`).toBeGreaterThan(0);
-      // The product name must be a clickable link too.
-      const titleLink = screen.getByRole("link", { name: p.name });
-      expect(titleLink.getAttribute("href")).toBe(expected);
+      // Every link that exposes the product name must point to its canonical URL.
+      const namedLinks = screen.getAllByRole("link", { name: new RegExp(p.name, "i") });
+      expect(namedLinks.length).toBeGreaterThan(0);
+      for (const link of namedLinks) {
+        expect(link.getAttribute("href")).toBe(expected);
+      }
     }
   });
 
