@@ -80,6 +80,7 @@ export default function SEOAnalytics() {
   const { data: allProducts } = useProducts();
   const [selectedBoutique, setSelectedBoutique] = useState<string>("all");
   const [dupDialogOpen, setDupDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   const filteredBoutiques =
     selectedBoutique === "all" ? boutiques : boutiques.filter((b) => b.id === selectedBoutique);
@@ -476,7 +477,16 @@ export default function SEOAnalytics() {
           description="Actions prioritaires pour booster votre découvrabilité"
           icon={<Sparkles className="w-4 h-4 text-secondary" />}
           actions={
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              title="Rafraîchir"
+              onClick={() => {
+                queryClient.invalidateQueries({ queryKey: ["seo-products"] });
+                queryClient.invalidateQueries({ queryKey: ["seo-orders"] });
+              }}
+            >
               <RefreshCw className="w-4 h-4" />
             </Button>
           }
