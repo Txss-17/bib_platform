@@ -9,7 +9,7 @@ import {
   Search, TrendingUp, Sparkles, Zap, RefreshCw, BarChart3, Store, ArrowRight, Eye,
   AlertTriangle, ImageOff, Copy, FileWarning, Wand2,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBoutiques } from "@/hooks/useBoutiques";
