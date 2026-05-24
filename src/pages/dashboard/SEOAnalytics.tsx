@@ -322,25 +322,14 @@ export default function SEOAnalytics() {
         }
       />
 
-      {/* KPI strip */}
-      <KpiGrid cols={4}>
+      {/* KPI strip — essentiels uniquement */}
+      <KpiGrid cols={2}>
         <KpiTile
           tone="primary"
           label="Score SEO moyen"
           value={`${avgScore}/100`}
           icon={<Search className="w-5 h-5" />}
           hint={avgScore >= 80 ? "Excellent" : avgScore >= 60 ? "À améliorer" : "Critique"}
-        />
-        <KpiTile
-          label="Revenus (30 j)"
-          value={`${totalRevenue.toFixed(0)} €`}
-          icon={<TrendingUp className="w-5 h-5" />}
-        />
-        <KpiTile
-          tone="gold"
-          label="Produits indexés"
-          value={seoProducts.length}
-          icon={<Eye className="w-5 h-5" />}
         />
         <KpiTile
           label="Alertes SEO"
