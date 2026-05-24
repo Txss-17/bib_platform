@@ -187,7 +187,9 @@ export default function Parametres() {
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5 ml-6">Français (France)</p>
                   </div>
-                  <Button variant="outline" size="sm">Modifier</Button>
+                  <Button variant="outline" size="sm" disabled title="Bientôt — Français disponible">
+                    Bientôt
+                  </Button>
                 </div>
             </SectionCard>
 
