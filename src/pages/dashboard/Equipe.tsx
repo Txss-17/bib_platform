@@ -100,8 +100,8 @@ export default function Equipe() {
         }
       />
 
-      {/* KPI strip */}
-      <KpiGrid cols={4}>
+      {/* KPI strip — essentiels uniquement */}
+      <KpiGrid cols={2}>
         <KpiTile
           label="Membres actifs"
           value={activeNow}
@@ -109,22 +109,11 @@ export default function Equipe() {
           hint={`${activeCount}/${memberLimit} sur le plan`}
         />
         <KpiTile
-          label="Invitations"
-          value={pendingCount}
-          icon={<UserPlus className="w-4 h-4" />}
-          hint="En attente"
-        />
-        <KpiTile
           label="Plan"
           value={<span className="capitalize">{currentPlan}</span>}
           tone="gold"
           icon={<Sparkles className="w-4 h-4" />}
           hint={`Limite : ${memberLimit}`}
-        />
-        <KpiTile
-          label="Boutiques"
-          value={boutiques.length}
-          hint="Couvertes par l'équipe"
         />
       </KpiGrid>
 
