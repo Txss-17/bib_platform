@@ -143,8 +143,10 @@ export default function Equipe() {
               <UserPlus className="w-4 h-4" /> Inviter
             </Button>
           ) : (
-            <Button size="sm" variant="outline" className="gap-1.5">
-              <ArrowUpCircle className="w-4 h-4" /> Mettre à niveau
+            <Button size="sm" variant="outline" className="gap-1.5" asChild>
+              <Link to="/tarifs">
+                <ArrowUpCircle className="w-4 h-4" /> Mettre à niveau
+              </Link>
             </Button>
           )
         }
