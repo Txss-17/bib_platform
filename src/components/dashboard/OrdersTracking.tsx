@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Package, Truck, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface Order {
   id: string;
@@ -32,7 +33,7 @@ export function OrdersTracking() {
     <Card className="bg-card border-border/50">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg font-semibold">Recent Orders</CardTitle>
-        <a href="#" className="text-sm text-primary hover:underline">View all</a>
+        <Link to="/dashboard/commandes" className="text-sm text-primary hover:underline">View all</Link>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

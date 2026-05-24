@@ -35,7 +35,9 @@ const CTASection = () => {
                     <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </Button>
-                <Button variant="hero-outline" size="xl">{t("cta.sales")}</Button>
+                <Button variant="hero-outline" size="xl" asChild>
+                  <a href="mailto:sales@brand-in-a-box.space?subject=Contact%20Sales">{t("cta.sales")}</a>
+                </Button>
               </div>
 
               {/* Explicit 18+ guard — trust-first */}

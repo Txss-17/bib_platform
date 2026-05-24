@@ -17,9 +17,9 @@ const Footer = () => {
             </div>
             <p className="text-primary-foreground/70 text-sm leading-relaxed mb-6">{t("footer.desc")}</p>
             <div className="flex items-center gap-4">
-              <a href="#" className="text-primary-foreground/60 hover:text-primary-foreground transition-colors"><Twitter size={20} /></a>
-              <a href="#" className="text-primary-foreground/60 hover:text-primary-foreground transition-colors"><Linkedin size={20} /></a>
-              <a href="#" className="text-primary-foreground/60 hover:text-primary-foreground transition-colors"><Instagram size={20} /></a>
+              <a href="https://twitter.com/brandinabox" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="text-primary-foreground/60 hover:text-primary-foreground transition-colors"><Twitter size={20} /></a>
+              <a href="https://www.linkedin.com/company/brand-in-a-box" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="text-primary-foreground/60 hover:text-primary-foreground transition-colors"><Linkedin size={20} /></a>
+              <a href="https://www.instagram.com/brandinabox" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-primary-foreground/60 hover:text-primary-foreground transition-colors"><Instagram size={20} /></a>
             </div>
           </div>
 

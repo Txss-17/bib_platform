@@ -203,34 +203,6 @@ export default function Aide() {
         subtitle="FAQ, ressources et accès direct à l'équipe Brand-In-A-Box."
       />
 
-      <KpiGrid cols={4}>
-        <KpiTile
-          tone="primary"
-          label="Délai de réponse"
-          value="< 24h"
-          icon={<Clock className="w-5 h-5" />}
-          hint="Jours ouvrés"
-        />
-        <KpiTile
-          label="Tickets résolus"
-          value="98%"
-          icon={<Sparkles className="w-5 h-5" />}
-          hint="Sur 30 derniers jours"
-        />
-        <KpiTile
-          tone="gold"
-          label="Articles d'aide"
-          value={faqItems.length + resources.length}
-          icon={<BookOpen className="w-5 h-5" />}
-        />
-        <KpiTile
-          label="Canaux"
-          value="3"
-          icon={<MessageCircle className="w-5 h-5" />}
-          hint="Email · Chat · FAQ"
-        />
-      </KpiGrid>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* FAQ */}
         <SectionCard

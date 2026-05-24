@@ -261,9 +261,11 @@ export default function BoutiqueCreate() {
                   Vous pourrez ajouter des produits depuis notre catalogue fournisseur après la création de votre boutique.
                 </p>
               </div>
-              <Button variant="outline" className="gap-2">
-                <Package className="w-4 h-4" />
-                Voir le catalogue fournisseur
+              <Button variant="outline" className="gap-2" asChild>
+                <Link to="/dashboard/produits-fournisseurs">
+                  <Package className="w-4 h-4" />
+                  Voir le catalogue fournisseur
+                </Link>
               </Button>
             </div>
           )}

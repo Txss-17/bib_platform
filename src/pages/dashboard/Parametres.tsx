@@ -1,4 +1,5 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -187,7 +188,9 @@ export default function Parametres() {
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5 ml-6">Français (France)</p>
                   </div>
-                  <Button variant="outline" size="sm">Modifier</Button>
+                  <Button variant="outline" size="sm" disabled title="Bientôt — Français disponible">
+                    Bientôt
+                  </Button>
                 </div>
             </SectionCard>
 
@@ -415,14 +418,16 @@ export default function Parametres() {
                     <p className="text-sm font-medium text-foreground">Authentification 2FA</p>
                     <p className="text-xs text-muted-foreground">Couche de sécurité supplémentaire</p>
                   </div>
-                  <Button variant="outline" size="sm">Configurer</Button>
+                  <Button variant="outline" size="sm" disabled title="Disponible prochainement">Bientôt</Button>
                 </div>
                 <div className="flex items-center justify-between gap-3 pt-3">
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-foreground">Mot de passe</p>
                     <p className="text-xs text-muted-foreground">Dernière modification il y a 3 mois</p>
                   </div>
-                  <Button variant="outline" size="sm">Modifier</Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to="/forgot-password">Modifier</Link>
+                  </Button>
                 </div>
               </div>
             </SectionCard>
@@ -440,7 +445,9 @@ export default function Parametres() {
                   <p className="text-xs text-muted-foreground">IBAN</p>
                   <p className="font-mono text-sm text-foreground">FR76 •••• •••• •••• •••• ••87</p>
                 </div>
-                <Button variant="outline" size="sm">Modifier les coordonnées</Button>
+                <Button variant="outline" size="sm" disabled title="Géré via Stripe — disponible après onboarding paiements">
+                  Modifier les coordonnées
+                </Button>
               </div>
             </SectionCard>
           </TabsContent>
