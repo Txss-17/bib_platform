@@ -56,7 +56,7 @@ export function PartnerContactForm({ portal }: PartnerContactFormProps) {
       `${parsed.data.message}`;
 
     const { error } = await supabase.from("support_tickets").insert({
-      source: "storefront",
+      source: "partner_inquiry",
       contact_email: parsed.data.email,
       contact_name: parsed.data.contact_name,
       subject,
