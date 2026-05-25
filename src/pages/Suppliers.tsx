@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
 import { PartnerContactForm } from "@/components/standalone/PartnerContactForm";
 import { Card } from "@/components/ui/card";
@@ -23,12 +22,11 @@ const steps = [
 ];
 
 export default function Suppliers() {
-  useEffect(() => {
-    useSEO({
-      title: "Devenir fournisseur — Brand-In-A-Box",
-      description: "Référencez vos produits dans le Catalogue BIB et accédez à un réseau de boutiques pré-qualifiées. Logistique, paiements et conformité gérés.",
-    });
-  }, []);
+  useSEO({
+    title: "Devenir fournisseur — Brand-In-A-Box",
+    description:
+      "Référencez vos produits dans le Catalogue BIB et accédez à un réseau de boutiques pré-qualifiées. Logistique, paiements et conformité gérés.",
+  });
 
   return (
     <StandaloneLayout portal="Suppliers" accent="primary">
