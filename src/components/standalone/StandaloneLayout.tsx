@@ -17,6 +17,11 @@ interface StandaloneLayoutProps {
  * Independent of the marketing Header / Dashboard sidebar.
  */
 export function StandaloneLayout({ children, portal, accent = "primary" }: StandaloneLayoutProps) {
+  const accentClasses: Record<string, string> = {
+    primary: "bg-primary/10 text-primary border-primary/20",
+    accent: "bg-accent/10 text-accent border-accent/20",
+    secondary: "bg-secondary/10 text-secondary border-secondary/20",
+  };
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-40 border-b border-border/50 bg-background/80 backdrop-blur-lg">
@@ -24,7 +29,7 @@ export function StandaloneLayout({ children, portal, accent = "primary" }: Stand
           <Link to="/" className="flex items-center gap-3 min-w-0">
             <Logo iconSize={32} />
             <span
-              className={`hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[10px] uppercase tracking-[0.18em] font-semibold bg-${accent}/10 text-${accent} border border-${accent}/20`}
+              className={`hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[10px] uppercase tracking-[0.18em] font-semibold border ${accentClasses[accent]}`}
             >
               {portal}
             </span>
