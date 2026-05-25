@@ -29,7 +29,15 @@ export default function Suppliers() {
   });
 
   return (
-    <StandaloneLayout portal="Suppliers" accent="primary">
+    <StandaloneLayout
+      portal="Suppliers"
+      accent="primary"
+      menuItems={[
+        { label: "Compatibilité", href: "#compatibilite", icon: "layers" },
+        { label: "Comment ça marche", href: "#how", icon: "workflow" },
+        { label: "Contact", href: "#contact", icon: "mail" },
+      ]}
+    >
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-border/50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
@@ -45,7 +53,7 @@ export default function Suppliers() {
       </section>
 
       {/* Compatibility grid */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+      <section id="compatibilite" className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 scroll-mt-20">
         <div className="max-w-2xl mb-8">
           <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">Compatibilité</p>
           <h2 className="font-display text-2xl sm:text-3xl font-bold">
@@ -66,7 +74,7 @@ export default function Suppliers() {
       </section>
 
       {/* How it works */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-16">
+      <section id="how" className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-16 scroll-mt-20">
         <Card className="p-6 sm:p-8 bg-muted/30">
           <h2 className="font-display text-xl sm:text-2xl font-bold mb-5">Comment ça marche</h2>
           <ol className="space-y-3">

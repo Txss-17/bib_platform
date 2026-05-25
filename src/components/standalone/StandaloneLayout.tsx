@@ -3,6 +3,22 @@ import { Link } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import Footer from "@/components/Footer";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Menu, Home, LogIn, Mail, Layers, Workflow, Truck, Boxes } from "lucide-react";
+
+export interface StandaloneMenuItem {
+  label: string;
+  href: string;
+  icon?: "layers" | "workflow" | "truck" | "boxes" | "mail";
+}
 
 interface StandaloneLayoutProps {
   children: ReactNode;
@@ -10,13 +26,24 @@ interface StandaloneLayoutProps {
   portal: string;
   /** Color accent token: 'primary' (marine) by default, 'accent' (gold) for ops */
   accent?: "primary" | "accent" | "secondary";
+  /** Items shown in the page menu dropdown (in-page anchors or external links). */
+  menuItems?: StandaloneMenuItem[];
 }
+
+const iconMap = {
+  layers: Layers,
+  workflow: Workflow,
+  truck: Truck,
+  boxes: Boxes,
+  mail: Mail,
+};
 
 /**
  * Minimal chrome for standalone portals (suppliers / ops / logistics).
- * Independent of the marketing Header / Dashboard sidebar.
+ * Independent header, but shares the marketing Footer so partners can navigate
+ * back to the broader Brand-In-A-Box ecosystem.
  */
-export function StandaloneLayout({ children, portal, accent = "primary" }: StandaloneLayoutProps) {
+export function StandaloneLayout({ children, portal, accent = "primary", menuItems = [] }: StandaloneLayoutProps) {
   const accentClasses: Record<string, string> = {
     primary: "bg-primary/10 text-primary border-primary/20",
     accent: "bg-accent/10 text-accent border-accent/20",
@@ -34,28 +61,60 @@ export function StandaloneLayout({ children, portal, accent = "primary" }: Stand
               {portal}
             </span>
           </Link>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/">Accueil</Link>
-            </Button>
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/login">Connexion</Link>
-            </Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Menu className="w-4 h-4" />
+                <span>Menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              {menuItems.length > 0 && (
+                <>
+                  <DropdownMenuLabel>{portal}</DropdownMenuLabel>
+                  {menuItems.map((item) => {
+                    const Icon = item.icon ? iconMap[item.icon] : null;
+                    const isAnchor = item.href.startsWith("#");
+                    const content = (
+                      <span className="flex items-center gap-2">
+                        {Icon && <Icon className="w-4 h-4" />}
+                        {item.label}
+                      </span>
+                    );
+                    return (
+                      <DropdownMenuItem key={item.href} asChild>
+                        {isAnchor ? (
+                          <a href={item.href}>{content}</a>
+                        ) : (
+                          <Link to={item.href}>{content}</Link>
+                        )}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                  <DropdownMenuSeparator />
+                </>
+              )}
+              <DropdownMenuLabel>Plateforme</DropdownMenuLabel>
+              <DropdownMenuItem asChild>
+                <Link to="/"><span className="flex items-center gap-2"><Home className="w-4 h-4" /> Accueil</span></Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/suppliers"><span className="flex items-center gap-2"><Boxes className="w-4 h-4" /> Suppliers</span></Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/ops"><span className="flex items-center gap-2"><Truck className="w-4 h-4" /> Ops / Logistique</span></Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/login"><span className="flex items-center gap-2"><LogIn className="w-4 h-4" /> Connexion</span></Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <div className="px-2 py-1.5"><ThemeToggle /></div>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
       <main className="flex-1">{children}</main>
-      <footer className="border-t border-border/50 py-8 mt-12">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-          <span>© {new Date().getFullYear()} Brand-In-A-Box — {portal} Portal</span>
-          <div className="flex items-center gap-4">
-            <Link to="/mentions-legales" className="hover:text-foreground">Mentions légales</Link>
-            <Link to="/confidentialite" className="hover:text-foreground">Confidentialité</Link>
-            <Link to="/a-propos" className="hover:text-foreground">À propos</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
