@@ -19,6 +19,8 @@ import Marketplace from "./pages/Marketplace";
 import Recycler from "./pages/customer/Recycler";
 import Suppliers from "./pages/Suppliers";
 import Ops from "./pages/Ops";
+import SuppliersApply from "./pages/SuppliersApply";
+import OpsApply from "./pages/OpsApply";
 
 // Dashboard pages
 import Ventes from "./pages/dashboard/Ventes";
@@ -81,9 +83,13 @@ const App = () => (
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/suppliers" element={<Suppliers />} />
             <Route path="/fournisseurs" element={<Suppliers />} />
+            <Route path="/suppliers/apply" element={<SuppliersApply />} />
+            <Route path="/fournisseurs/candidature" element={<SuppliersApply />} />
             <Route path="/ops" element={<Ops />} />
             <Route path="/logistics" element={<Ops />} />
             <Route path="/logistique" element={<Ops />} />
+            <Route path="/ops/apply" element={<OpsApply />} />
+            <Route path="/logistique/candidature" element={<OpsApply />} />
             <Route path="/recycler" element={<Recycler />} />
             <Route path="/recycler/:slug" element={<Recycler />} />
             <Route path="/suivi-commande" element={<OrderTracking />} />

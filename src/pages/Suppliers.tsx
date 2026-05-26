@@ -1,9 +1,10 @@
 import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
-import { PartnerContactForm } from "@/components/standalone/PartnerContactForm";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useSEO } from "@/hooks/useSEO";
-import { Boxes, ShieldCheck, Truck, BarChart3, Layers, Workflow, Check } from "lucide-react";
+import { Boxes, ShieldCheck, Truck, BarChart3, Layers, Workflow, Check, ArrowRight, AlertTriangle, Sparkles, Mail } from "lucide-react";
 
 const compatibility = [
   { icon: Layers, title: "Catalogue centralisé", text: "Vos références (MOQ, prix de base, marge max, marché) sont pré-validées dans le Catalogue Produits BIB." },
@@ -15,10 +16,33 @@ const compatibility = [
 ];
 
 const steps = [
-  "Soumettez votre catalogue via le formulaire ci-dessous.",
-  "Vérification produit & conformité par notre équipe (~5 jours ouvrés).",
-  "Mise en ligne dans le Catalogue Produits BIB, accessible aux 1 000+ boutiques.",
-  "Commandes consolidées, paiements mensuels, support dédié.",
+  { title: "Candidature & qualification", text: "Étape 1 du formulaire en moins de 5 minutes." },
+  { title: "Validation compatibilité", text: "Notre équipe étudie votre dossier sous 3 jours ouvrés." },
+  { title: "Entretien & vérification KYC", text: "Audit qualité, contrôle des documents et échantillon Stripe." },
+  { title: "Signature & onboarding", text: "Mise en ligne dans le catalogue BIB et formation au portail." },
+  { title: "Accès portail fournisseur", text: "Commandes consolidées, statuts en temps réel, paiements mensuels." },
+];
+
+const minimumCriteria = [
+  "Production avec MOQ défini (idéalement ≤ 300 unités)",
+  "Capacité d'expédition vers l'UE (hub de transit BIB)",
+  "Tracking opérationnel (partiel ou complet)",
+  "Conformité légale : entreprise enregistrée, RC pro, documents KYC disponibles",
+  "Acceptation d'un audit qualité annoncé (48h de préavis)",
+];
+
+const advantages = [
+  { title: "Accès à un réseau qualifié", text: "1 000+ boutiques BIB pré-équipées (paiement, logistique, conformité)." },
+  { title: "Commandes consolidées", text: "Volumes agrégés mensuels, moins de friction administrative." },
+  { title: "Visibilité catalogue", text: "Fiches enrichies, score de performance, mise en avant des best-sellers." },
+  { title: "Paiements sécurisés", text: "Encaissements mensuels via BIB, escrow sur litiges, pas de risque client final." },
+];
+
+const constraints = [
+  "Audit qualité obligatoire (48h de préavis)",
+  "Suivi des commandes via portail fournisseur — pas d'email seul",
+  "Transit par notre hub de contrôle qualité (+2–5 jours)",
+  "Pénalités contractuelles en cas de retard injustifié > 10 jours",
 ];
 
 export default function Suppliers() {
@@ -33,9 +57,14 @@ export default function Suppliers() {
       portal="Suppliers"
       accent="primary"
       menuItems={[
-        { label: "Compatibilité", href: "#compatibilite", icon: "layers" },
         { label: "Comment ça marche", href: "#how", icon: "workflow" },
-        { label: "Contact", href: "#contact", icon: "mail" },
+        { label: "Compatibilité", href: "#compatibilite", icon: "layers" },
+        { label: "Critères minimums", href: "#criteres", icon: "shield" },
+        { label: "Avantages partenaires", href: "#avantages", icon: "sparkles" },
+        { label: "Contraintes", href: "#contraintes", icon: "shield" },
+        { label: "Étapes du processus", href: "#etapes", icon: "clipboard" },
+        { label: "Candidater", href: "/suppliers/apply", icon: "file" },
+        { label: "Nous écrire", href: "mailto:suppliers@brand-in-a-box.space", icon: "mail" },
       ]}
     >
       {/* Hero */}
@@ -49,6 +78,39 @@ export default function Suppliers() {
             Un catalogue unique, pré-validé, avec logistique et paiements opérés. Vous fabriquez,
             nous orchestrons la mise en marché auprès des boutiques de la plateforme.
           </p>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <Button asChild size="lg" className="gap-2">
+              <Link to="/suppliers/apply">Vérifier ma compatibilité <ArrowRight className="w-4 h-4" /></Link>
+            </Button>
+            <a href="#how" className="text-sm text-muted-foreground underline-offset-4 hover:underline">
+              Comprendre le fonctionnement
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* How it works (résumé) */}
+      <section id="how" className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 scroll-mt-20">
+        <div className="max-w-2xl mb-8">
+          <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">Fonctionnement</p>
+          <h2 className="font-display text-2xl sm:text-3xl font-bold">Comment fonctionne le réseau BIB</h2>
+          <p className="text-sm text-muted-foreground mt-2">
+            Commandes via portail, audit qualité, transit par notre hub UE, délais contractualisés, commissions transparentes.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { i: Workflow, t: "Portail fournisseur", d: "Statuts, incidents, reporting unifiés." },
+            { i: ShieldCheck, t: "Audit qualité", d: "Annoncé 48h à l'avance, obligatoire." },
+            { i: Truck, t: "Hub de transit", d: "Contrôle qualité +2–5 jours avant expédition finale." },
+            { i: BarChart3, t: "Commissions claires", d: "Tarif fixe par catégorie, payable mensuellement." },
+          ].map((s) => (
+            <Card key={s.t} className="p-5 space-y-2">
+              <s.i className="w-5 h-5 text-primary" />
+              <p className="font-semibold text-sm">{s.t}</p>
+              <p className="text-xs text-muted-foreground">{s.d}</p>
+            </Card>
+          ))}
         </div>
       </section>
 
@@ -74,42 +136,103 @@ export default function Suppliers() {
       </section>
 
       {/* How it works */}
-      <section id="how" className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-16 scroll-mt-20">
+      {/* Critères minimums */}
+      <section id="criteres" className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-16 scroll-mt-20">
+        <div className="max-w-2xl mb-6">
+          <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">Filtrage rapide</p>
+          <h2 className="font-display text-2xl sm:text-3xl font-bold">Critères minimums pour candidater</h2>
+        </div>
+        <Card className="p-6 sm:p-8">
+          <ul className="space-y-2.5">
+            {minimumCriteria.map((c) => (
+              <li key={c} className="flex items-start gap-2.5 text-sm">
+                <Check className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                <span>{c}</span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </section>
+
+      {/* Avantages */}
+      <section id="avantages" className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-16 scroll-mt-20">
+        <div className="max-w-2xl mb-6">
+          <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">Pourquoi nous rejoindre</p>
+          <h2 className="font-display text-2xl sm:text-3xl font-bold">Avantages partenaires</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {advantages.map((a) => (
+            <Card key={a.title} className="p-5 space-y-1.5">
+              <div className="inline-flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <p className="font-semibold text-sm">{a.title}</p>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">{a.text}</p>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* Contraintes */}
+      <section id="contraintes" className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-16 scroll-mt-20">
+        <Card className="p-6 sm:p-8 bg-warning/5 border-warning/30">
+          <div className="flex items-start gap-3 mb-4">
+            <AlertTriangle className="w-5 h-5 text-warning mt-0.5" />
+            <div>
+              <h2 className="font-display text-xl sm:text-2xl font-bold">Contraintes à accepter dès le jour 1</h2>
+              <p className="text-xs text-muted-foreground mt-1">Refuser l'un de ces points met fin au processus.</p>
+            </div>
+          </div>
+          <ul className="space-y-2 pl-1">
+            {constraints.map((c) => (
+              <li key={c} className="flex items-start gap-2 text-sm">
+                <span className="w-1.5 h-1.5 rounded-full bg-warning mt-1.5 shrink-0" />
+                <span>{c}</span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </section>
+
+      {/* Étapes processus */}
+      <section id="etapes" className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-16 scroll-mt-20">
+        <div className="max-w-2xl mb-6">
+          <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">Processus</p>
+          <h2 className="font-display text-2xl sm:text-3xl font-bold">Étapes du processus</h2>
+        </div>
         <Card className="p-6 sm:p-8 bg-muted/30">
-          <h2 className="font-display text-xl sm:text-2xl font-bold mb-5">Comment ça marche</h2>
-          <ol className="space-y-3">
+          <ol className="space-y-4">
             {steps.map((s, i) => (
-              <li key={i} className="flex items-start gap-3 text-sm">
-                <span className="shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-semibold inline-flex items-center justify-center">
+              <li key={s.title} className="flex items-start gap-3">
+                <span className="shrink-0 w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-semibold inline-flex items-center justify-center">
                   {i + 1}
                 </span>
-                <span className="text-muted-foreground pt-0.5">{s}</span>
+                <div>
+                  <p className="font-semibold text-sm">{s.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{s.text}</p>
+                </div>
               </li>
             ))}
           </ol>
         </Card>
       </section>
 
-      {/* Contact form */}
-      <section id="contact" className="container mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="max-w-2xl mb-6">
-          <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">Prise de contact</p>
-          <h2 className="font-display text-2xl sm:text-3xl font-bold">
-            Discutons de votre catalogue
-          </h2>
-          <p className="text-sm text-muted-foreground mt-2">
-            Réponse sous 48h ouvrées. Vous pouvez aussi écrire directement à{" "}
-            <a className="text-primary underline" href="mailto:suppliers@brand-in-a-box.space">
-              suppliers@brand-in-a-box.space
-            </a>.
+      {/* CTA */}
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <Card className="p-8 sm:p-10 text-center space-y-4 bg-primary/5 border-primary/20">
+          <h2 className="font-display text-2xl sm:text-3xl font-bold">Prêt à vérifier votre compatibilité ?</h2>
+          <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+            Étape 1 : moins de 5 minutes. Réponse de notre équipe sous 3 jours ouvrés.
           </p>
-        </div>
-        <PartnerContactForm portal="suppliers" />
-        <div className="mt-6 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-success" /> Données chiffrées</span>
-          <span className="inline-flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-success" /> Aucun engagement</span>
-          <span className="inline-flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-success" /> Confidentialité respectée</span>
-        </div>
+          <div className="flex flex-wrap justify-center gap-3 pt-2">
+            <Button asChild size="lg" className="gap-2">
+              <Link to="/suppliers/apply">Commencer la validation <ArrowRight className="w-4 h-4" /></Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="gap-2">
+              <a href="mailto:suppliers@brand-in-a-box.space"><Mail className="w-4 h-4" /> Nous écrire</a>
+            </Button>
+          </div>
+        </Card>
       </section>
     </StandaloneLayout>
   );
