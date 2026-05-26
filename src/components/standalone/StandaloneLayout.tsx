@@ -12,12 +12,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, Home, LogIn, Mail, Layers, Workflow, Truck, Boxes } from "lucide-react";
+import { Menu, Mail, Layers, Workflow, Truck, Boxes, ShieldCheck, Sparkles, FileText, ClipboardCheck } from "lucide-react";
 
 export interface StandaloneMenuItem {
   label: string;
   href: string;
-  icon?: "layers" | "workflow" | "truck" | "boxes" | "mail";
+  icon?: "layers" | "workflow" | "truck" | "boxes" | "mail" | "shield" | "sparkles" | "file" | "clipboard";
 }
 
 interface StandaloneLayoutProps {
@@ -36,6 +36,10 @@ const iconMap = {
   truck: Truck,
   boxes: Boxes,
   mail: Mail,
+  shield: ShieldCheck,
+  sparkles: Sparkles,
+  file: FileText,
+  clipboard: ClipboardCheck,
 };
 
 /**
@@ -94,20 +98,6 @@ export function StandaloneLayout({ children, portal, accent = "primary", menuIte
                   <DropdownMenuSeparator />
                 </>
               )}
-              <DropdownMenuLabel>Plateforme</DropdownMenuLabel>
-              <DropdownMenuItem asChild>
-                <Link to="/"><span className="flex items-center gap-2"><Home className="w-4 h-4" /> Accueil</span></Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/suppliers"><span className="flex items-center gap-2"><Boxes className="w-4 h-4" /> Suppliers</span></Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/ops"><span className="flex items-center gap-2"><Truck className="w-4 h-4" /> Ops / Logistique</span></Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/login"><span className="flex items-center gap-2"><LogIn className="w-4 h-4" /> Connexion</span></Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <div className="px-2 py-1.5"><ThemeToggle /></div>
             </DropdownMenuContent>
           </DropdownMenu>
