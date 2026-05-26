@@ -251,7 +251,7 @@ export function PartnerQualificationForm({
       </Card>
 
       {/* Blockers */}
-      <Card className="p-5 sm:p-6 space-y-4">
+      <Card id="blockers" className="p-5 sm:p-6 space-y-4 scroll-mt-20">
         <div className="flex items-center gap-2">
           <h3 className="font-display text-sm font-semibold">Compatibilité opérationnelle</h3>
           <Badge variant="destructive" className="text-[10px]">Critères bloquants</Badge>
