@@ -31,7 +31,10 @@ import {
   ShieldCheck,
   Trash2,
   UserCheck,
+  Mail,
+  ShieldAlert,
 } from "lucide-react";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 /**
  * PartnerOnboardingWizard
@@ -122,6 +125,15 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  // OTP verification state
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [otpSentTo, setOtpSentTo] = useState<string | null>(null);
+  const [otpCode, setOtpCode] = useState("");
+  const [otpRequesting, setOtpRequesting] = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [portalUrl, setPortalUrl] = useState<string | null>(null);
+
   // Restore progress
   useEffect(() => {
     try {
@@ -134,6 +146,8 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
       setIntegration(data.integration ?? {});
       setPilotNotes(data.pilotNotes ?? "");
       setStep(typeof data.step === "number" ? data.step : 0);
+      if (data.accessToken) setAccessToken(data.accessToken);
+      if (data.otpSentTo) setOtpSentTo(data.otpSentTo);
     } catch {
       /* ignore */
     }
@@ -144,12 +158,12 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
     try {
       localStorage.setItem(
         storageKey,
-        JSON.stringify({ step, identity, uploaded, commitAck, integration, pilotNotes }),
+        JSON.stringify({ step, identity, uploaded, commitAck, integration, pilotNotes, accessToken, otpSentTo }),
       );
     } catch {
       /* ignore */
     }
-  }, [storageKey, step, identity, uploaded, commitAck, integration, pilotNotes]);
+  }, [storageKey, step, identity, uploaded, commitAck, integration, pilotNotes, accessToken, otpSentTo]);
 
   const steps = useMemo(
     () => [
@@ -158,6 +172,7 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
       { key: "commitments", label: "Engagements", icon: FileSignature },
       { key: "integration", label: "Intégration", icon: Plug },
       { key: "pilot", label: "Pilote", icon: PackageCheck },
+      { key: "verify", label: "Vérification email", icon: Mail },
       { key: "review", label: "Récap", icon: ClipboardCheck },
     ],
     [],
@@ -178,6 +193,7 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
     .filter((f) => f.required)
     .every((f) => (integration[f.id] ?? "").trim().length > 0);
   const pilotOk = pilotNotes.trim().length >= 20;
+  const emailVerified = !!accessToken && otpSentTo === (identity.email ?? "").trim().toLowerCase();
 
   const canNext =
     (step === 0 && identityValid) ||
@@ -185,7 +201,8 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
     (step === 2 && allCommitOk) ||
     (step === 3 && requiredIntegrationOk) ||
     (step === 4 && pilotOk) ||
-    step === 5;
+    (step === 5 && emailVerified) ||
+    step === 6;
 
   async function handleUpload(slot: DocSlot, file: File) {
     if (!file) return;
@@ -218,6 +235,11 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
 
   async function handleSubmit() {
     if (!finalDecl) return;
+    if (!accessToken) {
+      toast({ title: "Vérification email requise", description: "Validez votre email avant de soumettre.", variant: "destructive" });
+      setStep(5);
+      return;
+    }
     setSubmitting(true);
     const parsed = identitySchema.safeParse(identity);
     if (!parsed.success) {
@@ -226,16 +248,8 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
       setStep(0);
       return;
     }
-    const portalLabel = config.portal === "suppliers" ? "Fournisseur" : "Logistique";
-    const subject = `[Onboarding ${portalLabel}] ${parsed.data.company}`;
-    const lines: string[] = [
-      `Code d'accès : ${parsed.data.access_code}`,
-      `Société : ${parsed.data.company}`,
-      `Représentant légal : ${parsed.data.legal_rep}`,
-      `Email : ${parsed.data.email}`,
-      `Téléphone : ${parsed.data.phone}`,
-      `Adresse : ${parsed.data.address}`,
-      "",
+
+    const summary_lines = [
       "— Documents fournis —",
       ...config.documents.map((d) => {
         const u = uploaded.find((x) => x.slotId === d.id);
@@ -248,29 +262,37 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
       "— Intégration technique —",
       ...config.integration.map((f) => {
         const v = integration[f.id] ?? "";
-        const label = f.type === "select" && v
-          ? f.options?.find((o) => o.value === v)?.label ?? v
-          : v || "—";
+        const label = f.type === "select" && v ? f.options?.find((o) => o.value === v)?.label ?? v : v || "—";
         return `${f.label} : ${label}`;
       }),
       "",
       "— Pilote —",
       pilotNotes || "—",
     ];
-    const { data: ticket, error } = await supabase
-      .from("support_tickets")
-      .insert({
-        source: "partner_inquiry" as never,
-        contact_email: parsed.data.email,
+
+    const { data, error } = await supabase.functions.invoke("partner-onboarding-submit", {
+      body: {
+        access_token: accessToken,
         contact_name: parsed.data.legal_rep,
-        subject,
-        message: lines.join("\n"),
-        boutique_id: null,
-      })
-      .select("id")
-      .single();
-    if (error || !ticket) {
-      setSubmitting(false);
+        company: parsed.data.company,
+        payload: {
+          identity: parsed.data,
+          commitAck,
+          integration,
+          pilotNotes,
+        },
+        kyc_attachments: uploaded.map((u) => ({
+          slotId: u.slotId,
+          fileName: u.fileName,
+          path: u.path,
+          size: u.size,
+        })),
+        summary_lines,
+      },
+    });
+
+    setSubmitting(false);
+    if (error || !data?.ok) {
       toast({
         title: "Envoi impossible",
         description: "Réessayez ou contactez partners@brand-in-a-box.space",
@@ -278,19 +300,66 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
       });
       return;
     }
-    // Best-effort: link uploaded docs to the ticket (RLS allows anon insert on
-    // attachments for tickets of source=storefront only — onboarding uses
-    // partner_inquiry which is server-validated later. We log paths in the
-    // ticket message so ops can fetch them via storage admin.)
-    setSubmitting(false);
+    setPortalUrl((data as { portal_url?: string }).portal_url ?? null);
     setSubmitted(true);
-    try {
-      localStorage.removeItem(storageKey);
-    } catch {
-      /* ignore */
-    }
-    toast({ title: "Onboarding soumis", description: "Notre équipe vous contacte sous 48h." });
+    try { localStorage.removeItem(storageKey); } catch { /* ignore */ }
+    toast({ title: "Onboarding soumis", description: "Vous recevez un email de suivi." });
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function requestOtp() {
+    const email = (identity.email ?? "").trim().toLowerCase();
+    if (!email) {
+      toast({ title: "Email manquant", description: "Renseignez votre email à l'étape Identité.", variant: "destructive" });
+      setStep(0);
+      return;
+    }
+    setOtpRequesting(true);
+    setOtpError(null);
+    const { data, error } = await supabase.functions.invoke("partner-otp-request", {
+      body: { email, portal: config.portal },
+    });
+    setOtpRequesting(false);
+    if (error || !(data as { ok?: boolean })?.ok) {
+      const code = (data as { error?: string })?.error;
+      setOtpError(code === "rate_limited" ? "Trop de demandes — patientez une minute." : "Envoi impossible. Réessayez.");
+      return;
+    }
+    setOtpSentTo(email);
+    setAccessToken(null);
+    toast({ title: "Code envoyé", description: `Vérifiez la boîte ${email}.` });
+  }
+
+  async function verifyOtp() {
+    const email = (identity.email ?? "").trim().toLowerCase();
+    if (!/^\d{6}$/.test(otpCode)) {
+      setOtpError("Saisissez les 6 chiffres du code.");
+      return;
+    }
+    setOtpVerifying(true);
+    setOtpError(null);
+    const { data, error } = await supabase.functions.invoke("partner-otp-verify", {
+      body: { email, portal: config.portal, code: otpCode },
+    });
+    setOtpVerifying(false);
+    const ok = (data as { ok?: boolean; access_token?: string; resumed?: boolean })?.ok;
+    if (error || !ok) {
+      const msg = (data as { error?: string })?.error;
+      setOtpError(
+        msg === "invalid_code" ? "Code incorrect."
+        : msg === "expired" ? "Code expiré, renvoyez un nouveau code."
+        : msg === "too_many_attempts" ? "Trop de tentatives. Renvoyez un code."
+        : "Vérification impossible."
+      );
+      return;
+    }
+    setAccessToken((data as { access_token: string }).access_token);
+    setOtpSentTo(email);
+    setOtpCode("");
+    toast({ title: "Email vérifié", description: "Vous pouvez soumettre votre dossier." });
+    if ((data as { resumed?: boolean }).resumed) {
+      toast({ title: "Dossier existant repris", description: "Vos précédentes informations seront mises à jour." });
+    }
   }
 
   if (submitted) {
@@ -305,6 +374,11 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
               accès au portail <strong>{config.portal === "suppliers" ? "Suppliers" : "Ops"}</strong> sous
               48 heures ouvrées, accompagné du planning de pilote.
             </p>
+            {portalUrl && (
+              <p className="text-xs mt-3">
+                Suivi en temps réel : <a className="underline text-primary break-all" href={portalUrl}>{portalUrl}</a>
+              </p>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2 pt-2">
@@ -575,6 +649,60 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
       {step === 5 && (
         <Card className="p-5 sm:p-6 space-y-4">
           <div className="flex items-center gap-2">
+            <Mail className="w-4 h-4 text-primary" />
+            <h3 className="font-display text-base font-semibold">Vérification de votre email</h3>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Pour sécuriser votre dossier et vous permettre de le reprendre/modifier après soumission,
+            nous envoyons un code à 6 chiffres à <strong>{identity.email || "—"}</strong>.
+          </p>
+          {!otpSentTo || otpSentTo !== (identity.email ?? "").trim().toLowerCase() ? (
+            <Button onClick={requestOtp} disabled={otpRequesting || !identity.email} className="w-full sm:w-auto">
+              {otpRequesting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />}
+              Envoyer le code
+            </Button>
+          ) : emailVerified ? (
+            <div className="flex items-center gap-2 text-sm text-success">
+              <CheckCircle2 className="w-4 h-4" />
+              Email vérifié — vous pouvez passer au récapitulatif.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs">Code reçu par email</Label>
+                <div className="mt-2">
+                  <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
+                    <InputOTPGroup>
+                      {[0,1,2,3,4,5].map((i) => <InputOTPSlot key={i} index={i} />)}
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button size="sm" onClick={verifyOtp} disabled={otpVerifying || otpCode.length !== 6}>
+                  {otpVerifying ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
+                  Vérifier le code
+                </Button>
+                <Button size="sm" variant="ghost" onClick={requestOtp} disabled={otpRequesting}>
+                  Renvoyer le code
+                </Button>
+              </div>
+              {otpError && (
+                <p className="text-xs text-destructive flex items-center gap-1.5">
+                  <ShieldAlert className="w-3.5 h-3.5" /> {otpError}
+                </p>
+              )}
+              <p className="text-[11px] text-muted-foreground">
+                Code valable 10 minutes. Max 5 tentatives par code.
+              </p>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {step === 6 && (
+        <Card className="p-5 sm:p-6 space-y-4">
+          <div className="flex items-center gap-2">
             <ClipboardCheck className="w-4 h-4 text-primary" />
             <h3 className="font-display text-base font-semibold">Récapitulatif & soumission</h3>
           </div>
@@ -591,6 +719,7 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
               label="Engagements"
               value={`${Object.values(commitAck).filter(Boolean).length} / ${config.commitments.length} acceptés`}
             />
+            <SummaryItem label="Email vérifié" value={emailVerified ? "✅ confirmé" : "❌ requis"} />
           </div>
           <label className="flex items-start gap-3 p-3 rounded-md border border-border bg-muted/20 cursor-pointer">
             <Checkbox checked={finalDecl} onCheckedChange={(c) => setFinalDecl(c === true)} className="mt-0.5" />
@@ -603,7 +732,7 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
             size="lg"
             className="w-full"
             onClick={handleSubmit}
-            disabled={submitting || !finalDecl || !identityValid || !requiredDocsOk || !allCommitOk || !requiredIntegrationOk || !pilotOk}
+            disabled={submitting || !finalDecl || !emailVerified || !identityValid || !requiredDocsOk || !allCommitOk || !requiredIntegrationOk || !pilotOk}
           >
             {submitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Rocket className="w-4 h-4 mr-2" />}
             Soumettre mon onboarding

@@ -14,6 +14,8 @@ import { template as kycSubmitted } from './kyc-submitted.tsx'
 import { template as newOrderNotification } from './new-order-notification.tsx'
 import { template as customerOrderConfirmation } from './customer-order-confirmation.tsx'
 import { template as supportTicketStatus } from './support-ticket-status.tsx'
+import { template as partnerOtp } from './partner-otp.tsx'
+import { template as partnerOnboardingSubmitted } from './partner-onboarding-submitted.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'seller-welcome': sellerWelcome,
@@ -21,4 +23,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'new-order-notification': newOrderNotification,
   'customer-order-confirmation': customerOrderConfirmation,
   'support-ticket-status': supportTicketStatus,
+  'partner-otp': partnerOtp,
+  'partner-onboarding-submitted': partnerOnboardingSubmitted,
 }
