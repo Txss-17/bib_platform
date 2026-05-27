@@ -91,12 +91,9 @@ Deno.serve(async (req) => {
     }
     ticketId = t.id
   } else if (isResubmission) {
-    // Post the change history as a ticket response
-    await supabase.from('support_ticket_responses').insert({
-      ticket_id: ticketId,
-      author_id: '00000000-0000-0000-0000-000000000000', // system
-      message: `[Modification du dossier]\n${body.change_summary ?? '(non précisé)'}\n\n${messageLines}`,
-    }).then(() => null).catch(() => null) // best-effort; RLS may refuse non-owner
+    // Resubmissions are recorded in partner_onboarding_history (below) and
+    // surfaced to the team via the admin panel — we don't post into
+    // support_ticket_responses (the table expects a real authenticated author).
   }
 
   // Attach KYC files to the support ticket (avoids manual Ops step)
