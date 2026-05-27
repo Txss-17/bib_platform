@@ -92,7 +92,7 @@ export default function PartnerOnboardingResume() {
       menuItems={[
         { label: "Présentation", href: portal === "suppliers" ? "/suppliers" : "/ops", icon: portal === "suppliers" ? "layers" : "truck" },
         { label: "Candidature", href: portal === "suppliers" ? "/suppliers/apply" : "/ops/apply", icon: "clipboard" },
-        { label: "Onboarding", href: portal === "suppliers" ? "/suppliers/onboarding" : "/ops/onboarding", icon: "rocket" },
+        { label: "Onboarding", href: portal === "suppliers" ? "/suppliers/onboarding" : "/ops/onboarding", icon: "workflow" },
       ]}
     >
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14 max-w-xl">
