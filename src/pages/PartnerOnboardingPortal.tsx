@@ -104,18 +104,21 @@ export default function PartnerOnboardingPortal() {
       return;
     }
     setLoading(true);
+    const client = supabase as unknown as {
+      rpc: (fn: string, params: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
+    };
     const [{ data: s, error: se }, { data: h }] = await Promise.all([
-      supabase.rpc("partner_load_submission", { _access_token: token }),
-      supabase.rpc("partner_load_history", { _access_token: token }),
+      client.rpc("partner_load_submission", { _access_token: token }),
+      client.rpc("partner_load_history", { _access_token: token }),
     ]);
     setLoading(false);
     if (se || !s || (Array.isArray(s) && s.length === 0)) {
       setError("Lien expiré ou invalide. Demandez un nouveau code.");
       return;
     }
-    const row = (Array.isArray(s) ? s[0] : s) as Submission;
+    const row = (Array.isArray(s) ? s[0] : s) as unknown as Submission;
     setSub(row);
-    setHistory(Array.isArray(h) ? (h as HistoryEntry[]) : []);
+    setHistory(Array.isArray(h) ? (h as unknown as HistoryEntry[]) : []);
   }
 
   useEffect(() => {
