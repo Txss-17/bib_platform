@@ -31,7 +31,10 @@ import {
   ShieldCheck,
   Trash2,
   UserCheck,
+  Mail,
+  ShieldAlert,
 } from "lucide-react";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 /**
  * PartnerOnboardingWizard
@@ -122,6 +125,15 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  // OTP verification state
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [otpSentTo, setOtpSentTo] = useState<string | null>(null);
+  const [otpCode, setOtpCode] = useState("");
+  const [otpRequesting, setOtpRequesting] = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [portalUrl, setPortalUrl] = useState<string | null>(null);
+
   // Restore progress
   useEffect(() => {
     try {
@@ -134,6 +146,8 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
       setIntegration(data.integration ?? {});
       setPilotNotes(data.pilotNotes ?? "");
       setStep(typeof data.step === "number" ? data.step : 0);
+      if (data.accessToken) setAccessToken(data.accessToken);
+      if (data.otpSentTo) setOtpSentTo(data.otpSentTo);
     } catch {
       /* ignore */
     }
@@ -144,12 +158,12 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
     try {
       localStorage.setItem(
         storageKey,
-        JSON.stringify({ step, identity, uploaded, commitAck, integration, pilotNotes }),
+        JSON.stringify({ step, identity, uploaded, commitAck, integration, pilotNotes, accessToken, otpSentTo }),
       );
     } catch {
       /* ignore */
     }
-  }, [storageKey, step, identity, uploaded, commitAck, integration, pilotNotes]);
+  }, [storageKey, step, identity, uploaded, commitAck, integration, pilotNotes, accessToken, otpSentTo]);
 
   const steps = useMemo(
     () => [
@@ -158,6 +172,7 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
       { key: "commitments", label: "Engagements", icon: FileSignature },
       { key: "integration", label: "Intégration", icon: Plug },
       { key: "pilot", label: "Pilote", icon: PackageCheck },
+      { key: "verify", label: "Vérification email", icon: Mail },
       { key: "review", label: "Récap", icon: ClipboardCheck },
     ],
     [],
@@ -178,6 +193,7 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
     .filter((f) => f.required)
     .every((f) => (integration[f.id] ?? "").trim().length > 0);
   const pilotOk = pilotNotes.trim().length >= 20;
+  const emailVerified = !!accessToken && otpSentTo === (identity.email ?? "").trim().toLowerCase();
 
   const canNext =
     (step === 0 && identityValid) ||
@@ -185,7 +201,8 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
     (step === 2 && allCommitOk) ||
     (step === 3 && requiredIntegrationOk) ||
     (step === 4 && pilotOk) ||
-    step === 5;
+    (step === 5 && emailVerified) ||
+    step === 6;
 
   async function handleUpload(slot: DocSlot, file: File) {
     if (!file) return;
@@ -218,6 +235,11 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
 
   async function handleSubmit() {
     if (!finalDecl) return;
+    if (!accessToken) {
+      toast({ title: "Vérification email requise", description: "Validez votre email avant de soumettre.", variant: "destructive" });
+      setStep(5);
+      return;
+    }
     setSubmitting(true);
     const parsed = identitySchema.safeParse(identity);
     if (!parsed.success) {
@@ -226,16 +248,8 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
       setStep(0);
       return;
     }
-    const portalLabel = config.portal === "suppliers" ? "Fournisseur" : "Logistique";
-    const subject = `[Onboarding ${portalLabel}] ${parsed.data.company}`;
-    const lines: string[] = [
-      `Code d'accès : ${parsed.data.access_code}`,
-      `Société : ${parsed.data.company}`,
-      `Représentant légal : ${parsed.data.legal_rep}`,
-      `Email : ${parsed.data.email}`,
-      `Téléphone : ${parsed.data.phone}`,
-      `Adresse : ${parsed.data.address}`,
-      "",
+
+    const summary_lines = [
       "— Documents fournis —",
       ...config.documents.map((d) => {
         const u = uploaded.find((x) => x.slotId === d.id);
@@ -248,29 +262,37 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
       "— Intégration technique —",
       ...config.integration.map((f) => {
         const v = integration[f.id] ?? "";
-        const label = f.type === "select" && v
-          ? f.options?.find((o) => o.value === v)?.label ?? v
-          : v || "—";
+        const label = f.type === "select" && v ? f.options?.find((o) => o.value === v)?.label ?? v : v || "—";
         return `${f.label} : ${label}`;
       }),
       "",
       "— Pilote —",
       pilotNotes || "—",
     ];
-    const { data: ticket, error } = await supabase
-      .from("support_tickets")
-      .insert({
-        source: "partner_inquiry" as never,
-        contact_email: parsed.data.email,
+
+    const { data, error } = await supabase.functions.invoke("partner-onboarding-submit", {
+      body: {
+        access_token: accessToken,
         contact_name: parsed.data.legal_rep,
-        subject,
-        message: lines.join("\n"),
-        boutique_id: null,
-      })
-      .select("id")
-      .single();
-    if (error || !ticket) {
-      setSubmitting(false);
+        company: parsed.data.company,
+        payload: {
+          identity: parsed.data,
+          commitAck,
+          integration,
+          pilotNotes,
+        },
+        kyc_attachments: uploaded.map((u) => ({
+          slotId: u.slotId,
+          fileName: u.fileName,
+          path: u.path,
+          size: u.size,
+        })),
+        summary_lines,
+      },
+    });
+
+    setSubmitting(false);
+    if (error || !data?.ok) {
       toast({
         title: "Envoi impossible",
         description: "Réessayez ou contactez partners@brand-in-a-box.space",
@@ -278,19 +300,66 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
       });
       return;
     }
-    // Best-effort: link uploaded docs to the ticket (RLS allows anon insert on
-    // attachments for tickets of source=storefront only — onboarding uses
-    // partner_inquiry which is server-validated later. We log paths in the
-    // ticket message so ops can fetch them via storage admin.)
-    setSubmitting(false);
+    setPortalUrl((data as { portal_url?: string }).portal_url ?? null);
     setSubmitted(true);
-    try {
-      localStorage.removeItem(storageKey);
-    } catch {
-      /* ignore */
-    }
-    toast({ title: "Onboarding soumis", description: "Notre équipe vous contacte sous 48h." });
+    try { localStorage.removeItem(storageKey); } catch { /* ignore */ }
+    toast({ title: "Onboarding soumis", description: "Vous recevez un email de suivi." });
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function requestOtp() {
+    const email = (identity.email ?? "").trim().toLowerCase();
+    if (!email) {
+      toast({ title: "Email manquant", description: "Renseignez votre email à l'étape Identité.", variant: "destructive" });
+      setStep(0);
+      return;
+    }
+    setOtpRequesting(true);
+    setOtpError(null);
+    const { data, error } = await supabase.functions.invoke("partner-otp-request", {
+      body: { email, portal: config.portal },
+    });
+    setOtpRequesting(false);
+    if (error || !(data as { ok?: boolean })?.ok) {
+      const code = (data as { error?: string })?.error;
+      setOtpError(code === "rate_limited" ? "Trop de demandes — patientez une minute." : "Envoi impossible. Réessayez.");
+      return;
+    }
+    setOtpSentTo(email);
+    setAccessToken(null);
+    toast({ title: "Code envoyé", description: `Vérifiez la boîte ${email}.` });
+  }
+
+  async function verifyOtp() {
+    const email = (identity.email ?? "").trim().toLowerCase();
+    if (!/^\d{6}$/.test(otpCode)) {
+      setOtpError("Saisissez les 6 chiffres du code.");
+      return;
+    }
+    setOtpVerifying(true);
+    setOtpError(null);
+    const { data, error } = await supabase.functions.invoke("partner-otp-verify", {
+      body: { email, portal: config.portal, code: otpCode },
+    });
+    setOtpVerifying(false);
+    const ok = (data as { ok?: boolean; access_token?: string; resumed?: boolean })?.ok;
+    if (error || !ok) {
+      const msg = (data as { error?: string })?.error;
+      setOtpError(
+        msg === "invalid_code" ? "Code incorrect."
+        : msg === "expired" ? "Code expiré, renvoyez un nouveau code."
+        : msg === "too_many_attempts" ? "Trop de tentatives. Renvoyez un code."
+        : "Vérification impossible."
+      );
+      return;
+    }
+    setAccessToken((data as { access_token: string }).access_token);
+    setOtpSentTo(email);
+    setOtpCode("");
+    toast({ title: "Email vérifié", description: "Vous pouvez soumettre votre dossier." });
+    if ((data as { resumed?: boolean }).resumed) {
+      toast({ title: "Dossier existant repris", description: "Vos précédentes informations seront mises à jour." });
+    }
   }
 
   if (submitted) {
