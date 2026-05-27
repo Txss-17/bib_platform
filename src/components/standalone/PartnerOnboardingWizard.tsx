@@ -644,6 +644,60 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
       {step === 5 && (
         <Card className="p-5 sm:p-6 space-y-4">
           <div className="flex items-center gap-2">
+            <Mail className="w-4 h-4 text-primary" />
+            <h3 className="font-display text-base font-semibold">Vérification de votre email</h3>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Pour sécuriser votre dossier et vous permettre de le reprendre/modifier après soumission,
+            nous envoyons un code à 6 chiffres à <strong>{identity.email || "—"}</strong>.
+          </p>
+          {!otpSentTo || otpSentTo !== (identity.email ?? "").trim().toLowerCase() ? (
+            <Button onClick={requestOtp} disabled={otpRequesting || !identity.email} className="w-full sm:w-auto">
+              {otpRequesting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />}
+              Envoyer le code
+            </Button>
+          ) : emailVerified ? (
+            <div className="flex items-center gap-2 text-sm text-success">
+              <CheckCircle2 className="w-4 h-4" />
+              Email vérifié — vous pouvez passer au récapitulatif.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs">Code reçu par email</Label>
+                <div className="mt-2">
+                  <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
+                    <InputOTPGroup>
+                      {[0,1,2,3,4,5].map((i) => <InputOTPSlot key={i} index={i} />)}
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button size="sm" onClick={verifyOtp} disabled={otpVerifying || otpCode.length !== 6}>
+                  {otpVerifying ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
+                  Vérifier le code
+                </Button>
+                <Button size="sm" variant="ghost" onClick={requestOtp} disabled={otpRequesting}>
+                  Renvoyer le code
+                </Button>
+              </div>
+              {otpError && (
+                <p className="text-xs text-destructive flex items-center gap-1.5">
+                  <ShieldAlert className="w-3.5 h-3.5" /> {otpError}
+                </p>
+              )}
+              <p className="text-[11px] text-muted-foreground">
+                Code valable 10 minutes. Max 5 tentatives par code.
+              </p>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {step === 6 && (
+        <Card className="p-5 sm:p-6 space-y-4">
+          <div className="flex items-center gap-2">
             <ClipboardCheck className="w-4 h-4 text-primary" />
             <h3 className="font-display text-base font-semibold">Récapitulatif & soumission</h3>
           </div>
@@ -660,6 +714,7 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
               label="Engagements"
               value={`${Object.values(commitAck).filter(Boolean).length} / ${config.commitments.length} acceptés`}
             />
+            <SummaryItem label="Email vérifié" value={emailVerified ? "✅ confirmé" : "❌ requis"} />
           </div>
           <label className="flex items-start gap-3 p-3 rounded-md border border-border bg-muted/20 cursor-pointer">
             <Checkbox checked={finalDecl} onCheckedChange={(c) => setFinalDecl(c === true)} className="mt-0.5" />
@@ -672,7 +727,7 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
             size="lg"
             className="w-full"
             onClick={handleSubmit}
-            disabled={submitting || !finalDecl || !identityValid || !requiredDocsOk || !allCommitOk || !requiredIntegrationOk || !pilotOk}
+            disabled={submitting || !finalDecl || !emailVerified || !identityValid || !requiredDocsOk || !allCommitOk || !requiredIntegrationOk || !pilotOk}
           >
             {submitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Rocket className="w-4 h-4 mr-2" />}
             Soumettre mon onboarding
