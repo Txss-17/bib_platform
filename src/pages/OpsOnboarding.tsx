@@ -91,7 +91,13 @@ export default function OpsOnboarding() {
         </Button>
         <Badge variant="secondary" className="mb-3">Activation · Réservé aux partenaires présélectionnés</Badge>
         <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">{config.title}</h1>
-        <p className="text-sm sm:text-base text-muted-foreground mt-3 mb-8 max-w-2xl">{config.subtitle}</p>
+        <p className="text-sm sm:text-base text-muted-foreground mt-3 max-w-2xl">{config.subtitle}</p>
+        <p className="text-xs text-muted-foreground mt-2 mb-8">
+          Déjà commencé ?{" "}
+          <Link to="/ops/onboarding/resume?portal=ops" className="underline text-primary">
+            Reprendre mon dossier
+          </Link>
+        </p>
         <PartnerOnboardingWizard config={config} />
       </section>
     </StandaloneLayout>
