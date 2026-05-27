@@ -1,95 +1,77 @@
-# Plan — Éditeur boutique multi-pages premium (vague 4)
+Le chantier est gros — je propose de le découper en 4 lots livrables séparément. Validez l'ordre, je commence par le lot 1.
 
-Cette demande regroupe ~8 chantiers indépendants. Je propose de les livrer en **4 phases courtes** pour pouvoir tester chaque étape.
+## Lot 1 — Vérification OTP + soumission durcie (fondations)
 
----
+**Base de données**
+- Nouvelle table `partner_onboarding_submissions` (id, portal type `suppliers`/`ops`, contact_email, status `draft|email_verified|submitted|under_review|approved|rejected`, payload jsonb, kyc_attachments jsonb, support_ticket_id, access_token unique, created_at, updated_at)
+- Table `partner_onboarding_history` (submission_id, changed_at, change_summary, diff jsonb) pour tracer chaque modif
+- Table `partner_email_otps` (email, code_hash, expires_at, attempts, consumed_at) — codes 6 chiffres, 10 min TTL, max 5 tentatives
+- RLS : insert anonyme autorisé sur submissions/otps ; lecture/update uniquement via edge function avec access_token (security definer RPC)
+- GRANT explicites sur les 3 tables
 
-## Phase A — Pages : SEO + templates + scènes recommandées
+**Edge functions**
+- `partner-otp-request` : génère un OTP, l'enqueue via `enqueue_email` (template transactionnel) ; rate-limit 3/min/email
+- `partner-otp-verify` : valide le code, marque l'email vérifié, retourne un `access_token` signé (pour reprise/suivi)
+- `partner-onboarding-submit` : appelée après OTP OK. Crée le `support_ticket` (source `partner_inquiry`), copie les fichiers KYC déjà uploadés dans `support-attachments` vers `support_ticket_attachments` automatiquement, envoie email récap au partenaire + notif équipe
 
-1. **Champs SEO par page** (déjà en DB : `slug`, `seo_title`, `seo_description`)
-   - Nouveau panneau "Métadonnées de la page" dans `StudioEditor` (au-dessus de la liste des scènes quand une page custom est active).
-   - Champs : Titre, Slug (auto-slugify + édition manuelle), Titre SEO, Meta description (compteurs 60/160).
-   - Lien public auto-généré affiché en lecture seule : `/boutique/{slug-boutique}/p/{slug-page}` + bouton copier.
+**Wizard**
+- Nouvelle étape "Vérification email" insérée juste avant l'étape finale "Récap & soumission"
+- Bouton "Envoyer le code" → input 6 cases → "Vérifier" → débloque le bouton Soumettre
+- Stocke `access_token` en localStorage pour reprise
 
-2. **Templates de pages "1-clic"** depuis la barre d'onglets
-   - Bouton `+` → menu déroulant : `Vide`, `Produits`, `Panier`, `Blog`, `À propos`, `Contact`.
-   - Chaque template crée la page + insère un bundle de scènes pré-configurées (ex. Produits = `hero-cinema` + `products-grid` + `cta-sticky`).
-   - Définis dans `src/lib/pageTemplates.ts`.
+## Lot 2 — Reprise / modification + historique
 
-3. **Scènes recommandées par contexte de page**
-   - Dans la bibliothèque "Ajouter une scène", section `Recommandées pour cette page` en haut, calculée depuis le titre/slug de la page (heuristique simple).
+- Page `/suppliers/onboarding/resume` et `/ops/onboarding/resume` : saisie email → OTP → réhydrate le wizard depuis la submission
+- Tant que `status != approved`, modifications autorisées
+- Chaque save calcule un diff vs version précédente et insère une ligne dans `partner_onboarding_history` + notifie l'équipe (email transactionnel "Modification onboarding" avec résumé du diff)
+- Bouton "Reprendre mon dossier" sur les pages Suppliers/Ops orientation
 
----
+## Lot 3 — Portail de suivi (lien magique)
 
-## Phase B — Héritage identité + override (finition)
+- Email de confirmation de soumission → lien `/portal/onboarding/:access_token`
+- Page publique standalone affichant une timeline 5 étapes :
+  1. Documents reçus
+  2. Conformité validée
+  3. Intégration planifiée
+  4. Pilote en cours
+  5. Go-live
+- Chaque étape a un état `pending|in_progress|done` lu depuis la submission + son ticket support
+- Affiche aussi : liste des documents uploadés, dernières notes équipe (depuis `support_ticket_responses`), bouton "Modifier mon dossier" tant que non validé
+- Bouton "Renvoyer le lien" si l'utilisateur perd l'email
 
-4. **Application automatique** : quand l'utilisateur change palette/polices/tailles dans le panneau Identité, toutes les scènes de la page se mettent à jour instantanément (CSS vars sur le wrapper page) — **sauf** celles avec `style_overrides != null`.
-5. **Inspector "Style" par scène** : toggle "Hériter / Personnaliser", color pickers, font selects (depuis `googleFonts.ts`), sliders tailles. Bouton "Réinitialiser → hériter".
-6. Indicateur visuel sur la scène (chip "Override") quand non hérité.
+## Lot 4 — Pages opérationnelles (après approval)
 
----
+**Conditionnel** : ces pages ne sont accessibles qu'aux submissions avec `status = approved`. Auth via le même access_token + OTP.
 
-## Phase C — Édition de la scène Produits + page produit
+**Portail Suppliers** (`/suppliers/portal/:token`)
+- Dépôt catalogue (upload produits proposés, statut validation par admin)
+- Upload documents (certifications, fiches techniques)
+- Demandes de MOQ à livrer (liste, bouton "Signaler envoi" → met à jour statut + notifie logistique)
+- Commissions : MOQ vendus, restants, montant dû (vue agrégée depuis `orders` + `supplier_products`)
+- Catalogue produits validés (lecture seule, MOQ min, prix échantillon, prix MOQ, médias, docs)
 
-7. **Inspector enrichi `products-grid`** (ouvert au clic sur la scène) :
-   - Réordonner les produits (drag handles) + filtrage (afficher tout / sélection manuelle).
-   - **Forme du cadre** : carré, arrondi, cercle, organic-blob.
-   - **Disposition** : 2/3/4 colonnes, masonry, carousel.
-   - **Effet hover** : zoom, parallaxe, image alternée (galerie aléatoire), tilt 3D, shine.
-   - Persistés dans `scene.content`.
+**Portail Ops/Logistique** (`/ops/portal/:token`)
+- Dashboard stock global (par produit, par boutique partenaire)
+- Écarts stock vs commandes en cours
+- File commandes à expédier (toutes boutiques)
+- Stock packaging/cartons
+- Produits retournés
+- Mise à jour statuts livraison → propage vers `orders.logistics_status` (visible côté boutique + client final via tracking existant)
 
-8. **Mode "page produit" éditable**
-   - Nouvelle entité conceptuelle : "page produit type" (template appliqué à tous les produits de la boutique).
-   - Stockée comme une `boutique_pages` spéciale (`slug = "__product__"`, `mode = "rich"`, masquée du menu).
-   - Quand l'utilisateur clique sur un produit dans l'aperçu (mode édition) → bascule l'éditeur sur cette page-template.
-   - Scènes dispo : `product-hero` (galerie + prix + CTA), `product-description`, `product-specs`, `product-reviews`, `product-related`, `product-gallery-3d`.
-   - Le rendu storefront (`/product/:id`) injecte les données du produit dans ces scènes.
+Vu l'ampleur (15+ écrans, 8 tables, 6 edge functions), le Lot 4 mérite probablement un découpage supplémentaire mais je peux livrer une v1 fonctionnelle.
 
----
+## Hors-scope de ce plan (à traiter séparément)
 
-## Phase D — Audio de fond + génération IA contextuelle + viewport responsive
+- **Affichage URL boutique en gras `nom.brand-in-a-box.space`** : c'est juste un changement visuel — je le ferai en passant dans le lot 1 (composant `<BoutiqueUrlBadge slug="..." />` réutilisable, sans toucher au routing réel qui reste `/boutique/:slug`)
+- **Rattachement des domaines suppliers./logistics./shop. aux pages standalone** : ça dépend de votre config Vercel (rewrites par host). Je peux ajouter une détection `window.location.hostname` qui auto-route vers `/suppliers` ou `/ops` quand on arrive sur le bon domaine — dites-moi si je l'inclus dans le lot 1.
 
-9. **Son de fond boutique**
-   - Nouveau champ `boutique.theme_settings.background_audio_url` (pas de migration nécessaire — JSONB existant).
-   - Upload mp3 dans bucket `boutique-media`.
-   - Lecteur global storefront (autoplay muté + bouton son en bas-droite, respect prefers-reduced-motion).
-   - Inspector dans onglet "Identité" : upload + volume + bouton "off".
+## Notes techniques
 
-10. **Génération IA contextuelle d'images / vidéos**
-    - Edge function existante `studio-image-gen` étendue : reçoit `boutique_id`, charge `boutique_brand_dna` (palette, ambiance, ton, audience, mots-clés) et **enrichit le prompt** avec ces données → images uniques, cohérentes avec l'identité.
-    - Nouvelle action `generate_for_product` : génère 4 visuels (hero, lifestyle, détail, packshot) pour un produit donné, en s'appuyant sur le nom + catégorie + ADN boutique.
-    - Bouton "✨ Générer" sur tout champ image dans l'inspector (scènes + page produit).
-    - Vidéos : nouvelle action `generate_video` côté edge function (utilise videogen, prompt enrichi ADN). Stockés dans `boutique-media/generated/`.
-    - Galerie "Mes générations" par boutique pour réutiliser.
-
-11. **Viewport responsive de l'aperçu**
-    - Toolbar au-dessus de l'aperçu : icônes 📱 Mobile / 📱 Tablette / 💻 Desktop.
-    - Wrapper iframe-like avec largeurs fixes (375 / 768 / 1280) + scale-to-fit.
-    - État local (pas persistant).
-
----
-
-## Fichiers principaux impactés
-
-- `src/lib/pageTemplates.ts` (nouveau — bundles de scènes par template)
-- `src/lib/studioScenes.ts` (+ 6 scènes produit : `product-hero`, `product-description`, `product-specs`, `product-reviews`, `product-related`, `product-gallery-3d`)
-- `src/components/dashboard/boutique/StudioEditor.tsx` (panneau SEO page, menu + templates, viewport switcher, audio panel)
-- `src/components/dashboard/boutique/SceneInspectorPro.tsx` (Style override, inspector products-grid riche, boutons "Générer ✨")
-- `src/components/dashboard/boutique/ProductPageEditor.tsx` (nouveau — éditeur de page produit type)
-- `src/components/storefront/StudioSceneRenderer.tsx` (héritage CSS vars, formes/effets produits, scènes produit, lecteur audio)
-- `src/hooks/useBrandStudio.ts` (mutation page-template, audio, generations)
-- `supabase/functions/studio-image-gen/index.ts` (enrichissement ADN, mode produit, mode vidéo)
-- Migration : table `boutique_generations` (historique des assets IA générés).
+- Tous les emails passent par l'infra transactionnelle existante (`enqueue_email` + queue pgmq)
+- Les fichiers KYC restent dans `support-attachments` (bucket privé) — la copie vers `support_ticket_attachments` est une simple insertion (mêmes paths)
+- Les access_tokens sont des UUID v4 (32 caractères) stockés en clair côté DB, jamais exposés en URL avant vérif OTP
+- Aucune migration sur les tables `auth.*` ou `storage.*`
 
 ---
 
-## Hors scope (proposition pour plus tard)
-
-- Versioning des pages / brouillons.
-- A/B testing par page.
-- Marketplace de templates communautaires.
-- Génération audio IA (musique d'ambiance auto).
-
----
-
-**OK pour partir sur cet ordre Phase A → D ?** Si oui, je commence directement par la Phase A (qui débloque l'usage immédiat).
+**Confirmez** : on attaque Lot 1 (OTP + soumission durcie + auto-attach KYC + badge URL boutique) ? Ou vous voulez ajuster le périmètre ?
