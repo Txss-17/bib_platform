@@ -374,6 +374,11 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
               accès au portail <strong>{config.portal === "suppliers" ? "Suppliers" : "Ops"}</strong> sous
               48 heures ouvrées, accompagné du planning de pilote.
             </p>
+            {portalUrl && (
+              <p className="text-xs mt-3">
+                Suivi en temps réel : <a className="underline text-primary break-all" href={portalUrl}>{portalUrl}</a>
+              </p>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2 pt-2">
