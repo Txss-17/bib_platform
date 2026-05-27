@@ -110,9 +110,31 @@ interface UploadedDoc {
 
 const STORAGE_KEY_PREFIX = "bib-onboarding-";
 
-export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }) {
+export interface OnboardingPrefill {
+  accessToken: string;
+  contactEmail: string;
+  contactName?: string | null;
+  company?: string | null;
+  payload?: Record<string, unknown>;
+  kycAttachments?: { slotId?: string; fileName: string; path: string; size?: number; mimeType?: string }[];
+  /** Allow returning to portal after submit */
+  portalUrl?: string;
+}
+
+export function PartnerOnboardingWizard({
+  config,
+  mode = "new",
+  prefill,
+  onSubmitted,
+}: {
+  config: OnboardingConfig;
+  mode?: "new" | "edit";
+  prefill?: OnboardingPrefill;
+  onSubmitted?: () => void;
+}) {
   const { toast } = useToast();
-  const storageKey = `${STORAGE_KEY_PREFIX}${config.portal}`;
+  const storageKey = `${STORAGE_KEY_PREFIX}${config.portal}${mode === "edit" ? `-edit-${prefill?.accessToken?.slice(0, 8) ?? ""}` : ""}`;
+  const isEdit = mode === "edit";
 
   const [step, setStep] = useState(0);
   const [identity, setIdentity] = useState<Partial<Identity>>({});
@@ -133,9 +155,48 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
   const [otpVerifying, setOtpVerifying] = useState(false);
   const [otpError, setOtpError] = useState<string | null>(null);
   const [portalUrl, setPortalUrl] = useState<string | null>(null);
+  const [initialSnapshot, setInitialSnapshot] = useState<Record<string, unknown> | null>(null);
 
-  // Restore progress
+  // Restore progress (or apply prefill in edit mode)
   useEffect(() => {
+    if (isEdit && prefill) {
+      const p = (prefill.payload ?? {}) as {
+        identity?: Partial<Identity>;
+        commitAck?: Record<string, boolean>;
+        integration?: Record<string, string>;
+        pilotNotes?: string;
+      };
+      const id: Partial<Identity> = {
+        ...(p.identity ?? {}),
+        email: (p.identity?.email ?? prefill.contactEmail ?? "").toLowerCase(),
+        legal_rep: p.identity?.legal_rep ?? prefill.contactName ?? undefined,
+        company: p.identity?.company ?? prefill.company ?? undefined,
+      };
+      setIdentity(id);
+      setCommitAck(p.commitAck ?? {});
+      setIntegration(p.integration ?? {});
+      setPilotNotes(p.pilotNotes ?? "");
+      setUploaded(
+        (prefill.kycAttachments ?? []).map((k) => ({
+          slotId: k.slotId ?? "",
+          fileName: k.fileName,
+          path: k.path,
+          size: k.size ?? 0,
+        })),
+      );
+      setAccessToken(prefill.accessToken);
+      setOtpSentTo((prefill.contactEmail ?? "").toLowerCase());
+      setPortalUrl(prefill.portalUrl ?? null);
+      setInitialSnapshot({
+        identity: id,
+        commitAck: p.commitAck ?? {},
+        integration: p.integration ?? {},
+        pilotNotes: p.pilotNotes ?? "",
+        kyc: (prefill.kycAttachments ?? []).map((k) => k.path).sort(),
+      });
+      setStep(6); // jump to review; user can navigate back
+      return;
+    }
     try {
       const raw = localStorage.getItem(storageKey);
       if (!raw) return;
@@ -151,10 +212,11 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
     } catch {
       /* ignore */
     }
-  }, [storageKey]);
+  }, [storageKey, isEdit, prefill]);
 
   // Persist
   useEffect(() => {
+    if (isEdit) return; // don't persist edits — short-lived session
     try {
       localStorage.setItem(
         storageKey,
@@ -163,18 +225,23 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
     } catch {
       /* ignore */
     }
-  }, [storageKey, step, identity, uploaded, commitAck, integration, pilotNotes, accessToken, otpSentTo]);
+  }, [storageKey, step, identity, uploaded, commitAck, integration, pilotNotes, accessToken, otpSentTo, isEdit]);
 
   const steps = useMemo(
-    () => [
-      { key: "identity", label: "Identité", icon: UserCheck },
-      { key: "documents", label: "Documents", icon: FileUp },
-      { key: "commitments", label: "Engagements", icon: FileSignature },
-      { key: "integration", label: "Intégration", icon: Plug },
-      { key: "pilot", label: "Pilote", icon: PackageCheck },
-      { key: "verify", label: "Vérification email", icon: Mail },
-      { key: "review", label: "Récap", icon: ClipboardCheck },
-    ],
+    () => {
+      const base = [
+        { key: "identity", label: "Identité", icon: UserCheck },
+        { key: "documents", label: "Documents", icon: FileUp },
+        { key: "commitments", label: "Engagements", icon: FileSignature },
+        { key: "integration", label: "Intégration", icon: Plug },
+        { key: "pilot", label: "Pilote", icon: PackageCheck },
+        { key: "verify", label: "Vérification email", icon: Mail },
+        { key: "review", label: "Récap", icon: ClipboardCheck },
+      ];
+      // In edit mode email is already verified — keep indexes stable but
+      // we'll skip step 5 via canNext + nav handlers below.
+      return base;
+    },
     [],
   );
   const totalSteps = steps.length;
@@ -193,7 +260,7 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
     .filter((f) => f.required)
     .every((f) => (integration[f.id] ?? "").trim().length > 0);
   const pilotOk = pilotNotes.trim().length >= 20;
-  const emailVerified = !!accessToken && otpSentTo === (identity.email ?? "").trim().toLowerCase();
+  const emailVerified = !!accessToken && (isEdit || otpSentTo === (identity.email ?? "").trim().toLowerCase());
 
   const canNext =
     (step === 0 && identityValid) ||
@@ -270,6 +337,30 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
       pilotNotes || "—",
     ];
 
+    // Compute diff vs initial snapshot when editing
+    let diff: Record<string, { from: unknown; to: unknown }> = {};
+    let changeSummary = "";
+    if (isEdit && initialSnapshot) {
+      const current = {
+        identity: parsed.data,
+        commitAck,
+        integration,
+        pilotNotes,
+        kyc: uploaded.map((u) => u.path).sort(),
+      };
+      for (const key of Object.keys(current) as (keyof typeof current)[]) {
+        const a = JSON.stringify((initialSnapshot as Record<string, unknown>)[key] ?? null);
+        const b = JSON.stringify(current[key] ?? null);
+        if (a !== b) {
+          diff[key] = { from: (initialSnapshot as Record<string, unknown>)[key], to: current[key] };
+        }
+      }
+      const changed = Object.keys(diff);
+      changeSummary = changed.length
+        ? `Mise à jour : ${changed.join(", ")}`
+        : "Resoumission sans modification";
+    }
+
     const { data, error } = await supabase.functions.invoke("partner-onboarding-submit", {
       body: {
         access_token: accessToken,
@@ -288,6 +379,9 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
           size: u.size,
         })),
         summary_lines,
+        is_resubmission: isEdit,
+        change_summary: changeSummary || undefined,
+        diff: isEdit ? diff : undefined,
       },
     });
 
@@ -303,8 +397,12 @@ export function PartnerOnboardingWizard({ config }: { config: OnboardingConfig }
     setPortalUrl((data as { portal_url?: string }).portal_url ?? null);
     setSubmitted(true);
     try { localStorage.removeItem(storageKey); } catch { /* ignore */ }
-    toast({ title: "Onboarding soumis", description: "Vous recevez un email de suivi." });
+    toast({
+      title: isEdit ? "Mise à jour envoyée" : "Onboarding soumis",
+      description: isEdit ? "L'équipe Ops a été notifiée des changements." : "Vous recevez un email de suivi.",
+    });
     window.scrollTo({ top: 0, behavior: "smooth" });
+    onSubmitted?.();
   }
 
   async function requestOtp() {

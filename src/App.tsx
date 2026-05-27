@@ -23,6 +23,8 @@ import SuppliersApply from "./pages/SuppliersApply";
 import OpsApply from "./pages/OpsApply";
 import SuppliersOnboarding from "./pages/SuppliersOnboarding";
 import OpsOnboarding from "./pages/OpsOnboarding";
+import PartnerOnboardingResume from "./pages/PartnerOnboardingResume";
+import PartnerOnboardingPortal from "./pages/PartnerOnboardingPortal";
 
 // Dashboard pages
 import Ventes from "./pages/dashboard/Ventes";
@@ -96,6 +98,11 @@ const App = () => (
             <Route path="/logistique/candidature" element={<OpsApply />} />
             <Route path="/ops/onboarding" element={<OpsOnboarding />} />
             <Route path="/logistique/onboarding" element={<OpsOnboarding />} />
+            <Route path="/suppliers/onboarding/resume" element={<PartnerOnboardingResume />} />
+            <Route path="/fournisseurs/onboarding/reprendre" element={<PartnerOnboardingResume />} />
+            <Route path="/ops/onboarding/resume" element={<PartnerOnboardingResume />} />
+            <Route path="/logistique/onboarding/reprendre" element={<PartnerOnboardingResume />} />
+            <Route path="/portal/onboarding/:token" element={<PartnerOnboardingPortal />} />
             <Route path="/recycler" element={<Recycler />} />
             <Route path="/recycler/:slug" element={<Recycler />} />
             <Route path="/suivi-commande" element={<OrderTracking />} />
