@@ -21,6 +21,8 @@ import Suppliers from "./pages/Suppliers";
 import Ops from "./pages/Ops";
 import SuppliersApply from "./pages/SuppliersApply";
 import OpsApply from "./pages/OpsApply";
+import SuppliersOnboarding from "./pages/SuppliersOnboarding";
+import OpsOnboarding from "./pages/OpsOnboarding";
 
 // Dashboard pages
 import Ventes from "./pages/dashboard/Ventes";
@@ -85,11 +87,15 @@ const App = () => (
             <Route path="/fournisseurs" element={<Suppliers />} />
             <Route path="/suppliers/apply" element={<SuppliersApply />} />
             <Route path="/fournisseurs/candidature" element={<SuppliersApply />} />
+            <Route path="/suppliers/onboarding" element={<SuppliersOnboarding />} />
+            <Route path="/fournisseurs/onboarding" element={<SuppliersOnboarding />} />
             <Route path="/ops" element={<Ops />} />
             <Route path="/logistics" element={<Ops />} />
             <Route path="/logistique" element={<Ops />} />
             <Route path="/ops/apply" element={<OpsApply />} />
             <Route path="/logistique/candidature" element={<OpsApply />} />
+            <Route path="/ops/onboarding" element={<OpsOnboarding />} />
+            <Route path="/logistique/onboarding" element={<OpsOnboarding />} />
             <Route path="/recycler" element={<Recycler />} />
             <Route path="/recycler/:slug" element={<Recycler />} />
             <Route path="/suivi-commande" element={<OrderTracking />} />
