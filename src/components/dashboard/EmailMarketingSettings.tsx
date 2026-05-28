@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
-  Mail, AtSign, PenLine, Clock, ShieldCheck, Loader2, Send, Instagram, Globe, Link as LinkIcon,
+  AtSign, PenLine, Clock, ShieldCheck, Loader2, Send, Instagram, Globe, Link as LinkIcon,
 } from "lucide-react";
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
