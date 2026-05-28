@@ -7,7 +7,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { SuppliersPricingSection } from "@/components/standalone/SuppliersPricingSection";
-import { ShieldCheck, Truck, BarChart3, Workflow, Check, ArrowRight, AlertTriangle, Sparkles, Mail } from "lucide-react";
+import { ShieldCheck, Truck, Workflow, Check, ArrowRight, AlertTriangle, Mail } from "lucide-react";
 
 const compatibility = [
   { icon: Workflow, title: "Workflow intégré", text: "Échantillon Stripe, audit qualité et catalogue pré-validé." },
