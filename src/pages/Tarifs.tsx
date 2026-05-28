@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, Sparkles, Recycle, ShieldCheck, Truck, Award, Umbrella, ArrowRight } from "lucide-react";
+import { Check, Sparkles, Recycle, ShieldCheck, Truck, Award, Umbrella, ChevronRight } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -14,38 +14,10 @@ import { PaymentTestModeBanner } from "@/components/payments/PaymentTestModeBann
 import { useSEO } from "@/hooks/useSEO";
 import { cn } from "@/lib/utils";
 
-const SHIPPING_PROVISIONS = [
-  { category: "Textiles & accessoires", examples: "Coussins, plaids, rideaux", price: 6, weight: "< 2 kg · 3-5 j" },
-  { category: "Déco & objets", examples: "Vases, cadres, bougies", price: 8, weight: "< 3 kg · 3-5 j" },
-  { category: "Luminaires", examples: "Lampes, suspensions", price: 12, weight: "3-8 kg · 5-7 j" },
-  { category: "Mobilier léger", examples: "Tables, étagères, miroirs", price: 18, weight: "> 8 kg · sur RDV" },
-];
-
-const GIFT_CARD_TIERS = [
-  { value: 10, points: 100, packs: 20, delay: "2 à 4 mois", probability: 85 },
-  { value: 30, points: 300, packs: 60, delay: "6 à 10 mois", probability: 60 },
-  { value: 50, points: 500, packs: 100, delay: "10 à 16 mois", probability: 35 },
-  { value: 100, points: 1000, packs: 200, delay: "20 à 36 mois", probability: 12 },
-];
-
-const FAQ = [
-  {
-    q: "Puis-je changer de plan à tout moment ?",
-    a: "Oui. L'upgrade est appliqué immédiatement, le downgrade au prochain cycle. Aucun engagement.",
-  },
-  {
-    q: "La commission s'applique-t-elle à la livraison ?",
-    a: "Non. La commission ne s'applique que sur le montant produit. La livraison EU est incluse dans le prix affiché à l'acheteur.",
-  },
-  {
-    q: "Les add-ons sont-ils obligatoires ?",
-    a: "Non, totalement optionnels. Vous pouvez les activer ou désactiver à la demande depuis votre tableau de bord.",
-  },
-  {
-    q: "Que se passe-t-il en cas de litige client ?",
-    a: "La plateforme prend la main sous 48h. Avec l'add-on Assurance, les remboursements sont couverts jusqu'au plafond de votre formule.",
-  },
-];
+/** Wrapper carousel : scroll-snap horizontal sur mobile (peek de la carte suivante), grille sur desktop. */
+const carouselClass =
+  "flex md:grid md:grid-cols-3 gap-4 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none -mx-4 px-4 md:mx-0 md:px-0 pb-2 md:pb-0 scrollbar-none";
+const cardSnapClass = "snap-center md:snap-align-none shrink-0 md:shrink min-w-[82%] sm:min-w-[60%] md:min-w-0";
 
 export default function Tarifs() {
   const { data: plans, isLoading } = usePlans();
@@ -103,10 +75,14 @@ export default function Tarifs() {
 
         {/* Plans */}
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+          <div className="max-w-6xl mx-auto">
+            <div className="md:hidden flex items-center justify-end gap-1 text-xs text-muted-foreground mb-2">
+              Glissez <ChevronRight className="h-3.5 w-3.5" />
+            </div>
           {isLoading ? (
             <div className="text-center text-muted-foreground py-20">Chargement des plans…</div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-3 max-w-6xl mx-auto">
+            <div className={carouselClass}>
               {sorted.map((plan) => {
                 const isFeatured = plan.tier === "growth";
                 const price = annual ? plan.annual_monthly_price_eur : plan.monthly_price_eur;
@@ -115,6 +91,7 @@ export default function Tarifs() {
                     key={plan.id}
                     className={cn(
                       "relative rounded-2xl border bg-card p-6 flex flex-col",
+                      cardSnapClass,
                       isFeatured
                         ? "border-bib-gold shadow-xl shadow-bib-gold/10 md:scale-105"
                         : "border-border shadow-sm",
@@ -169,23 +146,24 @@ export default function Tarifs() {
             🎁 <strong>Offre bêta :</strong> les 10 premiers marchands bénéficient de −50% sur les 3 premiers mois
             (Starter 39,50€ · Growth 74,50€ · Pro 149,50€).
           </p>
+          </div>
         </section>
 
         {/* Add-ons header */}
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-24 max-w-5xl text-center">
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-16 max-w-5xl text-center">
           <Badge variant="secondary" className="mb-3">Add-ons optionnels</Badge>
-          <h2 className="font-display text-3xl sm:text-4xl font-bold text-bib-marine">
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-bib-marine">
             Renforcez votre boutique à la carte
           </h2>
-          <p className="text-muted-foreground text-sm sm:text-base mt-3 max-w-2xl mx-auto">
-            Indépendants de votre plan. Activables et désactivables à tout moment depuis votre tableau de bord.
+          <p className="text-muted-foreground text-sm mt-2 max-w-2xl mx-auto">
+            Indépendants de votre plan. Activables ou désactivables à tout moment.
           </p>
         </section>
 
         {/* Add-on Assurance */}
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-10 max-w-5xl">
-          <div className="rounded-2xl border border-info/30 bg-info/5 p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-8 max-w-5xl">
+          <div className="rounded-2xl border border-info/30 bg-info/5 p-5 sm:p-7">
+            <div className="flex flex-col sm:flex-row items-start gap-4 mb-5">
               <div className="h-12 w-12 rounded-full bg-info/15 flex items-center justify-center shrink-0">
                 <Umbrella className="h-6 w-6 text-info" />
               </div>
@@ -194,15 +172,17 @@ export default function Tarifs() {
                 <h3 className="font-display text-2xl font-bold text-bib-marine">Assurance vendeur</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   Couvre les litiges clients (produit endommagé, perdu, retour contesté) jusqu'au plafond choisi.
-                  Indépendant de votre plan : choisissez la formule qui vous correspond.
                 </p>
               </div>
             </div>
 
+            <div className="md:hidden flex items-center justify-end gap-1 text-xs text-muted-foreground mb-2">
+              Glissez <ChevronRight className="h-3.5 w-3.5" />
+            </div>
             {isLoading ? (
               <div className="text-center text-muted-foreground py-8">Chargement…</div>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className={carouselClass}>
                 {sorted.map((plan) => {
                   const monthly = plan.insurance_addon_price_eur;
                   const yearly = Math.round(monthly * 0.8);
@@ -210,7 +190,7 @@ export default function Tarifs() {
                   return (
                     <div
                       key={plan.id}
-                      className="rounded-xl border border-border bg-card p-4 flex flex-col"
+                      className={cn("rounded-xl border border-border bg-card p-4 flex flex-col", cardSnapClass)}
                     >
                       <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
                         Formule {plan.name}
@@ -248,23 +228,23 @@ export default function Tarifs() {
                         className="w-full"
                         onClick={() => handleSubscribe(`insurance_${plan.tier}`)}
                       >
-                        Activer cette formule
+                        Activer
                       </Button>
                     </div>
                   );
                 })}
               </div>
             )}
-            <p className="text-xs text-muted-foreground mt-4">
-              💡 Aucune liaison avec votre plan : un marchand Starter peut souscrire l'assurance Pro, et inversement.
+            <p className="text-xs text-muted-foreground mt-3">
+              Indépendant de votre plan — un Starter peut souscrire l'assurance Pro, et inversement.
             </p>
           </div>
         </section>
 
         {/* Add-on Boutique Verte */}
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-8 max-w-5xl">
-          <div className="rounded-2xl border border-success/30 bg-success/5 p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-6 max-w-5xl">
+          <div className="rounded-2xl border border-success/30 bg-success/5 p-5 sm:p-7">
+            <div className="flex flex-col sm:flex-row items-start gap-4">
               <div className="h-12 w-12 rounded-full bg-success/15 flex items-center justify-center shrink-0">
                 <Recycle className="h-6 w-6 text-success" />
               </div>
@@ -272,98 +252,38 @@ export default function Tarifs() {
                 <Badge className="bg-success/15 text-success hover:bg-success/15 mb-2">Add-on · 19,99€/mois</Badge>
                 <h3 className="font-display text-2xl font-bold text-bib-marine">Boutique Verte</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Recyclage emballages, marketing sur bornes, programme cartes cadeaux et badge RSE certifié.
+                  Recyclage des emballages, programme cartes cadeaux fidélité (jusqu'à 100€ offerts à vos clients) et badge RSE certifié.
                 </p>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                  <Badge variant="secondary" className="bg-card border border-border">♻️ 1 emballage = 5 pts</Badge>
+                  <Badge variant="secondary" className="bg-card border border-border">🎁 Cartes cadeaux 10 → 100€</Badge>
+                  <Badge variant="secondary" className="bg-card border border-border">🏆 Badge RSE</Badge>
+                </div>
               </div>
             </div>
-
-            <div className="overflow-x-auto rounded-lg border border-border bg-card">
-              <table className="w-full text-sm">
-                <thead className="bg-bib-marine text-primary-foreground text-xs uppercase tracking-wider">
-                  <tr>
-                    <th className="px-3 py-2 text-left">Carte cadeau</th>
-                    <th className="px-3 py-2 text-right">Points</th>
-                    <th className="px-3 py-2 text-right">Emballages</th>
-                    <th className="px-3 py-2 text-left">Délai</th>
-                    <th className="px-3 py-2 text-right">Probabilité</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {GIFT_CARD_TIERS.map((tier) => (
-                    <tr key={tier.value} className="border-t border-border">
-                      <td className="px-3 py-2 font-semibold text-bib-marine">{tier.value}€</td>
-                      <td className="px-3 py-2 text-right">{tier.points}</td>
-                      <td className="px-3 py-2 text-right">{tier.packs}</td>
-                      <td className="px-3 py-2 text-muted-foreground">{tier.delay}</td>
-                      <td className="px-3 py-2 text-right">
-                        <Badge
-                          variant="secondary"
-                          className={cn(
-                            tier.probability >= 60 && "bg-success/15 text-success",
-                            tier.probability >= 30 && tier.probability < 60 && "bg-warning/15 text-warning",
-                            tier.probability < 30 && "bg-muted text-muted-foreground",
-                          )}
-                        >
-                          {tier.probability}%
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="text-xs text-muted-foreground mt-3">
-              1 emballage = 5 points · 1 point = 0,10€ · Points valables 24 mois sur toutes les boutiques équipées.
-            </p>
           </div>
         </section>
 
-        {/* FAQ */}
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-20 max-w-3xl">
-          <h2 className="font-display text-2xl sm:text-3xl font-bold text-bib-marine text-center mb-8">
-            Questions fréquentes
-          </h2>
-          <div className="space-y-3">
-            {FAQ.map((item) => (
-              <details
-                key={item.q}
-                className="group rounded-xl border border-border bg-card px-4 py-3 [&_summary::-webkit-details-marker]:hidden"
-              >
-                <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-foreground">
-                  {item.q}
-                  <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
-                </summary>
-                <p className="text-sm text-muted-foreground mt-3">{item.a}</p>
-              </details>
-            ))}
-          </div>
-        </section>
-
-        {/* Provisions livraison */}
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-16 max-w-5xl">
-          <div className="text-center mb-6">
-            <div className="inline-flex h-12 w-12 rounded-full bg-info/15 items-center justify-center mb-3">
+        {/* Livraison incluse — exemple unique, sans dévoiler la grille */}
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-12 max-w-3xl">
+          <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="h-12 w-12 rounded-full bg-info/15 flex items-center justify-center shrink-0">
               <Truck className="h-6 w-6 text-info" />
             </div>
-            <h2 className="font-display text-2xl font-bold text-bib-marine">Provision livraison incluse</h2>
-            <p className="text-sm text-muted-foreground mt-1 max-w-2xl mx-auto">
-              La livraison EU est intégrée au prix affiché à l'acheteur. Aucune surprise au checkout.
-            </p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {SHIPPING_PROVISIONS.map((s) => (
-              <div key={s.category} className="rounded-xl border border-border bg-card p-4">
-                <p className="text-2xl font-bold text-bib-marine mb-1">{s.price}€</p>
-                <p className="text-sm font-medium text-foreground">{s.category}</p>
-                <p className="text-xs text-muted-foreground mt-1">{s.examples}</p>
-                <p className="text-[11px] text-muted-foreground mt-2 pt-2 border-t border-border">{s.weight}</p>
-              </div>
-            ))}
+            <div className="flex-1">
+              <h2 className="font-display text-xl font-bold text-bib-marine">Livraison EU incluse</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Aucune surprise au checkout : la provision logistique est intégrée au prix affiché à l'acheteur.
+              </p>
+              <p className="text-xs text-muted-foreground mt-2 italic">
+                Exemple : un coussin vendu 39€ inclut déjà ~6€ de livraison standard EU (3–5 j).
+              </p>
+            </div>
           </div>
         </section>
 
         {/* Trust footer */}
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-16 max-w-5xl">
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-10 max-w-5xl">
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
               <ShieldCheck className="h-5 w-5 text-bib-gold shrink-0 mt-0.5" />
