@@ -1,77 +1,59 @@
-Le chantier est gros — je propose de le découper en 4 lots livrables séparément. Validez l'ordre, je commence par le lot 1.
+# Plan — Add-ons, équipe & espace membre
 
-## Lot 1 — Vérification OTP + soumission durcie (fondations)
+## 1. Add-ons dans Paramètres → Abonnement (compact)
 
-**Base de données**
-- Nouvelle table `partner_onboarding_submissions` (id, portal type `suppliers`/`ops`, contact_email, status `draft|email_verified|submitted|under_review|approved|rejected`, payload jsonb, kyc_attachments jsonb, support_ticket_id, access_token unique, created_at, updated_at)
-- Table `partner_onboarding_history` (submission_id, changed_at, change_summary, diff jsonb) pour tracer chaque modif
-- Table `partner_email_otps` (email, code_hash, expires_at, attempts, consumed_at) — codes 6 chiffres, 10 min TTL, max 5 tentatives
-- RLS : insert anonyme autorisé sur submissions/otps ; lecture/update uniquement via edge function avec access_token (security definer RPC)
-- GRANT explicites sur les 3 tables
+Fichier : `src/pages/dashboard/Parametres.tsx` (onglet `abonnement`).
 
-**Edge functions**
-- `partner-otp-request` : génère un OTP, l'enqueue via `enqueue_email` (template transactionnel) ; rate-limit 3/min/email
-- `partner-otp-verify` : valide le code, marque l'email vérifié, retourne un `access_token` signé (pour reprise/suivi)
-- `partner-onboarding-submit` : appelée après OTP OK. Crée le `support_ticket` (source `partner_inquiry`), copie les fichiers KYC déjà uploadés dans `support-attachments` vers `support_ticket_attachments` automatiquement, envoie email récap au partenaire + notif équipe
+Sous le `SubscriptionPanel`, ajouter un **bloc unique `SectionCard` "Add-ons"** avec 3 lignes compactes (titre + prix + Switch/CTA) :
 
-**Wizard**
-- Nouvelle étape "Vérification email" insérée juste avant l'étape finale "Récap & soumission"
-- Bouton "Envoyer le code" → input 6 cases → "Vérifier" → débloque le bouton Soumettre
-- Stocke `access_token` en localStorage pour reprise
+1. **Assurance litiges** — toggle qui appelle `useOpenBillingPortal` (ou une checkout `insurance_monthly`) ; état lu sur `profile.insurance_addon_enabled`.
+2. **Boutiques supplémentaires** — petit stepper (+/−) avec prix unitaire ; CTA "Mettre à jour" → ouvre le billing portal.
+3. **Membres d'équipe supplémentaires** — même pattern que ci-dessus.
 
-## Lot 2 — Reprise / modification + historique
+Garder la page courte : pas de gros textes, 1 ligne / add-on, prix à droite, badge "Actif" si souscrit.
 
-- Page `/suppliers/onboarding/resume` et `/ops/onboarding/resume` : saisie email → OTP → réhydrate le wizard depuis la submission
-- Tant que `status != approved`, modifications autorisées
-- Chaque save calcule un diff vs version précédente et insère une ligne dans `partner_onboarding_history` + notifie l'équipe (email transactionnel "Modification onboarding" avec résumé du diff)
-- Bouton "Reprendre mon dossier" sur les pages Suppliers/Ops orientation
+## 2. Onboarding membre — auto-join par email
 
-## Lot 3 — Portail de suivi (lien magique)
+Côté Auth (`src/contexts/AuthContext.tsx`) : après un `signIn`/signup réussi, appeler un nouveau RPC `claim_team_invites(_email text)` qui fait :
 
-- Email de confirmation de soumission → lien `/portal/onboarding/:access_token`
-- Page publique standalone affichant une timeline 5 étapes :
-  1. Documents reçus
-  2. Conformité validée
-  3. Intégration planifiée
-  4. Pilote en cours
-  5. Go-live
-- Chaque étape a un état `pending|in_progress|done` lu depuis la submission + son ticket support
-- Affiche aussi : liste des documents uploadés, dernières notes équipe (depuis `support_ticket_responses`), bouton "Modifier mon dossier" tant que non validé
-- Bouton "Renvoyer le lien" si l'utilisateur perd l'email
+```sql
+UPDATE public.boutique_members
+SET user_id = auth.uid(), status = 'active'
+WHERE LOWER(invited_email) = LOWER(_email)
+  AND status = 'pending'
+  AND user_id IS NULL;
+```
 
-## Lot 4 — Pages opérationnelles (après approval)
+Migration : créer la fonction `security definer` + autoriser `authenticated`. Ainsi tout membre invité rejoint automatiquement l'équipe à sa première connexion sans email/code.
 
-**Conditionnel** : ces pages ne sont accessibles qu'aux submissions avec `status = approved`. Auth via le même access_token + OTP.
+Sur la page Équipe, garder le statut `pending` visible jusqu'à ce que le membre se connecte (auto-bascule en `active`).
 
-**Portail Suppliers** (`/suppliers/portal/:token`)
-- Dépôt catalogue (upload produits proposés, statut validation par admin)
-- Upload documents (certifications, fiches techniques)
-- Demandes de MOQ à livrer (liste, bouton "Signaler envoi" → met à jour statut + notifie logistique)
-- Commissions : MOQ vendus, restants, montant dû (vue agrégée depuis `orders` + `supplier_products`)
-- Catalogue produits validés (lecture seule, MOQ min, prix échantillon, prix MOQ, médias, docs)
+## 3. Espace membre dédié
 
-**Portail Ops/Logistique** (`/ops/portal/:token`)
-- Dashboard stock global (par produit, par boutique partenaire)
-- Écarts stock vs commandes en cours
-- File commandes à expédier (toutes boutiques)
-- Stock packaging/cartons
-- Produits retournés
-- Mise à jour statuts livraison → propage vers `orders.logistics_status` (visible côté boutique + client final via tracking existant)
+Réutiliser le **DashboardLayout** existant (pas de second espace) avec un **switcher boutique** en haut de la sidebar et un filtrage des menus par rôle.
 
-Vu l'ampleur (15+ écrans, 8 tables, 6 edge functions), le Lot 4 mérite probablement un découpage supplémentaire mais je peux livrer une v1 fonctionnelle.
+- `DashboardSidebar.tsx` :
+  - Ajouter un `<BoutiqueSwitcher />` au-dessus du profil card. Source = `useBoutiques()` (déjà filtre par owner) **+** nouvelle requête `useMemberBoutiques()` qui liste les boutiques où `boutique_members.user_id = auth.uid() AND status='active'`. L'union devient le scope courant, persisté via un nouveau `TeamScopeContext` (`{ boutiqueId, role }` dans `localStorage`).
+  - Filtrer `mainNavItems` via `useTeamPermissions(currentBoutiqueId)` : un membre `support` ne voit que Dashboard + Commandes + Mes tickets ; `marketing` voit Boutiques + Analytics ; `manager` voit Produits/Commandes/Analytics ; `owner` voit tout.
+- Routes existantes (`Boutiques`, `Produits`, `Commandes`, etc.) : passer `boutiqueId` via le contexte au lieu d'un fetch "toutes mes boutiques", pour qu'un membre ne voie que la boutique dont il fait partie.
+- Sur les pages, si `!canAccess(module)` → rediriger vers `/dashboard` avec toast "Accès non autorisé".
 
-## Hors-scope de ce plan (à traiter séparément)
+Aucune nouvelle route `/team/*` — un membre arrive sur `/dashboard` comme un owner, mais avec une vue strictement réduite à ses permissions sur la boutique sélectionnée.
 
-- **Affichage URL boutique en gras `nom.brand-in-a-box.space`** : c'est juste un changement visuel — je le ferai en passant dans le lot 1 (composant `<BoutiqueUrlBadge slug="..." />` réutilisable, sans toucher au routing réel qui reste `/boutique/:slug`)
-- **Rattachement des domaines suppliers./logistics./shop. aux pages standalone** : ça dépend de votre config Vercel (rewrites par host). Je peux ajouter une détection `window.location.hostname` qui auto-route vers `/suppliers` ou `/ops` quand on arrive sur le bon domaine — dites-moi si je l'inclus dans le lot 1.
+## 4. Page Équipe refondue
 
-## Notes techniques
+`src/pages/dashboard/Equipe.tsx` (réservée au rôle `owner`) :
 
-- Tous les emails passent par l'infra transactionnelle existante (`enqueue_email` + queue pgmq)
-- Les fichiers KYC restent dans `support-attachments` (bucket privé) — la copie vers `support_ticket_attachments` est une simple insertion (mêmes paths)
-- Les access_tokens sont des UUID v4 (32 caractères) stockés en clair côté DB, jamais exposés en URL avant vérif OTP
-- Aucune migration sur les tables `auth.*` ou `storage.*`
+- **Header KPI** : Membres actifs / Sièges disponibles (selon plan + add-ons) / Invitations en attente.
+- **Card "Permissions par rôle"** : matrice visuelle (rôle × module) lisible, basée sur `ROLE_PERMISSIONS`. Sert de référence avant d'inviter.
+- **Liste des membres** enrichie : avatar/initiales, email, badge rôle, badge statut, **dernière connexion** (jointure `auth.users.last_sign_in_at` via une vue ou via les colonnes du profil), bouton **changer le rôle** (Select inline → `useUpdateMemberRole`) et **retirer**.
+- **Empty state** clair expliquant l'auto-join : "Le membre rejoindra l'équipe automatiquement à sa prochaine connexion avec cet email."
+- Bouton "Acheter un siège supplémentaire" si limite atteinte → renvoie sur l'onglet Abonnement → Add-ons.
 
----
+## Détails techniques
 
-**Confirmez** : on attaque Lot 1 (OTP + soumission durcie + auto-attach KYC + badge URL boutique) ? Ou vous voulez ajuster le périmètre ?
+- Migration SQL : RPC `claim_team_invites`, et nouvelle policy SELECT sur `boutiques` permettant à un membre actif de lire la boutique où il est membre (sinon le switcher ne verra rien). Garder l'index sur `boutique_members(invited_email, status)`.
+- Nouveau hook `useMemberBoutiques()` + `TeamScopeContext` (provider monté dans `DashboardLayout`).
+- `useTeamPermissions` consommé partout où on monte un module dashboard (HOC ou check inline en début de page).
+- Pas de changement aux edge functions ; pas de Stripe live tant que les price_id add-on ne sont pas créés — placer des CTA "Bientôt disponible" si `price_id` manquant côté front pour éviter de bloquer.
+- Page Paramètres : ne pas allonger — n'ajouter QUE la card Add-ons dans l'onglet existant, pas de nouvel onglet.
