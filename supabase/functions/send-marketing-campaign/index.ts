@@ -16,26 +16,52 @@ function renderTemplate(html: string, vars: Record<string, string>) {
   return html.replace(/\{\{(\w+)\}\}/g, (_, k) => vars[k] ?? "");
 }
 
-function appendUnsubFooter(html: string, boutiqueName: string, unsubLink: string) {
+function escapeHtml(s: string) {
+  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+}
+
+function appendSignatureAndFooter(
+  html: string,
+  opts: {
+    signature?: string | null;
+    footerLinks?: Record<string, string> | null;
+    boutiqueName: string;
+    unsubLink: string;
+  },
+) {
+  const sigBlock = opts.signature
+    ? `<p style="margin:24px 0 0;font-style:italic;color:#6b6b6b;font-size:13px">${escapeHtml(opts.signature)}</p>`
+    : "";
+  const links = opts.footerLinks
+    ? Object.entries(opts.footerLinks)
+        .filter(([, v]) => !!v)
+        .map(([k, v]) => `<a href="${escapeHtml(v)}" style="color:#888;margin:0 6px;text-decoration:none">${escapeHtml(k)}</a>`)
+        .join(" · ")
+    : "";
   const footer = `
     <hr style="margin:32px 0;border:none;border-top:1px solid #e5e5e5"/>
     <p style="font-size:11px;color:#888;text-align:center;font-family:Arial,sans-serif">
-      Vous recevez cet email car vous êtes abonné(e) à la newsletter de <strong>${boutiqueName}</strong>.<br/>
-      <a href="${unsubLink}" style="color:#888">Se désabonner</a>
+      ${links ? links + "<br/>" : ""}
+      Vous recevez cet email car vous êtes abonné(e) à la newsletter de <strong>${escapeHtml(opts.boutiqueName)}</strong>.<br/>
+      <a href="${opts.unsubLink}" style="color:#888">Se désabonner</a>
     </p>`;
-  return html + footer;
+  return html + sigBlock + footer;
 }
 
 async function sendOne(opts: {
   lovableKey: string;
   gmailKey: string;
   fromName: string;
+  fromAddress?: string;
   to: string;
   subject: string;
   html: string;
 }) {
+  const fromHeader = opts.fromAddress
+    ? `${opts.fromName} <${opts.fromAddress}>`
+    : `${opts.fromName} <me>`;
   const rawLines = [
-    `From: ${opts.fromName} <me>`,
+    `From: ${fromHeader}`,
     `To: ${opts.to}`,
     `Subject: =?UTF-8?B?${btoa(unescape(encodeURIComponent(opts.subject)))}?=`,
     "MIME-Version: 1.0",
@@ -86,7 +112,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { boutique_id, name, kind, subject, body_html, segment, promo_code } = body ?? {};
+    const { boutique_id, name, kind, subject, body_html, body_blocks, segment, promo_code } = body ?? {};
     if (!boutique_id || !subject || !body_html) {
       return new Response(JSON.stringify({ error: "Paramètres manquants" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -127,6 +153,7 @@ Deno.serve(async (req) => {
       .insert({
         boutique_id, user_id: user.id, name: name ?? subject,
         kind: kind ?? "newsletter", subject, body_html,
+        body_blocks: body_blocks ?? [],
         segment: seg, promo_code: promo_code ?? null,
         status: "sending", recipients_count: recipients.length,
       })
@@ -134,10 +161,14 @@ Deno.serve(async (req) => {
       .single();
     if (campErr) throw campErr;
 
-    // Fetch sender name
+    // Fetch sender name + marketing settings (signature, footer, address)
     const { data: settings } = await admin.from("boutique_email_settings")
-      .select("from_name").eq("boutique_id", boutique_id).maybeSingle();
+      .select("from_name, marketing_from_address, marketing_signature, marketing_footer_links")
+      .eq("boutique_id", boutique_id).maybeSingle();
     const fromName = settings?.from_name || boutique.name || "Boutique";
+    const fromAddress = settings?.marketing_from_address || undefined;
+    const signature = settings?.marketing_signature ?? null;
+    const footerLinks = (settings?.marketing_footer_links as Record<string, string> | null) ?? null;
 
     // Send loop with light throttling (250ms)
     let sent = 0, failed = 0;
@@ -149,12 +180,14 @@ Deno.serve(async (req) => {
         boutique_name: boutique.name,
         promo_code: promo_code ?? "",
       };
-      const html = appendUnsubFooter(renderTemplate(body_html, vars), boutique.name, unsubLink);
+      const html = appendSignatureAndFooter(renderTemplate(body_html, vars), {
+        signature, footerLinks, boutiqueName: boutique.name, unsubLink,
+      });
       const subj = renderTemplate(subject, vars);
 
       const res = await sendOne({
         lovableKey: LOVABLE_API_KEY, gmailKey: GOOGLE_MAIL_API_KEY,
-        fromName, to: r.email, subject: subj, html,
+        fromName, fromAddress, to: r.email, subject: subj, html,
       });
       if (res.ok) sent++; else failed++;
 
