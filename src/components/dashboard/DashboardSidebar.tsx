@@ -1,4 +1,5 @@
 import { NavLink } from "@/components/NavLink";
+import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Store,
@@ -16,6 +17,7 @@ import {
   Users,
   LifeBuoy,
   Crown,
+  LogOut,
 } from "lucide-react";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -49,7 +51,8 @@ interface DashboardSidebarProps {
 }
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
-  const { profile } = useAuth();
+  const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
   const { isAdmin } = useAdminRole();
 
   return (
@@ -122,6 +125,18 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             <span className="font-medium">{item.title}</span>
           </NavLink>
         ))}
+        <button
+          type="button"
+          onClick={async () => {
+            onNavigate?.();
+            await signOut();
+            navigate("/");
+          }}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors text-[13px]"
+        >
+          <LogOut className="w-4 h-4 shrink-0" />
+          <span className="font-medium">Déconnexion</span>
+        </button>
       </div>
     </>
   );

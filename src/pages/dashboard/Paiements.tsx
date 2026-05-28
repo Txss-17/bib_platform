@@ -1,10 +1,11 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  Euro, Clock, CheckCircle, TrendingUp, Wallet, CalendarClock, Sparkles,
+  Euro, Clock, CheckCircle, TrendingUp, Wallet, CalendarClock, Sparkles, ExternalLink, Loader2, CreditCard,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +15,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader, SectionCard, KpiTile, KpiTileSkeleton, EmptyState, RealtimeStatusPill, KpiGrid } from "@/components/dashboard/shared";
 import { usePaymentsRealtime } from "@/hooks/usePaymentsRealtime";
 import { PaymentsActivityFeed } from "@/components/dashboard/payments/PaymentsActivityFeed";
+import { useOpenBillingPortal, useUserSubscriptions } from "@/hooks/useSubscriptions";
+import { useCurrentPlan } from "@/hooks/usePlans";
+import { Link } from "react-router-dom";
 
 const fmt = (n: number) =>
   n.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -33,6 +37,9 @@ export default function Paiements() {
   const boutiqueIds = boutiques.map((b) => b.id);
   const { status: rtStatus, feed, clearFeed } = usePaymentsRealtime(boutiqueIds);
   const boutiqueLookup = Object.fromEntries(boutiques.map((b) => [b.id, b.name]));
+  const portal = useOpenBillingPortal();
+  const { data: subs = [] } = useUserSubscriptions();
+  const { plan, tier, billingCycle } = useCurrentPlan();
 
   const { data: payments = [], isLoading: paymentsLoading } = useQuery({
     queryKey: ["payments", user?.id],
@@ -89,6 +96,45 @@ export default function Paiements() {
         subtitle="Revenus en temps réel, prochains virements et historique de versements."
         actions={<RealtimeStatusPill status={rtStatus} />}
       />
+
+      {/* Plan + billing portal */}
+      <SectionCard className="mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div className="flex items-start gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <CreditCard className="w-5 h-5 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground capitalize">
+                Plan {tier}
+                <Badge variant="outline" className="ml-2 text-[10px]">
+                  {billingCycle === "annual" ? "Annuel" : "Mensuel"}
+                </Badge>
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {plan ? `Commission ${plan.commission_percent}% · jusqu'à ${plan.max_boutiques} boutique(s)` : "Référentiel en cours de chargement"}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/dashboard/parametres?tab=abonnement">Changer de plan</Link>
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => portal.mutate()}
+              disabled={portal.isPending || subs.length === 0}
+            >
+              {portal.isPending ? (
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+              ) : (
+                <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+              )}
+              Portail de facturation
+            </Button>
+          </div>
+        </div>
+      </SectionCard>
 
       {/* KPI strip */}
       <KpiGrid cols={4}>

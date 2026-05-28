@@ -1,5 +1,5 @@
 import { DashboardSidebar } from "./DashboardSidebar";
-import { Bell, Search, LogOut, Menu } from "lucide-react";
+import { Bell, Search, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,15 +18,10 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { profile, signOut } = useAuth();
+  const { profile } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/");
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -84,9 +79,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 </div>
               </PopoverContent>
             </Popover>
-            <Button variant="outline" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" onClick={handleSignOut} title="Déconnexion">
-              <LogOut className="w-4 h-4" />
-            </Button>
           </div>
         </header>
 

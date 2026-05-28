@@ -6,10 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { User, Bell, Shield, CreditCard, Globe, Loader2, FileCheck, Trash2, Crown, AlertTriangle, Search, Languages, Star } from "lucide-react";
+import { User, Bell, Shield, CreditCard, Globe, Loader2, FileCheck, Trash2, Crown, AlertTriangle, Search, Languages, Star, Mail, KeyRound, LogOut, ExternalLink, Smartphone, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { BusinessDocuments } from "@/components/dashboard/BusinessDocuments";
 import { SubscriptionPanel } from "@/components/payments/SubscriptionPanel";
+import { useOpenBillingPortal, useUserSubscriptions } from "@/hooks/useSubscriptions";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -37,14 +38,19 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function Parametres() {
-  const { profile, refreshProfile, user } = useAuth();
+  const { profile, refreshProfile, user, signOut } = useAuth();
   const { data: products = [] } = useProducts();
   const { settings: seoSettings, update: updateSeoSettings } = useSeoSettings();
+  const portal = useOpenBillingPortal();
+  const { data: subs = [] } = useUserSubscriptions();
   const [fullName, setFullName] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [businessType, setBusinessType] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [sendingReset, setSendingReset] = useState(false);
+  const [signingOutAll, setSigningOutAll] = useState(false);
 
   const hasProducts = products.length > 0;
 
@@ -53,6 +59,7 @@ export default function Parametres() {
       setFullName(profile.full_name || "");
       setBusinessName(profile.business_name || "");
       setBusinessType(profile.business_type || "");
+      setAvatarUrl(profile.avatar_url || "");
     }
   }, [profile]);
 
@@ -65,6 +72,7 @@ export default function Parametres() {
         full_name: fullName,
         business_name: businessName,
         business_type: businessType,
+        avatar_url: avatarUrl || null,
       })
       .eq("id", profile.id);
 
@@ -90,6 +98,28 @@ export default function Parametres() {
       toast.error("Erreur lors de la suppression");
     }
     setDeleting(false);
+  };
+
+  const handleSendPasswordReset = async () => {
+    if (!user?.email) return;
+    setSendingReset(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setSendingReset(false);
+    if (error) toast.error("Impossible d'envoyer l'email");
+    else toast.success(`Email de réinitialisation envoyé à ${user.email}`);
+  };
+
+  const handleSignOutAll = async () => {
+    setSigningOutAll(true);
+    try {
+      await supabase.auth.signOut({ scope: "global" } as any);
+      toast.success("Déconnecté de tous les appareils");
+    } catch {
+      toast.error("Erreur lors de la déconnexion globale");
+    }
+    setSigningOutAll(false);
   };
 
   const handleToggleLocale = (locale: SeoLocale, checked: boolean) => {
@@ -155,6 +185,29 @@ export default function Parametres() {
               icon={<User className="w-4 h-4" />}
             >
               <div className="space-y-4">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/40 border border-border/50">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-display font-semibold overflow-hidden shrink-0">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      (fullName || user?.email || "?").slice(0, 1).toUpperCase()
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {fullName || "Sans nom"}
+                    </p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 truncate">
+                      <Mail className="w-3 h-3 shrink-0" />
+                      {user?.email}
+                    </p>
+                  </div>
+                  {profile?.is_verified && (
+                    <Badge className="bg-success/10 text-success border-0 gap-1 text-[10px]">
+                      <ShieldCheck className="w-3 h-3" /> Vérifié
+                    </Badge>
+                  )}
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label htmlFor="fullName" className="text-xs">Nom complet</Label>
@@ -168,6 +221,22 @@ export default function Parametres() {
                 <div className="space-y-1.5">
                   <Label htmlFor="businessType" className="text-xs">Type d'activité</Label>
                   <Input id="businessType" value={businessType} onChange={(e) => setBusinessType(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="avatarUrl" className="text-xs">URL de l'avatar (optionnel)</Label>
+                  <Input
+                    id="avatarUrl"
+                    placeholder="https://…"
+                    value={avatarUrl}
+                    onChange={(e) => setAvatarUrl(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Email du compte</Label>
+                  <Input value={user?.email || ""} disabled />
+                  <p className="text-[11px] text-muted-foreground">
+                    Pour changer l'email, contactez le support.
+                  </p>
                 </div>
                 <Button onClick={handleSave} disabled={saving} size="sm">
                   {saving && <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />}
@@ -407,49 +476,135 @@ export default function Parametres() {
 
           {/* Sécurité */}
           <TabsContent value="securite" className="mt-4">
-            <SectionCard
-              title="Sécurité du compte"
-              description="Authentification renforcée et gestion du mot de passe"
-              icon={<Shield className="w-4 h-4" />}
-            >
-              <div className="divide-y divide-border/50">
-                <div className="flex items-center justify-between gap-3 pb-3">
+            <div className="space-y-4">
+              <SectionCard
+                title="Mot de passe"
+                description="Envoyez-vous un lien sécurisé pour le réinitialiser"
+                icon={<KeyRound className="w-4 h-4" />}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground">Authentification 2FA</p>
-                    <p className="text-xs text-muted-foreground">Couche de sécurité supplémentaire</p>
+                    <p className="text-sm font-medium text-foreground">Réinitialiser le mot de passe</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      Un email sera envoyé à {user?.email}
+                    </p>
                   </div>
-                  <Button variant="outline" size="sm" disabled title="Disponible prochainement">Bientôt</Button>
-                </div>
-                <div className="flex items-center justify-between gap-3 pt-3">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground">Mot de passe</p>
-                    <p className="text-xs text-muted-foreground">Dernière modification il y a 3 mois</p>
-                  </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="/forgot-password">Modifier</Link>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSendPasswordReset}
+                    disabled={sendingReset || !user?.email}
+                  >
+                    {sendingReset ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Mail className="w-3.5 h-3.5 mr-1.5" />}
+                    Envoyer le lien
                   </Button>
                 </div>
-              </div>
-            </SectionCard>
+              </SectionCard>
+
+              <SectionCard
+                title="Authentification à deux facteurs"
+                description="Ajoutez une couche de sécurité supplémentaire"
+                icon={<ShieldCheck className="w-4 h-4" />}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground">2FA par application (TOTP)</p>
+                    <p className="text-xs text-muted-foreground">
+                      Google Authenticator, 1Password, Authy…
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" disabled title="Disponible prochainement">
+                    Bientôt
+                  </Button>
+                </div>
+              </SectionCard>
+
+              <SectionCard
+                title="Sessions actives"
+                description="Déconnectez tous vos appareils en cas de doute"
+                icon={<Smartphone className="w-4 h-4" />}
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted/40 border border-border/40">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground">Session courante</p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        Connecté{user?.last_sign_in_at ? ` le ${new Date(user.last_sign_in_at).toLocaleString("fr-FR")}` : ""}
+                      </p>
+                    </div>
+                    <Badge className="bg-success/10 text-success border-0 text-[10px]">Active</Badge>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSignOutAll}
+                    disabled={signingOutAll}
+                    className="w-full sm:w-auto"
+                  >
+                    {signingOutAll ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <LogOut className="w-3.5 h-3.5 mr-1.5" />}
+                    Déconnecter tous les appareils
+                  </Button>
+                </div>
+              </SectionCard>
+            </div>
           </TabsContent>
 
           {/* Paiement */}
           <TabsContent value="paiement" className="mt-4">
-            <SectionCard
-              title="Coordonnées bancaires"
-              description="Compte utilisé pour les versements tous les 15 jours"
-              icon={<CreditCard className="w-4 h-4" />}
-            >
-              <div className="space-y-3">
-                <div className="p-3 rounded-lg bg-muted/50">
-                  <p className="text-xs text-muted-foreground">IBAN</p>
-                  <p className="font-mono text-sm text-foreground">FR76 •••• •••• •••• •••• ••87</p>
+            <div className="space-y-4">
+              <SectionCard
+                title="Facturation & moyens de paiement"
+                description="Carte de paiement, factures et historique gérés via Stripe"
+                icon={<CreditCard className="w-4 h-4" />}
+              >
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/40 border border-border/40">
+                    <CreditCard className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground">Portail Stripe</p>
+                      <p className="text-xs text-muted-foreground">
+                        Mettez à jour votre carte, téléchargez vos factures et gérez vos abonnements.
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => portal.mutate()}
+                    disabled={portal.isPending || subs.length === 0}
+                    className="w-full sm:w-auto"
+                  >
+                    {portal.isPending ? (
+                      <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                    ) : (
+                      <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                    )}
+                    {subs.length === 0 ? "Aucun abonnement actif" : "Ouvrir le portail de facturation"}
+                  </Button>
                 </div>
-                <Button variant="outline" size="sm" disabled title="Géré via Stripe — disponible après onboarding paiements">
-                  Modifier les coordonnées
-                </Button>
-              </div>
-            </SectionCard>
+              </SectionCard>
+
+              <SectionCard
+                title="Coordonnées de versement"
+                description="Compte bancaire utilisé pour vos versements (tous les 15 jours)"
+                icon={<CreditCard className="w-4 h-4" />}
+              >
+                <div className="space-y-3">
+                  <div className="p-3 rounded-lg bg-muted/40 border border-border/40">
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">IBAN</p>
+                    <p className="font-mono text-sm text-foreground mt-0.5">
+                      Non configuré
+                    </p>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Configurez votre RIB depuis Stripe Connect — l'onboarding sera proposé après votre première commande payée.
+                  </p>
+                  <Button variant="outline" size="sm" disabled>
+                    Configurer (bientôt)
+                  </Button>
+                </div>
+              </SectionCard>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
