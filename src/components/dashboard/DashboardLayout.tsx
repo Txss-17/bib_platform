@@ -7,6 +7,11 @@ import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { FloatingSupportButton } from "@/components/support/FloatingSupportButton";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -53,12 +58,32 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 />
               </div>
             )}
-            <Button variant="outline" size="icon" className="relative h-8 w-8 sm:h-9 sm:w-9">
-              <Bell className="w-4 h-4" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
-                2
-              </span>
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="relative h-8 w-8 sm:h-9 sm:w-9"
+                  aria-label="Notifications"
+                >
+                  <Bell className="w-4 h-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-80 p-0">
+                <div className="px-4 py-3 border-b border-border/50">
+                  <p className="text-sm font-semibold">Notifications</p>
+                </div>
+                <div className="px-4 py-8 text-center">
+                  <Bell className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    Aucune nouvelle notification.
+                  </p>
+                  <p className="text-xs text-muted-foreground/70 mt-1">
+                    Vous serez alerté ici à chaque nouvelle commande ou ticket.
+                  </p>
+                </div>
+              </PopoverContent>
+            </Popover>
             <Button variant="outline" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" onClick={handleSignOut} title="Déconnexion">
               <LogOut className="w-4 h-4" />
             </Button>
