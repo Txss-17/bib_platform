@@ -79,9 +79,13 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={
-              typeof window !== "undefined" && window.location.hostname.startsWith("pack-legal.")
-                ? <PackLegal />
-                : <Index />
+              (() => {
+                if (typeof window === "undefined") return <Index />;
+                const host = window.location.hostname;
+                if (host.startsWith("pack-legal.")) return <PackLegal />;
+                if (host.startsWith("carrieres.")) return <Carrieres />;
+                return <Index />;
+              })()
             } />
             <Route path="/vendre" element={<Vendre />} />
             <Route path="/landing" element={<Index />} />
