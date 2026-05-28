@@ -1,8 +1,9 @@
-import Header from "@/components/Header";
+import { Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Briefcase, ArrowRight, Sparkles, HeartHandshake, Rocket, Globe2 } from "lucide-react";
+import { Logo } from "@/components/Logo";
+import { MapPin, Briefcase, ArrowRight, Sparkles, HeartHandshake, Rocket, Globe2, Send } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 
 const openings = [
@@ -59,7 +60,23 @@ export default function Carrieres() {
 
   return (
     <div className="min-h-screen bg-bib-ivory">
-      <Header />
+      {/* Minimal header: only Candidater + Nous écrire */}
+      <header className="sticky top-0 z-50 bg-bib-ivory/90 backdrop-blur-lg border-b border-bib-marine/10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+          <Link to="/"><Logo iconSize={32} /></Link>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Button asChild variant="outline" size="sm" className="border-bib-marine/20 text-bib-marine hover:bg-bib-marine hover:text-bib-ivory">
+              <a href="#postes">Candidater</a>
+            </Button>
+            <Button asChild variant="coral" size="sm" className="hidden sm:inline-flex">
+              <a href="mailto:jobs@brand-in-a-box.space"><Send className="mr-1.5 h-3.5 w-3.5" />Nous écrire</a>
+            </Button>
+            <Button asChild variant="coral" size="sm" className="sm:hidden">
+              <a href="mailto:jobs@brand-in-a-box.space"><Send className="h-3.5 w-3.5" /></a>
+            </Button>
+          </div>
+        </div>
+      </header>
       <main>
         <section className="relative bg-bib-marine text-bib-ivory overflow-hidden">
           <div className="absolute -top-32 -left-24 w-[480px] h-[480px] rounded-full bg-bib-gold/10 blur-3xl" aria-hidden />
@@ -94,7 +111,7 @@ export default function Carrieres() {
         </section>
 
         {/* Openings */}
-        <section className="bg-bib-ivory pb-24">
+        <section id="postes" className="bg-bib-ivory pb-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-baseline justify-between mb-8">
               <h2 className="font-display text-2xl sm:text-3xl font-bold text-bib-marine">Postes ouverts</h2>
