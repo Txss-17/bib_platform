@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Tarifs from "./pages/Tarifs";
+import TarifsFournisseurs from "./pages/TarifsFournisseurs";
 import CheckoutReturn from "./pages/CheckoutReturn";
 import NotFound from "./pages/NotFound";
 import BrandPreview from "./pages/BrandPreview";
@@ -92,6 +93,9 @@ const App = () => (
             <Route path="/landing" element={<Index />} />
             <Route path="/tarifs" element={<Tarifs />} />
             <Route path="/pricing" element={<Tarifs />} />
+            <Route path="/suppliers/tarifs" element={<TarifsFournisseurs />} />
+            <Route path="/fournisseurs/tarifs" element={<TarifsFournisseurs />} />
+            <Route path="/suppliers/pricing" element={<TarifsFournisseurs />} />
             <Route path="/checkout/return" element={<CheckoutReturn />} />
             <Route path="/brand-preview" element={<BrandPreview />} />
             <Route path="/store" element={<Marketplace />} />

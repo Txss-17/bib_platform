@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Check, Sparkles, Recycle, ShieldCheck, Truck, Award, Umbrella, ChevronRight } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -307,6 +313,53 @@ export default function Tarifs() {
               </div>
             </div>
           </div>
+        </section>
+
+        {/* FAQ */}
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-16 max-w-3xl">
+          <div className="text-center mb-6">
+            <Badge variant="secondary" className="mb-3">FAQ</Badge>
+            <h2 className="font-display text-2xl sm:text-3xl font-bold text-bib-marine">
+              Questions fréquentes
+            </h2>
+          </div>
+          <Accordion type="single" collapsible className="space-y-2">
+            {[
+              {
+                q: "Puis-je changer de plan à tout moment ?",
+                a: "Oui. Vous pouvez passer du Starter au Growth ou Pro depuis votre tableau de bord. Le prorata est calculé automatiquement.",
+              },
+              {
+                q: "La commission est-elle prélevée en plus de l'abonnement ?",
+                a: "Oui. L'abonnement couvre l'accès à la plateforme, la commission (15 / 10 / 8 %) est prélevée à chaque vente via le système de paiement.",
+              },
+              {
+                q: "Les add-ons sont-ils liés au plan ?",
+                a: "Non. Boutique Verte et Assurance sont indépendants — un Starter peut souscrire l'assurance Pro, et inversement.",
+              },
+              {
+                q: "Comment se passent les litiges clients ?",
+                a: "La plateforme prend la main en médiation sous 48h. Avec l'add-on Assurance, le remboursement est couvert jusqu'au plafond choisi.",
+              },
+              {
+                q: "Y a-t-il un engagement ?",
+                a: "Aucun. Vous pouvez annuler à tout moment depuis votre espace facturation. Vos données restent exportables 90 jours.",
+              },
+            ].map((item, i) => (
+              <AccordionItem
+                key={i}
+                value={`faq-${i}`}
+                className="rounded-xl border border-border bg-card px-4 data-[state=open]:shadow-sm"
+              >
+                <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
+                  {item.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-sm text-muted-foreground">
+                  {item.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </section>
       </main>
       <Footer />

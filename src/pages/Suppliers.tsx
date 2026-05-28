@@ -63,6 +63,7 @@ export default function Suppliers() {
         { label: "Avantages partenaires", href: "#avantages", icon: "sparkles" },
         { label: "Contraintes", href: "#contraintes", icon: "shield" },
         { label: "Étapes du processus", href: "#etapes", icon: "clipboard" },
+        { label: "Tarifs", href: "/suppliers/tarifs", icon: "sparkles" },
         { label: "Candidater", href: "/suppliers/apply", icon: "file" },
         { label: "Nous écrire", href: "mailto:suppliers@brand-in-a-box.space", icon: "mail" },
       ]}
@@ -85,6 +86,9 @@ export default function Suppliers() {
             <a href="#how" className="text-sm text-muted-foreground underline-offset-4 hover:underline">
               Comprendre le fonctionnement
             </a>
+            <Link to="/suppliers/tarifs" className="text-sm text-muted-foreground underline-offset-4 hover:underline">
+              Voir les tarifs
+            </Link>
           </div>
         </div>
       </section>
