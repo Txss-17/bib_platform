@@ -78,7 +78,7 @@ export default function OpsPortal() {
     supabase
       .from("orders")
       .select("id, order_number, customer_name, amount, logistics_status, created_at")
-      .in("logistics_status", ["pending", "preparing", "shipped", "in_transit"])
+      .in("logistics_status", ["pending", "processing", "shipped"])
       .order("created_at", { ascending: false })
       .limit(50)
       .then(({ data: rows }) => {
@@ -94,9 +94,9 @@ export default function OpsPortal() {
 
   const stockSummary = useMemo(() => {
     const pending = orders.filter((o) => o.logistics_status === "pending").length;
-    const preparing = orders.filter((o) => o.logistics_status === "preparing").length;
+    const preparing = orders.filter((o) => o.logistics_status === "processing").length;
     const inTransit = orders.filter((o) =>
-      ["shipped", "in_transit"].includes(o.logistics_status),
+      ["shipped"].includes(o.logistics_status),
     ).length;
     return { pending, preparing, inTransit, returns: returns.length };
   }, [orders, returns]);
@@ -257,7 +257,7 @@ export default function OpsPortal() {
                   setOrdersLoading(true);
                   supabase.from("orders")
                     .select("id, order_number, customer_name, amount, logistics_status, created_at")
-                    .in("logistics_status", ["pending", "preparing", "shipped", "in_transit"])
+                    .in("logistics_status", ["pending", "processing", "shipped"])
                     .order("created_at", { ascending: false }).limit(50)
                     .then(({ data: rows }) => {
                       setOrders((rows ?? []) as BasicOrder[]);
