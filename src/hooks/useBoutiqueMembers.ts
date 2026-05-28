@@ -65,6 +65,38 @@ export function useBoutiqueMembers(boutiqueId?: string) {
   });
 }
 
+/**
+ * Returns boutiques where the current user is an ACTIVE member (not owner).
+ * Used to populate the dashboard scope for invited members.
+ */
+export function useMemberBoutiques() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["member-boutiques", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data: memberships, error: mErr } = await supabase
+        .from("boutique_members" as any)
+        .select("boutique_id, role")
+        .eq("user_id", user!.id)
+        .eq("status", "active");
+      if (mErr) throw mErr;
+      const ids = (memberships || []).map((m: any) => m.boutique_id);
+      if (ids.length === 0) return [];
+
+      const { data: boutiques, error: bErr } = await supabase
+        .from("boutiques")
+        .select("id, name, slug, logo_url, status")
+        .in("id", ids);
+      if (bErr) throw bErr;
+      return (boutiques || []).map((b) => ({
+        ...b,
+        role: (memberships as any[]).find((m) => m.boutique_id === b.id)?.role as TeamRole,
+      }));
+    },
+  });
+}
+
 export function useInviteMember() {
   const queryClient = useQueryClient();
 

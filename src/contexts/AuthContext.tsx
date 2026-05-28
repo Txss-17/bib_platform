@@ -72,6 +72,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const profileData = await fetchProfile(session.user.id);
             setProfile(profileData);
           }, 0);
+
+          // Claim any pending team invitations matching the user's email.
+          if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+            setTimeout(() => {
+              supabase.rpc("claim_team_invites" as any).then(({ error }) => {
+                if (error) console.warn("claim_team_invites failed:", error.message);
+              });
+            }, 0);
+          }
         } else {
           setProfile(null);
         }
