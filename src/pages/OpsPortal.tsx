@@ -28,11 +28,10 @@ import {
 } from "lucide-react";
 
 const DELIVERY_STATUSES = [
-  { value: "preparing", label: "Préparation" },
+  { value: "processing", label: "Préparation" },
   { value: "shipped", label: "Expédié" },
-  { value: "in_transit", label: "En transit" },
   { value: "delivered", label: "Livré" },
-  { value: "issue", label: "Incident" },
+  { value: "returned", label: "Retour" },
 ];
 
 interface BasicOrder {
