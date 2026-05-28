@@ -16,8 +16,14 @@ import { usePageAnalytics, useProductFunnel, usePeriodKpis } from "@/hooks/usePa
 import { useBoutiquePages } from "@/hooks/useBoutiquePages";
 import { useProducts } from "@/hooks/useProducts";
 import { findSceneDefinition } from "@/lib/studioScenes";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { EDITOR_ROUTES } from "@/lib/editorRoutes";
+import { exportToCSV, exportToPDF } from "@/lib/exportUtils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Download, FileSpreadsheet, FileText as FileTextIcon, ExternalLink } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const RANGES: { label: string; days: number }[] = [
   { label: "7 j", days: 7 },
@@ -50,6 +56,29 @@ export default function BoutiqueAnalytics() {
   const { data: products = [] } = useProducts();
   const { data: kpis } = usePeriodKpis(id, days);
 
+  // Map scene_id -> page_id (boutique_scenes carries page_id; analytics rows don't).
+  const { data: sceneIndex = {} } = useQuery({
+    queryKey: ["scene-index", id],
+    enabled: !!id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("boutique_scenes")
+        .select("id, page_id")
+        .eq("boutique_id", id!);
+      const map: Record<string, string | null> = {};
+      ((data as any[]) ?? []).forEach((s) => { map[s.id] = s.page_id ?? null; });
+      return map;
+    },
+  });
+
+  const pagesById = useMemo(() => {
+    const m = new Map<string, { title: string; slug: string }>();
+    pages.forEach((p) => m.set(p.id, { title: p.title, slug: p.slug }));
+    return m;
+  }, [pages]);
+
+  const [scenePageFilter, setScenePageFilter] = useState<string>("all");
+
   const cur = kpis?.current;
   const prev = kpis?.previous;
   const delta = (a?: number, b?: number) => {
@@ -65,7 +94,92 @@ export default function BoutiqueAnalytics() {
     : 0;
 
   const productMap = new Map(products.map((p: any) => [p.id, p]));
-  const filteredScenes = scenes;
+  // Augment scenes with page info + filter
+  const scenesWithPage = useMemo(() => scenes.map((s: any) => {
+    const pageId = sceneIndex[s.scene_id] ?? null;
+    const page = pageId ? pagesById.get(pageId) : null;
+    return { ...s, page_id: pageId, page_title: page?.title ?? null, page_slug: page?.slug ?? null };
+  }), [scenes, sceneIndex, pagesById]);
+  const filteredScenes = useMemo(() => {
+    if (scenePageFilter === "all") return scenesWithPage;
+    if (scenePageFilter === "home") return scenesWithPage.filter((s) => !s.page_id);
+    return scenesWithPage.filter((s) => s.page_id === scenePageFilter);
+  }, [scenesWithPage, scenePageFilter]);
+
+  const boutiqueName = boutique?.name || "Boutique";
+  const periodLabel = `${days}j vs période précédente`;
+
+  // Export helpers ----------------------------------------------------------
+  const exportPages = (fmt: "csv" | "pdf") => {
+    const rows = pages.map((p) => {
+      const r = pageRows.find((x) => x.page_id === p.id);
+      const views = Number(r?.views ?? 0);
+      const uniques = Number(r?.unique_visitors ?? 0);
+      return {
+        title: p.title,
+        slug: `/${p.slug}`,
+        views,
+        uniques,
+        engagement: views ? `${((uniques / views) * 100).toFixed(0)}%` : "—",
+      };
+    });
+    const cols = [
+      { header: "Page", accessor: (r: any) => r.title },
+      { header: "Slug", accessor: (r: any) => r.slug },
+      { header: "Vues", accessor: (r: any) => String(r.views) },
+      { header: "Uniques", accessor: (r: any) => String(r.uniques) },
+      { header: "Engagement", accessor: (r: any) => r.engagement },
+    ];
+    const title = `Analytics par page — ${periodLabel}`;
+    const filename = `analytics-pages-${days}j`;
+    if (fmt === "csv") exportToCSV(rows, cols, filename, { boutiqueName });
+    else exportToPDF(rows, cols, title, filename, { boutiqueName });
+  };
+
+  const exportScenes = (fmt: "csv" | "pdf") => {
+    const cols = [
+      { header: "Scène", accessor: (r: any) => findSceneDefinition(r.scene_type)?.name ?? r.scene_type },
+      { header: "Type", accessor: (r: any) => r.scene_type },
+      { header: "Page", accessor: (r: any) => r.page_title ?? "Accueil" },
+      { header: "ID scène", accessor: (r: any) => r.scene_id },
+      { header: "Impressions", accessor: (r: any) => String(r.impressions) },
+      { header: "Clics CTA", accessor: (r: any) => String(r.cta_clicks) },
+      { header: "CTR %", accessor: (r: any) => Number(r.ctr).toFixed(2) },
+      { header: "Dwell (s)", accessor: (r: any) => (Number(r.avg_dwell_ms) / 1000).toFixed(1) },
+      { header: "Scroll %", accessor: (r: any) => Number(r.avg_scroll_pct).toFixed(0) },
+      { header: "Conv. %", accessor: (r: any) => Number(r.conversion_rate).toFixed(2) },
+    ];
+    const title = `Analytics par scène — ${periodLabel}`;
+    const filename = `analytics-scenes-${days}j`;
+    if (fmt === "csv") exportToCSV(filteredScenes, cols, filename, { boutiqueName });
+    else exportToPDF(filteredScenes, cols, title, filename, { boutiqueName });
+  };
+
+  const exportProducts = (fmt: "csv" | "pdf") => {
+    const rows = funnel.map((r) => {
+      const p: any = productMap.get(r.product_id);
+      return {
+        name: p?.supplier_products?.name || p?.name || "Produit",
+        id: r.product_id,
+        views: Number(r.views),
+        cart: Number(r.add_to_cart),
+        purchases: Number(r.purchases),
+        conv: `${Number(r.conversion_rate).toFixed(2)}%`,
+      };
+    });
+    const cols = [
+      { header: "Produit", accessor: (r: any) => r.name },
+      { header: "ID", accessor: (r: any) => r.id },
+      { header: "Vues", accessor: (r: any) => String(r.views) },
+      { header: "Panier", accessor: (r: any) => String(r.cart) },
+      { header: "Achats", accessor: (r: any) => String(r.purchases) },
+      { header: "Conv.", accessor: (r: any) => r.conv },
+    ];
+    const title = `Top produits — ${periodLabel}`;
+    const filename = `analytics-produits-${days}j`;
+    if (fmt === "csv") exportToCSV(rows, cols, filename, { boutiqueName });
+    else exportToPDF(rows, cols, title, filename, { boutiqueName });
+  };
 
   return (
     <DashboardLayout>
@@ -121,7 +235,11 @@ export default function BoutiqueAnalytics() {
 
         {/* PER PAGE */}
         <TabsContent value="pages" className="mt-4">
-          <SectionCard title="Performance par page" description="Vues et visiteurs uniques de chaque page de votre boutique.">
+          <SectionCard
+            title="Performance par page"
+            description="Vues et visiteurs uniques de chaque page de votre boutique."
+            actions={<ExportMenu onExport={exportPages} />}
+          >
             {pagesLoading ? (
               <Spinner />
             ) : pages.length === 0 ? (
@@ -171,6 +289,19 @@ export default function BoutiqueAnalytics() {
           <SectionCard
             title="Performance par scène"
             description="Impressions, CTR, temps passé et scroll de chaque scène publiée."
+            actions={
+              <div className="flex items-center gap-2">
+                <Select value={scenePageFilter} onValueChange={setScenePageFilter}>
+                  <SelectTrigger className="h-8 text-xs w-[160px]"><SelectValue placeholder="Toutes les pages" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les pages</SelectItem>
+                    <SelectItem value="home">Accueil</SelectItem>
+                    {pages.map((p) => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <ExportMenu onExport={exportScenes} />
+              </div>
+            }
           >
             {scenesLoading ? (
               <Spinner />
@@ -182,6 +313,7 @@ export default function BoutiqueAnalytics() {
                   <thead>
                     <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground border-b border-border">
                       <th className="py-2 px-3">Scène</th>
+                      <th className="py-2 px-3">Page</th>
                       <th className="py-2 px-3 text-right"><Eye className="inline w-3.5 h-3.5" /></th>
                       <th className="py-2 px-3 text-right"><MousePointerClick className="inline w-3.5 h-3.5" /></th>
                       <th className="py-2 px-3 text-right">CTR</th>
@@ -197,7 +329,20 @@ export default function BoutiqueAnalytics() {
                         <tr key={r.scene_id} className="border-b border-border/40 hover:bg-muted/30">
                           <td className="py-2.5 px-3">
                             <div className="font-medium">{def?.name ?? r.scene_type}</div>
-                            <div className="text-[11px] text-muted-foreground">{r.scene_type}</div>
+                            <div className="text-[11px] text-muted-foreground font-mono">{String(r.scene_id).slice(0, 8)}…</div>
+                          </td>
+                          <td className="py-2.5 px-3">
+                            {id && (
+                              <Link
+                                to={r.page_id
+                                  ? `${EDITOR_ROUTES.boutiqueEdit(id)}?page=${r.page_id}#scene-${r.scene_id}`
+                                  : `${EDITOR_ROUTES.boutiqueEdit(id)}#scene-${r.scene_id}`}
+                                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                              >
+                                {r.page_title ?? "Accueil"}
+                                <ExternalLink className="w-3 h-3" />
+                              </Link>
+                            )}
                           </td>
                           <td className="py-2.5 px-3 text-right tabular-nums">{Number(r.impressions).toLocaleString("fr-FR")}</td>
                           <td className="py-2.5 px-3 text-right tabular-nums">{Number(r.cta_clicks).toLocaleString("fr-FR")}</td>
@@ -224,6 +369,7 @@ export default function BoutiqueAnalytics() {
           <SectionCard
             title="Top produits"
             description="Vues, ajouts au panier et achats par produit sur la période."
+            actions={<ExportMenu onExport={exportProducts} />}
           >
             {funnelLoading ? (
               <Spinner />
@@ -314,4 +460,24 @@ function CtrBadge({ value }: { value: number }) {
     value >= 2 ? "bg-warning/15 text-warning" :
     "bg-muted text-muted-foreground";
   return <Badge variant="outline" className={`${tone} border-transparent`}>{value.toFixed(2)}%</Badge>;
+}
+
+function ExportMenu({ onExport }: { onExport: (fmt: "csv" | "pdf") => void }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button size="sm" variant="outline" className="gap-1">
+          <Download className="w-3.5 h-3.5" /> Exporter
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => onExport("csv")} className="gap-2">
+          <FileSpreadsheet className="w-4 h-4" /> CSV
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onExport("pdf")} className="gap-2">
+          <FileTextIcon className="w-4 h-4" /> PDF
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }

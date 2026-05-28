@@ -12,6 +12,7 @@ import { useProductStats, useProducts } from "@/hooks/useProducts";
 import { useOrderStats, useOrders } from "@/hooks/useOrders";
 import { useSupplierProducts } from "@/hooks/useSupplierProducts";
 import { StockAlerts } from "@/components/dashboard/StockAlerts";
+import { BoutiqueAlertsCard } from "@/components/dashboard/BoutiqueAlertsCard";
 import { OrdersChart } from "@/components/dashboard/OrdersChart";
 import {
   PageHeader,
@@ -335,6 +336,9 @@ export default function Dashboard() {
 
           {/* Stock alerts */}
           <StockAlerts />
+
+          {/* Auto alerts (views drop, CTR, audits) */}
+          <BoutiqueAlertsCard />
 
           {/* Orders charts */}
           <SectionCard
