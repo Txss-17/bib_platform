@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { useSEO } from "@/hooks/useSEO";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { OpsPricingSection } from "@/components/standalone/OpsPricingSection";
 import {
   Truck,
   PackageCheck,
@@ -69,7 +68,6 @@ export default function Ops() {
       accent="accent"
       menuItems={[
         { label: "Candidater", href: "/ops/apply", icon: "file" },
-        { label: "Tarifs", href: "#tarifs", icon: "file" },
         { label: "Nous écrire", href: "mailto:ops@brand-in-a-box.space", icon: "mail" },
       ]}
     >
@@ -87,9 +85,6 @@ export default function Ops() {
             <Button asChild size="lg" variant="coral" className="gap-2">
               <Link to="/ops/apply">Vérifier ma compatibilité <ArrowRight className="w-4 h-4" /></Link>
             </Button>
-            <a href="#tarifs" className="text-sm text-muted-foreground underline-offset-4 hover:underline">
-              Voir les tarifs
-            </a>
           </div>
         </div>
       </section>
@@ -171,9 +166,6 @@ export default function Ops() {
           </ol>
         </Card>
       </section>
-
-      {/* Tarifs + FAQ + CTA (intégrés) */}
-      <OpsPricingSection />
 
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <div className="text-center">
