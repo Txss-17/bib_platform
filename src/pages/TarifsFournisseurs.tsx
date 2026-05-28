@@ -112,7 +112,7 @@ export default function TarifsFournisseurs() {
       menuItems={[
         { label: "Plans", href: "#plans", icon: "layers" },
         { label: "Inclus", href: "#inclus", icon: "shield" },
-        { label: "FAQ", href: "#faq", icon: "info" },
+        { label: "FAQ", href: "#faq", icon: "sparkles" },
       ]}
       ctaLabel="Postuler"
       ctaHref="/suppliers/apply"
