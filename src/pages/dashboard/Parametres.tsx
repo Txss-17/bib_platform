@@ -1,5 +1,5 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,6 +42,8 @@ import {
 
 export default function Parametres() {
   const { profile, refreshProfile, user, signOut } = useAuth();
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") || "profil";
   const { data: products = [] } = useProducts();
   const { settings: seoSettings, update: updateSeoSettings } = useSeoSettings();
   const portal = useOpenBillingPortal();
@@ -148,7 +150,7 @@ export default function Parametres() {
         subtitle="Profil, abonnement, sécurité et préférences de notification."
       />
       <div className="max-w-3xl">
-        <Tabs defaultValue="profil" className="w-full">
+        <Tabs defaultValue={initialTab} className="w-full">
           <TabsList className="w-full flex overflow-x-auto gap-1 bg-muted/50 p-1 h-auto flex-wrap">
             <TabsTrigger value="profil" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
               <User className="w-3.5 h-3.5" />
