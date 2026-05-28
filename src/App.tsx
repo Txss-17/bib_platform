@@ -133,6 +133,9 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/carrieres" element={<Carrieres />} />
+            <Route path="/carrieres/postes" element={<CarrieresPostes />} />
+            <Route path="/careers" element={<Carrieres />} />
+            <Route path="/careers/jobs" element={<CarrieresPostes />} />
             <Route path="/a-propos" element={<APropos />} />
             <Route path="/pack-legal" element={<PackLegal />} />
             <Route path="/legal" element={<PackLegal />} />
