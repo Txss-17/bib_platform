@@ -4,44 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Briefcase, ArrowRight, Sparkles, HeartHandshake, Rocket, Globe2 } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
-
-const openings = [
-  {
-    title: "Senior Product Designer",
-    team: "Design",
-    location: "Paris / Remote EU",
-    type: "CDI",
-    summary: "Façonner l'expérience du builder boutique et du dashboard live.",
-  },
-  {
-    title: "Full-Stack Engineer (React / Supabase)",
-    team: "Plateforme",
-    location: "Remote EU",
-    type: "CDI",
-    summary: "Construire les fondations du Commerce OS, du storefront aux APIs paiement.",
-  },
-  {
-    title: "Supplier Operations Lead",
-    team: "Opérations",
-    location: "Lyon / Hybride",
-    type: "CDI",
-    summary: "Sourcer, qualifier et accompagner les fournisseurs du catalogue pré-validé.",
-  },
-  {
-    title: "Brand & Content Lead",
-    team: "Marketing",
-    location: "Paris / Remote EU",
-    type: "CDI",
-    summary: "Porter la voix éditoriale BIB et faire grandir la communauté de fondateurs.",
-  },
-  {
-    title: "Customer Success — FR/EN",
-    team: "Support",
-    location: "Remote",
-    type: "CDI",
-    summary: "Accompagner les vendeurs sur le terrain, du lancement à leur première traction.",
-  },
-];
+import { Link } from "react-router-dom";
+import { openings, MAX_OPENINGS_PREVIEW } from "@/data/openings";
 
 const perks = [
   { icon: Rocket, title: "Mission claire", desc: "Donner à chaque entrepreneur une marque prête à décoller." },
@@ -56,6 +20,9 @@ export default function Carrieres() {
     description:
       "Rejoignez Brand-In-A-Box et construisez le Commerce OS qui libère les entrepreneurs. Postes ouverts en design, ingénierie, opérations et support.",
   });
+
+  const visibleOpenings = openings.slice(0, MAX_OPENINGS_PREVIEW);
+  const hasMore = openings.length > MAX_OPENINGS_PREVIEW;
 
   return (
     <div className="min-h-screen bg-bib-ivory">
@@ -101,7 +68,7 @@ export default function Carrieres() {
               <span className="text-sm text-muted-foreground tabular-nums">{openings.length} postes</span>
             </div>
             <div className="space-y-3">
-              {openings.map((o) => (
+              {visibleOpenings.map((o) => (
                 <div
                   key={o.title}
                   className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-bib-marine/10 bg-card p-5 hover:border-bib-gold/40 hover:shadow-md transition-all"
@@ -125,6 +92,16 @@ export default function Carrieres() {
                 </div>
               ))}
             </div>
+
+            {hasMore && (
+              <div className="mt-6 flex justify-center">
+                <Button asChild variant="outline" size="lg" className="border-bib-marine/20 text-bib-marine hover:bg-bib-marine hover:text-bib-ivory">
+                  <Link to="/carrieres/postes">
+                    Voir tous les postes ({openings.length}) <ArrowRight className="ml-1.5 h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            )}
 
             <div className="mt-12 rounded-2xl border border-bib-marine/10 bg-bib-marine text-bib-ivory p-8 text-center">
               <h3 className="font-display text-2xl font-bold">Vous ne trouvez pas votre poste ?</h3>
