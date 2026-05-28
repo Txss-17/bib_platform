@@ -72,8 +72,8 @@ export default function Marketing() {
 
   const previewHtml = useMemo(
     () => renderBlocksToHtml(blocks, {
-      signature: emailSettings?.marketing_signature ?? null,
-      footerLinks: (emailSettings?.marketing_footer_links as any) ?? null,
+      signature: (emailSettings as any)?.marketing_signature ?? null,
+      footerLinks: ((emailSettings as any)?.marketing_footer_links as any) ?? null,
       boutiqueName: boutiques.find((b: any) => b.id === activeId)?.name,
     }),
     [blocks, emailSettings, boutiques, activeId],
