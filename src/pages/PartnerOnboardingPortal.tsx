@@ -338,10 +338,14 @@ export default function PartnerOnboardingPortal() {
 
         {isApproved && (
           <Card className="p-5 bg-primary/5 border-primary/30">
-            <p className="text-sm">
+            <p className="text-sm mb-3">
               Votre accès au portail opérationnel <strong>{portalLabel}</strong> est ouvert.
-              Un email avec votre lien de connexion vous a été transmis.
             </p>
+            <Button asChild size="sm">
+              <Link to={sub.portal === "suppliers" ? `/suppliers/portal/${token}` : `/ops/portal/${token}`}>
+                Ouvrir mon portail {portalLabel}
+              </Link>
+            </Button>
           </Card>
         )}
       </section>
