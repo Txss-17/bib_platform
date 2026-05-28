@@ -58,16 +58,17 @@ export default function Clients() {
 
   const handleExport = () => {
     exportToCSV(
-      filtered.map((c) => ({
-        email: c.email,
-        nom: c.full_name ?? "",
-        ville: c.city ?? "",
-        commandes: c.orders_count,
-        depense_eur: (c.total_spent_cents / 100).toFixed(2),
-        derniere_commande: c.last_order_at ?? "",
-        opt_in: c.marketing_opt_in ? "oui" : "non",
-        source: c.source,
-      })),
+      filtered,
+      [
+        { header: "Email", accessor: (r) => r.email },
+        { header: "Nom", accessor: (r) => r.full_name ?? "" },
+        { header: "Ville", accessor: (r) => r.city ?? "" },
+        { header: "Commandes", accessor: (r) => String(r.orders_count) },
+        { header: "Dépensé (€)", accessor: (r) => (r.total_spent_cents / 100).toFixed(2) },
+        { header: "Dernière commande", accessor: (r) => r.last_order_at ?? "" },
+        { header: "Opt-in", accessor: (r) => (r.marketing_opt_in ? "oui" : "non") },
+        { header: "Source", accessor: (r) => r.source },
+      ],
       `clients-${activeId}`,
     );
     toast({ title: "Export CSV généré" });
