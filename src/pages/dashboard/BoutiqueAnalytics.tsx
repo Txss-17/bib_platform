@@ -28,7 +28,6 @@ const RANGES: { label: string; days: number }[] = [
 export default function BoutiqueAnalytics() {
   const { id } = useParams<{ id: string }>();
   const [days, setDays] = useState(30);
-  const [pageFilter, setPageFilter] = useState<string | "all">("all");
 
   const { data: boutique } = useQuery({
     queryKey: ["boutique-analytics-meta", id],
@@ -57,8 +56,7 @@ export default function BoutiqueAnalytics() {
     if (a == null || b == null || !b) return null;
     return ((a - b) / b) * 100;
   };
-  const bounceCur = cur && cur.views ? Math.max(0, 1 - cur.unique_visitors / cur.views) * 0 + (cur.views > cur.unique_visitors ? ((cur.views - (cur.product_views + cur.add_to_cart)) / cur.views) * 100 : 0) : 0;
-  // Simpler bounce: % of views with no product_view/add_to_cart (approx)
+  // Bounce approx: % of boutique_views with no subsequent product_view
   const bounce = cur && cur.views > 0
     ? Math.max(0, Math.min(100, ((cur.views - cur.product_views) / cur.views) * 100))
     : 0;
@@ -66,16 +64,8 @@ export default function BoutiqueAnalytics() {
     ? Math.max(0, Math.min(100, ((prev.views - prev.product_views) / prev.views) * 100))
     : 0;
 
-  const pageMap = new Map(pages.map((p) => [p.id, p]));
   const productMap = new Map(products.map((p: any) => [p.id, p]));
-
-  const filteredScenes = pageFilter === "all"
-    ? scenes
-    : scenes.filter((s: any) => {
-        // scenes summary doesn't directly carry page_id; surface all when boutique-wide
-        // (Per-page scene drill-down requires scene rows enriched with page_id, V2.)
-        return true;
-      });
+  const filteredScenes = scenes;
 
   return (
     <DashboardLayout>
