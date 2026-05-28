@@ -18,6 +18,8 @@ import {
   LifeBuoy,
   Crown,
   LogOut,
+  Megaphone,
+  UserCircle2,
 } from "lucide-react";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -35,6 +37,8 @@ const mainNavItems = [
   { title: "Mes Produits", url: "/dashboard/produits", icon: Package, module: "produits" },
   { title: "Catalogue Produits", url: "/dashboard/produits-fournisseurs", icon: Truck, module: "catalogue" },
   { title: "Commandes", url: "/dashboard/commandes", icon: ShoppingCart, module: "commandes" },
+  { title: "Clients", url: "/dashboard/clients", icon: UserCircle2, module: "commandes" },
+  { title: "Marketing", url: "/dashboard/marketing", icon: Megaphone, module: "boutiques" },
   { title: "Ventes", url: "/dashboard/ventes", icon: TrendingUp, module: "ventes" },
   { title: "Paiements", url: "/dashboard/paiements", icon: CreditCard, module: "paiements" },
   { title: "Analytics", url: "/dashboard/seo-analytics", icon: BarChart3, module: "analytics" },

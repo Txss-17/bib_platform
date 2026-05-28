@@ -1,59 +1,105 @@
-# Plan — Add-ons, équipe & espace membre
 
-## 1. Add-ons dans Paramètres → Abonnement (compact)
+# Module Marketing & CRM Clients
 
-Fichier : `src/pages/dashboard/Parametres.tsx` (onglet `abonnement`).
+## 1. Provider email — décision
 
-Sous le `SubscriptionPanel`, ajouter un **bloc unique `SectionCard` "Add-ons"** avec 3 lignes compactes (titre + prix + Switch/CTA) :
+**Lovable Emails** pour tout le bulk + transactionnel automatique.
+- `From: Nom Boutique <{boutique-slug}@brand-in-a-box.space>` (domaine déjà vérifié `notify.brand-in-a-box.space`).
+- Délivrabilité pro, unsubscribe + suppression list auto.
+- **Gmail conservé** uniquement pour réponses 1-to-1 dans la page Commandes (déjà en place via `send-boutique-email`). Le vendeur peut le déconnecter sans impact sur les campagnes.
 
-1. **Assurance litiges** — toggle qui appelle `useOpenBillingPortal` (ou une checkout `insurance_monthly`) ; état lu sur `profile.insurance_addon_enabled`.
-2. **Boutiques supplémentaires** — petit stepper (+/−) avec prix unitaire ; CTA "Mettre à jour" → ouvre le billing portal.
-3. **Membres d'équipe supplémentaires** — même pattern que ci-dessus.
+## 2. CRM Clients — nouvelle table + page
 
-Garder la page courte : pas de gros textes, 1 ligne / add-on, prix à droite, badge "Actif" si souscrit.
+### Base de données
+- **`boutique_customers`** : `id`, `boutique_id`, `email` (unique par boutique), `full_name`, `phone`, `city`, `country`, `total_spent_cents`, `orders_count`, `last_order_at`, `first_order_at`, `marketing_opt_in`, `source` (`order` / `newsletter_signup` / `import`), `tags[]`, `created_at`.
+- **`boutique_customer_purchases`** (vue/agrégat) : lien `customer_id ↔ order_id` pour segmenter par produit/catégorie.
+- **Trigger** : à chaque `INSERT` sur `orders` avec `payment_status='paid'` → upsert dans `boutique_customers` (incrément `total_spent`, `orders_count`, MAJ `last_order_at`).
+- **RLS** : owner boutique = full access ; pas d'accès anon.
+- **GRANTs** standards + `service_role`.
 
-## 2. Onboarding membre — auto-join par email
+### Page Dashboard → Clients (nouveau menu)
+- Liste paginée (avatar initiales, nom, email, total dépensé, nb commandes, dernière commande, badge opt-in).
+- Filtres : recherche, opt-in only, dépensé > X, dernier achat, produit/catégorie acheté(e).
+- Détail client : historique commandes, scans recyclage, tags éditables, opt-in toggle.
+- Export CSV.
+- Bouton **"Envoyer un message"** → préfill module Marketing.
 
-Côté Auth (`src/contexts/AuthContext.tsx`) : après un `signIn`/signup réussi, appeler un nouveau RPC `claim_team_invites(_email text)` qui fait :
+### Opt-in newsletter storefront
+- Bloc `StorefrontNewsletter` (existe déjà) → branché sur `boutique_customers` avec `source='newsletter_signup'`, `marketing_opt_in=true`. Double opt-in via email de confirmation transactionnel.
 
-```sql
-UPDATE public.boutique_members
-SET user_id = auth.uid(), status = 'active'
-WHERE LOWER(invited_email) = LOWER(_email)
-  AND status = 'pending'
-  AND user_id IS NULL;
-```
+## 3. Module Marketing (nouvelle page Dashboard)
 
-Migration : créer la fonction `security definer` + autoriser `authenticated`. Ainsi tout membre invité rejoint automatiquement l'équipe à sa première connexion sans email/code.
+### Onglets
+1. **Campagnes** — liste des envois passés + brouillons (newsletter, promo, message libre).
+2. **Automations** — toggles ON/OFF :
+   - Confirmation commande (déjà transactionnel, juste exposé)
+   - Expédition (idem)
+   - Relance panier abandonné (J+1h, J+24h) — nécessite tracking `storefront_events` type `cart_add`
+   - Post-achat J+7 (demande d'avis)
+   - Post-achat J+30 (cross-sell / fidélité)
+3. **Segments** — visualisation des audiences (tous opt-in, par produit, par catégorie, top dépensé).
+4. **Templates** — bibliothèque réutilisable (réutilise table `email_templates` existante).
 
-Sur la page Équipe, garder le statut `pending` visible jusqu'à ce que le membre se connecte (auto-bascule en `active`).
+### Composer de campagne
+- Étape 1 : Type (Newsletter / Promo / Message libre).
+- Étape 2 : Segment (tous opt-in, par produit/catégorie, sélection manuelle multi-clients).
+- Étape 3 : Contenu (subject + éditeur HTML léger + variables `{{first_name}}`, `{{boutique_name}}` ; pour promo : code + montant + validité).
+- Étape 4 : Aperçu + estimation destinataires + envoi immédiat ou programmé.
+- Garde-fous : badge "marketing — opt-in only", check anti-spam (max N campagnes/jour selon plan).
 
-## 3. Espace membre dédié
+## 4. Edge Functions
 
-Réutiliser le **DashboardLayout** existant (pas de second espace) avec un **switcher boutique** en haut de la sidebar et un filtrage des menus par rôle.
+- **`send-marketing-campaign`** (nouveau) :
+  - Auth : owner boutique.
+  - Itère sur segment, pour chaque destinataire opt-in non-suppressed → enqueue dans `transactional_emails` queue (le dispatcher existant `process-email-queue` gère le rate limit).
+  - Rend template via React Email avec data par destinataire.
+  - Log dans nouvelle table `campaign_sends` (campaign_id, customer_id, status, sent_at).
+- **`upsert-customer-from-order`** (DB trigger via pg_net) — alternative trigger SQL si plus simple.
+- **`schedule-marketing-automations`** (cron via pg_cron) :
+  - Toutes les heures : scan paniers abandonnés > 1h, commandes payées J+7, J+30 → enqueue campagne auto.
 
-- `DashboardSidebar.tsx` :
-  - Ajouter un `<BoutiqueSwitcher />` au-dessus du profil card. Source = `useBoutiques()` (déjà filtre par owner) **+** nouvelle requête `useMemberBoutiques()` qui liste les boutiques où `boutique_members.user_id = auth.uid() AND status='active'`. L'union devient le scope courant, persisté via un nouveau `TeamScopeContext` (`{ boutiqueId, role }` dans `localStorage`).
-  - Filtrer `mainNavItems` via `useTeamPermissions(currentBoutiqueId)` : un membre `support` ne voit que Dashboard + Commandes + Mes tickets ; `marketing` voit Boutiques + Analytics ; `manager` voit Produits/Commandes/Analytics ; `owner` voit tout.
-- Routes existantes (`Boutiques`, `Produits`, `Commandes`, etc.) : passer `boutiqueId` via le contexte au lieu d'un fetch "toutes mes boutiques", pour qu'un membre ne voie que la boutique dont il fait partie.
-- Sur les pages, si `!canAccess(module)` → rediriger vers `/dashboard` avec toast "Accès non autorisé".
+### Templates React Email à créer (dans `_shared/transactional-email-templates/`)
+- `marketing-newsletter.tsx`
+- `marketing-promo.tsx` (avec code + bouton)
+- `marketing-custom.tsx` (HTML libre)
+- `cart-abandoned.tsx`
+- `post-purchase-review.tsx`
+- `post-purchase-upsell.tsx`
+- `newsletter-double-optin.tsx`
 
-Aucune nouvelle route `/team/*` — un membre arrive sur `/dashboard` comme un owner, mais avec une vue strictement réduite à ses permissions sur la boutique sélectionnée.
+Tous ajoutés au `registry.ts`, redéployés via `deploy_edge_functions`.
 
-## 4. Page Équipe refondue
+## 5. Quotas par plan (`usePlanLimits`)
 
-`src/pages/dashboard/Equipe.tsx` (réservée au rôle `owner`) :
+| Plan    | Contacts | Campagnes/mois | Automations |
+|---------|----------|----------------|-------------|
+| Starter | 500      | 2              | Transactionnel seul |
+| Pro     | 5 000    | 20             | + Panier abandonné |
+| Scale   | Illimité | Illimité       | + Post-achat J+7/J+30 |
 
-- **Header KPI** : Membres actifs / Sièges disponibles (selon plan + add-ons) / Invitations en attente.
-- **Card "Permissions par rôle"** : matrice visuelle (rôle × module) lisible, basée sur `ROLE_PERMISSIONS`. Sert de référence avant d'inviter.
-- **Liste des membres** enrichie : avatar/initiales, email, badge rôle, badge statut, **dernière connexion** (jointure `auth.users.last_sign_in_at` via une vue ou via les colonnes du profil), bouton **changer le rôle** (Select inline → `useUpdateMemberRole`) et **retirer**.
-- **Empty state** clair expliquant l'auto-join : "Le membre rejoindra l'équipe automatiquement à sa prochaine connexion avec cet email."
-- Bouton "Acheter un siège supplémentaire" si limite atteinte → renvoie sur l'onglet Abonnement → Add-ons.
+Add-on "+5 000 contacts" achetable via Stripe (réutilise pattern AddOnsCompact).
 
-## Détails techniques
+## 6. UI/UX
 
-- Migration SQL : RPC `claim_team_invites`, et nouvelle policy SELECT sur `boutiques` permettant à un membre actif de lire la boutique où il est membre (sinon le switcher ne verra rien). Garder l'index sur `boutique_members(invited_email, status)`.
-- Nouveau hook `useMemberBoutiques()` + `TeamScopeContext` (provider monté dans `DashboardLayout`).
-- `useTeamPermissions` consommé partout où on monte un module dashboard (HOC ou check inline en début de page).
-- Pas de changement aux edge functions ; pas de Stripe live tant que les price_id add-on ne sont pas créés — placer des CTA "Bientôt disponible" si `price_id` manquant côté front pour éviter de bloquer.
-- Page Paramètres : ne pas allonger — n'ajouter QUE la card Add-ons dans l'onglet existant, pas de nouvel onglet.
+- Nouveau menu sidebar : **Clients** (icône Users) et **Marketing** (icône Megaphone), entre Commandes et Analytics.
+- Filtrage RBAC : rôle `marketing` voit ces 2 pages ; `support` voit Clients lecture seule ; `manager` tout.
+- Mobile-first, palette marine/or, semantic tokens.
+
+## Technique — résumé fichiers
+
+- **Migration SQL** : `boutique_customers` + trigger + RLS + GRANTs + index `(boutique_id, email)`.
+- **Edge Functions** : `send-marketing-campaign`, `schedule-marketing-automations` (+ templates).
+- **Front** :
+  - `src/pages/dashboard/Clients.tsx`
+  - `src/pages/dashboard/Marketing.tsx` (Tabs : Campagnes / Automations / Segments / Templates)
+  - `src/components/marketing/CampaignComposer.tsx`
+  - `src/components/marketing/SegmentBuilder.tsx`
+  - `src/hooks/useCustomers.ts`, `useCampaigns.ts`, `useAutomations.ts`
+  - Sidebar + routes App.tsx
+  - Bloc `StorefrontNewsletter` branché sur la nouvelle table
+- **Cron** : pg_cron toutes les heures pour `schedule-marketing-automations`.
+
+## Hors scope (proposé en V2)
+- A/B testing campagnes
+- WhatsApp / SMS
+- Workflow visuel d'automation (drag & drop)
