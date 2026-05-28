@@ -44,6 +44,8 @@ import Aide from "./pages/dashboard/Aide";
 import MesTickets from "./pages/dashboard/MesTickets";
 import AdminDocuments from "./pages/dashboard/AdminDocuments";
 import Equipe from "./pages/dashboard/Equipe";
+import Clients from "./pages/dashboard/Clients";
+import Marketing from "./pages/dashboard/Marketing";
 import VentesPrivees from "./pages/dashboard/VentesPrivees";
 import VentesPriveesPOS from "./pages/dashboard/VentesPriveesPOS";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -263,6 +265,8 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/dashboard/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+            <Route path="/dashboard/marketing" element={<ProtectedRoute><Marketing /></ProtectedRoute>} />
             <Route
               path="/dashboard/ventes-privees"
               element={
