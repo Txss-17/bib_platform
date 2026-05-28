@@ -114,8 +114,6 @@ export default function TarifsFournisseurs() {
         { label: "Inclus", href: "#inclus", icon: "shield" },
         { label: "FAQ", href: "#faq", icon: "sparkles" },
       ]}
-      ctaLabel="Postuler"
-      ctaHref="/suppliers/apply"
     >
       <main className="pb-16">
         {/* Hero */}
