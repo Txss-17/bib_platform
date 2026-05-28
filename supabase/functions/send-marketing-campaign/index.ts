@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { boutique_id, name, kind, subject, body_html, body_blocks, segment, promo_code } = body ?? {};
+    const { boutique_id, name, kind, subject, body_html, body_blocks, segment, promo_code, test_recipient } = body ?? {};
     if (!boutique_id || !subject || !body_html) {
       return new Response(JSON.stringify({ error: "Paramètres manquants" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -130,6 +130,47 @@ Deno.serve(async (req) => {
     if (!boutique || boutique.user_id !== user.id) {
       return new Response(JSON.stringify({ error: "Accès refusé" }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Fetch sender + marketing settings (shared by test + bulk)
+    const { data: settings } = await admin.from("boutique_email_settings")
+      .select("from_name, marketing_from_address, marketing_signature, marketing_footer_links")
+      .eq("boutique_id", boutique_id).maybeSingle();
+    const fromName = settings?.from_name || boutique.name || "Boutique";
+    const fromAddress = settings?.marketing_from_address || undefined;
+    const signature = settings?.marketing_signature ?? null;
+    const footerLinks = (settings?.marketing_footer_links as Record<string, string> | null) ?? null;
+
+    // --- TEST SEND : envoi unique, pas de campagne, pas de log destinataires ---
+    if (test_recipient && typeof test_recipient === "string") {
+      const unsubLink = `${Deno.env.get("SUPABASE_URL")?.replace(/\.supabase\.co.*/, "")}.lovable.app/unsubscribe?email=${encodeURIComponent(test_recipient)}&boutique=${boutique.slug}`;
+      const vars = {
+        first_name: "Test",
+        full_name: "Destinataire de test",
+        boutique_name: boutique.name,
+        promo_code: promo_code ?? "TESTCODE",
+      };
+      const html = appendSignatureAndFooter(renderTemplate(body_html, vars), {
+        signature, footerLinks, boutiqueName: boutique.name, unsubLink,
+      });
+      const subj = `[TEST] ${renderTemplate(subject, vars)}`;
+      const res = await sendOne({
+        lovableKey: LOVABLE_API_KEY, gmailKey: GOOGLE_MAIL_API_KEY,
+        fromName, fromAddress, to: test_recipient, subject: subj, html,
+      });
+      await admin.from("boutique_email_log").insert({
+        boutique_id,
+        type: `campaign_test:${kind ?? "newsletter"}`,
+        recipient_email: test_recipient,
+        subject: subj,
+        status: res.ok ? "sent" : "failed",
+        error: res.ok ? null : JSON.stringify(res.data).slice(0, 500),
+        metadata: { test: true },
+      });
+      return new Response(JSON.stringify({ ok: res.ok, test: true, status: res.status }), {
+        status: res.ok ? 200 : 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -160,15 +201,6 @@ Deno.serve(async (req) => {
       .select()
       .single();
     if (campErr) throw campErr;
-
-    // Fetch sender name + marketing settings (signature, footer, address)
-    const { data: settings } = await admin.from("boutique_email_settings")
-      .select("from_name, marketing_from_address, marketing_signature, marketing_footer_links")
-      .eq("boutique_id", boutique_id).maybeSingle();
-    const fromName = settings?.from_name || boutique.name || "Boutique";
-    const fromAddress = settings?.marketing_from_address || undefined;
-    const signature = settings?.marketing_signature ?? null;
-    const footerLinks = (settings?.marketing_footer_links as Record<string, string> | null) ?? null;
 
     // Send loop with light throttling (250ms)
     let sent = 0, failed = 0;
