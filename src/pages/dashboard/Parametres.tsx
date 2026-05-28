@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { User, Bell, Shield, CreditCard, Globe, Loader2, FileCheck, Trash2, Crown, AlertTriangle, Search, Languages, Star, Mail, KeyRound, LogOut, ExternalLink, Smartphone, ShieldCheck, Sparkles } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { BusinessDocuments } from "@/components/dashboard/BusinessDocuments";
+import { EmailMarketingSettings } from "@/components/dashboard/EmailMarketingSettings";
 import { SubscriptionPanel } from "@/components/payments/SubscriptionPanel";
 import { useOpenBillingPortal, useUserSubscriptions } from "@/hooks/useSubscriptions";
 import { Plus, Minus, Store, Users } from "lucide-react";
@@ -167,6 +168,10 @@ export default function Parametres() {
             <TabsTrigger value="notifications" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
               <Bell className="w-3.5 h-3.5" />
               <span>Notifs</span>
+            </TabsTrigger>
+            <TabsTrigger value="email" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
+              <Mail className="w-3.5 h-3.5" />
+              <span>Email</span>
             </TabsTrigger>
             <TabsTrigger value="securite" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
               <Shield className="w-3.5 h-3.5" />
