@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -12,7 +12,6 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Tarifs from "./pages/Tarifs";
-import TarifsFournisseurs from "./pages/TarifsFournisseurs";
 import CheckoutReturn from "./pages/CheckoutReturn";
 import NotFound from "./pages/NotFound";
 import BrandPreview from "./pages/BrandPreview";
@@ -93,9 +92,9 @@ const App = () => (
             <Route path="/landing" element={<Index />} />
             <Route path="/tarifs" element={<Tarifs />} />
             <Route path="/pricing" element={<Tarifs />} />
-            <Route path="/suppliers/tarifs" element={<TarifsFournisseurs />} />
-            <Route path="/fournisseurs/tarifs" element={<TarifsFournisseurs />} />
-            <Route path="/suppliers/pricing" element={<TarifsFournisseurs />} />
+            <Route path="/suppliers/tarifs" element={<Navigate to="/suppliers#tarifs" replace />} />
+            <Route path="/fournisseurs/tarifs" element={<Navigate to="/suppliers#tarifs" replace />} />
+            <Route path="/suppliers/pricing" element={<Navigate to="/suppliers#tarifs" replace />} />
             <Route path="/checkout/return" element={<CheckoutReturn />} />
             <Route path="/brand-preview" element={<BrandPreview />} />
             <Route path="/store" element={<Marketplace />} />
