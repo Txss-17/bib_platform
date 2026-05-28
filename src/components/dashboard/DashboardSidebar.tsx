@@ -56,7 +56,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     <>
       {/* Logo */}
       <div className="p-4 border-b border-border/50">
-        <Logo />
+        <Logo asLink={false} />
       </div>
 
       {/* User Profile Card */}
