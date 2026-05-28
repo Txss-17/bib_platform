@@ -2,7 +2,10 @@ import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useBoutiques } from "@/hooks/useBoutiques";
 import { useCustomers } from "@/hooks/useCustomers";
-import { useCampaigns, useSendCampaign, useAutomations, useUpsertAutomations } from "@/hooks/useCampaigns";
+import {
+  useCampaigns, useSendCampaign, useAutomations, useUpsertAutomations,
+  useTestSendCampaign, useSaveCampaignDraft,
+} from "@/hooks/useCampaigns";
 import { useEmailSettings } from "@/hooks/useBoutiqueEmail";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,8 +19,12 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
+import {
   Megaphone, Send, Sparkles, Mail, Bot, ListChecks,
   Tag, Newspaper, MessageSquare, AlertTriangle, CheckCircle2,
+  Eye, Save, Clock, Beaker,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { BlockComposer } from "@/components/marketing/BlockComposer";
@@ -35,6 +42,8 @@ export default function Marketing() {
   const { data: emailSettings } = useEmailSettings(activeId);
   const upsertAuto = useUpsertAutomations();
   const sendCampaign = useSendCampaign();
+  const testSend = useTestSendCampaign();
+  const saveDraft = useSaveCampaignDraft();
 
   const optInCount = useMemo(() => customers.filter((c) => c.marketing_opt_in).length, [customers]);
   const gmailReady = !!emailSettings?.gmail_connected;
@@ -51,6 +60,24 @@ export default function Marketing() {
   const [segmentType, setSegmentType] = useState("all_opt_in");
   const [segmentValue, setSegmentValue] = useState("");
   const [promoCode, setPromoCode] = useState("");
+  const [draftId, setDraftId] = useState<string | null>(null);
+
+  // Preview + test
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [testOpen, setTestOpen] = useState(false);
+  const [testEmail, setTestEmail] = useState("");
+  // Schedule
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [scheduleAt, setScheduleAt] = useState("");
+
+  const previewHtml = useMemo(
+    () => renderBlocksToHtml(blocks, {
+      signature: (emailSettings as any)?.marketing_signature ?? null,
+      footerLinks: ((emailSettings as any)?.marketing_footer_links as any) ?? null,
+      boutiqueName: boutiques.find((b: any) => b.id === activeId)?.name,
+    }),
+    [blocks, emailSettings, boutiques, activeId],
+  );
 
   const estimatedRecipients = useMemo(() => {
     if (segmentType === "min_spent" && segmentValue) {
@@ -60,31 +87,103 @@ export default function Marketing() {
     return optInCount;
   }, [customers, segmentType, segmentValue, optInCount]);
 
+  const buildPayload = () => ({
+    boutique_id: activeId,
+    name: name || subject,
+    kind, subject,
+    body_html: renderBlocksToHtml(blocks, {
+      boutiqueName: boutiques.find((b: any) => b.id === activeId)?.name,
+    }),
+    body_blocks: blocks,
+    segment: { type: segmentType, value: segmentValue || undefined },
+    promo_code: promoCode || undefined,
+  });
+
+  const resetComposer = () => {
+    setSubject(""); setName(""); setPromoCode(""); setDraftId(null);
+    setBlocks([newBlock("heading"), newBlock("text"), newBlock("button")]);
+  };
+
   const handleSend = async () => {
     if (!activeId || !subject || blocks.length === 0) {
       toast({ title: "Champs manquants", description: "Sujet et au moins un bloc requis", variant: "destructive" });
       return;
     }
     try {
-      const body_html = renderBlocksToHtml(blocks, {
-        boutiqueName: boutiques.find((b: any) => b.id === activeId)?.name,
-      });
-      const res = await sendCampaign.mutateAsync({
-        boutique_id: activeId,
-        name: name || subject,
-        kind, subject, body_html,
-        body_blocks: blocks,
-        segment: { type: segmentType, value: segmentValue || undefined },
-        promo_code: promoCode || undefined,
-      });
+      const res = await sendCampaign.mutateAsync(buildPayload());
       toast({
         title: "Campagne envoyée",
         description: `${(res as any)?.sent ?? 0} envoyés / ${(res as any)?.recipients ?? 0} destinataires`,
       });
-      setSubject(""); setName(""); setPromoCode("");
-      setBlocks([newBlock("heading"), newBlock("text"), newBlock("button")]);
+      resetComposer();
     } catch (e: any) {
       toast({ title: "Erreur d'envoi", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleTestSend = async () => {
+    if (!testEmail || !subject || blocks.length === 0) {
+      toast({ title: "Champs manquants", description: "Email de test et contenu requis", variant: "destructive" });
+      return;
+    }
+    try {
+      const p = buildPayload();
+      await testSend.mutateAsync({
+        boutique_id: p.boutique_id,
+        kind: p.kind,
+        subject: p.subject,
+        body_html: p.body_html,
+        promo_code: p.promo_code,
+        test_recipient: testEmail,
+      });
+      toast({ title: "Email de test envoyé", description: `Envoyé à ${testEmail}` });
+      setTestOpen(false);
+    } catch (e: any) {
+      toast({ title: "Échec du test", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    if (!activeId || !subject) {
+      toast({ title: "Sujet requis", variant: "destructive" });
+      return;
+    }
+    try {
+      const saved = await saveDraft.mutateAsync({
+        id: draftId ?? undefined,
+        ...buildPayload(),
+        status: "draft",
+        scheduled_at: null,
+      });
+      setDraftId((saved as any)?.id ?? draftId);
+      toast({ title: "Brouillon enregistré" });
+    } catch (e: any) {
+      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleSchedule = async () => {
+    if (!scheduleAt) return;
+    const when = new Date(scheduleAt);
+    if (isNaN(when.getTime()) || when.getTime() < Date.now()) {
+      toast({ title: "Date invalide", description: "Choisissez une date future", variant: "destructive" });
+      return;
+    }
+    try {
+      await saveDraft.mutateAsync({
+        id: draftId ?? undefined,
+        ...buildPayload(),
+        status: "scheduled",
+        scheduled_at: when.toISOString(),
+      });
+      toast({
+        title: "Campagne programmée",
+        description: `Envoi prévu le ${when.toLocaleString("fr-FR")}`,
+      });
+      setScheduleOpen(false);
+      resetComposer();
+    } catch (e: any) {
+      toast({ title: "Erreur", description: e.message, variant: "destructive" });
     }
   };
 
@@ -212,13 +311,40 @@ export default function Marketing() {
                     <span className="text-muted-foreground">Destinataires estimés :</span>{" "}
                     <Badge variant="secondary" className="ml-1">{estimatedRecipients}</Badge>
                   </div>
-                  <Button
-                    onClick={handleSend}
-                    disabled={!gmailReady || sendCampaign.isPending || estimatedRecipients === 0}
-                  >
-                    <Send className="w-4 h-4 mr-2" />
-                    {sendCampaign.isPending ? "Envoi en cours…" : "Envoyer maintenant"}
-                  </Button>
+                  <div className="flex flex-wrap items-center gap-2 justify-end">
+                    <Button variant="outline" size="sm" onClick={() => setPreviewOpen(true)}>
+                      <Eye className="w-4 h-4 mr-1.5" /> Aperçu
+                    </Button>
+                    <Button
+                      variant="outline" size="sm"
+                      onClick={() => setTestOpen(true)}
+                      disabled={!gmailReady}
+                      title={!gmailReady ? "Gmail non connecté" : undefined}
+                    >
+                      <Beaker className="w-4 h-4 mr-1.5" /> Envoi test
+                    </Button>
+                    <Button
+                      variant="outline" size="sm"
+                      onClick={handleSaveDraft}
+                      disabled={saveDraft.isPending}
+                    >
+                      <Save className="w-4 h-4 mr-1.5" />
+                      {draftId ? "Mettre à jour" : "Brouillon"}
+                    </Button>
+                    <Button
+                      variant="outline" size="sm"
+                      onClick={() => setScheduleOpen(true)}
+                    >
+                      <Clock className="w-4 h-4 mr-1.5" /> Programmer
+                    </Button>
+                    <Button
+                      onClick={handleSend}
+                      disabled={!gmailReady || sendCampaign.isPending || estimatedRecipients === 0}
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      {sendCampaign.isPending ? "Envoi en cours…" : "Envoyer maintenant"}
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -238,17 +364,45 @@ export default function Marketing() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-foreground truncate">{c.name}</span>
                       <Badge variant="outline" className="text-[10px]">{c.kind}</Badge>
-                      <Badge className={
-                        c.status === "sent" ? "bg-success/10 text-success border-0"
-                        : c.status === "failed" ? "bg-destructive/10 text-destructive border-0"
-                        : "bg-info/10 text-info border-0"
-                      }>{c.status}</Badge>
+                      <StatusBadge status={c.status} />
                     </div>
                     <div className="text-xs text-muted-foreground mt-1 truncate">{c.subject}</div>
+                    {c.status === "scheduled" && c.scheduled_at && (
+                      <div className="text-[11px] text-info mt-0.5">
+                        <Clock className="w-3 h-3 inline mr-1" />
+                        Programmée pour le {new Date(c.scheduled_at).toLocaleString("fr-FR")}
+                      </div>
+                    )}
+                    {c.status === "failed" && (
+                      <div className="text-[11px] text-destructive mt-0.5">
+                        {c.failed_count}/{c.recipients_count} échecs — vérifiez la connexion Gmail
+                      </div>
+                    )}
                   </div>
                   <div className="text-right text-xs">
-                    <div className="font-semibold">{c.sent_count}/{c.recipients_count}</div>
-                    <div className="text-muted-foreground">{c.sent_at ? new Date(c.sent_at).toLocaleDateString("fr-FR") : "—"}</div>
+                    {c.status === "draft" || c.status === "scheduled" ? (
+                      <Button
+                        size="sm" variant="ghost"
+                        onClick={() => {
+                          setDraftId(c.id);
+                          setName(c.name); setSubject(c.subject); setKind(c.kind);
+                          setBlocks(Array.isArray((c as any).body_blocks) && (c as any).body_blocks.length
+                            ? (c as any).body_blocks
+                            : [newBlock("heading"), newBlock("text")]);
+                          setPromoCode(c.promo_code ?? "");
+                          setSegmentType((c.segment as any)?.type ?? "all_opt_in");
+                          setSegmentValue((c.segment as any)?.value ?? "");
+                          toast({ title: "Brouillon chargé dans l'éditeur" });
+                        }}
+                      >
+                        Modifier
+                      </Button>
+                    ) : (
+                      <>
+                        <div className="font-semibold">{c.sent_count}/{c.recipients_count}</div>
+                        <div className="text-muted-foreground">{c.sent_at ? new Date(c.sent_at).toLocaleDateString("fr-FR") : "—"}</div>
+                      </>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -290,8 +444,98 @@ export default function Marketing() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* PREVIEW DIALOG */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Aperçu de l'email</DialogTitle>
+            <DialogDescription>
+              Rendu tel que vos clients le recevront. Les variables (ex. {"{{first_name}}"}) sont remplacées par des valeurs d'exemple.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-md border bg-muted/30 p-2">
+            <div className="text-xs text-muted-foreground px-2 py-1">
+              <strong>Sujet :</strong> {subject || <em>(sujet vide)</em>}
+            </div>
+            <iframe
+              title="Aperçu email"
+              srcDoc={previewHtml.replace(/\{\{first_name\}\}/g, "Camille")
+                .replace(/\{\{full_name\}\}/g, "Camille Martin")
+                .replace(/\{\{boutique_name\}\}/g, boutiques.find((b: any) => b.id === activeId)?.name ?? "Votre boutique")
+                .replace(/\{\{promo_code\}\}/g, promoCode || "EXEMPLE10")}
+              className="w-full h-[60vh] rounded bg-background"
+              sandbox=""
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* TEST SEND DIALOG */}
+      <Dialog open={testOpen} onOpenChange={setTestOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Envoyer un email de test</DialogTitle>
+            <DialogDescription>
+              Envoyez la campagne à une seule adresse pour vérifier le rendu. Aucune campagne n'est créée.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label className="text-xs">Adresse email du test</Label>
+            <Input
+              type="email" value={testEmail}
+              onChange={(e) => setTestEmail(e.target.value)}
+              placeholder="vous@exemple.com"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTestOpen(false)}>Annuler</Button>
+            <Button onClick={handleTestSend} disabled={testSend.isPending || !testEmail}>
+              <Beaker className="w-4 h-4 mr-1.5" />
+              {testSend.isPending ? "Envoi…" : "Envoyer le test"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* SCHEDULE DIALOG */}
+      <Dialog open={scheduleOpen} onOpenChange={setScheduleOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Programmer l'envoi</DialogTitle>
+            <DialogDescription>
+              La campagne apparaîtra comme "programmée" dans l'historique jusqu'à la date choisie.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label className="text-xs">Date et heure d'envoi</Label>
+            <Input
+              type="datetime-local" value={scheduleAt}
+              onChange={(e) => setScheduleAt(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setScheduleOpen(false)}>Annuler</Button>
+            <Button onClick={handleSchedule} disabled={saveDraft.isPending || !scheduleAt}>
+              <Clock className="w-4 h-4 mr-1.5" /> Programmer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const map: Record<string, { cls: string; label: string }> = {
+    draft: { cls: "bg-muted text-muted-foreground border-0", label: "Brouillon" },
+    scheduled: { cls: "bg-info/10 text-info border-0", label: "Programmée" },
+    sending: { cls: "bg-warning/10 text-warning border-0", label: "Envoi en cours" },
+    sent: { cls: "bg-success/10 text-success border-0", label: "Envoyée" },
+    failed: { cls: "bg-destructive/10 text-destructive border-0", label: "Échec" },
+  };
+  const s = map[status] ?? { cls: "bg-muted text-muted-foreground border-0", label: status };
+  return <Badge className={s.cls}>{s.label}</Badge>;
 }
 
 function Kpi({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
