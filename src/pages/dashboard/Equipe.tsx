@@ -20,14 +20,18 @@ import { useBoutiques } from "@/hooks/useBoutiques";
 import {
   useBoutiqueMembers,
   useRemoveMember,
+  useUpdateMemberRole,
   ROLE_LABELS,
+  ROLE_PERMISSIONS,
   PLAN_LIMITS,
   type TeamRole,
 } from "@/hooks/useBoutiqueMembers";
 import { InviteMemberDialog } from "@/components/dashboard/InviteMemberDialog";
 import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog";
 import { toast } from "@/hooks/use-toast";
-import { PageHeader, SectionCard, KpiTile, KpiTileSkeleton, EmptyState, KpiGrid } from "@/components/dashboard/shared";
+import { PageHeader, SectionCard, KpiTile, EmptyState, KpiGrid } from "@/components/dashboard/shared";
+import { Check, Info, Mail } from "lucide-react";
+import { useCurrentPlan } from "@/hooks/usePlans";
 
 const roleIcons: Record<TeamRole, React.ElementType> = {
   owner: Crown,
@@ -54,11 +58,12 @@ export default function Equipe() {
   const boutiqueId = selectedBoutique || boutiques[0]?.id || "";
   const { data: members = [], isLoading } = useBoutiqueMembers(boutiqueId);
   const removeMember = useRemoveMember();
+  const updateRole = useUpdateMemberRole();
   const [inviteOpen, setInviteOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; email: string } | null>(null);
 
-  // Simulated plan — replace with real subscription data later
-  const currentPlan = "starter";
+  const { tier } = useCurrentPlan();
+  const currentPlan = (tier as keyof typeof PLAN_LIMITS) || "starter";
   const memberLimit = PLAN_LIMITS[currentPlan] || 1;
   const activeCount = members.filter((m) => m.status !== "removed").length;
   const canInvite = activeCount < memberLimit;
@@ -83,7 +88,7 @@ export default function Equipe() {
       <PageHeader
         eyebrow="Collaboration"
         title="Équipe & rôles"
-        subtitle="Invitez vos collaborateurs et attribuez-leur des rôles précis pour chaque boutique."
+        subtitle="Invitez par email. Le membre rejoint l'équipe automatiquement à sa prochaine connexion."
         actions={
           boutiques.length > 1 ? (
             <Select value={boutiqueId} onValueChange={setSelectedBoutique}>
@@ -100,22 +105,39 @@ export default function Equipe() {
         }
       />
 
-      {/* KPI strip — essentiels uniquement */}
-      <KpiGrid cols={2}>
+      {/* KPI strip */}
+      <KpiGrid cols={3}>
         <KpiTile
           label="Membres actifs"
           value={activeNow}
           icon={<Users className="w-4 h-4" />}
-          hint={`${activeCount}/${memberLimit} sur le plan`}
+          hint={`${activeCount}/${memberLimit} sièges`}
+        />
+        <KpiTile
+          label="En attente"
+          value={pendingCount}
+          icon={<Mail className="w-4 h-4" />}
+          hint="Auto-join à la connexion"
         />
         <KpiTile
           label="Plan"
           value={<span className="capitalize">{currentPlan}</span>}
           tone="gold"
           icon={<Sparkles className="w-4 h-4" />}
-          hint={`Limite : ${memberLimit}`}
+          hint={`Limite : ${memberLimit} sièges`}
         />
       </KpiGrid>
+
+      {/* How auto-join works */}
+      <div className="mb-6 p-3 rounded-xl border border-info/30 bg-info/5 flex items-start gap-3">
+        <Info className="w-4 h-4 text-info shrink-0 mt-0.5" />
+        <div className="text-xs text-foreground/80">
+          <p className="font-medium text-foreground mb-0.5">Comment ça marche ?</p>
+          Lorsque vous invitez un email, le membre apparaît en <strong>En attente</strong>.
+          Dès qu'il se connecte (ou s'inscrit) avec cet email, il rejoint automatiquement votre boutique
+          avec le rôle que vous avez choisi — pas de code ni d'email à confirmer.
+        </div>
+      </div>
 
       {/* Action card */}
       <SectionCard
@@ -125,7 +147,7 @@ export default function Equipe() {
         description={
           canInvite
             ? "Choisissez un rôle adapté à ses responsabilités."
-            : "Passez au plan Growth (3) ou Premium (10) pour ajouter plus de membres."
+            : "Ajoutez des sièges via les add-ons ou passez au plan supérieur."
         }
         actions={
           canInvite ? (
@@ -134,8 +156,8 @@ export default function Equipe() {
             </Button>
           ) : (
             <Button size="sm" variant="outline" className="gap-1.5" asChild>
-              <Link to="/tarifs">
-                <ArrowUpCircle className="w-4 h-4" /> Mettre à niveau
+              <Link to="/dashboard/parametres?tab=abonnement">
+                <ArrowUpCircle className="w-4 h-4" /> Ajouter un siège
               </Link>
             </Button>
           )
@@ -167,7 +189,7 @@ export default function Equipe() {
           <EmptyState
             icon={<Users className="w-7 h-7" />}
             title="Aucun membre"
-            description="Invitez vos premiers collaborateurs pour partager la gestion de cette boutique."
+            description="Invitez par email — le membre rejoindra l'équipe à sa prochaine connexion."
             action={
               canInvite ? (
                 <Button size="sm" onClick={() => setInviteOpen(true)} className="gap-1.5">
@@ -192,25 +214,50 @@ export default function Equipe() {
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{member.invited_email}</p>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <Badge className={`${roleColors[member.role]} text-[10px] px-1.5 py-0`}>
-                            {ROLE_LABELS[member.role]}
-                          </Badge>
                           <Badge className={`${statusLabels[member.status]?.color} text-[10px] px-1.5 py-0`}>
                             {statusLabels[member.status]?.label}
                           </Badge>
                         </div>
                       </div>
                     </div>
-                    {member.role !== "owner" && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
-                        onClick={() => setDeleteTarget({ id: member.id, email: member.invited_email })}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {member.role === "owner" ? (
+                        <Badge className={`${roleColors.owner} text-[10px] px-2 py-0.5`}>
+                          <Crown className="w-3 h-3 mr-1" /> Propriétaire
+                        </Badge>
+                      ) : (
+                        <>
+                          <Select
+                            value={member.role}
+                            onValueChange={(v) => {
+                              updateRole.mutate(
+                                { memberId: member.id, role: v as TeamRole, boutiqueId },
+                                { onSuccess: () => toast({ title: "Rôle mis à jour" }) },
+                              );
+                            }}
+                          >
+                            <SelectTrigger className="h-8 w-[130px] text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {(["manager", "marketing", "support"] as TeamRole[]).map((r) => (
+                                <SelectItem key={r} value={r} className="text-xs">
+                                  {ROLE_LABELS[r]}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            onClick={() => setDeleteTarget({ id: member.id, email: member.invited_email })}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -218,32 +265,14 @@ export default function Equipe() {
         )}
       </SectionCard>
 
-      {/* Roles reference */}
+      {/* Permissions matrix */}
       <SectionCard
         className="mt-6"
-        title="Rôles disponibles"
-        description="Permissions granulaires par fonction métier."
+        title="Accès par rôle"
+        description="Ce que chaque rôle peut consulter dans l'espace dashboard."
         icon={<Shield className="w-4 h-4" />}
       >
-        <div className="grid gap-3 sm:grid-cols-2">
-          {(["owner", "manager", "marketing", "support"] as TeamRole[]).map((role) => {
-            const Icon = roleIcons[role];
-            return (
-              <div key={role} className="p-3 rounded-xl border border-border/40 bg-muted/20">
-                <div className="flex items-center gap-2 mb-1">
-                  <Icon className="w-4 h-4 text-secondary" />
-                  <span className="text-sm font-medium text-foreground">{ROLE_LABELS[role]}</span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {role === "owner" && "Accès total, gestion des abonnements et paiements"}
-                  {role === "manager" && "Gestion des produits, commandes et suivi d'activité"}
-                  {role === "marketing" && "Gestion du contenu, branding et stories"}
-                  {role === "support" && "Accès aux litiges, signalements et demandes clients"}
-                </p>
-              </div>
-            );
-          })}
-        </div>
+        <PermissionsMatrix />
       </SectionCard>
 
       <InviteMemberDialog open={inviteOpen} onOpenChange={setInviteOpen} boutiqueId={boutiqueId} />
@@ -256,5 +285,58 @@ export default function Equipe() {
         description={`Êtes-vous sûr de vouloir retirer ${deleteTarget?.email} de l'équipe ?`}
       />
     </DashboardLayout>
+  );
+}
+
+const PERMISSIONS_LABELS: Record<string, string> = {
+  dashboard: "Dashboard",
+  boutiques: "Boutiques",
+  produits: "Produits",
+  catalogue: "Catalogue",
+  commandes: "Commandes",
+  ventes: "Ventes",
+  paiements: "Paiements",
+  analytics: "Analytics",
+  equipe: "Équipe",
+  parametres: "Paramètres",
+};
+
+function PermissionsMatrix() {
+  const modules = Object.keys(PERMISSIONS_LABELS);
+  const roles: TeamRole[] = ["owner", "manager", "marketing", "support"];
+  return (
+    <div className="overflow-x-auto -mx-2 px-2">
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="text-muted-foreground">
+            <th className="text-left font-medium py-2 pr-3">Module</th>
+            {roles.map((r) => (
+              <th key={r} className="text-center font-medium py-2 px-2 capitalize">
+                {ROLE_LABELS[r]}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border/40">
+          {modules.map((m) => (
+            <tr key={m}>
+              <td className="py-2 pr-3 text-foreground font-medium">{PERMISSIONS_LABELS[m]}</td>
+              {roles.map((r) => {
+                const allowed = ROLE_PERMISSIONS[r]?.includes(m);
+                return (
+                  <td key={r} className="text-center py-2 px-2">
+                    {allowed ? (
+                      <Check className="w-3.5 h-3.5 text-success inline" />
+                    ) : (
+                      <span className="text-muted-foreground/40">—</span>
+                    )}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

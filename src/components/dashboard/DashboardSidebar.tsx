@@ -25,19 +25,22 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useAuth } from "@/contexts/AuthContext";
 import { Logo } from "@/components/Logo";
+import { useBoutiques } from "@/hooks/useBoutiques";
+import { useMemberBoutiques, ROLE_PERMISSIONS, ROLE_LABELS } from "@/hooks/useBoutiqueMembers";
+import { Badge } from "@/components/ui/badge";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Mes Boutiques", url: "/dashboard/boutiques", icon: Store },
-  { title: "Mes Produits", url: "/dashboard/produits", icon: Package },
-  { title: "Catalogue Produits", url: "/dashboard/produits-fournisseurs", icon: Truck },
-  { title: "Commandes", url: "/dashboard/commandes", icon: ShoppingCart },
-  { title: "Ventes", url: "/dashboard/ventes", icon: TrendingUp },
-  { title: "Paiements", url: "/dashboard/paiements", icon: CreditCard },
-  { title: "Analytics", url: "/dashboard/seo-analytics", icon: BarChart3 },
-  { title: "Équipe", url: "/dashboard/equipe", icon: Users },
-  { title: "Ventes privées", url: "/dashboard/ventes-privees", icon: Crown },
-];
+  { title: "Mes Boutiques", url: "/dashboard/boutiques", icon: Store, module: "boutiques" },
+  { title: "Mes Produits", url: "/dashboard/produits", icon: Package, module: "produits" },
+  { title: "Catalogue Produits", url: "/dashboard/produits-fournisseurs", icon: Truck, module: "catalogue" },
+  { title: "Commandes", url: "/dashboard/commandes", icon: ShoppingCart, module: "commandes" },
+  { title: "Ventes", url: "/dashboard/ventes", icon: TrendingUp, module: "ventes" },
+  { title: "Paiements", url: "/dashboard/paiements", icon: CreditCard, module: "paiements" },
+  { title: "Analytics", url: "/dashboard/seo-analytics", icon: BarChart3, module: "analytics" },
+  { title: "Équipe", url: "/dashboard/equipe", icon: Users, module: "equipe" },
+  { title: "Ventes privées", url: "/dashboard/ventes-privees", icon: Crown, module: "boutiques" },
+] as const;
 
 const bottomNavItems = [
   { title: "Paramètres", url: "/dashboard/parametres", icon: Settings },
@@ -54,6 +57,25 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
   const { isAdmin } = useAdminRole();
+  const { data: ownedBoutiques = [] } = useBoutiques();
+  const { data: memberBoutiques = [] } = useMemberBoutiques();
+
+  // "Member-only" mode: user owns no boutique but belongs to at least one.
+  const isMemberOnly = ownedBoutiques.length === 0 && memberBoutiques.length > 0;
+  const memberRoles = memberBoutiques.map((b) => b.role).filter(Boolean) as string[];
+  // Aggregate permissions across all member roles (union)
+  const allowedModules = new Set<string>();
+  memberRoles.forEach((r) => {
+    (ROLE_PERMISSIONS[r as keyof typeof ROLE_PERMISSIONS] || []).forEach((m) =>
+      allowedModules.add(m),
+    );
+  });
+
+  const visibleNav = isMemberOnly
+    ? mainNavItems.filter((item) => !("module" in item) || !item.module || allowedModules.has(item.module))
+    : mainNavItems;
+
+  const primaryRole = memberRoles[0];
 
   return (
     <>
@@ -72,16 +94,30 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             <p className="text-sm font-semibold text-foreground truncate">
               {profile?.full_name || profile?.business_name || "Utilisateur"}
             </p>
-            <p className="text-xs text-muted-foreground truncate">
-              {profile?.business_type || "Vendeur BIB"}
-            </p>
+            {isMemberOnly && primaryRole ? (
+              <Badge className="bg-info/15 text-info border-0 text-[10px] mt-0.5 gap-1">
+                <Users className="w-2.5 h-2.5" /> {ROLE_LABELS[primaryRole as keyof typeof ROLE_LABELS]}
+              </Badge>
+            ) : (
+              <p className="text-xs text-muted-foreground truncate">
+                {profile?.business_type || "Vendeur BIB"}
+              </p>
+            )}
           </div>
         </div>
+        {isMemberOnly && memberBoutiques.length > 0 && (
+          <p className="text-[10px] text-muted-foreground mt-2 truncate">
+            Membre de :{" "}
+            <span className="font-medium text-foreground">
+              {memberBoutiques.map((b: any) => b.name).join(", ")}
+            </span>
+          </p>
+        )}
       </div>
 
       {/* Main Navigation */}
       <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-        {mainNavItems.map((item) => (
+        {visibleNav.map((item) => (
           <NavLink
             key={item.title}
             to={item.url}
