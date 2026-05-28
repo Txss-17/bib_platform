@@ -10,6 +10,7 @@ import { User, Bell, Shield, CreditCard, Globe, Loader2, FileCheck, Trash2, Crow
 import { useAuth } from "@/contexts/AuthContext";
 import { BusinessDocuments } from "@/components/dashboard/BusinessDocuments";
 import { EmailMarketingSettings } from "@/components/dashboard/EmailMarketingSettings";
+import { BoutiqueAlertsSettings } from "@/components/dashboard/BoutiqueAlertsSettings";
 import { SubscriptionPanel } from "@/components/payments/SubscriptionPanel";
 import { useOpenBillingPortal, useUserSubscriptions } from "@/hooks/useSubscriptions";
 import { Plus, Minus, Store, Users } from "lucide-react";
@@ -172,6 +173,10 @@ export default function Parametres() {
             <TabsTrigger value="email" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
               <Mail className="w-3.5 h-3.5" />
               <span>Email</span>
+            </TabsTrigger>
+            <TabsTrigger value="alerts" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
+              <AlertTriangle className="w-3.5 h-3.5" />
+              <span>Alertes</span>
             </TabsTrigger>
             <TabsTrigger value="securite" className="flex items-center gap-1.5 text-xs sm:text-sm px-2.5 py-1.5">
               <Shield className="w-3.5 h-3.5" />
@@ -486,6 +491,11 @@ export default function Parametres() {
           {/* Email marketing */}
           <TabsContent value="email" className="mt-4">
             <EmailMarketingSettings />
+          </TabsContent>
+
+          {/* Alertes automatiques */}
+          <TabsContent value="alerts" className="mt-4">
+            <BoutiqueAlertsSettings />
           </TabsContent>
 
           {/* Sécurité */}
