@@ -69,6 +69,7 @@ export default function Ops() {
       accent="accent"
       menuItems={[
         { label: "Candidater", href: "/ops/apply", icon: "file" },
+        { label: "Tarifs", href: "#tarifs", icon: "file" },
         { label: "Nous écrire", href: "mailto:ops@brand-in-a-box.space", icon: "mail" },
       ]}
     >

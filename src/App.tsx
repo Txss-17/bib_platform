@@ -63,6 +63,7 @@ import Unsubscribe from "./pages/Unsubscribe";
 
 // Marketing/info pages
 import Carrieres from "./pages/Carrieres";
+import CarrieresPostes from "./pages/CarrieresPostes";
 import APropos from "./pages/APropos";
 import PackLegal from "./pages/PackLegal";
 import { MentionsLegales, CGU, Confidentialite, Cookies } from "./pages/LegalPages";
@@ -132,6 +133,9 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/carrieres" element={<Carrieres />} />
+            <Route path="/carrieres/postes" element={<CarrieresPostes />} />
+            <Route path="/careers" element={<Carrieres />} />
+            <Route path="/careers/jobs" element={<CarrieresPostes />} />
             <Route path="/a-propos" element={<APropos />} />
             <Route path="/pack-legal" element={<PackLegal />} />
             <Route path="/legal" element={<PackLegal />} />
