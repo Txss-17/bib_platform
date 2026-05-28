@@ -11,11 +11,12 @@ export interface MarketingCampaign {
   body_html: string;
   segment: { type: string; value?: string };
   promo_code: string | null;
-  status: "draft" | "sending" | "sent" | "failed";
+  status: "draft" | "scheduled" | "sending" | "sent" | "failed";
   recipients_count: number;
   sent_count: number;
   failed_count: number;
   sent_at: string | null;
+  scheduled_at: string | null;
   created_at: string;
 }
 
