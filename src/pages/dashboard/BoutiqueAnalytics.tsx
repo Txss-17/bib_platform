@@ -461,3 +461,23 @@ function CtrBadge({ value }: { value: number }) {
     "bg-muted text-muted-foreground";
   return <Badge variant="outline" className={`${tone} border-transparent`}>{value.toFixed(2)}%</Badge>;
 }
+
+function ExportMenu({ onExport }: { onExport: (fmt: "csv" | "pdf") => void }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button size="sm" variant="outline" className="gap-1">
+          <Download className="w-3.5 h-3.5" /> Exporter
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => onExport("csv")} className="gap-2">
+          <FileSpreadsheet className="w-4 h-4" /> CSV
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onExport("pdf")} className="gap-2">
+          <FileTextIcon className="w-4 h-4" /> PDF
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
