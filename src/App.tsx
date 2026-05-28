@@ -63,6 +63,7 @@ import Unsubscribe from "./pages/Unsubscribe";
 
 // Marketing/info pages
 import Carrieres from "./pages/Carrieres";
+import CarrieresPostes from "./pages/CarrieresPostes";
 import APropos from "./pages/APropos";
 import PackLegal from "./pages/PackLegal";
 import { MentionsLegales, CGU, Confidentialite, Cookies } from "./pages/LegalPages";
