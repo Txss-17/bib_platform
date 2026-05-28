@@ -2,7 +2,6 @@ import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import Footer from "@/components/Footer";
 import {
   DropdownMenu,
@@ -92,13 +91,12 @@ export function StandaloneLayout({ children, portal, accent = "primary", menuIte
                         ) : (
                           <Link to={item.href}>{content}</Link>
                         )}
-                      </DropdownMenuItem>
+                  </DropdownMenuItem>
                     );
                   })}
                   <DropdownMenuSeparator />
                 </>
               )}
-              <div className="px-2 py-1.5"><ThemeToggle /></div>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

@@ -7,7 +7,8 @@ createRoot(document.getElementById("root")!).render(
   <ThemeProvider
     attribute="class"
     defaultTheme="light"
-    enableSystem
+    forcedTheme="light"
+    enableSystem={false}
     storageKey="bib-theme"
     disableTransitionOnChange
   >
