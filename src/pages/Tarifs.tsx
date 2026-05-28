@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, Sparkles, Recycle, ShieldCheck, Truck, Award } from "lucide-react";
+import { Check, Sparkles, Recycle, ShieldCheck, Truck, Award, Umbrella, ArrowRight } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,25 @@ const GIFT_CARD_TIERS = [
   { value: 100, points: 1000, packs: 200, delay: "20 à 36 mois", probability: 12 },
 ];
 
+const FAQ = [
+  {
+    q: "Puis-je changer de plan à tout moment ?",
+    a: "Oui. L'upgrade est appliqué immédiatement, le downgrade au prochain cycle. Aucun engagement.",
+  },
+  {
+    q: "La commission s'applique-t-elle à la livraison ?",
+    a: "Non. La commission ne s'applique que sur le montant produit. La livraison EU est incluse dans le prix affiché à l'acheteur.",
+  },
+  {
+    q: "Les add-ons sont-ils obligatoires ?",
+    a: "Non, totalement optionnels. Vous pouvez les activer ou désactiver à la demande depuis votre tableau de bord.",
+  },
+  {
+    q: "Que se passe-t-il en cas de litige client ?",
+    a: "La plateforme prend la main sous 48h. Avec l'add-on Assurance, les remboursements sont couverts jusqu'au plafond de votre formule.",
+  },
+];
+
 export default function Tarifs() {
   const { data: plans, isLoading } = usePlans();
   const { user } = useAuth();
@@ -43,11 +62,11 @@ export default function Tarifs() {
 
   const sorted = (plans || []).slice().sort((a, b) => a.sort_order - b.sort_order);
 
-  function handleSubscribe(tier: string) {
+  function handleSubscribe(priceIdBase: string) {
     const cycle = annual ? "yearly" : "monthly";
-    const priceId = `${tier}_${cycle}`;
+    const priceId = `${priceIdBase}_${cycle}`;
     if (!user) {
-      navigate(`/signup?plan=${tier}&cycle=${annual ? "annual" : "monthly"}`);
+      navigate(`/signup?plan=${priceIdBase}&cycle=${annual ? "annual" : "monthly"}`);
       return;
     }
     setCheckoutPriceId(priceId);
@@ -133,16 +152,6 @@ export default function Tarifs() {
                       ))}
                     </ul>
 
-                    <div className="border-t border-border pt-4 mb-5 text-xs text-muted-foreground space-y-1">
-                      <p>
-                        <strong className="text-foreground">Assurance</strong> +{plan.insurance_addon_price_eur}€/mois ·
-                        plafond {plan.insurance_per_dispute_cap_eur}€ ·{" "}
-                        {plan.insurance_max_disputes_per_month
-                          ? `${plan.insurance_max_disputes_per_month}/mois`
-                          : "illimité"}
-                      </p>
-                    </div>
-
                     <Button
                       variant={isFeatured ? "coral" : "outline"}
                       className="w-full"
@@ -162,8 +171,98 @@ export default function Tarifs() {
           </p>
         </section>
 
+        {/* Add-ons header */}
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-24 max-w-5xl text-center">
+          <Badge variant="secondary" className="mb-3">Add-ons optionnels</Badge>
+          <h2 className="font-display text-3xl sm:text-4xl font-bold text-bib-marine">
+            Renforcez votre boutique à la carte
+          </h2>
+          <p className="text-muted-foreground text-sm sm:text-base mt-3 max-w-2xl mx-auto">
+            Indépendants de votre plan. Activables et désactivables à tout moment depuis votre tableau de bord.
+          </p>
+        </section>
+
+        {/* Add-on Assurance */}
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-10 max-w-5xl">
+          <div className="rounded-2xl border border-info/30 bg-info/5 p-6 sm:p-8">
+            <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
+              <div className="h-12 w-12 rounded-full bg-info/15 flex items-center justify-center shrink-0">
+                <Umbrella className="h-6 w-6 text-info" />
+              </div>
+              <div className="flex-1">
+                <Badge className="bg-info/15 text-info hover:bg-info/15 mb-2">Add-on · à partir de 25€/mois</Badge>
+                <h3 className="font-display text-2xl font-bold text-bib-marine">Assurance vendeur</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Couvre les litiges clients (produit endommagé, perdu, retour contesté) jusqu'au plafond choisi.
+                  Indépendant de votre plan : choisissez la formule qui vous correspond.
+                </p>
+              </div>
+            </div>
+
+            {isLoading ? (
+              <div className="text-center text-muted-foreground py-8">Chargement…</div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-3">
+                {sorted.map((plan) => {
+                  const monthly = plan.insurance_addon_price_eur;
+                  const yearly = Math.round(monthly * 0.8);
+                  const price = annual ? yearly : monthly;
+                  return (
+                    <div
+                      key={plan.id}
+                      className="rounded-xl border border-border bg-card p-4 flex flex-col"
+                    >
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
+                        Formule {plan.name}
+                      </p>
+                      <div className="mt-2 mb-3">
+                        <span className="text-2xl font-bold text-bib-marine">{price}€</span>
+                        <span className="text-muted-foreground text-sm">/mois</span>
+                        {annual && (
+                          <span className="ml-2 text-[10px] text-success font-medium">−20%</span>
+                        )}
+                      </div>
+                      <ul className="space-y-2 text-sm flex-1 mb-4">
+                        <li className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-success shrink-0 mt-0.5" />
+                          <span>
+                            Plafond <strong>{plan.insurance_per_dispute_cap_eur}€</strong> / litige
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-success shrink-0 mt-0.5" />
+                          <span>
+                            {plan.insurance_max_disputes_per_month
+                              ? `${plan.insurance_max_disputes_per_month} litiges couverts / mois`
+                              : "Litiges illimités"}
+                          </span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <Check className="h-4 w-4 text-success shrink-0 mt-0.5" />
+                          <span>Médiation prioritaire 24h</span>
+                        </li>
+                      </ul>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => handleSubscribe(`insurance_${plan.tier}`)}
+                      >
+                        Activer cette formule
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground mt-4">
+              💡 Aucune liaison avec votre plan : un marchand Starter peut souscrire l'assurance Pro, et inversement.
+            </p>
+          </div>
+        </section>
+
         {/* Add-on Boutique Verte */}
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-20 max-w-5xl">
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-8 max-w-5xl">
           <div className="rounded-2xl border border-success/30 bg-success/5 p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
               <div className="h-12 w-12 rounded-full bg-success/15 flex items-center justify-center shrink-0">
@@ -171,7 +270,7 @@ export default function Tarifs() {
               </div>
               <div className="flex-1">
                 <Badge className="bg-success/15 text-success hover:bg-success/15 mb-2">Add-on · 19,99€/mois</Badge>
-                <h2 className="font-display text-2xl font-bold text-bib-marine">Boutique Verte</h2>
+                <h3 className="font-display text-2xl font-bold text-bib-marine">Boutique Verte</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   Recyclage emballages, marketing sur bornes, programme cartes cadeaux et badge RSE certifié.
                 </p>
@@ -216,6 +315,27 @@ export default function Tarifs() {
             <p className="text-xs text-muted-foreground mt-3">
               1 emballage = 5 points · 1 point = 0,10€ · Points valables 24 mois sur toutes les boutiques équipées.
             </p>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-20 max-w-3xl">
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-bib-marine text-center mb-8">
+            Questions fréquentes
+          </h2>
+          <div className="space-y-3">
+            {FAQ.map((item) => (
+              <details
+                key={item.q}
+                className="group rounded-xl border border-border bg-card px-4 py-3 [&_summary::-webkit-details-marker]:hidden"
+              >
+                <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-foreground">
+                  {item.q}
+                  <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-90" />
+                </summary>
+                <p className="text-sm text-muted-foreground mt-3">{item.a}</p>
+              </details>
+            ))}
           </div>
         </section>
 
