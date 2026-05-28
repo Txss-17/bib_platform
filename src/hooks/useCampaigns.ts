@@ -46,6 +46,7 @@ export function useSendCampaign() {
       kind: "newsletter" | "promo" | "custom";
       subject: string;
       body_html: string;
+      body_blocks?: unknown;
       segment: { type: string; value?: string };
       promo_code?: string;
     }) => {

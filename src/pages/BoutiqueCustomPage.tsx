@@ -1,5 +1,7 @@
 import { useParams } from "react-router-dom";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { trackStorefrontEvent } from "@/lib/storefrontTracking";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { CartProvider } from "@/contexts/CartContext";
@@ -33,6 +35,16 @@ export default function BoutiqueCustomPage() {
   });
 
   const { data: page, isLoading: pLoading } = usePublicBoutiquePage(boutique?.id, pageSlug);
+
+  // Per-page tracking (used by analytics: page_analytics_summary).
+  useEffect(() => {
+    if (boutique?.id && page?.id) {
+      trackStorefrontEvent(boutique.id, "boutique_view", {
+        metadata: { page_id: page.id, page_slug: page.slug },
+      });
+    }
+  }, [boutique?.id, page?.id, page?.slug]);
+
   const { data: brandDna } = useBrandDNA(boutique?.id);
   const { data: scenes = [] } = useBoutiqueScenes(boutique?.id, page?.id ?? null);
 
