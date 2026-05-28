@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { BusinessDocuments } from "@/components/dashboard/BusinessDocuments";
 import { SubscriptionPanel } from "@/components/payments/SubscriptionPanel";
 import { useOpenBillingPortal, useUserSubscriptions } from "@/hooks/useSubscriptions";
+import { Plus, Minus, Store, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -319,7 +320,10 @@ export default function Parametres() {
 
           {/* Abonnement */}
           <TabsContent value="abonnement" className="mt-4">
-            <SubscriptionPanel />
+            <div className="space-y-4">
+              <SubscriptionPanel />
+              <AddOnsCompact onOpenPortal={() => portal.mutate()} portalPending={portal.isPending} hasSub={subs.length > 0} />
+            </div>
           </TabsContent>
 
           {/* SEO multilingue */}
@@ -609,5 +613,127 @@ export default function Parametres() {
         </Tabs>
       </div>
     </DashboardLayout>
+  );
+}
+
+/** Compact add-on row used inside the Abonnement tab. Keeps the page short. */
+function AddOnsCompact({
+  onOpenPortal,
+  portalPending,
+  hasSub,
+}: {
+  onOpenPortal: () => void;
+  portalPending: boolean;
+  hasSub: boolean;
+}) {
+  const [extraBoutiques, setExtraBoutiques] = useState(0);
+  const [extraSeats, setExtraSeats] = useState(0);
+  const BOUTIQUE_PRICE = 9;
+  const SEAT_PRICE = 6;
+
+  const Row = ({
+    icon,
+    title,
+    desc,
+    value,
+    setValue,
+    unitPrice,
+  }: {
+    icon: React.ReactNode;
+    title: string;
+    desc: string;
+    value: number;
+    setValue: (v: number) => void;
+    unitPrice: number;
+  }) => (
+    <div className="flex items-center justify-between gap-3 py-2.5">
+      <div className="flex items-center gap-2.5 min-w-0">
+        <div className="w-8 h-8 rounded-lg bg-secondary/15 text-secondary flex items-center justify-center shrink-0">
+          {icon}
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-foreground truncate">{title}</p>
+          <p className="text-[11px] text-muted-foreground truncate">{desc}</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1 rounded-lg border border-border/60 p-0.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => setValue(Math.max(0, value - 1))}
+            aria-label="Diminuer"
+          >
+            <Minus className="w-3 h-3" />
+          </Button>
+          <span className="text-sm font-semibold w-5 text-center tabular-nums">{value}</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => setValue(value + 1)}
+            aria-label="Augmenter"
+          >
+            <Plus className="w-3 h-3" />
+          </Button>
+        </div>
+        <p className="text-xs font-semibold text-foreground tabular-nums w-14 text-right">
+          +{value * unitPrice}€
+        </p>
+      </div>
+    </div>
+  );
+
+  const totalDelta = extraBoutiques * BOUTIQUE_PRICE + extraSeats * SEAT_PRICE;
+
+  return (
+    <SectionCard
+      title="Add-ons supplémentaires"
+      description="Ajoutez des sièges ou des boutiques au-delà des limites de votre plan"
+      icon={<Sparkles className="w-4 h-4" />}
+    >
+      <div className="divide-y divide-border/40">
+        <Row
+          icon={<Store className="w-4 h-4" />}
+          title="Boutique supplémentaire"
+          desc={`${BOUTIQUE_PRICE}€ / mois par boutique`}
+          value={extraBoutiques}
+          setValue={setExtraBoutiques}
+          unitPrice={BOUTIQUE_PRICE}
+        />
+        <Row
+          icon={<Users className="w-4 h-4" />}
+          title="Membre d'équipe supplémentaire"
+          desc={`${SEAT_PRICE}€ / mois par siège`}
+          value={extraSeats}
+          setValue={setExtraSeats}
+          unitPrice={SEAT_PRICE}
+        />
+      </div>
+      {totalDelta > 0 && (
+        <div className="mt-3 flex items-center justify-between gap-3 p-3 rounded-lg bg-secondary/5 border border-secondary/20">
+          <div className="min-w-0">
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wide">
+              Supplément mensuel
+            </p>
+            <p className="text-lg font-bold text-foreground tabular-nums">+{totalDelta}€/mois</p>
+          </div>
+          <Button
+            size="sm"
+            variant="coral"
+            onClick={onOpenPortal}
+            disabled={portalPending || !hasSub}
+            title={!hasSub ? "Activez d'abord un plan" : undefined}
+          >
+            {portalPending && <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />}
+            Confirmer via Stripe
+          </Button>
+        </div>
+      )}
+      <p className="text-[10px] text-muted-foreground mt-2">
+        Facturé au prorata sur votre prochaine échéance. L'assurance litige se gère depuis la carte ci-dessus.
+      </p>
+    </SectionCard>
   );
 }
