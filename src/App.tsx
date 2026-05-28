@@ -85,6 +85,8 @@ const App = () => (
                 if (host.startsWith("pack-legal.")) return <PackLegal />;
                 if (host.startsWith("carrieres.")) return <Carrieres />;
                 if (host.startsWith("tarifs.")) return <Tarifs />;
+                if (host.startsWith("logistics.")) return <Ops />;
+                if (host.startsWith("logistique.")) return <Ops />;
                 return <Index />;
               })()
             } />
