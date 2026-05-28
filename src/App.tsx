@@ -78,7 +78,11 @@ const App = () => (
         <LanguageProvider>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={
+              typeof window !== "undefined" && window.location.hostname.startsWith("pack-legal.")
+                ? <PackLegal />
+                : <Index />
+            } />
             <Route path="/vendre" element={<Vendre />} />
             <Route path="/landing" element={<Index />} />
             <Route path="/tarifs" element={<Tarifs />} />
