@@ -59,12 +59,6 @@ export default function Suppliers() {
       portal="Suppliers"
       accent="primary"
       menuItems={[
-        { label: "Fonctionnement", href: "#how", icon: "workflow" },
-        { label: "Critères", href: "#criteres", icon: "shield" },
-        { label: "Contraintes", href: "#contraintes", icon: "shield" },
-        { label: "Étapes", href: "#etapes", icon: "clipboard" },
-        { label: "Tarifs", href: "#tarifs", icon: "sparkles" },
-        { label: "FAQ", href: "#faq", icon: "sparkles" },
         { label: "Candidater", href: "/suppliers/apply", icon: "file" },
         { label: "Nous écrire", href: "mailto:suppliers@brand-in-a-box.space", icon: "mail" },
       ]}
