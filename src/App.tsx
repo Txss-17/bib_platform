@@ -84,6 +84,7 @@ const App = () => (
                 const host = window.location.hostname;
                 if (host.startsWith("pack-legal.")) return <PackLegal />;
                 if (host.startsWith("carrieres.")) return <Carrieres />;
+                if (host.startsWith("tarifs.")) return <Tarifs />;
                 return <Index />;
               })()
             } />
