@@ -483,6 +483,11 @@ export default function Parametres() {
             </SectionCard>
           </TabsContent>
 
+          {/* Email marketing */}
+          <TabsContent value="email" className="mt-4">
+            <EmailMarketingSettings />
+          </TabsContent>
+
           {/* Sécurité */}
           <TabsContent value="securite" className="mt-4">
             <div className="space-y-4">
