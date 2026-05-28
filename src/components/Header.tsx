@@ -6,6 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Logo } from "@/components/Logo";
 import { BoutiqueSearchBar } from "@/components/search/BoutiqueSearchBar";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -38,6 +39,7 @@ const Header = () => {
           <div className="hidden lg:flex items-center gap-3">
             <BoutiqueSearchBar compact className="w-64" placeholder="Boutique ou produit…" />
             <LanguageSwitcher />
+            <ThemeToggle />
             <Button variant="ghost" size="sm" asChild>
               <Link to="/login">{t("nav.signin")}</Link>
             </Button>
@@ -69,6 +71,7 @@ const Header = () => {
               <Link to="#trust" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium py-2">{t("nav.trust")}</Link>
               <div className="flex flex-col gap-2 pt-4 border-t border-border/50">
                 <LanguageSwitcher />
+                <ThemeToggle />
                 <Button variant="ghost" size="sm" className="justify-start" asChild>
                   <Link to="/login">{t("nav.signin")}</Link>
                 </Button>
