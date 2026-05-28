@@ -7,7 +7,6 @@ import { useEmailSettings } from "@/hooks/useBoutiqueEmail";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
@@ -21,6 +20,8 @@ import {
   Tag, Newspaper, MessageSquare, AlertTriangle, CheckCircle2,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { BlockComposer } from "@/components/marketing/BlockComposer";
+import { renderBlocksToHtml, blocksToPlainText, newBlock, type MarketingBlock } from "@/lib/marketingBlocks";
 
 type Kind = "newsletter" | "promo" | "custom";
 
@@ -42,7 +43,11 @@ export default function Marketing() {
   const [kind, setKind] = useState<Kind>("newsletter");
   const [name, setName] = useState("");
   const [subject, setSubject] = useState("");
-  const [bodyHtml, setBodyHtml] = useState("");
+  const [blocks, setBlocks] = useState<MarketingBlock[]>(() => [
+    newBlock("heading"),
+    newBlock("text"),
+    newBlock("button"),
+  ]);
   const [segmentType, setSegmentType] = useState("all_opt_in");
   const [segmentValue, setSegmentValue] = useState("");
   const [promoCode, setPromoCode] = useState("");
@@ -56,15 +61,19 @@ export default function Marketing() {
   }, [customers, segmentType, segmentValue, optInCount]);
 
   const handleSend = async () => {
-    if (!activeId || !subject || !bodyHtml) {
-      toast({ title: "Champs manquants", description: "Sujet et contenu requis", variant: "destructive" });
+    if (!activeId || !subject || blocks.length === 0) {
+      toast({ title: "Champs manquants", description: "Sujet et au moins un bloc requis", variant: "destructive" });
       return;
     }
     try {
+      const body_html = renderBlocksToHtml(blocks, {
+        boutiqueName: boutiques.find((b: any) => b.id === activeId)?.name,
+      });
       const res = await sendCampaign.mutateAsync({
         boutique_id: activeId,
         name: name || subject,
-        kind, subject, body_html: bodyHtml,
+        kind, subject, body_html,
+        body_blocks: blocks,
         segment: { type: segmentType, value: segmentValue || undefined },
         promo_code: promoCode || undefined,
       });
@@ -72,7 +81,8 @@ export default function Marketing() {
         title: "Campagne envoyée",
         description: `${(res as any)?.sent ?? 0} envoyés / ${(res as any)?.recipients ?? 0} destinataires`,
       });
-      setSubject(""); setBodyHtml(""); setName(""); setPromoCode("");
+      setSubject(""); setName(""); setPromoCode("");
+      setBlocks([newBlock("heading"), newBlock("text"), newBlock("button")]);
     } catch (e: any) {
       toast({ title: "Erreur d'envoi", description: e.message, variant: "destructive" });
     }
@@ -168,18 +178,14 @@ export default function Marketing() {
                 )}
 
                 <div>
-                  <Label className="text-xs">Contenu HTML *</Label>
-                  <Textarea
-                    value={bodyHtml}
-                    onChange={(e) => setBodyHtml(e.target.value)}
-                    rows={10}
-                    placeholder={`<h2>Bonjour {{first_name}},</h2>\n<p>Voici nos nouveautés...</p>${kind === "promo" ? `\n<p>Votre code : <strong>{{promo_code}}</strong></p>` : ""}`}
-                    className="font-mono text-xs"
+                  <Label className="text-xs mb-2 block">Contenu de l'email</Label>
+                  <BlockComposer
+                    boutiqueId={activeId}
+                    blocks={blocks}
+                    onChange={setBlocks}
+                    promoCode={promoCode}
+                    boutiqueName={boutiques.find((b: any) => b.id === activeId)?.name}
                   />
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    Variables disponibles : <code>{"{{first_name}}"}</code>, <code>{"{{full_name}}"}</code>, <code>{"{{boutique_name}}"}</code>
-                    {kind === "promo" && <>, <code>{"{{promo_code}}"}</code></>}
-                  </p>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-3">
