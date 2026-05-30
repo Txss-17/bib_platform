@@ -29,9 +29,9 @@ Format **A6 portrait 10×15 cm**, fond blanc, encre noire + accent or BIB.
 │  └──────────────────────┴──────────┴────┘  │
 │                                            │
 │  N° DE COMMANDE                            │
-│  LKS26-XXXXXX                              │
+│  BIB26-XXXXXX                              │
 │  ┃┃┃┃ ┃┃ ┃┃┃ ┃┃┃┃ ┃┃ ┃   (Code128)         │
-│  LKS26XXXXXX                               │
+│  BIB26XXXXXX                               │
 │                                            │
 │  ┌────┐  Suivez votre colis                │
 │  │ QR │  via le système                    │
@@ -50,7 +50,7 @@ Variante d'impression :
 | Expéditeur (nom/adresse) | `boutiques.legal_business_name`, `legal_address` |
 | Destinataire | `orders.customer_name` + adresse stockée dans `orders.metadata` (déjà saisie au checkout) |
 | Pays de livraison | dérivé adresse (fallback `orders.market`) |
-| N° commande | `orders.order_number` (format `LKS26-XXXXXX`) |
+| N° commande | `orders.order_number` (format `BIB26-XXXXXX`) |
 | SKU / Référence / Qté | jointure `products` → `supplier_products` |
 | Date d'expédition | date du jour à l'impression |
 | Code-barres | Code128 du `order_number` sans tiret |

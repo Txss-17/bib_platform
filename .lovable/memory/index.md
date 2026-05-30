@@ -6,7 +6,7 @@
 - **Stripe**: centralisé côté BIB (PAS Stripe Connect). BIB encaisse les ventes et reverse les vendeurs via table `payments`. Le client final n'a qu'UN compte sur le marketplace.
 - **Stack**: Supabase (Auth, RLS, `boutique-media`), Vercel. Custom React Query hooks.
 - **Recyclage**: 1 point = 10 centimes crédités sur la carte cadeau de la boutique d'origine (trigger `credit_gift_card_on_scan`).
-- **Data & Security**: Order format LKS26-XXXXXX. Anonymous inserts on 'orders' for checkout. Explicit confirm on deletions.
+- **Data & Security**: Order format BIB26-XXXXXX. Anonymous inserts on 'orders' for checkout. Explicit confirm on deletions.
 - **UX/UI**: Mobile-first premium (marine + gold + ivory). Trust-first, KPIs readable <5s. Bilingual (FR default, EN). Legacy Tailwind namespace `linksy-*` is repointed to BIB palette — do NOT mass-rename.
 
 ## Memories
@@ -17,7 +17,7 @@
 - [UX Principles](mem://style/ux-principles) — Trust-first, KPI readability < 5s, localized errors
 - [Auth Requirements](mem://auth/requirements) — 18+ only, individual vs business profiles
 - [Architecture Patterns](mem://tech/architecture-patterns) — Custom React Query hooks, storefront context in preview
-- [Data Conventions](mem://tech/data-conventions) — Order IDs (LKS26-XXXXXX), geographic metadata
+- [Data Conventions](mem://tech/data-conventions) — Order IDs (BIB26-XXXXXX), geographic metadata
 - [Storage](mem://tech/storage) — `boutique-media` bucket for user uploads
 - [Security Policies](mem://auth/security-policies) — RLS anonymous inserts for public checkout
 - [Language Strategy](mem://project/language-strategy) — FR/EN bilingual via LanguageContext with local persistence
