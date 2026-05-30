@@ -548,3 +548,113 @@ function EventList({
     </ul>
   );
 }
+
+function MiniStat({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
+      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="text-xl font-display font-semibold mt-1">{value}</p>
+    </div>
+  );
+}
+
+function ProductionConfirmForm({
+  busy,
+  onSubmit,
+}: {
+  busy: boolean;
+  onSubmit: (payload: Record<string, unknown>, title: string) => Promise<void>;
+}) {
+  const [product, setProduct] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [batch, setBatch] = useState("");
+  const [note, setNote] = useState("");
+
+  async function submit() {
+    if (!product.trim() || !quantity) {
+      toast({ title: "Champs manquants", description: "Produit et quantité requis." });
+      return;
+    }
+    const title = `Production confirmée : ${product.trim()} × ${quantity}`;
+    await onSubmit(
+      { product: product.trim(), quantity: Number(quantity), batch_number: batch.trim() || null, note: note.trim() || null },
+      title,
+    );
+    setProduct(""); setQuantity(""); setBatch(""); setNote("");
+  }
+
+  return (
+    <div className="grid sm:grid-cols-2 gap-3">
+      <div><Label>Produit *</Label><Input value={product} onChange={(e) => setProduct(e.target.value)} /></div>
+      <div><Label>Quantité produite *</Label><Input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} /></div>
+      <div><Label>N° de lot</Label><Input value={batch} onChange={(e) => setBatch(e.target.value)} placeholder="optionnel" /></div>
+      <div><Label>Note logistique</Label><Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="optionnel" /></div>
+      <div className="sm:col-span-2">
+        <Button onClick={submit} disabled={busy}>
+          {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+          Confirmer la production
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function printShippingLabels(events: PortalEvent[], supplier: string) {
+  const win = window.open("", "_blank", "width=800,height=900");
+  if (!win) return;
+  const labels = events
+    .map((e) => {
+      const p = e.payload as Record<string, unknown>;
+      return `
+        <div class="label">
+          <div class="hd">BRAND-IN-A-BOX · LOGISTIQUE</div>
+          <h2>${escapeHtml(e.title)}</h2>
+          <p><b>Fournisseur :</b> ${escapeHtml(supplier)}</p>
+          <p><b>Référence :</b> ${escapeHtml(e.id.slice(0, 8).toUpperCase())}</p>
+          <p><b>Qté :</b> ${escapeHtml(String(p?.quantity ?? "—"))}</p>
+          <p><b>Date :</b> ${new Date(e.created_at).toLocaleDateString("fr-FR")}</p>
+          <p class="addr">À expédier au partenaire logistique désigné par Brand-In-A-Box.</p>
+        </div>`;
+    })
+    .join("");
+  win.document.write(`
+    <html><head><title>Étiquettes</title><style>
+      body{font-family:Inter,system-ui,sans-serif;margin:0;padding:16px;background:#fff;color:#000;}
+      .label{border:2px dashed #000;padding:18px;margin-bottom:18px;page-break-after:always;}
+      .hd{font-size:11px;letter-spacing:.12em;font-weight:600;margin-bottom:6px;}
+      h2{margin:6px 0 12px;font-size:18px;}
+      p{margin:4px 0;font-size:13px;}
+      .addr{margin-top:14px;font-style:italic;font-size:12px;}
+      @media print { .label{page-break-after:always;} }
+    </style></head><body>${labels}<script>window.print()</script></body></html>
+  `);
+  win.document.close();
+}
+
+function printGenericLabel(supplier: string) {
+  const win = window.open("", "_blank", "width=800,height=900");
+  if (!win) return;
+  win.document.write(`
+    <html><head><title>Étiquette vierge</title><style>
+      body{font-family:Inter,system-ui,sans-serif;margin:0;padding:32px;}
+      .label{border:2px dashed #000;padding:24px;}
+      h2{margin:0 0 12px;} p{margin:6px 0;}
+    </style></head><body>
+      <div class="label">
+        <div style="font-size:11px;letter-spacing:.12em;font-weight:600;">BRAND-IN-A-BOX · LOGISTIQUE</div>
+        <h2>Étiquette d'expédition</h2>
+        <p><b>Fournisseur :</b> ${escapeHtml(supplier)}</p>
+        <p><b>Date :</b> ${new Date().toLocaleDateString("fr-FR")}</p>
+        <p>Produit : ____________________</p>
+        <p>Quantité : ____________________</p>
+        <p>N° lot : ____________________</p>
+      </div>
+      <script>window.print()</script>
+    </body></html>
+  `);
+  win.document.close();
+}
+
+function escapeHtml(s: string) {
+  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string));
+}
