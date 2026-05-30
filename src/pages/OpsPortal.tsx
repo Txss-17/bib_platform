@@ -549,6 +549,25 @@ export default function OpsPortal() {
                 <p className="text-xs text-muted-foreground mb-3">
                   Imprimer les étiquettes des commandes à expédier et l'historique des changements de statut.
                 </p>
+                <div className="flex items-center gap-2 mb-3 text-xs">
+                  <span className="text-muted-foreground">Format :</span>
+                  <div className="inline-flex rounded-md border border-border overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setLabelFormat("a6")}
+                      className={`px-2.5 py-1 ${labelFormat === "a6" ? "bg-foreground text-background" : "bg-background text-foreground"}`}
+                    >
+                      A6 thermique (10×15)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLabelFormat("a4-sheet")}
+                      className={`px-2.5 py-1 ${labelFormat === "a4-sheet" ? "bg-foreground text-background" : "bg-background text-foreground"}`}
+                    >
+                      A4 × 4
+                    </button>
+                  </div>
+                </div>
                 <div className="flex flex-wrap gap-2">
                   <Button size="sm" variant="outline" onClick={printAllShippingLabels}>
                     <Printer className="w-3.5 h-3.5 mr-1.5" /> Étiquettes ({orders.length})
