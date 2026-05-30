@@ -15,6 +15,7 @@ import { toast } from "@/hooks/use-toast";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPortal, type PortalEvent } from "@/hooks/usePartnerPortal";
+import { fetchLabelData, fetchLabelsData, printLabels } from "@/lib/shippingLabel";
 import {
   ArrowLeft,
   Boxes,
@@ -238,33 +239,26 @@ export default function OpsPortal() {
     w.document.close();
   }
 
-  function printShippingLabel(order: BasicOrder) {
-    openPrintWindow(`Étiquette ${order.order_number}`,
-      `<div class="label">
-        <h2>Étiquette logistique BIB</h2>
-        <p><b>N° commande :</b> ${escapeHtml(order.order_number)}</p>
-        <p><b>Destinataire :</b> ${escapeHtml(order.customer_name ?? "—")}</p>
-        <p><b>Montant :</b> ${Number(order.amount).toFixed(2)} €</p>
-        <p><b>Statut :</b> ${escapeHtml(order.logistics_status)}</p>
-        <p class="meta">Partenaire : ${escapeHtml(submission.company ?? submission.contact_email ?? "")}</p>
-        <p class="meta">Imprimé le ${new Date().toLocaleString("fr-FR")}</p>
-      </div>`);
+  const [labelFormat, setLabelFormat] = useState<"a6" | "a4-sheet">("a6");
+
+  async function printShippingLabel(order: BasicOrder) {
+    const data = await fetchLabelData(order.id);
+    if (!data) {
+      toast({ title: "Impossible de charger les données d'étiquette", variant: "destructive" });
+      return;
+    }
+    const res = await printLabels([data], labelFormat);
+    if (!res.ok) toast({ title: res.error ?? "Erreur d'impression", variant: "destructive" });
   }
 
-  function printAllShippingLabels() {
+  async function printAllShippingLabels() {
     if (orders.length === 0) {
       toast({ title: "Aucune commande à imprimer" });
       return;
     }
-    const body = orders.map((o) =>
-      `<div class="label">
-        <h2>${escapeHtml(o.order_number)}</h2>
-        <p><b>Destinataire :</b> ${escapeHtml(o.customer_name ?? "—")}</p>
-        <p><b>Montant :</b> ${Number(o.amount).toFixed(2)} €</p>
-        <p><b>Statut :</b> ${escapeHtml(o.logistics_status)}</p>
-        <p class="meta">${escapeHtml(submission.company ?? submission.contact_email ?? "")} · ${new Date(o.created_at).toLocaleString("fr-FR")}</p>
-      </div>`).join("");
-    openPrintWindow("Étiquettes logistiques", body);
+    const items = await fetchLabelsData(orders.map((o) => o.id));
+    const res = await printLabels(items, labelFormat);
+    if (!res.ok) toast({ title: res.error ?? "Erreur d'impression", variant: "destructive" });
   }
 
   function printStatusUpdates() {
