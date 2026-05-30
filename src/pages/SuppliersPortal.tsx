@@ -279,6 +279,152 @@ export default function SuppliersPortal() {
             </Card>
           </TabsContent>
 
+          {/* OPERATIONS */}
+          <TabsContent value="operations" className="space-y-4 mt-4">
+            {/* Confirmer production */}
+            <Card className="p-5">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Factory className="w-4 h-4 text-primary" /> Confirmer une production
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Indiquez qu'un lot est produit et prêt à être expédié au partenaire logistique.
+              </p>
+              <ProductionConfirmForm
+                busy={busy}
+                onSubmit={async (payload, title) => {
+                  setBusy(true);
+                  try {
+                    await callAction({ action: "create_event", kind: "delivery_update", title, payload });
+                    toast({ title: "Production confirmée", description: title });
+                  } catch (e) {
+                    toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" });
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              />
+              <div className="mt-4">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground mb-2">
+                  Historique ({totalProductionConfirmed} confirmées)
+                </p>
+                <EventList events={productionEvents} emptyLabel="Aucune production confirmée." />
+              </div>
+            </Card>
+
+            {/* Imprimer étiquettes */}
+            <Card className="p-5">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Printer className="w-4 h-4 text-primary" /> Imprimer des étiquettes
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Génère une planche d'étiquettes d'expédition pour les MOQ à livrer.
+                {moqRequests.filter((e) => e.status !== "resolved").length === 0
+                  ? " Aucune demande MOQ en attente pour le moment."
+                  : ""}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    printShippingLabels(
+                      moqRequests.filter((e) => e.status !== "resolved"),
+                      submission.company ?? submission.contact_email,
+                    )
+                  }
+                  disabled={moqRequests.filter((e) => e.status !== "resolved").length === 0}
+                >
+                  <Printer className="w-4 h-4 mr-2" /> Étiquettes MOQ en attente
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => printGenericLabel(submission.company ?? submission.contact_email)}
+                >
+                  Étiquette vierge
+                </Button>
+              </div>
+            </Card>
+
+            {/* Suivre audit */}
+            <Card className="p-5">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-primary" /> Suivi des audits
+              </h3>
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <MiniStat label="Ouverts" value={openAudits} />
+                <MiniStat label="Résolus" value={auditEvents.filter((e) => e.status === "resolved").length} />
+                <MiniStat label="Total" value={auditEvents.length} />
+              </div>
+              <EventList
+                events={auditEvents}
+                emptyLabel="Aucun audit en cours. L'équipe Ops déclenchera un audit si un contrôle qualité est requis."
+                allowStatusUpdate
+                onStatusChange={(id, status) =>
+                  callAction({ action: "update_event_status", event_id: id, status }).catch((e) =>
+                    toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" }),
+                  )
+                }
+              />
+            </Card>
+
+            {/* Consulter factures */}
+            <Card className="p-5">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-primary" /> Mes factures
+              </h3>
+              {invoiceDocs.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Aucune facture déposée. L'équipe Ops publie les factures mensuelles dans cette section.
+                </p>
+              ) : (
+                <ul className="space-y-2 text-sm">
+                  {invoiceDocs.map((d) => (
+                    <li key={d.id} className="flex items-center justify-between gap-3 border-b border-border/50 pb-2 last:border-0">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <FileText className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <span className="truncate">{d.file_name}</span>
+                        <Badge variant="outline" className="shrink-0 text-[10px]">{d.category}</Badge>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={async () => {
+                          const { data: signed } = await supabase.storage
+                            .from("support-attachments")
+                            .createSignedUrl(d.storage_path, 60);
+                          if (signed?.signedUrl) window.open(signed.signedUrl, "_blank");
+                          else toast({ title: "Lien indisponible", variant: "destructive" });
+                        }}
+                      >
+                        Ouvrir
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+
+            {/* Consulter performances */}
+            <Card className="p-5">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-primary" /> Performances
+              </h3>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <MiniStat label="Produits validés" value={catalogDrafts.filter((e) => e.status === "resolved").length} />
+                <MiniStat label="MOQ livrées" value={totalMoqDelivered} />
+                <MiniStat label="Productions" value={totalProductionConfirmed} />
+                <MiniStat
+                  label="Taux résolution"
+                  value={`${events.length > 0
+                    ? Math.round((events.filter((e) => e.status === "resolved").length / events.length) * 100)
+                    : 0}%`}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-4">
+                Indicateurs calculés sur l'ensemble de votre activité dans le portail. Un rapport mensuel détaillé est joint dans la section Factures.
+              </p>
+            </Card>
+          </TabsContent>
+
           {/* DOCUMENTS */}
           <TabsContent value="documents" className="space-y-4 mt-4">
             <Card className="p-5">
