@@ -108,6 +108,14 @@ export default function SuppliersPortal() {
   const catalogDrafts = events.filter((e) => e.kind === "catalog_draft");
   const moqRequests = events.filter((e) => e.kind === "moq_request");
   const issues = events.filter((e) => e.kind === "issue_report");
+  const productionEvents = events.filter((e) => e.kind === "delivery_update");
+  const auditEvents = events.filter((e) => e.kind === "packaging_alert");
+  const invoiceDocs = documents.filter((d) =>
+    /facture|invoice/i.test(d.category) || /facture|invoice/i.test(d.file_name),
+  );
+  const totalMoqDelivered = moqRequests.filter((e) => e.status === "resolved").length;
+  const totalProductionConfirmed = productionEvents.filter((e) => e.status === "resolved").length;
+  const openAudits = auditEvents.filter((e) => e.status !== "resolved").length;
 
   async function submitCatalog() {
     if (!catName.trim() || !catPrice) {
