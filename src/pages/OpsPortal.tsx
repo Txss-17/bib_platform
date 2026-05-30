@@ -25,6 +25,12 @@ import {
   RefreshCcw,
   Truck,
   XCircle,
+  ScanLine,
+  Printer,
+  AlertTriangle,
+  Inbox,
+  Wrench,
+  ClipboardList,
 } from "lucide-react";
 
 const DELIVERY_STATUSES = [
@@ -91,6 +97,7 @@ export default function OpsPortal() {
   const deliveryUpdates = events.filter((e) => e.kind === "delivery_update");
   const packagingAlerts = events.filter((e) => e.kind === "packaging_alert");
   const returns = events.filter((e) => e.kind === "return_logged");
+  const incidents = events.filter((e) => e.kind === "packaging_alert" && (e.payload as Record<string, unknown> | null)?.["incident"] === true);
 
   const stockSummary = useMemo(() => {
     const pending = orders.filter((o) => o.logistics_status === "pending").length;
@@ -206,6 +213,176 @@ export default function OpsPortal() {
     }
   }
 
+  function escapeHtml(s: string) {
+    return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+  }
+
+  function openPrintWindow(title: string, body: string) {
+    const w = window.open("", "_blank", "width=820,height=900");
+    if (!w) {
+      toast({ title: "Pop-up bloqué", description: "Autorisez les pop-ups pour imprimer.", variant: "destructive" });
+      return;
+    }
+    w.document.write(`<!doctype html><html><head><meta charset="utf-8"/><title>${escapeHtml(title)}</title>
+      <style>
+        body{font-family:Inter,system-ui,sans-serif;color:#0f172a;padding:24px}
+        .label{border:1px solid #0f172a;border-radius:8px;padding:16px;margin-bottom:12px;page-break-inside:avoid}
+        .label h2{margin:0 0 8px;font-size:16px}
+        .label p{margin:2px 0;font-size:12px}
+        .meta{color:#64748b;font-size:11px;margin-top:8px}
+        @media print{ button{display:none} }
+      </style></head><body>
+      <button onclick="window.print()" style="margin-bottom:16px;padding:8px 14px;border-radius:6px;border:1px solid #0f172a;background:#0f172a;color:#fff;cursor:pointer">Imprimer</button>
+      ${body}
+      </body></html>`);
+    w.document.close();
+  }
+
+  function printShippingLabel(order: BasicOrder) {
+    openPrintWindow(`Étiquette ${order.order_number}`,
+      `<div class="label">
+        <h2>Étiquette logistique BIB</h2>
+        <p><b>N° commande :</b> ${escapeHtml(order.order_number)}</p>
+        <p><b>Destinataire :</b> ${escapeHtml(order.customer_name ?? "—")}</p>
+        <p><b>Montant :</b> ${Number(order.amount).toFixed(2)} €</p>
+        <p><b>Statut :</b> ${escapeHtml(order.logistics_status)}</p>
+        <p class="meta">Partenaire : ${escapeHtml(submission.company ?? submission.contact_email ?? "")}</p>
+        <p class="meta">Imprimé le ${new Date().toLocaleString("fr-FR")}</p>
+      </div>`);
+  }
+
+  function printAllShippingLabels() {
+    if (orders.length === 0) {
+      toast({ title: "Aucune commande à imprimer" });
+      return;
+    }
+    const body = orders.map((o) =>
+      `<div class="label">
+        <h2>${escapeHtml(o.order_number)}</h2>
+        <p><b>Destinataire :</b> ${escapeHtml(o.customer_name ?? "—")}</p>
+        <p><b>Montant :</b> ${Number(o.amount).toFixed(2)} €</p>
+        <p><b>Statut :</b> ${escapeHtml(o.logistics_status)}</p>
+        <p class="meta">${escapeHtml(submission.company ?? submission.contact_email ?? "")} · ${new Date(o.created_at).toLocaleString("fr-FR")}</p>
+      </div>`).join("");
+    openPrintWindow("Étiquettes logistiques", body);
+  }
+
+  function printStatusUpdates() {
+    if (deliveryUpdates.length === 0) {
+      toast({ title: "Aucun changement de statut à imprimer" });
+      return;
+    }
+    const body = deliveryUpdates.map((e) => {
+      const p = (e.payload ?? {}) as Record<string, unknown>;
+      return `<div class="label">
+        <h2>${escapeHtml(e.title)}</h2>
+        <p><b>Commande :</b> ${escapeHtml(String(p.order_number ?? "—"))}</p>
+        <p><b>Statut :</b> ${escapeHtml(String(p.status ?? "—"))}</p>
+        <p><b>Note :</b> ${escapeHtml(String(p.note ?? "—"))}</p>
+        <p class="meta">${new Date(e.created_at).toLocaleString("fr-FR")}</p>
+      </div>`;
+    }).join("");
+    openPrintWindow("Changements de statut", body);
+  }
+
+  // Scan colis
+  const [scanCode, setScanCode] = useState("");
+  const [scanResult, setScanResult] = useState<BasicOrder | null>(null);
+  const [scanError, setScanError] = useState<string | null>(null);
+  async function handleScan(code?: string) {
+    const value = (code ?? scanCode).trim().toUpperCase();
+    if (!value) return;
+    setScanError(null);
+    const { data: rows, error: err } = await supabase
+      .from("orders")
+      .select("id, order_number, customer_name, amount, logistics_status, created_at")
+      .eq("order_number", value)
+      .limit(1);
+    if (err || !rows || rows.length === 0) {
+      setScanResult(null);
+      setScanError("Aucune commande trouvée pour ce code.");
+      return;
+    }
+    setScanResult(rows[0] as BasicOrder);
+  }
+
+  // Réception marchandises
+  const [recvRef, setRecvRef] = useState("");
+  const [recvQty, setRecvQty] = useState("");
+  const [recvNote, setRecvNote] = useState("");
+  async function submitReception() {
+    if (!recvRef.trim()) {
+      toast({ title: "Référence requise" });
+      return;
+    }
+    setBusy(true);
+    try {
+      await callAction({
+        action: "create_event",
+        kind: "delivery_update",
+        title: `Réception · ${recvRef.trim()} (${recvQty || "?"})`,
+        payload: { reception: true, reference: recvRef.trim(), quantity: recvQty ? Number(recvQty) : null, note: recvNote },
+      });
+      setRecvRef(""); setRecvQty(""); setRecvNote("");
+      toast({ title: "Réception enregistrée" });
+    } catch (e) {
+      toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Restock cartons
+  const [restockItem, setRestockItem] = useState("Carton M (40x30x20)");
+  const [restockQty, setRestockQty] = useState("");
+  async function submitRestock() {
+    if (!restockItem.trim() || !restockQty.trim()) {
+      toast({ title: "Article et quantité requis" });
+      return;
+    }
+    setBusy(true);
+    try {
+      await callAction({
+        action: "create_event",
+        kind: "packaging_alert",
+        title: `Restock · ${restockItem} (+${restockQty})`,
+        payload: { restock: true, item: restockItem, quantity: Number(restockQty) },
+      });
+      setRestockQty("");
+      toast({ title: "Restock enregistré" });
+    } catch (e) {
+      toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Incidents
+  const [incTitle, setIncTitle] = useState("");
+  const [incDetail, setIncDetail] = useState("");
+  const [incOrder, setIncOrder] = useState("");
+  async function submitIncident() {
+    if (!incTitle.trim()) {
+      toast({ title: "Titre requis" });
+      return;
+    }
+    setBusy(true);
+    try {
+      await callAction({
+        action: "create_event",
+        kind: "packaging_alert",
+        title: `Incident · ${incTitle.trim()}`,
+        payload: { incident: true, order_number: incOrder.trim().toUpperCase() || null, detail: incDetail },
+      });
+      setIncTitle(""); setIncDetail(""); setIncOrder("");
+      toast({ title: "Incident signalé", description: "L'équipe Ops BIB est notifiée." });
+    } catch (e) {
+      toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" });
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <StandaloneLayout
       portal="Logistics"
@@ -241,6 +418,7 @@ export default function OpsPortal() {
         <Tabs defaultValue="orders">
           <TabsList className="w-full justify-start overflow-x-auto">
             <TabsTrigger value="orders">Commandes</TabsTrigger>
+            <TabsTrigger value="operations">Opérations</TabsTrigger>
             <TabsTrigger value="delivery">Mise à jour livraison</TabsTrigger>
             <TabsTrigger value="packaging">Packaging</TabsTrigger>
             <TabsTrigger value="returns">Retours</TabsTrigger>
@@ -253,7 +431,11 @@ export default function OpsPortal() {
                 <h3 className="font-semibold flex items-center gap-2">
                   <Boxes className="w-4 h-4 text-accent" /> Commandes des boutiques à expédier
                 </h3>
-                <Button size="sm" variant="ghost" disabled={ordersLoading} onClick={() => {
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={printAllShippingLabels} disabled={orders.length === 0}>
+                    <Printer className="w-3.5 h-3.5 mr-1.5" /> Imprimer étiquettes
+                  </Button>
+                  <Button size="sm" variant="ghost" disabled={ordersLoading} onClick={() => {
                   setOrdersLoading(true);
                   supabase.from("orders")
                     .select("id, order_number, customer_name, amount, logistics_status, created_at")
@@ -265,7 +447,8 @@ export default function OpsPortal() {
                     });
                 }}>
                   <RefreshCcw className={`w-3.5 h-3.5 mr-1.5 ${ordersLoading ? "animate-spin" : ""}`} /> Rafraîchir
-                </Button>
+                  </Button>
+                </div>
               </div>
               {ordersLoading ? (
                 <p className="text-sm text-muted-foreground">Chargement…</p>
@@ -280,16 +463,167 @@ export default function OpsPortal() {
                         <p className="truncate text-muted-foreground text-xs">{o.customer_name} · {Number(o.amount).toFixed(2)} €</p>
                       </div>
                       <Badge variant="outline">{o.logistics_status}</Badge>
-                      <Button size="sm" variant="ghost" onClick={() => {
-                        setDeliveryOrder(o.order_number);
-                        const tab = document.querySelector<HTMLButtonElement>('[data-state][value="delivery"], [role="tab"][value="delivery"]');
-                        tab?.click();
-                      }}>Mettre à jour</Button>
+                      <div className="flex items-center gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => printShippingLabel(o)} title="Imprimer étiquette">
+                          <Printer className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => {
+                          setDeliveryOrder(o.order_number);
+                          const tab = document.querySelector<HTMLButtonElement>('[data-state][value="delivery"], [role="tab"][value="delivery"]');
+                          tab?.click();
+                        }}>Statut</Button>
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
             </Card>
+          </TabsContent>
+
+          {/* OPÉRATIONS */}
+          <TabsContent value="operations" className="space-y-4 mt-4">
+            <div className="grid lg:grid-cols-2 gap-4">
+              {/* Commandes à traiter */}
+              <Card className="p-5">
+                <h3 className="font-semibold flex items-center gap-2 mb-2">
+                  <ClipboardList className="w-4 h-4 text-accent" /> Commandes à traiter
+                </h3>
+                <p className="text-xs text-muted-foreground mb-3">{stockSummary.pending + stockSummary.preparing} commande(s) en attente · {stockSummary.inTransit} en transit.</p>
+                <Button size="sm" variant="outline" onClick={() => {
+                  const tab = document.querySelector<HTMLButtonElement>('[role="tab"][value="orders"]');
+                  tab?.click();
+                }}>Ouvrir la liste</Button>
+              </Card>
+
+              {/* Scan colis */}
+              <Card className="p-5">
+                <h3 className="font-semibold flex items-center gap-2 mb-3">
+                  <ScanLine className="w-4 h-4 text-accent" /> Scan colis
+                </h3>
+                <div className="flex gap-2">
+                  <Input
+                    value={scanCode}
+                    onChange={(e) => setScanCode(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleScan(); }}
+                    placeholder="LKS26-XXXXXX ou code-barres"
+                    className="font-mono"
+                  />
+                  <Button size="sm" onClick={() => handleScan()}>Scanner</Button>
+                </div>
+                {scanError && <p className="text-xs text-destructive mt-2">{scanError}</p>}
+                {scanResult && (
+                  <div className="mt-3 p-3 rounded-md bg-muted/40 text-xs space-y-1">
+                    <p className="font-mono">{scanResult.order_number}</p>
+                    <p>{scanResult.customer_name} · {Number(scanResult.amount).toFixed(2)} €</p>
+                    <p>Statut : <Badge variant="outline">{scanResult.logistics_status}</Badge></p>
+                    <div className="flex gap-2 pt-2">
+                      <Button size="sm" variant="outline" onClick={() => printShippingLabel(scanResult)}>
+                        <Printer className="w-3.5 h-3.5 mr-1.5" /> Étiquette
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => {
+                        setDeliveryOrder(scanResult.order_number);
+                        const tab = document.querySelector<HTMLButtonElement>('[role="tab"][value="delivery"]');
+                        tab?.click();
+                      }}>Mettre à jour statut</Button>
+                    </div>
+                  </div>
+                )}
+              </Card>
+
+              {/* Réception marchandises */}
+              <Card className="p-5">
+                <h3 className="font-semibold flex items-center gap-2 mb-3">
+                  <Inbox className="w-4 h-4 text-accent" /> Réception marchandises
+                </h3>
+                <div className="grid sm:grid-cols-2 gap-2 mb-2">
+                  <div><Label>Référence / SKU *</Label><Input value={recvRef} onChange={(e) => setRecvRef(e.target.value)} placeholder="REF-MC-DEC-1250" /></div>
+                  <div><Label>Quantité</Label><Input type="number" value={recvQty} onChange={(e) => setRecvQty(e.target.value)} /></div>
+                </div>
+                <Label>Note</Label>
+                <Textarea rows={2} value={recvNote} onChange={(e) => setRecvNote(e.target.value)} placeholder="État, écart, fournisseur…" />
+                <Button onClick={submitReception} disabled={busy} className="mt-3" size="sm">
+                  {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Inbox className="w-4 h-4 mr-2" />}
+                  Enregistrer la réception
+                </Button>
+              </Card>
+
+              {/* Gestion expédition / impressions */}
+              <Card className="p-5">
+                <h3 className="font-semibold flex items-center gap-2 mb-3">
+                  <Truck className="w-4 h-4 text-accent" /> Gestion expédition
+                </h3>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Imprimer les étiquettes des commandes à expédier et l'historique des changements de statut.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline" onClick={printAllShippingLabels}>
+                    <Printer className="w-3.5 h-3.5 mr-1.5" /> Étiquettes ({orders.length})
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={printStatusUpdates}>
+                    <Printer className="w-3.5 h-3.5 mr-1.5" /> Changements de statut
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => {
+                    const tab = document.querySelector<HTMLButtonElement>('[role="tab"][value="delivery"]');
+                    tab?.click();
+                  }}>Mettre à jour un statut →</Button>
+                </div>
+              </Card>
+
+              {/* Gestion retours + restock */}
+              <Card className="p-5">
+                <h3 className="font-semibold flex items-center gap-2 mb-3">
+                  <PackageX className="w-4 h-4 text-accent" /> Gestion retours & restock cartons
+                </h3>
+                <p className="text-xs text-muted-foreground mb-3">{returns.length} retour(s) en cours.</p>
+                <div className="grid sm:grid-cols-2 gap-2 mb-2">
+                  <div>
+                    <Label>Type de carton</Label>
+                    <Select value={restockItem} onValueChange={setRestockItem}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Carton XS (20x15x10)">Carton XS (20x15x10)</SelectItem>
+                        <SelectItem value="Carton S (30x20x15)">Carton S (30x20x15)</SelectItem>
+                        <SelectItem value="Carton M (40x30x20)">Carton M (40x30x20)</SelectItem>
+                        <SelectItem value="Carton L (50x40x30)">Carton L (50x40x30)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div><Label>Quantité reçue *</Label><Input type="number" value={restockQty} onChange={(e) => setRestockQty(e.target.value)} /></div>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <Button size="sm" onClick={submitRestock} disabled={busy} variant="outline">
+                    <Package2 className="w-3.5 h-3.5 mr-1.5" /> Enregistrer restock
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => {
+                    const tab = document.querySelector<HTMLButtonElement>('[role="tab"][value="returns"]');
+                    tab?.click();
+                  }}>Ouvrir les retours →</Button>
+                </div>
+              </Card>
+
+              {/* Incidents */}
+              <Card className="p-5">
+                <h3 className="font-semibold flex items-center gap-2 mb-3">
+                  <AlertTriangle className="w-4 h-4 text-warning" /> Gestion incidents
+                </h3>
+                <div className="grid sm:grid-cols-2 gap-2 mb-2">
+                  <div><Label>Titre *</Label><Input value={incTitle} onChange={(e) => setIncTitle(e.target.value)} placeholder="ex: colis endommagé" /></div>
+                  <div><Label>N° commande</Label><Input value={incOrder} onChange={(e) => setIncOrder(e.target.value)} placeholder="LKS26-XXXXXX" className="font-mono" /></div>
+                </div>
+                <Label>Détail</Label>
+                <Textarea rows={2} value={incDetail} onChange={(e) => setIncDetail(e.target.value)} placeholder="Description, zone, photos transmises séparément…" />
+                <Button onClick={submitIncident} disabled={busy} className="mt-3" size="sm" variant="outline">
+                  {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Wrench className="w-4 h-4 mr-2" />}
+                  Signaler l'incident
+                </Button>
+                {incidents.length > 0 && (
+                  <div className="mt-4 pt-3 border-t border-border/50">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Incidents récents</p>
+                    <EventList events={incidents.slice(0, 5)} emptyLabel="Aucun incident." />
+                  </div>
+                )}
+              </Card>
+            </div>
           </TabsContent>
 
           {/* DELIVERY UPDATES */}
