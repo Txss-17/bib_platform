@@ -23,6 +23,11 @@ import {
   TriangleAlert,
   Truck,
   XCircle,
+  Factory,
+  Printer,
+  ShieldCheck,
+  FileText,
+  BarChart3,
 } from "lucide-react";
 
 const STATUS_LABEL: Record<PortalEvent["status"], string> = {
