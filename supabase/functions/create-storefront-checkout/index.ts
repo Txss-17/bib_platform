@@ -60,7 +60,7 @@ async function createStorefrontCheckout(body: StorefrontCheckoutBody) {
   const supabase = getSupabaseAdmin();
   const country = normalizeCountry(body.shipping.country);
 
-  // 1. Create pending orders in DB (one per item) — DB trigger generates LKS26 number
+  // 1. Create pending orders in DB (one per item) — DB trigger generates BIB26 number
   const inserts = body.items.map((it) => ({
     boutique_id: body.boutiqueId,
     product_id: it.productId,

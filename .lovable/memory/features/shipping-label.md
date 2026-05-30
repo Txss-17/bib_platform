@@ -10,7 +10,7 @@ Logistic shipping labels are rendered by `src/lib/shippingLabel.ts` (`fetchLabel
 ## Data sources (current, no carrier API)
 - Sender: `boutiques.legal_business_name`, `legal_address`
 - Recipient: `orders.customer_name`, `customer_email`, `market` — postal address placeholder until carrier API is wired
-- Order #: `orders.order_number` (LKS26-XXXXXX)
+- Order #: `orders.order_number` (BIB26-XXXXXX)
 - Product SKU/ref: `products` → `supplier_products.name`
 - Barcode: Code128 of `order_number` without dash (via `jsbarcode`)
 - QR: `https://shop.brand-in-a-box.space/tracking?order={order_number}` (via `qrcode`)

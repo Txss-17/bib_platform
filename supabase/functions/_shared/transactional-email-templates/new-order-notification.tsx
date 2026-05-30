@@ -49,5 +49,5 @@ export const template = {
   component: NewOrderNotification,
   subject: (d: Record<string, any>) => `Nouvelle commande${d.orderNumber ? ` ${d.orderNumber}` : ''}`,
   displayName: 'Nouvelle commande (vendeur)',
-  previewData: { sellerName: 'Marie', orderNumber: 'LKS26-A1B2C3', customerName: 'Paul Durand', amount: '49.90', productName: 'Bougie parfumée' },
+  previewData: { sellerName: 'Marie', orderNumber: 'BIB26-A1B2C3', customerName: 'Paul Durand', amount: '49.90', productName: 'Bougie parfumée' },
 } satisfies TemplateEntry

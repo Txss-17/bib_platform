@@ -52,5 +52,5 @@ export const template = {
   component: CustomerOrderConfirmation,
   subject: (d: Record<string, any>) => `Commande confirmée${d.orderNumber ? ` — ${d.orderNumber}` : ''}`,
   displayName: 'Confirmation client (fallback)',
-  previewData: { customerName: 'Paul', orderNumber: 'LKS26-A1B2C3', amount: '49.90', productName: 'Bougie parfumée', boutiqueName: 'Atelier Solène' },
+  previewData: { customerName: 'Paul', orderNumber: 'BIB26-A1B2C3', amount: '49.90', productName: 'Bougie parfumée', boutiqueName: 'Atelier Solène' },
 } satisfies TemplateEntry
