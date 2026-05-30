@@ -226,6 +226,7 @@ export default function SuppliersPortal() {
           <TabsList className="w-full justify-start overflow-x-auto">
             <TabsTrigger value="catalog">Catalogue</TabsTrigger>
             <TabsTrigger value="moq">Demandes MOQ</TabsTrigger>
+            <TabsTrigger value="operations">Opérations</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="signal">Signaler</TabsTrigger>
           </TabsList>
