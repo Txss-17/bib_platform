@@ -23,6 +23,11 @@ import {
   TriangleAlert,
   Truck,
   XCircle,
+  Factory,
+  Printer,
+  ShieldCheck,
+  FileText,
+  BarChart3,
 } from "lucide-react";
 
 const STATUS_LABEL: Record<PortalEvent["status"], string> = {
@@ -103,6 +108,14 @@ export default function SuppliersPortal() {
   const catalogDrafts = events.filter((e) => e.kind === "catalog_draft");
   const moqRequests = events.filter((e) => e.kind === "moq_request");
   const issues = events.filter((e) => e.kind === "issue_report");
+  const productionEvents = events.filter((e) => e.kind === "delivery_update");
+  const auditEvents = events.filter((e) => e.kind === "packaging_alert");
+  const invoiceDocs = documents.filter((d) =>
+    /facture|invoice/i.test(d.category) || /facture|invoice/i.test(d.file_name),
+  );
+  const totalMoqDelivered = moqRequests.filter((e) => e.status === "resolved").length;
+  const totalProductionConfirmed = productionEvents.filter((e) => e.status === "resolved").length;
+  const openAudits = auditEvents.filter((e) => e.status !== "resolved").length;
 
   async function submitCatalog() {
     if (!catName.trim() || !catPrice) {
@@ -213,6 +226,7 @@ export default function SuppliersPortal() {
           <TabsList className="w-full justify-start overflow-x-auto">
             <TabsTrigger value="catalog">Catalogue</TabsTrigger>
             <TabsTrigger value="moq">Demandes MOQ</TabsTrigger>
+            <TabsTrigger value="operations">Opérations</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="signal">Signaler</TabsTrigger>
           </TabsList>
@@ -262,6 +276,152 @@ export default function SuppliersPortal() {
                   )
                 }
               />
+            </Card>
+          </TabsContent>
+
+          {/* OPERATIONS */}
+          <TabsContent value="operations" className="space-y-4 mt-4">
+            {/* Confirmer production */}
+            <Card className="p-5">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Factory className="w-4 h-4 text-primary" /> Confirmer une production
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Indiquez qu'un lot est produit et prêt à être expédié au partenaire logistique.
+              </p>
+              <ProductionConfirmForm
+                busy={busy}
+                onSubmit={async (payload, title) => {
+                  setBusy(true);
+                  try {
+                    await callAction({ action: "create_event", kind: "delivery_update", title, payload });
+                    toast({ title: "Production confirmée", description: title });
+                  } catch (e) {
+                    toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" });
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              />
+              <div className="mt-4">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground mb-2">
+                  Historique ({totalProductionConfirmed} confirmées)
+                </p>
+                <EventList events={productionEvents} emptyLabel="Aucune production confirmée." />
+              </div>
+            </Card>
+
+            {/* Imprimer étiquettes */}
+            <Card className="p-5">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Printer className="w-4 h-4 text-primary" /> Imprimer des étiquettes
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Génère une planche d'étiquettes d'expédition pour les MOQ à livrer.
+                {moqRequests.filter((e) => e.status !== "resolved").length === 0
+                  ? " Aucune demande MOQ en attente pour le moment."
+                  : ""}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    printShippingLabels(
+                      moqRequests.filter((e) => e.status !== "resolved"),
+                      submission.company ?? submission.contact_email,
+                    )
+                  }
+                  disabled={moqRequests.filter((e) => e.status !== "resolved").length === 0}
+                >
+                  <Printer className="w-4 h-4 mr-2" /> Étiquettes MOQ en attente
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => printGenericLabel(submission.company ?? submission.contact_email)}
+                >
+                  Étiquette vierge
+                </Button>
+              </div>
+            </Card>
+
+            {/* Suivre audit */}
+            <Card className="p-5">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-primary" /> Suivi des audits
+              </h3>
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <MiniStat label="Ouverts" value={openAudits} />
+                <MiniStat label="Résolus" value={auditEvents.filter((e) => e.status === "resolved").length} />
+                <MiniStat label="Total" value={auditEvents.length} />
+              </div>
+              <EventList
+                events={auditEvents}
+                emptyLabel="Aucun audit en cours. L'équipe Ops déclenchera un audit si un contrôle qualité est requis."
+                allowStatusUpdate
+                onStatusChange={(id, status) =>
+                  callAction({ action: "update_event_status", event_id: id, status }).catch((e) =>
+                    toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" }),
+                  )
+                }
+              />
+            </Card>
+
+            {/* Consulter factures */}
+            <Card className="p-5">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-primary" /> Mes factures
+              </h3>
+              {invoiceDocs.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Aucune facture déposée. L'équipe Ops publie les factures mensuelles dans cette section.
+                </p>
+              ) : (
+                <ul className="space-y-2 text-sm">
+                  {invoiceDocs.map((d) => (
+                    <li key={d.id} className="flex items-center justify-between gap-3 border-b border-border/50 pb-2 last:border-0">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <FileText className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        <span className="truncate">{d.file_name}</span>
+                        <Badge variant="outline" className="shrink-0 text-[10px]">{d.category}</Badge>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={async () => {
+                          const { data: signed } = await supabase.storage
+                            .from("support-attachments")
+                            .createSignedUrl(d.storage_path, 60);
+                          if (signed?.signedUrl) window.open(signed.signedUrl, "_blank");
+                          else toast({ title: "Lien indisponible", variant: "destructive" });
+                        }}
+                      >
+                        Ouvrir
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+
+            {/* Consulter performances */}
+            <Card className="p-5">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-primary" /> Performances
+              </h3>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <MiniStat label="Produits validés" value={catalogDrafts.filter((e) => e.status === "resolved").length} />
+                <MiniStat label="MOQ livrées" value={totalMoqDelivered} />
+                <MiniStat label="Productions" value={totalProductionConfirmed} />
+                <MiniStat
+                  label="Taux résolution"
+                  value={`${events.length > 0
+                    ? Math.round((events.filter((e) => e.status === "resolved").length / events.length) * 100)
+                    : 0}%`}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-4">
+                Indicateurs calculés sur l'ensemble de votre activité dans le portail. Un rapport mensuel détaillé est joint dans la section Factures.
+              </p>
             </Card>
           </TabsContent>
 
@@ -387,4 +547,114 @@ function EventList({
       ))}
     </ul>
   );
+}
+
+function MiniStat({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
+      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="text-xl font-display font-semibold mt-1">{value}</p>
+    </div>
+  );
+}
+
+function ProductionConfirmForm({
+  busy,
+  onSubmit,
+}: {
+  busy: boolean;
+  onSubmit: (payload: Record<string, unknown>, title: string) => Promise<void>;
+}) {
+  const [product, setProduct] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [batch, setBatch] = useState("");
+  const [note, setNote] = useState("");
+
+  async function submit() {
+    if (!product.trim() || !quantity) {
+      toast({ title: "Champs manquants", description: "Produit et quantité requis." });
+      return;
+    }
+    const title = `Production confirmée : ${product.trim()} × ${quantity}`;
+    await onSubmit(
+      { product: product.trim(), quantity: Number(quantity), batch_number: batch.trim() || null, note: note.trim() || null },
+      title,
+    );
+    setProduct(""); setQuantity(""); setBatch(""); setNote("");
+  }
+
+  return (
+    <div className="grid sm:grid-cols-2 gap-3">
+      <div><Label>Produit *</Label><Input value={product} onChange={(e) => setProduct(e.target.value)} /></div>
+      <div><Label>Quantité produite *</Label><Input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} /></div>
+      <div><Label>N° de lot</Label><Input value={batch} onChange={(e) => setBatch(e.target.value)} placeholder="optionnel" /></div>
+      <div><Label>Note logistique</Label><Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="optionnel" /></div>
+      <div className="sm:col-span-2">
+        <Button onClick={submit} disabled={busy}>
+          {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+          Confirmer la production
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function printShippingLabels(events: PortalEvent[], supplier: string) {
+  const win = window.open("", "_blank", "width=800,height=900");
+  if (!win) return;
+  const labels = events
+    .map((e) => {
+      const p = e.payload as Record<string, unknown>;
+      return `
+        <div class="label">
+          <div class="hd">BRAND-IN-A-BOX · LOGISTIQUE</div>
+          <h2>${escapeHtml(e.title)}</h2>
+          <p><b>Fournisseur :</b> ${escapeHtml(supplier)}</p>
+          <p><b>Référence :</b> ${escapeHtml(e.id.slice(0, 8).toUpperCase())}</p>
+          <p><b>Qté :</b> ${escapeHtml(String(p?.quantity ?? "—"))}</p>
+          <p><b>Date :</b> ${new Date(e.created_at).toLocaleDateString("fr-FR")}</p>
+          <p class="addr">À expédier au partenaire logistique désigné par Brand-In-A-Box.</p>
+        </div>`;
+    })
+    .join("");
+  win.document.write(`
+    <html><head><title>Étiquettes</title><style>
+      body{font-family:Inter,system-ui,sans-serif;margin:0;padding:16px;background:#fff;color:#000;}
+      .label{border:2px dashed #000;padding:18px;margin-bottom:18px;page-break-after:always;}
+      .hd{font-size:11px;letter-spacing:.12em;font-weight:600;margin-bottom:6px;}
+      h2{margin:6px 0 12px;font-size:18px;}
+      p{margin:4px 0;font-size:13px;}
+      .addr{margin-top:14px;font-style:italic;font-size:12px;}
+      @media print { .label{page-break-after:always;} }
+    </style></head><body>${labels}<script>window.print()</script></body></html>
+  `);
+  win.document.close();
+}
+
+function printGenericLabel(supplier: string) {
+  const win = window.open("", "_blank", "width=800,height=900");
+  if (!win) return;
+  win.document.write(`
+    <html><head><title>Étiquette vierge</title><style>
+      body{font-family:Inter,system-ui,sans-serif;margin:0;padding:32px;}
+      .label{border:2px dashed #000;padding:24px;}
+      h2{margin:0 0 12px;} p{margin:6px 0;}
+    </style></head><body>
+      <div class="label">
+        <div style="font-size:11px;letter-spacing:.12em;font-weight:600;">BRAND-IN-A-BOX · LOGISTIQUE</div>
+        <h2>Étiquette d'expédition</h2>
+        <p><b>Fournisseur :</b> ${escapeHtml(supplier)}</p>
+        <p><b>Date :</b> ${new Date().toLocaleDateString("fr-FR")}</p>
+        <p>Produit : ____________________</p>
+        <p>Quantité : ____________________</p>
+        <p>N° lot : ____________________</p>
+      </div>
+      <script>window.print()</script>
+    </body></html>
+  `);
+  win.document.close();
+}
+
+function escapeHtml(s: string) {
+  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string));
 }
