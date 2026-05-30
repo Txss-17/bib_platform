@@ -113,7 +113,7 @@ export default function OrderTracking() {
               id="order-number"
               value={orderNumber}
               onChange={(e) => setOrderNumber(e.target.value)}
-              placeholder="LKS26-XXXXXX"
+              placeholder="BIB26-XXXXXX"
               required
               className="mt-1 font-mono"
             />

@@ -1652,7 +1652,7 @@ export default function BoutiqueEdit() {
                           dangerouslySetInnerHTML={{
                             __html: emailBody
                               .replace(/\{\{boutique_name\}\}/g, boutique.name)
-                              .replace(/\{\{order_number\}\}/g, "LKS26-ABC123")
+                              .replace(/\{\{order_number\}\}/g, "BIB26-ABC123")
                               .replace(/\{\{product_name\}\}/g, "Produit Exemple")
                               .replace(/\{\{amount\}\}/g, "49.90")
                               .replace(/\{\{customer_name\}\}/g, "Jean Dupont"),
@@ -1748,7 +1748,7 @@ export default function BoutiqueEdit() {
                                     boutique_id: id!,
                                     type: "welcome",
                                     recipient_email: testEmail,
-                                    variables: { customer_name: "Test", order_number: "LKS26-TEST", product_name: "Produit test", amount: "0.00" },
+                                    variables: { customer_name: "Test", order_number: "BIB26-TEST", product_name: "Produit test", amount: "0.00" },
                                   });
                                   toast.success("Email envoyé !");
                                 } catch (e: any) {

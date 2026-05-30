@@ -197,7 +197,7 @@ export default function Recycler() {
                 <Label htmlFor="order-number">Numéro de commande</Label>
                 <Input
                   id="order-number"
-                  placeholder="LKS26-XXXXXX"
+                  placeholder="BIB26-XXXXXX"
                   value={orderNumber}
                   onChange={(e) => setOrderNumber(e.target.value)}
                   className="uppercase"

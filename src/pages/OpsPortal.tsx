@@ -499,7 +499,7 @@ export default function OpsPortal() {
                     value={scanCode}
                     onChange={(e) => setScanCode(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") handleScan(); }}
-                    placeholder="LKS26-XXXXXX ou code-barres"
+                    placeholder="BIB26-XXXXXX ou code-barres"
                     className="font-mono"
                   />
                   <Button size="sm" onClick={() => handleScan()}>Scanner</Button>
@@ -621,7 +621,7 @@ export default function OpsPortal() {
                 </h3>
                 <div className="grid sm:grid-cols-2 gap-2 mb-2">
                   <div><Label>Titre *</Label><Input value={incTitle} onChange={(e) => setIncTitle(e.target.value)} placeholder="ex: colis endommagé" /></div>
-                  <div><Label>N° commande</Label><Input value={incOrder} onChange={(e) => setIncOrder(e.target.value)} placeholder="LKS26-XXXXXX" className="font-mono" /></div>
+                  <div><Label>N° commande</Label><Input value={incOrder} onChange={(e) => setIncOrder(e.target.value)} placeholder="BIB26-XXXXXX" className="font-mono" /></div>
                 </div>
                 <Label>Détail</Label>
                 <Textarea rows={2} value={incDetail} onChange={(e) => setIncDetail(e.target.value)} placeholder="Description, zone, photos transmises séparément…" />
@@ -649,7 +649,7 @@ export default function OpsPortal() {
                 Le client final ET la boutique seront notifiés sur leur compte respectif.
               </p>
               <div className="grid sm:grid-cols-2 gap-3">
-                <div><Label>N° de commande *</Label><Input value={deliveryOrder} onChange={(e) => setDeliveryOrder(e.target.value)} placeholder="LKS26-XXXXXX" className="font-mono" /></div>
+                <div><Label>N° de commande *</Label><Input value={deliveryOrder} onChange={(e) => setDeliveryOrder(e.target.value)} placeholder="BIB26-XXXXXX" className="font-mono" /></div>
                 <div>
                   <Label>Nouveau statut</Label>
                   <Select value={deliveryStatus} onValueChange={setDeliveryStatus}>
@@ -704,7 +704,7 @@ export default function OpsPortal() {
                 <PackageX className="w-4 h-4 text-accent" /> Enregistrer un retour
               </h3>
               <div className="grid sm:grid-cols-2 gap-3">
-                <div><Label>N° commande *</Label><Input value={returnOrder} onChange={(e) => setReturnOrder(e.target.value)} placeholder="LKS26-XXXXXX" className="font-mono" /></div>
+                <div><Label>N° commande *</Label><Input value={returnOrder} onChange={(e) => setReturnOrder(e.target.value)} placeholder="BIB26-XXXXXX" className="font-mono" /></div>
                 <div><Label>Motif *</Label><Input value={returnReason} onChange={(e) => setReturnReason(e.target.value)} placeholder="ex: produit endommagé" /></div>
               </div>
               <Button onClick={submitReturn} disabled={busy} className="mt-4">
