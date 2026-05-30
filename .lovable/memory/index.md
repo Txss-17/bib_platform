@@ -29,6 +29,7 @@
 - [Public Storefront](mem://features/public-storefront-ecommerce) — 2-step checkout (Identity, Delivery), local customer profile
 - [Order Tracking](mem://features/order-tracking) — Tracking via email and order ID using track_order RPC
 - [Order Management](mem://features/order-management) — Vendor validation required before shipping, 48h dispute escalation
+- [Shipping label](mem://features/shipping-label) — A6 BIB-branded label (Code128 + QR) via src/lib/shippingLabel.ts; carrier API slots reserved
 - [Order Notifications](mem://features/order-notifications) — Cash register sound on new orders via Web Audio API
 - [Sample Validation](mem://features/sample-validation-system) — Mandatory Stripe sample order before product activation
 - [Payments — Stripe](mem://features/payments-stripe) — Subscriptions (managed_payments) + storefront checkout (automatic_tax), Embedded Checkout
