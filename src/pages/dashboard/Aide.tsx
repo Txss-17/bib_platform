@@ -28,6 +28,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { resolvePublicOrigin, useSeoSettings } from "@/lib/seoSettings";
 import { Store, Package } from "lucide-react";
 import { SeoFixChecklist } from "@/components/dashboard/seo/SeoFixChecklist";
+import { PlatformTourLauncher } from "@/components/tour/PlatformTour";
 
 const faqItems = [
   {
@@ -201,6 +202,7 @@ export default function Aide() {
         eyebrow="Centre d'aide"
         title="Aide & Support"
         subtitle="FAQ, ressources et accès direct à l'équipe Brand-In-A-Box."
+        actions={<PlatformTourLauncher label="Relancer le guide" />}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
