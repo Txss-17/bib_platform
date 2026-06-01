@@ -65,6 +65,7 @@ export default function Dashboard() {
         subtitle="Votre cockpit unifié — santé de la boutique, commandes et opportunités en un coup d'œil."
         actions={
           <>
+            <PlatformTourLauncher label="Guide" />
             <Link to="/dashboard/produits-fournisseurs">
               <Button variant="outline" size="sm" className="gap-1">
                 <Sparkles className="w-4 h-4" /> Catalogue
