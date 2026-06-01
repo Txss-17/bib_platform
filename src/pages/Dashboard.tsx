@@ -26,6 +26,7 @@ import { HealthScoreCard } from "@/components/dashboard/home/HealthScoreCard";
 import { HomeActivityCard } from "@/components/dashboard/home/HomeActivityCard";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist";
+import { PlatformTour, PlatformTourLauncher } from "@/components/tour/PlatformTour";
 
 export default function Dashboard() {
   const { data: boutiqueStats, isLoading: boutiquesLoading } = useBoutiqueStats();
@@ -55,6 +56,8 @@ export default function Dashboard() {
     <DashboardLayout>
       {/* First-5-minutes onboarding — wizard auto-opens if profile incomplete */}
       <OnboardingWizard />
+      {/* Guided tour — auto-opens on first visit, relaunchable from header / Aide */}
+      <PlatformTour autoOpen />
 
       <PageHeader
         eyebrow="Accueil"
