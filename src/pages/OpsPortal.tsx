@@ -16,6 +16,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPortal, type PortalEvent } from "@/hooks/usePartnerPortal";
 import { fetchLabelData, fetchLabelsData, printLabels } from "@/lib/shippingLabel";
+import { PlatformTour, PlatformTourLauncher } from "@/components/tour/PlatformTour";
 import {
   ArrowLeft,
   Boxes,
@@ -394,12 +395,16 @@ export default function OpsPortal() {
             </Link>
           </Button>
           <Badge variant="secondary" className="mb-2">Portail opérationnel · Logistics</Badge>
-          <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
-            {submission.company ?? submission.contact_email}
-          </h1>
+          <div className="flex items-start justify-between gap-3 flex-wrap">
+            <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
+              {submission.company ?? submission.contact_email}
+            </h1>
+            <PlatformTourLauncher label="Guide partenaire" availablePersonas={["ops", "supplier"]} />
+          </div>
           <p className="text-sm text-muted-foreground mt-2">
             Dashboard stock, commandes des boutiques, livraisons, packaging, retours.
           </p>
+          <PlatformTour autoOpen availablePersonas={["ops", "supplier"]} />
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

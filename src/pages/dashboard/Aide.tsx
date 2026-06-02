@@ -202,7 +202,7 @@ export default function Aide() {
         eyebrow="Centre d'aide"
         title="Aide & Support"
         subtitle="FAQ, ressources et accès direct à l'équipe Brand-In-A-Box."
-        actions={<PlatformTourLauncher label="Relancer le guide" />}
+        actions={<PlatformTourLauncher label="Relancer le guide" availablePersonas={["seller"]} />}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
