@@ -57,7 +57,7 @@ export default function Dashboard() {
       {/* First-5-minutes onboarding — wizard auto-opens if profile incomplete */}
       <OnboardingWizard />
       {/* Guided tour — auto-opens on first visit, relaunchable from header / Aide */}
-      <PlatformTour autoOpen />
+      <PlatformTour autoOpen availablePersonas={["seller"]} />
 
       <PageHeader
         eyebrow="Accueil"
@@ -65,7 +65,7 @@ export default function Dashboard() {
         subtitle="Votre cockpit unifié — santé de la boutique, commandes et opportunités en un coup d'œil."
         actions={
           <>
-            <PlatformTourLauncher label="Guide" />
+            <PlatformTourLauncher label="Guide" availablePersonas={["seller"]} />
             <Link to="/dashboard/produits-fournisseurs">
               <Button variant="outline" size="sm" className="gap-1">
                 <Sparkles className="w-4 h-4" /> Catalogue
