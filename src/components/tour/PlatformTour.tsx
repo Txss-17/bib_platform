@@ -11,8 +11,7 @@ import {
   Check, X, Compass, Rocket, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-type Persona = "seller" | "ops" | "supplier";
+import { useTourProgress, type TourPersona as Persona, type TourScope } from "@/hooks/useTourProgress";
 
 interface TourStep {
   icon: React.ComponentType<{ className?: string }>;
@@ -165,10 +164,10 @@ const PERSONAS: Record<Persona, { label: string; description: string; icon: Reac
   },
 };
 
-const STORAGE_KEY = "bib_platform_tour_done";
-
 interface PlatformTourProps {
-  /** Force le persona (utilisé sur OpsPortal / SuppliersPortal) */
+  /** Restreint les personas proposés. Si une seule entrée, l'écran de sélection est sauté. */
+  availablePersonas?: Persona[];
+  /** Force le persona (raccourci pour availablePersonas = [persona]) */
   forcedPersona?: Persona;
   /** Ouverture contrôlée (depuis un bouton externe) */
   open?: boolean;
@@ -177,9 +176,24 @@ interface PlatformTourProps {
   autoOpen?: boolean;
 }
 
-export function PlatformTour({ forcedPersona, open: openProp, onOpenChange, autoOpen }: PlatformTourProps) {
+const ALL_PERSONAS: Persona[] = ["seller", "ops", "supplier"];
+
+export function PlatformTour({
+  availablePersonas,
+  forcedPersona,
+  open: openProp,
+  onOpenChange,
+  autoOpen,
+}: PlatformTourProps) {
+  const personasList = forcedPersona ? [forcedPersona] : (availablePersonas ?? ALL_PERSONAS);
+  // "seller" tour scope vs "partner" tour scope — saved separately so a user
+  // can resume each one independently across devices.
+  const scope: TourScope = personasList.every((p) => p === "seller") ? "seller" : "partner";
+  const { progress, save, loaded } = useTourProgress(scope);
+
+  const autoSelectedPersona = personasList.length === 1 ? personasList[0] : null;
   const [internalOpen, setInternalOpen] = useState(false);
-  const [persona, setPersona] = useState<Persona | null>(forcedPersona ?? null);
+  const [persona, setPersona] = useState<Persona | null>(autoSelectedPersona);
   const [stepIdx, setStepIdx] = useState(0);
 
   const open = openProp ?? internalOpen;
@@ -187,32 +201,34 @@ export function PlatformTour({ forcedPersona, open: openProp, onOpenChange, auto
     onOpenChange?.(v);
     if (openProp === undefined) setInternalOpen(v);
     if (!v) {
-      try { localStorage.setItem(STORAGE_KEY, "1"); } catch {}
+      // Persist current position so we can resume later on any device.
+      save({
+        persona: persona ?? null,
+        stepIdx,
+        completedPersonas: progress.completedPersonas,
+        dismissed: true,
+      });
     }
   };
 
-  // Auto-open for first-time users
+  // Resume from saved progress once loaded.
   useEffect(() => {
-    if (!autoOpen) return;
-    try {
-      const done = localStorage.getItem(STORAGE_KEY);
-      if (!done) {
-        const t = setTimeout(() => setInternalOpen(true), 800);
-        return () => clearTimeout(t);
-      }
-    } catch {}
-  }, [autoOpen]);
+    if (!loaded) return;
+    const savedPersona = progress.persona && personasList.includes(progress.persona)
+      ? progress.persona
+      : autoSelectedPersona;
+    setPersona(savedPersona ?? null);
+    setStepIdx(savedPersona ? Math.max(0, progress.stepIdx) : 0);
+  }, [loaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Reset on close
+  // Auto-open for first-time users (no persona completed yet, never dismissed)
   useEffect(() => {
-    if (!open) {
-      const t = setTimeout(() => {
-        setStepIdx(0);
-        if (!forcedPersona) setPersona(null);
-      }, 250);
-      return () => clearTimeout(t);
-    }
-  }, [open, forcedPersona]);
+    if (!autoOpen || !loaded) return;
+    const hasCompletedAny = personasList.some((p) => progress.completedPersonas.includes(p));
+    if (progress.dismissed || hasCompletedAny) return;
+    const t = setTimeout(() => setInternalOpen(true), 800);
+    return () => clearTimeout(t);
+  }, [autoOpen, loaded, progress.dismissed, progress.completedPersonas, personasList]);
 
   const steps = persona ? PERSONAS[persona].steps : [];
   const currentStep = steps[stepIdx];
