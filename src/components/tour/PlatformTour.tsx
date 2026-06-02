@@ -233,7 +233,21 @@ export function PlatformTour({
   const steps = persona ? PERSONAS[persona].steps : [];
   const currentStep = steps[stepIdx];
   const totalSteps = steps.length;
-  const progress = totalSteps > 0 ? ((stepIdx + 1) / totalSteps) * 100 : 0;
+  const progressPct = totalSteps > 0 ? ((stepIdx + 1) / totalSteps) * 100 : 0;
+
+  const persist = (next: { persona?: Persona | null; stepIdx?: number; completed?: boolean }) => {
+    const nextPersona = next.persona !== undefined ? next.persona : persona;
+    const nextStep = next.stepIdx !== undefined ? next.stepIdx : stepIdx;
+    const completedPersonas = next.completed && nextPersona
+      ? Array.from(new Set([...progress.completedPersonas, nextPersona]))
+      : progress.completedPersonas;
+    save({
+      persona: nextPersona ?? null,
+      stepIdx: nextStep,
+      completedPersonas,
+      dismissed: progress.dismissed,
+    });
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -252,15 +266,21 @@ export function PlatformTour({
                 Choisissez un parcours, on vous montre l'essentiel en quelques étapes.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-3">
-              {(Object.keys(PERSONAS) as Persona[]).map((p) => {
+             <div className="grid gap-3">
+              {personasList.map((p) => {
                 const def = PERSONAS[p];
                 const Icon = def.icon;
+                const completed = progress.completedPersonas.includes(p);
                 return (
                   <button
                     key={p}
                     type="button"
-                    onClick={() => { setPersona(p); setStepIdx(0); }}
+                    onClick={() => {
+                      const resumeAt = progress.persona === p ? progress.stepIdx : 0;
+                      setPersona(p);
+                      setStepIdx(resumeAt);
+                      persist({ persona: p, stepIdx: resumeAt });
+                    }}
                     className={cn(
                       "group flex items-center gap-4 rounded-2xl border bg-gradient-to-br p-4 text-left transition-all hover:shadow-md hover:-translate-y-0.5",
                       def.accent,
@@ -270,7 +290,19 @@ export function PlatformTour({
                       <Icon className="w-5 h-5 text-foreground" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-foreground">{def.label}</p>
+                      <p className="font-semibold text-foreground flex items-center gap-2">
+                        {def.label}
+                        {completed && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-success">
+                            <Check className="w-3 h-3" /> Terminé
+                          </span>
+                        )}
+                        {!completed && progress.persona === p && progress.stepIdx > 0 && (
+                          <span className="text-[10px] font-medium text-secondary">
+                            Reprendre — étape {progress.stepIdx + 1}
+                          </span>
+                        )}
+                      </p>
                       <p className="text-sm text-muted-foreground">{def.description}</p>
                     </div>
                     <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
@@ -298,7 +330,7 @@ export function PlatformTour({
                   Étape {stepIdx + 1} / {totalSteps}
                 </span>
               </div>
-              <Progress value={progress} className="h-1.5" />
+              <Progress value={progressPct} className="h-1.5" />
             </div>
 
             <div className="px-6 sm:px-8 py-6 sm:py-8 min-h-[280px]">
@@ -336,20 +368,35 @@ export function PlatformTour({
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  if (stepIdx === 0 && !forcedPersona) setPersona(null);
-                  else setStepIdx((i) => Math.max(0, i - 1));
+                  if (stepIdx === 0 && personasList.length > 1) {
+                    setPersona(null);
+                    persist({ persona: null, stepIdx: 0 });
+                  } else if (stepIdx === 0) {
+                    setOpen(false);
+                  } else {
+                    const next = Math.max(0, stepIdx - 1);
+                    setStepIdx(next);
+                    persist({ stepIdx: next });
+                  }
                 }}
                 className="gap-1.5"
               >
                 <ArrowLeft className="w-4 h-4" />
-                {stepIdx === 0 ? (forcedPersona ? "Fermer" : "Changer de rôle") : "Précédent"}
+                {stepIdx === 0 ? (personasList.length > 1 ? "Changer de rôle" : "Fermer") : "Précédent"}
               </Button>
               {stepIdx < totalSteps - 1 ? (
-                <Button size="sm" className="gap-1.5" onClick={() => setStepIdx((i) => i + 1)}>
+                <Button size="sm" className="gap-1.5" onClick={() => {
+                  const next = stepIdx + 1;
+                  setStepIdx(next);
+                  persist({ stepIdx: next });
+                }}>
                   Suivant <ArrowRight className="w-4 h-4" />
                 </Button>
               ) : (
-                <Button size="sm" className="gap-1.5" onClick={() => setOpen(false)}>
+                <Button size="sm" className="gap-1.5" onClick={() => {
+                  persist({ completed: true, stepIdx: 0, persona: null });
+                  setOpen(false);
+                }}>
                   Terminer <Check className="w-4 h-4" />
                 </Button>
               )}
@@ -364,11 +411,13 @@ export function PlatformTour({
 /** Petit bouton à placer dans une page pour relancer le guide */
 export function PlatformTourLauncher({
   forcedPersona,
+  availablePersonas,
   label = "Guide d'utilisation",
   variant = "outline",
   size = "sm",
 }: {
   forcedPersona?: Persona;
+  availablePersonas?: Persona[];
   label?: string;
   variant?: "outline" | "ghost" | "default" | "secondary";
   size?: "sm" | "default" | "lg" | "icon";
@@ -379,7 +428,12 @@ export function PlatformTourLauncher({
       <Button variant={variant} size={size} className="gap-1.5" onClick={() => setOpen(true)}>
         <Compass className="w-4 h-4" /> {label}
       </Button>
-      <PlatformTour forcedPersona={forcedPersona} open={open} onOpenChange={setOpen} />
+      <PlatformTour
+        forcedPersona={forcedPersona}
+        availablePersonas={availablePersonas}
+        open={open}
+        onOpenChange={setOpen}
+      />
     </>
   );
 }
