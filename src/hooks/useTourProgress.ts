@@ -54,7 +54,7 @@ export function useTourProgress(scope: TourScope) {
     let cancelled = false;
     (async () => {
       if (!user) { setLoaded(true); return; }
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("user_tour_progress")
         .select("persona,step_idx,completed_personas,dismissed,scope")
         .eq("user_id", user.id)
@@ -83,7 +83,7 @@ export function useTourProgress(scope: TourScope) {
     const signature = JSON.stringify(next);
     if (signature === lastSaved.current) return;
     lastSaved.current = signature;
-    await supabase.from("user_tour_progress").upsert(
+    await (supabase as any).from("user_tour_progress").upsert(
       {
         user_id: user.id,
         scope,
