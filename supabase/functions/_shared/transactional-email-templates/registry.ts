@@ -16,6 +16,7 @@ import { template as customerOrderConfirmation } from './customer-order-confirma
 import { template as supportTicketStatus } from './support-ticket-status.tsx'
 import { template as partnerOtp } from './partner-otp.tsx'
 import { template as partnerOnboardingSubmitted } from './partner-onboarding-submitted.tsx'
+import { template as onboardingStuckReminder } from './onboarding-stuck-reminder.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'seller-welcome': sellerWelcome,
@@ -25,4 +26,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'support-ticket-status': supportTicketStatus,
   'partner-otp': partnerOtp,
   'partner-onboarding-submitted': partnerOnboardingSubmitted,
+  'onboarding-stuck-reminder': onboardingStuckReminder,
 }

@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Check, Circle, ChevronRight, X, Sparkles } from "lucide-react";
+import { Check, Circle, ChevronRight, X, Sparkles, Bell, BellOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useOnboardingState } from "@/hooks/useOnboardingState";
 import { Progress } from "@/components/ui/progress";
+import { useOnboardingReminders } from "@/hooks/useOnboardingReminders";
+import { Switch } from "@/components/ui/switch";
 
 const DISMISS_KEY = "bib_onboarding_dismissed";
 
@@ -15,6 +17,8 @@ const DISMISS_KEY = "bib_onboarding_dismissed";
  */
 export function OnboardingChecklist() {
   const { steps, doneCount, totalCount, completionPct, allDone } = useOnboardingState();
+  const { enabled: remindersEnabled, loading: remindersLoading, toggle: toggleReminders } =
+    useOnboardingReminders();
   const [dismissed, setDismissed] = useState<boolean>(
     typeof window !== "undefined" && window.localStorage.getItem(DISMISS_KEY) === "1",
   );
@@ -107,6 +111,29 @@ export function OnboardingChecklist() {
           </li>
         ))}
       </ul>
+
+      {/* Reminder toggle */}
+      <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3 border-t border-border/40 bg-muted/20">
+        <div className="flex items-start gap-2 min-w-0">
+          {remindersEnabled ? (
+            <Bell className="w-4 h-4 text-bib-gold mt-0.5 shrink-0" />
+          ) : (
+            <BellOff className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+          )}
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-foreground">Relances automatiques</p>
+            <p className="text-xs text-muted-foreground">
+              Recevoir un e-mail si une étape reste bloquée plus de 48 h (max 3 rappels).
+            </p>
+          </div>
+        </div>
+        <Switch
+          checked={remindersEnabled}
+          disabled={remindersLoading}
+          onCheckedChange={toggleReminders}
+          aria-label="Activer les relances onboarding par e-mail"
+        />
+      </div>
     </section>
   );
 }
