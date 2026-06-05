@@ -27,6 +27,7 @@ import { HomeActivityCard } from "@/components/dashboard/home/HomeActivityCard";
 import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
 import { OnboardingChecklist } from "@/components/onboarding/OnboardingChecklist";
 import { PlatformTour, PlatformTourLauncher } from "@/components/tour/PlatformTour";
+import { ReminderLog } from "@/components/dashboard/ReminderLog";
 
 export default function Dashboard() {
   const { data: boutiqueStats, isLoading: boutiquesLoading } = useBoutiqueStats();
@@ -473,6 +474,9 @@ export default function Dashboard() {
               </Link>
             </div>
           </SectionCard>
+
+          {/* Onboarding reminder journal */}
+          <ReminderLog limit={8} />
         </div>
       </div>
     </DashboardLayout>

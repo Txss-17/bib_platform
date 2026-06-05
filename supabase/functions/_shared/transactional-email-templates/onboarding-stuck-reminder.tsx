@@ -12,6 +12,9 @@ interface Props {
   attemptNo?: number
   totalSteps?: number
   doneSteps?: number
+  customSubject?: string
+  customPreheader?: string
+  customCtaLabel?: string
 }
 
 const OnboardingStuckReminder = ({
@@ -22,10 +25,12 @@ const OnboardingStuckReminder = ({
   attemptNo = 1,
   totalSteps,
   doneSteps,
+  customPreheader,
+  customCtaLabel,
 }: Props) => (
   <Html lang="fr">
     <Head />
-    <Preview>Reprenez votre onboarding Brand-In-A-Box là où vous l'avez laissé</Preview>
+    <Preview>{customPreheader || "Reprenez votre onboarding Brand-In-A-Box là où vous l'avez laissé"}</Preview>
     <Body style={main}>
       <Section style={wrapper}>
         <Container style={container}>
@@ -51,7 +56,7 @@ const OnboardingStuckReminder = ({
               )}
             </Section>
             <Section style={{ textAlign: 'center' as const, margin: '20px 0 8px' }}>
-              <Button href={stepUrl} style={button}>Reprendre maintenant</Button>
+              <Button href={stepUrl} style={button}>{customCtaLabel || 'Reprendre maintenant'}</Button>
             </Section>
             <Text style={{ ...text, fontSize: 12, color: '#6B7280', marginTop: 24 }}>
               Vous recevez ce message car votre onboarding est en pause depuis plus de 48 heures
@@ -67,7 +72,8 @@ const OnboardingStuckReminder = ({
 
 export const template = {
   component: OnboardingStuckReminder,
-  subject: 'Reprenez votre onboarding Brand-In-A-Box',
+  subject: (data: Record<string, any>) =>
+    (data?.customSubject as string) || 'Reprenez votre onboarding Brand-In-A-Box',
   displayName: 'Relance onboarding bloqué',
   previewData: {
     name: 'Marie',
