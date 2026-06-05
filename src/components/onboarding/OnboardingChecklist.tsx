@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Check, Circle, ChevronRight, X, Sparkles, Bell, BellOff } from "lucide-react";
+import { Check, Circle, ChevronRight, X, Sparkles, Bell, BellOff, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useOnboardingState } from "@/hooks/useOnboardingState";
 import { Progress } from "@/components/ui/progress";
 import { useOnboardingReminders } from "@/hooks/useOnboardingReminders";
 import { Switch } from "@/components/ui/switch";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const DISMISS_KEY = "bib_onboarding_dismissed";
 
@@ -19,9 +21,26 @@ export function OnboardingChecklist() {
   const { steps, doneCount, totalCount, completionPct, allDone } = useOnboardingState();
   const { enabled: remindersEnabled, loading: remindersLoading, toggle: toggleReminders } =
     useOnboardingReminders();
+  const { user } = useAuth();
   const [dismissed, setDismissed] = useState<boolean>(
     typeof window !== "undefined" && window.localStorage.getItem(DISMISS_KEY) === "1",
   );
+
+  // Event-driven trigger: if at least one step is blocked, ping the
+  // reminders function (rate-limited to once / 6h per browser).
+  useEffect(() => {
+    if (!user || remindersLoading || !remindersEnabled) return;
+    if (allDone || totalCount === 0) return;
+    const hasBlocked = steps.some((s) => !s.done);
+    if (!hasBlocked) return;
+    const key = `bib_reminder_event_${user.id}`;
+    const last = Number(localStorage.getItem(key) || 0);
+    if (Date.now() - last < 6 * 3600_000) return;
+    localStorage.setItem(key, String(Date.now()));
+    supabase.functions
+      .invoke("onboarding-reminders", { body: { user_id: user.id, source: "event" } })
+      .catch(() => {});
+  }, [user, remindersLoading, remindersEnabled, steps, allDone, totalCount]);
 
   // Hide when complete or explicitly dismissed by the user.
   if (allDone || dismissed || totalCount === 0) return null;
@@ -123,16 +142,23 @@ export function OnboardingChecklist() {
           <div className="min-w-0">
             <p className="text-sm font-medium text-foreground">Relances automatiques</p>
             <p className="text-xs text-muted-foreground">
-              Recevoir un e-mail si une étape reste bloquée plus de 48 h (max 3 rappels).
+              E-mail si une étape reste bloquée. Personnalisez délais, modèle et journal.
             </p>
           </div>
         </div>
-        <Switch
-          checked={remindersEnabled}
-          disabled={remindersLoading}
-          onCheckedChange={toggleReminders}
-          aria-label="Activer les relances onboarding par e-mail"
-        />
+        <div className="flex items-center gap-2 shrink-0">
+          <Link to="/dashboard/parametres/relances">
+            <Button variant="ghost" size="sm" className="gap-1 h-8 px-2 text-xs">
+              <Settings className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Réglages</span>
+            </Button>
+          </Link>
+          <Switch
+            checked={remindersEnabled}
+            disabled={remindersLoading}
+            onCheckedChange={toggleReminders}
+            aria-label="Activer les relances onboarding par e-mail"
+          />
+        </div>
       </div>
     </section>
   );
