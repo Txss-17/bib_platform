@@ -251,6 +251,14 @@ const App = () => (
               }
             />
             <Route
+              path="/dashboard/parametres/relances"
+              element={
+                <ProtectedRoute>
+                  <RelancesOnboarding />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/dashboard/tickets"
               element={
                 <ProtectedRoute>
