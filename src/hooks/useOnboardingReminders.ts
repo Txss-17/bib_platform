@@ -2,47 +2,70 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-/**
- * Per-user opt-in/out for automatic onboarding stuck-step email reminders.
- * Default ON for any authenticated user — explicit row only exists when toggled off.
- */
+export interface ReminderSettings {
+  enabled: boolean;
+  delay_hours: number;
+  max_reminders: number;
+  timezone: string;
+  role_seller_enabled: boolean;
+  role_team_enabled: boolean;
+  persona_seller_enabled: boolean;
+  persona_team_enabled: boolean;
+  custom_subject: string | null;
+  custom_preheader: string | null;
+  custom_cta_label: string | null;
+}
+
+const DEFAULTS: ReminderSettings = {
+  enabled: true,
+  delay_hours: 48,
+  max_reminders: 3,
+  timezone: "Europe/Paris",
+  role_seller_enabled: true,
+  role_team_enabled: true,
+  persona_seller_enabled: true,
+  persona_team_enabled: true,
+  custom_subject: null,
+  custom_preheader: null,
+  custom_cta_label: null,
+};
+
 export function useOnboardingReminders() {
   const { user } = useAuth();
-  const [enabled, setEnabled] = useState<boolean>(true);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [settings, setSettings] = useState<ReminderSettings>(DEFAULTS);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+    if (!user) { setLoading(false); return; }
     let cancelled = false;
     (async () => {
       const { data } = await (supabase as any)
         .from("onboarding_reminders_settings")
-        .select("enabled")
+        .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
       if (!cancelled) {
-        setEnabled(data?.enabled ?? true);
+        if (data) setSettings({ ...DEFAULTS, ...data });
         setLoading(false);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [user]);
 
-  const toggle = useCallback(
-    async (next: boolean) => {
-      if (!user) return;
-      setEnabled(next);
-      await (supabase as any)
-        .from("onboarding_reminders_settings")
-        .upsert({ user_id: user.id, enabled: next }, { onConflict: "user_id" });
-    },
-    [user],
-  );
+  const save = useCallback(async (patch: Partial<ReminderSettings>) => {
+    if (!user) return;
+    setSaving(true);
+    const next = { ...settings, ...patch };
+    setSettings(next);
+    const { error } = await (supabase as any)
+      .from("onboarding_reminders_settings")
+      .upsert({ user_id: user.id, ...next }, { onConflict: "user_id" });
+    setSaving(false);
+    if (error) throw error;
+  }, [user, settings]);
 
-  return { enabled, loading, toggle };
+  const toggle = useCallback((next: boolean) => save({ enabled: next }), [save]);
+
+  return { settings, loading, saving, save, toggle, enabled: settings.enabled };
 }
