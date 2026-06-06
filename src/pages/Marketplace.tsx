@@ -89,14 +89,14 @@ export default function Marketplace() {
   );
 
   return (
-    <div className="min-h-screen bg-[hsl(220_25%_6%)] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Pill header */}
-      <header className="sticky top-0 z-40 bg-gradient-to-b from-[hsl(220_25%_6%)] via-[hsl(220_25%_6%)]/95 to-transparent pt-[env(safe-area-inset-top)]">
-        <div className="container mx-auto flex items-center justify-between gap-3 px-4 py-3">
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur pt-[env(safe-area-inset-top)]">
+        <div className="container mx-auto flex items-center justify-between gap-3 px-4 py-3 max-w-6xl">
           <button
             onClick={() => openPanel("favorites")}
             aria-label="Mon espace"
-            className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white/10 backdrop-blur text-white text-sm font-semibold transition hover:bg-white/15 active:scale-95 outline-none ring-1 ring-white/10"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full bg-muted text-foreground text-sm font-semibold transition hover:bg-muted/70 active:scale-95 outline-none ring-1 ring-border"
           >
             {user ? (
               <span className="font-display">{initial}</span>
@@ -104,20 +104,20 @@ export default function Marketplace() {
               <User className="h-5 w-5" />
             )}
             {user && (
-              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-[hsl(220_25%_6%)]" />
+              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
             )}
           </button>
 
           <form
             onSubmit={(e) => e.preventDefault()}
-            className="relative flex-1"
+            className="relative flex-1 max-w-2xl mx-auto"
           >
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Rechercher une boutique, un produit…"
-              className="h-10 rounded-full border-white/10 bg-white/10 pl-10 text-sm text-white placeholder:text-white/50 focus-visible:ring-primary/40 backdrop-blur"
+              className="h-10 rounded-full border-border bg-muted/50 pl-10 text-sm focus-visible:ring-primary/40"
             />
           </form>
 
@@ -133,17 +133,17 @@ export default function Marketplace() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 pb-20">
+      <main className="container mx-auto px-4 pb-20 max-w-6xl">
         {/* States */}
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-24 text-white/60">
+          <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
             <Loader2 className="h-6 w-6 animate-spin" />
             <p className="text-sm">Chargement des boutiques…</p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="mt-8 rounded-3xl border border-dashed border-white/15 bg-white/[0.03] py-16 text-center">
-            <p className="text-lg font-semibold">Aucun résultat</p>
-            <p className="mt-2 text-sm text-white/60">Essayez un autre mot-clé.</p>
+          <div className="mt-8 rounded-3xl border border-dashed border-border bg-muted/30 py-16 text-center">
+            <p className="text-lg font-semibold text-foreground">Aucun résultat</p>
+            <p className="mt-2 text-sm text-muted-foreground">Essayez un autre mot-clé.</p>
           </div>
         ) : (
           <>
@@ -181,11 +181,11 @@ export default function Marketplace() {
         )}
       </main>
 
-      <footer className="border-t border-white/5 bg-black/40">
-        <div className="container mx-auto flex flex-col items-center gap-2 px-4 py-6 text-center text-xs text-white/50 sm:flex-row sm:justify-between sm:text-left">
+      <footer className="border-t border-border bg-muted/30">
+        <div className="container mx-auto max-w-6xl flex flex-col items-center gap-2 px-4 py-6 text-center text-xs text-muted-foreground sm:flex-row sm:justify-between sm:text-left">
           <Logo iconSize={20} asLink={false} />
           <p>© {new Date().getFullYear()} Brand-In-A-Box · Marketplace officiel</p>
-          <Link to="/" className="hover:text-white">Brand-In-A-Box</Link>
+          <Link to="/" className="hover:text-foreground">Brand-In-A-Box</Link>
         </div>
       </footer>
 
@@ -220,17 +220,17 @@ function Rail({ title, subtitle, items, accent }: RailProps) {
         <div>
           <h3
             className={`font-display text-xl font-semibold leading-tight ${
-              accent ? "text-primary" : "text-white"
+              accent ? "text-primary" : "text-foreground"
             }`}
           >
             {title}
           </h3>
-          {subtitle && <p className="text-xs text-white/55">{subtitle}</p>}
+          {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
         </div>
         <button
           onClick={() => scroll(1)}
           aria-label="Suivant"
-          className="hidden h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/80 transition hover:bg-white/20 sm:flex"
+          className="hidden h-9 w-9 items-center justify-center rounded-full bg-muted text-foreground transition hover:bg-muted/70 sm:flex"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
@@ -244,11 +244,9 @@ function Rail({ title, subtitle, items, accent }: RailProps) {
           {items.map((b) => (
             <div
               key={b.id}
-              className="w-[78%] shrink-0 snap-start sm:w-[44%] md:w-[32%] lg:w-[24%]"
+              className="w-[78%] shrink-0 snap-start sm:w-[44%] md:w-[31%] lg:w-[23.5%] xl:w-[22%]"
             >
-              <div className="[&_a]:bg-white/[0.03] [&_a]:border-white/10 [&_p.text-foreground\\/80]:text-white/80 [&_.text-muted-foreground]:text-white/55">
-                <BoutiqueCard boutique={b} />
-              </div>
+              <BoutiqueCard boutique={b} />
             </div>
           ))}
         </div>
