@@ -59,12 +59,19 @@ async function processUser(sb: any, userId: string, source: string) {
     custom_subject: s?.custom_subject ?? null,
     custom_preheader: s?.custom_preheader ?? null,
     custom_cta_label: s?.custom_cta_label ?? null,
+    per_step_rules: (s?.per_step_rules ?? {}) as Record<string, { delay_hours?: number | null; max_reminders?: number | null; enabled?: boolean }>,
   }
 
-  const logSkip = async (stepKey: string, stepLabel: string | null, status: string, detail?: string) => {
+  const logSkip = async (
+    stepKey: string, stepLabel: string | null, status: string,
+    extra: { detail?: string; role?: string | null; next_attempt_at?: string | null } = {},
+  ) => {
     await sb.from('onboarding_reminders_log').insert({
       user_id: userId, step_key: stepKey, attempt_no: 0,
-      status, source, step_label: stepLabel, detail: detail ?? null,
+      status, source, step_label: stepLabel,
+      detail: extra.detail ?? null,
+      role: extra.role ?? null,
+      next_attempt_at: extra.next_attempt_at ?? null,
     })
   }
 
@@ -84,12 +91,13 @@ async function processUser(sb: any, userId: string, source: string) {
     .select('id').eq('user_id', userId).limit(1)
   const isTeam = (members?.length ?? 0) > 0
   const isSeller = !isTeam
+  const roleStr = isTeam ? 'team' : 'seller'
 
-  if (isSeller && !settings.role_seller_enabled) { await logSkip('-', null, 'skipped:role'); return 'skipped:role' }
-  if (isTeam && !settings.role_team_enabled) { await logSkip('-', null, 'skipped:role'); return 'skipped:role' }
+  if (isSeller && !settings.role_seller_enabled) { await logSkip('-', null, 'skipped:role', { role: roleStr }); return 'skipped:role' }
+  if (isTeam && !settings.role_team_enabled) { await logSkip('-', null, 'skipped:role', { role: roleStr }); return 'skipped:role' }
   // persona = same as role here (seller vs team)
-  if (isSeller && !settings.persona_seller_enabled) { await logSkip('-', null, 'skipped:persona'); return 'skipped:persona' }
-  if (isTeam && !settings.persona_team_enabled) { await logSkip('-', null, 'skipped:persona'); return 'skipped:persona' }
+  if (isSeller && !settings.persona_seller_enabled) { await logSkip('-', null, 'skipped:persona', { role: roleStr }); return 'skipped:persona' }
+  if (isTeam && !settings.persona_team_enabled) { await logSkip('-', null, 'skipped:persona', { role: roleStr }); return 'skipped:persona' }
 
   // Age check (24h after signup) — only for cron fallback; event mode can fire sooner if already overdue
   const ageMs = Date.now() - new Date(p.created_at).getTime()
@@ -116,31 +124,44 @@ async function processUser(sb: any, userId: string, source: string) {
   const step = pickBlockedStep(ctx)
   if (!step) return 'skipped:nothing_blocked'
 
+  // Per-step rule overrides
+  const rule = settings.per_step_rules?.[step.key] ?? {}
+  const effDelay = Math.max(1, Math.min(720, Number(rule.delay_hours ?? settings.delay_hours)))
+  const effMax = Math.max(1, Math.min(10, Number(rule.max_reminders ?? settings.max_reminders)))
+  if (rule.enabled === false) {
+    await logSkip(step.key, step.label, 'skipped:step_disabled', { role: roleStr })
+    return 'skipped:step_disabled'
+  }
+
   // Throttle
   const { data: log } = await sb
     .from('onboarding_reminders_log')
     .select('id, sent_at, attempt_no, status')
     .eq('user_id', userId).eq('step_key', step.key)
     .eq('status', 'sent')
-    .order('sent_at', { ascending: false }).limit(settings.max_reminders)
+    .order('sent_at', { ascending: false }).limit(effMax)
   const sentCount = log?.length ?? 0
-  if (sentCount >= settings.max_reminders) {
-    await logSkip(step.key, step.label, 'max_reached')
+  if (sentCount >= effMax) {
+    await logSkip(step.key, step.label, 'max_reached', { role: roleStr })
     return 'max_reached'
   }
   const lastSent = log?.[0]?.sent_at
   if (lastSent) {
     const sinceMs = Date.now() - new Date(lastSent).getTime()
-    if (sinceMs < settings.delay_hours * 3600_000) {
-      await logSkip(step.key, step.label, 'skipped:throttle',
-        `next in ${Math.ceil(settings.delay_hours - sinceMs / 3600_000)}h`)
+    if (sinceMs < effDelay * 3600_000) {
+      const next = new Date(new Date(lastSent).getTime() + effDelay * 3600_000).toISOString()
+      await logSkip(step.key, step.label, 'skipped:throttle', {
+        role: roleStr,
+        next_attempt_at: next,
+        detail: `Délai ${effDelay}h non écoulé`,
+      })
       return 'skipped:throttle'
     }
   }
 
   const { data: userRes } = await sb.auth.admin.getUserById(userId)
   const email = userRes?.user?.email
-  if (!email) { await logSkip(step.key, step.label, 'failed', 'no_email'); return 'failed' }
+  if (!email) { await logSkip(step.key, step.label, 'failed', { role: roleStr, detail: 'no_email' }); return 'failed' }
 
   const attemptNo = sentCount + 1
   const totalSteps = ctx.isBusiness ? 5 : 4
@@ -167,12 +188,17 @@ async function processUser(sb: any, userId: string, source: string) {
     },
   })
   if (sendErr) {
-    await logSkip(step.key, step.label, 'failed', sendErr.message)
+    await logSkip(step.key, step.label, 'failed', { role: roleStr, detail: sendErr.message })
     return 'failed'
   }
+  const nextAttempt = attemptNo < effMax
+    ? new Date(Date.now() + effDelay * 3600_000).toISOString()
+    : null
   await sb.from('onboarding_reminders_log').insert({
     user_id: userId, step_key: step.key, attempt_no: attemptNo,
     status: 'sent', source, step_label: step.label,
+    role: roleStr, next_attempt_at: nextAttempt,
+    detail: `Délai ${effDelay}h · max ${effMax}`,
   })
   return 'sent'
 }
