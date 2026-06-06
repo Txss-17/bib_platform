@@ -35,7 +35,10 @@ export interface SectionConfig {
     | "comparison"
     | "bundle"
     | "lookbook"
-    | "sticky-cta";
+    | "sticky-cta"
+    | "banner-cta"
+    | "image-gallery"
+    | "video-gallery";
   enabled: boolean;
   title?: string;
   subtitle?: string;
