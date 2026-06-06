@@ -35,7 +35,10 @@ export interface SectionConfig {
     | "comparison"
     | "bundle"
     | "lookbook"
-    | "sticky-cta";
+    | "sticky-cta"
+    | "banner-cta"
+    | "image-gallery"
+    | "video-gallery";
   enabled: boolean;
   title?: string;
   subtitle?: string;
@@ -95,6 +98,9 @@ export const availableSections: { type: SectionConfig["type"]; label: string; de
   { type: "comparison", label: "Comparatif", description: "Avant / Après ou Nous vs Concurrents" },
   { type: "bundle", label: "Bundle / Offre groupée", description: "Pack de plusieurs produits avec remise" },
   { type: "lookbook", label: "Lookbook", description: "Galerie immersive façon magazine" },
+  { type: "banner-cta", label: "Bande CTA", description: "Bande de couleur avec texte à gauche et bouton à droite" },
+  { type: "image-gallery", label: "Galerie images", description: "1 à 5 images, 1-4 colonnes, effets de défilement" },
+  { type: "video-gallery", label: "Galerie vidéos", description: "1 à 5 vidéos, 1-4 colonnes, autoplay au scroll" },
   { type: "products", label: "Produits", description: "Grille de produits" },
   { type: "about", label: "À propos", description: "Présentation de la boutique" },
   { type: "testimonials", label: "Avis clients", description: "Témoignages et étoiles" },
