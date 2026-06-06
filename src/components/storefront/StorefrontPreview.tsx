@@ -24,6 +24,11 @@ import {
   StorefrontLookbook,
   StorefrontStickyCTA,
 } from "./StorefrontConversionSections";
+import {
+  StorefrontBannerCTA,
+  StorefrontImageGallery,
+  StorefrontVideoGallery,
+} from "./StorefrontMediaSections";
 
 function effectToReveal(effect?: SectionEffect): "up" | "left" | "right" | "scale" | null {
   switch (effect) {
@@ -316,6 +321,52 @@ export function StorefrontPreview({
             <StorefrontLookbook
               title={section.data?.title}
               images={section.data?.images}
+              primaryColor={primaryColor}
+            />
+          </div>
+        );
+        break;
+      case "banner-cta":
+        defaultDir = "up";
+        inner = (
+          <div key="banner-cta" className={animClass} style={animStyle}>
+            <StorefrontBannerCTA
+              title={section.data?.title}
+              subtitle={section.data?.subtitle}
+              ctaLabel={section.data?.ctaLabel}
+              ctaHref={section.data?.ctaHref}
+              align={section.data?.align}
+              primaryColor={primaryColor}
+              secondaryColor={secondaryColor}
+            />
+          </div>
+        );
+        break;
+      case "image-gallery":
+        defaultDir = "up";
+        inner = (
+          <div key="image-gallery" className={animClass} style={animStyle}>
+            <StorefrontImageGallery
+              title={section.data?.title}
+              subtitle={section.data?.subtitle}
+              images={section.data?.images}
+              columns={section.data?.columns}
+              effect={section.data?.effect}
+              primaryColor={primaryColor}
+            />
+          </div>
+        );
+        break;
+      case "video-gallery":
+        defaultDir = "up";
+        inner = (
+          <div key="video-gallery" className={animClass} style={animStyle}>
+            <StorefrontVideoGallery
+              title={section.data?.title}
+              subtitle={section.data?.subtitle}
+              videos={section.data?.videos}
+              columns={section.data?.columns}
+              effect={section.data?.effect}
               primaryColor={primaryColor}
             />
           </div>
