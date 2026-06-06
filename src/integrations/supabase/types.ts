@@ -703,6 +703,99 @@ export type Database = {
           },
         ]
       }
+      onboarding_reminders_log: {
+        Row: {
+          attempt_no: number
+          detail: string | null
+          id: string
+          next_attempt_at: string | null
+          role: string | null
+          sent_at: string
+          source: string
+          status: string
+          step_key: string
+          step_label: string | null
+          user_id: string
+        }
+        Insert: {
+          attempt_no?: number
+          detail?: string | null
+          id?: string
+          next_attempt_at?: string | null
+          role?: string | null
+          sent_at?: string
+          source?: string
+          status?: string
+          step_key: string
+          step_label?: string | null
+          user_id: string
+        }
+        Update: {
+          attempt_no?: number
+          detail?: string | null
+          id?: string
+          next_attempt_at?: string | null
+          role?: string | null
+          sent_at?: string
+          source?: string
+          status?: string
+          step_key?: string
+          step_label?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      onboarding_reminders_settings: {
+        Row: {
+          custom_cta_label: string | null
+          custom_preheader: string | null
+          custom_subject: string | null
+          delay_hours: number
+          enabled: boolean
+          max_reminders: number
+          per_step_rules: Json
+          persona_seller_enabled: boolean
+          persona_team_enabled: boolean
+          role_seller_enabled: boolean
+          role_team_enabled: boolean
+          timezone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          custom_cta_label?: string | null
+          custom_preheader?: string | null
+          custom_subject?: string | null
+          delay_hours?: number
+          enabled?: boolean
+          max_reminders?: number
+          per_step_rules?: Json
+          persona_seller_enabled?: boolean
+          persona_team_enabled?: boolean
+          role_seller_enabled?: boolean
+          role_team_enabled?: boolean
+          timezone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          custom_cta_label?: string | null
+          custom_preheader?: string | null
+          custom_subject?: string | null
+          delay_hours?: number
+          enabled?: boolean
+          max_reminders?: number
+          per_step_rules?: Json
+          persona_seller_enabled?: boolean
+          persona_team_enabled?: boolean
+          role_seller_enabled?: boolean
+          role_team_enabled?: boolean
+          timezone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       order_issues: {
         Row: {
           created_at: string
