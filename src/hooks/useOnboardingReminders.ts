@@ -14,6 +14,7 @@ export interface ReminderSettings {
   custom_subject: string | null;
   custom_preheader: string | null;
   custom_cta_label: string | null;
+  per_step_rules: Record<string, { delay_hours?: number | null; max_reminders?: number | null; enabled?: boolean }>;
 }
 
 const DEFAULTS: ReminderSettings = {
@@ -28,6 +29,7 @@ const DEFAULTS: ReminderSettings = {
   custom_subject: null,
   custom_preheader: null,
   custom_cta_label: null,
+  per_step_rules: {},
 };
 
 export function useOnboardingReminders() {
