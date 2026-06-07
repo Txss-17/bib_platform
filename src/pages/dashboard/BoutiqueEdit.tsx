@@ -1332,24 +1332,35 @@ export default function BoutiqueEdit() {
                        {sections.map((section, sIdx) => {
                           const sectionDef = availableSections.find(s => s.type === section.type);
                           if (!sectionDef) return null;
+                          const isGallery = section.type === "image-gallery" || section.type === "video-gallery";
                           return (
-                            <SortableSectionItem
-                              key={section.type}
-                              section={section}
-                              sectionDef={sectionDef}
-                              isEnabled={section.enabled}
-                              onToggle={updateSection}
-                              onEffectChange={updateSectionEffect}
-                              onIntensityChange={updateSectionIntensity}
-                              onWidthChange={updateSectionWidth}
-                              onSpacingChange={updateSectionSpacing}
-                              onAlignChange={updateSectionAlign}
-                              onMoveUp={(t) => moveSection(t, -1)}
-                              onMoveDown={(t) => moveSection(t, 1)}
-                              onRemove={(t) => removeSection(t as SectionConfig["type"])}
-                              canMoveUp={sIdx > 0}
-                              canMoveDown={sIdx < sections.length - 1}
-                            />
+                            <div key={section.type}>
+                              <SortableSectionItem
+                                section={section}
+                                sectionDef={sectionDef}
+                                isEnabled={section.enabled}
+                                onToggle={updateSection}
+                                onEffectChange={updateSectionEffect}
+                                onIntensityChange={updateSectionIntensity}
+                                onWidthChange={updateSectionWidth}
+                                onSpacingChange={updateSectionSpacing}
+                                onAlignChange={updateSectionAlign}
+                                onMoveUp={(t) => moveSection(t, -1)}
+                                onMoveDown={(t) => moveSection(t, 1)}
+                                onRemove={(t) => removeSection(t as SectionConfig["type"])}
+                                canMoveUp={sIdx > 0}
+                                canMoveDown={sIdx < sections.length - 1}
+                              />
+                              {isGallery && section.enabled && id && (
+                                <div className="mt-1 ml-4 rounded-lg border border-border/40 bg-muted/20">
+                                  <GallerySectionEditor
+                                    boutiqueId={id}
+                                    section={section}
+                                    onChange={(data) => updateSectionData(section.type, data)}
+                                  />
+                                </div>
+                              )}
+                            </div>
                           );
                         })}
                       </div>
