@@ -40,6 +40,7 @@ import { BoutiqueIdentityPanel } from "@/components/dashboard/boutique/BoutiqueI
 import { BrandStudioWizard } from "@/components/dashboard/boutique/BrandStudioWizard";
 import { StudioEditor } from "@/components/dashboard/boutique/StudioEditor";
 import { HighlightsManager } from "@/components/dashboard/boutique/HighlightsManager";
+import { GallerySectionEditor } from "@/components/dashboard/boutique/GallerySectionEditor";
 
 const colorSchemes = [
   { name: "Moderne", primary: "#3b82f6", secondary: "#1e40af" },
