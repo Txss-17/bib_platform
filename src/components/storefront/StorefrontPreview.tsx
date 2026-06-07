@@ -347,12 +347,9 @@ export function StorefrontPreview({
         inner = (
           <div key="image-gallery" className={animClass} style={animStyle}>
             <StorefrontImageGallery
-              title={section.data?.title}
-              subtitle={section.data?.subtitle}
               images={section.data?.images}
               columns={section.data?.columns}
               effect={section.data?.effect}
-              primaryColor={primaryColor}
             />
           </div>
         );
@@ -362,12 +359,9 @@ export function StorefrontPreview({
         inner = (
           <div key="video-gallery" className={animClass} style={animStyle}>
             <StorefrontVideoGallery
-              title={section.data?.title}
-              subtitle={section.data?.subtitle}
               videos={section.data?.videos}
               columns={section.data?.columns}
               effect={section.data?.effect}
-              primaryColor={primaryColor}
             />
           </div>
         );

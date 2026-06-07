@@ -136,43 +136,19 @@ function GalleryTile({
 }
 
 export function StorefrontImageGallery({
-  title,
-  subtitle,
   images,
   columns = 3,
   effect = "slide-up",
-  primaryColor,
 }: {
-  title?: string;
-  subtitle?: string;
   images?: GalleryImage[];
   columns?: 1 | 2 | 3 | 4;
   effect?: "fade" | "slide-up" | "zoom" | "tilt" | "none";
-  primaryColor?: string;
 }) {
   const items = (images && images.length > 0 ? images : DEFAULT_IMAGES).slice(0, 5);
-  const accent = hex(primaryColor);
 
   return (
     <section className="w-full px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
       <div className="max-w-7xl mx-auto">
-        {(title || subtitle) && (
-          <div className="mb-8 sm:mb-10 text-center">
-            {title && (
-              <h2
-                className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight"
-                style={{ color: accent }}
-              >
-                {title}
-              </h2>
-            )}
-            {subtitle && (
-              <p className="mt-2 text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
-                {subtitle}
-              </p>
-            )}
-          </div>
-        )}
         <div className={`grid ${colsClass(columns)} gap-3 sm:gap-4`}>
           {items.map((img, i) => (
             <GalleryTile key={i} index={i} effect={effect}>
@@ -183,11 +159,6 @@ export function StorefrontImageGallery({
                   loading="lazy"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                {img.caption && (
-                  <figcaption className="absolute bottom-0 left-0 right-0 p-3 text-white text-sm bg-gradient-to-t from-black/70 to-transparent">
-                    {img.caption}
-                  </figcaption>
-                )}
               </figure>
             </GalleryTile>
           ))}
@@ -211,13 +182,11 @@ const DEFAULT_VIDEOS: GalleryVideo[] = [
 function VideoTile({
   src,
   poster,
-  caption,
   index,
   effect,
 }: {
   src: string;
   poster?: string;
-  caption?: string;
   index: number;
   effect: "fade" | "slide-up" | "zoom" | "tilt" | "none";
 }) {
@@ -258,54 +227,25 @@ function VideoTile({
           preload="metadata"
           className="w-full h-full object-cover"
         />
-        {caption && (
-          <figcaption className="absolute bottom-0 left-0 right-0 p-3 text-white text-sm bg-gradient-to-t from-black/70 to-transparent">
-            {caption}
-          </figcaption>
-        )}
       </figure>
     </div>
   );
 }
 
 export function StorefrontVideoGallery({
-  title,
-  subtitle,
   videos,
   columns = 2,
   effect = "slide-up",
-  primaryColor,
 }: {
-  title?: string;
-  subtitle?: string;
   videos?: GalleryVideo[];
   columns?: 1 | 2 | 3 | 4;
   effect?: "fade" | "slide-up" | "zoom" | "tilt" | "none";
-  primaryColor?: string;
 }) {
   const items = (videos && videos.length > 0 ? videos : DEFAULT_VIDEOS).slice(0, 5);
-  const accent = hex(primaryColor);
 
   return (
     <section className="w-full px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
       <div className="max-w-7xl mx-auto">
-        {(title || subtitle) && (
-          <div className="mb-8 sm:mb-10 text-center">
-            {title && (
-              <h2
-                className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight"
-                style={{ color: accent }}
-              >
-                {title}
-              </h2>
-            )}
-            {subtitle && (
-              <p className="mt-2 text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
-                {subtitle}
-              </p>
-            )}
-          </div>
-        )}
         <div className={`grid ${colsClass(columns)} gap-3 sm:gap-4`}>
           {items.map((v, i) => (
             <VideoTile
@@ -314,7 +254,6 @@ export function StorefrontVideoGallery({
               effect={effect}
               src={v.url}
               poster={v.poster}
-              caption={v.caption}
             />
           ))}
         </div>
