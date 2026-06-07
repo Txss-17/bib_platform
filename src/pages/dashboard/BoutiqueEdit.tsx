@@ -497,6 +497,13 @@ export default function BoutiqueEdit() {
     setThemeSettings(prev => ({ ...prev, sections: updated }));
   };
 
+  const updateSectionData = (sectionType: string, data: Record<string, any>) => {
+    const template = getTemplateForCategory(boutique?.category || "Mode");
+    const currentSections = themeSettings.sections || template.sections;
+    const updated = currentSections.map(s => s.type === sectionType ? { ...s, data } : s);
+    setThemeSettings(prev => ({ ...prev, sections: updated }));
+  };
+
   const moveSection = (sectionType: string, direction: -1 | 1) => {
     const template = getTemplateForCategory(boutique?.category || "Mode");
     const currentSections = themeSettings.sections || template.sections;
