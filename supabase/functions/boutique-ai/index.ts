@@ -35,6 +35,17 @@ IMPORTANT — Champ « inspiration » :
   avec les autres réponses (audience, ambiance, ton, valeurs).
 - Toujours retourner un appel d'outil complet et valide.
 
+RÈGLES D'UNICITÉ (critiques) :
+- Le seed change à chaque génération : tes choix doivent VRAIMENT varier d'une boutique à l'autre.
+- Ne réutilise PAS les mêmes formules ("L'élégance qui dure", "Faire mieux", "Découvrir la collection").
+  Invente un tagline + hero_title + CTA qui n'apparaissent dans aucune autre boutique.
+- Varie le LABEL du CTA principal (évite "Découvrir" par défaut : préfère un verbe lié au produit
+  — "Goûter", "Réserver", "Explorer la saison", "Rejoindre le cercle", "Composer mon coffret"…).
+- Varie aussi la PALETTE (jamais 2 marques avec le même primaire) et le COUPLE TYPO
+  (alterne entre serif éditoriale, sans-serif géométrique, slab, mono…). Pas que Playfair+Inter.
+- Propose un menu de navigation court (3 à 5 items) cohérent avec la marque, pas générique
+  ("Boutique / À propos / Contact" est interdit tel quel — reformule selon l'univers).
+
 Tu réponds STRICTEMENT en JSON via tool calling.`;
 
 const SYSTEM_SEO = `Tu es un expert SEO e-commerce francophone.
@@ -140,6 +151,11 @@ const BRAND_TOOL = {
             hero_subtitle: { type: "string", description: "Sous-titre hero <140 car." },
             about: { type: "string", description: "Paragraphe about ~280 car." },
             cta_primary: { type: "string", description: "Label CTA principal" },
+            nav_links: {
+              type: "array",
+              description: "3 à 5 items de menu, courts et signature de la marque",
+              items: { type: "string" },
+            },
           },
           required: ["tagline", "hero_title", "hero_subtitle", "about", "cta_primary"],
         },
