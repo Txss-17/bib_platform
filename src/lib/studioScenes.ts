@@ -751,6 +751,44 @@ export const STUDIO_BUNDLES: Array<{ key: string; name: string; scenes: Array<{ 
       { id: "cta-sticky", variant: "centered" },
     ],
   },
+  {
+    key: "magazine",
+    name: "Magazine éditorial",
+    scenes: [
+      { id: "hero-cinema", variant: "split" },
+      { id: "marquee-strip", variant: "accent" },
+      { id: "lookbook-parallax", variant: "zigzag" },
+      { id: "press-strip", variant: "scrolling" },
+      { id: "showcase-magazine", variant: "carousel" },
+      { id: "stats-counter", variant: "split" },
+      { id: "newsletter-editorial", variant: "split-image" },
+    ],
+  },
+  {
+    key: "showroom",
+    name: "Showroom signature",
+    scenes: [
+      { id: "hero-cinema", variant: "fullscreen" },
+      { id: "product-spotlight", variant: "image-right" },
+      { id: "gallery-mosaic", variant: "mosaic" },
+      { id: "image-text-split", variant: "image-left" },
+      { id: "trust-wall", variant: "press-first" },
+      { id: "cta-sticky", variant: "sticky-only" },
+    ],
+  },
+  {
+    key: "community",
+    name: "Communauté & valeurs",
+    scenes: [
+      { id: "hero-cinema", variant: "type-only" },
+      { id: "manifesto-typographic", variant: "xl" },
+      { id: "founder-letter", variant: "portrait-left" },
+      { id: "timeline", variant: "vertical" },
+      { id: "showcase-magazine", variant: "3-up" },
+      { id: "newsletter-editorial", variant: "minimal" },
+      { id: "cta-sticky", variant: "centered" },
+    ],
+  },
 ];
 
 function hashSeed(seed: string): number {
@@ -769,12 +807,40 @@ export function defaultStudioBundle(seed?: string): Array<
   Pick<SceneRecord, "role" | "scene_type" | "variant" | "content" | "position" | "is_visible">
 > {
   const bundle = pickStudioBundle(seed);
-  return bundle.scenes.map((s, index) => {
-    const def = findSceneDefinition(s.id)!;
+  // Mini PRNG déterministe (mulberry32) — varie aussi la variante de CHAQUE scène
+  // ET injecte un léger shuffle des scènes intermédiaires pour éviter la
+  // signature "même ordre". Le hero reste toujours en tête.
+  const seedNum = hashSeed(seed ?? Math.random().toString(36).slice(2));
+  let s = seedNum;
+  const rand = () => {
+    s |= 0; s = (s + 0x6D2B79F5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+
+  const scenes = bundle.scenes.map((sc) => {
+    const def = findSceneDefinition(sc.id)!;
+    // 35% chance: choisir une variante aléatoire (toujours déterministe via seed)
+    const variant = rand() < 0.35
+      ? def.variants[Math.floor(rand() * def.variants.length)]
+      : (sc.variant ?? def.variants[0]);
+    return { def, variant };
+  });
+
+  // Shuffle léger des scènes du milieu (hero[0] fixé, CTA final fixé)
+  if (scenes.length > 3) {
+    for (let i = scenes.length - 2; i > 1; i--) {
+      const j = 1 + Math.floor(rand() * (i - 1));
+      [scenes[i], scenes[j]] = [scenes[j], scenes[i]];
+    }
+  }
+
+  return scenes.map(({ def, variant }, index) => {
     return {
       role: def.role,
       scene_type: def.id,
-      variant: s.variant ?? def.variants[0],
+      variant,
       content: def.defaultContent,
       position: index,
       is_visible: true,
