@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, ArrowRight, Check, Upload, Palette, Package, Eye, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Package, Eye, Loader2, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCreateBoutique } from "@/hooks/useBoutiques";
@@ -13,9 +13,8 @@ import { toast } from "sonner";
 
 const steps = [
   { id: 1, title: "Informations", icon: Package },
-  { id: 2, title: "Identité visuelle", icon: Palette },
-  { id: 3, title: "Produits", icon: Package },
-  { id: 4, title: "Aperçu", icon: Eye },
+  { id: 2, title: "Produits", icon: Package },
+  { id: 3, title: "Aperçu", icon: Eye },
 ];
 
 const categories = [
@@ -27,14 +26,6 @@ const categories = [
   "Alimentation",
   "Jardin",
   "Enfants",
-];
-
-const colorSchemes = [
-  { name: "Moderne", primary: "#3b82f6", secondary: "#1e40af" },
-  { name: "Nature", primary: "#22c55e", secondary: "#15803d" },
-  { name: "Élégant", primary: "#8b5cf6", secondary: "#6d28d9" },
-  { name: "Chaleureux", primary: "#f97316", secondary: "#c2410c" },
-  { name: "Minimaliste", primary: "#374151", secondary: "#1f2937" },
 ];
 
 function StepIndicator({ currentStep }: { currentStep: number }) {
@@ -76,11 +67,9 @@ export default function BoutiqueCreate() {
     slug: "",
     category: "",
     description: "",
-    colorScheme: "",
-    logo: null as File | null,
   });
 
-  const updateFormData = (key: string, value: string | File | null) => {
+  const updateFormData = (key: string, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }));
     if (key === "name") {
       const slug = value.toString().toLowerCase()
@@ -93,31 +82,24 @@ export default function BoutiqueCreate() {
   const canProceed = () => {
     switch (currentStep) {
       case 1: return formData.name && formData.category && formData.slug;
-      case 2: return formData.colorScheme;
+      case 2: return true;
       case 3: return true;
-      case 4: return true;
       default: return false;
     }
   };
 
   const handleCreateBoutique = async () => {
     try {
-      const selectedScheme = colorSchemes.find(s => s.name === formData.colorScheme);
-      
       await createBoutique.mutateAsync({
         name: formData.name,
         slug: formData.slug,
         category: formData.category,
         description: formData.description || null,
-        theme_settings: selectedScheme ? {
-          colorScheme: formData.colorScheme,
-          primaryColor: selectedScheme.primary,
-          secondaryColor: selectedScheme.secondary,
-        } : null,
+        theme_settings: null,
         status: "draft",
       });
 
-      toast.success("Boutique créée avec succès !");
+      toast.success("Boutique créée — passons au Brand Studio IA.");
       navigate("/dashboard/boutiques");
     } catch (error: any) {
       if (error.code === "23505") {
@@ -209,50 +191,23 @@ export default function BoutiqueCreate() {
                   rows={4}
                 />
               </div>
-            </div>
-          )}
 
-          {/* Step 2: Visual Identity */}
-          {currentStep === 2 && (
-            <div className="space-y-6">
-              <div>
-                <Label>Logo de la boutique</Label>
-                <div className="mt-2 border-2 border-dashed border-border rounded-lg p-8 text-center">
-                  <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">
-                    Glissez votre logo ici ou cliquez pour sélectionner
+              <div className="p-4 rounded-lg bg-accent/10 border border-accent/30 flex gap-3">
+                <Sparkles className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                <div className="text-sm text-foreground">
+                  <p className="font-medium">Identité visuelle générée par l'IA</p>
+                  <p className="text-muted-foreground mt-1">
+                    Palette, typographie, copy, menu et structure de page seront créés
+                    par le Brand Studio à l'ouverture de l'éditeur. Chaque boutique reçoit
+                    une identité unique — jamais deux fois la même mise en page.
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">PNG, JPG jusqu'à 2MB</p>
-                </div>
-              </div>
-
-              <div>
-                <Label>Palette de couleurs</Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-                  {colorSchemes.map(scheme => (
-                    <button
-                      key={scheme.name}
-                      onClick={() => updateFormData("colorScheme", scheme.name)}
-                      className={`p-4 rounded-lg border-2 transition-all ${
-                        formData.colorScheme === scheme.name 
-                          ? "border-primary bg-primary/5" 
-                          : "border-border hover:border-primary/50"
-                      }`}
-                    >
-                      <div className="flex gap-2 mb-2">
-                        <div className="w-6 h-6 rounded-full" style={{ backgroundColor: scheme.primary }} />
-                        <div className="w-6 h-6 rounded-full" style={{ backgroundColor: scheme.secondary }} />
-                      </div>
-                      <p className="text-sm font-medium text-foreground">{scheme.name}</p>
-                    </button>
-                  ))}
                 </div>
               </div>
             </div>
           )}
 
-          {/* Step 3: Products */}
-          {currentStep === 3 && (
+          {/* Step 2: Products */}
+          {currentStep === 2 && (
             <div className="space-y-6 text-center py-8">
               <Package className="w-16 h-16 text-muted-foreground mx-auto" />
               <div>
@@ -270,8 +225,8 @@ export default function BoutiqueCreate() {
             </div>
           )}
 
-          {/* Step 4: Preview */}
-          {currentStep === 4 && (
+          {/* Step 3: Preview */}
+          {currentStep === 3 && (
             <div className="space-y-6">
               <div className="p-6 rounded-lg bg-muted/50">
                 <h3 className="font-semibold text-foreground mb-4">Récapitulatif</h3>
@@ -289,8 +244,10 @@ export default function BoutiqueCreate() {
                     <dd className="font-medium text-foreground">{formData.category || "-"}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-muted-foreground">Thème</dt>
-                    <dd className="font-medium text-foreground">{formData.colorScheme || "-"}</dd>
+                    <dt className="text-muted-foreground">Identité visuelle</dt>
+                    <dd className="font-medium text-accent flex items-center gap-1">
+                      <Sparkles className="w-3.5 h-3.5" /> Brand Studio IA
+                    </dd>
                   </div>
                 </dl>
               </div>
@@ -298,7 +255,8 @@ export default function BoutiqueCreate() {
               <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
                 <p className="text-sm text-foreground">
                   ✨ Votre boutique sera créée en mode <strong>brouillon</strong>. 
-                  Vous pourrez la publier une fois que vous aurez ajouté des produits.
+                  Le Brand Studio se lance automatiquement à l'ouverture de l'éditeur
+                  pour générer palette, typo, copy et structure de page sur-mesure.
                 </p>
               </div>
             </div>
@@ -315,7 +273,7 @@ export default function BoutiqueCreate() {
               <div />
             )}
 
-            {currentStep < 4 ? (
+            {currentStep < 3 ? (
               <Button onClick={() => setCurrentStep(prev => prev + 1)} disabled={!canProceed()}>
                 Suivant
                 <ArrowRight className="w-4 h-4 ml-2" />
