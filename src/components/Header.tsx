@@ -30,7 +30,7 @@ const Header = () => {
   const partnerItems = [
     { to: "/suppliers/apply", label: "Devenir fournisseur", desc: "Rejoindre le catalogue BIB", icon: Boxes },
     { to: "/ops/apply", label: "Devenir partenaire logistique", desc: "Opérer en marque blanche", icon: Handshake },
-    { to: "/a-propos", label: "Centre d'aide", desc: "FAQ, contact & support", icon: LifeBuoy },
+    { to: "/centre-aide", label: "Centre d'aide", desc: "FAQ, ressources & support", icon: LifeBuoy },
   ];
 
   return (
