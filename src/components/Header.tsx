@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Store, ChevronDown, Truck, Package, Briefcase } from "lucide-react";
+import { Menu, X, Store, ChevronDown, Truck, Package, Briefcase, LifeBuoy, Handshake, Boxes } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -25,6 +25,12 @@ const Header = () => {
     { to: "/suppliers", label: "Fournisseurs", desc: "Catalogue & partenaires", icon: Package },
     { to: "/ops", label: "Logistique", desc: "Opérateurs vérifiés", icon: Truck },
     { to: "/carrieres", label: "Carrières", desc: "Rejoindre l'équipe", icon: Briefcase },
+  ];
+
+  const partnerItems = [
+    { to: "/suppliers/apply", label: "Devenir fournisseur", desc: "Rejoindre le catalogue BIB", icon: Boxes },
+    { to: "/ops/apply", label: "Devenir partenaire logistique", desc: "Opérer en marque blanche", icon: Handshake },
+    { to: "/a-propos", label: "Centre d'aide", desc: "FAQ, contact & support", icon: LifeBuoy },
   ];
 
   return (
@@ -52,7 +58,7 @@ const Header = () => {
                 Découvrir le réseau
                 <ChevronDown className="h-3.5 w-3.5" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-72 p-2">
+              <DropdownMenuContent align="start" className="w-80 p-2">
                 <DropdownMenuLabel className="text-xs uppercase tracking-wider text-muted-foreground">
                   L'écosystème Brand-In-A-Box
                 </DropdownMenuLabel>
@@ -61,6 +67,23 @@ const Header = () => {
                   <DropdownMenuItem key={to} asChild>
                     <Link to={to} className="flex items-start gap-3 py-2.5 cursor-pointer">
                       <span className="mt-0.5 w-8 h-8 rounded-lg bg-bib-marine/5 text-bib-marine flex items-center justify-center shrink-0">
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <span className="flex flex-col">
+                        <span className="text-sm font-medium text-foreground">{label}</span>
+                        <span className="text-xs text-muted-foreground">{desc}</span>
+                      </span>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Devenir partenaire & aide
+                </DropdownMenuLabel>
+                {partnerItems.map(({ to, label, desc, icon: Icon }) => (
+                  <DropdownMenuItem key={to} asChild>
+                    <Link to={to} className="flex items-start gap-3 py-2.5 cursor-pointer">
+                      <span className="mt-0.5 w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center shrink-0">
                         <Icon className="h-4 w-4" />
                       </span>
                       <span className="flex flex-col">
@@ -141,6 +164,27 @@ const Header = () => {
                       </span>
                     </Link>
                   ))}
+                  <div className="mt-2 pt-2 border-t border-border/40">
+                    <p className="px-2 text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
+                      Devenir partenaire & aide
+                    </p>
+                    {partnerItems.map(({ to, label, desc, icon: Icon }) => (
+                      <Link
+                        key={to}
+                        to={to}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-start gap-3 py-2.5 px-2 rounded-lg hover:bg-muted/60"
+                      >
+                        <span className="mt-0.5 w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center shrink-0">
+                          <Icon className="h-4 w-4" />
+                        </span>
+                        <span className="flex flex-col">
+                          <span className="text-sm font-medium text-foreground">{label}</span>
+                          <span className="text-xs text-muted-foreground">{desc}</span>
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               )}
 

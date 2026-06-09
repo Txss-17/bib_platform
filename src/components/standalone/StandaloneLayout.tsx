@@ -1,17 +1,8 @@
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Logo } from "@/components/Logo";
-import { Button } from "@/components/ui/button";
 import Footer from "@/components/Footer";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Menu, Mail, Layers, Workflow, Truck, Boxes, ShieldCheck, Sparkles, FileText, ClipboardCheck } from "lucide-react";
+import Header from "@/components/Header";
+import { Mail, Layers, Workflow, Truck, Boxes, ShieldCheck, Sparkles, FileText, ClipboardCheck } from "lucide-react";
 
 export interface StandaloneMenuItem {
   label: string;
@@ -54,53 +45,40 @@ export function StandaloneLayout({ children, portal, accent = "primary", menuIte
   };
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-40 border-b border-border/50 bg-background/80 backdrop-blur-lg">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          <Link to="/" className="flex items-center gap-3 min-w-0">
-            <Logo iconSize={32} />
+      <Header />
+      {/* Spacer for fixed Header (h-16 mobile / h-20 desktop) */}
+      <div className="h-16 lg:h-20" aria-hidden />
+      {/* Portal sub-nav: badge + in-page anchors so partners keep quick access to sections */}
+      {(portal || menuItems.length > 0) && (
+        <div className="sticky top-16 lg:top-20 z-30 border-b border-border/50 bg-background/85 backdrop-blur">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center gap-3 overflow-x-auto">
             <span
-              className={`hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[10px] uppercase tracking-[0.18em] font-semibold border ${accentClasses[accent]}`}
+              className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] uppercase tracking-[0.18em] font-semibold border shrink-0 ${accentClasses[accent]}`}
             >
               {portal}
             </span>
-          </Link>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Menu className="w-4 h-4" />
-                <span>Menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              {menuItems.length > 0 && (
-                <>
-                  <DropdownMenuLabel>{portal}</DropdownMenuLabel>
-                  {menuItems.map((item) => {
-                    const Icon = item.icon ? iconMap[item.icon] : null;
-                    const isAnchor = item.href.startsWith("#");
-                    const content = (
-                      <span className="flex items-center gap-2">
-                        {Icon && <Icon className="w-4 h-4" />}
-                        {item.label}
-                      </span>
-                    );
-                    return (
-                      <DropdownMenuItem key={item.href} asChild>
-                        {isAnchor ? (
-                          <a href={item.href}>{content}</a>
-                        ) : (
-                          <Link to={item.href}>{content}</Link>
-                        )}
-                  </DropdownMenuItem>
-                    );
-                  })}
-                  <DropdownMenuSeparator />
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            {menuItems.length > 0 && (
+              <nav className="flex items-center gap-1 text-sm">
+                {menuItems.map((item) => {
+                  const Icon = item.icon ? iconMap[item.icon] : null;
+                  const isAnchor = item.href.startsWith("#");
+                  const content = (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 whitespace-nowrap">
+                      {Icon && <Icon className="w-3.5 h-3.5" />}
+                      {item.label}
+                    </span>
+                  );
+                  return isAnchor ? (
+                    <a key={item.href} href={item.href}>{content}</a>
+                  ) : (
+                    <Link key={item.href} to={item.href}>{content}</Link>
+                  );
+                })}
+              </nav>
+            )}
+          </div>
         </div>
-      </header>
+      )}
       <main className="flex-1">{children}</main>
       <Footer />
     </div>
