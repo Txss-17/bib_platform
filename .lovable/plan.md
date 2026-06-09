@@ -1,91 +1,65 @@
+# Centre d'aide Brand-In-A-Box
+
+## Constat
+Aujourd'hui le lien « Centre d'aide » du menu pointe vers `/a-propos`, qui est en réalité une page **manifesto / À propos**. Il manque une vraie page d'aide pour orienter vendeurs, partenaires et clients finaux.
 
 ## Objectif
+Créer une page publique `/centre-aide` (alias `/aide`) qui regroupe **toutes les ressources** dont un utilisateur a besoin avant d'écrire au support, organisée en 4 blocs lisibles en moins de 30 secondes.
 
-Remplacer le gabarit HTML générique actuel du Portail Logistique par un **modèle d'étiquette Brand-In-A-Box** fidèle à la maquette fournie : format A6 (10×15 cm) prêt à imprimer sur imprimante thermique ou A4, avec code-barres et QR code générés à la volée. Les API transporteurs (Sendcloud/Colissimo/DHL…) seront branchées plus tard sans casser ce composant.
+## Structure de la page
 
-## Modèle d'étiquette (reproduction fidèle de la maquette)
+### 1. Hero + barre de recherche
+- Titre « Comment pouvons-nous vous aider ? »
+- Input de recherche live qui filtre l'ensemble FAQ + guides ci-dessous (filtrage client, pas d'appel backend).
+- 3 raccourcis rapides : « Suivre ma commande », « Devenir vendeur », « Contacter le support ».
 
-Format **A6 portrait 10×15 cm**, fond blanc, encre noire + accent or BIB.
+### 2. Bloc « Je suis… » (orientation par persona)
+Cartes cliquables qui scrollent vers la section adaptée :
+- **Client** → suivi commande, retours, recyclage, gift cards
+- **Vendeur** → créer boutique, ajouter produits, paiements, échantillons
+- **Fournisseur** → candidature, catalogue, performance
+- **Partenaire logistique** → portail Ops, étiquettes, litiges
 
-```text
-┌────────────────────────────────────────────┐
-│  [Logo BIB]  BRAND-IN-A-BOX   [⛨ VERIFIED] │
-├────────────────────────────────────────────┤
-│  EXPÉDITEUR                    ⛨ VERIFIED  │
-│  {boutique.legal_business_name}   BY       │
-│  {boutique.legal_address}                  │
-│                                            │
-│  DESTINATAIRE         PAYS DE LIVRAISON    │
-│  {customer_name}      {country}            │
-│  {shipping_address}   DATE D'EXPÉDITION    │
-│                       {ship_date}          │
-├────────────────────────────────────────────┤
-│  INFORMATIONS PRODUIT                      │
-│  ┌──────────────────────┬───────────────┐  │
-│  │ SKU (BOUTIQUE)       │ {sku}         │  │
-│  ├──────────────────────┼──────────┬────┤  │
-│  │ RÉFÉRENCE PRODUIT    │ {ref}    │QTÉ │  │
-│  │                      │          │ {n}│  │
-│  └──────────────────────┴──────────┴────┘  │
-│                                            │
-│  N° DE COMMANDE                            │
-│  BIB26-XXXXXX                              │
-│  ┃┃┃┃ ┃┃ ┃┃┃ ┃┃┃┃ ┃┃ ┃   (Code128)         │
-│  BIB26XXXXXX                               │
-│                                            │
-│  ┌────┐  Suivez votre colis                │
-│  │ QR │  via le système                    │
-│  └────┘                                    │
-└────────────────────────────────────────────┘
-```
+### 3. Ressources & guides
+Grille de cartes regroupées par thème (icône + titre + 2-3 liens chacun) :
+- **Premiers pas** : Créer un compte, Choisir un plan (`/tarifs`), Lancer sa première boutique
+- **Boutique & produits** : Brand Studio IA, Sections, Ajouter un produit fournisseur, Validation échantillon
+- **Commandes & paiements** : Suivi (`/tracking`), Étiquettes A6, Litiges 48 h, Reversements
+- **Marketing & SEO** : SEO Copilot, Campagnes e-mail, Ventes privées
+- **Conformité & légal** : KYC, RGPD, CGV (`/legal/*`), Pack légal
+- **Partenaires** : Devenir fournisseur (`/suppliers/apply`), Devenir logisticien (`/ops/apply`), Portails
 
-Variante d'impression :
-- **Une étiquette par page A6** (par défaut, imprimante thermique Zebra/Dymo)
-- **Planche A4 = 4 étiquettes** (bouton « Planche A4 ») pour imprimante bureautique
+Chaque lien interne pointe vers une route existante de l'app (pas de page fantôme).
 
-## Sources de données (sans API)
+### 4. FAQ par catégorie (accordion shadcn)
+Onglets : **Client / Vendeur / Fournisseur / Logistique / Compte & facturation**. ~6 questions par onglet, réponses concises (2-3 phrases), avec liens internes vers les pages concernées. Exemples :
+- « Comment suivre une commande ? » → renvoi vers `/tracking`
+- « Quand suis-je payé ? » → renvoi `/dashboard/paiements`
+- « Échantillon obligatoire : pourquoi ? » → renvoi vers la mémoire sample-validation
+- « Comment supprimer mon compte ? » → renvoi `/dashboard/parametres`
 
-| Champ | Source |
-|---|---|
-| Expéditeur (nom/adresse) | `boutiques.legal_business_name`, `legal_address` |
-| Destinataire | `orders.customer_name` + adresse stockée dans `orders.metadata` (déjà saisie au checkout) |
-| Pays de livraison | dérivé adresse (fallback `orders.market`) |
-| N° commande | `orders.order_number` (format `BIB26-XXXXXX`) |
-| SKU / Référence / Qté | jointure `products` → `supplier_products` |
-| Date d'expédition | date du jour à l'impression |
-| Code-barres | Code128 du `order_number` sans tiret |
-| QR code | URL publique de suivi `https://shop.brand-in-a-box.space/tracking?order={order_number}` |
+### 5. Contact & escalade
+- Carte « Toujours bloqué ? » avec : ouvrir un ticket (`/dashboard/mes-tickets` si connecté, sinon redirection login), e-mail `support@brand-in-a-box.space`, délais affichés (réponse < 24 h, escalade litige 48 h).
+- Bouton secondaire « Statut plateforme » (placeholder, lien interne).
 
-Aucun champ transporteur/tracking_number/poids n'est requis pour l'instant — emplacements réservés mais non affichés tant que `null`.
+## Implémentation
 
-## Implémentation technique
+### Fichiers
+- **Créer** `src/pages/CentreAide.tsx` — composant complet, données FAQ + guides en const local.
+- **Modifier** `src/App.tsx` — route `/centre-aide` + alias `/aide` → `<CentreAide />`.
+- **Modifier** `src/components/Header.tsx` — lien « Centre d'aide » pointe désormais vers `/centre-aide` (au lieu de `/a-propos`). La page `/a-propos` reste accessible pour le manifesto.
+- **Modifier** `src/components/Footer.tsx` — ajouter lien « Centre d'aide » dans la colonne support.
 
-### Dépendances
-- `jsbarcode` (génération Code128 en SVG)
-- `qrcode` (génération QR en SVG)
+### Détails techniques
+- SEO via `useSEO` : titre `Centre d'aide — Brand-In-A-Box`, description orientée mots-clés support/FAQ.
+- JSON-LD `FAQPage` injecté pour SEO (schema.org).
+- Composants : `Accordion`, `Tabs`, `Card`, `Input` (shadcn déjà en place).
+- Recherche : `useMemo` qui filtre un tableau unifié `{ question, answer, category, tags }` sur match insensible aux accents.
+- Tokens : marine/or/ivoire, status tokens sémantiques (`bg-success/10`, `text-info`, etc.) — aucune couleur Tailwind brute.
+- Responsive mobile-first (cartes 1 col mobile, 2-3 cols desktop).
+- i18n : textes FR par défaut conformes à la mémoire (pas de switch EN ajouté dans ce lot — réutilisera `LanguageContext` plus tard si besoin).
 
-### Nouveau fichier `src/lib/shippingLabel.ts`
-Fonctions pures :
-- `buildLabelData(order, boutique, productLine)` → normalise les données
-- `renderLabelSVG(data)` → renvoie la chaîne HTML/SVG de l'étiquette A6 (CSS print `@page { size: 100mm 150mm; margin: 0 }`)
-- `renderA4Sheet(labelsData[])` → 4 étiquettes par planche A4
-- `openPrintWindow(html)` → réutilise l'helper existant
-
-### Refacto `src/pages/OpsPortal.tsx`
-Remplacer `printShippingLabel` et `printAllShippingLabels` par appels à `renderLabelSVG` / `renderA4Sheet`. Ajout dans l'onglet **Opérations → Gestion expédition** :
-- Bouton « Imprimer étiquette » (par commande, A6)
-- Bouton « Planche A4 (4 étiquettes) » (sélection multiple)
-- Toggle format dans le header de section : **A6 thermique** | **A4 ×4**
-
-Le bouton existant « Imprimer étiquettes » du tableau principal pointera vers le nouveau format.
-
-### Mémoire projet
-Ajout d'une entrée `mem://features/shipping-label` documentant le modèle BIB et le hook futur pour l'API transporteur (champs `carrier`, `tracking_number`, `weight_kg`, `parcel_id` à mapper quand l'API sera branchée — emplacements déjà prévus dans le SVG).
-
-## Hors-périmètre (pour plus tard, quand l'API sera branchée)
-- Création de l'expédition côté transporteur
-- Récupération du PDF officiel transporteur (remplace le SVG BIB)
-- Stockage de `tracking_number`, `carrier`, `parcel_id` sur `orders`
-- Webhook de mise à jour de statut
-
-Aucun changement de schéma DB nécessaire dans ce lot.
+## Hors-périmètre
+- Pas de back-office d'édition de FAQ (contenu statique versionné).
+- Pas de recherche serveur / IA (le chatbot `support-ai` reste accessible via `FloatingSupportButton`).
+- Pas de refonte de `/a-propos` (manifesto conservé tel quel).

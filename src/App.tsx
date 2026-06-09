@@ -68,6 +68,7 @@ import Unsubscribe from "./pages/Unsubscribe";
 import Carrieres from "./pages/Carrieres";
 import CarrieresPostes from "./pages/CarrieresPostes";
 import APropos from "./pages/APropos";
+import CentreAide from "./pages/CentreAide";
 import PackLegal from "./pages/PackLegal";
 import { MentionsLegales, CGU, Confidentialite, Cookies } from "./pages/LegalPages";
 
@@ -140,6 +141,9 @@ const App = () => (
             <Route path="/careers" element={<Carrieres />} />
             <Route path="/careers/jobs" element={<CarrieresPostes />} />
             <Route path="/a-propos" element={<APropos />} />
+            <Route path="/centre-aide" element={<CentreAide />} />
+            <Route path="/aide" element={<CentreAide />} />
+            <Route path="/help" element={<CentreAide />} />
             <Route path="/pack-legal" element={<PackLegal />} />
             <Route path="/legal" element={<PackLegal />} />
             <Route path="/mentions-legales" element={<MentionsLegales />} />
