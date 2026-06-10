@@ -5,40 +5,16 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/contexts/AuthContext";
 import {
+  personas, guideGroups, faq, toneClass, normalize,
+} from "@/lib/centreAideData";
+import {
   Search, LifeBuoy, Package, Truck, Store, Boxes, ShieldCheck, Mail,
   Sparkles, CreditCard, Megaphone, FileText, Users, Activity, ArrowRight,
-  Recycle, BookOpen, HelpCircle,
+  Recycle, BookOpen,
 } from "lucide-react";
-
-type Persona = {
-  id: string;
-  label: string;
-  desc: string;
-  icon: React.ComponentType<{ className?: string }>;
-  anchor: string;
-};
-
-const personas: Persona[] = [
-  { id: "client", label: "Je suis client", desc: "Suivre une commande, retours, recyclage, cartes cadeaux", icon: Users, anchor: "#faq-client" },
-  { id: "vendeur", label: "Je suis vendeur", desc: "Créer ma boutique, produits, paiements, échantillons", icon: Store, anchor: "#faq-vendeur" },
-  { id: "fournisseur", label: "Je suis fournisseur", desc: "Candidature, catalogue, performance, paiements", icon: Boxes, anchor: "#faq-fournisseur" },
-  { id: "logistique", label: "Je suis partenaire logistique", desc: "Portail Ops, étiquettes, litiges, expéditions", icon: Truck, anchor: "#faq-logistique" },
-];
-
-type Guide = { title: string; to: string; desc?: string };
-type GuideGroup = { title: string; icon: React.ComponentType<{ className?: string }>; tone: "marine" | "gold" | "info" | "success" | "accent" | "warning"; guides: Guide[] };
-
-const guideGroups: GuideGroup[] = [
   {
     title: "Premiers pas",
     icon: Sparkles,
