@@ -69,6 +69,8 @@ import Carrieres from "./pages/Carrieres";
 import CarrieresPostes from "./pages/CarrieresPostes";
 import APropos from "./pages/APropos";
 import CentreAide from "./pages/CentreAide";
+import CentreAideFaq from "./pages/CentreAideFaq";
+import CentreAideGuide from "./pages/CentreAideGuide";
 import PackLegal from "./pages/PackLegal";
 import { MentionsLegales, CGU, Confidentialite, Cookies } from "./pages/LegalPages";
 
@@ -144,6 +146,10 @@ const App = () => (
             <Route path="/centre-aide" element={<CentreAide />} />
             <Route path="/aide" element={<CentreAide />} />
             <Route path="/help" element={<CentreAide />} />
+            <Route path="/centre-aide/faq/:persona" element={<CentreAideFaq />} />
+            <Route path="/aide/faq/:persona" element={<CentreAideFaq />} />
+            <Route path="/centre-aide/guide/:slug" element={<CentreAideGuide />} />
+            <Route path="/aide/guide/:slug" element={<CentreAideGuide />} />
             <Route path="/pack-legal" element={<PackLegal />} />
             <Route path="/legal" element={<PackLegal />} />
             <Route path="/mentions-legales" element={<MentionsLegales />} />

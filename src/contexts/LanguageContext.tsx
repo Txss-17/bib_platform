@@ -17,6 +17,11 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.trust": "Confiance & Sécurité",
     "nav.signin": "Se connecter",
     "nav.start": "Commencer",
+    "nav.sell": "Vendre",
+    "nav.discover": "Découvrir le réseau",
+    "nav.ecosystem": "L'écosystème Brand-In-A-Box",
+    "nav.becomePartner": "Devenir partenaire",
+    "nav.help": "Centre d'aide",
 
     // Hero
     "hero.badge": "Approuvé par 10 000+ entrepreneurs",
@@ -217,6 +222,11 @@ const translations: Record<Lang, Record<string, string>> = {
     "nav.trust": "Trust & Security",
     "nav.signin": "Sign In",
     "nav.start": "Start Free",
+    "nav.sell": "Sell",
+    "nav.discover": "Discover the network",
+    "nav.ecosystem": "The Brand-In-A-Box ecosystem",
+    "nav.becomePartner": "Become a partner",
+    "nav.help": "Help Center",
 
     // Hero
     "hero.badge": "Trusted by 10,000+ entrepreneurs",
