@@ -30,7 +30,6 @@ const Header = () => {
   const partnerItems = [
     { to: "/suppliers/apply", label: "Devenir fournisseur", desc: "Rejoindre le catalogue BIB", icon: Boxes },
     { to: "/ops/apply", label: "Devenir partenaire logistique", desc: "Opérer en marque blanche", icon: Handshake },
-    { to: "/centre-aide", label: "Centre d'aide", desc: "FAQ, ressources & support", icon: LifeBuoy },
   ];
 
   return (
@@ -50,17 +49,17 @@ const Header = () => {
 
           <div className="hidden lg:flex items-center gap-7">
             <Link to="/vendre" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
-              Vendre
+              {t("nav.sell")}
             </Link>
 
             <DropdownMenu>
               <DropdownMenuTrigger className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors text-sm font-medium focus:outline-none">
-                Découvrir le réseau
+                {t("nav.discover")}
                 <ChevronDown className="h-3.5 w-3.5" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-80 p-2">
                 <DropdownMenuLabel className="text-xs uppercase tracking-wider text-muted-foreground">
-                  L'écosystème Brand-In-A-Box
+                  {t("nav.ecosystem")}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {networkItems.map(({ to, label, desc, icon: Icon }) => (
@@ -78,7 +77,7 @@ const Header = () => {
                 ))}
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Devenir partenaire & aide
+                  {t("nav.becomePartner")}
                 </DropdownMenuLabel>
                 {partnerItems.map(({ to, label, desc, icon: Icon }) => (
                   <DropdownMenuItem key={to} asChild>
@@ -99,8 +98,8 @@ const Header = () => {
             <Link to="/tarifs" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
               {t("nav.pricing")}
             </Link>
-            <Link to="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
-              {t("nav.how")}
+            <Link to="/centre-aide" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium inline-flex items-center gap-1">
+              <LifeBuoy className="h-3.5 w-3.5" /> {t("nav.help")}
             </Link>
             <Link to="#trust" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
               {t("nav.trust")}
@@ -134,7 +133,7 @@ const Header = () => {
               <BoutiqueSearchBar compact placeholder="Boutique ou produit…" />
 
               <Link to="/vendre" onClick={() => setMobileMenuOpen(false)} className="text-foreground font-medium py-3 px-1 border-b border-border/40">
-                Vendre
+                {t("nav.sell")}
               </Link>
 
               <button
@@ -143,7 +142,7 @@ const Header = () => {
                 className="flex items-center justify-between w-full text-foreground font-medium py-3 px-1 border-b border-border/40"
                 aria-expanded={networkOpen}
               >
-                Découvrir le réseau
+                {t("nav.discover")}
                 <ChevronDown className={`h-4 w-4 transition-transform ${networkOpen ? "rotate-180" : ""}`} />
               </button>
               {networkOpen && (
@@ -166,7 +165,7 @@ const Header = () => {
                   ))}
                   <div className="mt-2 pt-2 border-t border-border/40">
                     <p className="px-2 text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
-                      Devenir partenaire & aide
+                      {t("nav.becomePartner")}
                     </p>
                     {partnerItems.map(({ to, label, desc, icon: Icon }) => (
                       <Link
@@ -191,8 +190,8 @@ const Header = () => {
               <Link to="/tarifs" onClick={() => setMobileMenuOpen(false)} className="text-foreground font-medium py-3 px-1 border-b border-border/40">
                 {t("nav.pricing")}
               </Link>
-              <Link to="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground py-3 px-1 border-b border-border/40 text-sm">
-                {t("nav.how")}
+              <Link to="/centre-aide" onClick={() => setMobileMenuOpen(false)} className="text-foreground font-medium py-3 px-1 border-b border-border/40 inline-flex items-center gap-2">
+                <LifeBuoy className="h-4 w-4" /> {t("nav.help")}
               </Link>
               <Link to="#trust" onClick={() => setMobileMenuOpen(false)} className="text-muted-foreground py-3 px-1 border-b border-border/40 text-sm">
                 {t("nav.trust")}
