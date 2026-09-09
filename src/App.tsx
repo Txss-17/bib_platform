@@ -68,7 +68,7 @@ import Unsubscribe from "./pages/Unsubscribe";
 import Carrieres from "./pages/Carrieres";
 import CarrieresPostes from "./pages/CarrieresPostes";
 import APropos from "./pages/APropos";
-import BibTalent from "./pages/BibTalent.";
+import BibTalent from "./pages/BibTalent";
 import CentreAide from "./pages/CentreAide";
 import CentreAideFaq from "./pages/CentreAideFaq";
 import CentreAideGuide from "./pages/CentreAideGuide";
