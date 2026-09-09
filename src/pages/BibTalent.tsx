@@ -33,8 +33,16 @@ export default function BibTalent() {
           </div>
         </section>
         
-        <section className="relavtive overflow-hiden bg-bib-white">
-            <button onClick={() => window.open("https://docs.google.com/forms/d/e/1FAIpQLSemotUUORqFwUdM60S1BAW-79YzSm-5TiocRvm-wuTUiCevvg/viewform", "_blank")}>
+        <section>
+          <div className="relative w-full overflow-hidden rounded-2xl">
+            <video className="w-full h-auto"
+              controls
+              playsInline
+              preload="metadata"
+              >
+              <source src="/videos/bib-talent.mp4" type="video/mp4" />
+            </video>
+            <button asChild variant="premium" size="lg" className="group" onClick={() => window.open("https://docs.google.com/forms/d/e/1FAIpQLSemotUUORqFwUdM60S1BAW-79YzSm-5TiocRvm-wuTUiCevvg/viewform", "_blank")}>
               Join BIB Talent
             </button>
         </section>
