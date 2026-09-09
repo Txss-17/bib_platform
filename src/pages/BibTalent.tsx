@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useSEO } from "@/hooks/useSEO";
-import { BibTalent } from "@/assets/BibTalent.mp4";
+import { video } from "@/assets/BibTalent.mp4";
 
 export default function BibTalent() {
   useSEO({
@@ -38,13 +38,13 @@ export default function BibTalent() {
             <video className="w-full h-auto"
               controls
               playsInline
-              preload="metadata"
-              >
-              <source src="/videos/bib-talent.mp4" type="video/mp4" />
+              preload="metadata">
+              <source src="/assets/bib-talent.mp4" type="video/mp4" />
             </video>
             <button asChild variant="premium" size="lg" className="group" onClick={() => window.open("https://docs.google.com/forms/d/e/1FAIpQLSemotUUORqFwUdM60S1BAW-79YzSm-5TiocRvm-wuTUiCevvg/viewform", "_blank")}>
               Join BIB Talent
             </button>
+          </div>
         </section>
       </main>
     </div>
