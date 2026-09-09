@@ -47,3 +47,6 @@ export default function BibTalent() {
             </div>
           </div>
         </section>
+      </main>
+    </div>
+  
