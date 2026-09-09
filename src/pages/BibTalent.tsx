@@ -5,4 +5,5 @@ import { Button } from "@/components/ui/button";
 import { useSEO } from "@/hooks/useSEO";
 
 
-export default ();
+export default (){
+}
