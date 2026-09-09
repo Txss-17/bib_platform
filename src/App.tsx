@@ -63,6 +63,7 @@ import { BoutiqueCGVPage, BoutiqueCGUPage, BoutiqueAboutPage } from "./pages/Bou
 import BoutiqueCustomPage from "./pages/BoutiqueCustomPage";
 import { CartProvider } from "@/contexts/CartContext";
 import Unsubscribe from "./pages/Unsubscribe";
+import BibTalent from "./pages/BibTalent.";
 
 // Marketing/info pages
 import Carrieres from "./pages/Carrieres";
@@ -156,6 +157,7 @@ const App = () => (
             <Route path="/cgu" element={<CGU />} />
             <Route path="/confidentialite" element={<Confidentialite />} />
             <Route path="/cookies" element={<Cookies />} />
+            <Route path="/bibtalent" element={<BibTalent />} />
             <Route
               path="/dashboard"
               element={
