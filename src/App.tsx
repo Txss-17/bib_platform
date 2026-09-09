@@ -158,7 +158,7 @@ const App = () => (
             <Route path="/cgu" element={<CGU />} />
             <Route path="/confidentialite" element={<Confidentialite />} />
             <Route path="/cookies" element={<Cookies />} />
-            <Route path="/bibtalent" element={<BibTalent />} />
+            <Route path="/bib-talent" element={<BibTalent />} />
             <Route
               path="/dashboard"
               element={
