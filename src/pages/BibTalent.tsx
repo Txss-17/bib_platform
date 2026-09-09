@@ -8,7 +8,7 @@ import { useSEO } from "@/hooks/useSEO";
 export default function BibTalent() {
   useSeo({
     title:"Join BIB Talent",
-    description:"Disciver Brand-in-a-box, our early-stage project, and explore opportunities to contribute to its development across Tech, Product, R&D and Communication.",
+    description:"Discover Brand-in-a-box, our early-stage project, and explore opportunities to contribute to its development across Tech, Product, R&D and Communication.",
   });
 
   return (
