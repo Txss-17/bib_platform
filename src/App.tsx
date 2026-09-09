@@ -63,12 +63,12 @@ import { BoutiqueCGVPage, BoutiqueCGUPage, BoutiqueAboutPage } from "./pages/Bou
 import BoutiqueCustomPage from "./pages/BoutiqueCustomPage";
 import { CartProvider } from "@/contexts/CartContext";
 import Unsubscribe from "./pages/Unsubscribe";
-import BibTalent from "./pages/BibTalent.";
 
 // Marketing/info pages
 import Carrieres from "./pages/Carrieres";
 import CarrieresPostes from "./pages/CarrieresPostes";
 import APropos from "./pages/APropos";
+import BibTalent from "./pages/BibTalent.";
 import CentreAide from "./pages/CentreAide";
 import CentreAideFaq from "./pages/CentreAideFaq";
 import CentreAideGuide from "./pages/CentreAideGuide";
@@ -95,6 +95,7 @@ const App = () => (
                 if (host.startsWith("tarifs.")) return <Tarifs />;
                 if (host.startsWith("logistics.")) return <Ops />;
                 if (host.startsWith("logistique.")) return <Ops />;
+                if (host.startWith("bibtalent.")) return <BibTalent />;
                 return <Index />;
               })()
             } />
