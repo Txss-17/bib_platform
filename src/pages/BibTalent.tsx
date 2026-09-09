@@ -12,5 +12,5 @@ export default function BibTalent() {
       "Découvrez BIB Talent, le programme Early Team de Brand-in-a-box, et explorez les opportunités de contribuer au développement du projet en Tech, Produit, R&D et Communication",
   });
 
- return ()
+ return ();
 }
