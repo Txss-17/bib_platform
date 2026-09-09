@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useSEO } from "@/hooks/useSEO";
-import { video } from "@/assets/BibTalent.mp4";
+import { BibTalent } from "@/assets/BibTalent.mp4";
 
 export default function BibTalent() {
   useSEO({
