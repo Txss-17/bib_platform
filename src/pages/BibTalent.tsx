@@ -2,9 +2,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, ShieldCheck, Truck, Globe2, Heart, Users } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
-
 
 
 export default function BibTalent() {
@@ -14,13 +12,13 @@ export default function BibTalent() {
       "Découvrez BIB Talent, le programme Early Team de Brand-in-a-box, et explorez les opportunités de contribuer au développement du projet en Tech, Produit, R&D et Communication",
   });
 
-  return (
-    <div className="min-h-screen bg-bib-ivory">
-      <Header />
-      <main>
-        {/* Hero */}
-        <section className="relative overflow-hidden bg-bib-marine text-bib-ivory">
-          <div className="absolute -top-32 -right-24 w-[520px] h-[520px] rounded-full bg-bib-gold/10 blur-3xl" aria-hidden />
+return (
+  <div className="min-h-screen bg-bib-ivory">
+    <Header />
+    <main>
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-bib-marine text-bib-ivory">
+        <div className="absolute -top-32 -right-24 w-[520px] h-[520px] rounded-full bg-bib-gold/10 blur-3xl" aria-hidden />
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32 relative">
             <div className="max-w-3xl">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-bib-ivory/10 text-bib-ivory text-[11px] font-semibold uppercase tracking-[0.18em] mb-6">
@@ -49,5 +47,4 @@ export default function BibTalent() {
         </section>
       </main>
     </div>
-  )
-}
+)
