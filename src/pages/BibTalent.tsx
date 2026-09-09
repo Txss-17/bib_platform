@@ -21,7 +21,7 @@ export default function BibTalent() {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32 relative">
             <div className="max-w-3xl">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-bib-ivory/10 text-bib-ivory text-[11px] font-semibold uppercase tracking-[0.18em] mb-6">
-                <Globe2 className="h-3.5 w-3.5" /> BIB TALENT
+                BIB TALENT
               </span>
               <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05]">
                 <span className="text-bib-gold">Built BIB with us.</span>.
