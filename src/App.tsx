@@ -27,6 +27,7 @@ import PartnerOnboardingResume from "./pages/PartnerOnboardingResume";
 import PartnerOnboardingPortal from "./pages/PartnerOnboardingPortal";
 import SuppliersPortal from "./pages/SuppliersPortal";
 import OpsPortal from "./pages/OpsPortal";
+import BibTalent from "./pages/BibTalent";
 
 // Dashboard pages
 import Ventes from "./pages/dashboard/Ventes";
@@ -68,7 +69,6 @@ import Unsubscribe from "./pages/Unsubscribe";
 import Carrieres from "./pages/Carrieres";
 import CarrieresPostes from "./pages/CarrieresPostes";
 import APropos from "./pages/APropos";
-import BibTalent from "./pages/BibTalent";
 import CentreAide from "./pages/CentreAide";
 import CentreAideFaq from "./pages/CentreAideFaq";
 import CentreAideGuide from "./pages/CentreAideGuide";
@@ -95,7 +95,6 @@ const App = () => (
                 if (host.startsWith("tarifs.")) return <Tarifs />;
                 if (host.startsWith("logistics.")) return <Ops />;
                 if (host.startsWith("logistique.")) return <Ops />;
-                if (host.startWith("bib-talent.")) return <BibTalent />;
                 return <Index />;
               })()
             } />
