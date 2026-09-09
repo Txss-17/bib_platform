@@ -95,7 +95,7 @@ const App = () => (
                 if (host.startsWith("tarifs.")) return <Tarifs />;
                 if (host.startsWith("logistics.")) return <Ops />;
                 if (host.startsWith("logistique.")) return <Ops />;
-                if (host.startWith("bibtalent.")) return <BibTalent />;
+                if (host.startWith("bib-talent.")) return <BibTalent />;
                 return <Index />;
               })()
             } />
