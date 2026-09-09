@@ -32,10 +32,11 @@ export default function BibTalent() {
             </div>
           </div>
         </section>
-        <section>
-          <button onClick={() => window.open("https://docs.google.com/forms/d/e/1FAIpQLSemotUUORqFwUdM60S1BAW-79YzSm-5TiocRvm-wuTUiCevvg/viewform", "_blank")}>
-            Join BIB Talent
-          </button>
+        
+        <section className="relavtive overflow-hiden bg-bib-white">
+            <button onClick={() => window.open("https://docs.google.com/forms/d/e/1FAIpQLSemotUUORqFwUdM60S1BAW-79YzSm-5TiocRvm-wuTUiCevvg/viewform", "_blank")}>
+              Join BIB Talent
+            </button>
         </section>
       </main>
     </div>
