@@ -5,9 +5,7 @@ import {
   Heart,
   ImageOff,
   ShieldCheck,
-  Sparkles,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import type { MarketplaceBoutique } from "@/hooks/useMarketplace";
 
 interface Props {
@@ -75,7 +73,9 @@ export function BoutiqueCard({
 
   const current = stories[activeIdx];
 
-  const handleFavorite = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleFavorite = (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
     event.preventDefault();
     event.stopPropagation();
 
@@ -100,11 +100,11 @@ export function BoutiqueCard({
         transition-all
         hover:-translate-y-1
         hover:border-primary/30
-        hover:shadow-xl
+        hover:shadow-lg
       "
     >
       {/* IMAGE */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+      <div className="relative aspect-[5/3] overflow-hidden bg-muted">
         {current ? (
           current.mediaKind === "video" ? (
             <video
@@ -120,7 +120,7 @@ export function BoutiqueCard({
             <img
               key={current.id}
               src={current.url}
-              alt={current.label ?? boutique.name}
+              alt={boutique.name}
               loading="lazy"
               className="h-full w-full object-cover animate-in fade-in duration-700"
             />
@@ -134,12 +134,9 @@ export function BoutiqueCard({
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-muted">
-            <ImageOff className="h-10 w-10 text-muted-foreground/40" />
+            <ImageOff className="h-9 w-9 text-muted-foreground/40" />
           </div>
         )}
-
-        {/* GRADIENT */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
         {/* FAVORIS */}
         <button
@@ -162,18 +159,18 @@ export function BoutiqueCard({
             items-center
             justify-center
             rounded-full
-            bg-background/90
+            bg-white/90
             text-foreground
             shadow-md
-            backdrop-blur
+            backdrop-blur-sm
             transition-all
             hover:scale-105
-            hover:bg-background
+            hover:bg-white
             active:scale-95
           "
         >
           <Heart
-            className={`h-4 w-4 transition-all ${
+            className={`h-4 w-4 transition-colors ${
               isFavorite
                 ? "fill-current text-primary"
                 : "text-foreground"
@@ -181,144 +178,66 @@ export function BoutiqueCard({
           />
         </button>
 
-        {/* STORIES INDICATOR */}
+        {/* INDICATEURS STORIES */}
         {stories.length > 1 && (
-          <div className="absolute left-3 right-3 top-3 flex gap-1 pr-11">
+          <div className="absolute left-3 right-3 top-3 flex gap-1 pr-12">
             {stories.map((story, index) => (
               <div
                 key={story.id}
                 className={`h-0.5 flex-1 rounded-full transition-all ${
                   index === activeIdx
                     ? "bg-white"
-                    : "bg-white/30"
+                    : "bg-white/40"
                 }`}
               />
             ))}
           </div>
         )}
-
-        {/* HIGHLIGHT */}
-        {current?.kind === "highlight" && (
-          <Badge
-            className="
-              absolute
-              left-3
-              top-6
-              gap-1
-              border-0
-              bg-accent/90
-              text-accent-foreground
-              backdrop-blur
-            "
-          >
-            <Sparkles className="h-3 w-3" />
-            {current.label || "À la une"}
-          </Badge>
-        )}
-
-        {/* VERIFIED */}
-        {boutique.has_protection && (
-          <Badge
-            className="
-              absolute
-              right-3
-              bottom-3
-              gap-1
-              border-0
-              bg-primary/90
-              text-primary-foreground
-              backdrop-blur
-            "
-          >
-            <ShieldCheck className="h-3 w-3" />
-            Vérifié
-          </Badge>
-        )}
-
-        {/* BOUTIQUE NAME */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-          <div className="flex items-center gap-2">
-            {boutique.logo_url ? (
-              <img
-                src={boutique.logo_url}
-                alt=""
-                className="
-                  h-9
-                  w-9
-                  shrink-0
-                  rounded-full
-                  border
-                  border-white/40
-                  object-cover
-                "
-              />
-            ) : (
-              <div
-                className="
-                  flex
-                  h-9
-                  w-9
-                  shrink-0
-                  items-center
-                  justify-center
-                  rounded-full
-                  border
-                  border-white/40
-                  bg-white/10
-                  text-sm
-                  font-semibold
-                "
-              >
-                {boutique.name.charAt(0).toUpperCase()}
-              </div>
-            )}
-
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-display text-base font-semibold leading-tight">
-                {boutique.name}
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
 
-      {/* CARD INFO */}
-      <div className="flex flex-1 items-center justify-between gap-3 p-4">
-        <div className="min-w-0">
-          <p className="truncate text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            {boutique.category}
-          </p>
+      {/* SECTION BLANCHE */}
+      <div className="flex flex-1 flex-col bg-background p-4">
+        {/* NOM DE LA BOUTIQUE */}
+        <h3 className="truncate font-display text-base font-semibold text-foreground">
+          {boutique.name}
+        </h3>
 
-          <p className="mt-1 truncate text-sm text-foreground/80">
-            {boutique.tagline ||
-              `${boutique.product_count} produit${
-                boutique.product_count > 1 ? "s" : ""
-              }`}
-          </p>
+        {/* CATÉGORIE */}
+        <p className="mt-1 truncate text-xs uppercase tracking-[0.12em] text-muted-foreground">
+          {boutique.category || "Boutique"}
+        </p>
+
+        {/* VERIFIED BY BIB */}
+        {boutique.has_protection && (
+          <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-foreground/70">
+            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+            <span>Verified by BIB</span>
+          </div>
+        )}
+
+        {/* BOUTON PRODUITS */}
+        <div className="mt-auto pt-4">
+          <span
+            className="
+              inline-flex
+              items-center
+              gap-1
+              rounded-full
+              bg-primary/10
+              px-3
+              py-1.5
+              text-xs
+              font-medium
+              text-primary
+              transition-colors
+              group-hover:bg-primary
+              group-hover:text-primary-foreground
+            "
+          >
+            Voir les produits
+            <ChevronRight className="h-3.5 w-3.5" />
+          </span>
         </div>
-
-        {/* PRODUCTS CTA */}
-        <span
-          className="
-            flex
-            shrink-0
-            items-center
-            gap-1
-            rounded-full
-            bg-primary/10
-            px-3
-            py-1.5
-            text-xs
-            font-medium
-            text-primary
-            transition-colors
-            group-hover:bg-primary
-            group-hover:text-primary-foreground
-          "
-        >
-          Produits
-          <ChevronRight className="h-3.5 w-3.5" />
-        </span>
       </div>
     </Link>
   );
