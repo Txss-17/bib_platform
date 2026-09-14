@@ -4,7 +4,6 @@ import {
   ChevronRight,
   Heart,
   ImageOff,
-  ShieldCheck,
 } from "lucide-react";
 import type { MarketplaceBoutique } from "@/hooks/useMarketplace";
 
@@ -197,31 +196,43 @@ export function BoutiqueCard({
 
       {/* SECTION BLANCHE */}
       <div className="flex flex-1 flex-col bg-background p-4">
-        {/* NOM DE LA BOUTIQUE */}
-        <h3 className="truncate font-display text-base font-semibold text-foreground">
+        {/* NOM */}
+        <h3 className="truncate font-display text-base font-semibold leading-tight text-foreground">
           {boutique.name}
         </h3>
 
         {/* CATÉGORIE */}
-        <p className="mt-1 truncate text-xs uppercase tracking-[0.12em] text-muted-foreground">
+        <p className="mt-1 truncate text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
           {boutique.category || "Boutique"}
         </p>
 
+        {/* DESCRIPTION */}
+        {boutique.description && (
+          <p className="mt-2 line-clamp-1 text-xs leading-relaxed text-muted-foreground">
+            {boutique.description}
+          </p>
+        )}
+
         {/* VERIFIED BY BIB */}
         {boutique.has_protection && (
-          <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-foreground/70">
-            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-            <span>Verified by BIB</span>
+          <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-foreground/70">
+            <span
+              className="h-2 w-2 shrink-0 rounded-full bg-green-500"
+              aria-hidden="true"
+            />
+            <span>Vérifiée par BIB</span>
           </div>
         )}
 
-        {/* BOUTON PRODUITS */}
-        <div className="mt-auto pt-4">
+        {/* CTA */}
+        <div className="mt-3">
           <span
             className="
               inline-flex
+              shrink-0
               items-center
               gap-1
+              whitespace-nowrap
               rounded-full
               bg-primary/10
               px-3
@@ -234,8 +245,8 @@ export function BoutiqueCard({
               group-hover:text-primary-foreground
             "
           >
-            Voir les produits
-            <ChevronRight className="h-3.5 w-3.5" />
+            Voir
+            <ChevronRight className="h-3.5 w-3.5 shrink-0" />
           </span>
         </div>
       </div>
