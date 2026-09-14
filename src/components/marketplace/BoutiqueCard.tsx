@@ -1,6 +1,15 @@
-import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type MouseEvent,
+} from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, Heart, ImageOff } from "lucide-react";
+import {
+  ChevronRight,
+  Heart,
+  ImageOff,
+} from "lucide-react";
 
 import type { MarketplaceBoutique } from "@/hooks/useMarketplace";
 
@@ -30,9 +39,11 @@ export function BoutiqueCard({
   const [imageError, setImageError] = useState(false);
 
   const stories = useMemo<Story[]>(() => {
-    const rawStories = (boutique as MarketplaceBoutique & {
-      stories?: unknown;
-    }).stories;
+    const rawStories = (
+      boutique as MarketplaceBoutique & {
+        stories?: unknown;
+      }
+    ).stories;
 
     if (!Array.isArray(rawStories)) {
       return [];
@@ -99,17 +110,18 @@ export function BoutiqueCard({
   };
 
   return (
-    <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[22px] border border-border/70 bg-background shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md">
+    <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[20px] border border-border/70 bg-background shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md">
       <Link
         to={boutiqueUrl}
-        className="flex h-full min-w-0 flex-col outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         aria-label={`Voir la boutique ${boutique.name}`}
+        className="flex h-full min-w-0 flex-col outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       >
         {/* =====================================================
-            IMAGE
+            IMAGE + STORIES
+            Les stories restent attachées à la carte boutique
            ===================================================== */}
 
-        <div className="relative aspect-[5/3] shrink-0 overflow-hidden bg-muted">
+        <div className="relative aspect-[5/3] max-h-[150px] shrink-0 overflow-hidden bg-muted sm:max-h-[158px]">
           {imageUrl && !imageError ? (
             activeStory?.mediaKind === "video" ? (
               <video
@@ -133,23 +145,25 @@ export function BoutiqueCard({
             )
           ) : (
             <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-              <ImageOff className="h-7 w-7" strokeWidth={1.5} />
+              <ImageOff
+                className="h-6 w-6"
+                strokeWidth={1.5}
+              />
             </div>
           )}
 
-          {/* Légère protection visuelle pour le bouton favori */}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/[0.08] via-transparent to-transparent" />
+          {/* Dégradé discret pour préserver la lisibilité des contrôles */}
 
-          {/* =================================================
-              STORIES — INDICATEURS UNIQUEMENT
-             ================================================= */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/[0.12] via-transparent to-transparent" />
+
+          {/* STORIES : indicateurs uniquement */}
 
           {stories.length > 1 && (
             <div className="absolute left-3 right-3 top-3 flex gap-1">
               {stories.map((story, index) => (
                 <span
                   key={story.id}
-                  className={`h-0.5 flex-1 rounded-full transition-colors ${
+                  className={`h-0.5 min-w-0 flex-1 rounded-full transition-colors ${
                     index === activeStoryIndex
                       ? "bg-white"
                       : "bg-white/45"
@@ -159,9 +173,7 @@ export function BoutiqueCard({
             </div>
           )}
 
-          {/* =================================================
-              FAVORI
-             ================================================= */}
+          {/* FAVORI */}
 
           <button
             type="button"
@@ -172,10 +184,10 @@ export function BoutiqueCard({
                 : `Ajouter ${boutique.name} aux favoris`
             }
             aria-pressed={isFavorite}
-            className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-slate-900 shadow-sm backdrop-blur-sm transition hover:bg-white active:scale-95"
+            className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-slate-900 shadow-sm backdrop-blur-sm transition hover:bg-white active:scale-95"
           >
             <Heart
-              className={`h-[19px] w-[19px] transition ${
+              className={`h-[18px] w-[18px] ${
                 isFavorite
                   ? "fill-current text-primary"
                   : "text-slate-900"
@@ -189,48 +201,49 @@ export function BoutiqueCard({
             INFORMATIONS
            ===================================================== */}
 
-        <div className="flex min-h-[176px] flex-1 flex-col bg-white p-3.5 sm:min-h-[184px]">
-          {/* Nom */}
+        <div className="flex min-h-[146px] flex-1 flex-col bg-white p-3 sm:min-h-[152px] sm:p-3.5">
+          {/* NOM */}
 
           <h3 className="line-clamp-1 text-[15px] font-semibold leading-tight text-slate-950">
             {boutique.name}
           </h3>
 
-          {/* Catégorie */}
+          {/* CATÉGORIE */}
 
           <p className="mt-1 line-clamp-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
             {boutique.category || "Autres"}
           </p>
 
-          {/* Description courte */}
+          {/* DESCRIPTION */}
 
           {boutique.description ? (
-            <p className="mt-2 line-clamp-2 min-h-[32px] text-xs leading-relaxed text-slate-500">
+            <p className="mt-2 line-clamp-2 min-h-[30px] text-xs leading-relaxed text-slate-500">
               {boutique.description}
             </p>
           ) : (
-            <div className="min-h-[32px]" />
+            <div className="min-h-[30px]" />
           )}
 
-          <div className="mt-auto">
-            {/* Vérification BIB */}
+          {/* DERNIÈRE LIGNE :
+              vérification + bouton Voir aligné */}
 
-            {boutique.has_protection && (
-              <div className="mb-3 flex items-center gap-1.5 text-[11px] font-medium text-slate-600">
+          <div className="mt-auto flex min-w-0 items-center justify-between gap-2 pt-3">
+            {boutique.has_protection ? (
+              <div className="flex min-w-0 items-center gap-1.5 text-[10px] font-medium text-slate-600 sm:text-[11px]">
                 <span
                   aria-hidden="true"
                   className="h-2 w-2 shrink-0 rounded-full bg-emerald-500"
                 />
 
-                <span className="whitespace-nowrap">
+                <span className="truncate">
                   Vérifiée par BIB
                 </span>
               </div>
+            ) : (
+              <span />
             )}
 
-            {/* CTA */}
-
-            <span className="inline-flex h-8 w-fit items-center gap-1.5 rounded-full bg-slate-100 px-3.5 text-xs font-semibold text-slate-950 transition group-hover:bg-slate-200">
+            <span className="inline-flex h-8 shrink-0 items-center gap-1 rounded-full bg-slate-100 px-3 text-xs font-semibold whitespace-nowrap text-slate-950 transition group-hover:bg-slate-200">
               <span className="whitespace-nowrap">
                 Voir
               </span>
