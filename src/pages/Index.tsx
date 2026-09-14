@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
-import HeroSection from "@/components/HeroSection";
 import Footer from "@/components/Footer";
 import DiscoverBoutiquesSection from "@/components/landing/DiscoverBoutiquesSection";
 import { Button } from "@/components/ui/button";
@@ -13,28 +12,14 @@ import {
   Truck,
   Users,
   Globe2,
-  Sparkles,
   CheckCircle2,
 } from "lucide-react";
 
-/**
- * BIB — Landing page
- *
- * Parcours principaux :
- * 01. Client → Marketplace
- * 02. Marque / marchand → Vendre avec BIB
- * 03. Fournisseur → Rejoindre le réseau fournisseurs
- * 04. Logistique / opérations → Rejoindre le réseau opérationnel
- *
- * Le Hero utilise le symbole B entrant et ressortant
- * par la même ouverture de sa boîte.
- */
-
 const Index = () => {
   useSEO({
-    title: "Brand-in-a-box — Un réseau pour faire grandir les marques",
+    title: "Brand-in-a-box — Développez votre marque avec BIB",
     description:
-      "Brand-in-a-box connecte marques, clients, fournisseurs et partenaires opérationnels au sein d'un réseau vérifié.",
+      "BIB réunit boutiques, produits sélectionnés, logistique et partenaires au sein d'un réseau dédié aux marques.",
   });
 
   return (
@@ -47,33 +32,35 @@ const Index = () => {
         ========================================================= */}
         <section className="relative overflow-hidden bg-bib-ivory">
           <div
-            className="absolute inset-0 pointer-events-none"
+            className="pointer-events-none absolute -right-40 -top-40 h-[32rem] w-[32rem] rounded-full bg-bib-gold/10 blur-3xl"
             aria-hidden="true"
-          >
-            <div className="absolute -top-40 -right-40 h-[30rem] w-[30rem] rounded-full bg-bib-gold/10 blur-3xl" />
-            <div className="absolute -bottom-40 -left-40 h-[26rem] w-[26rem] rounded-full bg-bib-marine/5 blur-3xl" />
-          </div>
+          />
+
+          <div
+            className="pointer-events-none absolute -bottom-40 -left-40 h-[28rem] w-[28rem] rounded-full bg-bib-marine/5 blur-3xl"
+            aria-hidden="true"
+          />
 
           <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid min-h-[calc(100vh-80px)] items-center gap-12 py-20 lg:grid-cols-[1fr_0.95fr] lg:gap-20 lg:py-24">
-              {/* ---------- Hero copy ---------- */}
+            <div className="grid min-h-[calc(100vh-80px)] items-center gap-10 py-16 lg:grid-cols-[1fr_0.95fr] lg:gap-16 lg:py-20">
+              {/* Copy */}
               <div className="max-w-2xl">
-                <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-bib-marine/10 bg-white/60 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-bib-marine backdrop-blur-sm">
+                <span className="inline-flex items-center gap-2 rounded-full border border-bib-marine/10 bg-white/60 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] backdrop-blur-sm">
                   <span className="h-1.5 w-1.5 rounded-full bg-bib-gold" />
                   Brand-in-a-box
                 </span>
 
-                <h1 className="font-display text-5xl font-bold leading-[0.98] tracking-tight text-bib-marine sm:text-6xl lg:text-7xl">
-                  Les marques évoluent.
+                <h1 className="mt-6 font-display text-5xl font-bold leading-[0.96] tracking-tight sm:text-6xl lg:text-7xl">
+                  Développez votre marque
                   <span className="mt-2 block text-bib-gold">
-                    Leur réseau aussi.
+                    avec BIB.
                   </span>
                 </h1>
 
                 <p className="mt-7 max-w-xl text-base leading-7 text-bib-marine/65 sm:text-lg">
-                  BIB réunit les marques, les clients, les fournisseurs et les
-                  partenaires opérationnels dans un réseau pensé pour construire
-                  et développer des activités de confiance.
+                  Boutique, produits sélectionnés, logistique et réseau de
+                  partenaires : BIB réunit les ressources nécessaires pour
+                  développer une marque.
                 </p>
 
                 <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -83,8 +70,8 @@ const Index = () => {
                     variant="premium"
                     className="h-12 px-6"
                   >
-                    <Link to="/store">
-                      Découvrir les boutiques
+                    <Link to="/vendre">
+                      Développer ma marque
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
@@ -95,13 +82,13 @@ const Index = () => {
                     variant="outline"
                     className="h-12 border-bib-marine/15 bg-transparent px-6 text-bib-marine hover:bg-bib-marine/5"
                   >
-                    <Link to="/vendre">
-                      Développer ma marque
+                    <Link to="/store">
+                      Découvrir les marques
                     </Link>
                   </Button>
                 </div>
 
-                <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 text-xs font-medium text-bib-marine/50">
+                <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-xs font-medium text-bib-marine/50">
                   <span className="inline-flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-bib-gold" />
                     Réseau vérifié
@@ -114,38 +101,36 @@ const Index = () => {
 
                   <span className="inline-flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-bib-gold" />
-                    Infrastructure intégrée
+                    Logistique intégrée
                   </span>
                 </div>
               </div>
 
-              {/* ---------- B in box ---------- */}
+              {/* B 3D */}
               <div className="flex justify-center lg:justify-end">
-                <BibBoxAnimation />
+                <BibBox3D />
               </div>
             </div>
           </div>
         </section>
 
         {/* =========================================================
-            NETWORK PATHS
+            PARCOURS
         ========================================================= */}
         <section className="bg-bib-marine py-20 text-bib-ivory sm:py-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
-              <span className="inline-block rounded-full bg-bib-ivory/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-bib-ivory/80">
-                Un réseau, plusieurs portes d'entrée
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-bib-gold">
+                BIB
               </span>
 
-              <h2 className="mt-5 font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
-                Entrez dans BIB{" "}
-                <span className="text-bib-gold">par votre activité.</span>
+              <h2 className="mt-4 font-display text-3xl font-bold sm:text-4xl">
+                Que recherchez-vous ?
               </h2>
 
-              <p className="mx-auto mt-5 max-w-xl text-sm leading-6 text-bib-ivory/60 sm:text-base">
-                Que vous cherchiez une boutique, développiez une marque,
-                proposiez des produits ou opériez une partie de la chaîne,
-                BIB vous donne un parcours adapté.
+              <p className="mt-4 text-sm leading-6 text-bib-ivory/55 sm:text-base">
+                Choisissez votre parcours pour accéder directement à
+                l'espace qui vous concerne.
               </p>
             </div>
 
@@ -153,17 +138,17 @@ const Index = () => {
               <AudienceCard
                 icon={<Store className="h-5 w-5" />}
                 number="01"
-                title="Je cherche une boutique"
-                description="Découvrez les boutiques disponibles sur la marketplace BIB."
-                cta="Explorer la marketplace"
+                title="Découvrir les marques"
+                description="Explorez les boutiques disponibles sur la marketplace BIB."
+                cta="Voir les marques"
                 to="/store"
               />
 
               <AudienceCard
-                icon={<Sparkles className="h-5 w-5" />}
+                icon={<ShieldCheck className="h-5 w-5" />}
                 number="02"
-                title="Je développe une marque"
-                description="Développez votre activité avec un catalogue, une boutique et une infrastructure intégrée."
+                title="Développer ma marque"
+                description="Créez et développez votre activité avec l'infrastructure BIB."
                 cta="Vendre avec BIB"
                 to="/vendre"
               />
@@ -171,18 +156,18 @@ const Index = () => {
               <AudienceCard
                 icon={<Package className="h-5 w-5" />}
                 number="03"
-                title="Je suis fournisseur"
-                description="Proposez vos produits et vos capacités au réseau de marques BIB."
-                cta="Devenir fournisseur"
+                title="Devenir fournisseur"
+                description="Proposez vos produits et capacités au réseau BIB."
+                cta="Proposer mes produits"
                 to="/suppliers"
               />
 
               <AudienceCard
                 icon={<Truck className="h-5 w-5" />}
                 number="04"
-                title="Je suis partenaire opérationnel"
-                description="Proposez vos capacités logistiques ou opérationnelles au réseau BIB."
-                cta="Rejoindre les opérations"
+                title="Devenir partenaire"
+                description="Proposez vos capacités logistiques ou opérationnelles."
+                cta="Rejoindre le réseau"
                 to="/ops"
               />
             </div>
@@ -190,65 +175,107 @@ const Index = () => {
         </section>
 
         {/* =========================================================
-            NETWORK PROMISE
+            MARQUES QUI NOUS FONT CONFIANCE
         ========================================================= */}
         <section className="bg-bib-ivory py-20 sm:py-28">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-24">
-              <div>
+            <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+              <div className="max-w-2xl">
                 <span className="inline-flex items-center gap-2 rounded-full bg-bib-marine/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-bib-marine">
                   <ShieldCheck className="h-3.5 w-3.5" />
-                  Le réseau BIB
+                  Réseau BIB
                 </span>
 
-                <h2 className="mt-5 max-w-xl font-display text-3xl font-bold leading-tight text-bib-marine sm:text-4xl lg:text-5xl">
-                  Pas seulement une plateforme.
+                <h2 className="mt-5 font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
+                  Les marques qui nous
                   <span className="block text-bib-gold">
-                    Une infrastructure de confiance.
+                    font confiance.
+                  </span>
+                </h2>
+
+                <p className="mt-5 max-w-xl text-sm leading-6 text-bib-marine/55 sm:text-base">
+                  Découvrez les marques présentes au sein de l'écosystème
+                  BIB et leurs boutiques.
+                </p>
+              </div>
+
+              <Button
+                asChild
+                variant="outline"
+                className="w-fit border-bib-marine/15 text-bib-marine hover:bg-bib-marine/5"
+              >
+                <Link to="/store">
+                  Voir toutes les marques
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+
+            <div className="mt-12">
+              <DiscoverBoutiquesSection />
+            </div>
+          </div>
+        </section>
+
+        {/* =========================================================
+            POURQUOI BIB
+        ========================================================= */}
+        <section className="bg-white py-20 sm:py-28">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-24">
+              <div>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-bib-gold">
+                  Pourquoi BIB
+                </span>
+
+                <h2 className="mt-4 max-w-xl font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
+                  Les ressources essentielles,
+                  <span className="block text-bib-gold">
+                    au même endroit.
                   </span>
                 </h2>
 
                 <p className="mt-6 max-w-xl text-base leading-7 text-bib-marine/60">
-                  BIB structure les relations entre les différents acteurs
-                  nécessaires au développement d'une marque : sélection,
-                  vérification, catalogue, boutique, logistique et opérations.
+                  BIB structure les différentes briques nécessaires au
+                  développement d'une marque afin de réduire la complexité
+                  opérationnelle.
                 </p>
 
                 <Button
                   asChild
-                  variant="outline"
-                  className="mt-8 border-bib-marine/15 text-bib-marine hover:bg-bib-marine/5"
+                  variant="premium"
+                  className="mt-8"
                 >
                   <Link to="/a-propos">
-                    Comprendre BIB
+                    En savoir plus sur BIB
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <NetworkPoint
-                  icon={<ShieldCheck />}
-                  title="Sélection"
-                  description="Les acteurs et produits intégrés au réseau sont soumis à un processus de validation."
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FeatureCard
+                  icon={<Store />}
+                  title="Boutique"
+                  description="Une présence commerciale adaptée à votre marque."
                 />
 
-                <NetworkPoint
+                <FeatureCard
                   icon={<Package />}
-                  title="Catalogue"
-                  description="Les marques accèdent à un environnement structuré plutôt qu'à un catalogue ouvert."
+                  title="Produits"
+                  description="Un catalogue sélectionné et structuré."
                 />
 
-                <NetworkPoint
+                <FeatureCard
                   icon={<Truck />}
-                  title="Opérations"
-                  description="La logistique et les opérations sont pensées comme une partie intégrante du réseau."
+                  title="Logistique"
+                  description="Une infrastructure opérationnelle intégrée."
                 />
 
-                <NetworkPoint
-                  icon={<Globe2 />}
-                  title="Développement"
-                  description="BIB est conçu pour accompagner progressivement les marques sur plusieurs marchés."
+                <FeatureCard
+                  icon={<Users />}
+                  title="Réseau"
+                  description="Des partenaires sélectionnés autour de votre activité."
                 />
               </div>
             </div>
@@ -256,81 +283,52 @@ const Index = () => {
         </section>
 
         {/* =========================================================
-            MARKETPLACE
-        ========================================================= */}
-        <DiscoverBoutiquesSection />
-
-        {/* =========================================================
-            MERCHANT
+            MARQUES
         ========================================================= */}
         <section className="bg-bib-marine py-20 text-bib-ivory sm:py-28">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-24">
-              <div className="relative overflow-hidden rounded-[2rem] border border-bib-ivory/10 bg-bib-ivory/[0.04] p-8 sm:p-12">
-                <div className="absolute -right-20 -top-20 h-52 w-52 rounded-full bg-bib-gold/10 blur-3xl" />
+              <div className="rounded-[2rem] border border-bib-ivory/10 bg-bib-ivory/[0.04] p-8 sm:p-12">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-bib-gold">
+                  Pour les marques
+                </span>
 
-                <div className="relative">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-bib-gold">
-                    Pour les marques
-                  </span>
+                <div className="mt-8 space-y-3">
+                  <MiniFeature
+                    icon={<Store />}
+                    title="Votre boutique"
+                    description="Une vitrine pensée pour votre activité."
+                  />
 
-                  <div className="mt-8 space-y-4">
-                    <div className="flex items-center gap-4 rounded-xl border border-bib-ivory/10 bg-bib-ivory/[0.04] p-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-bib-gold/15 text-bib-gold">
-                        <Store className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="font-semibold">Votre boutique</p>
-                        <p className="mt-0.5 text-xs text-bib-ivory/50">
-                          Une présence commerciale structurée.
-                        </p>
-                      </div>
-                    </div>
+                  <MiniFeature
+                    icon={<Package />}
+                    title="Votre catalogue"
+                    description="Des produits intégrés au réseau BIB."
+                  />
 
-                    <div className="flex items-center gap-4 rounded-xl border border-bib-ivory/10 bg-bib-ivory/[0.04] p-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-bib-gold/15 text-bib-gold">
-                        <Package className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="font-semibold">Un catalogue sélectionné</p>
-                        <p className="mt-0.5 text-xs text-bib-ivory/50">
-                          Des produits intégrés au réseau BIB.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-4 rounded-xl border border-bib-ivory/10 bg-bib-ivory/[0.04] p-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-bib-gold/15 text-bib-gold">
-                        <Truck className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="font-semibold">Une infrastructure opérée</p>
-                        <p className="mt-0.5 text-xs text-bib-ivory/50">
-                          Les opérations suivent le développement de votre activité.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                  <MiniFeature
+                    icon={<Truck />}
+                    title="Vos opérations"
+                    description="Une logistique structurée autour de vos ventes."
+                  />
                 </div>
               </div>
 
               <div className="max-w-xl">
-                <span className="inline-flex items-center gap-2 rounded-full bg-bib-ivory/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]">
-                  <Sparkles className="h-3.5 w-3.5 text-bib-gold" />
+                <span className="inline-flex rounded-full bg-bib-ivory/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]">
                   Développer une marque
                 </span>
 
                 <h2 className="mt-5 font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
-                  Vous développez la marque.
+                  Concentrez-vous sur votre marque.
                   <span className="block text-bib-gold">
-                    BIB structure le reste.
+                    BIB s'occupe de l'infrastructure.
                   </span>
                 </h2>
 
                 <p className="mt-6 text-base leading-7 text-bib-ivory/60">
-                  BIB permet aux marques de se concentrer sur leur
-                  développement tout en s'appuyant sur un réseau structuré de
-                  produits, de partenaires et d'opérations.
+                  Accédez à un environnement structuré pour développer votre
+                  boutique, vos produits et vos opérations.
                 </p>
 
                 <Button
@@ -340,7 +338,7 @@ const Index = () => {
                   className="mt-8"
                 >
                   <Link to="/vendre">
-                    Développer ma marque
+                    Commencer avec BIB
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
@@ -350,110 +348,67 @@ const Index = () => {
         </section>
 
         {/* =========================================================
-            TRUST
+            PARTENAIRES
         ========================================================= */}
         <section className="bg-bib-ivory py-20 sm:py-28">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-3xl text-center">
-              <span className="inline-flex items-center gap-2 rounded-full bg-bib-marine/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-bib-marine">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                Verified by BIB
-              </span>
-
-              <h2 className="mt-5 font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
-                La confiance doit se{" "}
-                <span className="text-bib-gold">voir.</span>
-              </h2>
-
-              <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-bib-marine/60">
-                BIB met en place des processus de sélection et de vérification
-                afin de rendre plus lisibles les acteurs et les produits
-                présents dans son réseau.
-              </p>
-            </div>
-
-            <div className="mt-14 grid gap-4 md:grid-cols-3">
-              <TrustCard
-                title="Acteurs sélectionnés"
-                description="Les partenaires intégrés au réseau passent par un parcours d'entrée adapté à leur activité."
-              />
-
-              <TrustCard
-                title="Produits vérifiés"
-                description="Les produits proposés aux marques sont sélectionnés et suivis selon les critères BIB."
-              />
-
-              <TrustCard
-                title="Traçabilité"
-                description="BIB structure les informations nécessaires au suivi des produits et des opérations."
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* =========================================================
-            PARTNERS
-        ========================================================= */}
-        <section className="bg-bib-marine py-20 text-bib-ivory sm:py-24">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center">
               <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-bib-gold">
-                Construire avec BIB
+                Le réseau BIB
               </span>
 
               <h2 className="mt-4 font-display text-3xl font-bold sm:text-4xl">
-                BIB grandit avec son réseau.
+                Vous souhaitez travailler avec BIB ?
               </h2>
 
-              <p className="mt-5 text-sm leading-6 text-bib-ivory/60 sm:text-base">
-                Fournisseurs, partenaires logistiques et acteurs opérationnels
-                peuvent proposer leurs capacités et participer au développement
-                du réseau.
+              <p className="mt-5 text-sm leading-6 text-bib-marine/55 sm:text-base">
+                Fournisseurs et partenaires opérationnels peuvent présenter
+                leurs capacités et rejoindre le réseau.
               </p>
             </div>
 
             <div className="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2">
               <PartnerCard
-                icon={<Package className="h-5 w-5" />}
+                icon={<Package />}
                 title="Fournisseurs"
-                description="Proposez vos produits, capacités de production ou savoir-faire au réseau BIB."
+                description="Présentez vos produits, capacités de production ou savoir-faire."
                 to="/suppliers"
-                label="Proposer mes capacités"
+                label="Devenir fournisseur"
               />
 
               <PartnerCard
-                icon={<Truck className="h-5 w-5" />}
+                icon={<Truck />}
                 title="Partenaires opérationnels"
-                description="Présentez vos capacités logistiques ou opérationnelles et rejoignez le réseau."
+                description="Proposez vos capacités logistiques ou opérationnelles."
                 to="/ops"
-                label="Rejoindre les opérations"
+                label="Devenir partenaire"
               />
             </div>
           </div>
         </section>
 
         {/* =========================================================
-            FINAL CTA
+            CTA
         ========================================================= */}
-        <section className="bg-bib-ivory py-24 sm:py-32">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="bg-bib-ivory px-4 pb-24 sm:pb-32">
+          <div className="container mx-auto">
             <div className="relative overflow-hidden rounded-[2rem] bg-bib-marine px-6 py-16 text-center text-bib-ivory sm:px-12 sm:py-20">
-              <div className="absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-bib-gold/10 blur-3xl" />
+              <div
+                className="pointer-events-none absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-bib-gold/10 blur-3xl"
+                aria-hidden="true"
+              />
 
               <div className="relative mx-auto max-w-2xl">
                 <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-bib-gold">
                   Brand-in-a-box
                 </span>
 
-                <h2 className="mt-5 font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
-                  Une marque.
-                  <span className="block text-bib-gold">
-                    Un réseau pour aller plus loin.
-                  </span>
+                <h2 className="mt-5 font-display text-3xl font-bold sm:text-4xl lg:text-5xl">
+                  Prêt à développer votre marque ?
                 </h2>
 
-                <p className="mx-auto mt-5 max-w-xl text-sm leading-6 text-bib-ivory/60 sm:text-base">
-                  Découvrez BIB selon ce que vous cherchez aujourd'hui.
+                <p className="mx-auto mt-5 max-w-xl text-sm leading-6 text-bib-ivory/55 sm:text-base">
+                  Choisissez le parcours qui correspond à votre activité.
                 </p>
 
                 <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
@@ -462,8 +417,8 @@ const Index = () => {
                     size="lg"
                     variant="premium"
                   >
-                    <Link to="/store">
-                      Explorer les boutiques
+                    <Link to="/vendre">
+                      Développer ma marque
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
@@ -474,8 +429,8 @@ const Index = () => {
                     variant="outline"
                     className="border-bib-ivory/20 bg-transparent text-bib-ivory hover:bg-bib-ivory/10 hover:text-bib-ivory"
                   >
-                    <Link to="/vendre">
-                      Développer ma marque
+                    <Link to="/store">
+                      Découvrir les marques
                     </Link>
                   </Button>
                 </div>
@@ -491,78 +446,89 @@ const Index = () => {
 };
 
 /* ===============================================================
-   B IN BOX — animation principale
+   BIB BOX 3D
    =============================================================== */
 
-function BibBoxAnimation() {
+function BibBox3D() {
   return (
-    <div
-      className="relative flex h-[390px] w-full max-w-[520px] items-center justify-center sm:h-[480px]"
-      aria-label="Animation du B dans sa boîte"
-    >
+    <div className="relative flex h-[400px] w-full max-w-[560px] items-center justify-center sm:h-[500px]">
       <style>{`
-        @keyframes bibBoxEnterExit {
+        @keyframes bib3dB {
           0%,
           12% {
-            transform: translateX(0) scale(1);
-            opacity: 1;
+            transform:
+              translate3d(-115px, 0, 70px)
+              rotateY(-10deg)
+              rotateX(2deg)
+              scale(1);
           }
 
-          28% {
-            transform: translateX(88px) scale(0.92);
-            opacity: 1;
+          30% {
+            transform:
+              translate3d(0, 0, 10px)
+              rotateY(0deg)
+              rotateX(0deg)
+              scale(.86);
           }
 
-          42%,
+          43%,
           58% {
-            transform: translateX(88px) scale(0.88);
-            opacity: 1;
+            transform:
+              translate3d(0, 0, -25px)
+              rotateY(0deg)
+              rotateX(0deg)
+              scale(.78);
           }
 
-          72% {
-            transform: translateX(0) scale(1);
-            opacity: 1;
+          73% {
+            transform:
+              translate3d(-115px, 0, 70px)
+              rotateY(-10deg)
+              rotateX(2deg)
+              scale(1);
           }
 
-          82%,
+          84%,
           100% {
-            transform: translateX(0) scale(1);
-            opacity: 1;
+            transform:
+              translate3d(-115px, 0, 70px)
+              rotateY(-10deg)
+              rotateX(2deg)
+              scale(1);
           }
         }
 
-        @keyframes bibBoxShadow {
+        @keyframes bib3dBox {
           0%,
-          12% {
-            transform: scaleX(1);
-            opacity: .18;
+          100% {
+            transform: rotateX(2deg) rotateY(-7deg);
           }
 
-          28%,
-          72% {
-            transform: scaleX(.82);
-            opacity: .12;
+          50% {
+            transform: rotateX(0deg) rotateY(-3deg);
           }
+        }
 
-          42%,
-          58% {
-            transform: scaleX(.72);
-            opacity: .08;
-          }
-
-          82%,
+        @keyframes bib3dShadow {
+          0%,
+          12%,
+          73%,
           100% {
             transform: scaleX(1);
-            opacity: .18;
+            opacity: .2;
+          }
+
+          30%,
+          58% {
+            transform: scaleX(.72);
+            opacity: .12;
           }
         }
 
         @media (prefers-reduced-motion: reduce) {
-          .bib-box-b {
-            animation: none !important;
-          }
-
-          .bib-box-shadow {
+          .bib-3d-b,
+          .bib-3d-box,
+          .bib-3d-shadow {
             animation: none !important;
           }
         }
@@ -570,84 +536,144 @@ function BibBoxAnimation() {
 
       {/* Halo */}
       <div
-        className="absolute h-64 w-64 rounded-full bg-bib-gold/10 blur-3xl sm:h-80 sm:w-80"
+        className="absolute h-72 w-72 rounded-full bg-bib-gold/10 blur-3xl sm:h-96 sm:w-96"
         aria-hidden="true"
       />
 
-      {/* Sol / ombre */}
+      {/* Ombre */}
       <div
-        className="bib-box-shadow absolute bottom-[62px] h-8 w-56 rounded-[50%] bg-bib-marine/30 blur-xl sm:bottom-[76px] sm:w-72"
+        className="bib-3d-shadow absolute bottom-[55px] h-10 w-64 rounded-full bg-bib-marine/30 blur-2xl sm:bottom-[70px] sm:w-80"
         style={{
           animation:
-            "bibBoxShadow 7s cubic-bezier(.65,0,.35,1) infinite",
+            "bib3dShadow 7s cubic-bezier(.65,0,.35,1) infinite",
         }}
         aria-hidden="true"
       />
 
-      {/* Groupe boîte */}
-      <div className="relative h-64 w-72 sm:h-72 sm:w-80">
-        {/* Face arrière de la boîte */}
+      {/* Perspective */}
+      <div
+        className="relative h-[280px] w-[340px] [perspective:1100px] sm:h-[330px] sm:w-[420px]"
+      >
+        {/* Boîte */}
         <div
-          className="absolute left-1/2 top-1/2 h-44 w-56 -translate-x-1/2 -translate-y-1/2 rounded-[1.5rem] border border-bib-gold/40 bg-bib-marine shadow-2xl sm:h-52 sm:w-64"
-          aria-hidden="true"
-        >
-          <div className="absolute inset-3 rounded-[1.1rem] border border-bib-ivory/10" />
-
-          <div className="absolute left-1/2 top-1/2 h-[75%] w-px -translate-x-1/2 -translate-y-1/2 bg-bib-gold/20" />
-        </div>
-
-        {/* Ouverture sombre de la boîte */}
-        <div
-          className="absolute left-1/2 top-1/2 z-10 h-36 w-48 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[1.1rem] border border-bib-gold/25 bg-[#081824] shadow-inner sm:h-44 sm:w-56"
-          aria-hidden="true"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-bib-gold/5 via-transparent to-black/20" />
-        </div>
-
-        {/* B animé */}
-        <div
-          className="bib-box-b absolute left-[calc(50%-126px)] top-1/2 z-20 flex h-28 w-28 -translate-y-1/2 items-center justify-center sm:left-[calc(50%-146px)] sm:h-36 sm:w-36"
+          className="bib-3d-box absolute left-1/2 top-1/2 h-52 w-64 -translate-x-1/2 -translate-y-1/2 [transform-style:preserve-3d] sm:h-60 sm:w-72"
           style={{
             animation:
-              "bibBoxEnterExit 7s cubic-bezier(.65,0,.35,1) infinite",
+              "bib3dBox 7s ease-in-out infinite",
           }}
         >
-          <span
-            className="font-display text-[8rem] font-black leading-none text-bib-gold drop-shadow-[0_12px_24px_rgba(0,0,0,0.25)] sm:text-[10rem]"
-            aria-hidden="true"
+          {/* Fond */}
+          <div
+            className="absolute inset-0 rounded-[1.5rem] border border-bib-gold/40 bg-bib-marine shadow-[0_35px_70px_rgba(4,24,37,.28)]"
+            style={{
+              transform: "translateZ(-18px)",
+            }}
+          />
+
+          {/* Face arrière intérieure */}
+          <div
+            className="absolute inset-[14px] rounded-[1.1rem] border border-bib-gold/20 bg-[#071a28]"
+            style={{
+              transform: "translateZ(-2px)",
+            }}
+          />
+
+          {/* Face avant / cadre */}
+          <div
+            className="absolute inset-0 rounded-[1.5rem] border border-bib-gold/40"
+            style={{
+              transform: "translateZ(20px)",
+              background:
+                "linear-gradient(135deg, rgba(255,255,255,.05), transparent 45%)",
+            }}
+          />
+
+          {/* Ouverture */}
+          <div
+            className="absolute left-1/2 top-1/2 h-36 w-48 -translate-x-1/2 -translate-y-1/2 rounded-[1.15rem] border border-bib-gold/20 bg-[#06141f] shadow-inner sm:h-44 sm:w-56"
+            style={{
+              transform: "translateZ(23px) translate(-50%, -50%)",
+            }}
           >
-            B
-          </span>
+            <div className="absolute inset-0 rounded-[1.15rem] bg-gradient-to-br from-bib-gold/[0.08] via-transparent to-black/30" />
+
+            <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-bib-gold/[0.06]" />
+          </div>
+
+          {/* Logo discret sur la boîte */}
+          <div
+            className="absolute bottom-5 left-1/2 -translate-x-1/2 text-[8px] font-semibold uppercase tracking-[0.35em] text-bib-ivory/30"
+            style={{
+              transform: "translateZ(26px) translateX(-50%)",
+            }}
+          >
+            BIB
+          </div>
         </div>
 
-        {/* Face avant / cadre de l'ouverture.
-            Elle reste devant le B lorsqu'il entre. */}
+        {/* B 3D */}
         <div
-          className="absolute left-1/2 top-1/2 z-30 h-36 w-48 -translate-x-1/2 -translate-y-1/2 rounded-[1.1rem] border border-bib-gold/20 pointer-events-none sm:h-44 sm:w-56"
-          aria-hidden="true"
-        />
+          className="bib-3d-b absolute left-1/2 top-1/2 z-20 h-36 w-32 -translate-x-1/2 -translate-y-1/2 [transform-style:preserve-3d]"
+          style={{
+            animation:
+              "bib3dB 7s cubic-bezier(.65,0,.35,1) infinite",
+          }}
+        >
+          {/* Extrusion arrière */}
+          <div
+            className="absolute inset-0 flex items-center justify-center rounded-xl bg-[#9c711b]"
+            style={{
+              transform: "translateZ(-16px)",
+            }}
+          >
+            <span className="font-display text-[9rem] font-black leading-none text-[#b98a27]">
+              B
+            </span>
+          </div>
 
-        {/* Petite ligne de signature */}
-        <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.3em] text-bib-marine/35">
-          Brand-in-a-box
+          {/* Corps du B */}
+          <div
+            className="absolute inset-0 flex items-center justify-center rounded-xl"
+            style={{
+              transform: "translateZ(4px)",
+              background:
+                "linear-gradient(135deg, #f4d27a 0%, #c99a32 42%, #9e701d 100%)",
+              boxShadow:
+                "inset 5px 5px 10px rgba(255,255,255,.32), inset -8px -8px 16px rgba(70,45,5,.22), 0 18px 30px rgba(0,0,0,.25)",
+            }}
+          >
+            <span
+              className="font-display text-[9rem] font-black leading-none"
+              style={{
+                color: "#e8bd58",
+                textShadow:
+                  "2px 2px 0 #c18e27, 4px 5px 0 #9c6d19, 0 10px 20px rgba(0,0,0,.2)",
+              }}
+            >
+              B
+            </span>
+          </div>
+
+          {/* Reflet */}
+          <div
+            className="pointer-events-none absolute left-[22%] top-[12%] h-16 w-5 rotate-[25deg] rounded-full bg-white/25 blur-md"
+            style={{
+              transform: "translateZ(10px)",
+            }}
+          />
         </div>
+      </div>
+
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.32em] text-bib-marine/30">
+        Brand-in-a-box
       </div>
     </div>
   );
-}
+};
 
 /* ===============================================================
    AUDIENCE CARD
    =============================================================== */
-
-interface AudienceCardProps {
-  icon: React.ReactNode;
-  number: string;
-  title: string;
-  description: string;
-  cta: string;
-  to: string;
-}
 
 function AudienceCard({
   icon,
@@ -656,7 +682,14 @@ function AudienceCard({
   description,
   cta,
   to,
-}: AudienceCardProps) {
+}: {
+  icon: React.ReactNode;
+  number: string;
+  title: string;
+  description: string;
+  cta: string;
+  to: string;
+}) {
   return (
     <Link
       to={to}
@@ -687,10 +720,10 @@ function AudienceCard({
 }
 
 /* ===============================================================
-   NETWORK POINT
+   FEATURE CARD
    =============================================================== */
 
-function NetworkPoint({
+function FeatureCard({
   icon,
   title,
   description,
@@ -700,7 +733,7 @@ function NetworkPoint({
   description: string;
 }) {
   return (
-    <div className="rounded-2xl border border-bib-marine/10 bg-white/50 p-6">
+    <div className="rounded-2xl border border-bib-marine/10 bg-bib-ivory p-6">
       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-bib-marine text-bib-ivory">
         {icon}
       </div>
@@ -717,29 +750,30 @@ function NetworkPoint({
 }
 
 /* ===============================================================
-   TRUST CARD
+   MINI FEATURE
    =============================================================== */
 
-function TrustCard({
+function MiniFeature({
+  icon,
   title,
   description,
 }: {
+  icon: React.ReactNode;
   title: string;
   description: string;
 }) {
   return (
-    <div className="rounded-2xl border border-bib-marine/10 bg-white/50 p-7">
-      <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-full bg-bib-gold/15 text-bib-gold">
-        <ShieldCheck className="h-5 w-5" />
+    <div className="flex items-center gap-4 rounded-xl border border-bib-ivory/10 bg-bib-ivory/[0.04] p-4">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-bib-gold/15 text-bib-gold">
+        {icon}
       </div>
 
-      <h3 className="font-display text-xl font-semibold text-bib-marine">
-        {title}
-      </h3>
-
-      <p className="mt-2 text-sm leading-6 text-bib-marine/55">
-        {description}
-      </p>
+      <div>
+        <p className="font-semibold">{title}</p>
+        <p className="mt-0.5 text-xs text-bib-ivory/50">
+          {description}
+        </p>
+      </div>
     </div>
   );
 }
@@ -764,9 +798,9 @@ function PartnerCard({
   return (
     <Link
       to={to}
-      className="group rounded-2xl border border-bib-ivory/10 bg-bib-ivory/[0.04] p-7 transition-all duration-300 hover:border-bib-gold/40 hover:bg-bib-ivory/[0.07]"
+      className="group rounded-2xl border border-bib-marine/10 bg-white p-7 transition-all duration-300 hover:-translate-y-1 hover:border-bib-gold/40 hover:shadow-lg"
     >
-      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-bib-gold/15 text-bib-gold">
+      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-bib-marine text-bib-ivory">
         {icon}
       </div>
 
@@ -774,11 +808,11 @@ function PartnerCard({
         {title}
       </h3>
 
-      <p className="mt-2 text-sm leading-6 text-bib-ivory/50">
+      <p className="mt-2 text-sm leading-6 text-bib-marine/55">
         {description}
       </p>
 
-      <div className="mt-6 inline-flex items-center text-xs font-semibold text-bib-gold">
+      <div className="mt-6 inline-flex items-center text-xs font-semibold text-bib-marine">
         {label}
         <ArrowRight className="ml-1.5 h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
       </div>
