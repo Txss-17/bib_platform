@@ -117,11 +117,10 @@ export function BoutiqueCard({
         className="flex h-full min-w-0 flex-col outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       >
         {/* =====================================================
-            IMAGE + STORIES
-            Les stories restent attachées à la carte boutique
+            IMAGE / STORIES
            ===================================================== */}
 
-        <div className="relative aspect-[5/3] max-h-[150px] shrink-0 overflow-hidden bg-muted sm:max-h-[158px]">
+        <div className="relative aspect-[5/3] shrink-0 overflow-hidden bg-muted">
           {imageUrl && !imageError ? (
             activeStory?.mediaKind === "video" ? (
               <video
@@ -152,11 +151,11 @@ export function BoutiqueCard({
             </div>
           )}
 
-          {/* Dégradé discret pour préserver la lisibilité des contrôles */}
+          {/* Dégradé très léger */}
 
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/[0.12] via-transparent to-transparent" />
 
-          {/* STORIES : indicateurs uniquement */}
+          {/* STORIES — toujours attachées à la carte */}
 
           {stories.length > 1 && (
             <div className="absolute left-3 right-3 top-3 flex gap-1">
@@ -201,18 +200,12 @@ export function BoutiqueCard({
             INFORMATIONS
            ===================================================== */}
 
-        <div className="flex min-h-[146px] flex-1 flex-col bg-white p-3 sm:min-h-[152px] sm:p-3.5">
+        <div className="flex min-h-[140px] flex-1 flex-col bg-white p-3 sm:min-h-[145px] sm:p-3.5">
           {/* NOM */}
 
           <h3 className="line-clamp-1 text-[15px] font-semibold leading-tight text-slate-950">
             {boutique.name}
           </h3>
-
-          {/* CATÉGORIE */}
-
-          <p className="mt-1 line-clamp-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-            {boutique.category || "Autres"}
-          </p>
 
           {/* DESCRIPTION */}
 
@@ -224,24 +217,23 @@ export function BoutiqueCard({
             <div className="min-h-[30px]" />
           )}
 
-          {/* DERNIÈRE LIGNE :
-              vérification + bouton Voir aligné */}
+          {/* DERNIÈRE LIGNE */}
 
           <div className="mt-auto flex min-w-0 items-center justify-between gap-2 pt-3">
-            {boutique.has_protection ? (
-              <div className="flex min-w-0 items-center gap-1.5 text-[10px] font-medium text-slate-600 sm:text-[11px]">
-                <span
-                  aria-hidden="true"
-                  className="h-2 w-2 shrink-0 rounded-full bg-emerald-500"
-                />
+            {/* Toutes les boutiques Marketplace sont vérifiées */}
 
-                <span className="truncate">
-                  Vérifiée par BIB
-                </span>
-              </div>
-            ) : (
-              <span />
-            )}
+            <div className="flex min-w-0 items-center gap-1.5 text-[10px] font-medium text-slate-600 sm:text-[11px]">
+              <span
+                aria-hidden="true"
+                className="h-2 w-2 shrink-0 rounded-full bg-emerald-500"
+              />
+
+              <span className="whitespace-nowrap">
+                Vérifiée par BIB
+              </span>
+            </div>
+
+            {/* VOIR */}
 
             <span className="inline-flex h-8 shrink-0 items-center gap-1 rounded-full bg-slate-100 px-3 text-xs font-semibold whitespace-nowrap text-slate-950 transition group-hover:bg-slate-200">
               <span className="whitespace-nowrap">
