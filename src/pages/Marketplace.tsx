@@ -1,5 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Menu,
+  Search,
+  Heart,
+  ShoppingBag,
+  User,
+  Check,
+  ChevronRight,
+  Loader2,
+  X,
+  Store,
+  Sparkles,
+  Package,
+  Gift,
+  Recycle,
+  Star,
+  Settings,
+} from "lucide-react";
 
 import {
   useMarketplaceBoutiques,
@@ -9,26 +27,13 @@ import {
 import { BoutiqueCard } from "@/components/marketplace/BoutiqueCard";
 import { Logo } from "@/components/Logo";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/contexts/AuthContext";
-import { CustomerPanel, type CustomerPanelTab } from "@/components/marketplace/CustomerPanel";
-import { useCustomerProfile } from "@/hooks/useCustomerProfile";
-
 import {
-  Search,
-  Check,
-  ChevronRight,
-  Loader2,
-  User,
-  ShieldCheck,
-  PackageCheck,
-  Gift,
-  Recycle,
-  ArrowRight,
-  Sparkles,
-} from "lucide-react";
+  CustomerPanel,
+  type CustomerPanelTab,
+} from "@/components/marketplace/CustomerPanel";
+import { useCustomerProfile } from "@/hooks/useCustomerProfile";
 
 export default function Marketplace() {
   const { data: boutiques = [], isLoading } = useMarketplaceBoutiques();
@@ -37,25 +42,29 @@ export default function Marketplace() {
   const [search, setSearch] = useState(searchParams.get("q") ?? "");
 
   const navigate = useNavigate();
-
   const { user } = useAuth();
   const { data: customer } = useCustomerProfile();
 
+  const [menuOpen, setMenuOpen] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [panelTab, setPanelTab] =
     useState<CustomerPanelTab>("favorites");
 
-  const initial =
-    (customer?.full_name || user?.email || "?")
-      .trim()
-      .charAt(0)
-      .toUpperCase();
+  const initial = (
+    customer?.full_name ||
+    user?.email ||
+    "?"
+  )
+    .trim()
+    .charAt(0)
+    .toUpperCase();
 
   const openPanel = (
     tab: CustomerPanelTab = "favorites",
   ) => {
     setPanelTab(tab);
     setPanelOpen(true);
+    setMenuOpen(false);
   };
 
   useEffect(() => {
@@ -75,9 +84,9 @@ export default function Marketplace() {
   }, [search]);
 
   useSEO({
-    title: "BIB Marketplace — Des marques à découvrir",
+    title: "Store BIB",
     description:
-      "Découvrez les boutiques et produits sélectionnés par Brand-in-a-box. Explorez la marketplace BIB et votre espace BIB Abonné.",
+      "Découvrez les boutiques et produits sélectionnés sur BIB.",
   });
 
   const q = search.trim().toLowerCase();
@@ -132,768 +141,480 @@ export default function Marketplace() {
   );
 
   return (
-    <div className="min-h-screen bg-bib-ivory text-bib-marine">
-
+    <div className="min-h-screen bg-background text-foreground">
       {/* =========================================================
-          HEADER MARKETPLACE
-      ========================================================== */}
+          NAVIGATION
+      ========================================================= */}
 
-      <header className="sticky top-0 z-40 border-b border-bib-marine/10 bg-bib-ivory/95 backdrop-blur-md">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
+        <div className="container mx-auto max-w-7xl px-3 sm:px-4">
+          <div className="flex h-16 items-center gap-2 sm:gap-4">
 
-          <div className="flex min-h-[72px] items-center gap-4">
+            {/* MENU */}
+            <button
+              type="button"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Ouvrir le menu"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition hover:bg-muted active:scale-95"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
 
-            {/* EXISTING BIB LOGO — NE PAS MODIFIER */}
+            {/* LOGO BIB — EXISTANT, NON MODIFIÉ */}
             <Link
               to="/store"
+              aria-label="Store BIB"
               className="shrink-0"
-              aria-label="BIB Marketplace"
             >
               <Logo
-                iconSize={34}
+                iconSize={30}
                 asLink={false}
               />
             </Link>
 
-            {/* Desktop navigation */}
-            <nav className="hidden items-center gap-6 lg:flex">
-              <Link
-                to="/store"
-                className="text-sm font-semibold text-bib-marine"
-              >
-                Boutiques
-              </Link>
-
-              <Link
-                to="/store#produits"
-                className="text-sm text-bib-marine/65 transition hover:text-bib-marine"
-              >
-                Produits
-              </Link>
-
-              <Link
-                to="/store#categories"
-                className="text-sm text-bib-marine/65 transition hover:text-bib-marine"
-              >
-                Catégories
-              </Link>
-            </nav>
-
-            {/* Search */}
+            {/* SEARCH */}
             <form
               onSubmit={(e) => {
                 e.preventDefault();
 
-                if (search.trim()) {
+                const value = search.trim();
+
+                if (value) {
                   navigate(
-                    `/store?q=${encodeURIComponent(
-                      search.trim(),
-                    )}`,
+                    `/store?q=${encodeURIComponent(value)}`,
                   );
                 }
               }}
-              className="relative mx-auto hidden w-full max-w-xl md:block"
+              className="relative mx-auto hidden max-w-2xl flex-1 md:block"
             >
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-bib-marine/40" />
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
               <Input
                 value={search}
                 onChange={(e) =>
                   setSearch(e.target.value)
                 }
-                placeholder="Rechercher une boutique, un produit…"
-                className="h-11 rounded-full border-bib-marine/10 bg-white pl-11 pr-12 text-sm shadow-sm focus-visible:ring-bib-gold/40"
+                placeholder="Rechercher..."
+                className="h-10 rounded-full border-border bg-muted/50 pl-10 pr-4 text-sm focus-visible:ring-primary/40"
               />
-
-              <button
-                type="submit"
-                aria-label="Rechercher"
-                className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-bib-marine text-bib-ivory transition hover:bg-bib-marine/90"
-              >
-                <Search className="h-4 w-4" />
-              </button>
             </form>
 
-            {/* Subscriber space */}
-            <button
-              onClick={() => openPanel("favorites")}
-              className="group ml-auto flex shrink-0 items-center gap-2 rounded-full border border-bib-marine/10 bg-white px-2.5 py-2 shadow-sm transition hover:border-bib-gold/40 hover:shadow-md"
-              aria-label="Ouvrir mon espace BIB"
-            >
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-bib-marine text-bib-gold">
+            {/* ACTIONS */}
+            <div className="ml-auto flex shrink-0 items-center gap-1">
+
+              {/* FAVORIS */}
+              <NavIconButton
+                label="Favoris"
+                onClick={() => openPanel("favorites")}
+              >
+                <Heart className="h-[19px] w-[19px]" />
+              </NavIconButton>
+
+              {/* PANIER */}
+              <NavIconButton
+                label="Panier"
+                onClick={() => openPanel("cart")}
+                badge={0}
+              >
+                <ShoppingBag className="h-[19px] w-[19px]" />
+              </NavIconButton>
+
+              {/* PROFIL */}
+              <button
+                type="button"
+                onClick={() => openPanel("profile")}
+                aria-label="Mon espace"
+                className="relative flex h-10 w-10 items-center justify-center rounded-full bg-muted transition hover:bg-muted/70 active:scale-95"
+              >
                 {user ? (
-                  <span className="text-xs font-bold">
+                  <span className="font-display text-sm font-semibold">
                     {initial}
                   </span>
                 ) : (
-                  <User className="h-4 w-4" />
+                  <User className="h-[19px] w-[19px]" />
                 )}
-              </span>
 
-              <span className="hidden text-left sm:block">
-                <span className="block text-[10px] font-semibold uppercase tracking-wider text-bib-marine/45">
-                  Espace
-                </span>
-
-                <span className="block text-xs font-bold text-bib-marine">
-                  BIB Abonné
-                </span>
-              </span>
-            </button>
+                {user && (
+                  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
+                )}
+              </button>
+            </div>
           </div>
 
-          {/* Mobile search */}
+          {/* MOBILE SEARCH */}
           <div className="pb-3 md:hidden">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
 
-                if (search.trim()) {
+                const value = search.trim();
+
+                if (value) {
                   navigate(
-                    `/store?q=${encodeURIComponent(
-                      search.trim(),
-                    )}`,
+                    `/store?q=${encodeURIComponent(value)}`,
                   );
                 }
               }}
               className="relative"
             >
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-bib-marine/40" />
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
               <Input
                 value={search}
                 onChange={(e) =>
                   setSearch(e.target.value)
                 }
-                placeholder="Rechercher une boutique, un produit…"
-                className="h-11 rounded-full border-bib-marine/10 bg-white pl-11"
+                placeholder="Rechercher..."
+                className="h-10 rounded-full border-border bg-muted/50 pl-10 pr-10 text-sm"
               />
+
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  aria-label="Effacer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </form>
           </div>
-
         </div>
       </header>
 
-      <main>
+      {/* =========================================================
+          SIDE MENU
+      ========================================================= */}
 
-        {/* =========================================================
-            HERO
-        ========================================================== */}
-
-        <section className="relative overflow-hidden bg-bib-marine text-bib-ivory">
-
-          <div
-            className="absolute -right-32 -top-40 h-[500px] w-[500px] rounded-full bg-bib-gold/10 blur-3xl"
-            aria-hidden="true"
+      {menuOpen && (
+        <div
+          className="fixed inset-0 z-[60]"
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            aria-label="Fermer le menu"
+            onClick={() => setMenuOpen(false)}
+            className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
           />
 
-          <div className="container relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-24">
-
-            <div className="grid items-center gap-10 lg:grid-cols-[1fr_0.85fr]">
-
-              <div className="max-w-2xl">
-
-                <span className="inline-flex items-center gap-2 rounded-full border border-bib-ivory/15 bg-bib-ivory/5 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-bib-gold">
-                  <Sparkles className="h-3 w-3" />
-                  BIB Marketplace
-                </span>
-
-                <h1 className="mt-6 font-display text-4xl font-bold leading-[1.05] sm:text-5xl lg:text-6xl">
-                  Des marques à découvrir.
-                  <span className="block text-bib-gold">
-                    Des produits sélectionnés.
-                  </span>
-                </h1>
-
-                <p className="mt-6 max-w-xl text-base leading-relaxed text-bib-ivory/70 sm:text-lg">
-                  Découvrez des boutiques indépendantes et
-                  explorez une sélection de produits au sein de
-                  l'écosystème BIB.
-                </p>
-
-                {/* Hero search */}
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-
-                    if (search.trim()) {
-                      navigate(
-                        `/store?q=${encodeURIComponent(
-                          search.trim(),
-                        )}`,
-                      );
-                    }
-                  }}
-                  className="mt-8 flex max-w-xl flex-col gap-3 sm:flex-row"
-                >
-                  <div className="relative flex-1">
-                    <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-bib-marine/40" />
-
-                    <Input
-                      value={search}
-                      onChange={(e) =>
-                        setSearch(e.target.value)
-                      }
-                      placeholder="Une boutique, un produit…"
-                      className="h-12 rounded-full border-0 bg-white pl-11 text-bib-marine shadow-lg"
-                    />
-                  </div>
-
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="h-12 rounded-full bg-bib-gold px-6 text-bib-marine hover:bg-bib-gold/90"
-                  >
-                    Rechercher
-                  </Button>
-                </form>
-
-                <div className="mt-7 flex flex-wrap gap-2">
-                  {[
-                    "Mode",
-                    "Maison",
-                    "Beauté",
-                    "Accessoires",
-                    "Éco-responsable",
-                  ].map((category) => (
-                    <button
-                      key={category}
-                      onClick={() =>
-                        setSearch(category)
-                      }
-                      className="rounded-full border border-bib-ivory/15 px-3 py-1.5 text-xs text-bib-ivory/65 transition hover:border-bib-gold/50 hover:text-bib-gold"
-                    >
-                      {category}
-                    </button>
-                  ))}
-                </div>
-
-              </div>
-
-              {/* Visual panel */}
-              <div className="relative hidden lg:block">
-
-                <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 p-3 shadow-2xl">
-
-                  <div className="aspect-[4/3] overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-bib-ivory via-white to-bib-gold/10">
-
-                    <div className="flex h-full items-center justify-center p-8">
-
-                      <div className="grid w-full max-w-md grid-cols-2 gap-4">
-
-                        {[
-                          "Sélection BIB",
-                          "Boutiques",
-                          "Nouveautés",
-                          "BIB Abonné",
-                        ].map((item, index) => (
-                          <div
-                            key={item}
-                            className={`rounded-2xl border border-bib-marine/10 bg-white p-5 shadow-sm ${
-                              index === 0
-                                ? "col-span-2"
-                                : ""
-                            }`}
-                          >
-                            <div className="mb-3 h-2 w-10 rounded-full bg-bib-gold" />
-
-                            <p className="font-display text-lg font-bold text-bib-marine">
-                              {item}
-                            </p>
-
-                            <p className="mt-1 text-xs text-bib-marine/45">
-                              BIB Marketplace
-                            </p>
-                          </div>
-                        ))}
-
-                      </div>
-
-                    </div>
-                  </div>
-
-                </div>
-
-                <div className="absolute -bottom-5 -left-5 rounded-2xl border border-bib-marine/10 bg-white px-5 py-3 shadow-xl">
-                  <div className="flex items-center gap-3">
-                    <ShieldCheck className="h-5 w-5 text-bib-gold" />
-
-                    <div>
-                      <p className="text-xs font-bold text-bib-marine">
-                        Verified by BIB
-                      </p>
-
-                      <p className="text-[10px] text-bib-marine/45">
-                        Sélection et confiance
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-            </div>
-          </div>
-        </section>
-
-        {/* =========================================================
-            CATEGORIES
-        ========================================================== */}
-
-        <section
-          id="categories"
-          className="border-b border-bib-marine/10 bg-white"
-        >
-          <div className="container mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8">
-
-            <div className="flex gap-3 overflow-x-auto scrollbar-none">
-
-              {[
-                {
-                  name: "Mode",
-                  icon: "◌",
-                },
-                {
-                  name: "Maison",
-                  icon: "⌂",
-                },
-                {
-                  name: "Beauté",
-                  icon: "✦",
-                },
-                {
-                  name: "Accessoires",
-                  icon: "◇",
-                },
-                {
-                  name: "Éco-responsable",
-                  icon: "♧",
-                },
-                {
-                  name: "Nouveautés",
-                  icon: "✧",
-                },
-              ].map((category) => (
-                <button
-                  key={category.name}
-                  onClick={() =>
-                    setSearch(category.name)
-                  }
-                  className="flex min-w-fit items-center gap-2 rounded-full border border-bib-marine/10 bg-bib-ivory px-4 py-2.5 text-xs font-medium text-bib-marine transition hover:border-bib-gold/50 hover:bg-bib-gold/5"
-                >
-                  <span className="text-bib-gold">
-                    {category.icon}
-                  </span>
-
-                  {category.name}
-                </button>
-              ))}
-
-            </div>
-
-          </div>
-        </section>
-
-        {/* =========================================================
-            MARKETPLACE CONTENT
-        ========================================================== */}
-
-        <section
-          id="produits"
-          className="container mx-auto max-w-7xl px-4 pb-24 sm:px-6 lg:px-8"
-        >
-
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center gap-3 py-24 text-bib-marine/50">
-              <Loader2 className="h-6 w-6 animate-spin" />
-
-              <p className="text-sm">
-                Chargement des boutiques…
-              </p>
-            </div>
-          ) : filtered.length === 0 ? (
-            <div className="mt-12 rounded-3xl border border-dashed border-bib-marine/15 bg-white py-20 text-center">
-              <p className="text-lg font-semibold">
-                Aucun résultat
-              </p>
-
-              <p className="mt-2 text-sm text-bib-marine/50">
-                Essayez un autre mot-clé.
-              </p>
-            </div>
-          ) : (
-            <>
-              {q ? (
-                <Rail
-                  title={`Résultats pour "${search.trim()}"`}
-                  subtitle={`${filtered.length} boutique${
-                    filtered.length > 1 ? "s" : ""
-                  }`}
-                  items={filtered}
-                />
-              ) : (
-                <>
-                  <Rail
-                    title="Tendances"
-                    subtitle="Les boutiques les plus populaires"
-                    items={trending}
-                    accent
-                  />
-
-                  <Rail
-                    title="Nouveautés"
-                    subtitle="Les dernières boutiques à découvrir"
-                    items={newest}
-                  />
-
-                  {byCategory.map(([category, items]) => (
-                    <Rail
-                      key={category}
-                      title={category}
-                      subtitle={`${items.length} boutique${
-                        items.length > 1 ? "s" : ""
-                      }`}
-                      items={items}
-                    />
-                  ))}
-                </>
-              )}
-            </>
-          )}
-
-        </section>
-
-        {/* =========================================================
-            WHY BIB
-        ========================================================== */}
-
-        <section className="border-y border-bib-marine/10 bg-white py-20">
-          <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-
-            <div className="max-w-2xl">
-              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-bib-gold">
-                Pourquoi BIB ?
-              </span>
-
-              <h2 className="mt-3 font-display text-3xl font-bold sm:text-4xl">
-                Une marketplace pensée autour de la confiance.
-              </h2>
-
-              <p className="mt-4 text-sm leading-relaxed text-bib-marine/60 sm:text-base">
-                BIB souhaite construire une expérience où les
-                boutiques et les produits présentés répondent à
-                un cadre de sélection et de suivi.
-              </p>
-            </div>
-
-            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-
-              <TrustCard
-                icon={ShieldCheck}
-                title="Sélection BIB"
-                text="Une sélection de boutiques et de produits intégrés à l'écosystème BIB."
-              />
-
-              <TrustCard
-                icon={PackageCheck}
-                title="Suivi"
-                text="Retrouvez vos commandes et leur évolution depuis votre espace."
-              />
-
-              <TrustCard
-                icon={Gift}
-                title="Avantages"
-                text="Accédez aux fonctionnalités et avantages de BIB Abonné."
-              />
-
-              <TrustCard
-                icon={Recycle}
-                title="Circularité"
-                text="Découvrez progressivement les initiatives de recyclage développées par BIB."
-              />
-
-            </div>
-          </div>
-        </section>
-
-        {/* =========================================================
-            BIB ABONNE
-        ========================================================== */}
-
-        <section className="bg-bib-marine py-20 text-bib-ivory sm:py-24">
-
-          <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-
-            <div className="grid items-center gap-12 lg:grid-cols-[1fr_auto]">
-
-              <div className="max-w-2xl">
-
-                <span className="inline-flex items-center rounded-full bg-bib-gold/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-bib-gold">
-                  BIB Abonné
-                </span>
-
-                <h2 className="mt-5 font-display text-3xl font-bold sm:text-4xl lg:text-5xl">
-                  Votre espace BIB,
-                  <span className="block text-bib-gold">
-                    au même endroit.
-                  </span>
-                </h2>
-
-                <p className="mt-5 max-w-xl text-base leading-relaxed text-bib-ivory/65">
-                  Suivez vos boutiques préférées, vos commandes
-                  et profitez progressivement des fonctionnalités
-                  réservées aux abonnés.
-                </p>
-
-                <div className="mt-8 grid gap-3 sm:grid-cols-2">
-
-                  {[
-                    "Boutiques suivies",
-                    "Suivi des commandes",
-                    "Points BIB",
-                    "Cartes cadeaux",
-                    "Programme de recyclage",
-                    "Découvertes personnalisées",
-                  ].map((item) => (
-                    <div
-                      key={item}
-                      className="flex items-center gap-2 text-sm text-bib-ivory/75"
-                    >
-                      <Check className="h-4 w-4 shrink-0 text-bib-gold" />
-                      {item}
-                    </div>
-                  ))}
-
-                </div>
-
-                <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-
-                  <Button
-                    onClick={() => openPanel("favorites")}
-                    size="lg"
-                    className="bg-bib-gold text-bib-marine hover:bg-bib-gold/90"
-                  >
-                    Découvrir BIB Abonné
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="lg"
-                    className="border-bib-ivory/20 bg-transparent text-bib-ivory hover:bg-bib-ivory/10 hover:text-bib-ivory"
-                  >
-                    <Link to="/tarifs">
-                      Voir les détails
-                    </Link>
-                  </Button>
-
-                </div>
-
-              </div>
-
-              {/* Subscriber card */}
-              <div className="w-full max-w-sm">
-
-                <div className="rounded-[2rem] border border-bib-ivory/10 bg-bib-ivory/5 p-7 shadow-2xl backdrop-blur">
-
-                  <div className="flex items-center justify-between">
-                    <span className="font-display text-xl font-bold">
-                      BIB
-                    </span>
-
-                    <span className="rounded-full bg-bib-gold px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-bib-marine">
-                      Abonné
-                    </span>
-                  </div>
-
-                  <div className="mt-10">
-                    <p className="text-xs text-bib-ivory/50">
-                      À partir de
-                    </p>
-
-                    <div className="mt-1 flex items-baseline gap-1">
-                      <span className="font-display text-5xl font-bold">
-                        4,99€
-                      </span>
-
-                      <span className="text-sm text-bib-ivory/50">
-                        /mois
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="mt-8 border-t border-bib-ivory/10 pt-6">
-
-                    <p className="text-xs leading-relaxed text-bib-ivory/55">
-                      Les achats sur la marketplace restent
-                      accessibles sans abonnement BIB Abonné.
-                    </p>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
-          </div>
-        </section>
-
-        {/* =========================================================
-            FINAL CTA
-        ========================================================== */}
-
-        <section className="bg-bib-ivory py-20 sm:py-24">
-
-          <div className="container mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-
-            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-bib-gold">
-              BIB Marketplace
-            </span>
-
-            <h2 className="mt-4 font-display text-3xl font-bold sm:text-4xl lg:text-5xl">
-              Commencez votre découverte.
-            </h2>
-
-            <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-bib-marine/60 sm:text-base">
-              Explorez les boutiques disponibles et découvrez
-              progressivement l'univers BIB.
-            </p>
-
-            <Button
-              onClick={() =>
-                window.scrollTo({
-                  top: 0,
-                  behavior: "smooth",
-                })
-              }
-              size="lg"
-              className="mt-8 rounded-full bg-bib-marine px-7 text-bib-ivory hover:bg-bib-marine/90"
-            >
-              Explorer les boutiques
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-
-          </div>
-
-        </section>
-
-      </main>
-
-      {/* =========================================================
-          MARKETPLACE FOOTER
-      ========================================================== */}
-
-      <footer className="border-t border-bib-marine/10 bg-white">
-
-        <div className="container mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-
-            <div>
-              {/* LOGO BIB EXISTANT */}
+          <aside className="relative flex h-full w-[min(88vw,360px)] flex-col bg-background shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
               <Logo
                 iconSize={28}
                 asLink={false}
               />
 
-              <p className="mt-3 text-xs text-bib-marine/45">
-                Marketplace officiel Brand-in-a-box.
+              <button
+                type="button"
+                onClick={() => setMenuOpen(false)}
+                aria-label="Fermer"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-muted"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <nav className="flex-1 overflow-y-auto p-4">
+
+              <MenuSection title="Découvrir">
+                <MenuItem
+                  icon={<Store />}
+                  label="Boutiques"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate("/store");
+                  }}
+                />
+
+                <MenuItem
+                  icon={<Sparkles />}
+                  label="Tendances"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    document
+                      .getElementById("tendances")
+                      ?.scrollIntoView({
+                        behavior: "smooth",
+                      });
+                  }}
+                />
+
+                <MenuItem
+                  icon={<Package />}
+                  label="Nouveautés"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    document
+                      .getElementById("nouveautes")
+                      ?.scrollIntoView({
+                        behavior: "smooth",
+                      });
+                  }}
+                />
+              </MenuSection>
+
+              <MenuSection title="Mon espace">
+                <MenuItem
+                  icon={<Heart />}
+                  label="Mes favoris"
+                  onClick={() => openPanel("favorites")}
+                />
+
+                <MenuItem
+                  icon={<ShoppingBag />}
+                  label="Mon panier"
+                  onClick={() => openPanel("cart")}
+                />
+
+                <MenuItem
+                  icon={<Package />}
+                  label="Mes commandes"
+                  onClick={() => openPanel("orders")}
+                />
+
+                <MenuItem
+                  icon={<User />}
+                  label="Mon profil"
+                  onClick={() => openPanel("profile")}
+                />
+              </MenuSection>
+
+              <MenuSection title="Programme Abonné">
+                <MenuItem
+                  icon={<Gift />}
+                  label="Cartes cadeaux"
+                  onClick={() => openPanel("giftCards")}
+                />
+
+                <MenuItem
+                  icon={<Star />}
+                  label="Mes points"
+                  onClick={() => openPanel("points")}
+                />
+
+                <MenuItem
+                  icon={<Recycle />}
+                  label="Recyclage"
+                  onClick={() => openPanel("recycling")}
+                />
+              </MenuSection>
+
+              <MenuSection title="Compte">
+                <MenuItem
+                  icon={<Settings />}
+                  label="Paramètres"
+                  onClick={() => openPanel("profile")}
+                />
+              </MenuSection>
+            </nav>
+
+            <div className="border-t border-border p-4">
+              <p className="text-[11px] text-muted-foreground">
+                Store BIB
               </p>
             </div>
-
-            <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-bib-marine/55">
-
-              <Link
-                to="/centre-aide"
-                className="hover:text-bib-marine"
-              >
-                Centre d'aide
-              </Link>
-
-              <Link
-                to="/pack-legal"
-                className="hover:text-bib-marine"
-              >
-                Mentions légales
-              </Link>
-
-              <Link
-                to="/pack-legal#confidentialite"
-                className="hover:text-bib-marine"
-              >
-                Confidentialité
-              </Link>
-
-              <Link
-                to="/a-propos"
-                className="hover:text-bib-marine"
-              >
-                À propos de BIB
-              </Link>
-
-            </div>
-
-          </div>
-
-          <div className="mt-8 border-t border-bib-marine/10 pt-5 text-xs text-bib-marine/40">
-            © {new Date().getFullYear()} Brand-in-a-box. Tous droits réservés.
-          </div>
-
+          </aside>
         </div>
+      )}
 
+      {/* =========================================================
+          CONTENT
+      ========================================================= */}
+
+      <main className="container mx-auto max-w-7xl px-4 pb-20">
+
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <p className="text-sm">
+              Chargement...
+            </p>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="mt-8 rounded-3xl border border-dashed border-border bg-muted/30 py-16 text-center">
+            <p className="text-lg font-semibold">
+              Aucun résultat
+            </p>
+
+            <p className="mt-2 text-sm text-muted-foreground">
+              Essayez un autre mot-clé.
+            </p>
+          </div>
+        ) : (
+          <>
+            {q ? (
+              <Rail
+                title={`Résultats pour « ${search.trim()} »`}
+                subtitle={`${filtered.length} boutique${
+                  filtered.length > 1 ? "s" : ""
+                }`}
+                items={filtered}
+              />
+            ) : (
+              <>
+                <div id="tendances">
+                  <Rail
+                    title="Tendances"
+                    items={trending}
+                    accent
+                  />
+                </div>
+
+                <div id="nouveautes">
+                  <Rail
+                    title="Nouveautés"
+                    items={newest}
+                  />
+                </div>
+
+                {byCategory.map(([category, items]) => (
+                  <Rail
+                    key={category}
+                    title={category}
+                    items={items}
+                  />
+                ))}
+              </>
+            )}
+          </>
+        )}
+      </main>
+
+      {/* =========================================================
+          FOOTER
+      ========================================================= */}
+
+      <footer className="border-t border-border bg-muted/30">
+        <div className="container mx-auto flex max-w-7xl flex-col items-center gap-2 px-4 py-6 text-center text-xs text-muted-foreground sm:flex-row sm:justify-between">
+          <Logo
+            iconSize={20}
+            asLink={false}
+          />
+
+          <p>
+            © {new Date().getFullYear()} BIB
+          </p>
+
+          <Link
+            to="/"
+            className="transition hover:text-foreground"
+          >
+            BIB
+          </Link>
+        </div>
       </footer>
 
       {/* =========================================================
-          CUSTOMER PANEL
-      ========================================================== */}
+          CUSTOMER SPACE
+      ========================================================= */}
 
       <CustomerPanel
         open={panelOpen}
         onOpenChange={setPanelOpen}
         initialTab={panelTab}
       />
-
     </div>
   );
 }
 
 /* ===============================================================
-   TRUST CARD
-================================================================ */
+   NAV ICON
+=============================================================== */
 
-function TrustCard({
-  icon: Icon,
+interface NavIconButtonProps {
+  children: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  badge?: number;
+}
+
+function NavIconButton({
+  children,
+  label,
+  onClick,
+  badge,
+}: NavIconButtonProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className="relative flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-muted active:scale-95"
+    >
+      {children}
+
+      {typeof badge === "number" && badge > 0 && (
+        <span className="absolute right-0.5 top-0.5 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground ring-2 ring-background">
+          {badge > 99 ? "99+" : badge}
+        </span>
+      )}
+    </button>
+  );
+}
+
+/* ===============================================================
+   MENU
+=============================================================== */
+
+function MenuSection({
   title,
-  text,
+  children,
 }: {
-  icon: typeof ShieldCheck;
   title: string;
-  text: string;
+  children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-bib-marine/10 bg-bib-ivory p-6">
-
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-bib-marine text-bib-gold">
-        <Icon className="h-5 w-5" />
-      </div>
-
-      <h3 className="mt-5 font-display text-lg font-bold">
+    <section className="mb-6">
+      <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         {title}
-      </h3>
-
-      <p className="mt-2 text-sm leading-relaxed text-bib-marine/55">
-        {text}
       </p>
 
-    </div>
+      <div className="space-y-1">
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function MenuItem({
+  icon,
+  label,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm transition hover:bg-muted active:scale-[0.99]"
+    >
+      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+        {React.cloneElement(
+          icon as React.ReactElement,
+          {
+            className: "h-4 w-4",
+          },
+        )}
+      </span>
+
+      <span className="flex-1 text-left">
+        {label}
+      </span>
+
+      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+    </button>
   );
 }
 
 /* ===============================================================
    HORIZONTAL RAIL
-================================================================ */
+=============================================================== */
 
 interface RailProps {
   title: string;
@@ -912,70 +633,76 @@ function Rail({
 
   if (items.length === 0) return null;
 
-  const scroll = (dir: 1 | -1) => {
-    const el = ref.current;
+  const scroll = (direction: 1 | -1) => {
+    const element = ref.current;
 
-    if (!el) return;
+    if (!element) return;
 
-    el.scrollBy({
-      left: dir * el.clientWidth * 0.85,
+    element.scrollBy({
+      left:
+        direction *
+        element.clientWidth *
+        0.85,
       behavior: "smooth",
     });
   };
 
   return (
-    <section className="mt-14">
-
-      <div className="mb-5 flex items-end justify-between gap-3">
-
+    <section className="mt-8 sm:mt-10">
+      <div className="mb-3 flex items-end justify-between gap-3 sm:mb-4">
         <div>
-          <h3
-            className={`font-display text-2xl font-semibold leading-tight ${
+          <h2
+            className={`font-display text-xl font-semibold leading-tight sm:text-2xl ${
               accent
-                ? "text-bib-gold"
-                : "text-bib-marine"
+                ? "text-primary"
+                : "text-foreground"
             }`}
           >
             {title}
-          </h3>
+          </h2>
 
           {subtitle && (
-            <p className="mt-1 text-xs text-bib-marine/50">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               {subtitle}
             </p>
           )}
         </div>
 
         <button
+          type="button"
           onClick={() => scroll(1)}
-          aria-label="Voir plus"
-          className="hidden h-9 w-9 items-center justify-center rounded-full border border-bib-marine/10 bg-white text-bib-marine transition hover:border-bib-gold/40 hover:bg-bib-gold/5 sm:flex"
+          aria-label={`Voir plus : ${title}`}
+          className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted transition hover:bg-muted/70 sm:flex"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
-
       </div>
 
       <div className="relative">
-
         <div
           ref={ref}
           className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 scrollbar-none"
         >
-
           {items.map((boutique) => (
             <div
               key={boutique.id}
-              className="w-[82%] shrink-0 snap-start sm:w-[44%] md:w-[31%] lg:w-[23.5%]"
+              className="
+                w-[78%]
+                shrink-0
+                snap-start
+                sm:w-[44%]
+                md:w-[31%]
+                lg:w-[23.5%]
+                xl:w-[22%]
+              "
             >
-              <BoutiqueCard boutique={boutique} />
+              <BoutiqueCard
+                boutique={boutique}
+              />
             </div>
           ))}
-
         </div>
-
       </div>
-
     </section>
   );
 }
