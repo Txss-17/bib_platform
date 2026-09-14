@@ -324,7 +324,7 @@ export default function APropos() {
 
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Button asChild variant="premium" size="lg">
-                <Link to="/carrieres">Rejoindre BIB Talent</Link>
+                <Link to="/bib-talent">Rejoindre BIB Talent</Link>
               </Button>
 
               <Button
@@ -333,7 +333,7 @@ export default function APropos() {
                 size="lg"
                 className="border-bib-ivory/30 text-bib-ivory hover:bg-bib-ivory hover:text-bib-marine"
               >
-                <Link to="/centre-aide">En savoir plus</Link>
+                <Link to="/store">Découvrir BIB</Link>
               </Button>
             </div>
           </div>
