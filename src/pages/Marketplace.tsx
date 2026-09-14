@@ -60,11 +60,10 @@ export default function Marketplace() {
     useState<CustomerPanelTab>("favorites");
 
   /*
-   * TEMPORAIRE :
-   * Tout utilisateur connecté est considéré comme abonné.
+   * TEMPORAIRE
    *
-   * À remplacer par le vrai champ d'abonnement lorsque celui-ci
-   * sera disponible dans useCustomerProfile().
+   * À remplacer par le véritable statut BIB Abonné
+   * lorsque celui-ci sera disponible dans le profil client.
    */
   const isSubscriber = Boolean(user);
 
@@ -84,6 +83,10 @@ export default function Marketplace() {
     setPanelOpen(true);
   };
 
+  /* =========================================================
+     SYNCHRONISATION DE LA RECHERCHE AVEC L'URL
+     ========================================================= */
+
   useEffect(() => {
     const next = new URLSearchParams(searchParams);
 
@@ -100,6 +103,10 @@ export default function Marketplace() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
+  /* =========================================================
+     SEO
+     ========================================================= */
+
   useSEO({
     title: "Store BIB — Boutiques et produits sélectionnés",
     description:
@@ -108,13 +115,17 @@ export default function Marketplace() {
 
   const query = search.trim().toLowerCase();
 
+  /* =========================================================
+     RECHERCHE
+     ========================================================= */
+
   const filteredBoutiques = useMemo(() => {
     if (!query) {
       return boutiques;
     }
 
     return boutiques.filter((boutique) => {
-      const searchableContent = [
+      const content = [
         boutique.name,
         boutique.category,
         boutique.tagline,
@@ -127,9 +138,13 @@ export default function Marketplace() {
         .join(" ")
         .toLowerCase();
 
-      return searchableContent.includes(query);
+      return content.includes(query);
     });
   }, [boutiques, query]);
+
+  /* =========================================================
+     TENDANCES
+     ========================================================= */
 
   const trendingBoutiques = useMemo(
     () =>
@@ -138,6 +153,10 @@ export default function Marketplace() {
         .slice(0, 12),
     [filteredBoutiques],
   );
+
+  /* =========================================================
+     NOUVEAUTÉS
+     ========================================================= */
 
   const newestBoutiques = useMemo(
     () =>
@@ -150,6 +169,10 @@ export default function Marketplace() {
         .slice(0, 12),
     [filteredBoutiques],
   );
+
+  /* =========================================================
+     CATÉGORIES
+     ========================================================= */
 
   const boutiquesByCategory = useMemo(() => {
     const categories = new Map<
@@ -170,6 +193,27 @@ export default function Marketplace() {
     return Array.from(categories.entries());
   }, [filteredBoutiques]);
 
+  /* =========================================================
+     IMAGE HERO
+     ========================================================= */
+
+  const marketplaceHeroImage = useMemo(
+    () =>
+      trendingBoutiques[0]?.cover_image_url ||
+      newestBoutiques[0]?.cover_image_url ||
+      boutiques[0]?.cover_image_url ||
+      "",
+    [
+      trendingBoutiques,
+      newestBoutiques,
+      boutiques,
+    ],
+  );
+
+  /* =========================================================
+     NAVIGATION
+     ========================================================= */
+
   const goToProducts = () => {
     navigate(
       search.trim()
@@ -188,7 +232,7 @@ export default function Marketplace() {
     openPanel("favorites");
   };
 
-  const goToSearch = () => {
+  const submitSearch = () => {
     if (!search.trim()) {
       goToProducts();
       return;
@@ -217,7 +261,9 @@ export default function Marketplace() {
             <Logo iconSize={30} asLink={false} />
           </Link>
 
-          {/* NAVIGATION DESKTOP */}
+          {/* =================================================
+              NAVIGATION DESKTOP
+             ================================================= */}
 
           <nav className="hidden items-center gap-1 lg:flex">
             <Link
@@ -272,12 +318,14 @@ export default function Marketplace() {
             )}
           </nav>
 
-          {/* RECHERCHE */}
+          {/* =================================================
+              RECHERCHE
+             ================================================= */}
 
           <form
             onSubmit={(event) => {
               event.preventDefault();
-              goToSearch();
+              submitSearch();
             }}
             className="relative mx-auto flex min-w-0 flex-1 lg:max-w-xl"
           >
@@ -303,7 +351,9 @@ export default function Marketplace() {
             )}
           </form>
 
-          {/* ACTIONS */}
+          {/* =================================================
+              ACTIONS
+             ================================================= */}
 
           <div className="flex shrink-0 items-center gap-1">
             <button
@@ -312,7 +362,10 @@ export default function Marketplace() {
               aria-label="Favoris"
               className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition hover:bg-muted active:scale-95"
             >
-              <Heart className="h-5 w-5" strokeWidth={1.8} />
+              <Heart
+                className="h-5 w-5"
+                strokeWidth={1.8}
+              />
             </button>
 
             <button
@@ -348,18 +401,25 @@ export default function Marketplace() {
       </header>
 
       {/* =====================================================
-          CONTENU PRINCIPAL
+          CONTENU
          ===================================================== */}
 
       <main className="container mx-auto max-w-7xl px-4 pb-28 lg:pb-12">
-        {/* INTRODUCTION ADAPTÉE */}
+        {/* =================================================
+            HERO
+           ================================================= */}
 
         {!query && (
           <MarketplaceIntro
             isSubscriber={isSubscriber}
+            imageUrl={marketplaceHeroImage}
             onPrimaryAction={goToProducts}
           />
         )}
+
+        {/* =================================================
+            CHARGEMENT
+           ================================================= */}
 
         {isLoading ? (
           <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
@@ -371,7 +431,7 @@ export default function Marketplace() {
           </div>
         ) : filteredBoutiques.length === 0 ? (
           <div className="mt-8 rounded-3xl border border-dashed border-border bg-muted/30 px-5 py-16 text-center">
-            <p className="text-lg font-semibold text-foreground">
+            <p className="text-lg font-semibold">
               Aucun résultat
             </p>
 
@@ -388,6 +448,10 @@ export default function Marketplace() {
             </button>
           </div>
         ) : query ? (
+          /* =================================================
+             RÉSULTATS
+             ================================================= */
+
           <Rail
             title={`Résultats pour "${search.trim()}"`}
             subtitle={`${filteredBoutiques.length} boutique${
@@ -398,6 +462,10 @@ export default function Marketplace() {
           />
         ) : (
           <>
+            {/* =================================================
+                TENDANCES
+               ================================================= */}
+
             <Rail
               title="Tendances"
               subtitle="Les boutiques les plus populaires"
@@ -406,12 +474,20 @@ export default function Marketplace() {
               showFilter
             />
 
+            {/* =================================================
+                NOUVEAUTÉS
+               ================================================= */}
+
             <Rail
               title="Nouveautés"
               subtitle="Les dernières boutiques"
               items={newestBoutiques}
               showFilter
             />
+
+            {/* =================================================
+                CATÉGORIES
+               ================================================= */}
 
             {boutiquesByCategory.map(
               ([category, categoryBoutiques]) => (
@@ -433,8 +509,7 @@ export default function Marketplace() {
       </main>
 
       {/* =====================================================
-          BARRE BASSE :
-          ABONNÉ UNIQUEMENT + FORMAT TÉLÉPHONE UNIQUEMENT
+          NAVIGATION MOBILE ABONNÉ UNIQUEMENT
          ===================================================== */}
 
       {isSubscriber && (
@@ -445,7 +520,10 @@ export default function Marketplace() {
               active={location.pathname === "/store"}
               onClick={() => navigate("/store")}
             >
-              <House className="h-5 w-5" strokeWidth={1.8} />
+              <House
+                className="h-5 w-5"
+                strokeWidth={1.8}
+              />
             </MobileNavButton>
 
             <MobileNavButton
@@ -455,7 +533,10 @@ export default function Marketplace() {
               )}
               onClick={goToProducts}
             >
-              <Search className="h-5 w-5" strokeWidth={1.8} />
+              <Search
+                className="h-5 w-5"
+                strokeWidth={1.8}
+              />
             </MobileNavButton>
 
             <MobileNavButton
@@ -486,7 +567,7 @@ export default function Marketplace() {
       )}
 
       {/* =====================================================
-          PANEL CLIENT
+          CUSTOMER PANEL
          ===================================================== */}
 
       <CustomerPanel
@@ -521,29 +602,33 @@ export default function Marketplace() {
 }
 
 /* =========================================================
-   INTRODUCTION MARKETPLACE
+   HERO MARKETPLACE
    ========================================================= */
 
 interface MarketplaceIntroProps {
   isSubscriber: boolean;
+  imageUrl?: string;
   onPrimaryAction: () => void;
 }
 
 function MarketplaceIntro({
   isSubscriber,
+  imageUrl,
   onPrimaryAction,
 }: MarketplaceIntroProps) {
   return (
-    <section className="mb-10 mt-6 overflow-hidden rounded-[28px] border border-border bg-muted/30 sm:mt-8">
-      <div className="grid items-center gap-6 px-5 py-8 sm:px-8 sm:py-10 lg:grid-cols-[1.1fr_0.9fr] lg:px-10 lg:py-12">
-        <div className="max-w-xl">
+    <section className="mb-10 mt-6 overflow-hidden rounded-[28px] border border-border bg-[#f7f5f0] sm:mt-8">
+      <div className="grid items-stretch lg:grid-cols-[1fr_0.9fr]">
+        {/* TEXTE */}
+
+        <div className="flex flex-col justify-center px-6 py-9 sm:px-8 sm:py-11 lg:px-10 lg:py-12">
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
             {isSubscriber
               ? "Votre espace BIB"
               : "Des marques engagées"}
           </p>
 
-          <h1 className="font-display text-3xl font-semibold leading-tight text-foreground sm:text-4xl lg:text-[42px]">
+          <h1 className="max-w-xl font-display text-3xl font-semibold leading-tight text-foreground sm:text-4xl lg:text-[42px]">
             {isSubscriber
               ? "Découvrez, suivez et retrouvez vos boutiques préférées."
               : "Des produits sélectionnés avec soin."}
@@ -558,7 +643,7 @@ function MarketplaceIntro({
           <button
             type="button"
             onClick={onPrimaryAction}
-            className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:brightness-110 active:scale-[0.98]"
+            className="mt-6 inline-flex h-11 w-fit items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:brightness-110 active:scale-[0.98]"
           >
             {isSubscriber
               ? "Explorer les produits"
@@ -566,15 +651,32 @@ function MarketplaceIntro({
           </button>
         </div>
 
-        <div className="hidden min-h-[220px] items-center justify-center rounded-3xl bg-background/80 lg:flex">
-          <div className="text-center">
-            <p className="font-display text-6xl font-semibold tracking-tight text-foreground">
-              BIB
-            </p>
+        {/* IMAGE */}
 
-            <p className="mt-2 text-sm text-muted-foreground">
-              Des boutiques sélectionnées avec soin
-            </p>
+        <div className="relative min-h-[230px] overflow-hidden bg-muted sm:min-h-[280px] lg:min-h-[340px]">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="eager"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-muted">
+              <span className="font-display text-5xl font-semibold text-foreground/10">
+                BIB
+              </span>
+            </div>
+          )}
+
+          <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-transparent" />
+
+          <div className="absolute right-4 top-4 flex items-center gap-2 rounded-full bg-white/95 px-3 py-2 text-xs font-semibold text-slate-900 shadow-sm backdrop-blur-sm sm:right-6 sm:top-6">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-950 text-[9px] font-bold text-white">
+              BIB
+            </span>
+
+            <span>Vérifié par BIB</span>
           </div>
         </div>
       </div>
@@ -583,7 +685,7 @@ function MarketplaceIntro({
 }
 
 /* =========================================================
-   MOBILE NAVIGATION BUTTON
+   MOBILE NAVIGATION
    ========================================================= */
 
 interface MobileNavButtonProps {
@@ -610,13 +712,14 @@ function MobileNavButton({
       }`}
     >
       {children}
+
       <span>{label}</span>
     </button>
   );
 }
 
 /* =========================================================
-   RAIL DE BOUTIQUES
+   RAIL
    ========================================================= */
 
 interface RailProps {
@@ -654,38 +757,29 @@ function Rail({
   };
 
   const handleFilterClick = () => {
-    /*
-     * Le bouton est volontairement contextuel.
-     *
-     * Le panneau de filtres réel pourra ensuite être branché
-     * selon la section :
-     * - Tendances : popularité, vérifiées, catégorie
-     * - Nouveautés : date, catégorie, vérifiées
-     * - Produits : prix croissant, prix décroissant, etc.
-     *
-     * Pour le moment, on dirige vers la page Produits afin
-     * d'éviter un bouton visuellement présent mais sans action.
-     */
-    if (title === "Tendances" || title === "Nouveautés") {
-      window.dispatchEvent(
-        new CustomEvent("bib:open-marketplace-filters", {
+    window.dispatchEvent(
+      new CustomEvent(
+        "bib:open-marketplace-filters",
+        {
           detail: {
             section: title,
           },
-        }),
-      );
-    }
+        },
+      ),
+    );
   };
 
   return (
     <section className="mt-8 sm:mt-10">
-      {/* TITRE DE SECTION */}
+      {/* TITRE */}
 
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="min-w-0">
           <h2
             className={`font-display text-lg font-semibold leading-tight sm:text-xl ${
-              accent ? "text-primary" : "text-foreground"
+              accent
+                ? "text-primary"
+                : "text-foreground"
             }`}
           >
             {title}
