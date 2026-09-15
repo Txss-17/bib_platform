@@ -1,215 +1,148 @@
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ArrowRight, ShieldCheck, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-[100svh] overflow-hidden bg-bib-ivory pt-24 lg:pt-20">
-
-      {/* Background */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.035]"
-        aria-hidden
-        style={{
-          backgroundImage: `
-            linear-gradient(hsl(var(--bib-marine)) 1px, transparent 1px),
-            linear-gradient(90deg, hsl(var(--bib-marine)) 1px, transparent 1px)
-          `,
-          backgroundSize: "48px 48px",
-        }}
-      />
-
-      <div
-        className="pointer-events-none absolute -right-40 -top-40 h-[600px] w-[600px] rounded-full bg-bib-marine/[0.035] blur-3xl"
-        aria-hidden
-      />
-
-      <div
-        className="pointer-events-none absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-bib-gold/[0.07] blur-3xl"
-        aria-hidden
-      />
-
-      <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
-
-        <div className="grid min-h-[calc(100svh-80px)] items-center gap-12 py-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20 lg:py-16">
-
-          {/* LEFT */}
-          <div className="max-w-[590px] animate-fade-up">
-
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-bib-marine px-3.5 py-2 text-primary-foreground shadow-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-bib-gold" />
-
-              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] sm:text-[11px]">
-                Brand-In-A-Box
-              </span>
+    <section className="relative overflow-hidden bg-[#F7F4EE] pt-24 sm:pt-28 lg:pt-[7.5rem]">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid min-h-[680px] items-center gap-12 py-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16 lg:py-16">
+          
+          {/* ─────────────────────────────
+              LEFT — MESSAGE
+          ───────────────────────────── */}
+          <div className="relative z-10 max-w-xl">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-bib-marine/10 bg-white/70 px-3.5 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-bib-marine backdrop-blur-sm">
+              <ShieldCheck className="h-3.5 w-3.5 text-bib-gold" />
+              Réseau vérifié BIB
             </div>
 
-            <h1 className="mb-7 font-display text-[42px] font-bold leading-[0.98] tracking-[-0.035em] text-bib-marine sm:text-5xl lg:text-[68px]">
+            <h1 className="font-display text-[3.4rem] font-bold leading-[0.96] tracking-[-0.04em] text-bib-marine sm:text-6xl lg:text-[5.2rem]">
               Votre marque.
               <br />
               <span className="text-bib-gold">
-                Prête à prendre sa place.
+                Prête à prendre
               </span>
+              <br />
+              sa place.
             </h1>
 
-            <p className="mb-9 max-w-[500px] text-base leading-7 text-muted-foreground sm:text-lg">
+            <p className="mt-7 max-w-lg text-base leading-7 text-bib-marine/65 sm:text-lg sm:leading-8">
               BIB réunit boutique, produits vérifiés et infrastructure
               commerciale pour permettre aux marques de se développer
               simplement.
             </p>
 
-            <div className="mb-9 flex flex-col gap-3 sm:flex-row">
-
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button
-                variant="premium"
-                size="xl"
-                className="group shadow-lg"
                 asChild
+                variant="coral"
+                size="lg"
+                className="group h-12 rounded-full px-6 shadow-sm"
               >
                 <Link to="/signup">
                   Créer ma boutique
-                  <ArrowRight
-                    size={19}
-                    className="transition-transform group-hover:translate-x-1"
-                  />
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
 
               <Button
-                variant="outline"
-                size="xl"
-                className="border-bib-marine/20 text-bib-marine hover:bg-bib-marine hover:text-primary-foreground"
                 asChild
+                variant="outline"
+                size="lg"
+                className="h-12 rounded-full border-bib-marine/15 bg-white/50 px-6 text-bib-marine hover:bg-bib-marine hover:text-white"
               >
                 <Link to="/store">
                   Découvrir les boutiques
                 </Link>
               </Button>
-
             </div>
 
-            {/* Compact trust signals */}
-            <div className="flex flex-wrap gap-x-6 gap-y-3 border-t border-bib-marine/10 pt-6 text-sm text-bib-marine/75">
-
-              <div className="flex items-center gap-2">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-bib-gold/15">
-                  <Check
-                    size={12}
-                    className="text-bib-gold"
-                    strokeWidth={3}
-                  />
+            {/* Trust points */}
+            <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3">
+              <div className="flex items-center gap-2 text-sm text-bib-marine/65">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-bib-marine/8">
+                  <Check className="h-3 w-3 text-bib-marine" />
                 </span>
                 Réseau vérifié
               </div>
 
-              <div className="flex items-center gap-2">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-bib-gold/15">
-                  <Check
-                    size={12}
-                    className="text-bib-gold"
-                    strokeWidth={3}
-                  />
+              <div className="flex items-center gap-2 text-sm text-bib-marine/65">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-bib-marine/8">
+                  <Check className="h-3 w-3 text-bib-marine" />
                 </span>
                 Produits sélectionnés
               </div>
 
-              <div className="flex items-center gap-2">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-bib-gold/15">
-                  <Check
-                    size={12}
-                    className="text-bib-gold"
-                    strokeWidth={3}
-                  />
+              <div className="flex items-center gap-2 text-sm text-bib-marine/65">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-bib-marine/8">
+                  <Check className="h-3 w-3 text-bib-marine" />
                 </span>
                 Infrastructure intégrée
               </div>
-
             </div>
           </div>
 
-          {/* RIGHT — EDITORIAL IMAGE COMPOSITION */}
-          <div className="relative flex min-h-[480px] items-center justify-center lg:min-h-[650px]">
+          {/* ─────────────────────────────
+              RIGHT — IMAGE
+          ───────────────────────────── */}
+          <div className="relative">
+            {/* Decorative frame */}
+            <div className="absolute -inset-3 rounded-[2.5rem] border border-bib-marine/8 sm:-inset-5" />
 
-            {/* Main image */}
-            <div className="relative z-10 h-[420px] w-[min(100%,480px)] overflow-hidden rounded-[2rem] shadow-2xl sm:h-[520px] lg:h-[590px] lg:w-[470px]">
-
-              <img
-                src="/images/landing-founder.jpg"
-                alt="Fondatrice travaillant sur sa marque"
-                className="h-full w-full object-cover"
-              />
+            <div className="relative overflow-hidden rounded-[2rem] bg-bib-marine shadow-[0_30px_80px_rgba(20,35,55,0.16)]">
+              <div className="aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5]">
+                <img
+                  src="/images/landing-founder0.jpg"
+                  alt="Fondatrice présentant sa marque"
+                  className="h-full w-full object-cover"
+                />
+              </div>
 
               {/* Image overlay */}
-              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/45 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-bib-marine/80 via-bib-marine/20 to-transparent p-5 pt-24 sm:p-7 sm:pt-32">
+                <div className="flex items-end justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/60">
+                      BIB Network
+                    </p>
+                    <p className="mt-1 max-w-xs font-display text-xl font-semibold leading-tight text-white sm:text-2xl">
+                      Une infrastructure pensée pour les marques.
+                    </p>
+                  </div>
 
-              <div className="absolute bottom-6 left-6 right-6 text-white">
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] opacity-80">
-                  BIB Network
-                </p>
-
-                <p className="max-w-[300px] font-display text-2xl font-semibold leading-tight">
-                  Une infrastructure pensée pour les marques.
-                </p>
-              </div>
-            </div>
-
-            {/* Small product image */}
-            <div className="absolute -bottom-2 -left-2 z-20 hidden h-36 w-36 overflow-hidden rounded-2xl border-8 border-bib-ivory shadow-xl sm:block lg:-left-8 lg:h-44 lg:w-44">
-              <img
-                src="/images/landing-unboxing.jpg"
-                alt="Produit et expérience de marque"
-                className="h-full w-full object-cover"
-              />
-            </div>
-
-            {/* Small interface image */}
-            <div className="absolute -right-2 -top-2 z-20 hidden h-40 w-48 overflow-hidden rounded-2xl border-8 border-bib-ivory shadow-xl sm:block lg:-right-10 lg:h-48 lg:w-56">
-              <img
-                src="/images/landing-dashboard.jpg"
-                alt="Interface BIB"
-                className="h-full w-full object-cover"
-              />
-            </div>
-
-            {/* Floating BIB label */}
-            <div className="absolute bottom-20 right-0 z-30 hidden rounded-xl border border-bib-marine/10 bg-white px-4 py-3 shadow-xl lg:block lg:-right-4">
-              <div className="flex items-center gap-3">
-
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-bib-marine text-bib-gold">
-                  <Sparkles size={16} />
-                </span>
-
-                <div>
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                  <div className="hidden shrink-0 items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-[10px] font-semibold text-white backdrop-blur-md sm:flex">
+                    <ShieldCheck className="h-3.5 w-3.5 text-bib-gold" />
                     Vérifié par BIB
-                  </p>
-
-                  <p className="mt-0.5 text-sm font-semibold text-bib-marine">
-                    Réseau de confiance
-                  </p>
+                  </div>
                 </div>
-
               </div>
             </div>
 
-            {/* Decorative frame */}
-            <div
-              className="absolute -bottom-5 -right-5 h-[85%] w-[72%] rounded-[2rem] border border-bib-gold/25"
-              aria-hidden
-            />
+            {/* Floating trust badge */}
+            <div className="absolute -bottom-5 left-4 flex items-center gap-3 rounded-2xl border border-bib-marine/8 bg-white px-4 py-3 shadow-xl sm:bottom-6 sm:-left-7">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-bib-marine/5">
+                <ShieldCheck className="h-4.5 w-4.5 text-bib-marine" />
+              </div>
 
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-bib-marine/45">
+                  BIB Verified
+                </p>
+                <p className="mt-0.5 text-xs font-medium text-bib-marine">
+                  Réseau de confiance
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-5 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-bib-marine/45 lg:flex">
-        <span className="text-[9px] font-semibold uppercase tracking-[0.3em]">
-          Découvrir
-        </span>
-
-        <span className="h-8 w-px bg-bib-marine/25" />
-      </div>
+      {/* Subtle background detail */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-32 top-1/3 h-80 w-80 rounded-full bg-bib-gold/5 blur-3xl"
+      />
     </section>
   );
 };
