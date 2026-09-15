@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Check,
+  Sparkles,
+  Recycle,
   ShieldCheck,
   Truck,
   Award,
@@ -34,12 +36,7 @@ import { cn } from "@/lib/utils";
 const carouselClass =
   "flex md:grid md:grid-cols-3 gap-4 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none -mx-4 px-4 md:mx-0 md:px-0 pb-2 md:pb-0 scrollbar-none";
 const cardSnapClass =
-  "snap-start md:snap-align-none shrink-0 md:shrink min-w-[78%] sm:min-w-[48%] md:min-w-0";
-const audience: Record<PlanTier, string> = {
-  starter: "Micro-entrepreneurs & TPE",
-  growth: "Entrepreneurs & marques actives",
-  pro: "PME & marques établies",
-};
+  "snap-center md:snap-align-none shrink-0 md:shrink min-w-[86%] sm:min-w-[62%] md:min-w-0";
 export default function Tarifs() {
   const { data: plans, isLoading } = usePlans();
   const { user } = useAuth();
@@ -47,9 +44,9 @@ export default function Tarifs() {
   const [annual, setAnnual] = useState(false);
   const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
   useSEO({
-    title: "Tarifs BIB — Offres marchands",
+    title: "Tarifs BIB — Plans transparents pour vendre en ligne",
     description:
-      "Plans Starter (79€), Growth (149€) et Pro (299€). Commission dégressive 8-15%, livraison EU incluse et options complémentaires.",
+      "Plans Starter (79€), Growth (149€) et Pro (299€). Commission dégressive 8-15%, livraison EU incluse, add-ons et assurance.",
   });
   const sorted = (plans || [])
     .slice()
@@ -68,7 +65,7 @@ export default function Tarifs() {
     setCheckoutPriceId(priceId);
   }
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background">
       <PaymentTestModeBanner />
       <Header />
       <main className="pt-24 pb-16">
@@ -77,20 +74,19 @@ export default function Tarifs() {
           <div className="mx-auto max-w-3xl text-center">
             <Badge
               variant="outline"
-              className="mb-5 rounded-full px-4 py-1"
+              className="mb-5 rounded-full px-4 py-1.5"
             >
               Grille v1.0 — Avril 2026
             </Badge>
             <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
               Une tarification transparente.
-              <br />
+              <br className="hidden sm:block" />
               Aucune surprise.
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
               Boutique prête à l'emploi, livraison EU incluse, audits
-              produits et commission dégressive selon votre volume.
+              produits, et commission dégressive selon votre volume.
             </p>
-            {/* TOGGLE */}
             <div className="mt-8 flex items-center justify-center gap-3">
               <span
                 className={cn(
@@ -105,7 +101,7 @@ export default function Tarifs() {
               <Switch
                 checked={annual}
                 onCheckedChange={setAnnual}
-                aria-label="Basculer entre facturation mensuelle et annuelle"
+                aria-label="Facturation annuelle"
               />
               <span
                 className={cn(
@@ -118,10 +114,7 @@ export default function Tarifs() {
                 Annuel
               </span>
               {annual && (
-                <Badge
-                  variant="secondary"
-                  className="rounded-full"
-                >
+                <Badge variant="secondary" className="rounded-full">
                   −20%
                 </Badge>
               )}
@@ -131,8 +124,8 @@ export default function Tarifs() {
         {/* PLANS */}
         <section className="container mx-auto px-4">
           <div className="mx-auto max-w-6xl">
-            <div className="mb-4 text-center text-xs text-muted-foreground md:hidden">
-              Glissez pour voir les offres
+            <div className="mb-3 text-center text-xs text-muted-foreground md:hidden">
+              Glissez pour voir les autres offres
             </div>
             {isLoading ? (
               <div className="py-12 text-center text-sm text-muted-foreground">
@@ -148,32 +141,33 @@ export default function Tarifs() {
                   return (
                     <div
                       key={plan.tier}
-                      className={cn(
-                        cardSnapClass,
-                        "relative",
-                      )}
+                      className={cardSnapClass}
                     >
                       <article
                         className={cn(
-                          "flex h-full flex-col rounded-2xl border bg-card p-5 shadow-sm md:p-6",
+                          "relative flex h-full flex-col rounded-2xl border bg-card p-5 shadow-sm md:p-6",
                           featured
                             ? "border-foreground/30"
                             : "border-border",
                         )}
                       >
                         {featured && (
-                          <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1/2">
+                          <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
                             <Badge className="whitespace-nowrap rounded-full px-3 py-1 text-xs">
                               ★ Recommandé
                             </Badge>
                           </div>
                         )}
-                        {/* HEADER */}
+                        {/* PLAN HEADER */}
                         <div>
                           <p className="text-xs font-medium text-muted-foreground">
-                            {audience[plan.tier]}
+                            {plan.tier === "starter"
+                              ? "Micro-entrepreneurs & TPE"
+                              : plan.tier === "growth"
+                                ? "Entrepreneurs & marques actives"
+                                : "PME & marques établies"}
                           </p>
-                          <h2 className="mt-1.5 text-2xl font-semibold">
+                          <h2 className="mt-1 text-2xl font-semibold">
                             {plan.name}
                           </h2>
                         </div>
@@ -181,39 +175,37 @@ export default function Tarifs() {
                         <div className="mt-5">
                           <div className="flex items-baseline gap-1">
                             <span className="text-4xl font-semibold tracking-tight">
-                              {price}
+                              {price}€
                             </span>
                             <span className="text-sm text-muted-foreground">
-                              €/mois
+                              /mois
                             </span>
                           </div>
                           {annual && (
                             <p className="mt-1 text-xs text-muted-foreground">
-                              Facturation annuelle
+                              Tarif mensuel équivalent, facturé annuellement
                             </p>
                           )}
                         </div>
                         {/* COMMISSION */}
-                        <div className="mt-5 rounded-xl bg-muted/50 px-4 py-3">
-                          <div className="flex items-center justify-between gap-3">
-                            <span className="text-sm text-muted-foreground">
-                              Commission
-                            </span>
-                            <span className="text-lg font-semibold">
-                              {plan.commission_percent}%
-                            </span>
-                          </div>
+                        <div className="mt-5 flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3">
+                          <span className="text-sm text-muted-foreground">
+                            Commission
+                          </span>
+                          <span className="text-lg font-semibold">
+                            {plan.commission_percent}%
+                          </span>
                         </div>
                         {/* FEATURES */}
                         <div className="mt-5 flex-1">
                           <p className="mb-3 text-sm font-medium">
-                            Inclus dans l'offre
+                            Inclus dans votre offre
                           </p>
                           <ul className="space-y-2.5">
                             {(plan.features || []).map(
                               (feature: string, index: number) => (
                                 <li
-                                  key={`${plan.tier}-${index}`}
+                                  key={`${plan.tier}-feature-${index}`}
                                   className="flex items-start gap-2.5 text-sm leading-5 text-muted-foreground"
                                 >
                                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
@@ -242,15 +234,12 @@ export default function Tarifs() {
             )}
           </div>
         </section>
-        {/* BETA */}
+        {/* OFFRE BÊTA */}
         <section className="container mx-auto px-4 py-12 md:py-16">
-          <div className="mx-auto max-w-5xl rounded-2xl border bg-muted/30 px-5 py-6 md:px-7">
+          <div className="mx-auto max-w-5xl rounded-2xl border bg-muted/30 p-5 md:p-6">
             <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
               <div>
-                <Badge
-                  variant="secondary"
-                  className="mb-2 rounded-full"
-                >
+                <Badge variant="secondary" className="mb-2 rounded-full">
                   Offre bêta
                 </Badge>
                 <h2 className="text-lg font-semibold md:text-xl">
@@ -258,24 +247,24 @@ export default function Tarifs() {
                   sur les 3 premiers mois.
                 </h2>
               </div>
-              <div className="grid grid-cols-3 gap-4 text-center text-sm md:min-w-[310px]">
+              <div className="grid grid-cols-3 gap-4 text-center text-sm">
                 <div>
                   <p className="text-muted-foreground">Starter</p>
-                  <p className="mt-1 font-semibold">39,50 €</p>
+                  <p className="mt-1 font-semibold">39,50€</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Growth</p>
-                  <p className="mt-1 font-semibold">74,50 €</p>
+                  <p className="mt-1 font-semibold">74,50€</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Pro</p>
-                  <p className="mt-1 font-semibold">149,50 €</p>
+                  <p className="mt-1 font-semibold">149,50€</p>
                 </div>
               </div>
             </div>
           </div>
         </section>
-        {/* ASSURANCE */}
+        {/* ASSURANCE VENDEUR */}
         <section className="border-y border-border bg-muted/20">
           <div className="container mx-auto px-4 py-14 md:py-16">
             <div className="mx-auto max-w-3xl text-center">
@@ -294,11 +283,12 @@ export default function Tarifs() {
                 couvertes selon le niveau choisi.
               </p>
             </div>
-            <div className="mx-auto mt-8 max-w-5xl">
+            <div className="mx-auto mt-8 max-w-6xl">
               <div className={carouselClass}>
                 {sorted.map((plan) => {
                   const monthly =
-                    plan.insurance_addon_price_eur ?? 25;
+                    plan.insurance_addon_price_eur;
+                  if (monthly == null) return null;
                   const price = annual
                     ? Math.round(monthly * 0.8)
                     : monthly;
@@ -309,13 +299,10 @@ export default function Tarifs() {
                   return (
                     <div
                       key={`insurance-${plan.tier}`}
-                      className={cn(
-                        cardSnapClass,
-                        "rounded-2xl",
-                      )}
+                      className={cardSnapClass}
                     >
                       <article className="flex h-full flex-col rounded-2xl border bg-card p-5 md:p-6">
-                        <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center justify-between">
                           <div>
                             <p className="text-xs text-muted-foreground">
                               Niveau
@@ -328,38 +315,32 @@ export default function Tarifs() {
                         </div>
                         <div className="mt-5 flex items-baseline gap-1">
                           <span className="text-3xl font-semibold">
-                            {price}
+                            {price}€
                           </span>
                           <span className="text-sm text-muted-foreground">
-                            €/mois
+                            /mois
                           </span>
                         </div>
-                        <div className="mt-5 flex-1 space-y-3 text-sm text-muted-foreground">
-                          <div className="flex gap-2.5">
+                        <ul className="mt-5 flex-1 space-y-3 text-sm text-muted-foreground">
+                          <li className="flex items-start gap-2.5">
                             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
                             <span>
-                              Jusqu'à{" "}
-                              {cap != null
-                                ? `${cap} €`
-                                : "la limite sélectionnée"}{" "}
-                              par litige
+                              Jusqu'à {cap}€ par litige
                             </span>
-                          </div>
-                          <div className="flex gap-2.5">
+                          </li>
+                          <li className="flex items-start gap-2.5">
                             <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
                             <span>
                               {maxDisputes
-                                ? `${maxDisputes} litiges/mois`
+                                ? `${maxDisputes} litiges maximum par mois`
                                 : "Litiges sans plafond mensuel"}
                             </span>
-                          </div>
-                          <div className="flex gap-2.5">
+                          </li>
+                          <li className="flex items-start gap-2.5">
                             <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
-                            <span>
-                              Médiation prioritaire 24h
-                            </span>
-                          </div>
-                        </div>
+                            <span>Médiation prioritaire 24h</span>
+                          </li>
+                        </ul>
                         <Button
                           variant="outline"
                           className="mt-6 w-full"
@@ -379,15 +360,14 @@ export default function Tarifs() {
             </div>
             <p className="mx-auto mt-6 max-w-3xl text-center text-xs leading-5 text-muted-foreground">
               L'assurance est indépendante du plan marchand. Un marchand
-              Starter peut sélectionner une couverture supérieure et
-              inversement.
+              Starter peut choisir l'Assurance Pro et inversement.
             </p>
           </div>
         </section>
         {/* LIVRAISON */}
         <section className="container mx-auto px-4 py-14 md:py-16">
           <div className="mx-auto max-w-5xl rounded-2xl border bg-card p-6 md:p-8">
-            <div className="flex flex-col gap-5 md:flex-row md:items-start">
+            <div className="flex gap-4">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted">
                 <Truck className="h-5 w-5" />
               </div>
@@ -395,13 +375,13 @@ export default function Tarifs() {
                 <h2 className="text-xl font-semibold">
                   Livraison EU incluse
                 </h2>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   Aucune surprise au checkout : la provision logistique
-                  standard est intégrée au prix affiché à l'acheteur.
+                  est intégrée au prix affiché à l'acheteur.
                 </p>
                 <p className="mt-3 text-sm text-muted-foreground">
-                  Exemple : un article affiché à 39 € peut inclure environ
-                  6 € de livraison standard EU.
+                  Exemple : un article affiché à 39€ peut inclure environ
+                  6€ de livraison standard EU.
                 </p>
               </div>
             </div>
@@ -417,7 +397,7 @@ export default function Tarifs() {
                   Médiation 48h
                 </h3>
               </div>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              <p className="mt-2 text-sm text-muted-foreground">
                 Litige client géré par la plateforme.
               </p>
             </div>
@@ -428,8 +408,8 @@ export default function Tarifs() {
                   Produits audités
                 </h3>
               </div>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Catalogue pré-validé par les équipes BIB.
+              <p className="mt-2 text-sm text-muted-foreground">
+                Catalogue pré-validé par nos équipes.
               </p>
             </div>
             <div className="rounded-2xl border bg-card p-5">
@@ -439,8 +419,8 @@ export default function Tarifs() {
                   Sans engagement
                 </h3>
               </div>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Annulation à tout moment et données exportables.
+              <p className="mt-2 text-sm text-muted-foreground">
+                Annulation à tout moment, données exportables.
               </p>
             </div>
           </div>
@@ -448,23 +428,23 @@ export default function Tarifs() {
         {/* FAQ */}
         <section className="border-t border-border">
           <div className="container mx-auto max-w-3xl px-4 py-14 md:py-16">
-            <div className="mb-7 text-center">
+            <div className="mb-8 text-center">
               <h2 className="text-2xl font-semibold md:text-3xl">
                 Questions fréquentes
               </h2>
               <p className="mt-3 text-sm text-muted-foreground">
-                Les principales questions concernant les offres marchands.
+                Tout ce qu'il faut savoir sur les offres marchands.
               </p>
             </div>
             <Accordion type="single" collapsible>
-              <AccordionItem value="plan-change">
+              <AccordionItem value="change-plan">
                 <AccordionTrigger>
                   Puis-je changer de plan à tout moment ?
                 </AccordionTrigger>
                 <AccordionContent>
                   Oui. Vous pouvez passer de Starter à Growth ou Pro,
-                  ou inversement. Le changement est pris en compte selon
-                  les conditions de votre abonnement.
+                  ou inversement. Le changement est pris en compte
+                  selon les conditions applicables à votre abonnement.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="commission">
@@ -472,10 +452,9 @@ export default function Tarifs() {
                   La commission est-elle prélevée en plus de l'abonnement ?
                 </AccordionTrigger>
                 <AccordionContent>
-                  Oui. L'abonnement couvre l'accès à la plateforme et à
-                  votre offre. La commission est ensuite appliquée sur les
-                  ventes : 15 % pour Starter, 10 % pour Growth et 8 % pour
-                  Pro.
+                  Oui. L'abonnement couvre la plateforme. Une commission
+                  est ensuite appliquée sur chaque vente selon votre offre :
+                  15% pour Starter, 10% pour Growth et 8% pour Pro.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="addons">
@@ -483,8 +462,8 @@ export default function Tarifs() {
                   Les add-ons sont-ils liés au plan ?
                 </AccordionTrigger>
                 <AccordionContent>
-                  Non. L'Assurance vendeur est indépendante du plan
-                  marchand choisi.
+                  Non. L'Assurance vendeur est indépendante de l'offre
+                  marchande choisie.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="disputes">
@@ -492,9 +471,9 @@ export default function Tarifs() {
                   Comment se passent les litiges clients ?
                 </AccordionTrigger>
                 <AccordionContent>
-                  BIB assure une médiation des litiges sous 48h.
-                  L'Assurance vendeur peut couvrir certaines situations
-                  selon le niveau souscrit et les plafonds associés.
+                  BIB assure une médiation sous 48h. L'assurance peut
+                  compléter cette protection selon le niveau souscrit
+                  et les plafonds associés.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="commitment">
@@ -502,9 +481,8 @@ export default function Tarifs() {
                   Y a-t-il un engagement ?
                 </AccordionTrigger>
                 <AccordionContent>
-                  Non. Les offres marchands sont sans engagement. Vous
-                  pouvez annuler à tout moment et exporter vos données
-                  selon les conditions applicables.
+                  Non. Vous pouvez annuler à tout moment et exporter
+                  vos données selon les conditions applicables.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -515,11 +493,9 @@ export default function Tarifs() {
       {/* STRIPE CHECKOUT */}
       <Dialog
         open={!!checkoutPriceId}
-        onOpenChange={(open) => {
-          if (!open) {
-            setCheckoutPriceId(null);
-          }
-        }}
+        onOpenChange={(open) =>
+          !open && setCheckoutPriceId(null)
+        }
       >
         <DialogContent className="max-w-2xl overflow-hidden p-0">
           <DialogHeader className="px-6 pb-2 pt-5">
@@ -543,5 +519,3 @@ export default function Tarifs() {
   );
 }
 export type { PlanTier };
-
-Cette version est volontairement beaucoup plus proche de l’ancien code : la structure de la page reste la même, et la correction principale porte sur la densité et la visibilité des cartes. Les trois offres doivent maintenant apparaître comme trois offres équivalentes, et non comme une seule grande carte mise au premier plan.
