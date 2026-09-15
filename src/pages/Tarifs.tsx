@@ -1,1088 +1,475 @@
-import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
   Check,
   ChevronDown,
   CircleHelp,
-  Leaf,
-  PackageCheck,
+  CreditCard,
+  Package,
   ShieldCheck,
   Store,
   Truck,
-  Users,
-  WalletCards,
 } from "lucide-react";
 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useSEO } from "@/hooks/useSEO";
 
-import { Button } from "@/components/ui/button";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-
-import { useAuth } from "@/hooks/useAuth";
-import { usePlans } from "@/hooks/usePlans";
-
-type OfferAudience = "merchant" | "customer";
-
-interface PricingFeature {
-  label: string;
-  included: boolean;
-  note?: string;
-}
-
-interface PricingOffer {
+type PricingOffer = {
   id: string;
   name: string;
   eyebrow: string;
   description: string;
   price: string;
-  period?: string;
-  audience: OfferAudience;
+  period: string;
+  badge?: string;
   published: boolean;
   featured?: boolean;
-  badge?: string;
-  icon: React.ElementType;
-  features: PricingFeature[];
-  cta: string;
-  href?: string;
-}
+  features: string[];
+};
 
-/**
- * =========================================================
- * CATALOGUE TARIFAIRE BIB
- * =========================================================
- *
- * IMPORTANT :
- *
- * published: true  = visible publiquement
- * published: false = préparé mais masqué
- *
- * Cela permet de conserver les futures offres dans le code
- * sans les exposer avant leur lancement commercial.
- */
+type PricingTier = {
+  label: string;
+  price: string;
+};
 
-/* ---------------------------------------------------------
- * OFFRES MARCHANDES
- * --------------------------------------------------------- */
-
-const merchantOffers: PricingOffer[] = [
+const offers: PricingOffer[] = [
   {
     id: "bib-boutique",
     name: "BIB Boutique",
-    eyebrow: "Offre marchande",
+    eyebrow: "Pour les marques",
     description:
-      "L'offre principale pour les marques qui souhaitent intégrer leur boutique au réseau commercial vérifié de BIB.",
+      "Une boutique intégrée à l’environnement BIB pour présenter votre marque et développer votre activité dans un réseau structuré.",
     price: "79 €",
     period: "/ mois",
-    audience: "Marques, créateurs et marchands",
+    badge: "Offre actuellement disponible",
     published: true,
     featured: true,
-    badge: "Disponible",
-    icon: Store,
     features: [
-      {
-        label: "Boutique BIB dédiée à votre marque",
-        included: true,
-      },
-      {
-        label: "Accès au catalogue de produits sélectionnés",
-        included: true,
-      },
-      {
-        label: "Intégration au réseau BIB vérifié",
-        included: true,
-      },
-      {
-        label: "Infrastructure commerciale BIB",
-        included: true,
-      },
-      {
-        label: "Gestion et suivi des commandes",
-        included: true,
-      },
-      {
-        label: "Reversements marchands selon le cycle BIB",
-        included: true,
-      },
-      {
-        label: "Accès à l'infrastructure logistique BIB selon les conditions applicables",
-        included: true,
-      },
-      {
-        label: "Accompagnement du fonctionnement commercial BIB",
-        included: true,
-      },
+      "Boutique BIB dédiée à votre marque",
+      "Accès au réseau commercial BIB",
+      "Catalogue de produits sélectionnés",
+      "Infrastructure BIB intégrée",
+      "Suivi des commandes et de l’activité",
+      "Accompagnement dans le cadre du réseau BIB",
     ],
-    cta: "Créer ma boutique",
-    href: "/signup",
   },
 
-  /*
-   * -------------------------------------------------------
-   * FUTURES OFFRES MARCHANDES
-   * -------------------------------------------------------
-   *
-   * Conservées ici afin que leur activation soit simple :
-   * published: false -> true
-   *
-   * Elles ne sont actuellement PAS visibles sur la page.
-   */
-
-  {
-    id: "boutique-verte-0-100",
-    name: "Boutique Verte",
-    eyebrow: "Offre marchande",
-    description:
-      "Formule Boutique Verte adaptée aux boutiques comptant jusqu'à 100 abonnés.",
-    price: "19,99 €",
-    period: "/ mois",
-    audience: "0 à 100 abonnés",
-    published: false,
-    icon: Leaf,
-    features: [
-      {
-        label: "Formule Boutique Verte",
-        included: true,
-      },
-      {
-        label: "Réseau BIB",
-        included: true,
-      },
-      {
-        label: "Dispositifs responsables BIB",
-        included: true,
-      },
-    ],
-    cta: "Découvrir",
-    href: "/centre-aide",
-  },
-
-  {
-    id: "boutique-verte-101-250",
-    name: "Boutique Verte",
-    eyebrow: "Offre marchande",
-    description:
-      "Formule Boutique Verte adaptée aux boutiques comptant de 101 à 250 abonnés.",
-    price: "29,99 €",
-    period: "/ mois",
-    audience: "101 à 250 abonnés",
-    published: false,
-    icon: Leaf,
-    features: [
-      {
-        label: "Formule Boutique Verte",
-        included: true,
-      },
-      {
-        label: "Réseau BIB",
-        included: true,
-      },
-      {
-        label: "Dispositifs responsables BIB",
-        included: true,
-      },
-    ],
-    cta: "Découvrir",
-    href: "/centre-aide",
-  },
-
-  {
-    id: "boutique-verte-251-500",
-    name: "Boutique Verte",
-    eyebrow: "Offre marchande",
-    description:
-      "Formule Boutique Verte adaptée aux boutiques comptant de 251 à 500 abonnés.",
-    price: "49,99 €",
-    period: "/ mois",
-    audience: "251 à 500 abonnés",
-    published: false,
-    icon: Leaf,
-    features: [
-      {
-        label: "Formule Boutique Verte",
-        included: true,
-      },
-      {
-        label: "Réseau BIB",
-        included: true,
-      },
-      {
-        label: "Dispositifs responsables BIB",
-        included: true,
-      },
-    ],
-    cta: "Découvrir",
-    href: "/centre-aide",
-  },
-
-  {
-    id: "boutique-verte-501-1000",
-    name: "Boutique Verte",
-    eyebrow: "Offre marchande",
-    description:
-      "Formule Boutique Verte adaptée aux boutiques comptant de 501 à 1 000 abonnés.",
-    price: "79,99 €",
-    period: "/ mois",
-    audience: "501 à 1 000 abonnés",
-    published: false,
-    icon: Leaf,
-    features: [
-      {
-        label: "Formule Boutique Verte",
-        included: true,
-      },
-      {
-        label: "Réseau BIB",
-        included: true,
-      },
-      {
-        label: "Dispositifs responsables BIB",
-        included: true,
-      },
-    ],
-    cta: "Découvrir",
-    href: "/centre-aide",
-  },
-
-  {
-    id: "boutique-verte-1001-2500",
-    name: "Boutique Verte",
-    eyebrow: "Offre marchande",
-    description:
-      "Formule Boutique Verte adaptée aux boutiques comptant de 1 001 à 2 500 abonnés.",
-    price: "129,99 €",
-    period: "/ mois",
-    audience: "1 001 à 2 500 abonnés",
-    published: false,
-    icon: Leaf,
-    features: [
-      {
-        label: "Formule Boutique Verte",
-        included: true,
-      },
-      {
-        label: "Réseau BIB",
-        included: true,
-      },
-      {
-        label: "Dispositifs responsables BIB",
-        included: true,
-      },
-    ],
-    cta: "Découvrir",
-    href: "/centre-aide",
-  },
-
-  {
-    id: "boutique-verte-2501-5000",
-    name: "Boutique Verte",
-    eyebrow: "Offre marchande",
-    description:
-      "Formule Boutique Verte adaptée aux boutiques comptant de 2 501 à 5 000 abonnés.",
-    price: "199,99 €",
-    period: "/ mois",
-    audience: "2 501 à 5 000 abonnés",
-    published: false,
-    icon: Leaf,
-    features: [
-      {
-        label: "Formule Boutique Verte",
-        included: true,
-      },
-      {
-        label: "Réseau BIB",
-        included: true,
-      },
-      {
-        label: "Dispositifs responsables BIB",
-        included: true,
-      },
-    ],
-    cta: "Découvrir",
-    href: "/centre-aide",
-  },
-
-  {
-    id: "boutique-verte-5001-10000",
-    name: "Boutique Verte",
-    eyebrow: "Offre marchande",
-    description:
-      "Formule Boutique Verte adaptée aux boutiques comptant de 5 001 à 10 000 abonnés.",
-    price: "299,99 €",
-    period: "/ mois",
-    audience: "5 001 à 10 000 abonnés",
-    published: false,
-    icon: Leaf,
-    features: [
-      {
-        label: "Formule Boutique Verte",
-        included: true,
-      },
-      {
-        label: "Réseau BIB",
-        included: true,
-      },
-      {
-        label: "Dispositifs responsables BIB",
-        included: true,
-      },
-    ],
-    cta: "Découvrir",
-    href: "/centre-aide",
-  },
-];
-
-/* ---------------------------------------------------------
- * OFFRES CLIENTS
- * --------------------------------------------------------- */
-
-const customerOffers: PricingOffer[] = [
+  // OFFRE FUTURE — ne sera pas affichée tant que published === false
   {
     id: "bib-abonne",
     name: "BIB Abonné",
-    eyebrow: "Offre client",
+    eyebrow: "Pour les clients",
     description:
-      "L'abonnement destiné aux clients qui souhaitent profiter des services et avantages associés à l'expérience BIB.",
+      "Un espace client enrichi pour découvrir les boutiques, suivre ses commandes et accéder aux programmes BIB.",
     price: "4,99 €",
     period: "/ mois",
-    audience: "Clients du réseau BIB",
     published: false,
-    icon: Users,
     features: [
-      {
-        label: "Recherche et découverte des boutiques",
-        included: true,
-      },
-      {
-        label: "Boutiques suivies",
-        included: true,
-      },
-      {
-        label: "Suivi des commandes",
-        included: true,
-      },
-      {
-        label: "Programme de points",
-        included: true,
-      },
-      {
-        label: "Programme de recyclage",
-        included: true,
-      },
-      {
-        label: "Cartes cadeaux BIB",
-        included: true,
-      },
+      "Recherche de boutiques",
+      "Boutiques suivies",
+      "Suivi des commandes",
+      "Programme de recyclage",
+      "Points BIB",
+      "Cartes cadeaux",
     ],
-    cta: "Découvrir les boutiques",
-    href: "/store",
+  },
+
+  // OFFRE FUTURE — ne sera pas affichée tant que published === false
+  {
+    id: "boutique-verte",
+    name: "Boutique Verte",
+    eyebrow: "Pour les boutiques",
+    description:
+      "Une offre progressive destinée aux boutiques selon la taille de leur communauté d’abonnés.",
+    price: "19,99 €",
+    period: "/ mois",
+    published: false,
+    features: [
+      "Tarification progressive selon le nombre d’abonnés",
+      "Services liés au programme Boutique Verte",
+      "Intégration aux dispositifs BIB concernés",
+    ],
   },
 ];
 
-/* ---------------------------------------------------------
- * COMPOSANTS
- * --------------------------------------------------------- */
+const boutiqueVerteTiers: PricingTier[] = [
+  { label: "0 – 100 abonnés", price: "19,99 € / mois" },
+  { label: "101 – 250 abonnés", price: "29,99 € / mois" },
+  { label: "251 – 500 abonnés", price: "49,99 € / mois" },
+  { label: "501 – 1 000 abonnés", price: "79,99 € / mois" },
+  { label: "1 001 – 2 500 abonnés", price: "129,99 € / mois" },
+  { label: "2 501 – 5 000 abonnés", price: "199,99 € / mois" },
+  { label: "5 001 – 10 000 abonnés", price: "299,99 € / mois" },
+];
 
-function FeatureLine({ feature }: { feature: PricingFeature }) {
-  return (
-    <div className="flex items-start gap-3">
-      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-foreground text-background">
-        <Check className="h-3 w-3" strokeWidth={2.5} />
-      </span>
-
-      <p className="text-sm leading-6 text-foreground">
-        {feature.label}
-      </p>
-    </div>
-  );
-}
-
-function OfferCard({
-  offer,
-  onSubscribe,
-}: {
-  offer: PricingOffer;
-  onSubscribe: (offer: PricingOffer) => void;
-}) {
-  const Icon = offer.icon;
-
-  return (
-    <Card
-      className={[
-        "relative flex h-full flex-col overflow-hidden rounded-[2rem] border-border/70 bg-background",
-        offer.featured
-          ? "border-foreground/30 shadow-xl shadow-black/[0.06]"
-          : "shadow-sm",
-      ].join(" ")}
-    >
-      {offer.badge && (
-        <div className="absolute right-6 top-6 rounded-full bg-foreground px-3 py-1 text-[11px] font-medium text-background">
-          {offer.badge}
-        </div>
-      )}
-
-      <CardHeader className="p-7 pb-5 sm:p-8">
-        <div className="mb-7 flex h-11 w-11 items-center justify-center rounded-2xl bg-muted">
-          <Icon className="h-5 w-5" strokeWidth={1.7} />
-        </div>
-
-        <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-          {offer.eyebrow}
-        </p>
-
-        <CardTitle className="mt-2 text-2xl tracking-tight">
-          {offer.name}
-        </CardTitle>
-
-        <CardDescription className="mt-3 min-h-[72px] text-sm leading-6">
-          {offer.description}
-        </CardDescription>
-
-        <div className="mt-7 flex items-baseline gap-1">
-          <span className="text-4xl font-semibold tracking-tight">
-            {offer.price}
-          </span>
-
-          {offer.period && (
-            <span className="text-sm text-muted-foreground">
-              {offer.period}
-            </span>
-          )}
-        </div>
-
-        <p className="mt-2 text-xs text-muted-foreground">
-          {offer.audience}
-        </p>
-      </CardHeader>
-
-      <CardContent className="flex flex-1 flex-col p-7 pt-0 sm:p-8 sm:pt-0">
-        <div className="my-6 h-px bg-border" />
-
-        <div className="space-y-4">
-          {offer.features.map((feature) => (
-            <FeatureLine
-              key={`${offer.id}-${feature.label}`}
-              feature={feature}
-            />
-          ))}
-        </div>
-
-        <div className="mt-auto pt-8">
-          {offer.id === "bib-boutique" ? (
-            <Button
-              className="h-12 w-full rounded-xl"
-              onClick={() => onSubscribe(offer)}
-            >
-              {offer.cta}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          ) : (
-            <Button
-              asChild
-              variant="outline"
-              className="h-12 w-full rounded-xl"
-            >
-              <Link to={offer.href || "/centre-aide"}>
-                {offer.cta}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-/* ---------------------------------------------------------
- * PAGE
- * --------------------------------------------------------- */
+const faqs = [
+  {
+    question: "Que comprend l’abonnement BIB Boutique ?",
+    answer:
+      "BIB Boutique donne accès à l’environnement commercial BIB destiné aux marques : boutique, catalogue sélectionné, infrastructure intégrée et services associés au réseau BIB.",
+  },
+  {
+    question: "L’abonnement comprend-il les commissions sur les ventes ?",
+    answer:
+      "L’abonnement et les éventuels frais liés aux transactions sont deux éléments distincts. Les conditions applicables sont présentées avant l’activation de l’offre.",
+  },
+  {
+    question: "Comment les reversements sont-ils effectués ?",
+    answer:
+      "Les ventes font l’objet d’un traitement et d’un reversement selon le fonctionnement financier BIB applicable au compte marchand. Les documents correspondants sont mis à disposition selon le cycle prévu.",
+  },
+  {
+    question: "La livraison est-elle gérée directement par la marque ?",
+    answer:
+      "BIB structure son réseau logistique avec des partenaires dédiés. La marque n’a pas vocation à gérer directement les relations fournisseurs et logistiques intégrées au réseau BIB.",
+  },
+  {
+    question: "Puis-je souscrire immédiatement ?",
+    answer:
+      "BIB Boutique est actuellement l’offre marchande accessible. La création de boutique commence par le parcours d’inscription et de vérification.",
+  },
+];
 
 export default function Tarifs() {
-  const { user } = useAuth();
-  const { plans, loading: plansLoading } = usePlans();
+  useSEO({
+    title: "Tarifs BIB — Des offres adaptées à votre activité",
+    description:
+      "Découvrez les offres BIB pour les marques et les boutiques. BIB Boutique est actuellement disponible à 79 € par mois.",
+  });
 
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [selectedOffer, setSelectedOffer] =
-    useState<PricingOffer | null>(null);
+  const publishedOffers = offers.filter((offer) => offer.published);
 
-  /**
-   * Seules les offres publiées sont exposées.
-   *
-   * Aujourd'hui :
-   * - BIB Boutique = visible
-   * - Boutique Verte = masquée
-   * - BIB Abonné = masquée
-   *
-   * Le jour du lancement :
-   * published: false -> true
-   */
-  const publishedMerchantOffers = useMemo(
-    () => merchantOffers.filter((offer) => offer.published),
-    [],
+  const currentOffer = publishedOffers.find(
+    (offer) => offer.id === "bib-boutique",
   );
-
-  const publishedCustomerOffers = useMemo(
-    () => customerOffers.filter((offer) => offer.published),
-    [],
-  );
-
-  /**
-   * Stripe reste alimenté par la configuration existante
-   * de usePlans.
-   */
-  const boutiquePlan = useMemo(() => {
-    if (!plans?.length) return null;
-
-    return [...plans].sort(
-      (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0),
-    )[0];
-  }, [plans]);
-
-  const priceId = useMemo(() => {
-    if (!boutiquePlan) return null;
-
-    const plan = boutiquePlan as typeof boutiquePlan & {
-      stripe_price_id?: string | null;
-      stripe_monthly_price_id?: string | null;
-    };
-
-    return (
-      plan.stripe_monthly_price_id ||
-      plan.stripe_price_id ||
-      null
-    );
-  }, [boutiquePlan]);
-
-  const handleSubscribe = (offer: PricingOffer) => {
-    setSelectedOffer(offer);
-    setCheckoutOpen(true);
-  };
-
-  const handleCheckout = () => {
-    if (!priceId || !selectedOffer) return;
-
-    window.dispatchEvent(
-      new CustomEvent("bib:open-checkout", {
-        detail: {
-          priceId,
-          userId: user?.id ?? null,
-          offerId: selectedOffer.id,
-        },
-      }),
-    );
-
-    setCheckoutOpen(false);
-  };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-white text-slate-950">
       <Header />
 
       <main>
-        {/* =================================================
-            HERO — TARIFS
-            Structure volontairement différente du landing
-            ================================================= */}
-
-        <section className="border-b border-border/60">
-          <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-20 lg:px-10 lg:py-24">
-            <div className="grid gap-12 lg:grid-cols-[1fr_0.7fr] lg:items-end">
-              <div className="max-w-4xl">
-                <div className="mb-7 flex items-center gap-3">
-                  <span className="h-px w-10 bg-foreground" />
-                  <span className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-                    Tarifs BIB
-                  </span>
-                </div>
-
-                <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.045em] sm:text-5xl lg:text-[4.4rem] lg:leading-[1.02]">
-                  Une offre claire pour chaque étape de votre présence dans
-                  le réseau BIB.
-                </h1>
+        {/* HERO */}
+        <section className="relative overflow-hidden border-b border-slate-200 bg-[#f7f4ee]">
+          <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
+            <div className="max-w-4xl">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700">
+                <CreditCard className="h-4 w-4" />
+                Tarification BIB
               </div>
 
-              <div className="max-w-md lg:justify-self-end">
-                <p className="text-base leading-7 text-muted-foreground">
-                  BIB distingue l'accès marchand, les services associés et
-                  les offres destinées aux clients. Les offres non encore
-                  lancées ne sont pas affichées publiquement.
-                </p>
+              <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
+                Une offre claire pour construire votre activité dans le réseau
+                BIB.
+              </h1>
+
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+                BIB structure les outils, les produits et les partenaires
+                nécessaires au développement d’une marque. Les offres sont
+                activées progressivement selon leur disponibilité.
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a
+                  href="#offres"
+                  className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                >
+                  Voir l’offre disponible
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+
+                <Link
+                  to="/centre-aide"
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
+                >
+                  Comprendre BIB
+                </Link>
               </div>
             </div>
           </div>
         </section>
 
-        {/* =================================================
-            OFFRES MARCHANDES
-            ================================================= */}
+        {/* OFFRES */}
+        <section id="offres" className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Offres actuellement disponibles
+            </p>
 
-        <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-10 lg:py-24">
-          <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div className="max-w-2xl">
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                Pour les marques
-              </p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
+              Commencez avec BIB Boutique.
+            </h2>
 
-              <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-                Les offres marchandes actuellement disponibles.
-              </h2>
-
-              <p className="mt-4 text-muted-foreground leading-7">
-                Rejoignez l'infrastructure commerciale BIB avec l'offre
-                actuellement ouverte à l'activation.
-              </p>
-            </div>
-
-            <div className="rounded-full border border-border bg-muted/30 px-4 py-2 text-xs text-muted-foreground">
-              {publishedMerchantOffers.length} offre actuellement disponible
-            </div>
+            <p className="mt-4 text-base leading-7 text-slate-600">
+              Les offres non encore lancées restent masquées de la page
+              publique. Elles pourront être activées sans modifier
+              l’architecture de cette page.
+            </p>
           </div>
 
-          <div
-            className={[
-              "grid gap-6",
-              publishedMerchantOffers.length === 1
-                ? "mx-auto max-w-xl"
-                : "lg:grid-cols-2",
-            ].join(" ")}
-          >
-            {publishedMerchantOffers.map((offer) => (
-              <OfferCard
+          <div className="mt-10">
+            {publishedOffers.map((offer) => (
+              <div
                 key={offer.id}
-                offer={offer}
-                onSubscribe={handleSubscribe}
-              />
+                className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm"
+              >
+                <div className="grid lg:grid-cols-[1.2fr_0.8fr]">
+                  <div className="p-8 sm:p-10 lg:p-12">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
+                        {offer.eyebrow}
+                      </span>
+
+                      {offer.badge && (
+                        <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold text-white">
+                          {offer.badge}
+                        </span>
+                      )}
+                    </div>
+
+                    <h3 className="mt-5 text-3xl font-semibold text-slate-950">
+                      {offer.name}
+                    </h3>
+
+                    <p className="mt-4 max-w-xl text-base leading-7 text-slate-600">
+                      {offer.description}
+                    </p>
+
+                    <div className="mt-8 flex items-end gap-2">
+                      <span className="text-5xl font-semibold tracking-tight text-slate-950">
+                        {offer.price}
+                      </span>
+
+                      <span className="mb-2 text-sm text-slate-500">
+                        {offer.period}
+                      </span>
+                    </div>
+
+                    <div className="mt-8">
+                      <Link
+                        to="/signup?plan=bib-boutique"
+                        className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                      >
+                        Créer ma boutique
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-200 bg-[#f7f4ee] p-8 sm:p-10 lg:border-l lg:border-t-0 lg:p-12">
+                    <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
+                      Inclus
+                    </p>
+
+                    <ul className="mt-6 space-y-4">
+                      {offer.features.map((feature) => (
+                        <li
+                          key={feature}
+                          className="flex items-start gap-3 text-sm leading-6 text-slate-700"
+                        >
+                          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white">
+                            <Check className="h-3.5 w-3.5 text-slate-950" />
+                          </span>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </section>
 
-        {/* =================================================
-            CE QUE COUVRE BIB BOUTIQUE
-            ================================================= */}
-
-        <section className="border-y border-border/60 bg-muted/20">
-          <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-10 lg:py-24">
-            <div className="grid gap-12 lg:grid-cols-[0.75fr_1.25fr]">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                  BIB Boutique
-                </p>
-
-                <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-                  Vous ne payez pas simplement pour une page boutique.
-                </h2>
-
-                <p className="mt-5 leading-7 text-muted-foreground">
-                  BIB Boutique donne accès à un environnement commercial
-                  construit autour d'un catalogue sélectionné, d'un réseau
-                  vérifié et d'une infrastructure qui dépasse la simple
-                  mise en ligne d'une boutique.
-                </p>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Card className="rounded-3xl border-border/70 shadow-none">
-                  <CardContent className="p-6">
-                    <Store className="h-5 w-5" />
-                    <h3 className="mt-5 font-medium">
-                      Votre boutique
-                    </h3>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                      Une présence commerciale intégrée au réseau BIB.
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="rounded-3xl border-border/70 shadow-none">
-                  <CardContent className="p-6">
-                    <PackageCheck className="h-5 w-5" />
-                    <h3 className="mt-5 font-medium">
-                      Produits sélectionnés
-                    </h3>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                      Un catalogue accessible dans le cadre défini par BIB.
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="rounded-3xl border-border/70 shadow-none">
-                  <CardContent className="p-6">
-                    <ShieldCheck className="h-5 w-5" />
-                    <h3 className="mt-5 font-medium">
-                      Réseau vérifié
-                    </h3>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                      Des partenaires et boutiques intégrés selon les
-                      contrôles BIB applicables.
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="rounded-3xl border-border/70 shadow-none">
-                  <CardContent className="p-6">
-                    <Truck className="h-5 w-5" />
-                    <h3 className="mt-5 font-medium">
-                      Infrastructure
-                    </h3>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                      Des processus commerciaux et logistiques structurés
-                      autour du réseau BIB.
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* =================================================
-            LOGISTIQUE
-            ================================================= */}
-
-        <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-10 lg:py-24">
-          <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                Livraison
-              </p>
-
-              <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-                Une tarification pensée pour rester lisible côté client.
-              </h2>
-
-              <p className="mt-5 max-w-xl leading-7 text-muted-foreground">
-                Pour les produits concernés, la livraison standard est
-                intégrée au prix présenté au client. L'option express reste
-                distincte lorsqu'elle est proposée.
-              </p>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-3xl border border-border/70 p-7">
-                <Truck className="h-5 w-5" />
-
-                <h3 className="mt-6 font-medium">
-                  Livraison standard
-                </h3>
-
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  Incluse dans le prix produit selon les conditions BIB.
-                </p>
-              </div>
-
-              <div className="rounded-3xl border border-border/70 p-7">
-                <ArrowRight className="h-5 w-5" />
-
-                <h3 className="mt-6 font-medium">
-                  Livraison express
-                </h3>
-
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  Disponible lorsqu'elle est proposée, avec un coût
-                  supplémentaire distinct.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* =================================================
-            FRAIS / REVERSEMENTS
-            ================================================= */}
-
-        <section className="border-y border-border/60 bg-muted/20">
-          <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-10 lg:py-24">
-            <div className="max-w-2xl">
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                Fonctionnement commercial
-              </p>
-
-              <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-                Abonnement, transactions et reversements restent distincts.
-              </h2>
-
-              <p className="mt-4 leading-7 text-muted-foreground">
-                Le prix de l'abonnement BIB Boutique ne doit pas être
-                confondu avec les mécanismes financiers liés aux ventes.
-                Chaque élément est traité selon les conditions commerciales
-                applicables.
-              </p>
-            </div>
-
-            <div className="mt-10 grid gap-5 md:grid-cols-3">
-              <div className="rounded-3xl bg-background p-7">
-                <WalletCards className="h-5 w-5" />
-
-                <h3 className="mt-6 font-medium">
-                  Abonnement
-                </h3>
-
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  L'accès à l'offre BIB Boutique est facturé selon la
-                  formule active.
-                </p>
-              </div>
-
-              <div className="rounded-3xl bg-background p-7">
-                <PackageCheck className="h-5 w-5" />
-
-                <h3 className="mt-6 font-medium">
-                  Transactions
-                </h3>
-
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  Les éventuelles commissions ou conditions transactionnelles
-                  sont distinctes de l'abonnement.
-                </p>
-              </div>
-
-              <div className="rounded-3xl bg-background p-7">
-                <ShieldCheck className="h-5 w-5" />
-
-                <h3 className="mt-6 font-medium">
-                  Reversements
-                </h3>
-
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  Les ventes sont suivies puis reversées selon le cycle
-                  commercial BIB applicable.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* =================================================
-            OFFRES NON LANCÉES
-            =================================================
-            
-            AUCUNE CARTE ICI.
-            
-            Les offres futures existent dans les données,
-            mais ne sont volontairement pas rendues.
-            
-            Cela permet de lancer une offre plus tard simplement
-            en passant published: false -> true.
-            ================================================= */}
-
-        {/* =================================================
-            FAQ
-            ================================================= */}
-
-        <section className="mx-auto max-w-4xl px-5 py-16 sm:px-8 lg:py-24">
-          <div className="text-center">
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-              Questions fréquentes
-            </p>
-
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Avant de rejoindre BIB.
-            </h2>
-          </div>
-
-          <Accordion type="single" collapsible className="mt-10">
-            <AccordionItem value="price">
-              <AccordionTrigger>
-                Que comprend BIB Boutique à 79 € par mois ?
-              </AccordionTrigger>
-
-              <AccordionContent className="leading-7 text-muted-foreground">
-                BIB Boutique donne accès à une boutique BIB, au catalogue
-                sélectionné accessible aux marchands, au réseau vérifié et
-                aux processus commerciaux et logistiques prévus par
-                l'infrastructure BIB.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="commission">
-              <AccordionTrigger>
-                L'abonnement comprend-il les commissions sur les ventes ?
-              </AccordionTrigger>
-
-              <AccordionContent className="leading-7 text-muted-foreground">
-                L'abonnement et les éventuels frais liés aux transactions
-                sont distincts. Les conditions commerciales applicables
-                doivent être consultées avant l'activation de l'offre.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="delivery">
-              <AccordionTrigger>
-                La livraison standard est-elle facturée au client ?
-              </AccordionTrigger>
-
-              <AccordionContent className="leading-7 text-muted-foreground">
-                Pour les produits concernés, la livraison standard est
-                intégrée au prix du produit. Une livraison express peut être
-                proposée séparément.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="catalog">
-              <AccordionTrigger>
-                Puis-je choisir n'importe quel fournisseur ?
-              </AccordionTrigger>
-
-              <AccordionContent className="leading-7 text-muted-foreground">
-                Non. BIB fonctionne sur un réseau sélectionné. Les marchands
-                accèdent aux produits disponibles dans le catalogue BIB et
-                n'ont pas à gérer directement l'ensemble des relations
-                fournisseurs et logistiques.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="future">
-              <AccordionTrigger>
-                Pourquoi certaines offres BIB ne sont-elles pas affichées ?
-              </AccordionTrigger>
-
-              <AccordionContent className="leading-7 text-muted-foreground">
-                La page Tarifs présente uniquement les offres actuellement
-                ouvertes à la souscription. Les autres offres peuvent être
-                préparées par BIB sans être commercialisées avant leur
-                lancement officiel.
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="verification">
-              <AccordionTrigger>
-                Toutes les boutiques de la marketplace sont-elles vérifiées ?
-              </AccordionTrigger>
-
-              <AccordionContent className="leading-7 text-muted-foreground">
-                Les boutiques disponibles sur la marketplace BIB sont
-                intégrées dans le cadre de vérification du réseau BIB.
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </section>
-
-        {/* =================================================
-            CTA
-            ================================================= */}
-
-        <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8 lg:px-10 lg:pb-24">
-          <div className="rounded-[2rem] bg-foreground px-7 py-12 text-background sm:px-12 sm:py-16">
+        {/* INFRASTRUCTURE */}
+        <section className="border-y border-slate-200 bg-slate-950 text-white">
+          <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
             <div className="max-w-3xl">
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-background/60">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">
+                Au-delà de l’abonnement
+              </p>
+
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+                Une tarification qui distingue l’accès à BIB des services liés
+                à l’activité.
+              </h2>
+
+              <p className="mt-5 text-base leading-7 text-slate-300">
+                L’abonnement BIB Boutique constitue l’accès à l’environnement
+                marchand. Les flux de vente, la logistique et les éventuels
+                services complémentaires suivent leurs propres conditions.
+              </p>
+            </div>
+
+            <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+                <Store className="h-6 w-6" />
+                <h3 className="mt-5 font-semibold">Boutique</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-400">
+                  Un espace commercial dédié à votre marque.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+                <Package className="h-6 w-6" />
+                <h3 className="mt-5 font-semibold">Produits</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-400">
+                  Un catalogue sélectionné dans l’environnement BIB.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+                <Truck className="h-6 w-6" />
+                <h3 className="mt-5 font-semibold">Logistique</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-400">
+                  Une infrastructure organisée avec des partenaires dédiés.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+                <ShieldCheck className="h-6 w-6" />
+                <h3 className="mt-5 font-semibold">Réseau vérifié</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-400">
+                  Des partenaires et produits intégrés selon les standards
+                  BIB.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* PRIX / LOGIQUE */}
+        <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
+          <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+                À retenir
+              </p>
+
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
+                Pas de grille tarifaire artificiellement compliquée.
+              </h2>
+
+              <p className="mt-5 text-base leading-7 text-slate-600">
+                BIB publie uniquement les offres réellement accessibles. Les
+                nouvelles offres sont rendues visibles au moment de leur
+                lancement.
+              </p>
+            </div>
+
+            <div className="divide-y divide-slate-200 rounded-3xl border border-slate-200">
+              <div className="flex gap-5 p-6 sm:p-8">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100">
+                  <CreditCard className="h-5 w-5 text-slate-700" />
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-slate-950">
+                    Abonnement
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Le prix affiché correspond à l’accès à l’offre BIB
+                    concernée.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-5 p-6 sm:p-8">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100">
+                  <Package className="h-5 w-5 text-slate-700" />
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-slate-950">
+                    Activité commerciale
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Les conditions liées aux ventes sont distinctes de
+                    l’abonnement et sont présentées avant activation.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-5 p-6 sm:p-8">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100">
+                  <Truck className="h-5 w-5 text-slate-700" />
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-slate-950">
+                    Services complémentaires
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Certains services BIB peuvent disposer de conditions
+                    propres lorsqu’ils sont disponibles.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section className="border-t border-slate-200 bg-[#f7f4ee]">
+          <div className="mx-auto max-w-5xl px-6 py-20 lg:px-8">
+            <div className="text-center">
+              <CircleHelp className="mx-auto h-7 w-7 text-slate-700" />
+
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">
+                Questions fréquentes
+              </h2>
+            </div>
+
+            <div className="mt-10 divide-y divide-slate-300 rounded-3xl border border-slate-200 bg-white px-6 sm:px-8">
+              {faqs.map((faq) => (
+                <details key={faq.question} className="group py-6">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-6 font-medium text-slate-950">
+                    <span>{faq.question}</span>
+
+                    <ChevronDown className="h-5 w-5 shrink-0 text-slate-500 transition-transform group-open:rotate-180" />
+                  </summary>
+
+                  <p className="mt-4 max-w-3xl pr-8 text-sm leading-7 text-slate-600">
+                    {faq.answer}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
+          <div className="rounded-3xl bg-slate-950 px-8 py-12 text-white sm:px-12 lg:flex lg:items-center lg:justify-between lg:gap-12">
+            <div className="max-w-2xl">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">
                 BIB Boutique
               </p>
 
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
-                Votre marque peut commencer avec BIB aujourd'hui.
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+                Prêt à présenter votre marque dans le réseau BIB ?
               </h2>
 
-              <p className="mt-5 max-w-2xl leading-7 text-background/70">
-                L'offre marchande actuellement ouverte est BIB Boutique,
-                proposée à 79 € par mois.
+              <p className="mt-4 text-base leading-7 text-slate-300">
+                Commencez votre demande de création de boutique et passez par
+                le parcours de vérification BIB.
               </p>
+            </div>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button
-                  asChild
-                  variant="secondary"
-                  className="h-12 rounded-xl px-6"
-                >
-                  <Link to="/signup">
-                    Créer ma boutique
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-
-                <Button
-                  asChild
-                  variant="outline"
-                  className="h-12 rounded-xl border-background/20 bg-transparent px-6 text-background hover:bg-background/10 hover:text-background"
-                >
-                  <Link to="/centre-aide">
-                    Centre d'aide
-                  </Link>
-                </Button>
-              </div>
+            <div className="mt-8 shrink-0 lg:mt-0">
+              <Link
+                to="/signup?plan=bib-boutique"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
+              >
+                Créer ma boutique
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           </div>
         </section>
       </main>
 
       <Footer />
-
-      {/* =================================================
-          CHECKOUT
-          ================================================= */}
-
-      <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-        <DialogContent className="max-w-md rounded-3xl">
-          <DialogHeader>
-            <DialogTitle>
-              Commencer avec BIB Boutique
-            </DialogTitle>
-
-            <DialogDescription className="leading-6">
-              Vous allez commencer le parcours d'activation de votre
-              boutique BIB.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="mt-4 rounded-2xl bg-muted/50 p-5">
-            <div className="flex items-center justify-between gap-4">
-              <span className="font-medium">
-                BIB Boutique
-              </span>
-
-              <span className="whitespace-nowrap text-xl font-semibold">
-                79 € / mois
-              </span>
-            </div>
-
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Les conditions commerciales applicables sont présentées avant
-              validation de l'activation.
-            </p>
-          </div>
-
-          <div className="mt-5 flex gap-3">
-            <Button
-              variant="outline"
-              className="h-11 flex-1 rounded-xl"
-              onClick={() => setCheckoutOpen(false)}
-            >
-              Annuler
-            </Button>
-
-            <Button
-              className="h-11 flex-1 rounded-xl"
-              onClick={handleCheckout}
-              disabled={plansLoading || !priceId}
-            >
-              Continuer
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
