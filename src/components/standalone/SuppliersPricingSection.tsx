@@ -1,216 +1,361 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Check, Sparkles, ShieldCheck, Boxes, ChevronRight, BarChart3, Award } from "lucide-react";
+import {
+  Check,
+  ShieldCheck,
+  Boxes,
+  ChevronRight,
+  BarChart3,
+  ClipboardCheck,
+  Truck,
+  FileCheck2,
+  ArrowRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 
-type SupplierTier = "essentiel" | "standard" | "premium";
-
-interface SupplierPlan {
-  tier: SupplierTier;
-  name: string;
-  monthly: number;
-  target: string;
-  references: string;
-  audits: string;
-  features: string[];
-  recommended?: boolean;
-}
-
-const SUPPLIER_PLANS: SupplierPlan[] = [
+const SUPPLIER_SERVICES = [
   {
-    tier: "essentiel",
-    name: "Essentiel",
-    monthly: 49,
-    target: "Petits fournisseurs",
-    references: "Jusqu'à 50 références",
-    audits: "1 audit / an inclus",
-    features: [
-      "Badge Certifié sur les produits",
-      "Portail fournisseur (commandes, statuts)",
-      "Paiements mensuels consolidés",
-      "Support email 48h",
-    ],
+    icon: ClipboardCheck,
+    title: "Référencement contrôlé",
+    text: "Chaque fournisseur et chaque référence sont étudiés avant leur intégration au catalogue BIB.",
   },
   {
-    tier: "standard",
-    name: "Standard",
-    monthly: 99,
-    target: "Fournisseurs établis",
-    references: "Jusqu'à 200 références",
-    audits: "2 audits / an inclus",
-    recommended: true,
-    features: [
-      "Badge Certifié sur les produits",
-      "Mise en avant prioritaire catalogue",
-      "Données de ventes par produit",
-      "Support prioritaire 24h",
-    ],
+    icon: ShieldCheck,
+    title: "Contrôles qualité & conformité",
+    text: "BIB peut contrôler les documents, produits, procédés et éléments nécessaires à la commercialisation.",
   },
   {
-    tier: "premium",
-    name: "Premium",
-    monthly: 199,
-    target: "Grands fournisseurs",
-    references: "Références illimitées",
-    audits: "Audits illimités inclus",
-    features: [
-      "Top placement catalogue",
-      "Co-marketing avec les marchands",
-      "API commandes & webhooks",
-      "Account manager dédié",
-    ],
+    icon: Boxes,
+    title: "Catalogue BIB",
+    text: "Les références validées peuvent être proposées aux boutiques correspondant aux critères du réseau.",
+  },
+  {
+    icon: Truck,
+    title: "Coordination logistique",
+    text: "Les opérations de stock, de préparation et d'expédition sont coordonnées avec les partenaires BIB.",
+  },
+  {
+    icon: BarChart3,
+    title: "Suivi des performances",
+    text: "Le portail fournisseur permet progressivement de suivre les références, disponibilités et opérations.",
+  },
+  {
+    icon: FileCheck2,
+    title: "Traçabilité documentaire",
+    text: "Les documents et informations nécessaires au suivi du fournisseur sont centralisés dans le parcours BIB.",
   },
 ];
 
-const carouselClass =
-  "flex md:grid md:grid-cols-3 gap-4 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none -mx-4 px-4 md:mx-0 md:px-0 pb-2 md:pb-0 scrollbar-none";
-const cardSnapClass = "snap-center md:snap-align-none shrink-0 md:shrink min-w-[82%] sm:min-w-[60%] md:min-w-0";
+const FAQ = [
+  {
+    q: "Le référencement fournisseur est-il automatique ?",
+    a: "Non. BIB fonctionne sur un modèle de réseau sélectionné. La candidature fait l'objet d'une étude avant toute validation. L'acceptation d'un fournisseur ne garantit pas l'intégration de l'ensemble de ses produits.",
+  },
+  {
+    q: "Qui sélectionne les produits proposés aux boutiques ?",
+    a: "BIB. Les boutiques n'accèdent pas directement à l'ensemble du catalogue fournisseur. Les références sont d'abord étudiées et validées selon les critères BIB, puis intégrées au catalogue disponible pour le réseau.",
+  },
+  {
+    q: "Le fournisseur travaille-t-il directement avec chaque boutique ?",
+    a: "Le modèle BIB vise à centraliser cette relation opérationnelle. Le fournisseur transmet ses informations, ses produits et ses disponibilités à BIB ; les boutiques accèdent ensuite au catalogue qui leur est rendu disponible.",
+  },
+  {
+    q: "Y a-t-il un abonnement obligatoire pour être fournisseur ?",
+    a: "Le modèle tarifaire dépend du parcours fournisseur et des services effectivement proposés par BIB. Les éventuels frais, services ou conditions applicables sont présentés au fournisseur avant son engagement.",
+  },
+  {
+    q: "Comment fonctionnent les audits ?",
+    a: "Les contrôles sont définis selon le profil du fournisseur, les produits concernés et le niveau de risque ou de conformité requis. BIB peut demander des documents, des échantillons ou organiser un contrôle sur site lorsque cela est nécessaire.",
+  },
+  {
+    q: "Comment les stocks sont-ils gérés ?",
+    a: "Le fournisseur transmet ses informations de disponibilité selon les procédures BIB. Lorsque le modèle logistique le prévoit, les stocks peuvent être orientés vers un partenaire logistique afin de permettre leur préparation et leur expédition.",
+  },
+  {
+    q: "Comment les paiements sont-ils effectués ?",
+    a: "Les modalités financières sont définies dans le cadre contractuel applicable au fournisseur. Les reversements sont suivis par BIB et font l'objet des documents financiers prévus.",
+  },
+  {
+    q: "Puis-je retirer une référence du catalogue ?",
+    a: "Oui, sous réserve des commandes, engagements et procédures en cours. Une référence peut également être suspendue par BIB lorsqu'elle ne respecte plus les critères applicables.",
+  },
+];
 
 export function SuppliersPricingSection() {
-  const [annual, setAnnual] = useState(false);
-
   return (
     <>
-      <section id="tarifs" className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 scroll-mt-20">
-        <div className="text-center max-w-2xl mx-auto mb-8">
-          <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">Tarifs</p>
-          <h2 className="font-display text-2xl sm:text-3xl font-bold text-bib-marine mb-3">
-            Abonnements fournisseurs
-          </h2>
-          <p className="text-sm text-muted-foreground mb-5">
-            Marge plateforme <strong>20%</strong> sur commandes, en plus de l'abonnement mensuel.
+      {/* SERVICES FOURNISSEUR */}
+      <section
+        id="services"
+        className="container mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-18 scroll-mt-20"
+      >
+        <div className="max-w-2xl mx-auto text-center mb-10">
+          <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">
+            Services BIB
           </p>
-          <div className="inline-flex items-center gap-3 rounded-full border border-border bg-card px-4 py-2 shadow-sm">
-            <span className={cn("text-sm font-medium", !annual && "text-foreground", annual && "text-muted-foreground")}>Mensuel</span>
-            <Switch checked={annual} onCheckedChange={setAnnual} aria-label="Facturation annuelle" />
-            <span className={cn("text-sm font-medium flex items-center gap-1.5", annual && "text-foreground", !annual && "text-muted-foreground")}>
-              Annuel <Badge className="bg-success text-success-foreground text-[10px] px-1.5 py-0">−20%</Badge>
-            </span>
-          </div>
+
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-bib-marine">
+            Ce que BIB met en place pour les fournisseurs
+          </h2>
+
+          <p className="text-sm sm:text-base text-muted-foreground mt-3 leading-relaxed">
+            Le fournisseur rejoint un environnement structuré : référencement,
+            contrôle, catalogue, opérations et suivi sont organisés dans un
+            même parcours.
+          </p>
         </div>
 
-        <div className="md:hidden flex items-center justify-end gap-1 text-xs text-muted-foreground mb-2">
-          Glissez <ChevronRight className="h-3.5 w-3.5" />
-        </div>
-        <div className={carouselClass}>
-          {SUPPLIER_PLANS.map((plan) => {
-            const price = annual ? Math.round(plan.monthly * 0.8) : plan.monthly;
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {SUPPLIER_SERVICES.map((service) => {
+            const Icon = service.icon;
+
             return (
-              <div
-                key={plan.tier}
-                className={cn(
-                  "relative rounded-2xl border bg-card p-6 flex flex-col",
-                  cardSnapClass,
-                  plan.recommended
-                    ? "border-bib-gold shadow-xl shadow-bib-gold/10 md:scale-105"
-                    : "border-border shadow-sm",
-                )}
+              <Card
+                key={service.title}
+                className="p-5 sm:p-6 transition-shadow hover:shadow-md"
               >
-                {plan.recommended && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-bib-gold text-bib-marine">★ Recommandé</Badge>
-                )}
-                <h3 className="font-display text-2xl font-bold text-bib-marine">{plan.name}</h3>
-                <p className="text-xs text-muted-foreground mt-1 mb-4">{plan.target}</p>
-                <div className="mb-1">
-                  <span className="text-4xl font-bold text-foreground">{price}€</span>
-                  <span className="text-muted-foreground text-sm">/mois</span>
+                <div className="w-10 h-10 rounded-lg bg-bib-gold/10 text-bib-gold flex items-center justify-center mb-4">
+                  <Icon className="h-5 w-5" />
                 </div>
-                <p className="text-xs text-muted-foreground mb-4">
-                  {annual ? `Facturé ${price * 12}€/an` : "Sans engagement"}
+
+                <h3 className="font-semibold text-bib-marine">
+                  {service.title}
+                </h3>
+
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                  {service.text}
                 </p>
-                <div className="rounded-lg bg-muted/50 px-3 py-2 mb-5 grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <p className="text-muted-foreground">Références</p>
-                    <p className="font-semibold text-bib-marine">{plan.references}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Audits</p>
-                    <p className="font-semibold text-bib-marine">{plan.audits}</p>
-                  </div>
-                </div>
-                <ul className="space-y-2.5 mb-6 flex-1">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2 text-sm">
-                      <Check className="h-4 w-4 text-success shrink-0 mt-0.5" />
-                      <span className="text-foreground/80">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Button asChild variant={plan.recommended ? "coral" : "outline"} className="w-full">
-                  <Link to={`/suppliers/apply?plan=${plan.tier}&cycle=${annual ? "annual" : "monthly"}`}>
-                    Choisir {plan.name}
-                  </Link>
-                </Button>
-              </div>
+              </Card>
             );
           })}
         </div>
+      </section>
 
-        <p className="text-center text-xs text-muted-foreground mt-6 max-w-2xl mx-auto">
-          Frais d'audit unique (150€–250€ selon localisation) <strong>offerts en phase bêta</strong>.
-        </p>
+      {/* LOGIQUE TARIFAIRE */}
+      <section className="bg-muted/30 border-y border-border/50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-18">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-9">
+              <Badge variant="secondary" className="mb-3">
+                Conditions fournisseur
+              </Badge>
 
-        <div className="grid gap-4 sm:grid-cols-3 mt-10 max-w-5xl mx-auto">
-          <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
-            <ShieldCheck className="h-5 w-5 text-bib-gold shrink-0 mt-0.5" />
-            <div>
-              <p className="font-semibold text-sm">Badge Certifié</p>
-              <p className="text-xs text-muted-foreground">Sur chaque produit validé.</p>
+              <h2 className="font-display text-2xl sm:text-3xl font-bold text-bib-marine">
+                Un modèle tarifaire lié aux services réellement utilisés
+              </h2>
+
+              <p className="text-sm sm:text-base text-muted-foreground mt-3 leading-relaxed">
+                BIB ne fonctionne pas comme une marketplace ouverte où un
+                fournisseur paie simplement pour apparaître. Les éventuels
+                frais et conditions sont déterminés selon le parcours,
+                les contrôles et les services opérationnels concernés.
+              </p>
             </div>
-          </div>
-          <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
-            <Boxes className="h-5 w-5 text-bib-gold shrink-0 mt-0.5" />
-            <div>
-              <p className="font-semibold text-sm">Portail fournisseur</p>
-              <p className="text-xs text-muted-foreground">Commandes et statuts temps réel.</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3 rounded-xl border border-border bg-card p-4">
-            <BarChart3 className="h-5 w-5 text-bib-gold shrink-0 mt-0.5" />
-            <div>
-              <p className="font-semibold text-sm">Performance 6 mois</p>
-              <p className="text-xs text-muted-foreground">Rotation & alertes de stock.</p>
-            </div>
+
+            <Card className="p-6 sm:p-8 bg-background">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div>
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
+                    <FileCheck2 className="h-4 w-4" />
+                  </div>
+
+                  <h3 className="font-semibold text-sm">
+                    Référencement
+                  </h3>
+
+                  <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                    Étude de l'entreprise, des documents et des références
+                    proposées.
+                  </p>
+                </div>
+
+                <div>
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
+                    <ShieldCheck className="h-4 w-4" />
+                  </div>
+
+                  <h3 className="font-semibold text-sm">
+                    Contrôle
+                  </h3>
+
+                  <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                    Contrôles documentaires, qualité et conformité selon les
+                    produits et le profil fournisseur.
+                  </p>
+                </div>
+
+                <div>
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
+                    <Truck className="h-4 w-4" />
+                  </div>
+
+                  <h3 className="font-semibold text-sm">
+                    Opérations
+                  </h3>
+
+                  <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                    Coordination des flux de stock et de livraison avec les
+                    opérations et partenaires BIB.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-7 pt-6 border-t border-border/60">
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {[
+                    "Conditions communiquées avant engagement",
+                    "Aucun accès automatique au réseau",
+                    "Références soumises à validation",
+                    "Services adaptés au parcours fournisseur",
+                  ].map((item) => (
+                    <li
+                      key={item}
+                      className="flex items-start gap-2.5 text-sm"
+                    >
+                      <Check className="h-4 w-4 text-success shrink-0 mt-0.5" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </Card>
+
+            <p className="text-center text-xs text-muted-foreground mt-5">
+              Les conditions commerciales définitives sont présentées au
+              fournisseur lors du parcours de candidature et avant toute
+              contractualisation.
+            </p>
           </div>
         </div>
       </section>
 
-      <section id="faq" className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-16 max-w-3xl scroll-mt-20">
-        <div className="text-center mb-6">
-          <Badge variant="secondary" className="mb-3">FAQ</Badge>
-          <h2 className="font-display text-2xl sm:text-3xl font-bold text-bib-marine">Questions fréquentes</h2>
+      {/* PARCOURS */}
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-18">
+        <div className="max-w-2xl mx-auto text-center mb-9">
+          <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">
+            Parcours
+          </p>
+
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-bib-marine">
+            Ce qui se passe après votre candidature
+          </h2>
         </div>
-        <Accordion type="single" collapsible className="space-y-2">
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
           {[
-            { q: "Comment fonctionne la marge plateforme de 20% ?", a: "Prélevée automatiquement sur chaque commande livrée, en plus de l'abonnement. Elle finance l'audit qualité, le hub logistique et la garantie marchand." },
-            { q: "Puis-je changer de plan à tout moment ?", a: "Oui, depuis le portail fournisseur. Effet au cycle de facturation suivant, prorata appliqué." },
-            { q: "Que couvrent les audits inclus ?", a: "Audit qualité (site ou échantillon), vérification conformité, contrôle process. 1 en Essentiel, 2 en Standard, illimités en Premium." },
-            { q: "Comment suis-je payé ?", a: "Virement SEPA mensuel le 10 du mois suivant. Escrow plateforme sur les litiges en cours." },
-          ].map((item, i) => (
-            <AccordionItem key={i} value={`faq-${i}`} className="rounded-xl border border-border bg-card px-4 data-[state=open]:shadow-sm">
-              <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">{item.q}</AccordionTrigger>
-              <AccordionContent className="text-sm text-muted-foreground">{item.a}</AccordionContent>
+            {
+              number: "01",
+              title: "Candidature",
+              text: "Vous présentez votre entreprise et vos produits.",
+            },
+            {
+              number: "02",
+              title: "Évaluation",
+              text: "BIB étudie la compatibilité avec son réseau.",
+            },
+            {
+              number: "03",
+              title: "Validation",
+              text: "Les documents et références retenus sont contrôlés.",
+            },
+            {
+              number: "04",
+              title: "Intégration",
+              text: "Les produits validés peuvent rejoindre le catalogue BIB.",
+            },
+          ].map((step) => (
+            <Card key={step.number} className="p-5">
+              <span className="text-xs font-bold tracking-[0.15em] text-bib-gold">
+                {step.number}
+              </span>
+
+              <h3 className="font-semibold text-bib-marine mt-3">
+                {step.title}
+              </h3>
+
+              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                {step.text}
+              </p>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section
+        id="faq"
+        className="container mx-auto px-4 sm:px-6 lg:px-8 pb-14 lg:pb-18 max-w-4xl scroll-mt-20"
+      >
+        <div className="text-center mb-7">
+          <Badge variant="secondary" className="mb-3">
+            FAQ fournisseur
+          </Badge>
+
+          <h2 className="font-display text-2xl sm:text-3xl font-bold text-bib-marine">
+            Questions fréquentes
+          </h2>
+
+          <p className="text-sm text-muted-foreground mt-2">
+            Les principales règles du parcours fournisseur BIB.
+          </p>
+        </div>
+
+        <Accordion
+          type="single"
+          collapsible
+          className="space-y-2"
+        >
+          {FAQ.map((item, index) => (
+            <AccordionItem
+              key={item.q}
+              value={`faq-${index}`}
+              className="rounded-xl border border-border bg-card px-4 data-[state=open]:shadow-sm"
+            >
+              <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
+                {item.q}
+              </AccordionTrigger>
+
+              <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
+                {item.a}
+              </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
+      </section>
 
-        <div className="rounded-2xl border border-bib-gold/40 bg-bib-gold/5 p-6 sm:p-8 text-center mt-10">
-          <Award className="h-8 w-8 text-bib-gold mx-auto mb-3" />
-          <h3 className="font-display text-xl font-bold text-bib-marine mb-2">Prêt à rejoindre le réseau BIB ?</h3>
-          <p className="text-sm text-muted-foreground mb-5">Candidature en moins de 5 minutes — validation sous 3 jours ouvrés.</p>
-          <Button asChild variant="coral" size="lg">
-            <Link to="/suppliers/apply">Postuler maintenant</Link>
-          </Button>
-        </div>
+      {/* CTA */}
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <Card className="relative overflow-hidden p-7 sm:p-10 text-center border-bib-gold/30 bg-bib-gold/5">
+          <div className="relative max-w-2xl mx-auto">
+            <div className="w-11 h-11 rounded-xl bg-bib-gold/15 text-bib-gold flex items-center justify-center mx-auto mb-4">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+
+            <h3 className="font-display text-xl sm:text-2xl font-bold text-bib-marine">
+              Vous souhaitez rejoindre le réseau BIB ?
+            </h3>
+
+            <p className="text-sm text-muted-foreground mt-2 mb-6 max-w-xl mx-auto leading-relaxed">
+              Présentez votre activité et vos produits. L'équipe BIB étudiera
+              votre candidature avant de vous communiquer les prochaines
+              étapes.
+            </p>
+
+            <Button asChild variant="coral" size="lg" className="gap-2">
+              <Link to="/suppliers/apply">
+                Déposer ma candidature
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </Card>
       </section>
     </>
   );
