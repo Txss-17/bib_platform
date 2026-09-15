@@ -1,173 +1,215 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Check, Star } from "lucide-react";
+import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
-import { BoxWithProductsHero3D } from "@/components/BoxWithProductsHero3D";
-import { useRef } from "react";
 
-/**
- * Hero — Brand-In-A-Box
- * Strict tri-color palette: Ivory bg, Marine ink, Gold accent. NO gradients.
- * Typography: Playfair Display (display) + Inter (body) — set globally.
- * Signature animation: scroll-driven B-drops-into-the-box, then bounces gently.
- */
 const HeroSection = () => {
-  const sectionRef = useRef<HTMLElement>(null);
-
   return (
-    <section
-      ref={sectionRef}
-      className="relative min-h-[100svh] flex items-center overflow-hidden pt-28 lg:pt-0 bg-bib-ivory"
-    >
-      {/* Discreet single-color halos — never blended together */}
-      <div className="absolute -top-40 -right-32 w-[560px] h-[560px] rounded-full bg-bib-marine/[0.04] blur-3xl" aria-hidden />
-      <div className="absolute -bottom-40 -left-32 w-[460px] h-[460px] rounded-full bg-bib-gold/[0.08] blur-3xl" aria-hidden />
+    <section className="relative min-h-[100svh] overflow-hidden bg-bib-ivory pt-24 lg:pt-20">
 
-      {/* Subtle grid background (marine ink, very low opacity) */}
+      {/* Background */}
       <div
-        className="absolute inset-0 opacity-[0.04] pointer-events-none"
+        className="pointer-events-none absolute inset-0 opacity-[0.035]"
         aria-hidden
         style={{
-          backgroundImage:
-            "linear-gradient(hsl(var(--bib-marine)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--bib-marine)) 1px, transparent 1px)",
+          backgroundImage: `
+            linear-gradient(hsl(var(--bib-marine)) 1px, transparent 1px),
+            linear-gradient(90deg, hsl(var(--bib-marine)) 1px, transparent 1px)
+          `,
           backgroundSize: "48px 48px",
         }}
       />
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-24 relative z-10">
-        <div className="grid lg:grid-cols-[1.05fr_1fr] gap-12 lg:gap-20 items-center">
-          {/* LEFT — copy + CTAs */}
-          <div className="max-w-xl animate-fade-up">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-bib-marine text-primary-foreground mb-6 shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-bib-gold" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.18em]">
-                Brand-In-A-Box · Commerce OS
+      <div
+        className="pointer-events-none absolute -right-40 -top-40 h-[600px] w-[600px] rounded-full bg-bib-marine/[0.035] blur-3xl"
+        aria-hidden
+      />
+
+      <div
+        className="pointer-events-none absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-bib-gold/[0.07] blur-3xl"
+        aria-hidden
+      />
+
+      <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div className="grid min-h-[calc(100svh-80px)] items-center gap-12 py-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20 lg:py-16">
+
+          {/* LEFT */}
+          <div className="max-w-[590px] animate-fade-up">
+
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-bib-marine px-3.5 py-2 text-primary-foreground shadow-sm">
+              <span className="h-1.5 w-1.5 rounded-full bg-bib-gold" />
+
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] sm:text-[11px]">
+                Brand-In-A-Box
               </span>
             </div>
 
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-[64px] font-bold leading-[1.02] tracking-tight mb-6 text-bib-marine">
+            <h1 className="mb-7 font-display text-[42px] font-bold leading-[0.98] tracking-[-0.035em] text-bib-marine sm:text-5xl lg:text-[68px]">
               Votre marque.
               <br />
-              <span className="text-bib-gold">Prête à décoller.</span>
+              <span className="text-bib-gold">
+                Prête à prendre sa place.
+              </span>
             </h1>
 
-            <p className="text-base lg:text-lg text-muted-foreground leading-relaxed mb-8 font-sans">
-              Boutique premium. Logistique incluse. Aucune ligne de code.
+            <p className="mb-9 max-w-[500px] text-base leading-7 text-muted-foreground sm:text-lg">
+              BIB réunit boutique, produits vérifiés et infrastructure
+              commerciale pour permettre aux marques de se développer
+              simplement.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 mb-8">
-              <Button variant="premium" size="xl" className="group shadow-lg" asChild>
+            <div className="mb-9 flex flex-col gap-3 sm:flex-row">
+
+              <Button
+                variant="premium"
+                size="xl"
+                className="group shadow-lg"
+                asChild
+              >
                 <Link to="/signup">
-                  Créer ma boutique gratuitement
-                  <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                  Créer ma boutique
+                  <ArrowRight
+                    size={19}
+                    className="transition-transform group-hover:translate-x-1"
+                  />
                 </Link>
               </Button>
+
               <Button
                 variant="outline"
                 size="xl"
-                className="border-bib-marine/25 text-bib-marine hover:bg-bib-marine hover:text-primary-foreground"
+                className="border-bib-marine/20 text-bib-marine hover:bg-bib-marine hover:text-primary-foreground"
                 asChild
               >
-                <Link to="/store">Explorer les boutiques</Link>
+                <Link to="/store">
+                  Découvrir les boutiques
+                </Link>
               </Button>
+
             </div>
 
-            <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-bib-marine/80">
-              {["Sans CB", "RGPD", "Support 24/7"].map((label) => (
-                <li key={label} className="flex items-center gap-2">
-                  <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-bib-gold/15">
-                    <Check size={11} className="text-bib-gold" strokeWidth={3} />
-                  </span>
-                  {label}
-                </li>
-              ))}
-            </ul>
+            {/* Compact trust signals */}
+            <div className="flex flex-wrap gap-x-6 gap-y-3 border-t border-bib-marine/10 pt-6 text-sm text-bib-marine/75">
 
-            <div className="mt-8 flex items-center gap-4">
-              <div className="flex -space-x-2">
-                {[
-                  "hsl(var(--bib-marine))",
-                  "hsl(var(--bib-gold))",
-                  "hsl(var(--bib-marine))",
-                  "hsl(var(--bib-gold))",
-                ].map((bg, i) => (
-                  <span
-                    key={i}
-                    className="w-8 h-8 rounded-full border-2 border-bib-ivory"
-                    style={{ background: bg }}
-                    aria-hidden
+              <div className="flex items-center gap-2">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-bib-gold/15">
+                  <Check
+                    size={12}
+                    className="text-bib-gold"
+                    strokeWidth={3}
                   />
-                ))}
+                </span>
+                Réseau vérifié
               </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1 text-bib-gold">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} size={14} fill="currentColor" strokeWidth={0} />
-                  ))}
-                  <span className="ml-1.5 text-bib-marine font-semibold text-sm">4.9/5</span>
-                </div>
-                <span className="text-xs text-muted-foreground">+1 200 marques lancées</span>
+
+              <div className="flex items-center gap-2">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-bib-gold/15">
+                  <Check
+                    size={12}
+                    className="text-bib-gold"
+                    strokeWidth={3}
+                  />
+                </span>
+                Produits sélectionnés
               </div>
+
+              <div className="flex items-center gap-2">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-bib-gold/15">
+                  <Check
+                    size={12}
+                    className="text-bib-gold"
+                    strokeWidth={3}
+                  />
+                </span>
+                Infrastructure intégrée
+              </div>
+
             </div>
           </div>
 
-          {/* RIGHT — true 3D B-drops-into-box animation */}
-          <div className="relative flex items-center justify-center">
-            <div className="relative">
-              <div
-                className="absolute -inset-10 rounded-[2.25rem] bg-card border border-bib-marine/10 shadow-premium"
-                aria-hidden
+          {/* RIGHT — EDITORIAL IMAGE COMPOSITION */}
+          <div className="relative flex min-h-[480px] items-center justify-center lg:min-h-[650px]">
+
+            {/* Main image */}
+            <div className="relative z-10 h-[420px] w-[min(100%,480px)] overflow-hidden rounded-[2rem] shadow-2xl sm:h-[520px] lg:h-[590px] lg:w-[470px]">
+
+              <img
+                src="/images/landing-founder.jpg"
+                alt="Fondatrice travaillant sur sa marque"
+                className="h-full w-full object-cover"
               />
-              <div className="relative w-[300px] h-[300px] sm:w-[380px] sm:h-[380px] lg:w-[460px] lg:h-[460px]">
-                <BoxWithProductsHero3D />
-              </div>
 
-              <div className="absolute -left-6 -bottom-6 bg-card rounded-xl shadow-lg border border-bib-marine/10 px-3 py-2.5">
-                <div className="flex items-center gap-3">
-                  <span className="relative flex w-2.5 h-2.5">
-                    <span className="absolute inset-0 rounded-full bg-bib-gold animate-ping opacity-60" />
-                    <span className="relative inline-flex rounded-full w-2.5 h-2.5 bg-bib-gold" />
-                  </span>
-                  <div>
-                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground leading-none">
-                      Commande live
-                    </p>
-                    <p className="text-sm font-semibold text-bib-marine leading-tight mt-1">
-                      €128 · 🇫🇷
-                    </p>
-                  </div>
-                </div>
-              </div>
+              {/* Image overlay */}
+              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/45 to-transparent" />
 
-              <div className="absolute -right-6 -top-6 bg-bib-marine text-primary-foreground rounded-xl shadow-lg px-3 py-2.5">
-                <div className="flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-md bg-bib-gold flex items-center justify-center">
-                    <Check size={14} className="text-bib-marine" strokeWidth={3} />
-                  </span>
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider opacity-70 leading-none">
-                      Trust score
-                    </p>
-                    <p className="text-sm font-bold leading-tight mt-0.5">98 / 100</p>
-                  </div>
-                </div>
+              <div className="absolute bottom-6 left-6 right-6 text-white">
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] opacity-80">
+                  BIB Network
+                </p>
+
+                <p className="max-w-[300px] font-display text-2xl font-semibold leading-tight">
+                  Une infrastructure pensée pour les marques.
+                </p>
               </div>
             </div>
+
+            {/* Small product image */}
+            <div className="absolute -bottom-2 -left-2 z-20 hidden h-36 w-36 overflow-hidden rounded-2xl border-8 border-bib-ivory shadow-xl sm:block lg:-left-8 lg:h-44 lg:w-44">
+              <img
+                src="/images/landing-unboxing.jpg"
+                alt="Produit et expérience de marque"
+                className="h-full w-full object-cover"
+              />
+            </div>
+
+            {/* Small interface image */}
+            <div className="absolute -right-2 -top-2 z-20 hidden h-40 w-48 overflow-hidden rounded-2xl border-8 border-bib-ivory shadow-xl sm:block lg:-right-10 lg:h-48 lg:w-56">
+              <img
+                src="/images/landing-dashboard.jpg"
+                alt="Interface BIB"
+                className="h-full w-full object-cover"
+              />
+            </div>
+
+            {/* Floating BIB label */}
+            <div className="absolute bottom-20 right-0 z-30 hidden rounded-xl border border-bib-marine/10 bg-white px-4 py-3 shadow-xl lg:block lg:-right-4">
+              <div className="flex items-center gap-3">
+
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-bib-marine text-bib-gold">
+                  <Sparkles size={16} />
+                </span>
+
+                <div>
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                    Vérifié par BIB
+                  </p>
+
+                  <p className="mt-0.5 text-sm font-semibold text-bib-marine">
+                    Réseau de confiance
+                  </p>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Decorative frame */}
+            <div
+              className="absolute -bottom-5 -right-5 h-[85%] w-[72%] rounded-[2rem] border border-bib-gold/25"
+              aria-hidden
+            />
+
           </div>
         </div>
       </div>
 
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-bib-marine/60">
-        <span className="text-[10px] uppercase tracking-[0.3em] font-semibold">Découvrir</span>
-        <span className="w-px h-10 bg-bib-marine/30 animate-bib-scroll-line" />
-      </div>
+      {/* Scroll indicator */}
+      <div className="absolute bottom-5 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-bib-marine/45 lg:flex">
+        <span className="text-[9px] font-semibold uppercase tracking-[0.3em]">
+          Découvrir
+        </span>
 
-      <style>{`
-        @keyframes bib-scroll-line {
-          0%, 100% { transform: scaleY(0.4); transform-origin: top; opacity: 0.4; }
-          50%      { transform: scaleY(1);   transform-origin: top; opacity: 1; }
-        }
-        .animate-bib-scroll-line { animation: bib-scroll-line 1.8s ease-in-out infinite; }
-      `}</style>
+        <span className="h-8 w-px bg-bib-marine/25" />
+      </div>
     </section>
   );
 };
