@@ -113,7 +113,12 @@ export default function MarketplaceSignup() {
 
     setLoading(true);
 
-    const { error } = await signUp(email.trim(), password);
+    const { error } = await signUp(
+    email.trim(),
+    password,
+    fullName.trim(),
+    "marketplace"
+    );
 
     if (error) {
       setError(getErrorMessage(error.message));
