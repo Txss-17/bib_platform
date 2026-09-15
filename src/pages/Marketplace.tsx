@@ -53,7 +53,7 @@ export default function Marketplace() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { user } = useAuth();
+  const { user, accountType } = useAuth();
   const { data: customer } = useCustomerProfile();
 
   const [panelOpen, setPanelOpen] = useState(false);
@@ -67,7 +67,12 @@ export default function Marketplace() {
    * À remplacer par le véritable statut BIB Abonné
    * lorsqu'il sera disponible dans le profil client.
    */
-  const isSubscriber = Boolean(user);
+  const isMarketplaceAccount = 
+    !!user && accountType === "marketplace"
+
+  const isSuscriber = 
+    accountType === "marketplace" &&
+    subscriptionStatus === "active";
 
   const initial = (
     customer?.full_name ||
@@ -77,13 +82,6 @@ export default function Marketplace() {
     .trim()
     .charAt(0)
     .toUpperCase();
-
-  const openPanel = (
-    tab: CustomerPanelTab = "favorites",
-  ) => {
-    setPanelTab(tab);
-    setPanelOpen(true);
-  };
 
   /* =========================================================
      SYNCHRONISATION DE LA RECHERCHE AVEC L'URL
@@ -236,23 +234,24 @@ export default function Marketplace() {
 
   const submitSearch = () => {
     if (!search.trim()) {
-      goToProducts();
-      return;
-    }
-
-    navigate(
-      `/store?q=${encodeURIComponent(search.trim())}`,
-    );
+      
   };
 
   const activateAccount = () => {
-    if (user) {
-      openPanel("favorites");
+    if (!user) {
+      navigate("/store/signup");
       return;
-    }
-
-    navigate("/store/signup");
-  };
+  }
+    if (accountType !== "marketplace") {
+      navigate("/store/signup");
+    return;
+  }
+    if (!isSuscriber) {
+      navigate("/store/subscription");
+      return;
+  }
+  navigate("/store"); 
+}; 
 
   const goToOrderTracking = () => {
     navigate("/order-tracking");
