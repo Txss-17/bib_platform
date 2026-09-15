@@ -86,9 +86,10 @@ export default function Signup() {
     }
     setLoading(true);
     const { error } = await signUp(
-      email.trim(),
-      password,
-      fullName.trim()
+    email.trim(),
+    password,
+    fullName.trim(),
+    "platform"
     );
     if (error) {
       setError(error.message);
