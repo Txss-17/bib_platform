@@ -1,236 +1,262 @@
-import { useState, useMemo } from "react";
-import { TrendingUp, Wallet, Receipt, Info } from "lucide-react";
-import { Slider } from "@/components/ui/slider";
+import { Link } from "react-router-dom";
+import { ArrowRight, Check, Receipt, ShieldCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
-
-/**
- * PriceTransparencySection
- * Live margin simulator. Public sees exactly:
- *   - supplier base price (input)
- *   - chosen margin %
- *   - public price (output)
- *   - platform fee (flat 5% — example only)
- *   - net to seller
- * Strict palette: ivory bg / marine ink / gold accent.
- */
-const PLATFORM_FEE_PCT = 5;
 
 export default function PriceTransparencySection() {
   const { lang } = useLanguage();
-  const [base, setBase] = useState(18);
-  const [marginPct, setMarginPct] = useState(40);
-
-  const computed = useMemo(() => {
-    const margin = +(base * (marginPct / 100));
-    const publicPrice = +(base + margin);
-    const platformFee = +(publicPrice * (PLATFORM_FEE_PCT / 100));
-    const net = +(margin - platformFee);
-    return {
-      margin: margin.toFixed(2),
-      publicPrice: publicPrice.toFixed(2),
-      platformFee: platformFee.toFixed(2),
-      net: net.toFixed(2),
-      netPct: ((net / publicPrice) * 100).toFixed(1),
-    };
-  }, [base, marginPct]);
+  const isFr = lang === "fr";
 
   return (
     <section
-      id="transparency"
-      className="py-20 lg:py-28 bg-bib-ivory relative overflow-hidden"
+      id="pricing-preview"
+      className="relative overflow-hidden bg-bib-ivory py-16 sm:py-20 lg:py-24"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-[1fr_1.1fr] gap-10 lg:gap-16 items-center">
-          {/* LEFT — copy */}
-          <div className="max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-bib-gold/15 border border-bib-gold/30 mb-5">
-              <Receipt size={14} className="text-bib-gold" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-bib-gold">
-                {lang === "fr" ? "Transparence prix" : "Price transparency"}
-              </span>
-            </div>
-            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-5 text-bib-marine">
-              {lang === "fr" ? (
-                <>
-                  Aucun frais caché.{" "}
-                  <span className="text-bib-gold">Jamais.</span>
-                </>
-              ) : (
-                <>
-                  No hidden fees.{" "}
-                  <span className="text-bib-gold">Ever.</span>
-                </>
-              )}
-            </h2>
-            <p className="text-base lg:text-lg text-muted-foreground leading-relaxed mb-6">
-              {lang === "fr"
-                ? "Une seule commission claire sur chaque vente. Vous voyez exactement combien vous gagnez avant de publier le produit."
-                : "One clear commission per sale. You see exactly what you earn before you publish."}
-            </p>
-
-            <ul className="space-y-3 text-bib-marine">
-              {[
-                lang === "fr"
-                  ? "Marge libre dans la limite fixée par le fournisseur"
-                  : "Free margin within supplier-defined cap",
-                lang === "fr"
-                  ? "Commission unique de 5% sur le prix public"
-                  : "Single 5% commission on public price",
-                lang === "fr"
-                  ? "Aucun frais sur les remboursements"
-                  : "No fee on refunds",
-              ].map((line) => (
-                <li key={line} className="flex items-start gap-2.5 text-sm">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-bib-gold shrink-0" />
-                  <span className="leading-relaxed">{line}</span>
-                </li>
-              ))}
-            </ul>
-
-            <p className="text-xs text-muted-foreground mt-6 flex items-center gap-1.5">
-              <Info size={12} />
-              {lang === "fr"
-                ? "Simulateur indicatif. Les marges réelles dépendent du fournisseur."
-                : "Indicative simulator. Real margins depend on the supplier."}
-            </p>
+        <div className="mx-auto max-w-3xl text-center">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-bib-gold/30 bg-bib-gold/10 px-3 py-1.5"
+          >
+            <Receipt className="h-4 w-4 text-bib-gold" />
+            <span className="text-xs font-semibold uppercase tracking-[0.16em] text-bib-marine">
+              {isFr ? "Une offre claire" : "Clear pricing"}
+            </span>
           </div>
 
-          {/* RIGHT — live simulator card */}
-          <div className="relative">
-            <div className="rounded-2xl border border-bib-marine/10 bg-card shadow-premium p-6 lg:p-8">
-              <p className="font-display font-semibold text-bib-marine mb-1">
-                {lang === "fr" ? "Simulateur de marge" : "Margin simulator"}
-              </p>
-              <p className="text-xs text-muted-foreground mb-6">
-                {lang === "fr"
-                  ? "Ajustez le prix d'achat et votre marge cible."
-                  : "Adjust the cost price and your target margin."}
-              </p>
+          <h2 className="font-display text-3xl font-bold leading-tight text-bib-marine sm:text-4xl lg:text-5xl">
+            {isFr ? (
+              <>
+                Développez votre marque.
+                <span className="block text-bib-gold">
+                  Maîtrisez vos coûts.
+                </span>
+              </>
+            ) : (
+              <>
+                Grow your brand.
+                <span className="block text-bib-gold">
+                  Know your costs.
+                </span>
+              </>
+            )}
+          </h2>
 
-              {/* Base price slider */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-bib-marine">
-                    {lang === "fr" ? "Prix d'achat" : "Cost price"}
-                  </label>
-                  <span className="font-display font-bold text-bib-marine">
-                    € {base.toFixed(2)}
-                  </span>
-                </div>
-                <Slider
-                  value={[base]}
-                  onValueChange={(v) => setBase(v[0])}
-                  min={5}
-                  max={150}
-                  step={1}
-                  aria-label="Cost price"
-                />
-              </div>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+            {isFr
+              ? "BIB présente les frais, commissions et revenus estimés avant chaque engagement. Aucun calcul important ne doit être découvert après la vente."
+              : "BIB shows fees, commissions and estimated earnings before every commitment. No important cost should appear after the sale."}
+          </p>
+        </div>
 
-              {/* Margin slider */}
-              <div className="mb-7">
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-bib-marine">
-                    {lang === "fr" ? "Marge appliquée" : "Applied margin"}
-                  </label>
-                  <span className="font-display font-bold text-bib-gold">{marginPct}%</span>
-                </div>
-                <Slider
-                  value={[marginPct]}
-                  onValueChange={(v) => setMarginPct(v[0])}
-                  min={5}
-                  max={80}
-                  step={1}
-                  aria-label="Margin"
-                />
-              </div>
+        <div className="mx-auto mt-10 grid max-w-5xl gap-4 md:grid-cols-3">
+          <PricingPreviewCard
+            eyebrow={isFr ? "Pour les clients" : "For customers"}
+            title={isFr ? "Découvrir" : "Discover"}
+            price={isFr ? "4,99 € / mois" : "€4.99 / month"}
+            description={
+              isFr
+                ? "Explorez les marques vérifiées et profitez des services BIB."
+                : "Explore verified brands and access BIB services."
+            }
+            items={
+              isFr
+                ? [
+                    "Découverte des boutiques",
+                    "Boutiques suivies",
+                    "Points et cartes cadeaux",
+                  ]
+                : [
+                    "Discover boutiques",
+                    "Followed brands",
+                    "Points and gift cards",
+                  ]
+            }
+            href="/store"
+            cta={isFr ? "Découvrir les marques" : "Discover brands"}
+          />
 
-              {/* Breakdown */}
-              <div className="rounded-xl bg-bib-ivory border border-bib-marine/10 divide-y divide-bib-marine/10">
-                <Row
-                  label={lang === "fr" ? "Prix public" : "Public price"}
-                  value={`€ ${computed.publicPrice}`}
-                  strong
-                />
-                <Row
-                  label={lang === "fr" ? "Coût fournisseur" : "Supplier cost"}
-                  value={`− € ${base.toFixed(2)}`}
-                />
-                <Row
-                  label={
-                    lang === "fr"
-                      ? `Commission Brand-In-A-Box (${PLATFORM_FEE_PCT}%)`
-                      : `Brand-In-A-Box commission (${PLATFORM_FEE_PCT}%)`
-                  }
-                  value={`− € ${computed.platformFee}`}
-                />
-                <Row
-                  label={lang === "fr" ? "Vous gagnez" : "You earn"}
-                  value={`€ ${computed.net}`}
-                  highlight
-                />
-              </div>
+          <PricingPreviewCard
+            featured
+            eyebrow={isFr ? "Pour les marques" : "For brands"}
+            title={isFr ? "Développer" : "Grow"}
+            price={isFr ? "À partir de 79 € / mois" : "From €79 / month"}
+            description={
+              isFr
+                ? "Développez votre boutique au sein d’un réseau sélectionné."
+                : "Grow your store within a curated network."
+            }
+            items={
+              isFr
+                ? [
+                    "Accès au réseau BIB",
+                    "Outils de vente",
+                    "Frais présentés avant engagement",
+                  ]
+                : [
+                    "Access to the BIB network",
+                    "Sales tools",
+                    "Fees shown before commitment",
+                  ]
+            }
+            href="/vendre"
+            cta={isFr ? "Développer ma marque" : "Grow my brand"}
+          />
 
-              {/* KPIs */}
-              <div className="grid grid-cols-2 gap-3 mt-5">
-                <div className="rounded-lg border border-bib-marine/10 p-3">
-                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
-                    <Wallet size={11} />
-                    {lang === "fr" ? "Marge nette" : "Net margin"}
-                  </div>
-                  <p className="font-display font-bold text-bib-marine text-lg">
-                    {computed.netPct}%
-                  </p>
-                </div>
-                <div className="rounded-lg border border-bib-gold/30 bg-bib-gold/5 p-3">
-                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-bib-gold mb-1">
-                    <TrendingUp size={11} />
-                    {lang === "fr" ? "Vente unitaire" : "Per sale"}
-                  </div>
-                  <p className="font-display font-bold text-bib-gold text-lg">
-                    € {computed.net}
-                  </p>
-                </div>
-              </div>
-            </div>
+          <PricingPreviewCard
+            eyebrow={isFr ? "Pour les partenaires" : "For partners"}
+            title={isFr ? "Collaborer" : "Partner"}
+            price={isFr ? "Selon votre activité" : "Based on your activity"}
+            description={
+              isFr
+                ? "Fournisseurs et opérateurs peuvent rejoindre l’écosystème BIB."
+                : "Suppliers and operators can join the BIB ecosystem."
+            }
+            items={
+              isFr
+                ? [
+                    "Cadre adapté à votre activité",
+                    "Processus de sélection",
+                    "Partenariat structuré",
+                  ]
+                : [
+                    "Activity-based framework",
+                    "Selection process",
+                    "Structured partnership",
+                  ]
+            }
+            href="/suppliers"
+            cta={isFr ? "Voir les partenariats" : "View partnerships"}
+          />
+        </div>
+
+        <div className="mt-8 flex flex-col items-center justify-center gap-4 text-center sm:flex-row">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <ShieldCheck className="h-4 w-4 text-bib-gold" />
+            {isFr
+              ? "Tarifs et conditions présentés avant validation"
+              : "Pricing and terms shown before confirmation"}
           </div>
+
+          <Button asChild variant="outline" className="gap-2">
+            <Link to="/tarifs">
+              {isFr ? "Voir tous les tarifs" : "View all pricing"}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </div>
     </section>
   );
 }
 
-function Row({
-  label,
-  value,
-  strong,
-  highlight,
+function PricingPreviewCard({
+  eyebrow,
+  title,
+  price,
+  description,
+  items,
+  href,
+  cta,
+  featured = false,
 }: {
-  label: string;
-  value: string;
-  strong?: boolean;
-  highlight?: boolean;
+  eyebrow: string;
+  title: string;
+  price: string;
+  description: string;
+  items: string[];
+  href: string;
+  cta: string;
+  featured?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between px-4 py-3">
-      <span
-        className={`text-sm ${
-          highlight ? "text-bib-marine font-semibold" : "text-muted-foreground"
-        }`}
+    <div
+      className={[
+        "relative flex h-full flex-col rounded-2xl border p-6 transition-all",
+        featured
+          ? "border-bib-gold bg-bib-marine text-primary-foreground shadow-premium"
+          : "border-bib-marine/10 bg-card",
+      ].join(" ")}
+    >
+      {featured && (
+        <div className="absolute -top-3 left-6 rounded-full bg-bib-gold px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-bib-marine">
+          Recommandé
+        </div>
+      )}
+
+      <p
+        className={[
+          "text-xs font-semibold uppercase tracking-[0.16em]",
+          featured ? "text-bib-gold" : "text-muted-foreground",
+        ].join(" ")}
       >
-        {label}
-      </span>
-      <span
-        className={`font-display ${
-          highlight
-            ? "text-bib-gold text-lg font-bold"
-            : strong
-              ? "text-bib-marine font-bold"
-              : "text-bib-marine/80 font-medium"
-        }`}
+        {eyebrow}
+      </p>
+
+      <h3
+        className={[
+          "mt-3 font-display text-2xl font-bold",
+          featured ? "text-primary-foreground" : "text-bib-marine",
+        ].join(" ")}
       >
-        {value}
-      </span>
+        {title}
+      </h3>
+
+      <p
+        className={[
+          "mt-4 font-display text-xl font-bold",
+          featured ? "text-bib-gold" : "text-bib-marine",
+        ].join(" ")}
+      >
+        {price}
+      </p>
+
+      <p
+        className={[
+          "mt-3 text-sm leading-relaxed",
+          featured
+            ? "text-primary-foreground/75"
+            : "text-muted-foreground",
+        ].join(" ")}
+      >
+        {description}
+      </p>
+
+      <ul className="mt-6 flex-1 space-y-3">
+        {items.map((item) => (
+          <li
+            key={item}
+            className={[
+              "flex items-start gap-2 text-sm",
+              featured
+                ? "text-primary-foreground/90"
+                : "text-bib-marine",
+            ].join(" ")}
+          >
+            <Check
+              className={[
+                "mt-0.5 h-4 w-4 shrink-0",
+                featured ? "text-bib-gold" : "text-bib-gold",
+              ].join(" ")}
+            />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+
+      <Button
+        asChild
+        className={[
+          "mt-8 w-full gap-2",
+          featured
+            ? "bg-bib-gold text-bib-marine hover:bg-bib-gold/90"
+            : "",
+        ].join(" ")}
+        variant={featured ? "default" : "outline"}
+      >
+        <Link to={href}>
+          {cta}
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </Button>
     </div>
   );
 }
