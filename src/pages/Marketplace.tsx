@@ -251,7 +251,7 @@ export default function Marketplace() {
       return;
     }
 
-    navigate("/signup");
+    navigate("/store/signup");
   };
 
   const goToOrderTracking = () => {
