@@ -1,138 +1,195 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { User, Session } from "@supabase/supabase-js";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type {
+  Session,
+  User,
+  AuthError,
+} from "@supabase/supabase-js";
 
-interface Profile {
-  id: string;
-  user_id: string;
-  full_name: string | null;
-  business_name: string | null;
-  business_type: string | null;
-  market: string | null;
-  avatar_url: string | null;
-  trust_score: number;
-  recycling_points: number;
-  is_verified: boolean;
-  plan_tier?: "starter" | "growth" | "pro";
-  plan_billing_cycle?: "monthly" | "annual";
-  green_addon_enabled?: boolean;
-  insurance_addon_enabled?: boolean;
-}
+export type AccountType =
+  | "platform"
+  | "marketplace";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  profile: Profile | null;
+  accountType: AccountType | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+
+  signIn: (
+    email: string,
+    password: string
+  ) => Promise<{ error: AuthError | null }>;
+
+  signUp: (
+    email: string,
+    password: string,
+    fullName?: string,
+    accountType?: AccountType
+  ) => Promise<{
+    data: {
+      user: User | null;
+      session: Session | null;
+    };
+    error: AuthError | null;
+  }>;
+
   signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [accountType, setAccountType] =
+    useState<AccountType | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Error fetching profile:", error);
+  /**
+   * Détermine le type de compte à partir des metadata Supabase.
+   */
+  const resolveAccountType = (
+    currentUser: User | null
+  ): AccountType | null => {
+    if (!currentUser) {
       return null;
     }
-    return data as Profile | null;
-  };
 
-  const refreshProfile = async () => {
-    if (user) {
-      const profileData = await fetchProfile(user.id);
-      setProfile(profileData);
+    const value = currentUser.user_metadata?.account_type;
+
+    if (value === "marketplace") {
+      return "marketplace";
     }
+
+    if (value === "platform") {
+      return "platform";
+    }
+
+    return null;
   };
 
   useEffect(() => {
-    // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+    let mounted = true;
 
-        if (session?.user) {
-          // Defer profile fetch to avoid blocking
-          setTimeout(async () => {
-            const profileData = await fetchProfile(session.user.id);
-            setProfile(profileData);
-          }, 0);
+    /**
+     * Session initiale
+     */
+    supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
 
-          // Claim any pending team invitations matching the user's email.
-          if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-            setTimeout(() => {
-              supabase.rpc("claim_team_invites" as any).then(({ error }) => {
-                if (error) console.warn("claim_team_invites failed:", error.message);
-              });
-            }, 0);
-          }
-        } else {
-          setProfile(null);
-        }
+      const currentSession = data.session;
+      const currentUser = currentSession?.user ?? null;
 
+      setSession(currentSession);
+      setUser(currentUser);
+      setAccountType(resolveAccountType(currentUser));
+      setLoading(false);
+    });
+
+    /**
+     * Changements d'authentification
+     */
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+      (_event, currentSession) => {
+        if (!mounted) return;
+
+        const currentUser =
+          currentSession?.user ?? null;
+
+        setSession(currentSession);
+        setUser(currentUser);
+        setAccountType(resolveAccountType(currentUser));
         setLoading(false);
       }
     );
 
-    // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-
-      if (session?.user) {
-        fetchProfile(session.user.id).then(setProfile);
-      }
-
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: {
-          full_name: fullName,
+  /**
+   * Connexion
+   *
+   * La connexion ne choisit jamais le type de compte.
+   * Le type est déjà enregistré dans le compte Supabase.
+   */
+  const signIn = async (
+    email: string,
+    password: string
+  ) => {
+    const { error } =
+      await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+    return { error };
+  };
+
+  /**
+   * Création de compte
+   *
+   * accountType est volontairement explicite.
+   *
+   * /signup
+   *       -> platform
+   *
+   * /store/signup
+   *       -> marketplace
+   */
+  const signUp = async (
+    email: string,
+    password: string,
+    fullName = "",
+    type: AccountType = "platform"
+  ) => {
+    const { data, error } =
+      await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: {
+            full_name: fullName.trim(),
+            account_type: type,
+          },
         },
+      });
+
+    return {
+      data: {
+        user: data.user,
+        session: data.session,
       },
-    });
-
-    return { error: error as Error | null };
+      error,
+    };
   };
 
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    return { error: error as Error | null };
-  };
-
+  /**
+   * Déconnexion complète
+   */
   const signOut = async () => {
     await supabase.auth.signOut();
+
     setUser(null);
     setSession(null);
-    setProfile(null);
+    setAccountType(null);
   };
 
   return (
@@ -140,12 +197,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         session,
-        profile,
+        accountType,
         loading,
-        signUp,
         signIn,
+        signUp,
         signOut,
-        refreshProfile,
       }}
     >
       {children}
@@ -155,8 +211,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
+
+  if (!context) {
+    throw new Error(
+      "useAuth must be used within an AuthProvider"
+    );
   }
+
   return context;
 }
