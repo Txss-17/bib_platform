@@ -6,164 +6,342 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { useToast } from "@/hooks/use-toast";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Loader2, Mail, ShieldAlert, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  Mail,
+  ShieldAlert,
+  ShieldCheck,
+} from "lucide-react";
 
-/**
- * Magic-link-style resume page. Partner enters their email, receives a 6-digit
- * code, and is redirected to /portal/onboarding/:token where they can view
- * status and (re)edit their dossier until it is approved.
- */
 export default function PartnerOnboardingResume() {
   const [params] = useSearchParams();
+
   const portalParam = params.get("portal");
-  const portal: "suppliers" | "ops" = portalParam === "ops" ? "ops" : "suppliers";
-  const portalLabel = portal === "suppliers" ? "Suppliers" : "Logistique";
+
+  const portal: "suppliers" | "ops" =
+    portalParam === "ops" ? "ops" : "suppliers";
+
+  const portalLabel =
+    portal === "suppliers" ? "Suppliers" : "Logistique";
+
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
+
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
 
   useSEO({
     title: `Reprendre mon onboarding ${portalLabel} — Brand-In-A-Box`,
-    description: "Reprenez et modifiez votre dossier d'onboarding avant validation finale.",
+    description:
+      "Reprenez et modifiez votre dossier d'onboarding avant sa validation finale.",
   });
 
   async function sendCode() {
-    const e = email.trim().toLowerCase();
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) {
-      setError("Email invalide.");
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (
+      !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(normalizedEmail)
+    ) {
+      setError("Veuillez saisir une adresse email valide.");
       return;
     }
+
     setSending(true);
     setError(null);
-    const { data, error } = await supabase.functions.invoke("partner-otp-request", {
-      body: { email: e, portal },
-    });
+
+    const { data, error: invokeError } =
+      await supabase.functions.invoke("partner-otp-request", {
+        body: {
+          email: normalizedEmail,
+          portal,
+        },
+      });
+
     setSending(false);
-    if (error || !(data as { ok?: boolean })?.ok) {
-      const code = (data as { error?: string })?.error;
-      setError(code === "rate_limited" ? "Trop de demandes — patientez une minute." : "Envoi impossible. Réessayez.");
+
+    const response = data as {
+      ok?: boolean;
+      error?: string;
+    } | null;
+
+    if (invokeError || !response?.ok) {
+      setError(
+        response?.error === "rate_limited"
+          ? "Trop de demandes. Veuillez patienter avant de réessayer."
+          : "Impossible d'envoyer le code. Veuillez réessayer."
+      );
+
       return;
     }
+
     setSent(true);
-    toast({ title: "Code envoyé", description: `Vérifiez ${e}.` });
+
+    toast({
+      title: "Code envoyé",
+      description: `Vérifiez votre boîte email ${normalizedEmail}.`,
+    });
   }
 
   async function verifyCode() {
-    const e = email.trim().toLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
+
     if (!/^\d{6}$/.test(code)) {
-      setError("Saisissez les 6 chiffres du code.");
+      setError("Veuillez saisir les 6 chiffres du code.");
       return;
     }
+
     setVerifying(true);
     setError(null);
-    const { data, error } = await supabase.functions.invoke("partner-otp-verify", {
-      body: { email: e, portal, code },
-    });
+
+    const { data, error: invokeError } =
+      await supabase.functions.invoke("partner-otp-verify", {
+        body: {
+          email: normalizedEmail,
+          portal,
+          code,
+        },
+      });
+
     setVerifying(false);
-    const ok = (data as { ok?: boolean })?.ok;
-    if (error || !ok) {
-      const msg = (data as { error?: string })?.error;
+
+    const response = data as {
+      ok?: boolean;
+      error?: string;
+      access_token?: string;
+    } | null;
+
+    if (invokeError || !response?.ok) {
       setError(
-        msg === "invalid_code" ? "Code incorrect."
-        : msg === "expired" ? "Code expiré, renvoyez un nouveau code."
-        : msg === "too_many_attempts" ? "Trop de tentatives. Renvoyez un code."
-        : "Vérification impossible."
+        response?.error === "invalid_code"
+          ? "Code incorrect."
+          : response?.error === "expired"
+            ? "Code expiré. Demandez un nouveau code."
+            : response?.error === "too_many_attempts"
+              ? "Trop de tentatives. Demandez un nouveau code."
+              : "Impossible de vérifier le code."
       );
+
       return;
     }
-    const token = (data as { access_token: string }).access_token;
-    navigate(`/portal/onboarding/${token}`);
+
+    if (!response.access_token) {
+      setError("Accès au dossier impossible. Veuillez réessayer.");
+      return;
+    }
+
+    navigate(`/portal/onboarding/${response.access_token}`);
   }
 
   return (
     <StandaloneLayout
       portal={portal === "suppliers" ? "Suppliers" : "Ops"}
       accent={portal === "suppliers" ? "primary" : "accent"}
-      menuItems={[
-        { label: "Présentation", href: portal === "suppliers" ? "/suppliers" : "/ops", icon: portal === "suppliers" ? "layers" : "truck" },
-        { label: "Candidature", href: portal === "suppliers" ? "/suppliers/apply" : "/ops/apply", icon: "clipboard" },
-        { label: "Onboarding", href: portal === "suppliers" ? "/suppliers/onboarding" : "/ops/onboarding", icon: "workflow" },
-      ]}
     >
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14 max-w-xl">
-        <Button asChild variant="ghost" size="sm" className="mb-4 -ml-2">
-          <Link to={portal === "suppliers" ? "/suppliers" : "/ops"}>
-            <ArrowLeft className="w-4 h-4 mr-1.5" /> Retour
+      <section className="container mx-auto max-w-xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+        {/* ------------------------------------------------------------------ */}
+        {/* RETOUR                                                              */}
+        {/* ------------------------------------------------------------------ */}
+
+        <Button
+          asChild
+          variant="ghost"
+          size="sm"
+          className="mb-4 -ml-2"
+        >
+          <Link
+            to={
+              portal === "suppliers"
+                ? "/suppliers"
+                : "/ops"
+            }
+          >
+            <ArrowLeft className="mr-1.5 h-4 w-4" />
+            Retour
           </Link>
         </Button>
-        <Badge variant="secondary" className="mb-3">Reprise sécurisée</Badge>
-        <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">Reprendre mon onboarding</h1>
-        <p className="text-sm sm:text-base text-muted-foreground mt-3 mb-8">
-          Saisissez l'email utilisé lors de votre soumission. Nous envoyons un code à 6 chiffres pour
-          accéder à votre dossier et le modifier avant validation finale.
+
+        {/* ------------------------------------------------------------------ */}
+        {/* INTRO                                                               */}
+        {/* ------------------------------------------------------------------ */}
+
+        <Badge variant="secondary" className="mb-3">
+          Reprise sécurisée
+        </Badge>
+
+        <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+          Reprendre mon onboarding
+        </h1>
+
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+          Utilisez l'adresse email associée à votre dossier. BIB vous
+          enverra un code à 6 chiffres permettant d'accéder à votre
+          dossier et de le modifier lorsque cela est encore possible.
         </p>
 
-        <Card className="p-5 sm:p-6 space-y-4">
+        {/* ------------------------------------------------------------------ */}
+        {/* FORMULAIRE                                                          */}
+        {/* ------------------------------------------------------------------ */}
+
+        <Card className="mt-8 space-y-5 p-5 sm:p-6">
           <div className="space-y-1.5">
-            <Label htmlFor="resume-email">Email du dossier</Label>
+            <Label htmlFor="resume-email">
+              Email associé au dossier
+            </Label>
+
             <Input
               id="resume-email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                setError(null);
+              }}
               placeholder="vous@societe.com"
               maxLength={255}
+              autoComplete="email"
               disabled={sending || verifying}
             />
           </div>
 
           {!sent ? (
-            <Button onClick={sendCode} disabled={sending || !email} className="w-full sm:w-auto">
-              {sending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />}
+            <Button
+              onClick={sendCode}
+              disabled={sending || !email.trim()}
+              className="w-full sm:w-auto"
+            >
+              {sending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Mail className="mr-2 h-4 w-4" />
+              )}
+
               Recevoir mon code
             </Button>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
-                <Label className="text-xs">Code reçu par email</Label>
+                <Label className="text-xs">
+                  Code reçu par email
+                </Label>
+
                 <div className="mt-2">
-                  <InputOTP maxLength={6} value={code} onChange={setCode}>
+                  <InputOTP
+                    maxLength={6}
+                    value={code}
+                    onChange={(value) => {
+                      setCode(value);
+                      setError(null);
+                    }}
+                    disabled={verifying}
+                  >
                     <InputOTPGroup>
-                      {[0,1,2,3,4,5].map((i) => <InputOTPSlot key={i} index={i} />)}
+                      {[0, 1, 2, 3, 4, 5].map((index) => (
+                        <InputOTPSlot
+                          key={index}
+                          index={index}
+                        />
+                      ))}
                     </InputOTPGroup>
                   </InputOTP>
                 </div>
               </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <Button size="sm" onClick={verifyCode} disabled={verifying || code.length !== 6}>
-                  {verifying ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
+
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={verifyCode}
+                  disabled={
+                    verifying ||
+                    code.length !== 6
+                  }
+                >
+                  {verifying ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <ShieldCheck className="mr-2 h-4 w-4" />
+                  )}
+
                   Accéder à mon dossier
                 </Button>
-                <Button size="sm" variant="ghost" onClick={sendCode} disabled={sending}>
+
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={sendCode}
+                  disabled={sending}
+                >
+                  {sending && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+
                   Renvoyer le code
                 </Button>
               </div>
             </div>
           )}
 
+          {/* ---------------------------------------------------------------- */}
+          {/* ERREUR                                                            */}
+          {/* ---------------------------------------------------------------- */}
+
           {error && (
-            <p className="text-xs text-destructive flex items-center gap-1.5">
-              <ShieldAlert className="w-3.5 h-3.5" /> {error}
-            </p>
+            <div
+              role="alert"
+              className="flex items-start gap-1.5 text-xs text-destructive"
+            >
+              <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              <span>{error}</span>
+            </div>
           )}
 
-          <p className="text-[11px] text-muted-foreground">
-            Pas encore inscrit ?{" "}
-            <Link className="underline" to={portal === "suppliers" ? "/suppliers/apply" : "/ops/apply"}>
+          {/* ---------------------------------------------------------------- */}
+          {/* NOUVELLE CANDIDATURE                                              */}
+          {/* ---------------------------------------------------------------- */}
+
+          <div className="border-t border-border/50 pt-4">
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              Vous n'avez pas encore déposé de candidature ?
+            </p>
+
+            <Link
+              className="mt-1 inline-block text-xs font-medium underline underline-offset-4"
+              to={
+                portal === "suppliers"
+                  ? "/suppliers/apply"
+                  : "/ops/apply"
+              }
+            >
               Déposer une candidature
             </Link>
-          </p>
+          </div>
         </Card>
+
+        {/* ------------------------------------------------------------------ */}
+        {/* INFORMATION                                                         */}
+        {/* ------------------------------------------------------------------ */}
+
+        <div className="mt-6 rounded-lg border bg-muted/20 p-4">
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Le code est envoyé uniquement à l'adresse email utilisée
+            lors de la candidature. Il permet d'accéder au dossier
+            correspondant au portail sélectionné.
+          </p>
+        </div>
       </section>
     </StandaloneLayout>
   );
