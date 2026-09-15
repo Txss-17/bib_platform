@@ -23,6 +23,7 @@ import {
   ClipboardList,
   MoreHorizontal,
   SlidersHorizontal,
+  ArrowRight,
 } from "lucide-react";
 
 import {
@@ -243,6 +244,15 @@ export default function Marketplace() {
     );
   };
 
+  const activateAccount = () => {
+    if (user) {
+      openPanel("favorites");
+      return;
+    }
+
+    navigate("/signup");
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* =====================================================
@@ -414,6 +424,18 @@ export default function Marketplace() {
             isSubscriber={isSubscriber}
             imageUrl={marketplaceHeroImage}
             onPrimaryAction={goToProducts}
+          />
+        )}
+
+        {/* =================================================
+            COMPLÉMENTS COMPTE / COMMANDE
+           ================================================= */}
+
+        {!query && (
+          <MarketplaceAccountBar
+            isSubscriber={isSubscriber}
+            onActivateAccount={activateAccount}
+            onTrackOrder={goToOrders}
           />
         )}
 
@@ -617,7 +639,7 @@ function MarketplaceIntro({
   onPrimaryAction,
 }: MarketplaceIntroProps) {
   return (
-    <section className="mb-10 mt-6 overflow-hidden rounded-[28px] border border-border bg-[#f7f5f0] sm:mt-8">
+    <section className="mb-5 mt-6 overflow-hidden rounded-[28px] border border-border bg-[#f7f5f0] sm:mt-8">
       <div className="grid items-stretch lg:grid-cols-[1fr_0.9fr]">
         {/* TEXTE */}
 
@@ -678,6 +700,100 @@ function MarketplaceIntro({
 
             <span>Vérifié par BIB</span>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* =========================================================
+   BANDEAU COMPTE / SUIVI
+   ========================================================= */
+
+interface MarketplaceAccountBarProps {
+  isSubscriber: boolean;
+  onActivateAccount: () => void;
+  onTrackOrder: () => void;
+}
+
+function MarketplaceAccountBar({
+  isSubscriber,
+  onActivateAccount,
+  onTrackOrder,
+}: MarketplaceAccountBarProps) {
+  return (
+    <section className="mb-7 overflow-hidden rounded-2xl border border-border bg-muted/35">
+      <div className="flex flex-col divide-y divide-border/70 sm:flex-row sm:divide-x sm:divide-y-0">
+        {/* COMPTE */}
+
+        <div className="flex min-w-0 flex-1 items-center justify-between gap-4 px-4 py-3.5 sm:px-5">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background sm:flex">
+              <Heart
+                className="h-4 w-4 text-primary"
+                strokeWidth={1.8}
+              />
+            </div>
+
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground">
+                {isSubscriber
+                  ? "Votre espace BIB"
+                  : "Activez votre compte"}
+              </p>
+
+              <p className="truncate text-xs text-muted-foreground">
+                {isSubscriber
+                  ? "Retrouvez vos boutiques favorites et vos commandes."
+                  : "Suivez vos boutiques favorites et retrouvez vos commandes."}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onActivateAccount}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-foreground px-3.5 py-2 text-xs font-semibold text-background transition hover:opacity-85 active:scale-[0.98]"
+          >
+            {isSubscriber
+              ? "Mon espace"
+              : "Activer mon compte"}
+
+            <ArrowRight className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        {/* SUIVI DE COMMANDE */}
+
+        <div className="flex min-w-0 flex-1 items-center justify-between gap-4 px-4 py-3.5 sm:px-5">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background sm:flex">
+              <ClipboardList
+                className="h-4 w-4 text-foreground"
+                strokeWidth={1.8}
+              />
+            </div>
+
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground">
+                Déjà commandé ?
+              </p>
+
+              <p className="truncate text-xs text-muted-foreground">
+                Suivez l’avancement de votre commande.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onTrackOrder}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-background px-3.5 py-2 text-xs font-semibold text-foreground transition hover:bg-muted active:scale-[0.98]"
+          >
+            Suivre ma commande
+
+            <ArrowRight className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
     </section>
