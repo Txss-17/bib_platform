@@ -1,23 +1,28 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
-type ProtectedContext = "platform" | "marketplace";
+export type ProtectedContext = "platform" | "marketplace";
 
 interface ProtectedRouteProps {
   context: ProtectedContext;
   children?: React.ReactNode;
 }
 
-export default function ProtectedRoute({
+export function ProtectedRoute({
   context,
   children,
 }: ProtectedRouteProps) {
-  const { user, accountType, loading } = useAuth();
+  const {
+    user,
+    accountType,
+    loading,
+  } = useAuth();
+
   const location = useLocation();
 
   /*
-   * Attendre que Supabase ait terminé
-   * de restaurer la session.
+   * Attendre la restauration de la session
+   * avant de prendre une décision de redirection.
    */
   if (loading) {
     return null;
@@ -26,8 +31,7 @@ export default function ProtectedRoute({
   /*
    * Aucun utilisateur connecté.
    *
-   * La destination de connexion dépend du contexte
-   * de la route protégée.
+   * Chaque espace possède son propre accès.
    */
   if (!user) {
     const destination =
@@ -40,17 +44,19 @@ export default function ProtectedRoute({
 
     return (
       <Navigate
-        to={`${loginPath}?next=${encodeURIComponent(destination)}`}
+        to={`${loginPath}?next=${encodeURIComponent(
+          destination
+        )}`}
         replace
       />
     );
   }
 
   /*
-   * L'utilisateur est connecté mais son type de compte
-   * n'est pas correctement défini.
+   * Utilisateur connecté mais compte sans type
+   * reconnu.
    *
-   * On ne lui accorde aucun accès implicite.
+   * Aucun accès implicite n'est accordé.
    */
   if (!accountType) {
     return (
@@ -62,35 +68,37 @@ export default function ProtectedRoute({
   }
 
   /*
-   * Compte Marketplace essayant d'accéder
-   * à une zone Platform.
+   * COMPTE PLATFORM
+   *
+   * Autorisé uniquement dans les routes
+   * protégées de la plateforme BIB.
    */
-  if (
-    context === "platform" &&
-    accountType !== "platform"
-  ) {
-    return (
-      <Navigate
-        to="/store"
-        replace
-      />
-    );
+  if (context === "platform") {
+    if (accountType !== "platform") {
+      return (
+        <Navigate
+          to="/store"
+          replace
+        />
+      );
+    }
   }
 
   /*
-   * Compte Platform essayant d'accéder
-   * à une zone Marketplace.
+   * COMPTE MARKETPLACE
+   *
+   * Autorisé uniquement dans les routes
+   * protégées de l'espace client.
    */
-  if (
-    context === "marketplace" &&
-    accountType !== "marketplace"
-  ) {
-    return (
-      <Navigate
-        to="/dashboard"
-        replace
-      />
-    );
+  if (context === "marketplace") {
+    if (accountType !== "marketplace") {
+      return (
+        <Navigate
+          to="/dashboard"
+          replace
+        />
+      );
+    }
   }
 
   /*
