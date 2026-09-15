@@ -18,10 +18,7 @@ const Footer = () => {
   return (
     <footer className="bg-primary text-primary-foreground">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* Main footer */}
         <div className="py-16 lg:py-20">
-
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.5fr_repeat(4,1fr)] lg:gap-10">
 
             {/* Brand */}
@@ -89,15 +86,6 @@ const Footer = () => {
 
                 <li>
                   <Link
-                    to="/marketplace"
-                    className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
-                  >
-                    Marketplace
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
                     to="/suivi-commande"
                     className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
                   >
@@ -125,10 +113,10 @@ const Footer = () => {
               <ul className="space-y-3.5">
                 <li>
                   <Link
-                    to="/vendre"
-                    className="inline-flex items-center gap-1.5 text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
+                    to="/signup"
+                    className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
                   >
-                    Vendre avec BIB
+                    Créer ma boutique
                   </Link>
                 </li>
 
@@ -138,6 +126,15 @@ const Footer = () => {
                     className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
                   >
                     Tarifs
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
+                    to="/a-propos"
+                    className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
+                  >
+                    À propos de BIB
                   </Link>
                 </li>
 
@@ -161,7 +158,7 @@ const Footer = () => {
               </ul>
             </div>
 
-            {/* Réseau */}
+            {/* Réseau BIB */}
             <div>
               <h4 className="mb-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-foreground/45">
                 Réseau BIB
@@ -179,28 +176,10 @@ const Footer = () => {
 
                 <li>
                   <Link
-                    to="/suppliers/apply"
-                    className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
-                  >
-                    Devenir fournisseur
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
                     to="/ops"
                     className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
                   >
-                    Partenaires logistiques
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    to="/ops/apply"
-                    className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
-                  >
-                    Devenir partenaire
+                    Logistique
                   </Link>
                 </li>
               </ul>
@@ -271,12 +250,10 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Trust / bottom bar */}
+        {/* Bottom */}
         <div className="border-t border-primary-foreground/10 py-7">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-xs text-primary-foreground/50">
-
               <div className="inline-flex items-center gap-2">
                 <Shield size={15} />
                 <span>{t("footer.ssl")}</span>
