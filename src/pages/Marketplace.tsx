@@ -708,7 +708,7 @@ function MarketplaceAccountBar({
 
           <button
             type="button"
-            onClick={onActivateAccount}
+            onClick={() => navigate("/store/signup")}
             className="inline-flex h-9 w-fit items-center justify-center gap-1.5 rounded-full bg-foreground px-4 text-xs font-semibold text-background transition hover:opacity-85 active:scale-[0.98]"
           >
             Activer mon compte
