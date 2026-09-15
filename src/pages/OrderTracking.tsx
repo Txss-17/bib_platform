@@ -1,955 +1,515 @@
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
-import {
-  Link,
-  useLocation,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
-import {
-  Search,
-  Check,
-  ChevronRight,
-  Loader2,
-  User,
-  Heart,
-  ShoppingCart,
-  House,
-  ClipboardList,
-  MoreHorizontal,
-  SlidersHorizontal,
-  ArrowRight,
-} from "lucide-react";
-
-import {
-  useMarketplaceBoutiques,
-  type MarketplaceBoutique,
-} from "@/hooks/useMarketplace";
-import { BoutiqueCard } from "@/components/marketplace/BoutiqueCard";
-import { Logo } from "@/components/Logo";
+import { useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useSEO } from "@/hooks/useSEO";
-import { useAuth } from "@/contexts/AuthContext";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
-  CustomerPanel,
-  type CustomerPanelTab,
-} from "@/components/marketplace/CustomerPanel";
-import { useCustomerProfile } from "@/hooks/useCustomerProfile";
+  ArrowLeft,
+  ArrowRight,
+  Search,
+  Package,
+  Loader2,
+  Truck,
+  CheckCircle,
+  Clock,
+  RotateCcw,
+  ExternalLink,
+} from "lucide-react";
+import { useSEO } from "@/hooks/useSEO";
+import { Logo } from "@/components/Logo";
 
-export default function Marketplace() {
-  const { data: boutiques = [], isLoading } =
-    useMarketplaceBoutiques();
+const STATUS_MAP: Record<
+  string,
+  {
+    label: string;
+    color: string;
+    icon: React.ElementType;
+    message: string;
+  }
+> = {
+  pending: {
+    label: "En attente",
+    color: "bg-yellow-100 text-yellow-800",
+    icon: Clock,
+    message:
+      "Votre commande a bien été enregistrée et est en attente de préparation.",
+  },
+  processing: {
+    label: "En préparation",
+    color: "bg-blue-100 text-blue-800",
+    icon: Package,
+    message:
+      "La boutique prépare actuellement votre commande.",
+  },
+  shipped: {
+    label: "Expédiée",
+    color: "bg-purple-100 text-purple-800",
+    icon: Truck,
+    message:
+      "Votre commande a été expédiée et est actuellement en cours d’acheminement.",
+  },
+  delivered: {
+    label: "Livrée",
+    color: "bg-green-100 text-green-800",
+    icon: CheckCircle,
+    message:
+      "Votre commande a été livrée.",
+  },
+  returned: {
+    label: "Retournée",
+    color: "bg-red-100 text-red-800",
+    icon: RotateCcw,
+    message:
+      "Le retour de votre commande est actuellement en cours de traitement.",
+  },
+};
 
-  const [searchParams, setSearchParams] = useSearchParams();
+interface OrderResult {
+  id?: string;
+  order_number: string;
+  customer_name: string;
+  amount: number;
+  logistics_status: string;
+  created_at: string;
+  product_name: string | null;
+}
 
-  const [search, setSearch] = useState(
-    searchParams.get("q") ?? "",
-  );
+export default function OrderTracking() {
+  const { slug } = useParams<{ slug: string }>();
 
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const { user } = useAuth();
-  const { data: customer } = useCustomerProfile();
-
-  const [panelOpen, setPanelOpen] = useState(false);
-
-  const [panelTab, setPanelTab] =
-    useState<CustomerPanelTab>("favorites");
-
-  /*
-   * TEMPORAIRE
-   *
-   * À remplacer par le véritable statut BIB Abonné
-   * lorsque celui-ci sera disponible dans le profil client.
-   *
-   * Pour le moment :
-   * - utilisateur connecté = considéré comme abonné ;
-   * - visiteur non connecté = affichage du bandeau compte.
-   */
-  const isSubscriber = Boolean(user);
-
-  const initial = (
-    customer?.full_name ||
-    user?.email ||
-    "?"
-  )
-    .trim()
-    .charAt(0)
-    .toUpperCase();
-
-  const openPanel = (
-    tab: CustomerPanelTab = "favorites",
-  ) => {
-    setPanelTab(tab);
-    setPanelOpen(true);
-  };
-
-  /* =========================================================
-     SYNCHRONISATION DE LA RECHERCHE AVEC L'URL
-     ========================================================= */
-
-  useEffect(() => {
-    const next = new URLSearchParams(searchParams);
-
-    if (search.trim()) {
-      next.set("q", search.trim());
-    } else {
-      next.delete("q");
-    }
-
-    if (next.toString() !== searchParams.toString()) {
-      setSearchParams(next, { replace: true });
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
-
-  /* =========================================================
-     SEO
-     ========================================================= */
+  const [orderNumber, setOrderNumber] = useState("");
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [order, setOrder] = useState<OrderResult | null>(null);
+  const [searched, setSearched] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useSEO({
-    title: "Store BIB — Boutiques et produits sélectionnés",
+    title: "Suivi de commande",
     description:
-      "Découvrez les boutiques et produits sélectionnés par Brand-In-A-Box.",
+      "Suivez l'état de votre commande en temps réel.",
   });
 
-  const query = search.trim().toLowerCase();
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  /* =========================================================
-     RECHERCHE
-     ========================================================= */
+    setLoading(true);
+    setError(null);
+    setOrder(null);
+    setSearched(true);
 
-  const filteredBoutiques = useMemo(() => {
-    if (!query) {
-      return boutiques;
-    }
+    try {
+      const { data, error: rpcError } = await supabase.rpc(
+        "track_order",
+        {
+          _order_number: orderNumber.trim(),
+          _customer_email: email.trim(),
+        },
+      );
 
-    return boutiques.filter((boutique) => {
-      const content = [
-        boutique.name,
-        boutique.category,
-        boutique.tagline,
-        boutique.description,
-        ...boutique.product_previews.map(
-          (product) => product.name,
-        ),
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-      return content.includes(query);
-    });
-  }, [boutiques, query]);
-
-  /* =========================================================
-     TENDANCES
-     ========================================================= */
-
-  const trendingBoutiques = useMemo(
-    () =>
-      [...filteredBoutiques]
-        .sort((a, b) => b.total_sales - a.total_sales)
-        .slice(0, 12),
-    [filteredBoutiques],
-  );
-
-  /* =========================================================
-     NOUVEAUTÉS
-     ========================================================= */
-
-  const newestBoutiques = useMemo(
-    () =>
-      [...filteredBoutiques]
-        .sort(
-          (a, b) =>
-            new Date(b.created_at).getTime() -
-            new Date(a.created_at).getTime(),
-        )
-        .slice(0, 12),
-    [filteredBoutiques],
-  );
-
-  /* =========================================================
-     CATÉGORIES
-     ========================================================= */
-
-  const boutiquesByCategory = useMemo(() => {
-    const categories = new Map<
-      string,
-      MarketplaceBoutique[]
-    >();
-
-    for (const boutique of filteredBoutiques) {
-      const category = boutique.category || "Autres";
-
-      if (!categories.has(category)) {
-        categories.set(category, []);
+      if (rpcError) {
+        throw rpcError;
       }
 
-      categories.get(category)!.push(boutique);
+      if (data && data.length > 0) {
+        const row = data[0];
+
+        const { data: orderRow } = await supabase
+          .from("orders")
+          .select("id")
+          .eq("order_number", row.order_number)
+          .eq(
+            "customer_email",
+            email.trim().toLowerCase(),
+          )
+          .maybeSingle();
+
+        setOrder({
+          id: orderRow?.id,
+          order_number: row.order_number,
+          customer_name: row.customer_name,
+          amount: Number(row.amount),
+          logistics_status: row.logistics_status,
+          created_at: row.created_at,
+          product_name: row.product_name,
+        });
+      }
+    } catch (err) {
+      console.error("Order tracking error:", err);
+      setError(
+        "Une erreur est survenue. Veuillez réessayer.",
+      );
+    } finally {
+      setLoading(false);
     }
-
-    return Array.from(categories.entries());
-  }, [filteredBoutiques]);
-
-  /* =========================================================
-     IMAGE HERO
-     ========================================================= */
-
-  const marketplaceHeroImage = useMemo(
-    () =>
-      trendingBoutiques[0]?.cover_image_url ||
-      newestBoutiques[0]?.cover_image_url ||
-      boutiques[0]?.cover_image_url ||
-      "",
-    [
-      trendingBoutiques,
-      newestBoutiques,
-      boutiques,
-    ],
-  );
-
-  /* =========================================================
-     NAVIGATION
-     ========================================================= */
-
-  const goToProducts = () => {
-    navigate(
-      search.trim()
-        ? `/store/products?q=${encodeURIComponent(
-            search.trim(),
-          )}`
-        : "/store/products",
-    );
   };
 
-  const goToOrders = () => {
-    navigate("/store/orders");
-  };
+  const status = order
+    ? STATUS_MAP[order.logistics_status] ||
+      STATUS_MAP.pending
+    : null;
 
-  const goToMore = () => {
-    openPanel("favorites");
-  };
+  const StatusIcon = status?.icon || Clock;
 
-  const submitSearch = () => {
-    if (!search.trim()) {
-      goToProducts();
-      return;
-    }
+  const progressWidth =
+    order?.logistics_status === "pending"
+      ? "10%"
+      : order?.logistics_status === "processing"
+        ? "35%"
+        : order?.logistics_status === "shipped"
+          ? "70%"
+          : order?.logistics_status === "delivered"
+            ? "100%"
+            : "10%";
 
-    navigate(
-      `/store?q=${encodeURIComponent(search.trim())}`,
-    );
-  };
+  const isDelivered =
+    order?.logistics_status === "delivered";
 
-  const activateAccount = () => {
-    if (user) {
-      openPanel("favorites");
-      return;
-    }
-
-    navigate("/signup");
-  };
-
-  const goToOrderTracking = () => {
-    navigate("/OrderTracking");
-  };
+  const isReturned =
+    order?.logistics_status === "returned";
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* =====================================================
-          HEADER
-         ===================================================== */}
-
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-xl">
-        <div className="container mx-auto flex min-h-[68px] max-w-7xl items-center gap-3 px-4 py-3">
-          {/* LOGO */}
-
-          <Link
-            to="/store"
-            aria-label="Accueil BIB"
-            className="shrink-0"
-          >
-            <Logo iconSize={30} asLink={false} />
-          </Link>
-
-          {/* =================================================
-              NAVIGATION DESKTOP
-             ================================================= */}
-
-          <nav className="hidden items-center gap-1 lg:flex">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <main className="flex-1">
+        <div className="max-w-lg mx-auto w-full px-4 py-8 md:py-16">
+          {slug && (
             <Link
-              to="/store"
-              className={`rounded-full px-3 py-2 text-sm font-medium transition ${
-                location.pathname === "/store"
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
+              to={`/boutique/${slug}`}
+              className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-6"
             >
-              Accueil
+              <ArrowLeft className="w-4 h-4" />
+              Retour à la boutique
             </Link>
+          )}
 
-            <button
-              type="button"
-              onClick={goToProducts}
-              className={`rounded-full px-3 py-2 text-sm font-medium transition ${
-                location.pathname.startsWith(
-                  "/store/products",
-                )
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
-              }`}
-            >
-              Produits
-            </button>
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="w-14 h-14 rounded-full bg-white shadow-sm mx-auto flex items-center justify-center mb-4">
+              <Package className="w-7 h-7 text-gray-700" />
+            </div>
 
-            {isSubscriber && (
-              <button
-                type="button"
-                onClick={goToOrders}
-                className={`rounded-full px-3 py-2 text-sm font-medium transition ${
-                  location.pathname.startsWith(
-                    "/store/orders",
-                  )
-                    ? "bg-muted text-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                Mes commandes
-              </button>
-            )}
+            <h1 className="text-2xl font-bold text-gray-900">
+              Suivi de commande
+            </h1>
 
-            {isSubscriber && (
-              <button
-                type="button"
-                onClick={goToMore}
-                className="rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
-              >
-                Plus
-              </button>
-            )}
-          </nav>
+            <p className="text-gray-500 mt-1">
+              Entrez votre numéro de commande et votre
+              email pour suivre votre colis.
+            </p>
+          </div>
 
-          {/* =================================================
-              RECHERCHE
-             ================================================= */}
-
+          {/* Search */}
           <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              submitSearch();
-            }}
-            className="relative mx-auto flex min-w-0 flex-1 lg:max-w-xl"
+            onSubmit={handleSearch}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4"
           >
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <div>
+              <Label htmlFor="order-number">
+                Numéro de commande
+              </Label>
 
-            <Input
-              value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
-              placeholder="Rechercher une boutique, un produit…"
-              className="h-10 rounded-full border-border bg-muted/50 pl-10 pr-11 text-sm focus-visible:ring-primary/40"
-            />
+              <Input
+                id="order-number"
+                value={orderNumber}
+                onChange={(e) =>
+                  setOrderNumber(e.target.value)
+                }
+                placeholder="BIB26-XXXXXX"
+                required
+                className="mt-1 font-mono"
+              />
+            </div>
 
-            {search.trim() && (
-              <button
-                type="submit"
-                aria-label="Valider la recherche"
-                className="absolute right-1 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-primary text-primary-foreground transition hover:brightness-110 active:scale-95"
-              >
-                <Check className="h-4 w-4" />
-              </button>
-            )}
+            <div>
+              <Label htmlFor="tracking-email">
+                Email utilisé lors de la commande
+              </Label>
+
+              <Input
+                id="tracking-email"
+                type="email"
+                value={email}
+                onChange={(e) =>
+                  setEmail(e.target.value)
+                }
+                placeholder="jean@exemple.com"
+                required
+                className="mt-1"
+              />
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <Search className="w-4 h-4 mr-2" />
+              )}
+
+              Rechercher
+            </Button>
           </form>
 
-          {/* =================================================
-              ACTIONS
-             ================================================= */}
-
-          <div className="flex shrink-0 items-center gap-1">
-            <button
-              type="button"
-              onClick={() => openPanel("favorites")}
-              aria-label="Favoris"
-              className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition hover:bg-muted active:scale-95"
-            >
-              <Heart
-                className="h-5 w-5"
-                strokeWidth={1.8}
-              />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => navigate("/store/cart")}
-              aria-label="Panier"
-              className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition hover:bg-muted active:scale-95"
-            >
-              <ShoppingCart
-                className="h-5 w-5"
-                strokeWidth={1.8}
-              />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => openPanel("favorites")}
-              aria-label="Profil"
-              className="relative flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-semibold text-foreground transition hover:bg-muted/70 active:scale-95"
-            >
-              {user ? (
-                <span>{initial}</span>
-              ) : (
-                <User className="h-5 w-5" />
-              )}
-
-              {user && (
-                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
-              )}
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* =====================================================
-          CONTENU
-         ===================================================== */}
-
-      <main className="container mx-auto max-w-7xl px-4 pb-28 lg:pb-12">
-        {/* =================================================
-            HERO
-           ================================================= */}
-
-        {!query && (
-          <MarketplaceIntro
-            isSubscriber={isSubscriber}
-            imageUrl={marketplaceHeroImage}
-            onPrimaryAction={goToProducts}
-          />
-        )}
-
-        {/* =================================================
-            BANDEAU COMPTE / SUIVI
-            VISITEURS NON ABONNÉS UNIQUEMENT
-           ================================================= */}
-
-        {!query && !isSubscriber && (
-          <MarketplaceAccountBar
-            onActivateAccount={activateAccount}
-            onTrackOrder={goToOrderTracking}
-          />
-        )}
-
-        {/* =================================================
-            CHARGEMENT
-           ================================================= */}
-
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
-            <Loader2 className="h-6 w-6 animate-spin" />
-
-            <p className="text-sm">
-              Chargement des boutiques…
-            </p>
-          </div>
-        ) : filteredBoutiques.length === 0 ? (
-          <div className="mt-8 rounded-3xl border border-dashed border-border bg-muted/30 px-5 py-16 text-center">
-            <p className="text-lg font-semibold">
-              Aucun résultat
-            </p>
-
-            <p className="mt-2 text-sm text-muted-foreground">
-              Essayez un autre mot-clé.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setSearch("")}
-              className="mt-5 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:brightness-110"
-            >
-              Réinitialiser la recherche
-            </button>
-          </div>
-        ) : query ? (
-          /* =================================================
-             RÉSULTATS
-             ================================================= */
-
-          <Rail
-            title={`Résultats pour "${search.trim()}"`}
-            subtitle={`${filteredBoutiques.length} boutique${
-              filteredBoutiques.length > 1 ? "s" : ""
-            }`}
-            items={filteredBoutiques}
-            showFilter
-          />
-        ) : (
-          <>
-            {/* =================================================
-                TENDANCES
-               ================================================= */}
-
-            <Rail
-              title="Tendances"
-              subtitle="Les boutiques les plus populaires"
-              items={trendingBoutiques}
-              accent
-              showFilter
-            />
-
-            {/* =================================================
-                NOUVEAUTÉS
-               ================================================= */}
-
-            <Rail
-              title="Nouveautés"
-              subtitle="Les dernières boutiques"
-              items={newestBoutiques}
-              showFilter
-            />
-
-            {/* =================================================
-                CATÉGORIES
-               ================================================= */}
-
-            {boutiquesByCategory.map(
-              ([category, categoryBoutiques]) => (
-                <Rail
-                  key={category}
-                  title={category}
-                  subtitle={`${categoryBoutiques.length} boutique${
-                    categoryBoutiques.length > 1
-                      ? "s"
-                      : ""
-                  }`}
-                  items={categoryBoutiques}
-                  showFilter
-                />
-              ),
-            )}
-          </>
-        )}
-      </main>
-
-      {/* =====================================================
-          NAVIGATION MOBILE ABONNÉ UNIQUEMENT
-         ===================================================== */}
-
-      {isSubscriber && (
-        <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background/95 backdrop-blur-xl lg:hidden">
-          <div className="mx-auto flex h-16 max-w-lg items-center justify-around px-3 pb-[env(safe-area-inset-bottom)]">
-            <MobileNavButton
-              label="Accueil"
-              active={location.pathname === "/store"}
-              onClick={() => navigate("/store")}
-            >
-              <House
-                className="h-5 w-5"
-                strokeWidth={1.8}
-              />
-            </MobileNavButton>
-
-            <MobileNavButton
-              label="Produits"
-              active={location.pathname.startsWith(
-                "/store/products",
-              )}
-              onClick={goToProducts}
-            >
-              <Search
-                className="h-5 w-5"
-                strokeWidth={1.8}
-              />
-            </MobileNavButton>
-
-            <MobileNavButton
-              label="Commandes"
-              active={location.pathname.startsWith(
-                "/store/orders",
-              )}
-              onClick={goToOrders}
-            >
-              <ClipboardList
-                className="h-5 w-5"
-                strokeWidth={1.8}
-              />
-            </MobileNavButton>
-
-            <MobileNavButton
-              label="Plus"
-              active={false}
-              onClick={goToMore}
-            >
-              <MoreHorizontal
-                className="h-5 w-5"
-                strokeWidth={1.8}
-              />
-            </MobileNavButton>
-          </div>
-        </nav>
-      )}
-
-      {/* =====================================================
-          CUSTOMER PANEL
-         ===================================================== */}
-
-      <CustomerPanel
-        open={panelOpen}
-        onOpenChange={setPanelOpen}
-        initialTab={panelTab}
-      />
-
-      {/* =====================================================
-          FOOTER
-         ===================================================== */}
-
-      <footer className="border-t border-border bg-muted/30">
-        <div className="container mx-auto flex max-w-7xl flex-col items-center gap-2 px-4 py-6 text-center text-xs text-muted-foreground sm:flex-row sm:justify-between sm:text-left">
-          <Logo iconSize={20} asLink={false} />
-
-          <p>
-            © {new Date().getFullYear()} Brand-In-A-Box ·
-            Marketplace officiel
-          </p>
-
-          <Link
-            to="/"
-            className="transition hover:text-foreground"
-          >
-            Brand-In-A-Box
-          </Link>
-        </div>
-      </footer>
-    </div>
-  );
-}
-
-/* =========================================================
-   HERO MARKETPLACE
-   ========================================================= */
-
-interface MarketplaceIntroProps {
-  isSubscriber: boolean;
-  imageUrl?: string;
-  onPrimaryAction: () => void;
-}
-
-function MarketplaceIntro({
-  isSubscriber,
-  imageUrl,
-  onPrimaryAction,
-}: MarketplaceIntroProps) {
-  return (
-    <section className="mb-5 mt-6 overflow-hidden rounded-[28px] border border-border bg-[#f7f5f0] sm:mt-8">
-      <div className="grid items-stretch lg:grid-cols-[1fr_0.9fr]">
-        {/* TEXTE */}
-
-        <div className="flex flex-col justify-center px-6 py-9 sm:px-8 sm:py-11 lg:px-10 lg:py-12">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            {isSubscriber
-              ? "Votre espace BIB"
-              : "Des marques engagées"}
-          </p>
-
-          <h1 className="max-w-xl font-display text-3xl font-semibold leading-tight text-foreground sm:text-4xl lg:text-[42px]">
-            {isSubscriber
-              ? "Découvrez, suivez et retrouvez vos boutiques préférées."
-              : "Des produits sélectionnés avec soin."}
-          </h1>
-
-          <p className="mt-4 max-w-lg text-sm leading-relaxed text-muted-foreground sm:text-base">
-            {isSubscriber
-              ? "Explorez de nouvelles boutiques, retrouvez vos favoris et gardez vos commandes au même endroit."
-              : "Découvrez des boutiques indépendantes et des produits sélectionnés selon les exigences BIB."}
-          </p>
-
-          <button
-            type="button"
-            onClick={onPrimaryAction}
-            className="mt-6 inline-flex h-11 w-fit items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:brightness-110 active:scale-[0.98]"
-          >
-            {isSubscriber
-              ? "Explorer les produits"
-              : "Découvrir les boutiques"}
-          </button>
-        </div>
-
-        {/* IMAGE */}
-
-        <div className="relative min-h-[230px] overflow-hidden bg-muted sm:min-h-[280px] lg:min-h-[340px]">
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover"
-              loading="eager"
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-muted">
-              <span className="font-display text-5xl font-semibold text-foreground/10">
-                BIB
-              </span>
+          {/* Error */}
+          {error && (
+            <div className="mt-4 p-4 bg-red-50 text-red-700 rounded-lg text-sm">
+              {error}
             </div>
           )}
 
-          <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-transparent" />
+          {/* No result */}
+          {searched &&
+            !loading &&
+            !order &&
+            !error && (
+              <div className="mt-6 text-center text-gray-500">
+                <p>
+                  Aucune commande trouvée avec ces
+                  informations.
+                </p>
 
-          <div className="absolute right-4 top-4 flex items-center gap-2 rounded-full bg-white/95 px-3 py-2 text-xs font-semibold text-slate-900 shadow-sm backdrop-blur-sm sm:right-6 sm:top-6">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-950 text-[9px] font-bold text-white">
-              BIB
-            </span>
+                <p className="text-sm mt-1">
+                  Vérifiez votre numéro de commande et
+                  votre email.
+                </p>
+              </div>
+            )}
 
-            <span>Vérifié par BIB</span>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
+          {/* Order result */}
+          {order && status && (
+            <div className="mt-6 space-y-4">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-5">
+                {/* Status header */}
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs text-gray-500">
+                      Commande
+                    </p>
 
-/* =========================================================
-   BANDEAU COMPTE / SUIVI
-   VISITEURS NON ABONNÉS UNIQUEMENT
-   ========================================================= */
+                    <p className="font-mono font-semibold text-gray-900">
+                      {order.order_number}
+                    </p>
+                  </div>
 
-interface MarketplaceAccountBarProps {
-  onActivateAccount: () => void;
-  onTrackOrder: () => void;
-}
+                  <Badge className={status.color}>
+                    <StatusIcon className="w-3.5 h-3.5 mr-1" />
+                    {status.label}
+                  </Badge>
+                </div>
 
-function MarketplaceAccountBar({
-  onActivateAccount,
-  onTrackOrder,
-}: MarketplaceAccountBarProps) {
-  return (
-    <section className="mb-7 overflow-hidden rounded-2xl border border-border bg-muted/35">
-      <div className="grid gap-0 sm:grid-cols-[1.25fr_1fr]">
-        {/* COMPTE BIB ABONNÉ */}
+                {/* Status message */}
+                <div className="rounded-lg bg-gray-50 p-4">
+                  <p className="text-sm leading-relaxed text-gray-700">
+                    {status.message}
+                  </p>
+                </div>
 
-        <div className="flex min-w-0 flex-col justify-between gap-4 px-4 py-4 sm:px-5 sm:py-4">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-foreground">
-              Activez votre compte BIB
-            </p>
+                {/* Order details */}
+                <div className="border-t border-gray-100 pt-4 space-y-3 text-sm">
+                  <div className="flex justify-between gap-4">
+                    <span className="text-gray-500">
+                      Client
+                    </span>
 
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              Suivez vos boutiques favorites, retrouvez vos commandes et
-              profitez de votre espace BIB.
-            </p>
+                    <span className="font-medium text-gray-900 text-right">
+                      {order.customer_name}
+                    </span>
+                  </div>
 
-            <p className="mt-2 text-sm font-semibold text-foreground">
-              BIB Abonné · 4,99 €/mois
-            </p>
-          </div>
+                  {order.product_name && (
+                    <div className="flex justify-between gap-4">
+                      <span className="text-gray-500">
+                        Produit
+                      </span>
 
-          <button
-            type="button"
-            onClick={onActivateAccount}
-            className="inline-flex h-9 w-fit items-center justify-center gap-1.5 rounded-full bg-foreground px-4 text-xs font-semibold text-background transition hover:opacity-85 active:scale-[0.98]"
-          >
-            Activer mon compte
+                      <span className="font-medium text-gray-900 text-right">
+                        {order.product_name}
+                      </span>
+                    </div>
+                  )}
 
-            <ArrowRight className="h-3.5 w-3.5" />
-          </button>
-        </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-gray-500">
+                      Montant
+                    </span>
 
-        {/* SUIVI DE COMMANDE */}
+                    <span className="font-medium text-gray-900">
+                      {order.amount.toFixed(2)} €
+                    </span>
+                  </div>
 
-        <div className="flex min-w-0 flex-col justify-between gap-3 border-t border-border/70 px-4 py-4 sm:border-l sm:border-t-0 sm:px-5 sm:py-4">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-foreground">
-              Vous avez déjà commandé ?
-            </p>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-gray-500">
+                      Date
+                    </span>
 
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              Suivez l’avancement de votre commande, même sans compte abonné.
-            </p>
-          </div>
+                    <span className="font-medium text-gray-900 text-right">
+                      {new Date(
+                        order.created_at,
+                      ).toLocaleDateString("fr-FR", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </span>
+                  </div>
+                </div>
 
-          <button
-            type="button"
-            onClick={onTrackOrder}
-            className="inline-flex h-9 w-fit items-center justify-center gap-1.5 rounded-full border border-border bg-background px-4 text-xs font-semibold text-foreground transition hover:bg-muted active:scale-[0.98]"
-          >
-            Suivre ma commande
+                {/* Progress */}
+                <div className="pt-2">
+                  <div className="flex justify-between text-xs text-gray-400 mb-1">
+                    <span>Commande reçue</span>
+                    <span>Livrée</span>
+                  </div>
 
-            <ArrowRight className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </div>
-    </section>
-  );
-}
+                  <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-green-500 transition-all"
+                      style={{
+                        width: progressWidth,
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
 
-/* =========================================================
-   MOBILE NAVIGATION
-   ========================================================= */
+              {/* Customer service */}
+              <div className="bg-white rounded-xl border border-gray-200 p-5">
+                <p className="text-sm font-semibold text-gray-900">
+                  Une question concernant votre commande ?
+                </p>
 
-interface MobileNavButtonProps {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-  children: ReactNode;
-}
+                <p className="mt-1 text-sm leading-relaxed text-gray-500">
+                  Pour toute question concernant votre
+                  commande, sa préparation, sa livraison ou
+                  un retour, contactez directement la
+                  boutique auprès de laquelle vous avez
+                  effectué votre achat.
+                </p>
 
-function MobileNavButton({
-  label,
-  active,
-  onClick,
-  children,
-}: MobileNavButtonProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex min-w-[64px] flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[11px] transition ${
-        active
-          ? "font-semibold text-primary"
-          : "text-muted-foreground hover:text-foreground"
-      }`}
-    >
-      {children}
+                {slug ? (
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="mt-4 w-full gap-2"
+                  >
+                    <Link to={`/boutique/${slug}`}>
+                      Rendez-vous sur la boutique
+                      <ExternalLink className="w-4 h-4" />
+                    </Link>
+                  </Button>
+                ) : (
+                  <p className="mt-4 text-xs leading-relaxed text-gray-400">
+                    Vous pouvez retrouver les coordonnées
+                    ou le site utilisé pour votre commande
+                    dans votre confirmation de commande.
+                  </p>
+                )}
+              </div>
 
-      <span>{label}</span>
-    </button>
-  );
-}
+              {/* Post-order conversion */}
+              {!isReturned && (
+                <div className="rounded-xl border border-gray-200 bg-white p-5">
+                  {isDelivered ? (
+                    <>
+                      <p className="text-sm font-semibold text-gray-900">
+                        Votre commande est arrivée.
+                      </p>
 
-/* =========================================================
-   RAIL
-   ========================================================= */
+                      <p className="mt-1 text-sm leading-relaxed text-gray-500">
+                        Découvrez d'autres boutiques
+                        sélectionnées et vérifiées par BIB.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm font-semibold text-gray-900">
+                        Découvrez l'univers BIB
+                      </p>
 
-interface RailProps {
-  title: string;
-  subtitle?: string;
-  items: MarketplaceBoutique[];
-  accent?: boolean;
-  showFilter?: boolean;
-}
+                      <p className="mt-1 text-sm leading-relaxed text-gray-500">
+                        Explorez d'autres boutiques et
+                        découvrez des produits sélectionnés
+                        selon les exigences BIB.
+                      </p>
+                    </>
+                  )}
 
-function Rail({
-  title,
-  subtitle,
-  items,
-  accent,
-  showFilter,
-}: RailProps) {
-  const railRef = useRef<HTMLDivElement>(null);
+                  <Button
+                    asChild
+                    className="mt-4 w-full gap-2"
+                  >
+                    <Link to="/store">
+                      Découvrir les boutiques
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </Button>
+                </div>
+              )}
 
-  if (items.length === 0) {
-    return null;
-  }
+              {/* Subscription conversion */}
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-5">
+                <p className="text-sm font-semibold text-gray-900">
+                  Retrouvez vos boutiques préférées
+                </p>
 
-  const scroll = (direction: 1 | -1) => {
-    const element = railRef.current;
+                <p className="mt-1 text-sm leading-relaxed text-gray-500">
+                  Activez votre espace BIB pour suivre vos
+                  boutiques favorites, retrouver vos
+                  commandes et profiter des fonctionnalités
+                  BIB Abonné.
+                </p>
 
-    if (!element) {
-      return;
-    }
+                <p className="mt-3 text-sm font-semibold text-gray-900">
+                  BIB Abonné · 4,99 €/mois
+                </p>
 
-    element.scrollBy({
-      left: direction * element.clientWidth * 0.85,
-      behavior: "smooth",
-    });
-  };
-
-  const handleFilterClick = () => {
-    window.dispatchEvent(
-      new CustomEvent(
-        "bib:open-marketplace-filters",
-        {
-          detail: {
-            section: title,
-          },
-        },
-      ),
-    );
-  };
-
-  return (
-    <section className="mt-8 sm:mt-10">
-      {/* TITRE */}
-
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <h2
-            className={`font-display text-lg font-semibold leading-tight sm:text-xl ${
-              accent
-                ? "text-primary"
-                : "text-foreground"
-            }`}
-          >
-            {title}
-          </h2>
-
-          {subtitle && (
-            <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground sm:text-sm">
-              {subtitle}
-            </p>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="mt-4 w-full gap-2"
+                >
+                  <Link to="/signup">
+                    Activer mon compte
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
           )}
         </div>
+      </main>
 
-        <div className="flex shrink-0 items-center gap-2">
-          {showFilter && (
-            <button
-              type="button"
-              onClick={handleFilterClick}
-              aria-label={`Filtrer ${title}`}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-foreground transition hover:bg-muted active:scale-95"
+      {/* Marketplace footer */}
+      <footer className="border-t border-border bg-background">
+        <div className="container mx-auto max-w-7xl px-4 py-6">
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <Link
+              to="/store"
+              className="inline-flex items-center"
+              aria-label="Retour au marketplace BIB"
             >
-              <SlidersHorizontal
-                className="h-4 w-4"
-                strokeWidth={1.8}
-              />
-            </button>
-          )}
+              <Logo className="h-7 w-auto" />
+            </Link>
 
-          <button
-            type="button"
-            onClick={() => scroll(1)}
-            aria-label={`Voir plus dans ${title}`}
-            className="hidden h-9 w-9 items-center justify-center rounded-full bg-muted text-foreground transition hover:bg-muted/70 active:scale-95 sm:flex"
-          >
-            <ChevronRight
-              className="h-4 w-4"
-              strokeWidth={1.8}
-            />
-          </button>
-        </div>
-      </div>
+            <div className="flex flex-col items-center gap-1 text-center text-xs text-muted-foreground sm:items-end sm:text-right">
+              <span>© 2026 Brand-In-A-Box</span>
 
-      {/* CARTES */}
-
-      <div
-        ref={railRef}
-        className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 scrollbar-none sm:gap-4"
-      >
-        {items.map((boutique) => (
-          <div
-            key={boutique.id}
-            className="
-              w-[210px]
-              shrink-0
-              snap-start
-              sm:w-[220px]
-              md:w-[230px]
-              lg:w-[240px]
-              xl:w-[250px]
-            "
-          >
-            <BoutiqueCard boutique={boutique} />
+              <Link
+                to="/"
+                className="transition-colors hover:text-foreground"
+              >
+                Brand-In-A-Box
+              </Link>
+            </div>
           </div>
-        ))}
-      </div>
-    </section>
+        </div>
+      </footer>
+    </div>
   );
 }
