@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Vendre from "./pages/Vendre";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
+import MarketplaceLogin from "./pages/MarketplaceLogin";
 import Signup from "./pages/Signup";
 import Tarifs from "./pages/Tarifs";
 import CheckoutReturn from "./pages/CheckoutReturn";
@@ -200,8 +201,10 @@ const App = () => (
               <Route path="/recycler" element={<Recycler />} />
               <Route path="/recycler/:slug" element={<Recycler />} />
               <Route path="/order-tracking" element={<OrderTracking />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
+              <Route path="/login" element={<PlatformLogin />} />
+              <Route path="/signup" element={<PlatformSignup />} />
+              <Route path="/store/login" element={<MarketplaceLogin />} />
+              <Route path="/store/signup" element={<MarketplaceSignup />} />      
               <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
