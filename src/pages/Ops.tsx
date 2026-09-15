@@ -30,7 +30,6 @@ import {
   Truck,
   PackageCheck,
   Route,
-  Webhook,
   Check,
   ArrowRight,
   Mail,
@@ -42,69 +41,186 @@ import {
   Globe2,
   Loader2,
   CheckCircle2,
+  ClipboardCheck,
+  Boxes,
+  ShieldCheck,
 } from "lucide-react";
 
 const howItWorks = [
-  { icon: Webhook, title: "Réception des commandes", text: "Flux temps réel via webhooks BIB (orders.created, orders.paid)." },
-  { icon: PackageCheck, title: "Préparation & étiquetage", text: "Étiquettes BIB et bordereaux générés automatiquement." },
-  { icon: Route, title: "Expédition & suivi", text: "Statuts logistiques synchronisés plateforme et client final." },
+  {
+    icon: Boxes,
+    title: "Réception des stocks",
+    text: "Les stocks et réassorts sont orientés vers les partenaires logistiques selon les besoins du réseau BIB.",
+  },
+  {
+    icon: PackageCheck,
+    title: "Préparation des commandes",
+    text: "Les commandes affectées au partenaire sont préparées selon les procédures BIB, avec les références et emballages requis.",
+  },
+  {
+    icon: Route,
+    title: "Expédition & suivi",
+    text: "Les colis sont remis au transporteur et leur statut est transmis dans le circuit de suivi BIB.",
+  },
 ];
 
 const advantages = [
-  { icon: LayoutDashboard, title: "Portail logistique dédié", text: "Espace partenaire pour piloter toute votre activité BIB." },
-  { icon: ListChecks, title: "Commandes à traiter", text: "File centralisée triée par SLA, zone et priorité." },
-  { icon: RotateCcw, title: "Gestion des statuts & retours", text: "Mise à jour fluide des statuts et traitement des retours." },
-  { icon: History, title: "Historique des opérations", text: "Traçabilité complète : préparations, expéditions, incidents." },
-  { icon: BarChart3, title: "Reporting", text: "Indicateurs SLA, volumes et qualité de service consolidés." },
-  { icon: Truck, title: "Connectivité transporteurs", text: "Connexion aux principaux transporteurs européens." },
+  {
+    icon: LayoutDashboard,
+    title: "Portail partenaire",
+    text: "Un espace dédié pour suivre les opérations qui vous sont attribuées par BIB.",
+  },
+  {
+    icon: ListChecks,
+    title: "Opérations à traiter",
+    text: "Commandes, réassorts et tâches logistiques organisés selon les priorités définies.",
+  },
+  {
+    icon: RotateCcw,
+    title: "Retours",
+    text: "Traitement des retours selon les procédures BIB et les responsabilités définies avec le partenaire.",
+  },
+  {
+    icon: History,
+    title: "Traçabilité",
+    text: "Historique des préparations, expéditions, incidents et événements opérationnels.",
+  },
+  {
+    icon: BarChart3,
+    title: "Suivi d'activité",
+    text: "Indicateurs opérationnels permettant de suivre volumes, délais et qualité de service.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Cadre BIB",
+    text: "Des procédures communes pour assurer la qualité et la traçabilité des opérations.",
+  },
 ];
 
 const coverage = [
-  "France métropolitaine",
-  "Benelux (Belgique, Pays-Bas, Luxembourg)",
-  "Allemagne, Autriche",
-  "Espagne, Portugal, Italie",
-  "Pays nordiques et Europe de l'Est (en développement)",
+  "Zone Nord Europe",
+  "Zone Ouest Europe",
+  "Zone Sud Europe",
+  "Zone Est Europe",
 ];
 
 const processSteps = [
-  { title: "Prise de contact", text: "Vous remplissez le formulaire ci-contre, on revient vers vous sous 48h ouvrées." },
-  { title: "Échange de qualification", text: "Visio avec notre équipe Ops : volumes, zones, intégrations, SLA." },
-  { title: "Cadrage technique", text: "Tests webhooks, étiquettes BIB et configuration sandbox." },
-  { title: "Mise en production", text: "Routage progressif des commandes selon zone, SLA et coût." },
+  {
+    title: "Candidature",
+    text: "Présentez votre entreprise, vos installations, vos capacités et vos zones couvertes.",
+  },
+  {
+    title: "Qualification",
+    text: "BIB étudie vos capacités de stockage, préparation, expédition, retours et intégration opérationnelle.",
+  },
+  {
+    title: "Audit & cadrage",
+    text: "Les installations, procédures et exigences applicables sont vérifiées avant l'intégration.",
+  },
+  {
+    title: "Test opérationnel",
+    text: "Un parcours de test permet de valider les flux, références, étiquetage et procédures.",
+  },
+  {
+    title: "Intégration",
+    text: "Le partenaire est progressivement intégré aux opérations BIB selon sa zone et ses capacités.",
+  },
 ];
 
-const COUNTRIES = ["France", "Belgique", "Luxembourg", "Pays-Bas", "Allemagne", "Espagne", "Portugal", "Italie", "Autriche", "Suisse", "Autre UE", "Autre"];
+const COUNTRIES = [
+  "France",
+  "Belgique",
+  "Luxembourg",
+  "Pays-Bas",
+  "Allemagne",
+  "Espagne",
+  "Portugal",
+  "Italie",
+  "Autriche",
+  "Autre UE",
+  "Autre",
+];
+
 const ACTIVITY_TYPES = [
-  "Transporteur",
   "3PL / Entrepôt",
-  "Préparateur de commandes",
-  "Express / Dernier kilomètre",
+  "Transporteur",
+  "Préparation de commandes",
+  "Dernier kilomètre",
+  "Logistique retour",
   "Cross-border / International",
   "Autre",
 ];
 
 const contactSchema = z.object({
-  company: z.string().trim().min(2, "Nom de société requis").max(120),
-  contact_name: z.string().trim().min(2, "Nom du contact requis").max(120),
-  email: z.string().trim().email("Email invalide").max(255),
-  phone: z.string().trim().min(4, "Téléphone requis").max(40),
-  country: z.string().trim().min(2, "Pays requis").max(60),
-  activity: z.string().trim().min(2, "Type d'activité requis").max(80),
-  message: z.string().trim().min(10, "Décrivez votre activité (10 caractères min.)").max(2000),
+  company: z
+    .string()
+    .trim()
+    .min(2, "Nom de société requis")
+    .max(120),
+
+  contact_name: z
+    .string()
+    .trim()
+    .min(2, "Nom du contact requis")
+    .max(120),
+
+  email: z
+    .string()
+    .trim()
+    .email("Email invalide")
+    .max(255),
+
+  phone: z
+    .string()
+    .trim()
+    .min(4, "Téléphone requis")
+    .max(40),
+
+  country: z
+    .string()
+    .trim()
+    .min(2, "Pays requis")
+    .max(60),
+
+  activity: z
+    .string()
+    .trim()
+    .min(2, "Type d'activité requis")
+    .max(80),
+
+  message: z
+    .string()
+    .trim()
+    .min(10, "Décrivez votre activité (10 caractères min.)")
+    .max(2000),
 });
 
-function OpsContactDialog({ children }: { children: React.ReactNode }) {
+function OpsContactDialog({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { toast } = useToast();
+
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [country, setCountry] = useState("");
   const [activity, setActivity] = useState("");
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function resetDialog() {
+    setDone(false);
+    setCountry("");
+    setActivity("");
+  }
+
+  async function handleSubmit(
+    e: React.FormEvent<HTMLFormElement>,
+  ) {
     e.preventDefault();
+
     const data = new FormData(e.currentTarget);
+
     const parsed = contactSchema.safeParse({
       company: data.get("company"),
       contact_name: data.get("contact_name"),
@@ -114,16 +230,23 @@ function OpsContactDialog({ children }: { children: React.ReactNode }) {
       activity,
       message: data.get("message"),
     });
+
     if (!parsed.success) {
       toast({
         title: "Formulaire incomplet",
-        description: parsed.error.issues[0]?.message ?? "Vérifiez les champs",
+        description:
+          parsed.error.issues[0]?.message ??
+          "Vérifiez les champs.",
         variant: "destructive",
       });
+
       return;
     }
+
     setSubmitting(true);
-    const subject = `[Logistique] Prise de contact — ${parsed.data.company}`;
+
+    const subject = `[Ops BIB] Candidature partenaire — ${parsed.data.company}`;
+
     const message =
       `Société : ${parsed.data.company}\n` +
       `Contact : ${parsed.data.contact_name}\n` +
@@ -133,88 +256,206 @@ function OpsContactDialog({ children }: { children: React.ReactNode }) {
       `Type d'activité : ${parsed.data.activity}\n\n` +
       `${parsed.data.message}`;
 
-    const { error } = await supabase.from("support_tickets").insert({
-      source: "partner_inquiry",
-      contact_email: parsed.data.email,
-      contact_name: parsed.data.contact_name,
-      subject,
-      message,
-      boutique_id: null,
-    } as never);
+    const { error } = await supabase
+      .from("support_tickets")
+      .insert({
+        source: "partner_inquiry",
+        contact_email: parsed.data.email,
+        contact_name: parsed.data.contact_name,
+        subject,
+        message,
+        boutique_id: null,
+      } as never);
+
     setSubmitting(false);
+
     if (error) {
       toast({
         title: "Envoi impossible",
-        description: "Réessayez ou écrivez à ops@brand-in-a-box.space",
+        description:
+          "Réessayez ou écrivez à ops@brand-in-a-box.space",
         variant: "destructive",
       });
+
       return;
     }
+
     setDone(true);
-    toast({ title: "Demande envoyée", description: "Notre équipe revient vers vous sous 48h ouvrées." });
+
+    toast({
+      title: "Demande envoyée",
+      description:
+        "Votre candidature a bien été transmise à l'équipe BIB.",
+    });
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setDone(false); setCountry(""); setActivity(""); } }}>
+    <Dialog
+      open={open}
+      onOpenChange={(value) => {
+        setOpen(value);
+
+        if (!value) {
+          resetDialog();
+        }
+      }}
+    >
       <DialogTrigger asChild>{children}</DialogTrigger>
+
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display text-2xl">Échanger avec notre équipe</DialogTitle>
+          <DialogTitle className="font-display text-2xl">
+            Devenir partenaire logistique
+          </DialogTitle>
+
           <DialogDescription>
-            Quelques informations pour qualifier votre activité — réponse sous 48h ouvrées.
+            Présentez votre activité et vos capacités. L'équipe BIB
+            reviendra vers vous après étude de votre candidature.
           </DialogDescription>
         </DialogHeader>
+
         {done ? (
-          <div className="text-center space-y-3 py-6">
+          <div className="text-center space-y-3 py-8">
             <CheckCircle2 className="w-10 h-10 text-success mx-auto" />
-            <h3 className="font-display text-xl">Merci pour votre demande</h3>
-            <p className="text-sm text-muted-foreground">Notre équipe partenaires vous contacte sous 48h ouvrées.</p>
-            <Button variant="outline" onClick={() => setOpen(false)}>Fermer</Button>
+
+            <h3 className="font-display text-xl">
+              Demande reçue
+            </h3>
+
+            <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+              Merci. Votre demande a été transmise à l'équipe
+              BIB pour qualification.
+            </p>
+
+            <Button
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
+              Fermer
+            </Button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4"
+          >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="ops-company">Société *</Label>
-                <Input id="ops-company" name="company" required maxLength={120} placeholder="Transport Dupont" />
+                <Label htmlFor="ops-company">
+                  Société *
+                </Label>
+
+                <Input
+                  id="ops-company"
+                  name="company"
+                  required
+                  maxLength={120}
+                  placeholder="Nom de votre société"
+                />
               </div>
+
               <div className="space-y-1.5">
-                <Label htmlFor="ops-contact">Nom du contact *</Label>
-                <Input id="ops-contact" name="contact_name" required maxLength={120} placeholder="Marie Dupont" />
+                <Label htmlFor="ops-contact">
+                  Nom du contact *
+                </Label>
+
+                <Input
+                  id="ops-contact"
+                  name="contact_name"
+                  required
+                  maxLength={120}
+                  placeholder="Nom Prénom"
+                />
               </div>
             </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="ops-email">Email *</Label>
-                <Input id="ops-email" name="email" type="email" required maxLength={255} placeholder="contact@societe.com" />
+                <Label htmlFor="ops-email">
+                  Email *
+                </Label>
+
+                <Input
+                  id="ops-email"
+                  name="email"
+                  type="email"
+                  required
+                  maxLength={255}
+                  placeholder="contact@societe.com"
+                />
               </div>
+
               <div className="space-y-1.5">
-                <Label htmlFor="ops-phone">Téléphone *</Label>
-                <Input id="ops-phone" name="phone" type="tel" required maxLength={40} placeholder="+33 6 12 34 56 78" />
+                <Label htmlFor="ops-phone">
+                  Téléphone *
+                </Label>
+
+                <Input
+                  id="ops-phone"
+                  name="phone"
+                  type="tel"
+                  required
+                  maxLength={40}
+                  placeholder="+33..."
+                />
               </div>
             </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Pays *</Label>
-                <Select value={country} onValueChange={setCountry}>
-                  <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                <Label>Pays principal *</Label>
+
+                <Select
+                  value={country}
+                  onValueChange={setCountry}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner" />
+                  </SelectTrigger>
+
                   <SelectContent>
-                    {COUNTRIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    {COUNTRIES.map((item) => (
+                      <SelectItem
+                        key={item}
+                        value={item}
+                      >
+                        {item}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="space-y-1.5">
                 <Label>Type d'activité *</Label>
-                <Select value={activity} onValueChange={setActivity}>
-                  <SelectTrigger><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+
+                <Select
+                  value={activity}
+                  onValueChange={setActivity}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner" />
+                  </SelectTrigger>
+
                   <SelectContent>
-                    {ACTIVITY_TYPES.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
+                    {ACTIVITY_TYPES.map((item) => (
+                      <SelectItem
+                        key={item}
+                        value={item}
+                      >
+                        {item}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
+
             <div className="space-y-1.5">
-              <Label htmlFor="ops-message">Message *</Label>
+              <Label htmlFor="ops-message">
+                Présentez votre activité *
+              </Label>
+
               <Textarea
                 id="ops-message"
                 name="message"
@@ -222,15 +463,29 @@ function OpsContactDialog({ children }: { children: React.ReactNode }) {
                 minLength={10}
                 maxLength={2000}
                 rows={5}
-                placeholder="Zones couvertes, volumes mensuels, transporteurs intégrés, certifications…"
+                placeholder="Zones couvertes, capacités de stockage, préparation de commandes, volumes, transporteurs utilisés, gestion des retours..."
               />
             </div>
-            <Button type="submit" disabled={submitting} variant="coral" size="lg" className="w-full">
-              {submitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />}
-              Envoyer ma demande
+
+            <Button
+              type="submit"
+              disabled={submitting}
+              variant="coral"
+              size="lg"
+              className="w-full"
+            >
+              {submitting ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Mail className="w-4 h-4 mr-2" />
+              )}
+
+              Envoyer ma candidature
             </Button>
+
             <p className="text-xs text-muted-foreground text-center">
-              En soumettant, vous acceptez d'être recontacté par l'équipe Brand-In-A-Box.
+              Les informations transmises sont utilisées pour
+              étudier votre candidature de partenaire logistique.
             </p>
           </form>
         )}
@@ -241,19 +496,26 @@ function OpsContactDialog({ children }: { children: React.ReactNode }) {
 
 export default function Ops() {
   useSEO({
-    title: "Partenaires logistiques (Ops) — Brand-In-A-Box",
+    title: "Partenaires logistiques — Brand-In-A-Box",
     description:
-      "Rejoignez le réseau Ops Brand-In-A-Box : webhooks commandes, étiquettes consolidées, suivi unifié et SLA clairs.",
+      "Rejoignez le réseau logistique Brand-In-A-Box. BIB travaille avec des partenaires 3PL, transporteurs et opérateurs capables de gérer stockage, préparation, expédition et retours.",
   });
 
   const location = useLocation();
+
   useEffect(() => {
-    if (location.hash) {
-      const id = location.hash.replace("#", "");
-      requestAnimationFrame(() => {
-        document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
-    }
+    if (!location.hash) return;
+
+    const id = location.hash.replace("#", "");
+
+    requestAnimationFrame(() => {
+      document
+        .getElementById(id)
+        ?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+    });
   }, [location.hash]);
 
   return (
@@ -261,148 +523,368 @@ export default function Ops() {
       portal="Ops"
       accent="accent"
       menuItems={[
-        { label: "Fonctionnement", href: "#how", icon: "workflow" },
-        { label: "Avantages", href: "#avantages", icon: "sparkles" },
-        { label: "Couverture", href: "#couverture", icon: "truck" },
-        { label: "Portail logistique", href: "#portail", icon: "layers" },
-        { label: "Processus", href: "#processus", icon: "clipboard" },
-        { label: "Nous écrire", href: "mailto:ops@brand-in-a-box.space", icon: "mail" },
+        {
+          label: "Fonctionnement",
+          href: "#fonctionnement",
+          icon: "workflow",
+        },
+        {
+          label: "Partenariat",
+          href: "#partenariat",
+          icon: "sparkles",
+        },
+        {
+          label: "Couverture",
+          href: "#couverture",
+          icon: "truck",
+        },
+        {
+          label: "Portail",
+          href: "#portail",
+          icon: "layers",
+        },
+        {
+          label: "Processus",
+          href: "#processus",
+          icon: "clipboard",
+        },
+        {
+          label: "Nous écrire",
+          href: "mailto:ops@brand-in-a-box.space",
+          icon: "mail",
+        },
       ]}
     >
-      {/* Hero */}
+      {/* HERO */}
       <section className="relative overflow-hidden border-b border-border/50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-          <Badge variant="secondary" className="mb-4">Espace logistique</Badge>
-          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight max-w-3xl">
-            Devenez partenaire logistique du réseau Brand-In-A-Box.
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
+          <Badge variant="secondary" className="mb-5">
+            Réseau opérations BIB
+          </Badge>
+
+          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight leading-tight max-w-4xl">
+            Construisons le réseau logistique de
+            <span className="text-accent">
+              {" "}Brand-In-A-Box.
+            </span>
           </h1>
-          <p className="text-base sm:text-lg text-muted-foreground mt-4 max-w-2xl">
-            Volumes consolidés, intégrations API standardisées et SLA clairs. Un seul interlocuteur, un portail dédié et un flux récurrent de commandes.
+
+          <p className="text-base sm:text-lg text-muted-foreground mt-5 max-w-2xl leading-relaxed">
+            BIB s'appuie sur des partenaires logistiques sélectionnés
+            pour assurer le stockage, la préparation, l'expédition et
+            la gestion des retours dans les zones couvertes par le
+            réseau.
           </p>
-          <div className="mt-6 flex flex-wrap items-center gap-3">
+
+          <div className="mt-7 flex flex-wrap items-center gap-3">
             <OpsContactDialog>
-              <Button size="lg" variant="coral" className="gap-2">
-                Échanger avec notre équipe <ArrowRight className="w-4 h-4" />
+              <Button
+                size="lg"
+                variant="coral"
+                className="gap-2"
+              >
+                Devenir partenaire
+                <ArrowRight className="w-4 h-4" />
               </Button>
             </OpsContactDialog>
-            <Button asChild size="lg" variant="outline" className="gap-2">
-              <a href="#how">Découvrir le fonctionnement</a>
+
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="gap-2"
+            >
+              <a href="#fonctionnement">
+                Découvrir le fonctionnement
+              </a>
             </Button>
           </div>
+
+          <div className="mt-9 grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl">
+            <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
+              <p className="text-xs text-muted-foreground">
+                Modèle
+              </p>
+
+              <p className="text-sm font-semibold mt-0.5">
+                Partenaires sélectionnés
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
+              <p className="text-xs text-muted-foreground">
+                Activités
+              </p>
+
+              <p className="text-sm font-semibold mt-0.5">
+                Stock · Préparation · Expédition
+              </p>
+            </div>
+
+            <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
+              <p className="text-xs text-muted-foreground">
+                Organisation
+              </p>
+
+              <p className="text-sm font-semibold mt-0.5">
+                Pilotée par BIB Ops
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Fonctionnement */}
-      <section id="how" className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 scroll-mt-20">
+      {/* FONCTIONNEMENT */}
+      <section
+        id="fonctionnement"
+        className="container mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-18 scroll-mt-20"
+      >
         <div className="max-w-2xl mb-8">
-          <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">Fonctionnement</p>
-          <h2 className="font-display text-2xl sm:text-3xl font-bold">Comment fonctionne le partenariat logistique</h2>
+          <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">
+            Fonctionnement
+          </p>
+
+          <h2 className="font-display text-2xl sm:text-3xl font-bold">
+            Comment fonctionne le réseau logistique BIB
+          </h2>
+
+          <p className="text-sm sm:text-base text-muted-foreground mt-3 leading-relaxed">
+            BIB coordonne les flux entre les fournisseurs, les
+            stocks, les boutiques et les partenaires logistiques.
+            Chaque partenaire intervient dans le périmètre qui lui
+            est attribué.
+          </p>
         </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {howItWorks.map((c) => (
-            <Card key={c.title} className="p-5 space-y-2">
-              <div className="w-9 h-9 rounded-lg bg-accent/10 text-accent flex items-center justify-center">
-                <c.icon className="w-4 h-4" />
-              </div>
-              <h3 className="font-semibold text-sm">{c.title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">{c.text}</p>
-            </Card>
-          ))}
+          {howItWorks.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <Card
+                key={item.title}
+                className="p-5 sm:p-6"
+              >
+                <div className="w-10 h-10 rounded-lg bg-accent/10 text-accent flex items-center justify-center mb-4">
+                  <Icon className="w-5 h-5" />
+                </div>
+
+                <h3 className="font-semibold text-sm">
+                  {item.title}
+                </h3>
+
+                <p className="text-xs text-muted-foreground leading-relaxed mt-2">
+                  {item.text}
+                </p>
+              </Card>
+            );
+          })}
         </div>
       </section>
 
-      {/* Avantages */}
-      <section id="avantages" className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-16 scroll-mt-20">
-        <div className="max-w-2xl mb-6">
-          <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">Ce que nous fournissons</p>
-          <h2 className="font-display text-2xl sm:text-3xl font-bold">Avantages partenaires</h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {advantages.map((a) => (
-            <Card key={a.title} className="p-5 space-y-2">
-              <div className="w-9 h-9 rounded-lg bg-accent/10 text-accent flex items-center justify-center">
-                <a.icon className="w-4 h-4" />
-              </div>
-              <h3 className="font-semibold text-sm">{a.title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">{a.text}</p>
-            </Card>
-          ))}
-        </div>
-        <Card className="p-5 mt-4 bg-muted/30">
-          <div className="flex items-start gap-3">
-            <Webhook className="w-5 h-5 text-accent shrink-0 mt-0.5" />
-            <p className="text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">Flux récurrents :</span> accès à un volume de commandes centralisé, prévisible, avec routage automatique selon vos zones et SLA.
+      {/* PARTENARIAT */}
+      <section
+        id="partenariat"
+        className="bg-muted/30 border-y border-border/50 scroll-mt-20"
+      >
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-18">
+          <div className="max-w-2xl mb-8">
+            <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">
+              Partenariat
+            </p>
+
+            <h2 className="font-display text-2xl sm:text-3xl font-bold">
+              Un cadre opérationnel commun
+            </h2>
+
+            <p className="text-sm sm:text-base text-muted-foreground mt-3">
+              Les partenaires sont intégrés progressivement au réseau
+              BIB selon leurs capacités, leur zone géographique et les
+              besoins opérationnels.
             </p>
           </div>
-        </Card>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {advantages.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <Card
+                  key={item.title}
+                  className="p-5 bg-background"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-accent/10 text-accent flex items-center justify-center mb-4">
+                    <Icon className="w-5 h-5" />
+                  </div>
+
+                  <h3 className="font-semibold text-sm">
+                    {item.title}
+                  </h3>
+
+                  <p className="text-xs text-muted-foreground leading-relaxed mt-2">
+                    {item.text}
+                  </p>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
       </section>
 
-      {/* Couverture recherchée */}
-      <section id="couverture" className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-16 scroll-mt-20">
-        <div className="max-w-2xl mb-6">
-          <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">Couverture recherchée</p>
-          <h2 className="font-display text-2xl sm:text-3xl font-bold">Zones prioritaires</h2>
+      {/* COUVERTURE */}
+      <section
+        id="couverture"
+        className="container mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-18 scroll-mt-20"
+      >
+        <div className="max-w-2xl mb-7">
+          <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">
+            Organisation géographique
+          </p>
+
+          <h2 className="font-display text-2xl sm:text-3xl font-bold">
+            Quatre zones opérationnelles
+          </h2>
+
+          <p className="text-sm sm:text-base text-muted-foreground mt-3">
+            BIB développe progressivement son réseau européen autour
+            de zones logistiques permettant de rapprocher les stocks
+            des marchés desservis.
+          </p>
         </div>
+
         <Card className="p-6 sm:p-8">
-          <div className="flex items-start gap-3 mb-4">
-            <Globe2 className="w-5 h-5 text-accent mt-0.5" />
+          <div className="flex items-start gap-3 mb-6">
+            <Globe2 className="w-5 h-5 text-accent mt-0.5 shrink-0" />
+
             <p className="text-sm text-muted-foreground">
-              Nous recrutons des partenaires logistiques sur les zones suivantes — d'autres pays peuvent être étudiés au cas par cas.
+              La couverture effective dépend de la zone, des volumes,
+              des capacités du partenaire et du niveau de service
+              recherché.
             </p>
           </div>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {coverage.map((c) => (
-              <li key={c} className="flex items-start gap-2.5 text-sm">
-                <Check className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                <span>{c}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      </section>
 
-      {/* Portail logistique */}
-      <section id="portail" className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-16 scroll-mt-20">
-        <div className="max-w-2xl mb-6">
-          <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">Portail logistique</p>
-          <h2 className="font-display text-2xl sm:text-3xl font-bold">Un espace dédié pour piloter votre activité</h2>
-        </div>
-        <Card className="p-6 sm:p-8 bg-muted/30">
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {[
-              "Commandes à traiter en temps réel",
-              "Gestion des statuts d'expédition",
-              "Suivi des retours et SAV",
-              "Historique des opérations",
-              "Reporting volumes et SLA",
-              "Connectivité transporteurs européens",
-            ].map((c) => (
-              <li key={c} className="flex items-start gap-2.5 text-sm">
-                <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                <span>{c}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      </section>
-
-      {/* Processus de partenariat */}
-      <section id="processus" className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 lg:pb-16 scroll-mt-20">
-        <div className="max-w-2xl mb-6">
-          <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">Processus de partenariat</p>
-          <h2 className="font-display text-2xl sm:text-3xl font-bold">Comment on démarre ensemble</h2>
-        </div>
-        <Card className="p-6 sm:p-8 bg-muted/30">
-          <ol className="space-y-4">
-            {processSteps.map((s, i) => (
-              <li key={s.title} className="flex items-start gap-3">
-                <span className="shrink-0 w-7 h-7 rounded-full bg-accent text-accent-foreground text-xs font-semibold inline-flex items-center justify-center">
-                  {i + 1}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {coverage.map((zone, index) => (
+              <div
+                key={zone}
+                className="flex items-start gap-3 rounded-lg border border-border/60 p-4"
+              >
+                <span className="w-7 h-7 rounded-full bg-accent/10 text-accent text-xs font-semibold flex items-center justify-center shrink-0">
+                  {index + 1}
                 </span>
+
                 <div>
-                  <p className="font-semibold text-sm">{s.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{s.text}</p>
+                  <p className="font-semibold text-sm">
+                    {zone}
+                  </p>
+
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Déploiement progressif du réseau.
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </section>
+
+      {/* PORTAIL */}
+      <section
+        id="portail"
+        className="bg-muted/30 border-y border-border/50 scroll-mt-20"
+      >
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-18">
+          <div className="max-w-2xl mb-8">
+            <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">
+              Portail partenaire
+            </p>
+
+            <h2 className="font-display text-2xl sm:text-3xl font-bold">
+              Un espace pour suivre les opérations BIB
+            </h2>
+
+            <p className="text-sm sm:text-base text-muted-foreground mt-3">
+              Les partenaires disposent progressivement d'outils
+              permettant de consulter et mettre à jour les opérations
+              qui leur sont attribuées.
+            </p>
+          </div>
+
+          <Card className="p-6 sm:p-8 bg-background">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+              {[
+                "Commandes et opérations à traiter",
+                "Statuts de préparation et d'expédition",
+                "Gestion des retours",
+                "Historique des opérations",
+                "Incidents et anomalies",
+                "Suivi des volumes et délais",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="flex items-start gap-3"
+                >
+                  <Check className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+
+                  <span className="text-sm">
+                    {item}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-7 pt-6 border-t border-border/60 flex items-start gap-3">
+              <ClipboardCheck className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Les fonctionnalités disponibles dépendent du rôle du
+                partenaire, de son périmètre opérationnel et du niveau
+                d'intégration mis en place avec BIB.
+              </p>
+            </div>
+          </Card>
+        </div>
+      </section>
+
+      {/* PROCESSUS */}
+      <section
+        id="processus"
+        className="container mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-18 scroll-mt-20"
+      >
+        <div className="max-w-2xl mb-8">
+          <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">
+            Intégration
+          </p>
+
+          <h2 className="font-display text-2xl sm:text-3xl font-bold">
+            Comment démarrer avec BIB
+          </h2>
+
+          <p className="text-sm text-muted-foreground mt-3">
+            Le partenariat commence par une qualification avant toute
+            intégration opérationnelle.
+          </p>
+        </div>
+
+        <Card className="p-6 sm:p-8">
+          <ol className="space-y-5">
+            {processSteps.map((step, index) => (
+              <li
+                key={step.title}
+                className="flex items-start gap-4"
+              >
+                <span className="shrink-0 w-8 h-8 rounded-full bg-accent text-accent-foreground text-xs font-semibold inline-flex items-center justify-center">
+                  {index + 1}
+                </span>
+
+                <div>
+                  <p className="font-semibold text-sm">
+                    {step.title}
+                  </p>
+
+                  <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                    {step.text}
+                  </p>
                 </div>
               </li>
             ))}
@@ -410,22 +892,48 @@ export default function Ops() {
         </Card>
       </section>
 
-      {/* CTA final */}
+      {/* CTA */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <Card className="p-8 sm:p-10 bg-bib-marine text-bib-ivory border-bib-marine text-center space-y-4">
-          <h2 className="font-display text-2xl sm:text-3xl font-bold">Prêt à rejoindre le réseau logistique ?</h2>
-          <p className="text-sm sm:text-base text-bib-ivory/80 max-w-xl mx-auto">
-            Un échange rapide avec notre équipe Ops pour qualifier ensemble votre activité et vos zones.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <OpsContactDialog>
-              <Button size="lg" variant="premium" className="gap-2">
-                Prendre contact <ArrowRight className="w-4 h-4" />
+        <Card className="p-8 sm:p-10 bg-bib-marine text-bib-ivory border-bib-marine text-center">
+          <div className="max-w-2xl mx-auto">
+            <div className="w-11 h-11 rounded-xl bg-bib-ivory/10 flex items-center justify-center mx-auto mb-5">
+              <Truck className="w-5 h-5" />
+            </div>
+
+            <h2 className="font-display text-2xl sm:text-3xl font-bold">
+              Votre entreprise peut-elle intégrer le réseau BIB ?
+            </h2>
+
+            <p className="text-sm sm:text-base text-bib-ivory/80 mt-3 leading-relaxed">
+              Présentez vos capacités logistiques, vos zones couvertes
+              et vos services. BIB étudiera votre candidature avant de
+              définir les prochaines étapes.
+            </p>
+
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-6">
+              <OpsContactDialog>
+                <Button
+                  size="lg"
+                  variant="premium"
+                  className="gap-2"
+                >
+                  Devenir partenaire
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </OpsContactDialog>
+
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="gap-2 border-bib-ivory/40 text-bib-ivory hover:bg-bib-ivory hover:text-bib-marine"
+              >
+                <a href="mailto:ops@brand-in-a-box.space">
+                  <Mail className="w-4 h-4" />
+                  Nous écrire
+                </a>
               </Button>
-            </OpsContactDialog>
-            <Button asChild size="lg" variant="outline" className="gap-2 border-bib-ivory/40 text-bib-ivory hover:bg-bib-ivory hover:text-bib-marine">
-              <a href="mailto:ops@brand-in-a-box.space"><Mail className="w-4 h-4" /> Nous écrire</a>
-            </Button>
+            </div>
           </div>
         </Card>
       </section>
