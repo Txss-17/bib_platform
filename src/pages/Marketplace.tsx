@@ -66,11 +66,7 @@ export default function Marketplace() {
    * TEMPORAIRE
    *
    * À remplacer par le véritable statut BIB Abonné
-   * lorsque celui-ci sera disponible dans le profil client.
-   *
-   * Pour le moment :
-   * - utilisateur connecté = considéré comme abonné ;
-   * - visiteur non connecté = affichage du bandeau compte.
+   * lorsqu'il sera disponible dans le profil client.
    */
   const isSubscriber = Boolean(user);
 
@@ -260,7 +256,7 @@ export default function Marketplace() {
   };
 
   const goToOrderTracking = () => {
-    navigate("/OrderTracking");
+    navigate("/order-tracking");
   };
 
   return (
@@ -271,8 +267,6 @@ export default function Marketplace() {
 
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-xl">
         <div className="container mx-auto flex min-h-[68px] max-w-7xl items-center gap-3 px-4 py-3">
-          {/* LOGO */}
-
           <Link
             to="/store"
             aria-label="Accueil BIB"
@@ -281,9 +275,7 @@ export default function Marketplace() {
             <Logo iconSize={30} asLink={false} />
           </Link>
 
-          {/* =================================================
-              NAVIGATION DESKTOP
-             ================================================= */}
+          {/* NAVIGATION DESKTOP */}
 
           <nav className="hidden items-center gap-1 lg:flex">
             <Link
@@ -338,9 +330,7 @@ export default function Marketplace() {
             )}
           </nav>
 
-          {/* =================================================
-              RECHERCHE
-             ================================================= */}
+          {/* RECHERCHE */}
 
           <form
             onSubmit={(event) => {
@@ -371,9 +361,7 @@ export default function Marketplace() {
             )}
           </form>
 
-          {/* =================================================
-              ACTIONS
-             ================================================= */}
+          {/* ACTIONS */}
 
           <div className="flex shrink-0 items-center gap-1">
             <button
@@ -425,9 +413,7 @@ export default function Marketplace() {
          ===================================================== */}
 
       <main className="container mx-auto max-w-7xl px-4 pb-28 lg:pb-12">
-        {/* =================================================
-            HERO
-           ================================================= */}
+        {/* HERO */}
 
         {!query && (
           <MarketplaceIntro
@@ -437,10 +423,8 @@ export default function Marketplace() {
           />
         )}
 
-        {/* =================================================
-            BANDEAU COMPTE / SUIVI
-            VISITEURS NON ABONNÉS UNIQUEMENT
-           ================================================= */}
+        {/* BANDEAU COMPTE / SUIVI
+            VISIBLE UNIQUEMENT POUR LES VISITEURS NON ABONNÉS */}
 
         {!query && !isSubscriber && (
           <MarketplaceAccountBar
@@ -449,9 +433,7 @@ export default function Marketplace() {
           />
         )}
 
-        {/* =================================================
-            CHARGEMENT
-           ================================================= */}
+        {/* CHARGEMENT */}
 
         {isLoading ? (
           <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
@@ -480,10 +462,6 @@ export default function Marketplace() {
             </button>
           </div>
         ) : query ? (
-          /* =================================================
-             RÉSULTATS
-             ================================================= */
-
           <Rail
             title={`Résultats pour "${search.trim()}"`}
             subtitle={`${filteredBoutiques.length} boutique${
@@ -494,10 +472,6 @@ export default function Marketplace() {
           />
         ) : (
           <>
-            {/* =================================================
-                TENDANCES
-               ================================================= */}
-
             <Rail
               title="Tendances"
               subtitle="Les boutiques les plus populaires"
@@ -506,20 +480,12 @@ export default function Marketplace() {
               showFilter
             />
 
-            {/* =================================================
-                NOUVEAUTÉS
-               ================================================= */}
-
             <Rail
               title="Nouveautés"
               subtitle="Les dernières boutiques"
               items={newestBoutiques}
               showFilter
             />
-
-            {/* =================================================
-                CATÉGORIES
-               ================================================= */}
 
             {boutiquesByCategory.map(
               ([category, categoryBoutiques]) => (
@@ -540,9 +506,7 @@ export default function Marketplace() {
         )}
       </main>
 
-      {/* =====================================================
-          NAVIGATION MOBILE ABONNÉ UNIQUEMENT
-         ===================================================== */}
+      {/* NAVIGATION MOBILE ABONNÉ UNIQUEMENT */}
 
       {isSubscriber && (
         <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background/95 backdrop-blur-xl lg:hidden">
@@ -598,9 +562,7 @@ export default function Marketplace() {
         </nav>
       )}
 
-      {/* =====================================================
-          CUSTOMER PANEL
-         ===================================================== */}
+      {/* CUSTOMER PANEL */}
 
       <CustomerPanel
         open={panelOpen}
@@ -608,9 +570,7 @@ export default function Marketplace() {
         initialTab={panelTab}
       />
 
-      {/* =====================================================
-          FOOTER
-         ===================================================== */}
+      {/* FOOTER */}
 
       <footer className="border-t border-border bg-muted/30">
         <div className="container mx-auto flex max-w-7xl flex-col items-center gap-2 px-4 py-6 text-center text-xs text-muted-foreground sm:flex-row sm:justify-between sm:text-left">
@@ -651,8 +611,6 @@ function MarketplaceIntro({
   return (
     <section className="mb-5 mt-6 overflow-hidden rounded-[28px] border border-border bg-[#f7f5f0] sm:mt-8">
       <div className="grid items-stretch lg:grid-cols-[1fr_0.9fr]">
-        {/* TEXTE */}
-
         <div className="flex flex-col justify-center px-6 py-9 sm:px-8 sm:py-11 lg:px-10 lg:py-12">
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
             {isSubscriber
@@ -682,8 +640,6 @@ function MarketplaceIntro({
               : "Découvrir les boutiques"}
           </button>
         </div>
-
-        {/* IMAGE */}
 
         <div className="relative min-h-[230px] overflow-hidden bg-muted sm:min-h-[280px] lg:min-h-[340px]">
           {imageUrl ? (
@@ -757,7 +713,6 @@ function MarketplaceAccountBar({
             className="inline-flex h-9 w-fit items-center justify-center gap-1.5 rounded-full bg-foreground px-4 text-xs font-semibold text-background transition hover:opacity-85 active:scale-[0.98]"
           >
             Activer mon compte
-
             <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -781,7 +736,6 @@ function MarketplaceAccountBar({
             className="inline-flex h-9 w-fit items-center justify-center gap-1.5 rounded-full border border-border bg-background px-4 text-xs font-semibold text-foreground transition hover:bg-muted active:scale-[0.98]"
           >
             Suivre ma commande
-
             <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -818,7 +772,6 @@ function MobileNavButton({
       }`}
     >
       {children}
-
       <span>{label}</span>
     </button>
   );
@@ -877,8 +830,6 @@ function Rail({
 
   return (
     <section className="mt-8 sm:mt-10">
-      {/* TITRE */}
-
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="min-w-0">
           <h2
@@ -926,8 +877,6 @@ function Rail({
           </button>
         </div>
       </div>
-
-      {/* CARTES */}
 
       <div
         ref={railRef}
