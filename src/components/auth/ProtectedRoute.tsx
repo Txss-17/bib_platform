@@ -1,130 +1,101 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
-type AuthContext = "platform" | "marketplace";
+type ProtectedContext = "platform" | "marketplace";
 
 interface ProtectedRouteProps {
-  context?: AuthContext;
+  context: ProtectedContext;
   children?: React.ReactNode;
 }
-
-const isPlatformPath = (pathname: string) => {
-  return (
-    pathname === "/dashboard" ||
-    pathname.startsWith("/dashboard/") ||
-    pathname === "/account" ||
-    pathname.startsWith("/account/") ||
-    pathname === "/settings" ||
-    pathname.startsWith("/settings/") ||
-    pathname === "/seller" ||
-    pathname.startsWith("/seller/") ||
-    pathname === "/merchant" ||
-    pathname.startsWith("/merchant/")
-  );
-};
-
-const isMarketplacePath = (pathname: string) => {
-  return (
-    pathname === "/store" ||
-    pathname.startsWith("/store/") ||
-    pathname === "/marketplace" ||
-    pathname.startsWith("/marketplace/") ||
-    pathname === "/recycler" ||
-    pathname.startsWith("/recycler/")
-  );
-};
 
 export default function ProtectedRoute({
   context,
   children,
 }: ProtectedRouteProps) {
-  const { user, loading } = useAuth();
+  const { user, accountType, loading } = useAuth();
   const location = useLocation();
 
+  /*
+   * Attendre que Supabase ait terminé
+   * de restaurer la session.
+   */
   if (loading) {
     return null;
   }
 
   /*
    * Aucun utilisateur connecté.
-   * Le contexte de la route détermine le formulaire de connexion.
+   *
+   * La destination de connexion dépend du contexte
+   * de la route protégée.
    */
   if (!user) {
-    const pathname = location.pathname;
+    const destination =
+      location.pathname + location.search;
 
-    if (context === "marketplace" || isMarketplacePath(pathname)) {
-      return (
-        <Navigate
-          to={`/store/login?next=${encodeURIComponent(
-            pathname + location.search
-          )}`}
-          replace
-        />
-      );
-    }
+    const loginPath =
+      context === "marketplace"
+        ? "/store/login"
+        : "/login";
 
     return (
       <Navigate
-        to={`/login?next=${encodeURIComponent(
-          pathname + location.search
-        )}`}
+        to={`${loginPath}?next=${encodeURIComponent(destination)}`}
         replace
       />
     );
   }
 
   /*
-   * Si aucun contexte n'est explicitement fourni,
-   * on le déduit de la route.
-   */
-  const currentContext: AuthContext =
-    context ??
-    (isMarketplacePath(location.pathname)
-      ? "marketplace"
-      : "platform");
-
-  /*
-   * IMPORTANT :
-   * Le profil utilisateur doit permettre de distinguer
-   * un compte Marketplace d'un compte Platform.
+   * L'utilisateur est connecté mais son type de compte
+   * n'est pas correctement défini.
    *
-   * Cette propriété devra correspondre à ton modèle réel
-   * Supabase/AuthContext.
+   * On ne lui accorde aucun accès implicite.
    */
-  const accountType = user.user_metadata?.account_type;
-
-  const isMarketplaceAccount =
-    accountType === "marketplace" ||
-    accountType === "customer";
-
-  const isPlatformAccount =
-    accountType === "platform" ||
-    accountType === "merchant" ||
-    accountType === "seller";
-
-  /*
-   * Compte Marketplace dans une zone Platform
-   */
-  if (currentContext === "platform" && isMarketplaceAccount) {
-    return <Navigate to="/store" replace />;
+  if (!accountType) {
+    return (
+      <Navigate
+        to="/login"
+        replace
+      />
+    );
   }
 
   /*
-   * Compte Platform dans une zone Marketplace
+   * Compte Marketplace essayant d'accéder
+   * à une zone Platform.
    */
-  if (currentContext === "marketplace" && isPlatformAccount) {
-    return <Navigate to="/dashboard" replace />;
+  if (
+    context === "platform" &&
+    accountType !== "platform"
+  ) {
+    return (
+      <Navigate
+        to="/store"
+        replace
+      />
+    );
   }
 
   /*
-   * Sécurité supplémentaire :
-   * si le type de compte est absent ou inconnu,
-   * on évite de donner un accès implicite.
+   * Compte Platform essayant d'accéder
+   * à une zone Marketplace.
    */
-  if (!isMarketplaceAccount && !isPlatformAccount) {
-    return <Navigate to="/login" replace />;
+  if (
+    context === "marketplace" &&
+    accountType !== "marketplace"
+  ) {
+    return (
+      <Navigate
+        to="/dashboard"
+        replace
+      />
+    );
   }
 
+  /*
+   * Accès autorisé.
+   */
   if (children) {
     return <>{children}</>;
   }
