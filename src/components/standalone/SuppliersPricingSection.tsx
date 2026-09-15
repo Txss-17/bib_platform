@@ -3,13 +3,13 @@ import {
   Check,
   ShieldCheck,
   Boxes,
-  ChevronRight,
   BarChart3,
   ClipboardCheck,
   Truck,
   FileCheck2,
   ArrowRight,
 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -20,343 +20,429 @@ import {
 } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
 
+/* -------------------------------------------------------------------------- */
+/* SERVICES FOURNISSEUR                                                       */
+/* -------------------------------------------------------------------------- */
+
 const SUPPLIER_SERVICES = [
   {
     icon: ClipboardCheck,
     title: "Référencement contrôlé",
-    text: "Chaque fournisseur et chaque référence sont étudiés avant leur intégration au catalogue BIB.",
+    description:
+      "BIB étudie l'entreprise, ses documents, ses capacités et les références proposées avant toute intégration au catalogue.",
   },
   {
     icon: ShieldCheck,
-    title: "Contrôles qualité & conformité",
-    text: "BIB peut contrôler les documents, produits, procédés et éléments nécessaires à la commercialisation.",
+    title: "Qualité & conformité",
+    description:
+      "Les éléments nécessaires à la commercialisation des produits sont examinés selon le profil du fournisseur, les produits concernés et les zones visées.",
   },
   {
     icon: Boxes,
     title: "Catalogue BIB",
-    text: "Les références validées peuvent être proposées aux boutiques correspondant aux critères du réseau.",
+    description:
+      "Les références validées peuvent être intégrées au catalogue BIB et proposées aux boutiques correspondant aux critères du réseau.",
   },
   {
     icon: Truck,
     title: "Coordination logistique",
-    text: "Les opérations de stock, de préparation et d'expédition sont coordonnées avec les partenaires BIB.",
+    description:
+      "Les flux de stock, de préparation et d'expédition sont organisés selon le schéma opérationnel BIB et les partenaires logistiques retenus.",
   },
   {
     icon: BarChart3,
-    title: "Suivi des performances",
-    text: "Le portail fournisseur permet progressivement de suivre les références, disponibilités et opérations.",
+    title: "Suivi des opérations",
+    description:
+      "Les informations relatives aux références, disponibilités et opérations sont structurées dans le cadre de suivi défini par BIB.",
   },
   {
     icon: FileCheck2,
     title: "Traçabilité documentaire",
-    text: "Les documents et informations nécessaires au suivi du fournisseur sont centralisés dans le parcours BIB.",
+    description:
+      "Les documents, informations produit et éléments nécessaires au suivi fournisseur sont centralisés et maintenus selon les exigences BIB.",
   },
 ];
+
+/* -------------------------------------------------------------------------- */
+/* FAQ                                                                        */
+/* -------------------------------------------------------------------------- */
 
 const FAQ = [
   {
-    q: "Le référencement fournisseur est-il automatique ?",
-    a: "Non. BIB fonctionne sur un modèle de réseau sélectionné. La candidature fait l'objet d'une étude avant toute validation. L'acceptation d'un fournisseur ne garantit pas l'intégration de l'ensemble de ses produits.",
+    question: "Le référencement d'un fournisseur est-il automatique ?",
+    answer:
+      "Non. La candidature constitue uniquement la première étape. BIB étudie le fournisseur, son activité, ses documents, ses capacités et les produits proposés avant toute décision de référencement.",
   },
   {
-    q: "Qui sélectionne les produits proposés aux boutiques ?",
-    a: "BIB. Les boutiques n'accèdent pas directement à l'ensemble du catalogue fournisseur. Les références sont d'abord étudiées et validées selon les critères BIB, puis intégrées au catalogue disponible pour le réseau.",
+    question: "L'acceptation d'un fournisseur signifie-t-elle que tous ses produits seront référencés ?",
+    answer:
+      "Non. Le fournisseur et ses références font l'objet d'une appréciation distincte. BIB peut accepter un fournisseur tout en ne retenant qu'une partie des produits proposés.",
   },
   {
-    q: "Le fournisseur travaille-t-il directement avec chaque boutique ?",
-    a: "Le modèle BIB vise à centraliser cette relation opérationnelle. Le fournisseur transmet ses informations, ses produits et ses disponibilités à BIB ; les boutiques accèdent ensuite au catalogue qui leur est rendu disponible.",
+    question: "Qui sélectionne les produits proposés aux boutiques ?",
+    answer:
+      "BIB définit et contrôle les références pouvant entrer dans son catalogue. Les boutiques n'accèdent pas directement à l'intégralité du catalogue d'un fournisseur.",
   },
   {
-    q: "Y a-t-il un abonnement obligatoire pour être fournisseur ?",
-    a: "Le modèle tarifaire dépend du parcours fournisseur et des services effectivement proposés par BIB. Les éventuels frais, services ou conditions applicables sont présentés au fournisseur avant son engagement.",
+    question: "Le fournisseur travaille-t-il directement avec les boutiques ?",
+    answer:
+      "Le modèle BIB vise à encadrer la relation opérationnelle entre fournisseurs et boutiques. Les échanges, flux et procédures sont organisés par BIB afin de conserver un fonctionnement cohérent et traçable.",
   },
   {
-    q: "Comment fonctionnent les audits ?",
-    a: "Les contrôles sont définis selon le profil du fournisseur, les produits concernés et le niveau de risque ou de conformité requis. BIB peut demander des documents, des échantillons ou organiser un contrôle sur site lorsque cela est nécessaire.",
+    question: "Faut-il payer un abonnement pour devenir fournisseur ?",
+    answer:
+      "Le référencement BIB ne repose pas sur un modèle ouvert de paiement pour simplement apparaître dans un catalogue. Les éventuelles conditions commerciales, prestations ou coûts applicables sont déterminés selon le parcours du fournisseur et présentés avant tout engagement contractuel.",
   },
   {
-    q: "Comment les stocks sont-ils gérés ?",
-    a: "Le fournisseur transmet ses informations de disponibilité selon les procédures BIB. Lorsque le modèle logistique le prévoit, les stocks peuvent être orientés vers un partenaire logistique afin de permettre leur préparation et leur expédition.",
+    question: "Des contrôles ou audits peuvent-ils être demandés ?",
+    answer:
+      "Oui. Selon le profil du fournisseur, les produits, le pays, le niveau de risque et les exigences applicables, BIB peut demander des documents complémentaires, des échantillons, des contrôles ou un audit adapté. Celui-ci peut notamment être réalisé sur site lorsque cela est pertinent.",
   },
   {
-    q: "Comment les paiements sont-ils effectués ?",
-    a: "Les modalités financières sont définies dans le cadre contractuel applicable au fournisseur. Les reversements sont suivis par BIB et font l'objet des documents financiers prévus.",
+    question: "Comment les informations de stock sont-elles gérées ?",
+    answer:
+      "Le fournisseur transmet les informations de disponibilité selon les procédures définies avec BIB. Le niveau de suivi et les modalités opérationnelles peuvent varier selon le schéma logistique retenu pour les références concernées.",
   },
   {
-    q: "Puis-je retirer une référence du catalogue ?",
-    a: "Oui, sous réserve des commandes, engagements et procédures en cours. Une référence peut également être suspendue par BIB lorsqu'elle ne respecte plus les critères applicables.",
+    question: "Comment les conditions financières sont-elles définies ?",
+    answer:
+      "Les conditions financières sont définies dans le cadre contractuel applicable au fournisseur et aux services concernés. Elles sont communiquées avant engagement et ne constituent pas un tarif public automatique applicable à tous les fournisseurs.",
+  },
+  {
+    question: "Une référence peut-elle être retirée du catalogue ?",
+    answer:
+      "Oui. Une référence peut être suspendue ou retirée en cas de non-conformité, indisponibilité, évolution des exigences, problème qualité ou autre motif opérationnel ou contractuel. Les commandes et engagements déjà concernés sont traités selon les procédures applicables.",
   },
 ];
 
+/* -------------------------------------------------------------------------- */
+/* COMPOSANT                                                                  */
+/* -------------------------------------------------------------------------- */
+
 export function SuppliersPricingSection() {
   return (
-    <>
-      {/* SERVICES FOURNISSEUR */}
-      <section
-        id="services"
-        className="container mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-18 scroll-mt-20"
-      >
-        <div className="max-w-2xl mx-auto text-center mb-10">
-          <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">
-            Services BIB
-          </p>
+    <section className="border-y border-border/50 bg-muted/20">
+      <div className="container mx-auto px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+        {/* ------------------------------------------------------------------ */}
+        {/* INTRO                                                               */}
+        {/* ------------------------------------------------------------------ */}
 
-          <h2 className="font-display text-2xl sm:text-3xl font-bold text-bib-marine">
-            Ce que BIB met en place pour les fournisseurs
-          </h2>
-
-          <p className="text-sm sm:text-base text-muted-foreground mt-3 leading-relaxed">
-            Le fournisseur rejoint un environnement structuré : référencement,
-            contrôle, catalogue, opérations et suivi sont organisés dans un
-            même parcours.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {SUPPLIER_SERVICES.map((service) => {
-            const Icon = service.icon;
-
-            return (
-              <Card
-                key={service.title}
-                className="p-5 sm:p-6 transition-shadow hover:shadow-md"
-              >
-                <div className="w-10 h-10 rounded-lg bg-bib-gold/10 text-bib-gold flex items-center justify-center mb-4">
-                  <Icon className="h-5 w-5" />
-                </div>
-
-                <h3 className="font-semibold text-bib-marine">
-                  {service.title}
-                </h3>
-
-                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                  {service.text}
-                </p>
-              </Card>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* LOGIQUE TARIFAIRE */}
-      <section className="bg-muted/30 border-y border-border/50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-18">
-          <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-9">
-              <Badge variant="secondary" className="mb-3">
-                Conditions fournisseur
-              </Badge>
-
-              <h2 className="font-display text-2xl sm:text-3xl font-bold text-bib-marine">
-                Un modèle tarifaire lié aux services réellement utilisés
-              </h2>
-
-              <p className="text-sm sm:text-base text-muted-foreground mt-3 leading-relaxed">
-                BIB ne fonctionne pas comme une marketplace ouverte où un
-                fournisseur paie simplement pour apparaître. Les éventuels
-                frais et conditions sont déterminés selon le parcours,
-                les contrôles et les services opérationnels concernés.
-              </p>
-            </div>
-
-            <Card className="p-6 sm:p-8 bg-background">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div>
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
-                    <FileCheck2 className="h-4 w-4" />
-                  </div>
-
-                  <h3 className="font-semibold text-sm">
-                    Référencement
-                  </h3>
-
-                  <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                    Étude de l'entreprise, des documents et des références
-                    proposées.
-                  </p>
-                </div>
-
-                <div>
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
-                    <ShieldCheck className="h-4 w-4" />
-                  </div>
-
-                  <h3 className="font-semibold text-sm">
-                    Contrôle
-                  </h3>
-
-                  <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                    Contrôles documentaires, qualité et conformité selon les
-                    produits et le profil fournisseur.
-                  </p>
-                </div>
-
-                <div>
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
-                    <Truck className="h-4 w-4" />
-                  </div>
-
-                  <h3 className="font-semibold text-sm">
-                    Opérations
-                  </h3>
-
-                  <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                    Coordination des flux de stock et de livraison avec les
-                    opérations et partenaires BIB.
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-7 pt-6 border-t border-border/60">
-                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {[
-                    "Conditions communiquées avant engagement",
-                    "Aucun accès automatique au réseau",
-                    "Références soumises à validation",
-                    "Services adaptés au parcours fournisseur",
-                  ].map((item) => (
-                    <li
-                      key={item}
-                      className="flex items-start gap-2.5 text-sm"
-                    >
-                      <Check className="h-4 w-4 text-success shrink-0 mt-0.5" />
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Card>
-
-            <p className="text-center text-xs text-muted-foreground mt-5">
-              Les conditions commerciales définitives sont présentées au
-              fournisseur lors du parcours de candidature et avant toute
-              contractualisation.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* PARCOURS */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-18">
-        <div className="max-w-2xl mx-auto text-center mb-9">
-          <p className="uppercase tracking-[0.18em] text-xs text-secondary font-medium mb-2">
-            Parcours
-          </p>
-
-          <h2 className="font-display text-2xl sm:text-3xl font-bold text-bib-marine">
-            Ce qui se passe après votre candidature
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
-          {[
-            {
-              number: "01",
-              title: "Candidature",
-              text: "Vous présentez votre entreprise et vos produits.",
-            },
-            {
-              number: "02",
-              title: "Évaluation",
-              text: "BIB étudie la compatibilité avec son réseau.",
-            },
-            {
-              number: "03",
-              title: "Validation",
-              text: "Les documents et références retenus sont contrôlés.",
-            },
-            {
-              number: "04",
-              title: "Intégration",
-              text: "Les produits validés peuvent rejoindre le catalogue BIB.",
-            },
-          ].map((step) => (
-            <Card key={step.number} className="p-5">
-              <span className="text-xs font-bold tracking-[0.15em] text-bib-gold">
-                {step.number}
-              </span>
-
-              <h3 className="font-semibold text-bib-marine mt-3">
-                {step.title}
-              </h3>
-
-              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                {step.text}
-              </p>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section
-        id="faq"
-        className="container mx-auto px-4 sm:px-6 lg:px-8 pb-14 lg:pb-18 max-w-4xl scroll-mt-20"
-      >
-        <div className="text-center mb-7">
-          <Badge variant="secondary" className="mb-3">
-            FAQ fournisseur
+        <div className="mx-auto max-w-3xl text-center">
+          <Badge variant="secondary" className="mb-4">
+            Conditions fournisseur
           </Badge>
 
-          <h2 className="font-display text-2xl sm:text-3xl font-bold text-bib-marine">
-            Questions fréquentes
+          <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
+            Un cadre défini avant l'intégration au réseau
           </h2>
 
-          <p className="text-sm text-muted-foreground mt-2">
-            Les principales règles du parcours fournisseur BIB.
+          <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
+            BIB ne fonctionne pas comme une marketplace ouverte où un fournisseur
+            paie simplement pour publier ses produits. Chaque candidature est
+            étudiée et les conditions applicables sont définies en fonction du
+            parcours, des contrôles nécessaires et des opérations concernées.
           </p>
         </div>
 
-        <Accordion
-          type="single"
-          collapsible
-          className="space-y-2"
-        >
-          {FAQ.map((item, index) => (
-            <AccordionItem
-              key={item.q}
-              value={`faq-${index}`}
-              className="rounded-xl border border-border bg-card px-4 data-[state=open]:shadow-sm"
-            >
-              <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline">
-                {item.q}
-              </AccordionTrigger>
+        {/* ------------------------------------------------------------------ */}
+        {/* SERVICES                                                            */}
+        {/* ------------------------------------------------------------------ */}
 
-              <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
-                {item.a}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-      </section>
-
-      {/* CTA */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <Card className="relative overflow-hidden p-7 sm:p-10 text-center border-bib-gold/30 bg-bib-gold/5">
-          <div className="relative max-w-2xl mx-auto">
-            <div className="w-11 h-11 rounded-xl bg-bib-gold/15 text-bib-gold flex items-center justify-center mx-auto mb-4">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-
-            <h3 className="font-display text-xl sm:text-2xl font-bold text-bib-marine">
-              Vous souhaitez rejoindre le réseau BIB ?
-            </h3>
-
-            <p className="text-sm text-muted-foreground mt-2 mb-6 max-w-xl mx-auto leading-relaxed">
-              Présentez votre activité et vos produits. L'équipe BIB étudiera
-              votre candidature avant de vous communiquer les prochaines
-              étapes.
+        <div className="mt-12">
+          <div className="mb-7">
+            <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-secondary">
+              Ce que BIB structure
             </p>
 
-            <Button asChild variant="coral" size="lg" className="gap-2">
-              <Link to="/suppliers/apply">
-                Déposer ma candidature
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
+            <h3 className="font-display text-xl font-bold sm:text-2xl">
+              Un parcours fournisseur encadré
+            </h3>
           </div>
-        </Card>
-      </section>
-    </>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {SUPPLIER_SERVICES.map((service) => {
+              const Icon = service.icon;
+
+              return (
+                <Card
+                  key={service.title}
+                  className="h-full p-5 transition-colors hover:bg-background"
+                >
+                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Icon className="h-5 w-5" />
+                  </div>
+
+                  <h4 className="text-sm font-semibold">
+                    {service.title}
+                  </h4>
+
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {service.description}
+                  </p>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ------------------------------------------------------------------ */}
+        {/* LOGIQUE COMMERCIALE                                                 */}
+        {/* ------------------------------------------------------------------ */}
+
+        <div className="mt-14">
+          <div className="mb-7 max-w-2xl">
+            <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-secondary">
+              Logique commerciale
+            </p>
+
+            <h3 className="font-display text-xl font-bold sm:text-2xl">
+              Pas de paiement pour une simple présence au catalogue
+            </h3>
+
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              Le modèle fournisseur BIB repose sur un parcours qualifié et sur
+              les services réellement nécessaires à l'intégration et aux
+              opérations. Les conditions sont définies avant contractualisation.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <Card className="p-6">
+              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <ClipboardCheck className="h-5 w-5" />
+              </div>
+
+              <h4 className="font-semibold">Référencement</h4>
+
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                L'accès au réseau commence par une candidature et une étude du
+                dossier. Aucune intégration automatique n'est effectuée.
+              </p>
+
+              <ul className="mt-5 space-y-2.5">
+                {[
+                  "Étude du fournisseur",
+                  "Étude des références",
+                  "Vérification des informations",
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-2 text-xs"
+                  >
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+
+            <Card className="p-6">
+              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+
+              <h4 className="font-semibold">Contrôles</h4>
+
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Les contrôles nécessaires sont déterminés selon le fournisseur,
+                les produits, les zones concernées et les exigences applicables.
+              </p>
+
+              <ul className="mt-5 space-y-2.5">
+                {[
+                  "Documents de conformité",
+                  "Qualité et informations produit",
+                  "Contrôles adaptés au profil",
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-2 text-xs"
+                  >
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+
+            <Card className="p-6">
+              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Truck className="h-5 w-5" />
+              </div>
+
+              <h4 className="font-semibold">Opérations</h4>
+
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                Une fois les références validées, leur exploitation est
+                organisée selon les procédures BIB et le schéma logistique
+                applicable.
+              </p>
+
+              <ul className="mt-5 space-y-2.5">
+                {[
+                  "Disponibilité des références",
+                  "Préparation et expédition",
+                  "Suivi et traçabilité",
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-2 text-xs"
+                  >
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          </div>
+
+          <div className="mt-6 rounded-lg border border-border/60 bg-background p-5">
+            <div className="flex items-start gap-3">
+              <FileCheck2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+
+              <div>
+                <p className="text-sm font-semibold">
+                  Les conditions sont communiquées avant engagement
+                </p>
+
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+                  Le dépôt d'une candidature ne constitue pas un engagement
+                  contractuel. Si le dossier est retenu pour la suite du
+                  parcours, BIB présente les conditions applicables avant toute
+                  contractualisation.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ------------------------------------------------------------------ */}
+        {/* PARCOURS                                                            */}
+        {/* ------------------------------------------------------------------ */}
+
+        <div className="mt-14">
+          <div className="mb-7 max-w-2xl">
+            <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-secondary">
+              Parcours
+            </p>
+
+            <h3 className="font-display text-xl font-bold sm:text-2xl">
+              De la candidature à l'intégration
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                number: "01",
+                title: "Candidature",
+                text: "Présentation de l'entreprise, des capacités et des références proposées.",
+              },
+              {
+                number: "02",
+                title: "Évaluation",
+                text: "Étude du dossier, des produits, des documents et de la compatibilité avec le réseau.",
+              },
+              {
+                number: "03",
+                title: "Validation",
+                text: "Contrôles complémentaires et décision sur les références pouvant être retenues.",
+              },
+              {
+                number: "04",
+                title: "Intégration",
+                text: "Mise en place du référencement et des procédures opérationnelles applicables.",
+              },
+            ].map((step) => (
+              <Card key={step.number} className="p-5">
+                <span className="text-xs font-semibold tracking-[0.15em] text-primary">
+                  {step.number}
+                </span>
+
+                <h4 className="mt-3 text-sm font-semibold">
+                  {step.title}
+                </h4>
+
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  {step.text}
+                </p>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* ------------------------------------------------------------------ */}
+        {/* FAQ                                                                 */}
+        {/* ------------------------------------------------------------------ */}
+
+        <div className="mt-14">
+          <div className="mb-7 max-w-2xl">
+            <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-secondary">
+              Questions fréquentes
+            </p>
+
+            <h3 className="font-display text-xl font-bold sm:text-2xl">
+              Comprendre le fonctionnement fournisseur
+            </h3>
+          </div>
+
+          <Card className="overflow-hidden">
+            <Accordion type="single" collapsible className="w-full">
+              {FAQ.map((item, index) => (
+                <AccordionItem
+                  key={item.question}
+                  value={`faq-${index}`}
+                  className="px-5 sm:px-6"
+                >
+                  <AccordionTrigger className="text-left text-sm font-medium hover:no-underline">
+                    {item.question}
+                  </AccordionTrigger>
+
+                  <AccordionContent className="pb-5 text-sm leading-relaxed text-muted-foreground">
+                    {item.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </Card>
+        </div>
+
+        {/* ------------------------------------------------------------------ */}
+        {/* CTA                                                                 */}
+        {/* ------------------------------------------------------------------ */}
+
+        <div className="mt-14">
+          <Card className="border-primary/20 bg-background p-6 sm:p-8">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-2xl">
+                <div className="mb-3 flex items-center gap-2">
+                  <ShieldCheck className="h-5 w-5 text-primary" />
+
+                  <span className="text-xs font-medium uppercase tracking-[0.16em] text-primary">
+                    Prochaine étape
+                  </span>
+                </div>
+
+                <h3 className="font-display text-xl font-bold sm:text-2xl">
+                  Votre entreprise souhaite rejoindre le réseau BIB ?
+                </h3>
+
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Déposez votre candidature pour permettre à BIB d'étudier
+                  votre activité, vos produits et vos capacités opérationnelles.
+                </p>
+              </div>
+
+              <Button asChild size="lg" className="shrink-0 gap-2">
+                <Link to="/suppliers/apply">
+                  Candidater
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </div>
+    </section>
   );
 }
