@@ -1,475 +1,698 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  ArrowRight,
   Check,
-  ChevronDown,
-  CircleHelp,
-  CreditCard,
-  Package,
   ShieldCheck,
-  Store,
   Truck,
+  Award,
+  Umbrella,
+  ChevronRight,
 } from "lucide-react";
+
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+import { usePlans, type PlanTier } from "@/hooks/usePlans";
+import { useAuth } from "@/contexts/AuthContext";
+import { StripeEmbeddedCheckout } from "@/components/payments/StripeEmbeddedCheckout";
+import { PaymentTestModeBanner } from "@/components/payments/PaymentTestModeBanner";
 import { useSEO } from "@/hooks/useSEO";
+import { cn } from "@/lib/utils";
 
-type PricingOffer = {
-  id: string;
-  name: string;
-  eyebrow: string;
-  description: string;
-  price: string;
-  period: string;
-  badge?: string;
-  published: boolean;
-  featured?: boolean;
-  features: string[];
+const carouselClass =
+  "flex md:grid md:grid-cols-3 gap-4 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory md:snap-none -mx-4 px-4 md:mx-0 md:px-0 pb-2 md:pb-0 scrollbar-none";
+
+const cardSnapClass =
+  "snap-center md:snap-align-none shrink-0 md:shrink min-w-[82%] sm:min-w-[60%] md:min-w-0";
+
+const planAudience: Record<PlanTier, string> = {
+  starter: "Micro-entrepreneurs & TPE",
+  growth: "Entrepreneurs & marques actives",
+  pro: "PME & marques établies",
 };
 
-type PricingTier = {
-  label: string;
-  price: string;
+const planDescriptions: Record<PlanTier, string> = {
+  starter:
+    "L'essentiel pour lancer et structurer votre activité avec BIB.",
+  growth:
+    "Pour les marques qui développent activement leur activité commerciale.",
+  pro:
+    "Pour les marques établies qui ont besoin d'un cadre plus complet.",
 };
 
-const offers: PricingOffer[] = [
-  {
-    id: "bib-boutique",
-    name: "BIB Boutique",
-    eyebrow: "Pour les marques",
-    description:
-      "Une boutique intégrée à l’environnement BIB pour présenter votre marque et développer votre activité dans un réseau structuré.",
-    price: "79 €",
-    period: "/ mois",
-    badge: "Offre actuellement disponible",
-    published: true,
-    featured: true,
-    features: [
-      "Boutique BIB dédiée à votre marque",
-      "Accès au réseau commercial BIB",
-      "Catalogue de produits sélectionnés",
-      "Infrastructure BIB intégrée",
-      "Suivi des commandes et de l’activité",
-      "Accompagnement dans le cadre du réseau BIB",
-    ],
-  },
+const planAccent: Record<PlanTier, string> = {
+  starter: "border-border",
+  growth: "border-foreground/25 ring-1 ring-foreground/10",
+  pro: "border-border",
+};
 
-  // OFFRE FUTURE — ne sera pas affichée tant que published === false
-  {
-    id: "bib-abonne",
-    name: "BIB Abonné",
-    eyebrow: "Pour les clients",
-    description:
-      "Un espace client enrichi pour découvrir les boutiques, suivre ses commandes et accéder aux programmes BIB.",
-    price: "4,99 €",
-    period: "/ mois",
-    published: false,
-    features: [
-      "Recherche de boutiques",
-      "Boutiques suivies",
-      "Suivi des commandes",
-      "Programme de recyclage",
-      "Points BIB",
-      "Cartes cadeaux",
-    ],
-  },
-
-  // OFFRE FUTURE — ne sera pas affichée tant que published === false
-  {
-    id: "boutique-verte",
-    name: "Boutique Verte",
-    eyebrow: "Pour les boutiques",
-    description:
-      "Une offre progressive destinée aux boutiques selon la taille de leur communauté d’abonnés.",
-    price: "19,99 €",
-    period: "/ mois",
-    published: false,
-    features: [
-      "Tarification progressive selon le nombre d’abonnés",
-      "Services liés au programme Boutique Verte",
-      "Intégration aux dispositifs BIB concernés",
-    ],
-  },
-];
-
-const boutiqueVerteTiers: PricingTier[] = [
-  { label: "0 – 100 abonnés", price: "19,99 € / mois" },
-  { label: "101 – 250 abonnés", price: "29,99 € / mois" },
-  { label: "251 – 500 abonnés", price: "49,99 € / mois" },
-  { label: "501 – 1 000 abonnés", price: "79,99 € / mois" },
-  { label: "1 001 – 2 500 abonnés", price: "129,99 € / mois" },
-  { label: "2 501 – 5 000 abonnés", price: "199,99 € / mois" },
-  { label: "5 001 – 10 000 abonnés", price: "299,99 € / mois" },
-];
-
-const faqs = [
-  {
-    question: "Que comprend l’abonnement BIB Boutique ?",
-    answer:
-      "BIB Boutique donne accès à l’environnement commercial BIB destiné aux marques : boutique, catalogue sélectionné, infrastructure intégrée et services associés au réseau BIB.",
-  },
-  {
-    question: "L’abonnement comprend-il les commissions sur les ventes ?",
-    answer:
-      "L’abonnement et les éventuels frais liés aux transactions sont deux éléments distincts. Les conditions applicables sont présentées avant l’activation de l’offre.",
-  },
-  {
-    question: "Comment les reversements sont-ils effectués ?",
-    answer:
-      "Les ventes font l’objet d’un traitement et d’un reversement selon le fonctionnement financier BIB applicable au compte marchand. Les documents correspondants sont mis à disposition selon le cycle prévu.",
-  },
-  {
-    question: "La livraison est-elle gérée directement par la marque ?",
-    answer:
-      "BIB structure son réseau logistique avec des partenaires dédiés. La marque n’a pas vocation à gérer directement les relations fournisseurs et logistiques intégrées au réseau BIB.",
-  },
-  {
-    question: "Puis-je souscrire immédiatement ?",
-    answer:
-      "BIB Boutique est actuellement l’offre marchande accessible. La création de boutique commence par le parcours d’inscription et de vérification.",
-  },
-];
+function formatPrice(value: number) {
+  return new Intl.NumberFormat("fr-FR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
 
 export default function Tarifs() {
+  const { data: plans, isLoading } = usePlans();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const [annual, setAnnual] = useState(false);
+  const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
+
   useSEO({
-    title: "Tarifs BIB — Des offres adaptées à votre activité",
+    title: "Tarifs BIB — Offres marchands",
     description:
-      "Découvrez les offres BIB pour les marques et les boutiques. BIB Boutique est actuellement disponible à 79 € par mois.",
+      "Découvrez les offres marchands BIB Starter, Growth et Pro : abonnement mensuel, commission dégressive et infrastructure commerciale intégrée.",
   });
 
-  const publishedOffers = offers.filter((offer) => offer.published);
+  const sorted = (plans || [])
+    .slice()
+    .sort((a, b) => a.sort_order - b.sort_order);
 
-  const currentOffer = publishedOffers.find(
-    (offer) => offer.id === "bib-boutique",
-  );
+  function handleSubscribe(priceIdBase: string) {
+    const cycle = annual ? "yearly" : "monthly";
+    const priceId = `${priceIdBase}_${cycle}`;
+
+    if (!user) {
+      navigate(
+        `/signup?plan=${priceIdBase}&cycle=${
+          annual ? "annual" : "monthly"
+        }`,
+      );
+      return;
+    }
+
+    setCheckoutPriceId(priceId);
+  }
 
   return (
-    <div className="min-h-screen bg-white text-slate-950">
+    <div className="min-h-screen bg-background text-foreground">
+      <PaymentTestModeBanner />
       <Header />
 
-      <main>
+      <main className="pt-24 pb-16">
         {/* HERO */}
-        <section className="relative overflow-hidden border-b border-slate-200 bg-[#f7f4ee]">
-          <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
-            <div className="max-w-4xl">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700">
-                <CreditCard className="h-4 w-4" />
-                Tarification BIB
-              </div>
+        <section className="border-b border-border">
+          <div className="container mx-auto px-4 py-16 md:py-20">
+            <div className="mx-auto max-w-3xl text-center">
+              <Badge
+                variant="outline"
+                className="mb-5 rounded-full px-4 py-1.5 text-xs font-medium"
+              >
+                Offres marchands BIB
+              </Badge>
 
-              <h1 className="max-w-4xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
-                Une offre claire pour construire votre activité dans le réseau
-                BIB.
+              <h1 className="text-4xl font-semibold tracking-tight md:text-5xl lg:text-6xl">
+                Une tarification claire pour développer votre marque.
               </h1>
 
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-                BIB structure les outils, les produits et les partenaires
-                nécessaires au développement d’une marque. Les offres sont
-                activées progressivement selon leur disponibilité.
+              <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
+                Choisissez l'offre adaptée à votre activité. Chaque formule
+                associe votre boutique BIB, l'infrastructure commerciale et un
+                catalogue de produits sélectionnés.
               </p>
 
-              <div className="mt-8 flex flex-wrap gap-3">
-                <a
-                  href="#offres"
-                  className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+              {/* CYCLE */}
+              <div className="mt-8 flex items-center justify-center gap-3">
+                <span
+                  className={cn(
+                    "text-sm",
+                    !annual
+                      ? "font-medium text-foreground"
+                      : "text-muted-foreground",
+                  )}
                 >
-                  Voir l’offre disponible
-                  <ArrowRight className="h-4 w-4" />
-                </a>
+                  Mensuel
+                </span>
 
-                <Link
-                  to="/centre-aide"
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
+                <Switch
+                  checked={annual}
+                  onCheckedChange={setAnnual}
+                  aria-label="Changer de périodicité"
+                />
+
+                <span
+                  className={cn(
+                    "text-sm",
+                    annual
+                      ? "font-medium text-foreground"
+                      : "text-muted-foreground",
+                  )}
                 >
-                  Comprendre BIB
-                </Link>
+                  Annuel
+                </span>
+
+                {annual && (
+                  <Badge
+                    variant="secondary"
+                    className="ml-1 rounded-full"
+                  >
+                    −20 %
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
         </section>
 
-        {/* OFFRES */}
-        <section id="offres" className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Offres actuellement disponibles
+        {/* PLANS MARCHANDS */}
+        <section className="container mx-auto px-4 py-14 md:py-20">
+          <div className="mx-auto mb-10 max-w-2xl text-center">
+            <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              Les offres
             </p>
 
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-              Commencez avec BIB Boutique.
+            <h2 className="mt-3 text-2xl font-semibold md:text-3xl">
+              Choisissez votre niveau d'accompagnement
             </h2>
 
-            <p className="mt-4 text-base leading-7 text-slate-600">
-              Les offres non encore lancées restent masquées de la page
-              publique. Elles pourront être activées sans modifier
-              l’architecture de cette page.
+            <p className="mt-3 text-muted-foreground">
+              Les trois offres marchands constituent la gamme principale BIB.
             </p>
           </div>
 
-          <div className="mt-10">
-            {publishedOffers.map((offer) => (
-              <div
-                key={offer.id}
-                className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm"
-              >
-                <div className="grid lg:grid-cols-[1.2fr_0.8fr]">
-                  <div className="p-8 sm:p-10 lg:p-12">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <span className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
-                        {offer.eyebrow}
-                      </span>
+          <div className="mb-4 text-center text-xs text-muted-foreground md:hidden">
+            Glissez pour découvrir les offres
+          </div>
 
-                      {offer.badge && (
-                        <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold text-white">
-                          {offer.badge}
+          {isLoading ? (
+            <div className="py-16 text-center text-muted-foreground">
+              Chargement des offres…
+            </div>
+          ) : (
+            <div className={carouselClass}>
+              {sorted.map((plan) => {
+                const featured = plan.tier === "growth";
+
+                const price = annual
+                  ? plan.annual_monthly_price_eur
+                  : plan.monthly_price_eur;
+
+                return (
+                  <article
+                    key={plan.tier}
+                    className={cn(
+                      cardSnapClass,
+                      "relative flex flex-col rounded-2xl border bg-card p-6 shadow-sm",
+                      planAccent[plan.tier],
+                      featured && "md:-translate-y-2",
+                    )}
+                  >
+                    {featured && (
+                      <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
+                        <Badge className="rounded-full px-4">
+                          ★ Recommandé
+                        </Badge>
+                      </div>
+                    )}
+
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        {planAudience[plan.tier]}
+                      </p>
+
+                      <h3 className="mt-2 text-2xl font-semibold">
+                        {plan.name}
+                      </h3>
+
+                      <p className="mt-3 min-h-[48px] text-sm leading-6 text-muted-foreground">
+                        {planDescriptions[plan.tier]}
+                      </p>
+                    </div>
+
+                    <div className="mt-7">
+                      <div className="flex items-end gap-1">
+                        <span className="text-4xl font-semibold tracking-tight">
+                          {formatPrice(price)}
                         </span>
+
+                        <span className="mb-1 text-sm text-muted-foreground">
+                          €/mois
+                        </span>
+                      </div>
+
+                      {annual && (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Facturation annuelle
+                        </p>
                       )}
                     </div>
 
-                    <h3 className="mt-5 text-3xl font-semibold text-slate-950">
-                      {offer.name}
-                    </h3>
+                    <div className="mt-6 rounded-xl bg-muted/50 p-4">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        Commission sur les ventes
+                      </p>
 
-                    <p className="mt-4 max-w-xl text-base leading-7 text-slate-600">
-                      {offer.description}
-                    </p>
-
-                    <div className="mt-8 flex items-end gap-2">
-                      <span className="text-5xl font-semibold tracking-tight text-slate-950">
-                        {offer.price}
-                      </span>
-
-                      <span className="mb-2 text-sm text-slate-500">
-                        {offer.period}
-                      </span>
+                      <p className="mt-1 text-2xl font-semibold">
+                        {plan.commission_percent} %
+                      </p>
                     </div>
 
-                    <div className="mt-8">
-                      <Link
-                        to="/signup?plan=bib-boutique"
-                        className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-                      >
-                        Créer ma boutique
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
+                    <div className="mt-6 flex-1">
+                      <p className="mb-3 text-sm font-medium">
+                        Ce qui est inclus
+                      </p>
+
+                      <ul className="space-y-3">
+                        {(plan.features || []).map(
+                          (feature: string, index: number) => (
+                            <li
+                              key={`${plan.tier}-feature-${index}`}
+                              className="flex items-start gap-3 text-sm text-muted-foreground"
+                            >
+                              <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
+                              <span>{feature}</span>
+                            </li>
+                          ),
+                        )}
+                      </ul>
                     </div>
-                  </div>
 
-                  <div className="border-t border-slate-200 bg-[#f7f4ee] p-8 sm:p-10 lg:border-l lg:border-t-0 lg:p-12">
-                    <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
-                      Inclus
-                    </p>
+                    <Button
+                      className="mt-8 w-full"
+                      variant={featured ? "default" : "outline"}
+                      onClick={() =>
+                        handleSubscribe(`plan_${plan.tier}`)
+                      }
+                    >
+                      Démarrer avec {plan.name}
+                      <ChevronRight className="ml-1 h-4 w-4" />
+                    </Button>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </section>
 
-                    <ul className="mt-6 space-y-4">
-                      {offer.features.map((feature) => (
-                        <li
-                          key={feature}
-                          className="flex items-start gap-3 text-sm leading-6 text-slate-700"
-                        >
-                          <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white">
-                            <Check className="h-3.5 w-3.5 text-slate-950" />
-                          </span>
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
+        {/* OFFRE BÊTA */}
+        <section className="container mx-auto px-4 pb-14">
+          <div className="mx-auto max-w-4xl rounded-2xl border border-border bg-muted/30 p-6 md:p-8">
+            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+              <div>
+                <Badge variant="secondary" className="mb-3 rounded-full">
+                  Offre bêta
+                </Badge>
+
+                <h2 className="text-xl font-semibold md:text-2xl">
+                  Les 10 premiers marchands bénéficient de −50 %.
+                </h2>
+
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  La réduction s'applique aux trois premiers mois de
+                  l'abonnement.
+                </p>
               </div>
-            ))}
+
+              <div className="shrink-0 text-sm text-muted-foreground">
+                <div>Starter : 39,50 €</div>
+                <div>Growth : 74,50 €</div>
+                <div>Pro : 149,50 €</div>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* INFRASTRUCTURE */}
-        <section className="border-y border-slate-200 bg-slate-950 text-white">
-          <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
-            <div className="max-w-3xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">
-                Au-delà de l’abonnement
+        {/* ASSURANCE */}
+        <section className="border-y border-border bg-muted/20">
+          <div className="container mx-auto px-4 py-14 md:py-20">
+            <div className="mx-auto max-w-3xl text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border bg-background">
+                <Umbrella className="h-5 w-5" />
+              </div>
+
+              <p className="mt-5 text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                Add-on marchand
               </p>
 
-              <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-                Une tarification qui distingue l’accès à BIB des services liés
-                à l’activité.
+              <h2 className="mt-3 text-2xl font-semibold md:text-3xl">
+                Assurance vendeur
               </h2>
 
-              <p className="mt-5 text-base leading-7 text-slate-300">
-                L’abonnement BIB Boutique constitue l’accès à l’environnement
-                marchand. Les flux de vente, la logistique et les éventuels
-                services complémentaires suivent leurs propres conditions.
+              <p className="mt-4 text-muted-foreground">
+                Une protection complémentaire pour les litiges clients,
+                indépendante de votre formule marchande.
               </p>
             </div>
 
-            <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
-                <Store className="h-6 w-6" />
-                <h3 className="mt-5 font-semibold">Boutique</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-400">
-                  Un espace commercial dédié à votre marque.
-                </p>
+            <div className="mx-auto mt-10 grid max-w-5xl gap-5 md:grid-cols-3">
+              {sorted.map((plan) => {
+                const monthly =
+                  plan.insurance_addon_price_eur ?? 25;
+
+                const price = annual
+                  ? Math.round(monthly * 0.8)
+                  : monthly;
+
+                const cap =
+                  plan.insurance_per_dispute_cap_eur;
+
+                const maxDisputes =
+                  plan.insurance_max_disputes_per_month;
+
+                return (
+                  <article
+                    key={`insurance-${plan.tier}`}
+                    className="rounded-2xl border bg-card p-6"
+                  >
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Assurance {plan.name}
+                    </p>
+
+                    <div className="mt-4 flex items-end gap-1">
+                      <span className="text-3xl font-semibold">
+                        {formatPrice(price)}
+                      </span>
+
+                      <span className="mb-1 text-sm text-muted-foreground">
+                        €/mois
+                      </span>
+                    </div>
+
+                    <div className="mt-6 space-y-3 text-sm text-muted-foreground">
+                      <div className="flex gap-3">
+                        <ShieldCheck className="h-4 w-4 shrink-0 text-foreground" />
+                        <span>
+                          Protection jusqu'à{" "}
+                          {cap != null
+                            ? `${formatPrice(cap)} €`
+                            : "la limite sélectionnée"}{" "}
+                          par litige
+                        </span>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <Check className="h-4 w-4 shrink-0 text-foreground" />
+                        <span>
+                          {maxDisputes
+                            ? `${maxDisputes} litiges maximum par mois`
+                            : "Litiges sans plafond mensuel"}
+                        </span>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <Check className="h-4 w-4 shrink-0 text-foreground" />
+                        <span>Médiation prioritaire sous 24h</span>
+                      </div>
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      className="mt-7 w-full"
+                      onClick={() =>
+                        handleSubscribe(`insurance_${plan.tier}`)
+                      }
+                    >
+                      Activer
+                    </Button>
+                  </article>
+                );
+              })}
+            </div>
+
+            <p className="mx-auto mt-6 max-w-2xl text-center text-xs leading-5 text-muted-foreground">
+              L'assurance est indépendante de votre abonnement marchand.
+              Vous pouvez sélectionner un niveau d'assurance différent de
+              votre offre Starter, Growth ou Pro.
+            </p>
+          </div>
+        </section>
+
+        {/* INFRASTRUCTURE INCLUSE */}
+        <section className="container mx-auto px-4 py-14 md:py-20">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
+              Dans le fonctionnement BIB
+            </p>
+
+            <h2 className="mt-3 text-2xl font-semibold md:text-3xl">
+              Une infrastructure pensée pour le marchand
+            </h2>
+          </div>
+
+          <div className="mx-auto mt-10 grid max-w-5xl gap-5 md:grid-cols-3">
+            <div className="rounded-2xl border bg-card p-6">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
+                <Award className="h-5 w-5" />
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
-                <Package className="h-6 w-6" />
-                <h3 className="mt-5 font-semibold">Produits</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-400">
-                  Un catalogue sélectionné dans l’environnement BIB.
-                </p>
+              <h3 className="mt-5 font-semibold">
+                Produits sélectionnés
+              </h3>
+
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Le catalogue accessible aux marchands est pré-validé par
+                BIB.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border bg-card p-6">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
+                <ShieldCheck className="h-5 w-5" />
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+              <h3 className="mt-5 font-semibold">
+                Contrôles et médiation
+              </h3>
+
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                BIB encadre les produits et accompagne la résolution des
+                litiges clients.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border bg-card p-6">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
+                <Truck className="h-5 w-5" />
+              </div>
+
+              <h3 className="mt-5 font-semibold">
+                Livraison EU incluse
+              </h3>
+
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                La provision logistique standard est intégrée au prix
+                affiché à l'acheteur.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* LIVRAISON */}
+        <section className="border-y border-border bg-muted/20">
+          <div className="container mx-auto px-4 py-14">
+            <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 text-center md:flex-row md:text-left">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border bg-background">
                 <Truck className="h-6 w-6" />
-                <h3 className="mt-5 font-semibold">Logistique</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-400">
-                  Une infrastructure organisée avec des partenaires dédiés.
-                </p>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
-                <ShieldCheck className="h-6 w-6" />
-                <h3 className="mt-5 font-semibold">Réseau vérifié</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-400">
-                  Des partenaires et produits intégrés selon les standards
-                  BIB.
+              <div>
+                <h2 className="text-xl font-semibold">
+                  Livraison EU incluse
+                </h2>
+
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Aucune surprise au checkout : la provision logistique
+                  standard est intégrée au prix affiché à l'acheteur.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* PRIX / LOGIQUE */}
-        <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
-          <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-                À retenir
-              </p>
-
-              <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
-                Pas de grille tarifaire artificiellement compliquée.
-              </h2>
-
-              <p className="mt-5 text-base leading-7 text-slate-600">
-                BIB publie uniquement les offres réellement accessibles. Les
-                nouvelles offres sont rendues visibles au moment de leur
-                lancement.
-              </p>
+        {/* CONFIANCE */}
+        <section className="container mx-auto px-4 py-14 md:py-20">
+          <div className="grid gap-5 md:grid-cols-3">
+            <div className="flex gap-4 rounded-2xl border bg-card p-6">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" />
+              <div>
+                <h3 className="font-medium">
+                  Médiation 48h
+                </h3>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  Les litiges clients sont gérés par la plateforme.
+                </p>
+              </div>
             </div>
 
-            <div className="divide-y divide-slate-200 rounded-3xl border border-slate-200">
-              <div className="flex gap-5 p-6 sm:p-8">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100">
-                  <CreditCard className="h-5 w-5 text-slate-700" />
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-slate-950">
-                    Abonnement
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
-                    Le prix affiché correspond à l’accès à l’offre BIB
-                    concernée.
-                  </p>
-                </div>
+            <div className="flex gap-4 rounded-2xl border bg-card p-6">
+              <Award className="mt-0.5 h-5 w-5 shrink-0" />
+              <div>
+                <h3 className="font-medium">
+                  Produits audités
+                </h3>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  Le catalogue marchand est pré-validé par BIB.
+                </p>
               </div>
+            </div>
 
-              <div className="flex gap-5 p-6 sm:p-8">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100">
-                  <Package className="h-5 w-5 text-slate-700" />
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-slate-950">
-                    Activité commerciale
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
-                    Les conditions liées aux ventes sont distinctes de
-                    l’abonnement et sont présentées avant activation.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-5 p-6 sm:p-8">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100">
-                  <Truck className="h-5 w-5 text-slate-700" />
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-slate-950">
-                    Services complémentaires
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">
-                    Certains services BIB peuvent disposer de conditions
-                    propres lorsqu’ils sont disponibles.
-                  </p>
-                </div>
+            <div className="flex gap-4 rounded-2xl border bg-card p-6">
+              <Check className="mt-0.5 h-5 w-5 shrink-0" />
+              <div>
+                <h3 className="font-medium">
+                  Sans engagement
+                </h3>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  Annulation à tout moment et données exportables.
+                </p>
               </div>
             </div>
           </div>
         </section>
 
         {/* FAQ */}
-        <section className="border-t border-slate-200 bg-[#f7f4ee]">
-          <div className="mx-auto max-w-5xl px-6 py-20 lg:px-8">
-            <div className="text-center">
-              <CircleHelp className="mx-auto h-7 w-7 text-slate-700" />
+        <section className="border-t border-border">
+          <div className="container mx-auto max-w-3xl px-4 py-14 md:py-20">
+            <div className="mb-8 text-center">
+              <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                FAQ
+              </p>
 
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950">
-                Questions fréquentes
+              <h2 className="mt-3 text-2xl font-semibold md:text-3xl">
+                Questions sur les offres marchands
               </h2>
             </div>
 
-            <div className="mt-10 divide-y divide-slate-300 rounded-3xl border border-slate-200 bg-white px-6 sm:px-8">
-              {faqs.map((faq) => (
-                <details key={faq.question} className="group py-6">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-6 font-medium text-slate-950">
-                    <span>{faq.question}</span>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="change-plan">
+                <AccordionTrigger>
+                  Puis-je changer de plan à tout moment ?
+                </AccordionTrigger>
 
-                    <ChevronDown className="h-5 w-5 shrink-0 text-slate-500 transition-transform group-open:rotate-180" />
-                  </summary>
+                <AccordionContent>
+                  Oui. Vous pouvez passer de Starter à Growth ou Pro, ou
+                  inversement. Le changement est pris en compte selon les
+                  conditions applicables à votre abonnement.
+                </AccordionContent>
+              </AccordionItem>
 
-                  <p className="mt-4 max-w-3xl pr-8 text-sm leading-7 text-slate-600">
-                    {faq.answer}
-                  </p>
-                </details>
-              ))}
-            </div>
+              <AccordionItem value="commission">
+                <AccordionTrigger>
+                  La commission est-elle prélevée en plus de l'abonnement ?
+                </AccordionTrigger>
+
+                <AccordionContent>
+                  Oui. L'abonnement couvre l'accès à votre offre BIB et à
+                  l'infrastructure associée. Une commission est ensuite
+                  appliquée sur les ventes selon votre formule : 15 % pour
+                  Starter, 10 % pour Growth et 8 % pour Pro.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="addons">
+                <AccordionTrigger>
+                  Les add-ons sont-ils liés au plan ?
+                </AccordionTrigger>
+
+                <AccordionContent>
+                  Non. L'Assurance vendeur est indépendante de votre
+                  abonnement marchand. Vous pouvez choisir le niveau qui
+                  correspond à votre activité.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="disputes">
+                <AccordionTrigger>
+                  Comment sont gérés les litiges clients ?
+                </AccordionTrigger>
+
+                <AccordionContent>
+                  BIB assure la médiation des litiges clients. L'Assurance
+                  vendeur peut compléter cette protection selon le niveau
+                  choisi et les plafonds associés.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="commitment">
+                <AccordionTrigger>
+                  Y a-t-il un engagement ?
+                </AccordionTrigger>
+
+                <AccordionContent>
+                  Non. Les offres marchands sont sans engagement. Vous pouvez
+                  annuler votre abonnement et récupérer vos données selon les
+                  conditions prévues par BIB.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
-          <div className="rounded-3xl bg-slate-950 px-8 py-12 text-white sm:px-12 lg:flex lg:items-center lg:justify-between lg:gap-12">
-            <div className="max-w-2xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">
-                BIB Boutique
-              </p>
+        {/* CTA FINAL */}
+        <section className="container mx-auto px-4 py-14 md:py-20">
+          <div className="mx-auto max-w-4xl rounded-3xl border bg-card p-8 text-center md:p-12">
+            <h2 className="text-2xl font-semibold md:text-3xl">
+              Prêt à développer votre marque avec BIB ?
+            </h2>
 
-              <h2 className="mt-3 text-3xl font-semibold tracking-tight">
-                Prêt à présenter votre marque dans le réseau BIB ?
-              </h2>
+            <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
+              Choisissez votre offre marchand et commencez à construire votre
+              présence dans le réseau BIB.
+            </p>
 
-              <p className="mt-4 text-base leading-7 text-slate-300">
-                Commencez votre demande de création de boutique et passez par
-                le parcours de vérification BIB.
-              </p>
-            </div>
-
-            <div className="mt-8 shrink-0 lg:mt-0">
-              <Link
-                to="/signup?plan=bib-boutique"
-                className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-slate-100"
-              >
-                Créer ma boutique
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
+            <Button
+              className="mt-7"
+              size="lg"
+              onClick={() => navigate("/signup")}
+            >
+              Créer ma boutique
+              <ChevronRight className="ml-1 h-4 w-4" />
+            </Button>
           </div>
         </section>
       </main>
 
       <Footer />
+
+      {/* STRIPE CHECKOUT */}
+      <Dialog
+        open={!!checkoutPriceId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCheckoutPriceId(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-2xl overflow-hidden p-0">
+          <DialogHeader className="px-6 pb-2 pt-5">
+            <DialogTitle>
+              Finaliser votre abonnement
+            </DialogTitle>
+          </DialogHeader>
+
+          {checkoutPriceId && user && (
+            <div className="px-2 pb-2">
+              <StripeEmbeddedCheckout
+                priceId={checkoutPriceId}
+                userId={user.id}
+                customerEmail={user.email ?? undefined}
+                returnUrl={`${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
+export type { PlanTier };
