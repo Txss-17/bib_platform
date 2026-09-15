@@ -46,6 +46,7 @@ export default function Marketplace() {
     useMarketplaceBoutiques();
 
   const [searchParams, setSearchParams] = useSearchParams();
+
   const [search, setSearch] = useState(
     searchParams.get("q") ?? "",
   );
@@ -57,6 +58,7 @@ export default function Marketplace() {
   const { data: customer } = useCustomerProfile();
 
   const [panelOpen, setPanelOpen] = useState(false);
+
   const [panelTab, setPanelTab] =
     useState<CustomerPanelTab>("favorites");
 
@@ -65,6 +67,10 @@ export default function Marketplace() {
    *
    * À remplacer par le véritable statut BIB Abonné
    * lorsque celui-ci sera disponible dans le profil client.
+   *
+   * Pour le moment :
+   * - utilisateur connecté = considéré comme abonné ;
+   * - visiteur non connecté = affichage du bandeau compte.
    */
   const isSubscriber = Boolean(user);
 
@@ -253,6 +259,10 @@ export default function Marketplace() {
     navigate("/signup");
   };
 
+  const goToOrderTracking = () => {
+    navigate("/OrderTracking");
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* =====================================================
@@ -428,14 +438,14 @@ export default function Marketplace() {
         )}
 
         {/* =================================================
-            COMPLÉMENTS COMPTE / COMMANDE
+            BANDEAU COMPTE / SUIVI
+            VISITEURS NON ABONNÉS UNIQUEMENT
            ================================================= */}
 
-        {!query && (
+        {!query && !isSubscriber && (
           <MarketplaceAccountBar
-            isSubscriber={isSubscriber}
             onActivateAccount={activateAccount}
-            onTrackOrder={goToOrders}
+            onTrackOrder={goToOrderTracking}
           />
         )}
 
@@ -708,56 +718,45 @@ function MarketplaceIntro({
 
 /* =========================================================
    BANDEAU COMPTE / SUIVI
+   VISITEURS NON ABONNÉS UNIQUEMENT
    ========================================================= */
 
 interface MarketplaceAccountBarProps {
-  isSubscriber: boolean;
   onActivateAccount: () => void;
   onTrackOrder: () => void;
 }
 
 function MarketplaceAccountBar({
-  isSubscriber,
   onActivateAccount,
   onTrackOrder,
 }: MarketplaceAccountBarProps) {
   return (
     <section className="mb-7 overflow-hidden rounded-2xl border border-border bg-muted/35">
-      <div className="flex flex-col divide-y divide-border/70 sm:flex-row sm:divide-x sm:divide-y-0">
-        {/* COMPTE */}
+      <div className="grid gap-0 sm:grid-cols-[1.25fr_1fr]">
+        {/* COMPTE BIB ABONNÉ */}
 
-        <div className="flex min-w-0 flex-1 items-center justify-between gap-4 px-4 py-3.5 sm:px-5">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background sm:flex">
-              <Heart
-                className="h-4 w-4 text-primary"
-                strokeWidth={1.8}
-              />
-            </div>
+        <div className="flex min-w-0 flex-col justify-between gap-4 px-4 py-4 sm:px-5 sm:py-4">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-foreground">
+              Activez votre compte BIB
+            </p>
 
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground">
-                {isSubscriber
-                  ? "Votre espace BIB"
-                  : "Activez votre compte"}
-              </p>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              Suivez vos boutiques favorites, retrouvez vos commandes et
+              profitez de votre espace BIB.
+            </p>
 
-              <p className="truncate text-xs text-muted-foreground">
-                {isSubscriber
-                  ? "Retrouvez vos boutiques favorites et vos commandes."
-                  : "Suivez vos boutiques favorites et retrouvez vos commandes."}
-              </p>
-            </div>
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              BIB Abonné · 4,99 €/mois
+            </p>
           </div>
 
           <button
             type="button"
             onClick={onActivateAccount}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-foreground px-3.5 py-2 text-xs font-semibold text-background transition hover:opacity-85 active:scale-[0.98]"
+            className="inline-flex h-9 w-fit items-center justify-center gap-1.5 rounded-full bg-foreground px-4 text-xs font-semibold text-background transition hover:opacity-85 active:scale-[0.98]"
           >
-            {isSubscriber
-              ? "Mon espace"
-              : "Activer mon compte"}
+            Activer mon compte
 
             <ArrowRight className="h-3.5 w-3.5" />
           </button>
@@ -765,30 +764,21 @@ function MarketplaceAccountBar({
 
         {/* SUIVI DE COMMANDE */}
 
-        <div className="flex min-w-0 flex-1 items-center justify-between gap-4 px-4 py-3.5 sm:px-5">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background sm:flex">
-              <ClipboardList
-                className="h-4 w-4 text-foreground"
-                strokeWidth={1.8}
-              />
-            </div>
+        <div className="flex min-w-0 flex-col justify-between gap-3 border-t border-border/70 px-4 py-4 sm:border-l sm:border-t-0 sm:px-5 sm:py-4">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-foreground">
+              Vous avez déjà commandé ?
+            </p>
 
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground">
-                Déjà commandé ?
-              </p>
-
-              <p className="truncate text-xs text-muted-foreground">
-                Suivez l’avancement de votre commande.
-              </p>
-            </div>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              Suivez l’avancement de votre commande, même sans compte abonné.
+            </p>
           </div>
 
           <button
             type="button"
             onClick={onTrackOrder}
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-background px-3.5 py-2 text-xs font-semibold text-foreground transition hover:bg-muted active:scale-[0.98]"
+            className="inline-flex h-9 w-fit items-center justify-center gap-1.5 rounded-full border border-border bg-background px-4 text-xs font-semibold text-foreground transition hover:bg-muted active:scale-[0.98]"
           >
             Suivre ma commande
 
