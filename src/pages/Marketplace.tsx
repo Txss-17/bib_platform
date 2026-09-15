@@ -256,7 +256,7 @@ export default function Marketplace() {
   };
 
   const goToOrderTracking = () => {
-    navigate("/order-tracking");
+    navigate("/pages/order-tracking");
   };
 
   return (
