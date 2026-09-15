@@ -9,9 +9,10 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Vendre from "./pages/Vendre";
 import Dashboard from "./pages/Dashboard";
-import Login from "./pages/Login";
+import PlatformLogin from "./pages/PlatformLogin";
+import PlatformSignup from "./pages/PlatformSignup";
 import MarketplaceLogin from "./pages/MarketplaceLogin";
-import Signup from "./pages/Signup";
+import MarketplaceSignup from "./pages/MarketplaceSignup";
 import Tarifs from "./pages/Tarifs";
 import CheckoutReturn from "./pages/CheckoutReturn";
 import NotFound from "./pages/NotFound";
@@ -201,8 +202,8 @@ const App = () => (
               <Route path="/recycler" element={<Recycler />} />
               <Route path="/recycler/:slug" element={<Recycler />} />
               <Route path="/order-tracking" element={<OrderTracking />} />
-              <Route path="/login" element={<PlatformLogin />} />
-              <Route path="/signup" element={<PlatformSignup />} />
+              <Route path="/platform-login" element={<PlatformLogin />} />
+              <Route path="/platform-signup" element={<PlatformSignup />} />
               <Route path="/store/login" element={<MarketplaceLogin />} />
               <Route path="/store/signup" element={<MarketplaceSignup />} />      
               <Route path="/unsubscribe" element={<Unsubscribe />} />
