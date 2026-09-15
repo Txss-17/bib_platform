@@ -467,6 +467,21 @@ const App = () => (
                 path="/boutique/:slug/p/:pageSlug"
                 element={<BoutiqueCustomPage />}
               />
+              <Route element={<ProtectedRoute context="platform" />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/account" element={<Account />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/seller" element={<Seller />} />
+                <Route path="/merchant" element={<Merchant />} />
+              </Route>
+
+              <Route element={<ProtectedRoute context="marketplace" />}>
+                <Route path="/store" element={<Store />} />
+                <Route path="/store/orders" element={<Orders />} />
+                <Route path="/store/favorites" element={<Favorites />} />
+                <Route path="/store/cart" element={<Cart />} />
+                <Route path="/recycler" element={<Recycler />} />
+              </Route>
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
