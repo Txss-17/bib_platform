@@ -8,39 +8,44 @@ export interface Opening {
 
 export const openings: Opening[] = [
   {
-    title: "Senior Product Designer",
-    team: "Design",
-    location: "Paris / Remote EU",
-    type: "CDI",
-    summary: "Façonner l'expérience du builder boutique et du dashboard live.",
+    title: "Développement & architecture",
+    team: "Tech",
+    location: "À distance",
+    type: "Contribution",
+    summary:
+      "Contribuer à la conception de la plateforme BIB, de ses interfaces, de ses services et de ses fondations techniques.",
   },
   {
-    title: "Full-Stack Engineer (React / Supabase)",
-    team: "Plateforme",
-    location: "Remote EU",
-    type: "CDI",
-    summary: "Construire les fondations du Commerce OS, du storefront aux APIs paiement.",
+    title: "Produit & expérimentation",
+    team: "R&D / Product",
+    location: "À distance",
+    type: "Contribution",
+    summary:
+      "Explorer les usages, challenger les concepts, prototyper des solutions et contribuer à l'évolution des produits et services BIB.",
   },
   {
-    title: "Supplier Operations Lead",
+    title: "Identité & communication",
+    team: "Communication",
+    location: "À distance",
+    type: "Contribution",
+    summary:
+      "Participer à la construction de l'identité BIB, de ses contenus, de son storytelling et de sa présence digitale.",
+  },
+  {
+    title: "Opérations & structuration",
     team: "Opérations",
-    location: "Lyon / Hybride",
-    type: "CDI",
-    summary: "Sourcer, qualifier et accompagner les fournisseurs du catalogue pré-validé.",
+    location: "À distance",
+    type: "Contribution",
+    summary:
+      "Contribuer à la définition des processus, à la structuration opérationnelle, à la qualité et à la coordination des différents acteurs.",
   },
   {
-    title: "Brand & Content Lead",
-    team: "Marketing",
-    location: "Paris / Remote EU",
-    type: "CDI",
-    summary: "Porter la voix éditoriale BIB et faire grandir la communauté de fondateurs.",
-  },
-  {
-    title: "Customer Success — FR/EN",
-    team: "Support",
-    location: "Remote",
-    type: "CDI",
-    summary: "Accompagner les vendeurs sur le terrain, du lancement à leur première traction.",
+    title: "Qualité, audit & conformité",
+    team: "Opérations",
+    location: "À distance",
+    type: "Contribution",
+    summary:
+      "Participer à la réflexion sur les méthodes de qualification, de contrôle, d'audit et de conformité nécessaires au fonctionnement de BIB.",
   },
 ];
 
