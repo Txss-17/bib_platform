@@ -37,7 +37,9 @@ type StoreProductPreview =
    HELPERS
    ========================================================= */
 
-function getProductId(product: StoreProductPreview): string {
+function getProductId(
+  product: StoreProductPreview,
+): string {
   return String(
     (product as any).id ??
       (product as any).product_id ??
@@ -45,7 +47,9 @@ function getProductId(product: StoreProductPreview): string {
   );
 }
 
-function getProductPrice(product: StoreProductPreview): number {
+function getProductPrice(
+  product: StoreProductPreview,
+): number {
   const raw =
     (product as any).price ??
     (product as any).public_price ??
@@ -54,28 +58,36 @@ function getProductPrice(product: StoreProductPreview): number {
 
   const parsed = Number(raw);
 
-  return Number.isFinite(parsed) ? parsed : 0;
+  return Number.isFinite(parsed) && parsed >= 0
+    ? parsed
+    : 0;
 }
 
 function getProductImage(
   product: StoreProductPreview,
 ): string {
-  return (
+  const image =
     (product as any).image_url ??
     (product as any).image ??
-    (product as any).thumbnail_url ??
-    "/placeholder.svg"
-  );
+    (product as any).thumbnail_url;
+
+  return typeof image === "string" &&
+    image.trim().length > 0
+    ? image
+    : "/placeholder.svg";
 }
 
 function getProductDescription(
   product: StoreProductPreview,
 ): string {
-  return (
+  const description =
     (product as any).description ??
-    (product as any).short_description ??
-    "Découvrez ce produit proposé par une boutique référencée dans le réseau BIB."
-  );
+    (product as any).short_description;
+
+  return typeof description === "string" &&
+    description.trim().length > 0
+    ? description
+    : "Découvrez ce produit proposé par une boutique référencée dans le réseau BIB.";
 }
 
 function getProductImages(
@@ -88,7 +100,8 @@ function getProductImages(
     (product as any).image_4_url,
   ].filter(
     (value): value is string =>
-      typeof value === "string" && value.trim().length > 0,
+      typeof value === "string" &&
+      value.trim().length > 0,
   );
 
   if (images.length > 0) {
@@ -101,12 +114,15 @@ function getProductImages(
 function getBoutiqueUrl(
   boutique: StoreBoutique,
 ): string | undefined {
-  return (
+  const value =
     (boutique as any).website_url ??
     (boutique as any).store_url ??
-    (boutique as any).url ??
-    undefined
-  );
+    (boutique as any).url;
+
+  return typeof value === "string" &&
+    value.trim().length > 0
+    ? value
+    : undefined;
 }
 
 /* =========================================================
@@ -114,7 +130,9 @@ function getBoutiqueUrl(
    ========================================================= */
 
 export default function StoreProduct() {
-  const { productId } = useParams<{ productId: string }>();
+  const { productId } =
+    useParams<{ productId: string }>();
+
   const navigate = useNavigate();
 
   const {
@@ -142,9 +160,11 @@ export default function StoreProduct() {
     }
 
     for (const boutique of boutiques) {
-      const product = boutique.product_previews.find(
-        (item) => getProductId(item) === productId,
-      );
+      const product =
+        boutique.product_previews.find(
+          (item) =>
+            getProductId(item) === productId,
+        );
 
       if (product) {
         return {
@@ -161,7 +181,10 @@ export default function StoreProduct() {
   const product = result?.product;
 
   const images = useMemo(
-    () => (product ? getProductImages(product) : []),
+    () =>
+      product
+        ? getProductImages(product)
+        : [],
     [product],
   );
 
@@ -169,11 +192,15 @@ export default function StoreProduct() {
     ? getProductPrice(product)
     : 0;
 
-  const productName = product?.name ?? "Produit";
+  const productName =
+    product?.name ?? "Produit";
 
   const existingQuantity =
     productId && boutique
-      ? getItemQuantity(productId, boutique.id)
+      ? getItemQuantity(
+          productId,
+          boutique.id,
+        )
       : 0;
 
   /* =======================================================
@@ -182,8 +209,11 @@ export default function StoreProduct() {
 
   useSEO({
     title: product
-      ? `${productName} — ${boutique?.name ?? "BIB"}`
+      ? `${productName} — ${
+          boutique?.name ?? "BIB"
+        }`
       : "Produit — Store BIB",
+
     description: product
       ? getProductDescription(product)
       : "Découvrez les produits sélectionnés par Brand-In-A-Box.",
@@ -194,7 +224,11 @@ export default function StoreProduct() {
      ======================================================= */
 
   const addToCart = () => {
-    if (!product || !boutique || !productId) {
+    if (
+      !product ||
+      !boutique ||
+      !productId
+    ) {
       return;
     }
 
@@ -202,12 +236,14 @@ export default function StoreProduct() {
       {
         productId,
         productName,
-        productImage: getProductImage(product),
+        productImage:
+          getProductImage(product),
         price,
         boutiqueId: boutique.id,
         boutiqueName: boutique.name,
         boutiqueSlug: boutique.slug,
-        boutiqueUrl: getBoutiqueUrl(boutique),
+        boutiqueUrl:
+          getBoutiqueUrl(boutique),
       },
       quantity,
     );
@@ -253,8 +289,9 @@ export default function StoreProduct() {
           </h1>
 
           <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-            Ce produit n'est plus disponible dans le catalogue
-            BIB ou le lien utilisé n'est plus valide.
+            Ce produit n'est plus disponible
+            dans le catalogue BIB ou le lien
+            utilisé n'est plus valide.
           </p>
 
           <Link
@@ -268,7 +305,8 @@ export default function StoreProduct() {
     );
   }
 
-  const boutiqueUrl = getBoutiqueUrl(boutique);
+  const boutiqueUrl =
+    getBoutiqueUrl(boutique);
 
   /* =======================================================
      RENDER
@@ -279,6 +317,7 @@ export default function StoreProduct() {
       <StoreHeader />
 
       <main className="container mx-auto max-w-7xl px-4 pb-16">
+
         {/* BREADCRUMB */}
 
         <div className="flex items-center gap-2 py-5 text-xs text-muted-foreground">
@@ -319,28 +358,40 @@ export default function StoreProduct() {
         {/* PRODUIT */}
 
         <section className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)] lg:gap-12">
-          {/* GALERIE */}
+
+          {/* =================================================
+              GALERIE
+             ================================================= */}
 
           <div>
             <div className="relative aspect-square overflow-hidden rounded-[28px] border border-border bg-muted">
+
               <img
                 src={images[imageIndex]}
                 alt={productName}
                 className="h-full w-full object-cover"
               />
 
+              {/* BADGE BIB */}
+
               <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full border border-border/60 bg-background/95 px-3 py-2 text-xs font-semibold shadow-sm backdrop-blur">
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-[7px] font-bold text-background">
                   BIB
                 </span>
 
-                <span>Vérifié par BIB</span>
+                <span>
+                  Vérifié par BIB
+                </span>
               </div>
+
+              {/* FAVORI */}
 
               <button
                 type="button"
                 onClick={() =>
-                  setFavorite((current) => !current)
+                  setFavorite(
+                    (current) => !current,
+                  )
                 }
                 aria-label={
                   favorite
@@ -359,6 +410,8 @@ export default function StoreProduct() {
                   strokeWidth={1.8}
                 />
               </button>
+
+              {/* NAVIGATION IMAGES */}
 
               {images.length > 1 && (
                 <>
@@ -396,35 +449,44 @@ export default function StoreProduct() {
               )}
             </div>
 
+            {/* MINIATURES */}
+
             {images.length > 1 && (
               <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
-                {images.map((image, index) => (
-                  <button
-                    key={`${image}-${index}`}
-                    type="button"
-                    onClick={() =>
-                      setImageIndex(index)
-                    }
-                    className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition ${
-                      imageIndex === index
-                        ? "border-primary"
-                        : "border-border"
-                    }`}
-                  >
-                    <img
-                      src={image}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
-                  </button>
-                ))}
+                {images.map(
+                  (image, index) => (
+                    <button
+                      key={`${image}-${index}`}
+                      type="button"
+                      onClick={() =>
+                        setImageIndex(index)
+                      }
+                      className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition ${
+                        imageIndex === index
+                          ? "border-primary"
+                          : "border-border"
+                      }`}
+                    >
+                      <img
+                        src={image}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    </button>
+                  ),
+                )}
               </div>
             )}
           </div>
 
-          {/* INFORMATIONS */}
+          {/* =================================================
+              INFORMATIONS PRODUIT
+             ================================================= */}
 
           <div className="flex flex-col">
+
+            {/* BOUTIQUE */}
+
             <Link
               to={`/store/boutique/${boutique.slug}`}
               className="group inline-flex w-fit items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground"
@@ -433,7 +495,9 @@ export default function StoreProduct() {
                 <Store className="h-4 w-4" />
               </span>
 
-              <span>{boutique.name}</span>
+              <span>
+                {boutique.name}
+              </span>
 
               <Check className="h-4 w-4 text-primary" />
 
@@ -442,9 +506,13 @@ export default function StoreProduct() {
               </span>
             </Link>
 
+            {/* NOM */}
+
             <h1 className="mt-5 max-w-2xl font-display text-3xl font-semibold leading-tight sm:text-4xl">
               {productName}
             </h1>
+
+            {/* PRIX */}
 
             <div className="mt-5">
               <span className="font-mono text-2xl font-semibold tabular-nums">
@@ -452,15 +520,21 @@ export default function StoreProduct() {
               </span>
             </div>
 
+            {/* DESCRIPTION */}
+
             <div className="mt-6 border-t border-border pt-6">
               <h2 className="text-sm font-semibold">
                 À propos du produit
               </h2>
 
               <p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">
-                {getProductDescription(product)}
+                {getProductDescription(
+                  product,
+                )}
               </p>
             </div>
+
+            {/* VÉRIFICATION BIB */}
 
             <div className="mt-6 rounded-2xl border border-border bg-muted/30 p-4">
               <div className="flex gap-3">
@@ -472,9 +546,10 @@ export default function StoreProduct() {
                   </p>
 
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    Les boutiques et références présentées
-                    dans le Store sont intégrées au réseau
-                    BIB selon ses critères de référencement.
+                    Les boutiques et références
+                    présentées dans le Store sont
+                    intégrées au réseau BIB selon
+                    ses critères de référencement.
                   </p>
                 </div>
               </div>
@@ -488,15 +563,20 @@ export default function StoreProduct() {
               </p>
 
               <div className="flex h-11 w-fit items-center overflow-hidden rounded-full border border-border">
+
                 <button
                   type="button"
                   onClick={() =>
                     setQuantity(
                       (current) =>
-                        Math.max(1, current - 1),
+                        Math.max(
+                          1,
+                          current - 1,
+                        ),
                     )
                   }
                   disabled={quantity <= 1}
+                  aria-label="Diminuer la quantité"
                   className="flex h-full w-11 items-center justify-center text-muted-foreground transition hover:bg-muted disabled:opacity-40"
                 >
                   <Minus className="h-4 w-4" />
@@ -511,10 +591,14 @@ export default function StoreProduct() {
                   onClick={() =>
                     setQuantity(
                       (current) =>
-                        Math.min(99, current + 1),
+                        Math.min(
+                          99,
+                          current + 1,
+                        ),
                     )
                   }
                   disabled={quantity >= 99}
+                  aria-label="Augmenter la quantité"
                   className="flex h-full w-11 items-center justify-center text-muted-foreground transition hover:bg-muted disabled:opacity-40"
                 >
                   <Plus className="h-4 w-4" />
@@ -523,14 +607,16 @@ export default function StoreProduct() {
 
               {existingQuantity > 0 && (
                 <p className="mt-2 text-xs text-muted-foreground">
-                  {existingQuantity} déjà dans votre panier Store.
+                  {existingQuantity} déjà dans
+                  votre panier Store.
                 </p>
               )}
             </div>
 
-            {/* CTA */}
+            {/* ACTIONS PANIER */}
 
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+
               <button
                 type="button"
                 onClick={addToCart}
@@ -561,20 +647,22 @@ export default function StoreProduct() {
 
             <div className="mt-8 border-t border-border pt-6">
               <div className="flex items-start gap-3">
+
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
                   <Store className="h-5 w-5" />
                 </div>
 
                 <div className="min-w-0">
                   <p className="text-sm font-semibold">
-                    Vendu par {boutique.name}
+                    Vendu par{" "}
+                    {boutique.name}
                   </p>
 
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    BIB vous permet de découvrir et
-                    sélectionner les produits. L'achat
-                    final est effectué sur le site de la
-                    boutique.
+                    BIB vous permet de découvrir
+                    et sélectionner les produits.
+                    L'achat final est effectué
+                    sur le site de la boutique.
                   </p>
 
                   {boutiqueUrl && (
@@ -594,10 +682,13 @@ export default function StoreProduct() {
           </div>
         </section>
 
-        {/* INFORMATION ACHAT */}
+        {/* =================================================
+            INFORMATIONS ACHAT
+           ================================================= */}
 
         <section className="mt-14 border-t border-border pt-8">
           <div className="grid gap-4 md:grid-cols-3">
+
             <InfoCard
               title="Sélection BIB"
               text="Les références présentées dans le Store sont issues de boutiques référencées dans le réseau BIB."
@@ -610,19 +701,27 @@ export default function StoreProduct() {
 
             <InfoCard
               title="Une boutique à la fois"
-              text="Lors du passage chez une boutique, les produits concernés sont regroupés pour finaliser l'achat auprès de celle-ci."
+              text="Les produits sont regroupés par boutique afin de poursuivre l'achat directement auprès de chaque boutique concernée."
             />
           </div>
         </section>
       </main>
 
+      {/* =====================================================
+          FOOTER
+         ===================================================== */}
+
       <footer className="border-t border-border bg-muted/30">
         <div className="container mx-auto flex max-w-7xl flex-col items-center gap-2 px-4 py-6 text-center text-xs text-muted-foreground sm:flex-row sm:justify-between sm:text-left">
-          <Logo iconSize={20} asLink={false} />
+
+          <Logo
+            iconSize={20}
+            asLink={false}
+          />
 
           <p>
-            © {new Date().getFullYear()} Brand-In-A-Box ·
-            Store officiel
+            © {new Date().getFullYear()}{" "}
+            Brand-In-A-Box · Store officiel
           </p>
 
           <Link
@@ -645,12 +744,16 @@ function StoreHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-xl">
       <div className="container mx-auto flex min-h-[68px] max-w-7xl items-center gap-3 px-4 py-3">
+
         <Link
           to="/store"
           aria-label="Accueil BIB"
           className="shrink-0"
         >
-          <Logo iconSize={30} asLink={false} />
+          <Logo
+            iconSize={30}
+            asLink={false}
+          />
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
