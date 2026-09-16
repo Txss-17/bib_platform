@@ -11,13 +11,13 @@ import {
   ImageOff,
 } from "lucide-react";
 
-import type { MarketplaceBoutique } from "@/hooks/useMarketplace";
+import type { StoreBoutique } from "@/hooks/useStore";
 
 interface BoutiqueCardProps {
-  boutique: MarketplaceBoutique;
+  boutique: StoreBoutique;
   isFavorite?: boolean;
   onToggleFavorite?: (
-    boutique: MarketplaceBoutique,
+    boutique: StoreBoutique,
   ) => void;
 }
 
@@ -35,12 +35,15 @@ export function BoutiqueCard({
   isFavorite = false,
   onToggleFavorite,
 }: BoutiqueCardProps) {
-  const [activeStoryIndex, setActiveStoryIndex] = useState(0);
-  const [imageError, setImageError] = useState(false);
+  const [activeStoryIndex, setActiveStoryIndex] =
+    useState(0);
+
+  const [imageError, setImageError] =
+    useState(false);
 
   const stories = useMemo<Story[]>(() => {
     const rawStories = (
-      boutique as MarketplaceBoutique & {
+      boutique as StoreBoutique & {
         stories?: unknown;
       }
     ).stories;
@@ -49,25 +52,34 @@ export function BoutiqueCard({
       return [];
     }
 
-    return rawStories.filter((story): story is Story => {
-      if (!story || typeof story !== "object") {
-        return false;
-      }
+    return rawStories.filter(
+      (story): story is Story => {
+        if (
+          !story ||
+          typeof story !== "object"
+        ) {
+          return false;
+        }
 
-      const item = story as Partial<Story>;
+        const item =
+          story as Partial<Story>;
 
-      return (
-        item.kind === "highlight" &&
-        typeof item.id === "string" &&
-        (item.mediaKind === "image" ||
-          item.mediaKind === "video") &&
-        typeof item.url === "string" &&
-        item.url.trim().length > 0
-      );
-    });
+        return (
+          item.kind === "highlight" &&
+          typeof item.id === "string" &&
+          (
+            item.mediaKind === "image" ||
+            item.mediaKind === "video"
+          ) &&
+          typeof item.url === "string" &&
+          item.url.trim().length > 0
+        );
+      },
+    );
   }, [boutique]);
 
-  const activeStory = stories[activeStoryIndex];
+  const activeStory =
+    stories[activeStoryIndex];
 
   const imageUrl =
     activeStory?.url ||
@@ -75,7 +87,8 @@ export function BoutiqueCard({
     boutique.logo_url ||
     "";
 
-  const boutiqueUrl = `/store/boutique/${boutique.slug}`;
+  const boutiqueUrl =
+    `/store/boutique/${boutique.slug}`;
 
   useEffect(() => {
     setActiveStoryIndex(0);
@@ -87,13 +100,16 @@ export function BoutiqueCard({
       return;
     }
 
-    const interval = window.setInterval(() => {
-      setActiveStoryIndex((currentIndex) =>
-        currentIndex === stories.length - 1
-          ? 0
-          : currentIndex + 1,
-      );
-    }, 3200);
+    const interval =
+      window.setInterval(() => {
+        setActiveStoryIndex(
+          (currentIndex) =>
+            currentIndex ===
+            stories.length - 1
+              ? 0
+              : currentIndex + 1,
+        );
+      }, 3200);
 
     return () => {
       window.clearInterval(interval);
@@ -122,7 +138,8 @@ export function BoutiqueCard({
 
         <div className="relative aspect-[5/3] shrink-0 overflow-hidden bg-muted">
           {imageUrl && !imageError ? (
-            activeStory?.mediaKind === "video" ? (
+            activeStory?.mediaKind ===
+            "video" ? (
               <video
                 key={imageUrl}
                 src={imageUrl}
@@ -130,7 +147,9 @@ export function BoutiqueCard({
                 muted
                 loop
                 playsInline
-                onError={() => setImageError(true)}
+                onError={() =>
+                  setImageError(true)
+                }
                 className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
               />
             ) : (
@@ -138,7 +157,9 @@ export function BoutiqueCard({
                 src={imageUrl}
                 alt=""
                 loading="lazy"
-                onError={() => setImageError(true)}
+                onError={() =>
+                  setImageError(true)
+                }
                 className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
               />
             )
@@ -159,16 +180,19 @@ export function BoutiqueCard({
 
           {stories.length > 1 && (
             <div className="absolute left-3 right-3 top-3 flex gap-1">
-              {stories.map((story, index) => (
-                <span
-                  key={story.id}
-                  className={`h-0.5 min-w-0 flex-1 rounded-full transition-colors ${
-                    index === activeStoryIndex
-                      ? "bg-white"
-                      : "bg-white/45"
-                  }`}
-                />
-              ))}
+              {stories.map(
+                (story, index) => (
+                  <span
+                    key={story.id}
+                    className={`h-0.5 min-w-0 flex-1 rounded-full transition-colors ${
+                      index ===
+                      activeStoryIndex
+                        ? "bg-white"
+                        : "bg-white/45"
+                    }`}
+                  />
+                ),
+              )}
             </div>
           )}
 
@@ -176,7 +200,9 @@ export function BoutiqueCard({
 
           <button
             type="button"
-            onClick={handleFavoriteClick}
+            onClick={
+              handleFavoriteClick
+            }
             aria-label={
               isFavorite
                 ? `Retirer ${boutique.name} des favoris`
@@ -201,6 +227,7 @@ export function BoutiqueCard({
            ===================================================== */}
 
         <div className="flex min-h-[140px] flex-1 flex-col bg-white p-3 sm:min-h-[145px] sm:p-3.5">
+
           {/* NOM */}
 
           <h3 className="line-clamp-1 text-[15px] font-semibold leading-tight text-slate-950">
@@ -220,7 +247,8 @@ export function BoutiqueCard({
           {/* DERNIÈRE LIGNE */}
 
           <div className="mt-auto flex min-w-0 items-center justify-between gap-2 pt-3">
-            {/* Toutes les boutiques Marketplace sont vérifiées */}
+
+            {/* STATUT BIB */}
 
             <div className="flex min-w-0 items-center gap-1.5 text-[10px] font-medium text-slate-600 sm:text-[11px]">
               <span
