@@ -1,7 +1,13 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,10 +19,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Alert,
+  AlertDescription,
+} from "@/components/ui/alert";
+
 import {
   ArrowRight,
-  CheckCircle,
   Eye,
   EyeOff,
   Gift,
@@ -27,9 +36,10 @@ import {
   ShoppingBag,
   Star,
 } from "lucide-react";
+
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
-export default function MarketplaceLogin() {
+export default function StoreLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -38,43 +48,47 @@ export default function MarketplaceLogin() {
 
   const { signIn } = useAuth();
   const { t } = useLanguage();
+
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  /**
-   * Marketplace authentication only.
+  /*
+   * Destination demandée après authentification.
    *
-   * This account is the single customer identity used across
-   * the BIB customer ecosystem:
+   * Le compte Store donne accès à l'ensemble de l'espace
+   * client BIB :
    *
    * - Store
-   * - boutiques followed by the customer
-   * - orders
-   * - gift cards
+   * - boutiques suivies
+   * - commandes
+   * - cartes cadeaux
    * - points
-   * - recycling
-   * - BIB Abonné
+   * - recyclage
+   * - abonnement BIB
    *
-   * Recycler does NOT have a separate authentication system.
+   * Le recyclage utilise la même identité client et ne possède
+   * pas de système d'authentification indépendant.
    */
   const from =
     searchParams.get("next") ||
     location.state?.from?.pathname ||
     "/store";
 
-  /**
-   * Customer-facing routes are handled by this authentication flow.
+  /*
+   * Routes autorisées après une authentification Store.
    *
-   * If a platform route is passed accidentally, do not allow the
-   * Marketplace login to become a gateway to the BIB platform.
+   * Une destination provenant de la plateforme BIB ou d'une
+   * autre zone externe est ignorée afin qu'un compte Store
+   * ne puisse pas être utilisé pour accéder à la plateforme.
    */
-  const isCustomerPath =
-    from.startsWith("/store") ||
-    from.startsWith("/recycler") ||
-    from.startsWith("/marketplace");
+  const isStorePath =
+    from === "/store" ||
+    from.startsWith("/store/");
 
-  const destination = isCustomerPath ? from : "/store";
+  const destination = isStorePath
+    ? from
+    : "/store";
 
   const getErrorMessage = (errorMsg: string) => {
     const normalizedMessage = errorMsg.toLowerCase();
@@ -88,35 +102,50 @@ export default function MarketplaceLogin() {
       return t("auth.error.network");
     }
 
-    if (errorMsg.includes("Invalid login credentials")) {
+    if (
+      errorMsg.includes("Invalid login credentials")
+    ) {
       return t("auth.error.invalid");
     }
 
     return errorMsg;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (
+    event: React.FormEvent
+  ) => {
+    event.preventDefault();
 
     setError(null);
     setLoading(true);
 
-    const { error } = await signIn(email.trim(), password);
+    const { error: signInError } = await signIn(
+      email.trim(),
+      password
+    );
 
-    if (error) {
-      setError(getErrorMessage(error.message));
+    if (signInError) {
+      setError(
+        getErrorMessage(signInError.message)
+      );
       setLoading(false);
       return;
     }
 
-    navigate(destination, { replace: true });
+    navigate(destination, {
+      replace: true,
+    });
   };
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Customer authentication */}
+      {/* =====================================================
+          STORE CUSTOMER AUTHENTICATION
+      ===================================================== */}
+
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
+
           {/* BIB Store header */}
           <div className="flex items-center justify-between mb-8">
             <Link
@@ -134,6 +163,7 @@ export default function MarketplaceLogin() {
                 <span className="font-bold text-2xl text-foreground leading-none">
                   BIB
                 </span>
+
                 <span className="text-xs text-muted-foreground">
                   Store
                 </span>
@@ -143,6 +173,7 @@ export default function MarketplaceLogin() {
             <LanguageSwitcher />
           </div>
 
+          {/* Authentication card */}
           <Card className="border-border/50 shadow-lg">
             <CardHeader className="space-y-1">
               <CardTitle className="text-2xl font-bold">
@@ -155,16 +186,21 @@ export default function MarketplaceLogin() {
             </CardHeader>
 
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form
+                onSubmit={handleSubmit}
+                className="space-y-4"
+              >
                 {error && (
                   <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
+                    <AlertDescription>
+                      {error}
+                    </AlertDescription>
                   </Alert>
                 )}
 
                 {/* Email */}
                 <div className="space-y-2">
-                  <Label htmlFor="marketplace-email">
+                  <Label htmlFor="store-email">
                     {t("login.email")}
                   </Label>
 
@@ -175,11 +211,13 @@ export default function MarketplaceLogin() {
                     />
 
                     <Input
-                      id="marketplace-email"
+                      id="store-email"
                       type="email"
                       placeholder="vous@exemple.com"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(event) =>
+                        setEmail(event.target.value)
+                      }
                       className="pl-10"
                       autoComplete="email"
                       required
@@ -190,7 +228,7 @@ export default function MarketplaceLogin() {
                 {/* Password */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="marketplace-password">
+                    <Label htmlFor="store-password">
                       {t("login.password")}
                     </Label>
 
@@ -209,11 +247,17 @@ export default function MarketplaceLogin() {
                     />
 
                     <Input
-                      id="marketplace-password"
-                      type={showPassword ? "text" : "password"}
+                      id="store-password"
+                      type={
+                        showPassword
+                          ? "text"
+                          : "password"
+                      }
                       placeholder="••••••••"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(event) =>
+                        setPassword(event.target.value)
+                      }
                       className="pl-10 pr-10"
                       autoComplete="current-password"
                       required
@@ -222,7 +266,9 @@ export default function MarketplaceLogin() {
                     <button
                       type="button"
                       onClick={() =>
-                        setShowPassword((current) => !current)
+                        setShowPassword(
+                          (current) => !current
+                        )
                       }
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       aria-label={
@@ -261,14 +307,18 @@ export default function MarketplaceLogin() {
             <CardFooter className="flex flex-col gap-5">
               <div className="text-center text-sm text-muted-foreground">
                 {t("login.noaccount")}{" "}
+
                 <Link
-                  to={`/store/signup?next=${encodeURIComponent(destination)}`}
+                  to={`/store/signup?next=${encodeURIComponent(
+                    destination
+                  )}`}
                   className="text-primary font-medium hover:underline"
                 >
                   {t("login.create")}
                 </Link>
               </div>
 
+              {/* Platform access remains explicitly separated */}
               <div className="text-center">
                 <Link
                   to="/login"
@@ -282,7 +332,10 @@ export default function MarketplaceLogin() {
         </div>
       </div>
 
-      {/* Customer ecosystem */}
+      {/* =====================================================
+          STORE CUSTOMER ECOSYSTEM
+      ===================================================== */}
+
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary/10 via-accent/5 to-background items-center justify-center p-12">
         <div className="max-w-lg">
           <h2 className="text-3xl font-bold text-foreground mb-4">
@@ -290,11 +343,14 @@ export default function MarketplaceLogin() {
           </h2>
 
           <p className="text-muted-foreground mb-8">
-            Un seul compte pour retrouver vos boutiques, vos commandes,
-            vos avantages et votre activité de recyclage.
+            Un seul compte pour retrouver vos boutiques,
+            vos commandes, vos avantages et votre activité
+            de recyclage.
           </p>
 
           <div className="space-y-5">
+
+            {/* Orders */}
             <div className="flex items-center gap-4">
               <div className="p-2 rounded-full bg-primary/10">
                 <ShoppingBag
@@ -307,13 +363,15 @@ export default function MarketplaceLogin() {
                 <p className="font-medium text-foreground">
                   Vos boutiques et commandes
                 </p>
+
                 <p className="text-sm text-muted-foreground">
-                  Retrouvez vos achats et suivez vos commandes depuis
-                  votre espace client.
+                  Retrouvez vos achats et suivez vos
+                  commandes depuis votre espace client.
                 </p>
               </div>
             </div>
 
+            {/* Recycling */}
             <div className="flex items-center gap-4">
               <div className="p-2 rounded-full bg-primary/10">
                 <Recycle
@@ -326,13 +384,15 @@ export default function MarketplaceLogin() {
                 <p className="font-medium text-foreground">
                   Recyclage BIB
                 </p>
+
                 <p className="text-sm text-muted-foreground">
-                  Scannez le QR code de vos emballages éligibles et
-                  validez votre recyclage.
+                  Scannez le QR code de vos emballages
+                  éligibles et validez votre recyclage.
                 </p>
               </div>
             </div>
 
+            {/* Points */}
             <div className="flex items-center gap-4">
               <div className="p-2 rounded-full bg-primary/10">
                 <Star
@@ -345,13 +405,15 @@ export default function MarketplaceLogin() {
                 <p className="font-medium text-foreground">
                   Vos points
                 </p>
+
                 <p className="text-sm text-muted-foreground">
-                  Consultez les points cumulés grâce à vos actions
-                  éligibles.
+                  Consultez les points cumulés grâce à
+                  vos actions éligibles.
                 </p>
               </div>
             </div>
 
+            {/* Gift cards */}
             <div className="flex items-center gap-4">
               <div className="p-2 rounded-full bg-primary/10">
                 <Gift
@@ -364,14 +426,16 @@ export default function MarketplaceLogin() {
                 <p className="font-medium text-foreground">
                   Vos avantages
                 </p>
+
                 <p className="text-sm text-muted-foreground">
-                  Gérez vos cartes cadeaux et les avantages associés à
-                  votre compte.
+                  Gérez vos cartes cadeaux et les avantages
+                  associés à votre compte.
                 </p>
               </div>
             </div>
           </div>
 
+          {/* Account security */}
           <div className="mt-8 p-4 rounded-xl bg-card border border-border/50">
             <div className="flex items-center gap-3">
               <Shield
@@ -385,8 +449,9 @@ export default function MarketplaceLogin() {
                 </p>
 
                 <p className="text-sm text-muted-foreground">
-                  Votre compte BIB vous accompagne dans tout votre
-                  parcours client, du suivi de commande au recyclage.
+                  Votre compte BIB vous accompagne dans
+                  tout votre parcours client, du suivi de
+                  commande au recyclage.
                 </p>
               </div>
             </div>
