@@ -1,35 +1,145 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import type { Tables, TablesUpdate } from "@/integrations/supabase/types";
+import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
 
-type Product = Tables<"products">;
-type SupplierProduct = Tables<"supplier_products">;
+/* -------------------------------------------------------------------------- */
+/* Types                                                                      */
+/* -------------------------------------------------------------------------- */
+
+export type Product = Tables<"products">;
+export type SupplierProduct = Tables<"supplier_products">;
 
 export interface ProductWithSupplier extends Product {
   supplier_products: SupplierProduct;
 }
 
+export interface ProductCommercialState {
+  publicPrice: number;
+  salePrice: number | null;
+  currentPrice: number;
+  discountPercent: number;
+  promotionActive: boolean;
+  promotionLabel: string | null;
+  promotionStartsAt: string | null;
+  promotionEndsAt: string | null;
+  isOutOfStock: boolean;
+  isLowStock: boolean;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Commercial helpers                                                         */
+/* -------------------------------------------------------------------------- */
+
+export function getProductCommercialState(
+  product: Product,
+  now = new Date(),
+): ProductCommercialState {
+  const publicPrice = Number(product.public_price ?? 0);
+
+  const salePrice =
+    product.sale_price !== null && product.sale_price !== undefined
+      ? Number(product.sale_price)
+      : null;
+
+  const promotionStartsAt = product.promotion_starts_at ?? null;
+  const promotionEndsAt = product.promotion_ends_at ?? null;
+
+  const startsAt = promotionStartsAt
+    ? new Date(promotionStartsAt)
+    : null;
+
+  const endsAt = promotionEndsAt
+    ? new Date(promotionEndsAt)
+    : null;
+
+  const promotionActive =
+    salePrice !== null &&
+    salePrice >= 0 &&
+    salePrice < publicPrice &&
+    (!startsAt || now >= startsAt) &&
+    (!endsAt || now <= endsAt);
+
+  const currentPrice = promotionActive
+    ? salePrice
+    : publicPrice;
+
+  const discountPercent =
+    promotionActive && publicPrice > 0
+      ? Math.round(
+          ((publicPrice - currentPrice) / publicPrice) * 100,
+        )
+      : 0;
+
+  const stockQuantity = Number(product.stock_quantity ?? 0);
+  const lowStockThreshold = Number(
+    product.low_stock_threshold ?? 0,
+  );
+
+  return {
+    publicPrice,
+    salePrice,
+    currentPrice,
+    discountPercent,
+    promotionActive,
+    promotionLabel: product.promotion_label ?? null,
+    promotionStartsAt,
+    promotionEndsAt,
+    isOutOfStock: stockQuantity <= 0,
+    isLowStock:
+      stockQuantity > 0 &&
+      lowStockThreshold > 0 &&
+      stockQuantity <= lowStockThreshold,
+  };
+}
+
+/* -------------------------------------------------------------------------- */
+/* Product query                                                              */
+/* -------------------------------------------------------------------------- */
+
 export function useProducts() {
-  const { user } = useAuth();
-
   return useQuery({
-    queryKey: ["products", user?.id],
-    queryFn: async () => {
-      if (!user) return [];
+    queryKey: ["products"],
+    queryFn: async (): Promise<ProductWithSupplier[]> => {
+      const {
+        data: {
+          user,
+        },
+      } = await supabase.auth.getUser();
 
-      // First get user's boutiques
-      const { data: boutiques, error: boutiquesError } = await supabase
-        .from("boutiques")
-        .select("id")
-        .eq("user_id", user.id);
+      if (!user) {
+        return [];
+      }
 
-      if (boutiquesError) throw boutiquesError;
-      if (!boutiques || boutiques.length === 0) return [];
+      /* -------------------------------------------------------------------- */
+      /* 1. Retrieve the merchant's boutiques                               */
+      /* -------------------------------------------------------------------- */
 
-      const boutiqueIds = boutiques.map((b) => b.id);
+      const { data: boutiques, error: boutiquesError } =
+        await supabase
+          .from("boutiques")
+          .select("id")
+          .eq("user_id", user.id);
 
-      // Then get products for those boutiques with supplier info
+      if (boutiquesError) {
+        throw boutiquesError;
+      }
+
+      const boutiqueIds = (boutiques ?? []).map(
+        (boutique) => boutique.id,
+      );
+
+      if (boutiqueIds.length === 0) {
+        return [];
+      }
+
+      /* -------------------------------------------------------------------- */
+      /* 2. Retrieve the products                                             */
+      /* -------------------------------------------------------------------- */
+
       const { data, error } = await supabase
         .from("products")
         .select(`
@@ -37,83 +147,103 @@ export function useProducts() {
           supplier_products (*)
         `)
         .in("boutique_id", boutiqueIds)
-        .order("created_at", { ascending: false });
+        .order("created_at", {
+          ascending: false,
+        });
 
-      if (error) throw error;
-      return data as ProductWithSupplier[];
-    },
-    enabled: !!user,
-  });
-}
-
-export function useProductStats() {
-  const { user } = useAuth();
-
-  return useQuery({
-    queryKey: ["product-stats", user?.id],
-    queryFn: async () => {
-      if (!user) return { total: 0, active: 0, paused: 0 };
-
-      // First get user's boutiques
-      const { data: boutiques, error: boutiquesError } = await supabase
-        .from("boutiques")
-        .select("id")
-        .eq("user_id", user.id);
-
-      if (boutiquesError) throw boutiquesError;
-      if (!boutiques || boutiques.length === 0) {
-        return { total: 0, active: 0, paused: 0 };
+      if (error) {
+        throw error;
       }
 
-      const boutiqueIds = boutiques.map((b) => b.id);
-
-      const { data, error } = await supabase
-        .from("products")
-        .select("status")
-        .in("boutique_id", boutiqueIds);
-
-      if (error) throw error;
-
-      const active = data?.filter((p) => p.status === "active").length || 0;
-      const paused = data?.filter((p) => p.status === "paused").length || 0;
-
-      return {
-        total: data?.length || 0,
-        active,
-        paused,
-      };
+      return (data ?? []) as ProductWithSupplier[];
     },
-    enabled: !!user,
   });
 }
+
+/* -------------------------------------------------------------------------- */
+/* Product statistics                                                         */
+/* -------------------------------------------------------------------------- */
+
+export function useProductStats() {
+  const { data: products = [], ...query } = useProducts();
+
+  const activeProducts = products.filter(
+    (product) => product.status === "active",
+  );
+
+  const pausedProducts = products.filter(
+    (product) => product.status === "paused",
+  );
+
+  const outOfStockProducts = products.filter(
+    (product) =>
+      Number(product.stock_quantity ?? 0) <= 0,
+  );
+
+  const productsOnSale = products.filter(
+    (product) =>
+      getProductCommercialState(product).promotionActive,
+  );
+
+  return {
+    ...query,
+    data: {
+      total: products.length,
+      active: activeProducts.length,
+      paused: pausedProducts.length,
+      outOfStock: outOfStockProducts.length,
+      onSale: productsOnSale.length,
+    },
+  };
+}
+
+/* -------------------------------------------------------------------------- */
+/* Update product                                                             */
+/* -------------------------------------------------------------------------- */
 
 export function useUpdateProduct() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({
-      productId,
+      id,
       updates,
     }: {
-      productId: string;
+      id: string;
       updates: TablesUpdate<"products">;
     }) => {
       const { data, error } = await supabase
         .from("products")
         .update(updates)
-        .eq("id", productId)
-        .select()
+        .eq("id", id)
+        .select(`
+          *,
+          supplier_products (*)
+        `)
         .single();
 
-      if (error) throw error;
-      return data;
+      if (error) {
+        throw error;
+      }
+
+      return data as ProductWithSupplier;
     },
+
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      queryClient.invalidateQueries({ queryKey: ["product-stats"] });
+      queryClient.invalidateQueries({
+        queryKey: ["products"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["product-stats"],
+      });
     },
   });
 }
+
+/* -------------------------------------------------------------------------- */
+/* Delete product                                                             */
+/* -------------------------------------------------------------------------- */
 
 export function useDeleteProduct() {
   const queryClient = useQueryClient();
@@ -125,11 +255,60 @@ export function useDeleteProduct() {
         .delete()
         .eq("id", productId);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
+
+      return productId;
     },
+
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      queryClient.invalidateQueries({ queryKey: ["product-stats"] });
+      queryClient.invalidateQueries({
+        queryKey: ["products"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["product-stats"],
+      });
+    },
+  });
+}
+
+/* -------------------------------------------------------------------------- */
+/* Product insert                                                             */
+/* -------------------------------------------------------------------------- */
+
+export function useCreateProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (
+      product: TablesInsert<"products">,
+    ) => {
+      const { data, error } = await supabase
+        .from("products")
+        .insert(product)
+        .select(`
+          *,
+          supplier_products (*)
+        `)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return data as ProductWithSupplier;
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["products"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["product-stats"],
+      });
     },
   });
 }
