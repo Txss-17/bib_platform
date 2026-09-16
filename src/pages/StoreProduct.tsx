@@ -9,6 +9,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  ExternalLink,
   Heart,
   Loader2,
   Minus,
@@ -195,6 +196,10 @@ export default function StoreProduct() {
   const productName =
     product?.name ?? "Produit";
 
+  const boutiqueUrl = boutique
+    ? getBoutiqueUrl(boutique)
+    : undefined;
+
   const existingQuantity =
     productId && boutique
       ? getItemQuantity(
@@ -210,9 +215,9 @@ export default function StoreProduct() {
   useSEO({
     title: product
       ? `${productName} — ${
-          boutique?.name ?? "BIB"
+          boutique?.name ?? "BIB Store"
         }`
-      : "Produit — Store BIB",
+      : "Produit — BIB Store",
 
     description: product
       ? getProductDescription(product)
@@ -243,7 +248,7 @@ export default function StoreProduct() {
         boutiqueName: boutique.name,
         boutiqueSlug: boutique.slug,
         boutiqueUrl:
-          getBoutiqueUrl(boutique),
+          boutiqueUrl,
       },
       quantity,
     );
@@ -305,9 +310,6 @@ export default function StoreProduct() {
     );
   }
 
-  const boutiqueUrl =
-    getBoutiqueUrl(boutique);
-
   /* =======================================================
      RENDER
      ======================================================= */
@@ -318,7 +320,9 @@ export default function StoreProduct() {
 
       <main className="container mx-auto max-w-7xl px-4 pb-16">
 
-        {/* BREADCRUMB */}
+        {/* =================================================
+            BREADCRUMB
+           ================================================= */}
 
         <div className="flex items-center gap-2 py-5 text-xs text-muted-foreground">
           <Link
@@ -344,7 +348,9 @@ export default function StoreProduct() {
           </span>
         </div>
 
-        {/* RETOUR */}
+        {/* =================================================
+            RETOUR
+           ================================================= */}
 
         <button
           type="button"
@@ -355,7 +361,9 @@ export default function StoreProduct() {
           Retour
         </button>
 
-        {/* PRODUIT */}
+        {/* =================================================
+            PRODUIT
+           ================================================= */}
 
         <section className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)] lg:gap-12">
 
@@ -485,12 +493,9 @@ export default function StoreProduct() {
 
           <div className="flex flex-col">
 
-            {/* BOUTIQUE */}
+            {/* BOUTIQUE — INFORMATION, PAS DE NAVIGATION */}
 
-            <Link
-              to={`/store/boutique/${boutique.slug}`}
-              className="group inline-flex w-fit items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground"
-            >
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
                 <Store className="h-4 w-4" />
               </span>
@@ -501,10 +506,10 @@ export default function StoreProduct() {
 
               <Check className="h-4 w-4 text-primary" />
 
-              <span className="text-xs text-primary">
+              <span className="text-xs font-medium text-primary">
                 Vérifiée par BIB
               </span>
-            </Link>
+            </div>
 
             {/* NOM */}
 
@@ -534,7 +539,7 @@ export default function StoreProduct() {
               </p>
             </div>
 
-            {/* VÉRIFICATION BIB */}
+            {/* CONFIANCE BIB */}
 
             <div className="mt-6 rounded-2xl border border-border bg-muted/30 p-4">
               <div className="flex gap-3">
@@ -542,14 +547,13 @@ export default function StoreProduct() {
 
                 <div>
                   <p className="text-sm font-semibold">
-                    Produit sélectionné par BIB
+                    Référence vérifiée par BIB
                   </p>
 
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    Les boutiques et références
-                    présentées dans le Store sont
-                    intégrées au réseau BIB selon
-                    ses critères de référencement.
+                    Ce produit est présenté par
+                    BIB dans le cadre de son réseau
+                    de boutiques référencées.
                   </p>
                 </div>
               </div>
@@ -613,39 +617,83 @@ export default function StoreProduct() {
               )}
             </div>
 
-            {/* ACTIONS PANIER */}
+            {/* =================================================
+                CTA PRINCIPAL : SORTIE VERS LA BOUTIQUE
+               ================================================= */}
 
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-6">
+
+              {boutiqueUrl ? (
+                <a
+                  href={boutiqueUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:brightness-110 active:scale-[0.98]"
+                >
+                  Voir le produit chez{" "}
+                  {boutique.name}
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              ) : (
+                <div className="rounded-2xl border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+                  Le site de cette boutique n'est
+                  momentanément pas disponible
+                  depuis le Store BIB.
+                </div>
+              )}
+
+              <p className="mt-3 text-center text-xs leading-relaxed text-muted-foreground">
+                Vous serez redirigé vers le site de
+                la boutique pour consulter le produit
+                et effectuer votre achat.
+              </p>
+            </div>
+
+            {/* =================================================
+                PANIER STORE — ACTION SECONDAIRE
+               ================================================= */}
+
+            <div className="mt-5 border-t border-border pt-5">
 
               <button
                 type="button"
                 onClick={addToCart}
-                className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:brightness-110 active:scale-[0.98]"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-background px-6 text-sm font-semibold transition hover:bg-muted active:scale-[0.98]"
               >
                 {added ? (
                   <>
                     <Check className="h-4 w-4" />
-                    Ajouté au panier
+                    Ajouté au panier Store
                   </>
                 ) : (
                   <>
                     <ShoppingCart className="h-4 w-4" />
-                    Ajouter au panier
+                    Ajouter au panier Store
                   </>
                 )}
               </button>
 
-              <Link
-                to="/store/cart"
-                className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-background px-6 text-sm font-semibold transition hover:bg-muted"
-              >
-                Voir le panier
-              </Link>
+              {added && (
+                <Link
+                  to="/store/cart"
+                  className="mt-2 inline-flex w-full items-center justify-center text-xs font-medium text-primary hover:underline"
+                >
+                  Voir le panier Store
+                </Link>
+              )}
+
+              <p className="mt-2 text-center text-[11px] leading-relaxed text-muted-foreground">
+                Le panier Store permet de conserver
+                plusieurs produits avant de poursuivre
+                vers les boutiques concernées.
+              </p>
             </div>
 
-            {/* BOUTIQUE */}
+            {/* =================================================
+                RAPPEL BOUTIQUE
+               ================================================= */}
 
-            <div className="mt-8 border-t border-border pt-6">
+            <div className="mt-7 border-t border-border pt-6">
               <div className="flex items-start gap-3">
 
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
@@ -654,28 +702,16 @@ export default function StoreProduct() {
 
                 <div className="min-w-0">
                   <p className="text-sm font-semibold">
-                    Vendu par{" "}
+                    Achat auprès de{" "}
                     {boutique.name}
                   </p>
 
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    BIB vous permet de découvrir
-                    et sélectionner les produits.
-                    L'achat final est effectué
+                    BIB facilite la découverte du
+                    produit. La consultation du produit,
+                    le panier et l'achat sont réalisés
                     sur le site de la boutique.
                   </p>
-
-                  {boutiqueUrl && (
-                    <a
-                      href={boutiqueUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
-                    >
-                      Découvrir la boutique
-                      <ChevronRight className="h-3.5 w-3.5" />
-                    </a>
-                  )}
                 </div>
               </div>
             </div>
@@ -683,25 +719,25 @@ export default function StoreProduct() {
         </section>
 
         {/* =================================================
-            INFORMATIONS ACHAT
+            INFORMATIONS
            ================================================= */}
 
         <section className="mt-14 border-t border-border pt-8">
           <div className="grid gap-4 md:grid-cols-3">
 
             <InfoCard
-              title="Sélection BIB"
-              text="Les références présentées dans le Store sont issues de boutiques référencées dans le réseau BIB."
+              title="Référencé par BIB"
+              text="Les produits présentés dans le Store proviennent de boutiques intégrées au réseau BIB."
             />
 
             <InfoCard
-              title="Achat auprès de la boutique"
-              text="BIB centralise la découverte et le panier. Le paiement est réalisé sur le site de la boutique."
+              title="Achat sur le site boutique"
+              text="BIB ne traite pas le paiement. Vous poursuivez directement sur le site de la boutique."
             />
 
             <InfoCard
-              title="Une boutique à la fois"
-              text="Les produits sont regroupés par boutique afin de poursuivre l'achat directement auprès de chaque boutique concernée."
+              title="Votre boutique reste votre destination"
+              text="Une fois redirigé, vous retrouvez l'expérience, le panier et le parcours d'achat propres à la boutique."
             />
           </div>
         </section>
@@ -775,7 +811,7 @@ function StoreHeader() {
         <div className="ml-auto flex items-center gap-1">
           <Link
             to="/store/cart"
-            aria-label="Panier"
+            aria-label="Panier Store"
             className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition hover:bg-muted active:scale-95"
           >
             <ShoppingCart
