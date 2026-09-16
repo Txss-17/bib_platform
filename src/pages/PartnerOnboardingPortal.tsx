@@ -1,29 +1,34 @@
-import { useEffect, useMemo, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { useSEO } from "@/hooks/useSEO";
-import { supabase } from "@/integrations/supabase/client";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  PartnerOnboardingWizard,
-  type OnboardingPrefill,
-} from "@/components/standalone/PartnerOnboardingWizard";
-import { PARTNER_ONBOARDING_CONFIGS } from "@/config/partnerOnboarding";
-import {
+  AlertCircle,
   ArrowLeft,
+  Check,
   CheckCircle2,
   Clock3,
   FileCheck2,
   Loader2,
-  PackageCheck,
-  Pencil,
-  Rocket,
+  RefreshCw,
   ShieldCheck,
   XCircle,
 } from "lucide-react";
+
+import { supabase } from "@/integrations/supabase/client";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import PartnerOnboardingWizard from "@/components/standalone/PartnerOnboardingWizard";
+import type { OnboardingConfig } from "@/components/standalone/PartnerOnboardingWizard";
+
+import { cn } from "@/lib/utils";
+
+/* -------------------------------------------------------------------------- */
+/* Types                                                                      */
+/* -------------------------------------------------------------------------- */
+
+type Portal = "suppliers" | "ops";
 
 type Status =
   | "draft"
@@ -35,320 +40,830 @@ type Status =
 
 interface Submission {
   id: string;
-  portal: "suppliers" | "ops";
+  portal: Portal;
   contact_email: string;
-  contact_name: string | null;
-  company: string | null;
+  contact_name: string;
+  company: string;
   status: Status;
   payload: Record<string, unknown>;
-  kyc_attachments: { slotId?: string; fileName: string; path: string; size?: number; mimeType?: string }[];
-  support_ticket_id: string | null;
-  submitted_at: string | null;
-  approved_at: string | null;
+  attachments: unknown[];
+  support_ticket_id?: string | null;
+  submitted_at?: string | null;
+  approved_at?: string | null;
   created_at: string;
   updated_at: string;
 }
 
 interface HistoryEntry {
-  id: string;
-  changed_at: string;
-  change_summary: string;
-  diff: Record<string, unknown>;
-  actor_email: string | null;
+  id?: string;
+  status?: Status;
+  action?: string;
+  message?: string;
+  created_at?: string;
+  created_by?: string | null;
 }
 
-const TIMELINE: { key: Status | "go_live"; label: string; icon: typeof FileCheck2 }[] = [
-  { key: "submitted", label: "Documents reçus", icon: FileCheck2 },
-  { key: "under_review", label: "Conformité validée", icon: ShieldCheck },
-  { key: "approved", label: "Intégration planifiée", icon: PackageCheck },
-  { key: "go_live", label: "Go-live", icon: Rocket },
+interface PartnerOnboardingPortalProps {
+  portal: Portal;
+  token: string;
+  config: OnboardingConfig;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Status configuration                                                       */
+/* -------------------------------------------------------------------------- */
+
+const STATUS_CONFIG: Record<
+  Status,
+  {
+    label: string;
+    description: string;
+    icon: typeof Check;
+    tone: "default" | "secondary" | "outline" | "destructive";
+  }
+> = {
+  draft: {
+    label: "Brouillon",
+    description:
+      "Le dossier a été commencé mais n’a pas encore été transmis.",
+    icon: Clock3,
+    tone: "outline",
+  },
+
+  email_verified: {
+    label: "Email vérifié",
+    description:
+      "L’adresse email du dossier a été vérifiée.",
+    icon: ShieldCheck,
+    tone: "secondary",
+  },
+
+  submitted: {
+    label: "Dossier transmis",
+    description:
+      "Le dossier a été transmis à BIB et attend son examen.",
+    icon: FileCheck2,
+    tone: "secondary",
+  },
+
+  under_review: {
+    label: "En cours d’examen",
+    description:
+      "BIB examine actuellement les informations et documents transmis.",
+    icon: Clock3,
+    tone: "secondary",
+  },
+
+  approved: {
+    label: "Dossier validé",
+    description:
+      "Le dossier a été validé pour la suite du processus d’intégration.",
+    icon: CheckCircle2,
+    tone: "secondary",
+  },
+
+  rejected: {
+    label: "Dossier non retenu",
+    description:
+      "Le dossier n’est pas retenu dans son état actuel.",
+    icon: XCircle,
+    tone: "destructive",
+  },
+};
+
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
+
+const STATUS_ORDER: Status[] = [
+  "draft",
+  "email_verified",
+  "submitted",
+  "under_review",
+  "approved",
 ];
 
-function statusIndex(status: Status): number {
-  switch (status) {
-    case "draft":
-    case "email_verified":
-      return -1;
-    case "submitted":
-      return 0;
-    case "under_review":
-      return 1;
-    case "approved":
-      return 2;
-    case "rejected":
-      return -1;
-    default:
-      return -1;
+function formatDate(value?: string | null) {
+  if (!value) return "—";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "—";
   }
+
+  return new Intl.DateTimeFormat("fr-FR", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
 }
 
-export default function PartnerOnboardingPortal() {
-  const { token = "" } = useParams<{ token: string }>();
-  const [sub, setSub] = useState<Submission | null>(null);
+function getStatusIndex(status: Status) {
+  const index = STATUS_ORDER.indexOf(status);
+
+  return index >= 0 ? index : -1;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Component                                                                  */
+/* -------------------------------------------------------------------------- */
+
+export default function PartnerOnboardingPortal({
+  portal,
+  token,
+  config,
+}: PartnerOnboardingPortalProps) {
+  const [submission, setSubmission] =
+    useState<Submission | null>(null);
+
   const [history, setHistory] = useState<HistoryEntry[]>([]);
+
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
   const [editing, setEditing] = useState(false);
 
-  useSEO({
-    title: sub
-      ? `Suivi onboarding · ${sub.company ?? sub.contact_email} — Brand-In-A-Box`
-      : "Suivi onboarding — Brand-In-A-Box",
-    description: "Suivi en temps réel de votre dossier d'onboarding partenaire.",
-  });
+  const [error, setError] = useState<string | null>(null);
 
-  async function load() {
-    if (!token) {
-      setError("Lien invalide.");
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    const client = supabase as unknown as {
-      rpc: (fn: string, params: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
-    };
-    const [{ data: s, error: se }, { data: h }] = await Promise.all([
-      client.rpc("partner_load_submission", { _access_token: token }),
-      client.rpc("partner_load_history", { _access_token: token }),
-    ]);
-    setLoading(false);
-    if (se || !s || (Array.isArray(s) && s.length === 0)) {
-      setError("Lien expiré ou invalide. Demandez un nouveau code.");
-      return;
-    }
-    const row = (Array.isArray(s) ? s[0] : s) as unknown as Submission;
-    setSub(row);
-    setHistory(Array.isArray(h) ? (h as unknown as HistoryEntry[]) : []);
-  }
+  /* ------------------------------------------------------------------------ */
+  /* Load submission                                                          */
+  /* ------------------------------------------------------------------------ */
+
+  const loadPortal = useCallback(
+    async (silent = false) => {
+      if (!silent) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
+
+      setError(null);
+
+      try {
+        const [
+          { data: submissionData, error: submissionError },
+          { data: historyData, error: historyError },
+        ] = await Promise.all([
+          supabase.rpc("partner_load_submission", {
+            _access_token: token,
+          }),
+
+          supabase.rpc("partner_load_history", {
+            _access_token: token,
+          }),
+        ]);
+
+        if (submissionError) {
+          throw submissionError;
+        }
+
+        if (historyError) {
+          throw historyError;
+        }
+
+        if (!submissionData) {
+          throw new Error(
+            "Dossier introuvable ou accès expiré.",
+          );
+        }
+
+        setSubmission(submissionData as Submission);
+        setHistory(
+          Array.isArray(historyData)
+            ? (historyData as HistoryEntry[])
+            : [],
+        );
+      } catch (loadError) {
+        console.error(loadError);
+
+        setSubmission(null);
+        setHistory([]);
+
+        setError(
+          "Impossible de charger votre dossier. Vérifiez le lien d'accès ou réessayez.",
+        );
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [token],
+  );
 
   useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+    loadPortal();
+  }, [loadPortal]);
 
-  const config = useMemo(() => sub ? PARTNER_ONBOARDING_CONFIGS[sub.portal] : null, [sub]);
+  /* ------------------------------------------------------------------------ */
+  /* Derived values                                                           */
+  /* ------------------------------------------------------------------------ */
 
-  if (loading) {
+  const status = submission?.status ?? "draft";
+
+  const statusConfig = STATUS_CONFIG[status];
+
+  const StatusIcon = statusConfig.icon;
+
+  const statusIndex = getStatusIndex(status);
+
+  const canEdit =
+    submission != null &&
+    status !== "approved" &&
+    status !== "rejected";
+
+  const isFinal =
+    status === "approved" || status === "rejected";
+
+  const timeline = useMemo(() => {
+    return [
+      {
+        status: "submitted" as Status,
+        label: "Dossier transmis",
+        description:
+          "Le dossier complet a été transmis à BIB.",
+      },
+      {
+        status: "under_review" as Status,
+        label: "Examen du dossier",
+        description:
+          "BIB vérifie les informations, documents et éléments opérationnels.",
+      },
+      {
+        status: "approved" as Status,
+        label: "Validation",
+        description:
+          "Le dossier est validé pour la suite de l’intégration.",
+      },
+    ];
+  }, []);
+
+  /* ------------------------------------------------------------------------ */
+  /* Edit mode                                                                */
+  /* ------------------------------------------------------------------------ */
+
+  if (editing && submission) {
     return (
-      <StandaloneLayout portal="Suppliers" accent="primary" menuItems={[]}>
-        <section className="container mx-auto px-4 py-20 max-w-xl text-center">
-          <Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
-          <p className="text-sm text-muted-foreground mt-3">Chargement de votre dossier…</p>
-        </section>
-      </StandaloneLayout>
-    );
-  }
+      <main className="min-h-screen bg-background">
+        <div className="mx-auto max-w-6xl px-4 py-8 md:px-6">
+          <div className="mb-8">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setEditing(false)}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Retour au dossier
+            </Button>
+          </div>
 
-  if (error || !sub || !config) {
-    return (
-      <StandaloneLayout portal="Suppliers" accent="primary" menuItems={[]}>
-        <section className="container mx-auto px-4 py-16 max-w-xl">
-          <Card className="p-6 border-destructive/30 bg-destructive/5">
-            <div className="flex items-start gap-3">
-              <XCircle className="w-5 h-5 text-destructive mt-0.5" />
-              <div>
-                <h2 className="font-semibold">Accès impossible</h2>
-                <p className="text-sm text-muted-foreground mt-1">{error ?? "Dossier introuvable."}</p>
-                <div className="flex gap-2 mt-4">
-                  <Button asChild size="sm" variant="outline">
-                    <Link to="/suppliers/onboarding/resume?portal=suppliers">Renvoyer un code Suppliers</Link>
-                  </Button>
-                  <Button asChild size="sm" variant="outline">
-                    <Link to="/ops/onboarding/resume?portal=ops">Renvoyer un code Logistique</Link>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </section>
-      </StandaloneLayout>
-    );
-  }
-
-  const portalLabel = sub.portal === "suppliers" ? "Suppliers" : "Ops";
-  const accent = sub.portal === "suppliers" ? "primary" : "accent";
-  const isApproved = sub.status === "approved";
-  const isRejected = sub.status === "rejected";
-  const canEdit = !isApproved && !isRejected;
-  const idx = statusIndex(sub.status);
-
-  if (editing && canEdit) {
-    const prefill: OnboardingPrefill = {
-      accessToken: token,
-      contactEmail: sub.contact_email,
-      contactName: sub.contact_name,
-      company: sub.company,
-      payload: sub.payload,
-      kycAttachments: sub.kyc_attachments ?? [],
-      portalUrl: typeof window !== "undefined" ? window.location.href : undefined,
-    };
-    return (
-      <StandaloneLayout
-        portal={portalLabel}
-        accent={accent}
-        menuItems={[
-          { label: "Présentation", href: sub.portal === "suppliers" ? "/suppliers" : "/ops", icon: sub.portal === "suppliers" ? "layers" : "truck" },
-          { label: "Mon dossier", href: `/portal/onboarding/${token}`, icon: "file" },
-        ]}
-      >
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 max-w-3xl">
-          <Button variant="ghost" size="sm" className="mb-4 -ml-2" onClick={() => setEditing(false)}>
-            <ArrowLeft className="w-4 h-4 mr-1.5" /> Revenir au suivi
-          </Button>
-          <Badge variant="secondary" className="mb-3">Édition · Avant validation finale</Badge>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight">Modifier mon dossier</h1>
-          <p className="text-sm text-muted-foreground mt-2 mb-6">
-            Vos modifications seront envoyées à l'équipe Ops avec un historique des changements.
-          </p>
           <PartnerOnboardingWizard
             config={config}
             mode="edit"
-            prefill={prefill}
+            accessToken={token}
+            initialValues={{
+              company: submission.company,
+              legal_rep:
+                typeof submission.payload?.identity ===
+                "object"
+                  ? String(
+                      (
+                        submission.payload.identity as Record<
+                          string,
+                          unknown
+                        >
+                      )?.legal_rep ?? "",
+                    )
+                  : "",
+              email: submission.contact_email,
+              phone:
+                typeof submission.payload?.identity ===
+                "object"
+                  ? String(
+                      (
+                        submission.payload.identity as Record<
+                          string,
+                          unknown
+                        >
+                      )?.phone ?? "",
+                    )
+                  : "",
+              address:
+                typeof submission.payload?.identity ===
+                "object"
+                  ? String(
+                      (
+                        submission.payload.identity as Record<
+                          string,
+                          unknown
+                        >
+                      )?.address ?? "",
+                    )
+                  : "",
+              access_code: token,
+            }}
+            initialPayload={submission.payload}
+            initialDocuments={
+              Array.isArray(submission.attachments)
+                ? (submission.attachments as any[])
+                : []
+            }
+            initialEmailVerified={
+              submission.status === "email_verified" ||
+              submission.status === "submitted" ||
+              submission.status === "under_review" ||
+              submission.status === "approved"
+            }
             onSubmitted={() => {
               setEditing(false);
-              load();
+              loadPortal();
             }}
           />
-        </section>
-      </StandaloneLayout>
+        </div>
+      </main>
     );
   }
 
-  return (
-    <StandaloneLayout
-      portal={portalLabel}
-      accent={accent}
-      menuItems={[
-        { label: "Présentation", href: sub.portal === "suppliers" ? "/suppliers" : "/ops", icon: sub.portal === "suppliers" ? "layers" : "truck" },
-        { label: "Candidature", href: sub.portal === "suppliers" ? "/suppliers/apply" : "/ops/apply", icon: "clipboard" },
-      ]}
-    >
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14 max-w-3xl space-y-6">
-        <div>
-          <Badge variant="secondary" className="mb-3">Suivi onboarding {portalLabel}</Badge>
-          <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
-            {sub.company ?? sub.contact_email}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-2">
-            Dossier #{sub.id.slice(0, 8)} · {sub.contact_email}
-            {sub.support_ticket_id && <> · Ticket #{sub.support_ticket_id.slice(0, 8)}</>}
-          </p>
-        </div>
+  /* ------------------------------------------------------------------------ */
+  /* Loading                                                                  */
+  /* ------------------------------------------------------------------------ */
 
-        {/* Status banner */}
-        <Card className={`p-5 ${isApproved ? "bg-success/5 border-success/30" : isRejected ? "bg-destructive/5 border-destructive/30" : "bg-muted/30"}`}>
-          <div className="flex items-start gap-3">
-            {isApproved ? <CheckCircle2 className="w-5 h-5 text-success mt-0.5" />
-              : isRejected ? <XCircle className="w-5 h-5 text-destructive mt-0.5" />
-              : <Clock3 className="w-5 h-5 text-primary mt-0.5" />}
-            <div className="flex-1">
-              <p className="font-semibold text-sm">
-                {isApproved ? "Dossier validé — accès au portail ouvert"
-                  : isRejected ? "Dossier refusé — voir motifs ci-dessous"
-                  : sub.status === "submitted" ? "Soumis — en file d'instruction"
-                  : sub.status === "under_review" ? "En revue par l'équipe Ops"
-                  : "Brouillon — en attente de soumission"}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Dernière mise à jour : {new Date(sub.updated_at).toLocaleString("fr-FR")}
-              </p>
+  if (loading) {
+    return (
+      <main className="flex min-h-[70vh] items-center justify-center px-4">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          Chargement du dossier…
+        </div>
+      </main>
+    );
+  }
+
+  /* ------------------------------------------------------------------------ */
+  /* Error                                                                    */
+  /* ------------------------------------------------------------------------ */
+
+  if (!submission) {
+    return (
+      <main className="mx-auto flex min-h-[70vh] max-w-xl items-center px-4">
+        <Card className="w-full">
+          <CardHeader>
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-destructive/10">
+              <AlertCircle className="h-6 w-6 text-destructive" />
             </div>
-            {canEdit && (
-              <Button size="sm" variant="outline" onClick={() => setEditing(true)}>
-                <Pencil className="w-3.5 h-3.5 mr-1.5" /> Modifier
-              </Button>
-            )}
+
+            <CardTitle className="mt-4">
+              Dossier inaccessible
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="space-y-5">
+            <p className="text-sm text-muted-foreground">
+              {error ??
+                "Ce lien ne permet pas d’accéder au dossier demandé."}
+            </p>
+
+            <Button
+              type="button"
+              onClick={() => loadPortal()}
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Réessayer
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
+    );
+  }
+
+  /* ------------------------------------------------------------------------ */
+  /* Main portal                                                              */
+  /* ------------------------------------------------------------------------ */
+
+  return (
+    <main className="min-h-screen bg-background">
+      <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 md:px-6 md:py-12">
+        {/* Header */}
+        <header className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary">
+                {portal === "suppliers"
+                  ? "Fournisseur"
+                  : "Partenaire logistique"}
+              </Badge>
+
+              <Badge variant="outline">
+                Dossier partenaire
+              </Badge>
+            </div>
+
+            <h1 className="mt-4 text-3xl font-semibold tracking-tight">
+              Suivi de votre dossier
+            </h1>
+
+            <p className="mt-2 max-w-2xl text-muted-foreground">
+              {submission.company}
+            </p>
           </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => loadPortal(true)}
+            disabled={refreshing}
+          >
+            {refreshing ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="mr-2 h-4 w-4" />
+            )}
+
+            Actualiser
+          </Button>
+        </header>
+
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+
+            <AlertDescription>
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Current status */}
+        <Card>
+          <CardContent className="p-6 md:p-8">
+            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-start gap-4">
+                <div
+                  className={cn(
+                    "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl",
+                    status === "rejected"
+                      ? "bg-destructive/10"
+                      : "bg-primary/10",
+                  )}
+                >
+                  <StatusIcon
+                    className={cn(
+                      "h-6 w-6",
+                      status === "rejected"
+                        ? "text-destructive"
+                        : "text-primary",
+                    )}
+                  />
+                </div>
+
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-xl font-semibold">
+                      {statusConfig.label}
+                    </h2>
+
+                    <Badge
+                      variant={statusConfig.tone}
+                    >
+                      {status}
+                    </Badge>
+                  </div>
+
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
+                    {statusConfig.description}
+                  </p>
+                </div>
+              </div>
+
+              {canEdit && (
+                <Button
+                  type="button"
+                  onClick={() => setEditing(true)}
+                >
+                  Modifier le dossier
+                </Button>
+              )}
+            </div>
+          </CardContent>
         </Card>
 
         {/* Timeline */}
-        <Card className="p-5 sm:p-6">
-          <h2 className="font-display text-lg font-semibold mb-4">Étapes</h2>
-          <ol className="space-y-3">
-            {TIMELINE.map((stage, i) => {
-              const done = i <= idx;
-              const current = i === idx + (sub.status === "approved" ? 0 : 0);
-              const Icon = stage.icon;
-              return (
-                <li key={stage.key} className="flex items-start gap-3">
-                  <div className={`mt-0.5 w-7 h-7 rounded-full flex items-center justify-center border ${
-                    done
-                      ? "bg-success text-success-foreground border-success"
-                      : current
-                      ? "bg-primary/10 text-primary border-primary/40"
-                      : "bg-muted text-muted-foreground border-border"
-                  }`}>
-                    <Icon className="w-3.5 h-3.5" />
-                  </div>
-                  <div className="flex-1 pt-0.5">
-                    <p className={`text-sm font-medium ${done ? "" : "text-muted-foreground"}`}>{stage.label}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      {stage.key === "submitted" && sub.submitted_at && `Soumis le ${new Date(sub.submitted_at).toLocaleDateString("fr-FR")}`}
-                      {stage.key === "approved" && sub.approved_at && `Validé le ${new Date(sub.approved_at).toLocaleDateString("fr-FR")}`}
-                    </p>
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              Progression du dossier
+            </CardTitle>
 
-        {/* Documents */}
-        <Card className="p-5 sm:p-6">
-          <h2 className="font-display text-lg font-semibold mb-3">Documents transmis</h2>
-          {sub.kyc_attachments?.length ? (
-            <ul className="space-y-2 text-sm">
-              {sub.kyc_attachments.map((k, i) => (
-                <li key={i} className="flex items-center gap-2 text-muted-foreground">
-                  <FileCheck2 className="w-3.5 h-3.5 text-success" />
-                  <span className="truncate">{k.fileName}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">Aucun document attaché.</p>
-          )}
-        </Card>
-
-        {/* History */}
-        <Card className="p-5 sm:p-6">
-          <h2 className="font-display text-lg font-semibold mb-3">Historique</h2>
-          {history.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Pas encore d'événement.</p>
-          ) : (
-            <ul className="space-y-3">
-              {history.map((h) => (
-                <li key={h.id} className="text-sm">
-                  <p className="font-medium">{h.change_summary}</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {new Date(h.changed_at).toLocaleString("fr-FR")}
-                    {h.actor_email && ` · ${h.actor_email}`}
-                  </p>
-                  {Object.keys(h.diff ?? {}).length > 0 && (
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      Champs modifiés : {Object.keys(h.diff).join(", ")}
-                    </p>
-                  )}
-                  <Separator className="mt-3" />
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        {isApproved && (
-          <Card className="p-5 bg-primary/5 border-primary/30">
-            <p className="text-sm mb-3">
-              Votre accès au portail opérationnel <strong>{portalLabel}</strong> est ouvert.
+            <p className="text-sm text-muted-foreground">
+              Les étapes affichées correspondent à l’avancement connu
+              de votre dossier.
             </p>
-            <Button asChild size="sm">
-              <Link to={sub.portal === "suppliers" ? `/suppliers/portal/${token}` : `/ops/portal/${token}`}>
-                Ouvrir mon portail {portalLabel}
-              </Link>
-            </Button>
+          </CardHeader>
+
+          <CardContent>
+            <div className="space-y-0">
+              {timeline.map((item, index) => {
+                const itemIndex = getStatusIndex(
+                  item.status,
+                );
+
+                const completed =
+                  statusIndex >= itemIndex &&
+                  status !== "rejected";
+
+                const current =
+                  status === item.status;
+
+                const isLast =
+                  index === timeline.length - 1;
+
+                return (
+                  <div
+                    key={item.status}
+                    className="relative flex gap-4"
+                  >
+                    {!isLast && (
+                      <div
+                        className={cn(
+                          "absolute left-[15px] top-8 h-[calc(100%-8px)] w-px",
+                          completed
+                            ? "bg-primary/40"
+                            : "bg-border",
+                        )}
+                      />
+                    )}
+
+                    <div
+                      className={cn(
+                        "relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border",
+                        completed
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "bg-background text-muted-foreground",
+                        current &&
+                          "ring-4 ring-primary/10",
+                      )}
+                    >
+                      {completed ? (
+                        <Check className="h-4 w-4" />
+                      ) : (
+                        <span className="text-xs">
+                          {index + 1}
+                        </span>
+                      )}
+                    </div>
+
+                    <div
+                      className={cn(
+                        "pb-8",
+                        isLast && "pb-0",
+                      )}
+                    >
+                      <p className="font-medium">
+                        {item.label}
+                      </p>
+
+                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                        {item.description}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {status === "rejected" && (
+                <div className="mt-6 flex items-start gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-5">
+                  <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+
+                  <div>
+                    <p className="font-medium">
+                      Dossier non retenu
+                    </p>
+
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                      Consultez l’historique ci-dessous pour connaître
+                      les informations éventuellement communiquées par BIB.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Details */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Informations du dossier
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Société
+                </p>
+
+                <p className="mt-1 font-medium">
+                  {submission.company}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Contact
+                </p>
+
+                <p className="mt-1 font-medium">
+                  {submission.contact_name}
+                </p>
+
+                <p className="text-sm text-muted-foreground">
+                  {submission.contact_email}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Référence
+                </p>
+
+                <p className="mt-1 break-all font-mono text-sm">
+                  {submission.id}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Dates clés
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Création
+                </p>
+
+                <p className="mt-1 text-sm">
+                  {formatDate(submission.created_at)}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Dernière mise à jour
+                </p>
+
+                <p className="mt-1 text-sm">
+                  {formatDate(submission.updated_at)}
+                </p>
+              </div>
+
+              {submission.submitted_at && (
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Transmission
+                  </p>
+
+                  <p className="mt-1 text-sm">
+                    {formatDate(submission.submitted_at)}
+                  </p>
+                </div>
+              )}
+
+              {submission.approved_at && (
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    Validation
+                  </p>
+
+                  <p className="mt-1 text-sm">
+                    {formatDate(submission.approved_at)}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Approved */}
+        {status === "approved" && (
+          <Card className="border-primary/30">
+            <CardContent className="p-6 md:p-8">
+              <div className="flex items-start gap-4">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                  <CheckCircle2 className="h-6 w-6 text-primary" />
+                </div>
+
+                <div>
+                  <h2 className="text-lg font-semibold">
+                    Dossier validé
+                  </h2>
+
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
+                    Votre dossier a été validé. Les prochaines étapes
+                    opérationnelles seront définies selon le périmètre
+                    retenu avec BIB.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
           </Card>
         )}
-      </section>
-    </StandaloneLayout>
+
+        {/* History */}
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              Historique du dossier
+            </CardTitle>
+
+            <p className="text-sm text-muted-foreground">
+              Les dernières actions enregistrées sur votre dossier.
+            </p>
+          </CardHeader>
+
+          <CardContent>
+            {history.length === 0 ? (
+              <div className="rounded-2xl border border-dashed p-6 text-center">
+                <Clock3 className="mx-auto h-5 w-5 text-muted-foreground" />
+
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Aucun événement complémentaire à afficher.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {history.map((entry, index) => (
+                  <div
+                    key={
+                      entry.id ??
+                      `${entry.created_at}-${index}`
+                    }
+                    className="flex gap-4 rounded-2xl border p-4"
+                  >
+                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                      <Clock3 className="h-4 w-4 text-muted-foreground" />
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {entry.status && (
+                          <Badge variant="outline">
+                            {STATUS_CONFIG[entry.status]?.label ??
+                              entry.status}
+                          </Badge>
+                        )}
+
+                        {entry.created_at && (
+                          <span className="text-xs text-muted-foreground">
+                            {formatDate(entry.created_at)}
+                          </span>
+                        )}
+                      </div>
+
+                      {entry.action && (
+                        <p className="mt-2 font-medium">
+                          {entry.action}
+                        </p>
+                      )}
+
+                      {entry.message && (
+                        <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                          {entry.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Footer notice */}
+        <div className="flex items-start gap-3 rounded-2xl border bg-muted/30 p-5">
+          <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+
+          <p className="text-sm leading-6 text-muted-foreground">
+            Ce portail permet de consulter et, lorsque le dossier le
+            permet, de compléter les informations transmises à BIB.
+            Les éventuelles étapes opérationnelles ultérieures sont
+            communiquées séparément selon la validation du dossier.
+          </p>
+        </div>
+
+        {isFinal && (
+          <p className="text-center text-xs text-muted-foreground">
+            Dernière mise à jour :{" "}
+            {formatDate(submission.updated_at)}
+          </p>
+        )}
+      </div>
+    </main>
   );
 }
