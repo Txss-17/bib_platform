@@ -56,7 +56,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { HighlightsManager } from "./HighlightsManager";
+import { StoriesManager } from "./StoriesManager";
 import { ALL_FONTS, loadGoogleFont } from "@/lib/googleFonts";
 import {
   useBoutiquePages,
@@ -846,7 +846,7 @@ export function StudioEditor({
             <TabsTrigger value="scenes">Scènes</TabsTrigger>
             <TabsTrigger value="brand">Identité</TabsTrigger>
             <TabsTrigger value="seo">SEO</TabsTrigger>
-            <TabsTrigger value="highlights">Marketplace</TabsTrigger>
+            <TabsTrigger value="highlights">Store</TabsTrigger>
           </TabsList>
 
           {/* SCENES TAB */}
@@ -1539,9 +1539,9 @@ export function StudioEditor({
             </Card>
           </TabsContent>
 
-          {/* MARKETPLACE HIGHLIGHTS TAB */}
+          {/* STORE HIGHLIGHTS TAB */}
           <TabsContent value="highlights" className="flex-1 overflow-y-auto px-4 pb-6 mt-3">
-            <HighlightsManager boutiqueId={boutiqueId} />
+            <StoriesManager boutiqueId={boutiqueId} />
           </TabsContent>
         </Tabs>
       </aside>
