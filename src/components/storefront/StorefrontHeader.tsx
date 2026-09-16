@@ -1,6 +1,13 @@
-import { ShoppingCart, Menu, Package } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  Menu,
+  Package,
+  ShoppingCart,
+  X,
+} from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useStorefrontContext } from "@/contexts/StorefrontContext";
 import { usePublicBoutiquePages } from "@/hooks/useBoutiquePages";
@@ -8,126 +15,280 @@ import { usePublicBoutiquePages } from "@/hooks/useBoutiquePages";
 interface StorefrontHeaderProps {
   boutiqueName: string;
   primaryColor?: string;
-  navLinks?: { label: string; href: string }[];
+  navLinks?: {
+    label: string;
+    href: string;
+  }[];
   boutiqueSlug?: string;
 }
 
-export function StorefrontHeader({ boutiqueName, primaryColor, navLinks, boutiqueSlug }: StorefrontHeaderProps) {
+export function StorefrontHeader({
+  boutiqueName,
+  primaryColor,
+  navLinks,
+  boutiqueSlug,
+}: StorefrontHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const { totalItems, setIsOpen } = useCart();
   const ctx = useStorefrontContext();
-  const { data: customPages = [] } = usePublicBoutiquePages(ctx?.boutiqueId);
+
+  const { data: customPages = [] } =
+    usePublicBoutiquePages(ctx?.boutiqueId);
+
   const accent = primaryColor || "#0f172a";
 
-  // "Accueil" always points to the boutique root (or "#" when slug unknown).
-  const homeLink = { label: "Accueil", href: boutiqueSlug ? `/boutique/${boutiqueSlug}` : "#" };
+  /*
+   * --------------------------------------------------------------------------
+   * Boutique URLs
+   * --------------------------------------------------------------------------
+   *
+   * /store
+   *   → BIB Store / discovery
+   *
+   * /store/boutique/:slug
+   *   → BIB presentation / discovery layer
+   *
+   * /boutique/:slug
+   *   → actual public boutique storefront
+   *
+   * Checkout and order tracking remain on the boutique storefront.
+   */
 
-  // Dynamic links come from `boutique_pages` (Boutique, À propos, Contact + custom pages).
-  // Titles + slugs are fully editable in the Studio so the menu stays in sync.
+  const boutiqueRoot = boutiqueSlug
+    ? `/boutique/${boutiqueSlug}`
+    : "#";
+
+  const orderTrackingUrl = boutiqueSlug
+    ? `/boutique/${boutiqueSlug}/order-tracking`
+    : "#";
+
+  const homeLink = {
+    label: "Accueil",
+    href: boutiqueRoot,
+  };
+
+  /*
+   * --------------------------------------------------------------------------
+   * Dynamic boutique pages
+   * --------------------------------------------------------------------------
+   */
+
   const dynamicLinks = (customPages as any[])
-    .filter((p) => p.show_in_nav)
-    .map((p) => ({
-      label: p.title as string,
-      href: boutiqueSlug ? `/boutique/${boutiqueSlug}/p/${p.slug}` : `#${p.slug}`,
+    .filter((page) => page.show_in_nav)
+    .map((page) => ({
+      label: page.title as string,
+      href: boutiqueSlug
+        ? `/boutique/${boutiqueSlug}/p/${page.slug}`
+        : `#${page.slug}`,
     }));
 
-  // If the parent passed explicit navLinks, honor them (used by previews/legacy callers).
-  // Otherwise build from Accueil + dynamic pages, with a minimal fallback when there are none yet.
-  const fallback =
+  /*
+   * Keep a useful navigation when the boutique has not created
+   * custom pages yet.
+   */
+
+  const fallbackLinks =
     dynamicLinks.length === 0
       ? [
-          { label: "Boutique", href: "#products" },
-          { label: "À Propos", href: "#about" },
-          { label: "Contact", href: "#contact" },
+          {
+            label: "Boutique",
+            href: "#products",
+          },
+          {
+            label: "À propos",
+            href: "#about",
+          },
+          {
+            label: "Contact",
+            href: "#contact",
+          },
         ]
       : [];
-  const links = navLinks ?? [homeLink, ...dynamicLinks, ...fallback];
+
+  const links =
+    navLinks ??
+    [
+      homeLink,
+      ...dynamicLinks,
+      ...fallbackLinks,
+    ];
+
+  /*
+   * --------------------------------------------------------------------------
+   * Helpers
+   * --------------------------------------------------------------------------
+   */
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <h1
-              className="text-xl md:text-2xl font-semibold tracking-tight"
+    <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          {/* ---------------------------------------------------------------- */}
+          {/* Brand                                                            */}
+          {/* ---------------------------------------------------------------- */}
+
+          <Link
+            to={boutiqueRoot}
+            className="min-w-0 shrink-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+            style={{
+              ["--tw-ring-color" as string]: accent,
+            }}
+            onClick={closeMobileMenu}
+            aria-label={`Accueil ${boutiqueName}`}
+          >
+            <span
+              className="block max-w-[220px] truncate text-xl font-semibold tracking-tight md:max-w-none md:text-2xl"
               style={{ color: accent }}
             >
               {boutiqueName}
-            </h1>
-          </div>
+            </span>
+          </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
+          {/* ---------------------------------------------------------------- */}
+          {/* Desktop navigation                                               */}
+          {/* ---------------------------------------------------------------- */}
+
+          <nav
+            aria-label="Navigation principale"
+            className="hidden items-center gap-8 md:flex"
+          >
             {links.map((link) => (
               <a
-                key={link.label}
+                key={`${link.label}-${link.href}`}
                 href={link.href}
-                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                className="text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"
               >
                 {link.label}
               </a>
             ))}
           </nav>
 
-          {/* Right side icons */}
-          <div className="flex items-center gap-2">
+          {/* ---------------------------------------------------------------- */}
+          {/* Actions                                                          */}
+          {/* ---------------------------------------------------------------- */}
+
+          <div className="flex items-center gap-1 sm:gap-2">
             {boutiqueSlug && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hidden sm:flex items-center gap-1.5 text-gray-600 hover:text-gray-900"
-                onClick={() => window.location.href = `/boutique/${boutiqueSlug}/order-tracking`}
+              <Link
+                to={orderTrackingUrl}
+                className="hidden sm:block"
               >
-                <Package className="w-4 h-4" />
-                <span className="text-xs font-medium">Suivi commande</span>
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900"
+                >
+                  <Package
+                    className="h-4 w-4"
+                    aria-hidden="true"
+                  />
+                  <span className="text-xs font-medium">
+                    Suivi commande
+                  </span>
+                </Button>
+              </Link>
             )}
-            <Button variant="ghost" size="icon" className="relative" onClick={() => setIsOpen(true)}>
-              <ShoppingCart className="w-5 h-5 text-gray-600" />
+
+            {/* Cart belongs to the boutique storefront */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="relative"
+              onClick={() => setIsOpen(true)}
+              aria-label={
+                totalItems > 0
+                  ? `Panier, ${totalItems} article${totalItems > 1 ? "s" : ""}`
+                  : "Panier"
+              }
+            >
+              <ShoppingCart
+                className="h-5 w-5 text-gray-600"
+                aria-hidden="true"
+              />
+
               {totalItems > 0 && (
-                <span 
-                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-xs flex items-center justify-center"
-                  style={{ backgroundColor: accent }}
+                <span
+                  className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs text-white"
+                  style={{
+                    backgroundColor: accent,
+                  }}
+                  aria-hidden="true"
                 >
                   {totalItems}
                 </span>
               )}
             </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+
+            {/* Mobile menu */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               className="md:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() =>
+                setMobileMenuOpen((open) => !open)
+              }
+              aria-label={
+                mobileMenuOpen
+                  ? "Fermer le menu"
+                  : "Ouvrir le menu"
+              }
+              aria-expanded={mobileMenuOpen}
             >
-              <Menu className="w-5 h-5" />
+              {mobileMenuOpen ? (
+                <X
+                  className="h-5 w-5"
+                  aria-hidden="true"
+                />
+              ) : (
+                <Menu
+                  className="h-5 w-5"
+                  aria-hidden="true"
+                />
+              )}
             </Button>
           </div>
         </div>
 
-        {/* Mobile menu */}
+        {/* ------------------------------------------------------------------ */}
+        {/* Mobile navigation                                                 */}
+        {/* ------------------------------------------------------------------ */}
+
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-100">
-            <nav className="flex flex-col gap-2">
+          <div className="border-t border-gray-100 py-4 md:hidden">
+            <nav
+              aria-label="Navigation mobile"
+              className="flex flex-col gap-1"
+            >
               {links.map((link) => (
                 <a
-                  key={link.label}
+                  key={`${link.label}-${link.href}`}
                   href={link.href}
-                  className="px-2 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
+                  className="rounded-md px-2 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+                  onClick={closeMobileMenu}
                 >
                   {link.label}
                 </a>
               ))}
+
               {boutiqueSlug && (
-                <a
-                  href={`/boutique/${boutiqueSlug}/order-tracking`}
-                  className="px-2 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors flex items-center gap-2"
-                  onClick={() => setMobileMenuOpen(false)}
+                <Link
+                  to={orderTrackingUrl}
+                  className="flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+                  onClick={closeMobileMenu}
                 >
-                  <Package className="w-4 h-4" />
+                  <Package
+                    className="h-4 w-4"
+                    aria-hidden="true"
+                  />
                   Suivre ma commande
-                </a>
+                </Link>
               )}
             </nav>
           </div>
