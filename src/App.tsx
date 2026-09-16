@@ -17,7 +17,10 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { CartProvider } from "@/contexts/CartContext";
 
-// Public / authentication
+// ============================================================
+// PUBLIC / AUTHENTICATION
+// ============================================================
+
 import Index from "./pages/Index";
 import Vendre from "./pages/Vendre";
 import Login from "./pages/Login";
@@ -27,17 +30,24 @@ import MarketplaceSignup from "./pages/MarketplaceSignup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
-// General pages
+// ============================================================
+// GENERAL PAGES
+// ============================================================
+
 import Dashboard from "./pages/Dashboard";
 import Tarifs from "./pages/Tarifs";
 import CheckoutReturn from "./pages/CheckoutReturn";
 import NotFound from "./pages/NotFound";
 import BrandPreview from "./pages/BrandPreview";
 import Marketplace from "./pages/Marketplace";
+import StoreProduct from "./pages/StoreProduct";
 import Recycler from "./pages/customer/Recycler";
 import Unsubscribe from "./pages/Unsubscribe";
 
-// Suppliers / Operations
+// ============================================================
+// SUPPLIERS / OPERATIONS
+// ============================================================
+
 import Suppliers from "./pages/Suppliers";
 import SuppliersApply from "./pages/SuppliersApply";
 import Ops from "./pages/Ops";
@@ -49,10 +59,16 @@ import PartnerOnboardingPortal from "./pages/PartnerOnboardingPortal";
 import SuppliersPortal from "./pages/SuppliersPortal";
 import OpsPortal from "./pages/OpsPortal";
 
-// BIB Talent
+// ============================================================
+// BIB TALENT
+// ============================================================
+
 import BibTalent from "./pages/BibTalent";
 
-// Dashboard pages
+// ============================================================
+// DASHBOARD PAGES
+// ============================================================
+
 import Ventes from "./pages/dashboard/Ventes";
 import Commandes from "./pages/dashboard/Commandes";
 import Produits from "./pages/dashboard/Produits";
@@ -74,7 +90,10 @@ import Marketing from "./pages/dashboard/Marketing";
 import VentesPrivees from "./pages/dashboard/VentesPrivees";
 import VentesPriveesPOS from "./pages/dashboard/VentesPriveesPOS";
 
-// Public boutique
+// ============================================================
+// PUBLIC BOUTIQUE
+// ============================================================
+
 import BoutiquePublic from "./pages/BoutiquePublic";
 import BoutiqueAllProducts from "./pages/BoutiqueAllProducts";
 import BoutiqueCategory from "./pages/BoutiqueCategory";
@@ -88,7 +107,10 @@ import {
 } from "./pages/BoutiqueLegalPages";
 import BoutiqueCustomPage from "./pages/BoutiqueCustomPage";
 
-// Marketing / information
+// ============================================================
+// MARKETING / INFORMATION
+// ============================================================
+
 import Carrieres from "./pages/Carrieres";
 import CarrieresPostes from "./pages/CarrieresPostes";
 import APropos from "./pages/APropos";
@@ -104,7 +126,15 @@ import {
   Cookies,
 } from "./pages/LegalPages";
 
+// ============================================================
+// QUERY CLIENT
+// ============================================================
+
 const queryClient = new QueryClient();
+
+// ============================================================
+// APP
+// ============================================================
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -212,7 +242,7 @@ const App = () => (
                   <Navigate
                     to="/suppliers#tarifs"
                     replace
-                  />
+                  }
                 }
               />
 
@@ -327,21 +357,45 @@ const App = () => (
               />
 
               {/* =====================================================
-                  MARKETPLACE PUBLIC
+                  BIB STORE
               ===================================================== */}
+
+              {/* Accueil du Store */}
 
               <Route
                 path="/store"
                 element={<Marketplace />}
               />
 
+              {/* Recherche / catalogue produits */}
+
               <Route
-                path="/marketplace"
+                path="/store/products"
                 element={<Marketplace />}
               />
 
+              {/* Page produit publique BIB */}
+
+              <Route
+                path="/store/product/:productId"
+                element={<StoreProduct />}
+              />
+
+              {/* Ancienne URL marketplace
+                  conservée uniquement pour compatibilité */}
+
+              <Route
+                path="/marketplace"
+                element={
+                  <Navigate
+                    to="/store"
+                    replace
+                  />
+                }
+              />
+
               {/* =====================================================
-                  CUSTOMER AUTHENTICATION
+                  STORE CUSTOMER AUTHENTICATION
               ===================================================== */}
 
               <Route
@@ -379,7 +433,7 @@ const App = () => (
               />
 
               {/* =====================================================
-                  OTHER PUBLIC ROUTES
+                  STORE / CUSTOMER PUBLIC ROUTES
               ===================================================== */}
 
               <Route
@@ -404,7 +458,7 @@ const App = () => (
 
               {/* =====================================================
                   CUSTOMER PROTECTED AREA
-                  Marketplace account only
+                  STORE ACCOUNT ONLY
               ===================================================== */}
 
               <Route
@@ -413,19 +467,19 @@ const App = () => (
                 }
               >
                 <Route
-                  path="/recycler"
+                  path="/store/recycler"
                   element={<Recycler />}
                 />
 
                 <Route
-                  path="/recycler/:slug"
+                  path="/store/recycler/:slug"
                   element={<Recycler />}
                 />
               </Route>
 
               {/* =====================================================
                   PLATFORM PROTECTED AREA
-                  BIB platform / merchant accounts only
+                  BIB PLATFORM / MERCHANT ACCOUNTS ONLY
               ===================================================== */}
 
               <Route
