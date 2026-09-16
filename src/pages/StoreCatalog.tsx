@@ -1,930 +1,814 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
-  Link,
-  useLocation,
-  useNavigate,
-  useSearchParams,
-} from "react-router-dom";
-import {
-  Check,
+  ArrowDownUp,
   ChevronDown,
-  ChevronRight,
   Heart,
   Loader2,
   Search,
-  ShoppingCart,
+  ShoppingBag,
   SlidersHorizontal,
-  User,
+  Sparkles,
+  Store,
+  X,
 } from "lucide-react";
 
-import {
-  useStoreBoutiques,
-  type StoreBoutique,
-} from "@/hooks/useStore";
-import { useStoreCart } from "@/contexts/StoreCartContext";
-import { Logo } from "@/components/Logo";
+import { useStoreProducts, type StoreProduct } from "@/hooks/useStore";
+import { useFavorites } from "@/hooks/useFavorites";
+
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useSEO } from "@/hooks/useSEO";
-import { useAuth } from "@/contexts/AuthContext";
-import { useCustomerProfile } from "@/hooks/useCustomerProfile";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 /* =========================================================
    TYPES
    ========================================================= */
 
-type StoreProductPreview =
-  StoreBoutique["product_previews"][number];
-
-interface CatalogProduct {
-  id: string;
-  name: string;
-  price: number;
-  image: string;
-  description: string;
-  boutiqueId: string;
-  boutiqueName: string;
-  boutiqueSlug: string;
-  boutiqueUrl?: string;
-  category: string;
-}
+type SortOption =
+  | "recent"
+  | "price-asc"
+  | "price-desc"
+  | "name-asc"
+  | "name-desc";
 
 /* =========================================================
    HELPERS
    ========================================================= */
 
-function getProductId(
-  product: StoreProductPreview,
-): string {
-  return String(
-    (product as any).id ??
-      (product as any).product_id ??
-      "",
-  );
+function formatPrice(price: number) {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  }).format(price);
 }
 
-function getProductPrice(
-  product: StoreProductPreview,
-): number {
-  const raw =
-    (product as any).price ??
-    (product as any).public_price ??
-    (product as any).sale_price ??
-    0;
-
-  const parsed = Number(raw);
-
-  return Number.isFinite(parsed) && parsed >= 0
-    ? parsed
-    : 0;
+function getInitials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
 }
 
-function getProductImage(
-  product: StoreProductPreview,
-): string {
-  const image =
-    (product as any).image_url ??
-    (product as any).image ??
-    (product as any).thumbnail_url;
-
-  return typeof image === "string" &&
-    image.trim().length > 0
-    ? image
-    : "/placeholder.svg";
-}
-
-function getProductDescription(
-  product: StoreProductPreview,
-): string {
-  const description =
-    (product as any).description ??
-    (product as any).short_description;
-
-  return typeof description === "string" &&
-    description.trim().length > 0
-    ? description
-    : "Produit sélectionné dans le réseau BIB.";
-}
-
-function getBoutiqueUrl(
-  boutique: StoreBoutique,
-): string | undefined {
-  const value =
-    (boutique as any).website_url ??
-    (boutique as any).store_url ??
-    (boutique as any).url;
-
-  return typeof value === "string" &&
-    value.trim().length > 0
-    ? value
-    : undefined;
-}
-
-function getProductCategory(
-  product: StoreProductPreview,
-  boutique: StoreBoutique,
-): string {
-  const productCategory =
-    (product as any).category ??
-    (product as any).category_name;
-
-  if (
-    typeof productCategory === "string" &&
-    productCategory.trim().length > 0
-  ) {
-    return productCategory.trim();
-  }
-
-  return boutique.category || "Autres";
-}
-
-/* =========================================================
-   PAGE
-   ========================================================= */
-
-export default function StoreCatalog() {
-  const {
-    data: boutiques = [],
-    isLoading,
-  } = useStoreBoutiques();
-
-  const [searchParams, setSearchParams] =
-    useSearchParams();
-
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const { user, accountType } = useAuth();
-
-  const { data: customer } =
-    useCustomerProfile();
-
-  const { totalItems } = useStoreCart();
-
-  const initialQuery =
-    searchParams.get("q") ?? "";
-
-  const [search, setSearch] =
-    useState(initialQuery);
-
-  const [category, setCategory] =
-    useState(
-      searchParams.get("category") ?? "all",
-    );
-
-  const [sort, setSort] =
-    useState(
-      searchParams.get("sort") ?? "relevance",
-    );
-
-  const [showFilters, setShowFilters] =
-    useState(false);
-
-  const isStoreAccount =
-    !!user && accountType === "store";
-
-  const initial = (
-    customer?.full_name ||
-    user?.email ||
-    "?"
-  )
-    .trim()
-    .charAt(0)
-    .toUpperCase();
-
-  /* =======================================================
-     SEO
-     ======================================================= */
-
-  useSEO({
-    title:
-      "Produits — Store BIB",
-    description:
-      "Découvrez les produits sélectionnés par Brand-In-A-Box auprès des boutiques référencées dans son réseau.",
-  });
-
-  /* =======================================================
-     SYNCHRONISATION URL
-     ======================================================= */
-
-  useEffect(() => {
-    const next =
-      new URLSearchParams(searchParams);
-
-    const query = search.trim();
-
-    if (query) {
-      next.set("q", query);
-    } else {
-      next.delete("q");
-    }
-
-    if (category !== "all") {
-      next.set("category", category);
-    } else {
-      next.delete("category");
-    }
-
-    if (sort !== "relevance") {
-      next.set("sort", sort);
-    } else {
-      next.delete("sort");
-    }
-
-    if (
-      next.toString() !==
-      searchParams.toString()
-    ) {
-      setSearchParams(next, {
-        replace: true,
-      });
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, category, sort]);
-
-  /* =======================================================
-     CATALOGUE PRODUITS
-     ======================================================= */
-
-  const products = useMemo<
-    CatalogProduct[]
-  >(() => {
-    const result: CatalogProduct[] = [];
-
-    for (const boutique of boutiques) {
-      for (const product of boutique.product_previews) {
-        const id = getProductId(product);
-
-        if (!id) {
-          continue;
-        }
-
-        result.push({
-          id,
-          name:
-            product.name ||
-            "Produit",
-          price:
-            getProductPrice(product),
-          image:
-            getProductImage(product),
-          description:
-            getProductDescription(
-              product,
-            ),
-          boutiqueId:
-            boutique.id,
-          boutiqueName:
-            boutique.name,
-          boutiqueSlug:
-            boutique.slug,
-          boutiqueUrl:
-            getBoutiqueUrl(boutique),
-          category:
-            getProductCategory(
-              product,
-              boutique,
-            ),
-        });
-      }
-    }
-
-    return result;
-  }, [boutiques]);
-
-  /* =======================================================
-     CATÉGORIES
-     ======================================================= */
-
-  const categories = useMemo(() => {
-    const values = new Set<string>();
-
-    for (const product of products) {
-      if (product.category) {
-        values.add(product.category);
-      }
-    }
-
-    return Array.from(values).sort(
-      (a, b) =>
-        a.localeCompare(b, "fr"),
-    );
-  }, [products]);
-
-  /* =======================================================
-     FILTRAGE + RECHERCHE
-     ======================================================= */
-
-  const filteredProducts =
-    useMemo(() => {
-      const query =
-        search.trim().toLowerCase();
-
-      let result =
-        products.filter((product) => {
-          if (
-            category !== "all" &&
-            product.category !== category
-          ) {
-            return false;
-          }
-
-          if (!query) {
-            return true;
-          }
-
-          const content = [
-            product.name,
-            product.description,
-            product.boutiqueName,
-            product.category,
-          ]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase();
-
-          return content.includes(query);
-        });
-
-      switch (sort) {
-        case "price-asc":
-          result = [...result].sort(
-            (a, b) =>
-              a.price - b.price,
-          );
-          break;
-
-        case "price-desc":
-          result = [...result].sort(
-            (a, b) =>
-              b.price - a.price,
-          );
-          break;
-
-        case "name":
-          result = [...result].sort(
-            (a, b) =>
-              a.name.localeCompare(
-                b.name,
-                "fr",
-              ),
-          );
-          break;
-
-        default:
-          break;
-      }
-
-      return result;
-    }, [
-      products,
-      search,
-      category,
-      sort,
-    ]);
-
-  /* =======================================================
-     NAVIGATION
-     ======================================================= */
-
-  const submitSearch = () => {
-    const value = search.trim();
-
-    navigate(
-      value
-        ? `/store/products?q=${encodeURIComponent(
-            value,
-          )}`
-        : "/store/products",
-    );
-  };
-
-  const goToCart = () => {
-    navigate("/store/cart");
-  };
-
-  const goToAccount = () => {
-    if (!user || accountType !== "store") {
-      navigate("/store/login");
-      return;
-    }
-
-    navigate("/store/account");
-  };
-
-  const resetFilters = () => {
-    setSearch("");
-    setCategory("all");
-    setSort("relevance");
-  };
-
-  /* =======================================================
-     RENDER
-     ======================================================= */
-
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-
-      {/* ===================================================
-          HEADER
-         =================================================== */}
-
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-xl">
-        <div className="container mx-auto flex min-h-[68px] max-w-7xl items-center gap-3 px-4 py-3">
-
-          <Link
-            to="/store"
-            aria-label="Accueil du Store BIB"
-            className="shrink-0"
-          >
-            <Logo
-              iconSize={30}
-              asLink={false}
-            />
-          </Link>
-
-          <nav className="hidden items-center gap-1 lg:flex">
-            <Link
-              to="/store"
-              className="rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
-            >
-              Accueil
-            </Link>
-
-            <Link
-              to="/store/products"
-              className="rounded-full bg-muted px-3 py-2 text-sm font-medium text-foreground"
-            >
-              Produits
-            </Link>
-          </nav>
-
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              submitSearch();
-            }}
-            className="relative mx-auto flex min-w-0 flex-1 lg:max-w-xl"
-          >
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-
-            <Input
-              value={search}
-              onChange={(event) =>
-                setSearch(
-                  event.target.value,
-                )
-              }
-              placeholder="Rechercher un produit, une boutique…"
-              className="h-10 rounded-full border-border bg-muted/50 pl-10 pr-11 text-sm focus-visible:ring-primary/40"
-            />
-
-            {search.trim() && (
-              <button
-                type="submit"
-                aria-label="Valider la recherche"
-                className="absolute right-1 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-primary text-primary-foreground transition hover:brightness-110 active:scale-95"
-              >
-                <Check className="h-4 w-4" />
-              </button>
-            )}
-          </form>
-
-          <div className="flex shrink-0 items-center gap-1">
-
-            <button
-              type="button"
-              onClick={goToAccount}
-              aria-label="Compte"
-              className="relative hidden h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-semibold text-foreground transition hover:bg-muted/70 active:scale-95 sm:flex"
-            >
-              {user ? (
-                <span>{initial}</span>
-              ) : (
-                <User className="h-5 w-5" />
-              )}
-
-              {user && (
-                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
-              )}
-            </button>
-
-            <button
-              type="button"
-              onClick={goToCart}
-              aria-label={`Panier${
-                totalItems > 0
-                  ? `, ${totalItems} article${
-                      totalItems > 1
-                        ? "s"
-                        : ""
-                    }`
-                  : ""
-              }`}
-              className="relative flex h-10 w-10 items-center justify-center rounded-full text-foreground transition hover:bg-muted active:scale-95"
-            >
-              <ShoppingCart
-                className="h-5 w-5"
-                strokeWidth={1.8}
-              />
-
-              {totalItems > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
-                  {totalItems > 99
-                    ? "99+"
-                    : totalItems}
-                </span>
-              )}
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* ===================================================
-          CONTENU
-         =================================================== */}
-
-      <main className="container mx-auto max-w-7xl px-4 pb-16">
-
-        {/* BREADCRUMB */}
-
-        <div className="flex items-center gap-2 py-5 text-xs text-muted-foreground">
-          <Link
-            to="/store"
-            className="transition hover:text-foreground"
-          >
-            Store
-          </Link>
-
-          <ChevronRight className="h-3.5 w-3.5" />
-
-          <span className="text-foreground">
-            Produits
-          </span>
-        </div>
-
-        {/* EN-TÊTE */}
-
-        <section className="mb-7">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                Store BIB
-              </p>
-
-              <h1 className="mt-2 font-display text-3xl font-semibold leading-tight sm:text-4xl">
-                Tous les produits
-              </h1>
-
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-                Découvrez les produits proposés
-                par les boutiques référencées
-                dans le réseau BIB.
-              </p>
-            </div>
-
-            <div className="text-sm text-muted-foreground">
-              {filteredProducts.length}{" "}
-              produit
-              {filteredProducts.length > 1
-                ? "s"
-                : ""}
-            </div>
-          </div>
-        </section>
-
-        {/* FILTRES */}
-
-        <section className="mb-7 rounded-2xl border border-border bg-muted/25 p-3 sm:p-4">
-
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-
-            <button
-              type="button"
-              onClick={() =>
-                setShowFilters(
-                  (current) =>
-                    !current,
-                )
-              }
-              className="inline-flex h-10 w-fit items-center gap-2 rounded-full border border-border bg-background px-4 text-sm font-semibold transition hover:bg-muted"
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-              Filtres
-            </button>
-
-            <div className="relative min-w-0 flex-1">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-
-              <Input
-                value={search}
-                onChange={(event) =>
-                  setSearch(
-                    event.target.value,
-                  )
-                }
-                onKeyDown={(event) => {
-                  if (
-                    event.key ===
-                    "Enter"
-                  ) {
-                    submitSearch();
-                  }
-                }}
-                placeholder="Rechercher dans les produits…"
-                className="h-10 rounded-full bg-background pl-10"
-              />
-            </div>
-
-            <div className="relative">
-              <select
-                value={sort}
-                onChange={(event) =>
-                  setSort(
-                    event.target.value,
-                  )
-                }
-                className="h-10 appearance-none rounded-full border border-border bg-background py-2 pl-4 pr-10 text-sm font-medium outline-none transition focus:ring-2 focus:ring-primary/30"
-                aria-label="Trier les produits"
-              >
-                <option value="relevance">
-                  Pertinence
-                </option>
-                <option value="price-asc">
-                  Prix croissant
-                </option>
-                <option value="price-desc">
-                  Prix décroissant
-                </option>
-                <option value="name">
-                  Nom
-                </option>
-              </select>
-
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            </div>
-          </div>
-
-          {showFilters && (
-            <div className="mt-4 border-t border-border pt-4">
-
-              <div className="flex flex-wrap gap-2">
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setCategory("all")
-                  }
-                  className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
-                    category === "all"
-                      ? "bg-primary text-primary-foreground"
-                      : "border border-border bg-background text-foreground hover:bg-muted"
-                  }`}
-                >
-                  Tous
-                </button>
-
-                {categories.map(
-                  (item) => (
-                    <button
-                      key={item}
-                      type="button"
-                      onClick={() =>
-                        setCategory(
-                          item,
-                        )
-                      }
-                      className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
-                        category === item
-                          ? "bg-primary text-primary-foreground"
-                          : "border border-border bg-background text-foreground hover:bg-muted"
-                      }`}
-                    >
-                      {item}
-                    </button>
-                  ),
-                )}
-
-                {(category !==
-                  "all" ||
-                  search ||
-                  sort !==
-                    "relevance") && (
-                  <button
-                    type="button"
-                    onClick={
-                      resetFilters
-                    }
-                    className="rounded-full px-4 py-2 text-xs font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                  >
-                    Réinitialiser
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* CHARGEMENT */}
-
-        {isLoading ? (
-          <div className="flex min-h-[40vh] items-center justify-center">
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              Chargement des produits…
-            </div>
-          </div>
-        ) : filteredProducts.length ===
-          0 ? (
-          <div className="rounded-3xl border border-dashed border-border bg-muted/30 px-5 py-20 text-center">
-
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-              <Search className="h-6 w-6 text-muted-foreground" />
-            </div>
-
-            <h2 className="mt-5 text-xl font-semibold">
-              Aucun produit trouvé
-            </h2>
-
-            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-              Aucun produit ne correspond
-              aux critères sélectionnés.
-              Essayez une autre recherche
-              ou réinitialisez les filtres.
-            </p>
-
-            <button
-              type="button"
-              onClick={resetFilters}
-              className="mt-5 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:brightness-110"
-            >
-              Réinitialiser
-            </button>
-          </div>
-        ) : (
-          /* =================================================
-             GRILLE PRODUITS
-             ================================================= */
-
-          <section
-            className="
-              grid
-              grid-cols-2
-              gap-3
-              sm:grid-cols-3
-              sm:gap-4
-              lg:grid-cols-4
-              xl:grid-cols-5
-            "
-          >
-            {filteredProducts.map(
-              (product) => (
-                <CatalogProductCard
-                  key={`${product.boutiqueId}-${product.id}`}
-                  product={product}
-                />
-              ),
-            )}
-          </section>
-        )}
-      </main>
-
-      {/* ===================================================
-          FOOTER
-         =================================================== */}
-
-      <footer className="border-t border-border bg-muted/30">
-        <div className="container mx-auto flex max-w-7xl flex-col items-center gap-2 px-4 py-6 text-center text-xs text-muted-foreground sm:flex-row sm:justify-between sm:text-left">
-
-          <Logo
-            iconSize={20}
-            asLink={false}
-          />
-
-          <p>
-            © {new Date().getFullYear()}{" "}
-            Brand-In-A-Box · Store officiel
-          </p>
-
-          <Link
-            to="/"
-            className="transition hover:text-foreground"
-          >
-            Brand-In-A-Box
-          </Link>
-        </div>
-      </footer>
-    </div>
-  );
+function normalizeSearch(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 }
 
 /* =========================================================
    PRODUCT CARD
    ========================================================= */
 
-interface CatalogProductCardProps {
-  product: CatalogProduct;
-}
-
-function CatalogProductCard({
+function ProductCard({
   product,
-}: CatalogProductCardProps) {
-  const [favorite, setFavorite] =
-    useState(false);
-
+  isFavorite,
+  onToggleFavorite,
+}: {
+  product: StoreProduct;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
+}) {
   return (
     <article className="group min-w-0">
-
-      <div className="relative overflow-hidden rounded-2xl border border-border bg-muted">
-
+      <div className="relative overflow-hidden rounded-2xl bg-muted/40">
         <Link
-          to={`/store/product/${encodeURIComponent(
-            product.id,
-          )}`}
-          className="block aspect-square"
+          to={`/store/product/${product.id}`}
+          className="block aspect-square overflow-hidden"
         >
-          <img
-            src={product.image}
-            alt={product.name}
-            loading="lazy"
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-          />
+          {product.image_url ? (
+            <img
+              src={product.image_url}
+              alt={product.name}
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-muted">
+              <ShoppingBag className="h-10 w-10 text-muted-foreground/40" />
+            </div>
+          )}
         </Link>
-
-        {/* FAVORI */}
 
         <button
           type="button"
-          onClick={() =>
-            setFavorite(
-              (current) =>
-                !current,
-            )
-          }
           aria-label={
-            favorite
+            isFavorite
               ? `Retirer ${product.name} des favoris`
               : `Ajouter ${product.name} aux favoris`
           }
-          className="absolute right-2.5 top-2.5 flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-background/95 text-foreground shadow-sm backdrop-blur transition hover:bg-background active:scale-95"
+          aria-pressed={isFavorite}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onToggleFavorite();
+          }}
+          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-background/90 shadow-sm backdrop-blur transition hover:bg-background"
         >
           <Heart
-            className="h-4 w-4"
-            fill={
-              favorite
-                ? "currentColor"
-                : "none"
-            }
-            strokeWidth={1.8}
+            className={`h-[18px] w-[18px] transition ${
+              isFavorite
+                ? "fill-current text-foreground"
+                : "text-foreground"
+            }`}
           />
         </button>
-
-        {/* BIB */}
-
-        <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 rounded-full border border-border/60 bg-background/95 px-2.5 py-1.5 text-[10px] font-semibold shadow-sm backdrop-blur">
-          <Check className="h-3 w-3 text-primary" />
-          Vérifié
-        </div>
       </div>
 
-      <div className="px-1 pt-3">
-
-        <Link
-          to={`/store/product/${encodeURIComponent(
-            product.id,
-          )}`}
-          className="block"
-        >
-          <h2 className="line-clamp-2 text-sm font-semibold leading-snug transition group-hover:text-primary">
-            {product.name}
-          </h2>
-        </Link>
-
-        <Link
-          to={`/store/boutique/${product.boutiqueSlug}`}
-          className="mt-1 block truncate text-xs text-muted-foreground transition hover:text-foreground"
-        >
-          {product.boutiqueName}
-        </Link>
-
-        <div className="mt-2 flex items-center justify-between gap-2">
-
-          <span className="font-mono text-sm font-semibold tabular-nums">
-            {product.price.toFixed(2)} €
-          </span>
-
+      <div className="pt-3">
+        <div className="mb-1 flex items-start justify-between gap-3">
           <Link
-            to={`/store/product/${encodeURIComponent(
-              product.id,
-            )}`}
-            aria-label={`Voir ${product.name}`}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-foreground transition hover:bg-primary hover:text-primary-foreground active:scale-95"
+            to={`/store/product/${product.id}`}
+            className="min-w-0 flex-1"
           >
-            <ChevronRight className="h-4 w-4" />
+            <h3 className="line-clamp-2 text-sm font-medium leading-5 transition-colors hover:text-primary">
+              {product.name}
+            </h3>
           </Link>
+
+          <span className="shrink-0 text-sm font-semibold">
+            {formatPrice(product.price)}
+          </span>
         </div>
+
+        <Link
+          to={`/store/boutique/${product.boutique_slug}`}
+          className="inline-flex max-w-full items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <Store className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">{product.boutique_name}</span>
+        </Link>
+
+        {product.boutique_category && (
+          <div className="mt-2">
+            <Badge
+              variant="secondary"
+              className="rounded-full px-2.5 py-0.5 text-[10px] font-medium"
+            >
+              {product.boutique_category}
+            </Badge>
+          </div>
+        )}
       </div>
     </article>
+  );
+}
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+function CatalogLoading() {
+  return (
+    <div className="flex min-h-[420px] items-center justify-center">
+      <div className="flex flex-col items-center gap-3 text-muted-foreground">
+        <Loader2 className="h-7 w-7 animate-spin" />
+        <span className="text-sm">Chargement des produits…</span>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+function CatalogError({
+  onRetry,
+}: {
+  onRetry: () => void;
+}) {
+  return (
+    <div className="flex min-h-[420px] items-center justify-center">
+      <div className="max-w-md text-center">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+          <ShoppingBag className="h-5 w-5 text-muted-foreground" />
+        </div>
+
+        <h2 className="text-lg font-semibold">
+          Impossible de charger les produits
+        </h2>
+
+        <p className="mt-2 text-sm text-muted-foreground">
+          Une erreur est survenue lors du chargement du Store.
+          Réessayez dans quelques instants.
+        </p>
+
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-5"
+          onClick={onRetry}
+        >
+          Réessayer
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+function EmptyCatalog({
+  hasFilters,
+  onReset,
+}: {
+  hasFilters: boolean;
+  onReset: () => void;
+}) {
+  return (
+    <div className="flex min-h-[420px] items-center justify-center">
+      <div className="max-w-md text-center">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+          <Search className="h-5 w-5 text-muted-foreground" />
+        </div>
+
+        <h2 className="text-lg font-semibold">
+          Aucun produit trouvé
+        </h2>
+
+        <p className="mt-2 text-sm text-muted-foreground">
+          {hasFilters
+            ? "Aucun produit ne correspond aux critères sélectionnés."
+            : "Aucun produit n'est actuellement disponible dans le Store."}
+        </p>
+
+        {hasFilters && (
+          <Button
+            type="button"
+            variant="outline"
+            className="mt-5"
+            onClick={onReset}
+          >
+            Réinitialiser les filtres
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================
+   CATALOG
+   ========================================================= */
+
+export default function StoreCatalog() {
+  const {
+    data: products = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useStoreProducts();
+
+  const {
+    favorites,
+    toggleFavorite,
+    isFavorite,
+  } = useFavorites();
+
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("all");
+  const [sort, setSort] = useState<SortOption>("recent");
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  /* ---------------------------------------------------------
+     CATEGORIES
+     --------------------------------------------------------- */
+
+  const categories = useMemo(() => {
+    const uniqueCategories = new Set<string>();
+
+    products.forEach((product) => {
+      if (product.boutique_category) {
+        uniqueCategories.add(product.boutique_category);
+      }
+    });
+
+    return Array.from(uniqueCategories).sort((a, b) =>
+      a.localeCompare(b, "fr"),
+    );
+  }, [products]);
+
+  /* ---------------------------------------------------------
+     FILTER + SEARCH + SORT
+     --------------------------------------------------------- */
+
+  const filteredProducts = useMemo(() => {
+    const normalizedSearch = normalizeSearch(search);
+
+    const result = products.filter((product) => {
+      const searchableText = normalizeSearch(
+        [
+          product.name,
+          product.description ?? "",
+          product.boutique_name,
+          product.boutique_category,
+        ].join(" "),
+      );
+
+      const matchesSearch =
+        !normalizedSearch ||
+        searchableText.includes(normalizedSearch);
+
+      const matchesCategory =
+        category === "all" ||
+        product.boutique_category === category;
+
+      const matchesFavorites =
+        !favoritesOnly ||
+        favorites.includes(product.id);
+
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesFavorites
+      );
+    });
+
+    return [...result].sort((a, b) => {
+      switch (sort) {
+        case "price-asc":
+          return a.price - b.price;
+
+        case "price-desc":
+          return b.price - a.price;
+
+        case "name-asc":
+          return a.name.localeCompare(
+            b.name,
+            "fr",
+            { sensitivity: "base" },
+          );
+
+        case "name-desc":
+          return b.name.localeCompare(
+            a.name,
+            "fr",
+            { sensitivity: "base" },
+          );
+
+        case "recent":
+        default:
+          return (
+            new Date(b.created_at).getTime() -
+            new Date(a.created_at).getTime()
+          );
+      }
+    });
+  }, [
+    products,
+    search,
+    category,
+    sort,
+    favoritesOnly,
+    favorites,
+  ]);
+
+  /* ---------------------------------------------------------
+     FILTER STATE
+     --------------------------------------------------------- */
+
+  const hasFilters =
+    Boolean(search.trim()) ||
+    category !== "all" ||
+    sort !== "recent" ||
+    favoritesOnly;
+
+  const activeFilterCount =
+    (category !== "all" ? 1 : 0) +
+    (sort !== "recent" ? 1 : 0) +
+    (favoritesOnly ? 1 : 0);
+
+  const resetFilters = () => {
+    setSearch("");
+    setCategory("all");
+    setSort("recent");
+    setFavoritesOnly(false);
+  };
+
+  /* ---------------------------------------------------------
+     RENDER
+     --------------------------------------------------------- */
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* =====================================================
+          HEADER
+          ===================================================== */}
+
+      <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+          {/* Brand */}
+
+          <Link
+            to="/store"
+            className="flex shrink-0 items-center gap-2"
+            aria-label="BIB Store"
+          >
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-foreground text-sm font-bold text-background">
+              B
+            </div>
+
+            <div className="hidden sm:block">
+              <div className="text-sm font-semibold leading-none">
+                BIB
+              </div>
+              <div className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                Store
+              </div>
+            </div>
+          </Link>
+
+          {/* Navigation */}
+
+          <nav className="hidden items-center gap-1 md:flex">
+            <Link
+              to="/store"
+              className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              Accueil
+            </Link>
+
+            <Link
+              to="/store/products"
+              className="rounded-lg bg-muted px-3 py-2 text-sm font-medium text-foreground"
+            >
+              Produits
+            </Link>
+          </nav>
+
+          {/* Search */}
+
+          <div className="relative ml-auto hidden max-w-md flex-1 lg:block">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+            <Input
+              value={search}
+              onChange={(event) =>
+                setSearch(event.target.value)
+              }
+              placeholder="Rechercher un produit ou une boutique"
+              className="h-10 rounded-xl border-muted bg-muted/50 pl-9 pr-9"
+            />
+
+            {search && (
+              <button
+                type="button"
+                aria-label="Effacer la recherche"
+                onClick={() => setSearch("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Actions */}
+
+          <div className="flex items-center gap-1">
+            <Link
+              to="/store/account"
+              className="hidden rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:block"
+            >
+              Compte
+            </Link>
+
+            <Link
+              to="/store/cart"
+              aria-label="Panier"
+              className="flex h-10 w-10 items-center justify-center rounded-xl transition-colors hover:bg-muted"
+            >
+              <ShoppingBag className="h-[19px] w-[19px]" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Mobile search */}
+
+        <div className="border-t px-4 py-3 lg:hidden">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+            <Input
+              value={search}
+              onChange={(event) =>
+                setSearch(event.target.value)
+              }
+              placeholder="Rechercher"
+              className="h-10 rounded-xl bg-muted/50 pl-9 pr-9"
+            />
+
+            {search && (
+              <button
+                type="button"
+                aria-label="Effacer la recherche"
+                onClick={() => setSearch("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* =====================================================
+          MAIN
+          ===================================================== */}
+
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+        {/* Intro */}
+
+        <section className="mb-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                <Sparkles className="h-3.5 w-3.5" />
+                BIB Store
+              </div>
+
+              <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                Produits
+              </h1>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+                Découvrez les produits proposés par les
+                boutiques vérifiées du réseau BIB.
+              </p>
+            </div>
+
+            {!isLoading && !isError && (
+              <div className="text-sm text-muted-foreground">
+                {filteredProducts.length}{" "}
+                {filteredProducts.length > 1
+                  ? "produits"
+                  : "produit"}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Mobile filter toggle */}
+
+        <div className="mb-5 flex gap-2 lg:hidden">
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-xl"
+            onClick={() =>
+              setFiltersOpen((current) => !current)
+            }
+          >
+            <SlidersHorizontal className="mr-2 h-4 w-4" />
+            Filtres
+            {activeFilterCount > 0 && (
+              <span className="ml-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1.5 text-[10px] text-background">
+                {activeFilterCount}
+              </span>
+            )}
+          </Button>
+
+          {favoritesOnly && (
+            <Button
+              type="button"
+              variant="secondary"
+              className="rounded-xl"
+              onClick={() => setFavoritesOnly(false)}
+            >
+              <Heart className="mr-2 h-4 w-4 fill-current" />
+              Favoris
+            </Button>
+          )}
+        </div>
+
+        {/* ===================================================
+            FILTER BAR
+            =================================================== */}
+
+        <div
+          className={`mb-8 ${
+            filtersOpen ? "block" : "hidden"
+          } lg:block`}
+        >
+          <div className="rounded-2xl border bg-card p-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                {/* Category */}
+
+                <Select
+                  value={category}
+                  onValueChange={setCategory}
+                >
+                  <SelectTrigger className="w-full rounded-xl sm:w-[210px]">
+                    <SelectValue placeholder="Catégorie" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    <SelectItem value="all">
+                      Toutes les catégories
+                    </SelectItem>
+
+                    {categories.map((item) => (
+                      <SelectItem
+                        key={item}
+                        value={item}
+                      >
+                        {item}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Sort */}
+
+                <Select
+                  value={sort}
+                  onValueChange={(value) =>
+                    setSort(value as SortOption)
+                  }
+                >
+                  <SelectTrigger className="w-full rounded-xl sm:w-[210px]">
+                    <ArrowDownUp className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <SelectValue />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    <SelectItem value="recent">
+                      Plus récents
+                    </SelectItem>
+
+                    <SelectItem value="price-asc">
+                      Prix croissant
+                    </SelectItem>
+
+                    <SelectItem value="price-desc">
+                      Prix décroissant
+                    </SelectItem>
+
+                    <SelectItem value="name-asc">
+                      Nom A → Z
+                    </SelectItem>
+
+                    <SelectItem value="name-desc">
+                      Nom Z → A
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {/* Favorites */}
+
+                <Button
+                  type="button"
+                  variant={
+                    favoritesOnly
+                      ? "default"
+                      : "outline"
+                  }
+                  className="rounded-xl"
+                  onClick={() =>
+                    setFavoritesOnly(
+                      (current) => !current,
+                    )
+                  }
+                >
+                  <Heart
+                    className={`mr-2 h-4 w-4 ${
+                      favoritesOnly
+                        ? "fill-current"
+                        : ""
+                    }`}
+                  />
+                  Favoris
+                </Button>
+              </div>
+
+              {/* Reset */}
+
+              {hasFilters && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-fit rounded-xl"
+                  onClick={resetFilters}
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Réinitialiser
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ===================================================
+            CONTENT
+            =================================================== */}
+
+        {isLoading ? (
+          <CatalogLoading />
+        ) : isError ? (
+          <CatalogError
+            onRetry={() => {
+              void refetch();
+            }}
+          />
+        ) : filteredProducts.length === 0 ? (
+          <EmptyCatalog
+            hasFilters={hasFilters}
+            onReset={resetFilters}
+          />
+        ) : (
+          <section
+            aria-label="Produits BIB Store"
+            className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-5 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-10"
+          >
+            {filteredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                isFavorite={isFavorite(product.id)}
+                onToggleFavorite={() =>
+                  toggleFavorite(product.id)
+                }
+              />
+            ))}
+          </section>
+        )}
+
+        {/* ===================================================
+            FOOTER INFO
+            =================================================== */}
+
+        {!isLoading &&
+          !isError &&
+          filteredProducts.length > 0 && (
+            <div className="mt-12">
+              <Separator />
+
+              <div className="flex flex-col gap-3 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+                <p>
+                  Les produits présentés sont proposés par
+                  les boutiques du réseau BIB.
+                </p>
+
+                <Link
+                  to="/store"
+                  className="inline-flex items-center gap-1 font-medium text-foreground hover:underline"
+                >
+                  Retour au Store
+                  <ChevronDown className="h-3.5 w-3.5 -rotate-90" />
+                </Link>
+              </div>
+            </div>
+          )}
+      </main>
+
+      {/* =====================================================
+          FOOTER
+          ===================================================== */}
+
+      <footer className="border-t">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground text-[10px] font-bold text-background">
+              B
+            </div>
+
+            <span>
+              BIB Store — découverte de boutiques vérifiées
+            </span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <Link
+              to="/store/account"
+              className="transition-colors hover:text-foreground"
+            >
+              Compte
+            </Link>
+
+            <Link
+              to="/store/cart"
+              className="transition-colors hover:text-foreground"
+            >
+              Panier
+            </Link>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }
