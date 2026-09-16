@@ -42,6 +42,7 @@ import NotFound from "./pages/NotFound";
 import BrandPreview from "./pages/BrandPreview";
 import Store from "./pages/Store";
 import StoreProduct from "./pages/StoreProduct";
+import StoreCatalog from "@/pages/StoreCatalog";
 import StoreCartPage from "./pages/StoreCart";
 import Recycler from "./pages/customer/Recycler";
 import Unsubscribe from "./pages/Unsubscribe";
@@ -366,7 +367,7 @@ const App = () => (
 
                 <Route
                   path="/store/products"
-                  element={<Store />}
+                  element={<StoreCatalog />}
                 />
 
                 <Route
