@@ -31,6 +31,7 @@ import {
   type StoreBoutique,
 } from "@/hooks/useStore";
 
+import { useStoreCart } from "@/contexts/StoreCartContext";
 import { BoutiqueCard } from "@/components/store/BoutiqueCard";
 import { Logo } from "@/components/Logo";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,8 @@ export default function Store() {
   const location = useLocation();
 
   const { user, accountType } = useAuth();
+
+  const { totalItems } = useStoreCart();
 
   const { data: customer } =
     useCustomerProfile();
@@ -281,6 +284,10 @@ export default function Store() {
     navigate("/store/favorites");
   };
 
+  const goToCart = () => {
+    navigate("/store/cart");
+  };
+
   const goToAccount = () => {
     if (!user) {
       navigate("/store/login");
@@ -462,19 +469,37 @@ export default function Store() {
               />
             </button>
 
+            {/* PANIER STORE */}
+
             <button
               type="button"
-              onClick={() =>
-                navigate("/store/cart")
-              }
-              aria-label="Panier"
-              className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition hover:bg-muted active:scale-95"
+              onClick={goToCart}
+              aria-label={`Panier${
+                totalItems > 0
+                  ? `, ${totalItems} article${
+                      totalItems > 1
+                        ? "s"
+                        : ""
+                    }`
+                  : ""
+              }`}
+              className="relative flex h-10 w-10 items-center justify-center rounded-full text-foreground transition hover:bg-muted active:scale-95"
             >
               <ShoppingCart
                 className="h-5 w-5"
                 strokeWidth={1.8}
               />
+
+              {totalItems > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
+                  {totalItems > 99
+                    ? "99+"
+                    : totalItems}
+                </span>
+              )}
             </button>
+
+            {/* COMPTE */}
 
             <button
               type="button"
