@@ -70,7 +70,7 @@ const minimumCriteria = [
   "Documents administratifs et de conformité disponibles",
   "Produits clairement identifiés et documentés",
   "Capacité à fournir les informations techniques nécessaires",
-  "Capacité d'expédition vers les zones couvertes par BIB",
+  "Capacité à expédier vers les zones compatibles avec le réseau BIB",
   "Traçabilité des produits et des lots lorsque nécessaire",
   "Capacité de production ou de réapprovisionnement compatible avec les besoins",
 ];
