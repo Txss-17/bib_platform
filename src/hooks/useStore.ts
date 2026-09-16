@@ -1,20 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-/* =========================================================
-   STORE PRODUCT
-   ========================================================= */
-
 export interface StoreProductPreview {
   id: string;
   name: string;
   image_url: string | null;
   price: number;
 }
-
-/* =========================================================
-   STORE STORY
-   ========================================================= */
 
 export interface StoreStory {
   id: string;
@@ -27,10 +19,6 @@ export interface StoreStory {
   ends_at?: string | null;
 }
 
-/* =========================================================
-   STORE BOUTIQUE
-   ========================================================= */
-
 export interface StoreBoutique {
   id: string;
   name: string;
@@ -40,29 +28,48 @@ export interface StoreBoutique {
   tagline: string | null;
   logo_url: string | null;
   cover_image_url: string | null;
+
   has_protection: boolean;
+
   product_count: number;
   product_previews: StoreProductPreview[];
+
+  /**
+   * Stories publiées depuis le StudioEditor / HighlightsManager.
+   *
+   * Source DB :
+   * boutiques.highlight_media
+   */
   stories: StoreStory[];
+
   market: string;
   created_at: string;
+
   total_sales: number;
   recycling_points: number;
 }
 
-/* =========================================================
-   STORE BOUTIQUES
-   ========================================================= */
+function normalizeStories(value: unknown): StoreStory[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
 
-/**
- * Récupère les boutiques publiées du Store BIB
- * avec leurs produits actifs et leurs Stories.
- *
- * Les Stories sont stockées dans highlight_media
- * côté base de données pour conserver la compatibilité
- * avec le schéma actuel, mais sont exposées sous le nom
- * stories dans l'application.
- */
+  return value.filter((story): story is StoreStory => {
+    if (!story || typeof story !== "object") {
+      return false;
+    }
+
+    const item = story as Partial<StoreStory>;
+
+    return (
+      typeof item.id === "string" &&
+      (item.kind === "image" || item.kind === "video") &&
+      typeof item.url === "string" &&
+      item.url.length > 0
+    );
+  });
+}
+
 export function useStoreBoutiques() {
   return useQuery({
     queryKey: ["store-boutiques"],
@@ -102,160 +109,79 @@ export function useStoreBoutiques() {
         `)
         .eq("status", "published")
         .eq("products.status", "active")
-        .order("created_at", {
-          ascending: false,
-        });
+        .order("created_at", { ascending: false });
 
       if (error) {
         throw error;
       }
 
-      return (boutiques ?? []).map(
-        (boutique: any): StoreBoutique => {
-          /* -------------------------------------------------
-             PRODUITS
-             ------------------------------------------------- */
+      return (boutiques ?? []).map((boutique: any): StoreBoutique => {
+        const products = boutique.products ?? [];
 
-          const productPreviews: StoreProductPreview[] = (
-            boutique.products ?? []
-          )
-            .slice(0, 8)
-            .map((product: any) => ({
-              id: product.id,
+        const productPreviews: StoreProductPreview[] = products
+          .slice(0, 8)
+          .map((product: any) => ({
+            id: product.id,
+            name:
+              product.supplier_products?.name ??
+              "Produit",
+            image_url:
+              product.supplier_products?.image_url ??
+              null,
+            price: Number(product.public_price ?? 0),
+          }));
 
-              name:
-                product.supplier_products?.name ??
-                "Produit",
+        const totalSales = products.reduce(
+          (total: number, product: any) =>
+            total +
+            Number(product.cumulative_sales ?? 0),
+          0,
+        );
 
-              image_url:
-                product.supplier_products?.image_url ??
-                null,
+        const orders = boutique.orders ?? [];
 
-              price: Number(
-                product.public_price ?? 0,
-              ),
-            }));
+        const market =
+          orders[0]?.market ??
+          "EU";
 
-          /* -------------------------------------------------
-             VENTES
-             ------------------------------------------------- */
+        const recyclingPoints = (
+          boutique.recycling_scans ?? []
+        ).reduce(
+          (total: number, scan: any) =>
+            total +
+            Number(scan.points ?? 0),
+          0,
+        );
 
-          const totalSales = (
-            boutique.products ?? []
-          ).reduce(
-            (
-              total: number,
-              product: any,
-            ) =>
-              total +
-              Number(
-                product.cumulative_sales ?? 0,
-              ),
-            0,
-          );
+        const stories = normalizeStories(
+          boutique.highlight_media,
+        );
 
-          /* -------------------------------------------------
-             MARCHÉ
-             ------------------------------------------------- */
+        return {
+          id: boutique.id,
+          name: boutique.name,
+          slug: boutique.slug,
+          category: boutique.category,
+          description: boutique.description,
+          tagline: boutique.tagline,
+          logo_url: boutique.logo_url,
+          cover_image_url: boutique.cover_image_url,
 
-          const orders = boutique.orders ?? [];
+          has_protection:
+            boutique.has_protection ?? false,
 
-          const market =
-            orders[0]?.market ?? "EU";
+          product_count: products.length,
+          product_previews: productPreviews,
 
-          /* -------------------------------------------------
-             RECYCLAGE
-             ------------------------------------------------- */
+          stories,
 
-          const recyclingPoints = (
-            boutique.recycling_scans ?? []
-          ).reduce(
-            (
-              total: number,
-              scan: any,
-            ) =>
-              total +
-              Number(
-                scan.points ?? 0,
-              ),
-            0,
-          );
+          market,
+          created_at: boutique.created_at,
 
-          /* -------------------------------------------------
-             STORIES
-             ------------------------------------------------- */
-
-          const stories: StoreStory[] =
-            Array.isArray(
-              boutique.highlight_media,
-            )
-              ? boutique.highlight_media
-                  .filter(
-                    (story: any): story is StoreStory =>
-                      story &&
-                      typeof story === "object" &&
-                      typeof story.id === "string" &&
-                      (
-                        story.kind === "image" ||
-                        story.kind === "video"
-                      ) &&
-                      typeof story.url === "string" &&
-                      story.url.trim().length > 0,
-                  )
-                  .map((story: StoreStory) => ({
-                    id: story.id,
-                    kind: story.kind,
-                    url: story.url,
-                    label: story.label,
-                    cta_url: story.cta_url,
-                    enabled:
-                      story.enabled !== false,
-                    starts_at:
-                      story.starts_at ?? null,
-                    ends_at:
-                      story.ends_at ?? null,
-                  }))
-              : [];
-
-          /* -------------------------------------------------
-             BOUTIQUE
-             ------------------------------------------------- */
-
-          return {
-            id: boutique.id,
-            name: boutique.name,
-            slug: boutique.slug,
-            category: boutique.category,
-            description: boutique.description,
-            tagline: boutique.tagline,
-            logo_url: boutique.logo_url,
-            cover_image_url:
-              boutique.cover_image_url,
-
-            has_protection:
-              boutique.has_protection ?? false,
-
-            product_count:
-              (boutique.products ?? []).length,
-
-            product_previews:
-              productPreviews,
-
-            stories,
-
-            market,
-
-            created_at:
-              boutique.created_at,
-
-            total_sales:
-              totalSales,
-
-            recycling_points:
-              recyclingPoints,
-          };
-        },
-      );
+          total_sales: totalSales,
+          recycling_points: recyclingPoints,
+        };
+      });
     },
   });
 }
