@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query";
 import {
   BrowserRouter,
+  Navigate,
   Routes,
   Route,
 } from "react-router-dom";
@@ -15,6 +16,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { CartProvider } from "@/contexts/CartContext";
+import { StoreCartProvider } from "@/contexts/StoreCartContext";
 
 // ============================================================
 // PUBLIC / AUTHENTICATION
@@ -144,593 +146,608 @@ const App = () => (
       <BrowserRouter>
         <LanguageProvider>
           <AuthProvider>
-            <Routes>
+            <StoreCartProvider>
+              <Routes>
 
-              {/* =====================================================
-                  PUBLIC ROOT
-              ===================================================== */}
+                {/* =====================================================
+                    PUBLIC ROOT
+                ===================================================== */}
 
-              <Route
-                path="/"
-                element={
-                  (() => {
-                    if (typeof window === "undefined") {
+                <Route
+                  path="/"
+                  element={
+                    (() => {
+                      if (typeof window === "undefined") {
+                        return <Index />;
+                      }
+
+                      const host = window.location.hostname;
+
+                      if (host.startsWith("pack-legal.")) {
+                        return <PackLegal />;
+                      }
+
+                      if (host.startsWith("carrieres.")) {
+                        return <Carrieres />;
+                      }
+
+                      if (host.startsWith("tarifs.")) {
+                        return <Tarifs />;
+                      }
+
+                      if (
+                        host.startsWith("logistics.") ||
+                        host.startsWith("logistique.")
+                      ) {
+                        return <Ops />;
+                      }
+
                       return <Index />;
-                    }
+                    })()
+                  }
+                />
 
-                    const host =
-                      window.location.hostname;
+                <Route
+                  path="/landing"
+                  element={<Index />}
+                />
 
-                    if (host.startsWith("pack-legal.")) {
-                      return <PackLegal />;
-                    }
+                <Route
+                  path="/vendre"
+                  element={<Vendre />}
+                />
 
-                    if (host.startsWith("carrieres.")) {
-                      return <Carrieres />;
-                    }
+                <Route
+                  path="/tarifs"
+                  element={<Tarifs />}
+                />
 
-                    if (host.startsWith("tarifs.")) {
-                      return <Tarifs />;
-                    }
+                <Route
+                  path="/pricing"
+                  element={<Tarifs />}
+                />
 
-                    if (
-                      host.startsWith("logistics.") ||
-                      host.startsWith("logistique.")
-                    ) {
-                      return <Ops />;
-                    }
+                {/* =====================================================
+                    SUPPLIERS / OPERATIONS
+                ===================================================== */}
 
-                    return <Index />;
-                  })()
-                }
-              />
+                <Route
+                  path="/suppliers/tarifs"
+                  element={
+                    <Navigate
+                      to="/suppliers#tarifs"
+                      replace
+                    />
+                  }
+                />
 
-              <Route
-                path="/landing"
-                element={<Index />}
-              />
+                <Route
+                  path="/fournisseurs/tarifs"
+                  element={
+                    <Navigate
+                      to="/suppliers#tarifs"
+                      replace
+                    />
+                  }
+                />
 
-              <Route
-                path="/vendre"
-                element={<Vendre />}
-              />
+                <Route
+                  path="/suppliers/pricing"
+                  element={
+                    <Navigate
+                      to="/suppliers#tarifs"
+                      replace
+                    />
+                  }
+                />
 
-              <Route
-                path="/tarifs"
-                element={<Tarifs />}
-              />
+                <Route
+                  path="/suppliers"
+                  element={<Suppliers />}
+                />
 
-              <Route
-                path="/pricing"
-                element={<Tarifs />}
-              />
+                <Route
+                  path="/fournisseurs"
+                  element={<Suppliers />}
+                />
 
-              {/* =====================================================
-                  SUPPLIERS / OPERATIONS
-              ===================================================== */}
+                <Route
+                  path="/suppliers/apply"
+                  element={<SuppliersApply />}
+                />
 
-              <Route
-                path="/suppliers/tarifs"
-                element={
-                  <NavigateTo
-                    path="/suppliers#tarifs"
+                <Route
+                  path="/fournisseurs/candidature"
+                  element={<SuppliersApply />}
+                />
+
+                <Route
+                  path="/suppliers/onboarding"
+                  element={<SuppliersOnboarding />}
+                />
+
+                <Route
+                  path="/fournisseurs/onboarding"
+                  element={<SuppliersOnboarding />}
+                />
+
+                <Route
+                  path="/ops"
+                  element={<Ops />}
+                />
+
+                <Route
+                  path="/logistics"
+                  element={<Ops />}
+                />
+
+                <Route
+                  path="/logistique"
+                  element={<Ops />}
+                />
+
+                <Route
+                  path="/ops/apply"
+                  element={<OpsApply />}
+                />
+
+                <Route
+                  path="/logistique/candidature"
+                  element={<OpsApply />}
+                />
+
+                <Route
+                  path="/ops/onboarding"
+                  element={<OpsOnboarding />}
+                />
+
+                <Route
+                  path="/logistique/onboarding"
+                  element={<OpsOnboarding />}
+                />
+
+                <Route
+                  path="/suppliers/onboarding/resume"
+                  element={<PartnerOnboardingResume />}
+                />
+
+                <Route
+                  path="/fournisseurs/onboarding/reprendre"
+                  element={<PartnerOnboardingResume />}
+                />
+
+                <Route
+                  path="/ops/onboarding/resume"
+                  element={<PartnerOnboardingResume />}
+                />
+
+                <Route
+                  path="/logistique/onboarding/reprendre"
+                  element={<PartnerOnboardingResume />}
+                />
+
+                <Route
+                  path="/portal/onboarding/:token"
+                  element={<PartnerOnboardingPortal />}
+                />
+
+                <Route
+                  path="/suppliers/portal/:token"
+                  element={<SuppliersPortal />}
+                />
+
+                <Route
+                  path="/fournisseurs/portail/:token"
+                  element={<SuppliersPortal />}
+                />
+
+                <Route
+                  path="/ops/portal/:token"
+                  element={<OpsPortal />}
+                />
+
+                <Route
+                  path="/logistique/portail/:token"
+                  element={<OpsPortal />}
+                />
+
+                {/* =====================================================
+                    BIB STORE
+                ===================================================== */}
+
+                <Route
+                  path="/store"
+                  element={<Store />}
+                />
+
+                <Route
+                  path="/store/products"
+                  element={<Store />}
+                />
+
+                <Route
+                  path="/store/product/:productId"
+                  element={<StoreProduct />}
+                />
+
+                {/* =====================================================
+                    STORE CART
+                ===================================================== */}
+
+                <Route
+                  path="/store/cart"
+                  element={
+                    <StoreCartPage />
+                  }
+                />
+
+                {/* =====================================================
+                    STORE CUSTOMER AUTHENTICATION
+                ===================================================== */}
+
+                <Route
+                  path="/store/login"
+                  element={<StoreLogin />}
+                />
+
+                <Route
+                  path="/store/signup"
+                  element={<StoreSignup />}
+                />
+
+                {/* =====================================================
+                    PLATFORM AUTHENTICATION
+                ===================================================== */}
+
+                <Route
+                  path="/login"
+                  element={<Login />}
+                />
+
+                <Route
+                  path="/signup"
+                  element={<Signup />}
+                />
+
+                <Route
+                  path="/forgot-password"
+                  element={<ForgotPassword />}
+                />
+
+                <Route
+                  path="/reset-password"
+                  element={<ResetPassword />}
+                />
+
+                {/* =====================================================
+                    GENERAL PUBLIC ROUTES
+                ===================================================== */}
+
+                <Route
+                  path="/checkout/return"
+                  element={<CheckoutReturn />}
+                />
+
+                <Route
+                  path="/brand-preview"
+                  element={<BrandPreview />}
+                />
+
+                <Route
+                  path="/order-tracking"
+                  element={<OrderTracking />}
+                />
+
+                <Route
+                  path="/unsubscribe"
+                  element={<Unsubscribe />}
+                />
+
+                {/* =====================================================
+                    STORE PROTECTED AREA
+                    STORE ACCOUNT ONLY
+                ===================================================== */}
+
+                <Route
+                  element={
+                    <ProtectedRoute context="store" />
+                  }
+                >
+                  <Route
+                    path="/store/recycler"
+                    element={<Recycler />}
                   />
-                }
-              />
 
-              <Route
-                path="/fournisseurs/tarifs"
-                element={
-                  <NavigateTo
-                    path="/suppliers#tarifs"
+                  <Route
+                    path="/store/recycler/:slug"
+                    element={<Recycler />}
                   />
-                }
-              />
+                </Route>
 
-              <Route
-                path="/suppliers/pricing"
-                element={
-                  <NavigateTo
-                    path="/suppliers#tarifs"
+                {/* =====================================================
+                    PLATFORM PROTECTED AREA
+                    BIB PLATFORM / MERCHANT ACCOUNTS ONLY
+                ===================================================== */}
+
+                <Route
+                  element={
+                    <ProtectedRoute context="platform" />
+                  }
+                >
+                  <Route
+                    path="/dashboard"
+                    element={<Dashboard />}
                   />
-                }
-              />
 
-              <Route
-                path="/suppliers"
-                element={<Suppliers />}
-              />
+                  <Route
+                    path="/dashboard/ventes"
+                    element={<Ventes />}
+                  />
 
-              <Route
-                path="/fournisseurs"
-                element={<Suppliers />}
-              />
+                  <Route
+                    path="/dashboard/commandes"
+                    element={<Commandes />}
+                  />
 
-              <Route
-                path="/suppliers/apply"
-                element={<SuppliersApply />}
-              />
+                  <Route
+                    path="/dashboard/produits"
+                    element={<Produits />}
+                  />
 
-              <Route
-                path="/fournisseurs/candidature"
-                element={<SuppliersApply />}
-              />
+                  <Route
+                    path="/dashboard/produits-fournisseurs"
+                    element={<ProduitsFournisseurs />}
+                  />
 
-              <Route
-                path="/suppliers/onboarding"
-                element={<SuppliersOnboarding />}
-              />
+                  <Route
+                    path="/dashboard/paiements"
+                    element={<Paiements />}
+                  />
 
-              <Route
-                path="/fournisseurs/onboarding"
-                element={<SuppliersOnboarding />}
-              />
+                  <Route
+                    path="/dashboard/seo-analytics"
+                    element={<SEOAnalytics />}
+                  />
 
-              <Route
-                path="/ops"
-                element={<Ops />}
-              />
+                  <Route
+                    path="/dashboard/boutiques"
+                    element={<Boutiques />}
+                  />
 
-              <Route
-                path="/logistics"
-                element={<Ops />}
-              />
+                  <Route
+                    path="/dashboard/boutiques/create"
+                    element={<BoutiqueCreate />}
+                  />
 
-              <Route
-                path="/logistique"
-                element={<Ops />}
-              />
+                  <Route
+                    path="/dashboard/boutiques/edit/:id"
+                    element={<BoutiqueEdit />}
+                  />
 
-              <Route
-                path="/ops/apply"
-                element={<OpsApply />}
-              />
+                  <Route
+                    path="/dashboard/boutiques/analytics/:id"
+                    element={<BoutiqueAnalytics />}
+                  />
 
-              <Route
-                path="/logistique/candidature"
-                element={<OpsApply />}
-              />
+                  <Route
+                    path="/dashboard/parametres"
+                    element={<Parametres />}
+                  />
 
-              <Route
-                path="/ops/onboarding"
-                element={<OpsOnboarding />}
-              />
+                  <Route
+                    path="/dashboard/aide"
+                    element={<Aide />}
+                  />
 
-              <Route
-                path="/logistique/onboarding"
-                element={<OpsOnboarding />}
-              />
+                  <Route
+                    path="/dashboard/parametres/relances"
+                    element={<RelancesOnboarding />}
+                  />
 
-              <Route
-                path="/suppliers/onboarding/resume"
-                element={<PartnerOnboardingResume />}
-              />
+                  <Route
+                    path="/dashboard/tickets"
+                    element={<MesTickets />}
+                  />
 
-              <Route
-                path="/fournisseurs/onboarding/reprendre"
-                element={<PartnerOnboardingResume />}
-              />
+                  <Route
+                    path="/dashboard/equipe"
+                    element={<Equipe />}
+                  />
 
-              <Route
-                path="/ops/onboarding/resume"
-                element={<PartnerOnboardingResume />}
-              />
+                  <Route
+                    path="/dashboard/clients"
+                    element={<Clients />}
+                  />
 
-              <Route
-                path="/logistique/onboarding/reprendre"
-                element={<PartnerOnboardingResume />}
-              />
+                  <Route
+                    path="/dashboard/marketing"
+                    element={<Marketing />}
+                  />
 
-              <Route
-                path="/portal/onboarding/:token"
-                element={<PartnerOnboardingPortal />}
-              />
+                  <Route
+                    path="/dashboard/ventes-privees"
+                    element={<VentesPrivees />}
+                  />
 
-              <Route
-                path="/suppliers/portal/:token"
-                element={<SuppliersPortal />}
-              />
+                  <Route
+                    path="/dashboard/ventes-privees/:id/pos"
+                    element={<VentesPriveesPOS />}
+                  />
 
-              <Route
-                path="/fournisseurs/portail/:token"
-                element={<SuppliersPortal />}
-              />
+                  <Route
+                    path="/dashboard/admin/documents"
+                    element={<AdminDocuments />}
+                  />
+                </Route>
 
-              <Route
-                path="/ops/portal/:token"
-                element={<OpsPortal />}
-              />
+                {/* =====================================================
+                    PUBLIC BOUTIQUE
+                ===================================================== */}
 
-              <Route
-                path="/logistique/portail/:token"
-                element={<OpsPortal />}
-              />
-
-              {/* =====================================================
-                  BIB STORE
-              ===================================================== */}
-
-              <Route
-                path="/store"
-                element={<Store />}
-              />
-
-              <Route
-                path="/store/products"
-                element={<Store />}
-              />
-
-              <Route
-                path="/store/product/:productId"
-                element={<StoreProduct />}
-              />
-
-              {/* =====================================================
-                  STORE CUSTOMER AUTHENTICATION
-              ===================================================== */}
-
-              <Route
-                path="/store/login"
-                element={<StoreLogin />}
-              />
-
-              <Route
-                path="/store/signup"
-                element={<StoreSignup />}
-              />
-
-              {/* =====================================================
-                  PLATFORM AUTHENTICATION
-              ===================================================== */}
-
-              <Route
-                path="/login"
-                element={<Login />}
-              />
-
-              <Route
-                path="/signup"
-                element={<Signup />}
-              />
-
-              <Route
-                path="/forgot-password"
-                element={<ForgotPassword />}
-              />
-
-              <Route
-                path="/reset-password"
-                element={<ResetPassword />}
-              />
-
-              {/* =====================================================
-                  STORE / CUSTOMER PUBLIC ROUTES
-              ===================================================== */}
-
-              <Route
-                path="/checkout/return"
-                element={<CheckoutReturn />}
-              />
-
-              <Route
-                path="/brand-preview"
-                element={<BrandPreview />}
-              />
-
-              <Route
-                path="/order-tracking"
-                element={<OrderTracking />}
-              />
-
-              <Route
-                path="/unsubscribe"
-                element={<Unsubscribe />}
-              />
-
-              {/* =====================================================
-                  STORE PROTECTED AREA
-                  STORE ACCOUNT ONLY
-              ===================================================== */}
-
-              <Route
-                element={
-                  <ProtectedRoute context="store" />
-                }
-              >
                 <Route
-                  path="/store/recycler"
-                  element={<Recycler />}
+                  path="/boutique/:slug"
+                  element={<BoutiquePublic />}
                 />
 
                 <Route
-                  path="/store/recycler/:slug"
-                  element={<Recycler />}
-                />
-              </Route>
-
-              {/* =====================================================
-                  PLATFORM PROTECTED AREA
-                  BIB PLATFORM / MERCHANT ACCOUNTS ONLY
-              ===================================================== */}
-
-              <Route
-                element={
-                  <ProtectedRoute context="platform" />
-                }
-              >
-                <Route
-                  path="/dashboard"
-                  element={<Dashboard />}
+                  path="/boutique/:slug/products"
+                  element={<BoutiqueAllProducts />}
                 />
 
                 <Route
-                  path="/dashboard/ventes"
-                  element={<Ventes />}
+                  path="/boutique/:slug/category/:category"
+                  element={<BoutiqueCategory />}
                 />
 
                 <Route
-                  path="/dashboard/commandes"
-                  element={<Commandes />}
+                  path="/boutique/:slug/product/:productId"
+                  element={
+                    <CartProvider>
+                      <ProductPublic />
+                    </CartProvider>
+                  }
                 />
 
                 <Route
-                  path="/dashboard/produits"
-                  element={<Produits />}
+                  path="/boutique/:slug/order-tracking"
+                  element={<OrderTracking />}
                 />
 
                 <Route
-                  path="/dashboard/produits-fournisseurs"
-                  element={<ProduitsFournisseurs />}
+                  path="/boutique/:slug/faq"
+                  element={<BoutiqueFAQPage />}
                 />
 
                 <Route
-                  path="/dashboard/paiements"
-                  element={<Paiements />}
+                  path="/boutique/:slug/cgv"
+                  element={<BoutiqueCGVPage />}
                 />
 
                 <Route
-                  path="/dashboard/seo-analytics"
-                  element={<SEOAnalytics />}
+                  path="/boutique/:slug/cgu"
+                  element={<BoutiqueCGUPage />}
                 />
 
                 <Route
-                  path="/dashboard/boutiques"
-                  element={<Boutiques />}
+                  path="/boutique/:slug/about"
+                  element={<BoutiqueAboutPage />}
                 />
 
                 <Route
-                  path="/dashboard/boutiques/create"
-                  element={<BoutiqueCreate />}
+                  path="/boutique/:slug/p/:pageSlug"
+                  element={<BoutiqueCustomPage />}
+                />
+
+                {/* =====================================================
+                    MARKETING / INFORMATION
+                ===================================================== */}
+
+                <Route
+                  path="/carrieres"
+                  element={<Carrieres />}
                 />
 
                 <Route
-                  path="/dashboard/boutiques/edit/:id"
-                  element={<BoutiqueEdit />}
+                  path="/carrieres/postes"
+                  element={<CarrieresPostes />}
                 />
 
                 <Route
-                  path="/dashboard/boutiques/analytics/:id"
-                  element={<BoutiqueAnalytics />}
+                  path="/careers"
+                  element={<Carrieres />}
                 />
 
                 <Route
-                  path="/dashboard/parametres"
-                  element={<Parametres />}
+                  path="/careers/jobs"
+                  element={<CarrieresPostes />}
                 />
 
                 <Route
-                  path="/dashboard/aide"
-                  element={<Aide />}
+                  path="/a-propos"
+                  element={<APropos />}
                 />
 
                 <Route
-                  path="/dashboard/parametres/relances"
-                  element={<RelancesOnboarding />}
+                  path="/centre-aide"
+                  element={<CentreAide />}
                 />
 
                 <Route
-                  path="/dashboard/tickets"
-                  element={<MesTickets />}
+                  path="/aide"
+                  element={<CentreAide />}
                 />
 
                 <Route
-                  path="/dashboard/equipe"
-                  element={<Equipe />}
+                  path="/help"
+                  element={<CentreAide />}
                 />
 
                 <Route
-                  path="/dashboard/clients"
-                  element={<Clients />}
+                  path="/centre-aide/faq/:persona"
+                  element={<CentreAideFaq />}
                 />
 
                 <Route
-                  path="/dashboard/marketing"
-                  element={<Marketing />}
+                  path="/aide/faq/:persona"
+                  element={<CentreAideFaq />}
                 />
 
                 <Route
-                  path="/dashboard/ventes-privees"
-                  element={<VentesPrivees />}
+                  path="/centre-aide/guide/:slug"
+                  element={<CentreAideGuide />}
                 />
 
                 <Route
-                  path="/dashboard/ventes-privees/:id/pos"
-                  element={<VentesPriveesPOS />}
+                  path="/aide/guide/:slug"
+                  element={<CentreAideGuide />}
                 />
 
                 <Route
-                  path="/dashboard/admin/documents"
-                  element={<AdminDocuments />}
+                  path="/pack-legal"
+                  element={<PackLegal />}
                 />
-              </Route>
 
-              {/* =====================================================
-                  PUBLIC BOUTIQUE
-              ===================================================== */}
+                <Route
+                  path="/legal"
+                  element={<PackLegal />}
+                />
 
-              <Route
-                path="/boutique/:slug"
-                element={<BoutiquePublic />}
-              />
+                <Route
+                  path="/mentions-legales"
+                  element={<MentionsLegales />}
+                />
 
-              <Route
-                path="/boutique/:slug/products"
-                element={<BoutiqueAllProducts />}
-              />
+                <Route
+                  path="/cgu"
+                  element={<CGU />}
+                />
 
-              <Route
-                path="/boutique/:slug/category/:category"
-                element={<BoutiqueCategory />}
-              />
+                <Route
+                  path="/confidentialite"
+                  element={<Confidentialite />}
+                />
 
-              <Route
-                path="/boutique/:slug/product/:productId"
-                element={
-                  <CartProvider>
-                    <ProductPublic />
-                  </CartProvider>
-                }
-              />
+                <Route
+                  path="/cookies"
+                  element={<Cookies />}
+                />
 
-              <Route
-                path="/boutique/:slug/order-tracking"
-                element={<OrderTracking />}
-              />
+                <Route
+                  path="/bib-talent"
+                  element={<BibTalent />}
+                />
 
-              <Route
-                path="/boutique/:slug/faq"
-                element={<BoutiqueFAQPage />}
-              />
+                {/* =====================================================
+                    CATCH-ALL
+                ===================================================== */}
 
-              <Route
-                path="/boutique/:slug/cgv"
-                element={<BoutiqueCGVPage />}
-              />
+                <Route
+                  path="*"
+                  element={<NotFound />}
+                />
 
-              <Route
-                path="/boutique/:slug/cgu"
-                element={<BoutiqueCGUPage />}
-              />
-
-              <Route
-                path="/boutique/:slug/about"
-                element={<BoutiqueAboutPage />}
-              />
-
-              <Route
-                path="/boutique/:slug/p/:pageSlug"
-                element={<BoutiqueCustomPage />}
-              />
-
-              {/* =====================================================
-                  MARKETING / INFORMATION
-              ===================================================== */}
-
-              <Route
-                path="/carrieres"
-                element={<Carrieres />}
-              />
-
-              <Route
-                path="/carrieres/postes"
-                element={<CarrieresPostes />}
-              />
-
-              <Route
-                path="/careers"
-                element={<Carrieres />}
-              />
-
-              <Route
-                path="/careers/jobs"
-                element={<CarrieresPostes />}
-              />
-
-              <Route
-                path="/a-propos"
-                element={<APropos />}
-              />
-
-              <Route
-                path="/centre-aide"
-                element={<CentreAide />}
-              />
-
-              <Route
-                path="/aide"
-                element={<CentreAide />}
-              />
-
-              <Route
-                path="/help"
-                element={<CentreAide />}
-              />
-
-              <Route
-                path="/centre-aide/faq/:persona"
-                element={<CentreAideFaq />}
-              />
-
-              <Route
-                path="/aide/faq/:persona"
-                element={<CentreAideFaq />}
-              />
-
-              <Route
-                path="/centre-aide/guide/:slug"
-                element={<CentreAideGuide />}
-              />
-
-              <Route
-                path="/aide/guide/:slug"
-                element={<CentreAideGuide />}
-              />
-
-              <Route
-                path="/pack-legal"
-                element={<PackLegal />}
-              />
-
-              <Route
-                path="/legal"
-                element={<PackLegal />}
-              />
-
-              <Route
-                path="/mentions-legales"
-                element={<MentionsLegales />}
-              />
-
-              <Route
-                path="/cgu"
-                element={<CGU />}
-              />
-
-              <Route
-                path="/confidentialite"
-                element={<Confidentialite />}
-              />
-
-              <Route
-                path="/cookies"
-                element={<Cookies />}
-              />
-
-              <Route
-                path="/bib-talent"
-                element={<BibTalent />}
-              />
-
-              {/* =====================================================
-                  CATCH-ALL
-              ===================================================== */}
-
-              <Route
-                path="*"
-                element={<NotFound />}
-              />
-
-            </Routes>
+              </Routes>
+            </StoreCartProvider>
           </AuthProvider>
         </LanguageProvider>
       </BrowserRouter>
@@ -739,15 +756,3 @@ const App = () => (
 );
 
 export default App;
-
-/* ============================================================
-   INTERNAL REDIRECT HELPER
-   ============================================================ */
-
-function NavigateTo({
-  path,
-}: {
-  path: string;
-}) {
-  return null;
-}
