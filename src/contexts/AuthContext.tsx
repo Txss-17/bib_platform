@@ -5,16 +5,26 @@ import {
   useState,
   type ReactNode,
 } from "react";
+
 import { supabase } from "@/integrations/supabase/client";
+
 import type {
   Session,
   User,
   AuthError,
 } from "@supabase/supabase-js";
 
+/* =========================================================
+   ACCOUNT TYPES
+   ========================================================= */
+
 export type AccountType =
   | "platform"
-  | "marketplace";
+  | "store";
+
+/* =========================================================
+   AUTH CONTEXT
+   ========================================================= */
 
 interface AuthContextType {
   user: User | null;
@@ -24,14 +34,16 @@ interface AuthContextType {
 
   signIn: (
     email: string,
-    password: string
-  ) => Promise<{ error: AuthError | null }>;
+    password: string,
+  ) => Promise<{
+    error: AuthError | null;
+  }>;
 
   signUp: (
     email: string,
     password: string,
     fullName?: string,
-    accountType?: AccountType
+    accountType?: AccountType,
   ) => Promise<{
     data: {
       user: User | null;
@@ -43,80 +55,169 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
-);
+/* =========================================================
+   CONTEXT
+   ========================================================= */
+
+const AuthContext =
+  createContext<AuthContextType | undefined>(
+    undefined,
+  );
+
+/* =========================================================
+   PROVIDER
+   ========================================================= */
 
 export function AuthProvider({
   children,
 }: {
   children: ReactNode;
 }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] =
+    useState<User | null>(null);
+
+  const [session, setSession] =
+    useState<Session | null>(null);
+
   const [accountType, setAccountType] =
     useState<AccountType | null>(null);
-  const [loading, setLoading] = useState(true);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  /* =======================================================
+     RESOLVE ACCOUNT TYPE
+     ======================================================= */
 
   /**
-   * Détermine le type de compte à partir des metadata Supabase.
+   * Détermine le type de compte à partir
+   * des metadata Supabase.
+   *
+   * Nouveau format :
+   *
+   *   platform
+   *   store
+   *
+   * Compatibilité :
+   *
+   *   marketplace
+   *
+   * Les anciens comptes marketplace sont
+   * automatiquement considérés comme des
+   * comptes Store.
    */
   const resolveAccountType = (
-    currentUser: User | null
+    currentUser: User | null,
   ): AccountType | null => {
     if (!currentUser) {
       return null;
     }
 
-    const value = currentUser.user_metadata?.account_type;
+    const value =
+      currentUser.user_metadata
+        ?.account_type;
 
-    if (value === "marketplace") {
-      return "marketplace";
-    }
+    /* -------------------------------------------------------
+       COMPTE PLATEFORME
+       ------------------------------------------------------- */
 
     if (value === "platform") {
       return "platform";
     }
 
+    /* -------------------------------------------------------
+       COMPTE STORE
+       ------------------------------------------------------- */
+
+    if (
+      value === "store" ||
+      value === "marketplace"
+    ) {
+      return "store";
+    }
+
     return null;
   };
+
+  /* =======================================================
+     SESSION INITIALIZATION
+     ======================================================= */
 
   useEffect(() => {
     let mounted = true;
 
     /**
-     * Session initiale
+     * Récupération de la session initiale.
      */
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!mounted) {
+          return;
+        }
 
-      const currentSession = data.session;
-      const currentUser = currentSession?.user ?? null;
-
-      setSession(currentSession);
-      setUser(currentUser);
-      setAccountType(resolveAccountType(currentUser));
-      setLoading(false);
-    });
-
-    /**
-     * Changements d'authentification
-     */
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(
-      (_event, currentSession) => {
-        if (!mounted) return;
+        const currentSession =
+          data.session;
 
         const currentUser =
           currentSession?.user ?? null;
 
-        setSession(currentSession);
-        setUser(currentUser);
-        setAccountType(resolveAccountType(currentUser));
+        setSession(
+          currentSession,
+        );
+
+        setUser(
+          currentUser,
+        );
+
+        setAccountType(
+          resolveAccountType(
+            currentUser,
+          ),
+        );
+
         setLoading(false);
-      }
-    );
+      });
+
+    /**
+     * Écoute des changements
+     * d'authentification.
+     */
+    const {
+      data: {
+        subscription,
+      },
+    } =
+      supabase.auth.onAuthStateChange(
+        (
+          _event,
+          currentSession,
+        ) => {
+          if (!mounted) {
+            return;
+          }
+
+          const currentUser =
+            currentSession?.user ??
+            null;
+
+          setSession(
+            currentSession,
+          );
+
+          setUser(
+            currentUser,
+          );
+
+          setAccountType(
+            resolveAccountType(
+              currentUser,
+            ),
+          );
+
+          setLoading(false);
+        },
+      );
 
     return () => {
       mounted = false;
@@ -124,50 +225,71 @@ export function AuthProvider({
     };
   }, []);
 
+  /* =======================================================
+     SIGN IN
+     ======================================================= */
+
   /**
-   * Connexion
+   * Connexion.
    *
-   * La connexion ne choisit jamais le type de compte.
-   * Le type est déjà enregistré dans le compte Supabase.
+   * Le type de compte n'est jamais choisi
+   * pendant la connexion.
+   *
+   * Il est récupéré depuis les metadata
+   * du compte Supabase.
    */
   const signIn = async (
     email: string,
-    password: string
+    password: string,
   ) => {
-    const { error } =
-      await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
+    const {
+      error,
+    } =
+      await supabase.auth.signInWithPassword(
+        {
+          email: email.trim(),
+          password,
+        },
+      );
 
-    return { error };
+    return {
+      error,
+    };
   };
 
+  /* =======================================================
+     SIGN UP
+     ======================================================= */
+
   /**
-   * Création de compte
-   *
-   * accountType est volontairement explicite.
+   * Création d'un compte.
    *
    * /signup
-   *       -> platform
+   *      -> platform
    *
    * /store/signup
-   *       -> marketplace
+   *      -> store
    */
   const signUp = async (
     email: string,
     password: string,
     fullName = "",
-    type: AccountType = "platform"
+    type: AccountType = "platform",
   ) => {
-    const { data, error } =
+    const {
+      data,
+      error,
+    } =
       await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
           data: {
-            full_name: fullName.trim(),
-            account_type: type,
+            full_name:
+              fullName.trim(),
+
+            account_type:
+              type,
           },
         },
       });
@@ -181,8 +303,12 @@ export function AuthProvider({
     };
   };
 
+  /* =======================================================
+     SIGN OUT
+     ======================================================= */
+
   /**
-   * Déconnexion complète
+   * Déconnexion complète.
    */
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -191,6 +317,10 @@ export function AuthProvider({
     setSession(null);
     setAccountType(null);
   };
+
+  /* =======================================================
+     PROVIDER
+     ======================================================= */
 
   return (
     <AuthContext.Provider
@@ -209,12 +339,17 @@ export function AuthProvider({
   );
 }
 
+/* =========================================================
+   HOOK
+   ========================================================= */
+
 export function useAuth() {
-  const context = useContext(AuthContext);
+  const context =
+    useContext(AuthContext);
 
   if (!context) {
     throw new Error(
-      "useAuth must be used within an AuthProvider"
+      "useAuth must be used within an AuthProvider",
     );
   }
 
