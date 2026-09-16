@@ -31,7 +31,7 @@ import {
   type StoreBoutique,
 } from "@/hooks/useStore";
 
-import { BoutiqueCard } from "@/components/marketplace/BoutiqueCard";
+import { BoutiqueCard } from "@/components/store/BoutiqueCard";
 import { Logo } from "@/components/Logo";
 import { Input } from "@/components/ui/input";
 import { useSEO } from "@/hooks/useSEO";
@@ -55,29 +55,26 @@ export default function Store() {
   const location = useLocation();
 
   const { user, accountType } = useAuth();
+
   const { data: customer } =
     useCustomerProfile();
 
   /*
    * Le compte Store correspond au compte
    * client BIB.
-   *
-   * Le statut d'abonnement devra être fourni
-   * par le profil client lorsqu'il sera disponible.
    */
   const isStoreAccount =
-    !!user && accountType === "marketplace";
+    !!user && accountType === "store";
 
   /*
    * TEMPORAIRE :
    *
    * Tant que le statut réel BIB Abonné n'est pas
-   * exposé par le profil client, on considère ici
-   * qu'un compte Store authentifié dispose de
-   * l'espace client.
+   * exposé par le profil client, un compte Store
+   * authentifié dispose de l'espace client.
    *
-   * Cette variable devra être remplacée par le
-   * véritable statut d'abonnement.
+   * Cette variable devra ensuite être remplacée
+   * par le véritable statut d'abonnement.
    */
   const isSubscriber = isStoreAccount;
 
@@ -95,14 +92,14 @@ export default function Store() {
      ========================================================= */
 
   useEffect(() => {
-    const next =
-      new URLSearchParams(searchParams);
+    const next = new URLSearchParams(
+      searchParams,
+    );
 
-    if (search.trim()) {
-      next.set(
-        "q",
-        search.trim(),
-      );
+    const value = search.trim();
+
+    if (value) {
+      next.set("q", value);
     } else {
       next.delete("q");
     }
@@ -265,58 +262,44 @@ export default function Store() {
      ========================================================= */
 
   const goToProducts = () => {
+    const value = search.trim();
+
     navigate(
-      search.trim()
+      value
         ? `/store/products?q=${encodeURIComponent(
-            search.trim(),
+            value,
           )}`
         : "/store/products",
     );
   };
 
   const goToOrders = () => {
-    navigate(
-      "/store/orders",
-    );
+    navigate("/store/orders");
   };
 
   const goToFavorites = () => {
-    navigate(
-      "/store/favorites",
-    );
+    navigate("/store/favorites");
   };
 
   const goToAccount = () => {
     if (!user) {
-      navigate(
-        "/store/login",
-      );
+      navigate("/store/login");
       return;
     }
 
-    if (
-      accountType !==
-      "marketplace"
-    ) {
-      navigate(
-        "/store/login",
-      );
+    if (accountType !== "store") {
+      navigate("/store/login");
       return;
     }
 
-    navigate(
-      "/store/account",
-    );
+    navigate("/store/account");
   };
 
   const submitSearch = () => {
-    const value =
-      search.trim();
+    const value = search.trim();
 
     if (!value) {
-      navigate(
-        "/store/products",
-      );
+      navigate("/store/products");
       return;
     }
 
@@ -329,33 +312,21 @@ export default function Store() {
 
   const activateAccount = () => {
     if (!user) {
-      navigate(
-        "/store/signup",
-      );
+      navigate("/store/signup");
       return;
     }
 
-    if (
-      accountType !==
-      "marketplace"
-    ) {
-      navigate(
-        "/store/signup",
-      );
+    if (accountType !== "store") {
+      navigate("/store/signup");
       return;
     }
 
-    navigate(
-      "/store/account",
-    );
+    navigate("/store/account");
   };
 
-  const goToOrderTracking =
-    () => {
-      navigate(
-        "/order-tracking",
-      );
-    };
+  const goToOrderTracking = () => {
+    navigate("/order-tracking");
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -387,8 +358,7 @@ export default function Store() {
             <Link
               to="/store"
               className={`rounded-full px-3 py-2 text-sm font-medium transition ${
-                location.pathname ===
-                "/store"
+                location.pathname === "/store"
                   ? "bg-muted text-foreground"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
@@ -398,9 +368,7 @@ export default function Store() {
 
             <button
               type="button"
-              onClick={
-                goToProducts
-              }
+              onClick={goToProducts}
               className={`rounded-full px-3 py-2 text-sm font-medium transition ${
                 location.pathname.startsWith(
                   "/store/products",
@@ -415,9 +383,7 @@ export default function Store() {
             {isSubscriber && (
               <button
                 type="button"
-                onClick={
-                  goToOrders
-                }
+                onClick={goToOrders}
                 className={`rounded-full px-3 py-2 text-sm font-medium transition ${
                   location.pathname.startsWith(
                     "/store/orders",
@@ -433,9 +399,7 @@ export default function Store() {
             {isSubscriber && (
               <button
                 type="button"
-                onClick={
-                  goToFavorites
-                }
+                onClick={goToFavorites}
                 className={`rounded-full px-3 py-2 text-sm font-medium transition ${
                   location.pathname.startsWith(
                     "/store/favorites",
@@ -488,9 +452,7 @@ export default function Store() {
 
             <button
               type="button"
-              onClick={
-                goToFavorites
-              }
+              onClick={goToFavorites}
               aria-label="Favoris"
               className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition hover:bg-muted active:scale-95"
             >
@@ -503,9 +465,7 @@ export default function Store() {
             <button
               type="button"
               onClick={() =>
-                navigate(
-                  "/store/cart",
-                )
+                navigate("/store/cart")
               }
               aria-label="Panier"
               className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition hover:bg-muted active:scale-95"
@@ -518,16 +478,12 @@ export default function Store() {
 
             <button
               type="button"
-              onClick={
-                goToAccount
-              }
+              onClick={goToAccount}
               aria-label="Compte"
               className="relative flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-semibold text-foreground transition hover:bg-muted/70 active:scale-95"
             >
               {user ? (
-                <span>
-                  {initial}
-                </span>
+                <span>{initial}</span>
               ) : (
                 <User className="h-5 w-5" />
               )}
@@ -550,31 +506,20 @@ export default function Store() {
 
         {!query && (
           <StoreIntro
-            isSubscriber={
-              isSubscriber
-            }
-            imageUrl={
-              storeHeroImage
-            }
-            onPrimaryAction={
-              goToProducts
-            }
+            isSubscriber={isSubscriber}
+            imageUrl={storeHeroImage}
+            onPrimaryAction={goToProducts}
           />
         )}
 
         {/* COMPTE / SUIVI */}
 
-        {!query &&
-          !isSubscriber && (
-            <StoreAccountBar
-              onActivateAccount={
-                activateAccount
-              }
-              onTrackOrder={
-                goToOrderTracking
-              }
-            />
-          )}
+        {!query && !isSubscriber && (
+          <StoreAccountBar
+            onActivateAccount={activateAccount}
+            onTrackOrder={goToOrderTracking}
+          />
+        )}
 
         {/* CHARGEMENT */}
 
@@ -586,8 +531,7 @@ export default function Store() {
               Chargement des boutiques…
             </p>
           </div>
-        ) : filteredBoutiques.length ===
-          0 ? (
+        ) : filteredBoutiques.length === 0 ? (
           <div className="mt-8 rounded-3xl border border-dashed border-border bg-muted/30 px-5 py-16 text-center">
             <p className="text-lg font-semibold">
               Aucun résultat
@@ -599,9 +543,7 @@ export default function Store() {
 
             <button
               type="button"
-              onClick={() =>
-                setSearch("")
-              }
+              onClick={() => setSearch("")}
               className="mt-5 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:brightness-110"
             >
               Réinitialiser la recherche
@@ -611,14 +553,11 @@ export default function Store() {
           <Rail
             title={`Résultats pour "${search.trim()}"`}
             subtitle={`${filteredBoutiques.length} boutique${
-              filteredBoutiques.length >
-              1
+              filteredBoutiques.length > 1
                 ? "s"
                 : ""
             }`}
-            items={
-              filteredBoutiques
-            }
+            items={filteredBoutiques}
             showFilter
           />
         ) : (
@@ -626,9 +565,7 @@ export default function Store() {
             <Rail
               title="Tendances"
               subtitle="Les boutiques les plus populaires"
-              items={
-                trendingBoutiques
-              }
+              items={trendingBoutiques}
               accent
               showFilter
             />
@@ -636,29 +573,21 @@ export default function Store() {
             <Rail
               title="Nouveautés"
               subtitle="Les dernières boutiques"
-              items={
-                newestBoutiques
-              }
+              items={newestBoutiques}
               showFilter
             />
 
             {boutiquesByCategory.map(
-              ([
-                category,
-                categoryBoutiques,
-              ]) => (
+              ([category, categoryBoutiques]) => (
                 <Rail
                   key={category}
                   title={category}
                   subtitle={`${categoryBoutiques.length} boutique${
-                    categoryBoutiques.length >
-                    1
+                    categoryBoutiques.length > 1
                       ? "s"
                       : ""
                   }`}
-                  items={
-                    categoryBoutiques
-                  }
+                  items={categoryBoutiques}
                   showFilter
                 />
               ),
@@ -678,13 +607,10 @@ export default function Store() {
             <MobileNavButton
               label="Accueil"
               active={
-                location.pathname ===
-                "/store"
+                location.pathname === "/store"
               }
               onClick={() =>
-                navigate(
-                  "/store",
-                )
+                navigate("/store")
               }
             >
               <House
@@ -698,9 +624,7 @@ export default function Store() {
               active={location.pathname.startsWith(
                 "/store/products",
               )}
-              onClick={
-                goToProducts
-              }
+              onClick={goToProducts}
             >
               <Search
                 className="h-5 w-5"
@@ -713,9 +637,7 @@ export default function Store() {
               active={location.pathname.startsWith(
                 "/store/orders",
               )}
-              onClick={
-                goToOrders
-              }
+              onClick={goToOrders}
             >
               <ClipboardList
                 className="h-5 w-5"
@@ -726,9 +648,7 @@ export default function Store() {
             <MobileNavButton
               label="Plus"
               active={false}
-              onClick={
-                goToAccount
-              }
+              onClick={goToAccount}
             >
               <MoreHorizontal
                 className="h-5 w-5"
@@ -809,9 +729,7 @@ function StoreIntro({
 
           <button
             type="button"
-            onClick={
-              onPrimaryAction
-            }
+            onClick={onPrimaryAction}
             className="mt-6 inline-flex h-11 w-fit items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:brightness-110 active:scale-[0.98]"
           >
             {isSubscriber
@@ -890,9 +808,7 @@ function StoreAccountBar({
 
           <button
             type="button"
-            onClick={
-              onActivateAccount
-            }
+            onClick={onActivateAccount}
             className="inline-flex h-9 w-fit items-center justify-center gap-1.5 rounded-full bg-foreground px-4 text-xs font-semibold text-background transition hover:opacity-85 active:scale-[0.98]"
           >
             Activer mon compte
@@ -914,9 +830,7 @@ function StoreAccountBar({
 
           <button
             type="button"
-            onClick={
-              onTrackOrder
-            }
+            onClick={onTrackOrder}
             className="inline-flex h-9 w-fit items-center justify-center gap-1.5 rounded-full border border-border bg-background px-4 text-xs font-semibold text-foreground transition hover:bg-muted active:scale-[0.98]"
           >
             Suivre ma commande
@@ -984,9 +898,7 @@ function Rail({
   showFilter,
 }: RailProps) {
   const railRef =
-    useRef<HTMLDivElement>(
-      null,
-    );
+    useRef<HTMLDivElement>(null);
 
   if (items.length === 0) {
     return null;
@@ -1011,19 +923,18 @@ function Rail({
     });
   };
 
-  const handleFilterClick =
-    () => {
-      window.dispatchEvent(
-        new CustomEvent(
-          "bib:open-store-filters",
-          {
-            detail: {
-              section: title,
-            },
+  const handleFilterClick = () => {
+    window.dispatchEvent(
+      new CustomEvent(
+        "bib:open-store-filters",
+        {
+          detail: {
+            section: title,
           },
-        ),
-      );
-    };
+        },
+      ),
+    );
+  };
 
   return (
     <section className="mt-8 sm:mt-10">
@@ -1054,9 +965,7 @@ function Rail({
           {showFilter && (
             <button
               type="button"
-              onClick={
-                handleFilterClick
-              }
+              onClick={handleFilterClick}
               aria-label={`Filtrer ${title}`}
               className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-foreground transition hover:bg-muted active:scale-95"
             >
@@ -1069,9 +978,7 @@ function Rail({
 
           <button
             type="button"
-            onClick={() =>
-              scroll(1)
-            }
+            onClick={() => scroll(1)}
             aria-label={`Voir plus dans ${title}`}
             className="hidden h-9 w-9 items-center justify-center rounded-full bg-muted text-foreground transition hover:bg-muted/70 active:scale-95 sm:flex"
           >
@@ -1087,28 +994,24 @@ function Rail({
         ref={railRef}
         className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 scrollbar-none sm:gap-4"
       >
-        {items.map(
-          (boutique) => (
-            <div
-              key={boutique.id}
-              className="
-                w-[210px]
-                shrink-0
-                snap-start
-                sm:w-[220px]
-                md:w-[230px]
-                lg:w-[240px]
-                xl:w-[250px]
-              "
-            >
-              <BoutiqueCard
-                boutique={
-                  boutique
-                }
-              />
-            </div>
-          ),
-        )}
+        {items.map((boutique) => (
+          <div
+            key={boutique.id}
+            className="
+              w-[210px]
+              shrink-0
+              snap-start
+              sm:w-[220px]
+              md:w-[230px]
+              lg:w-[240px]
+              xl:w-[250px]
+            "
+          >
+            <BoutiqueCard
+              boutique={boutique}
+            />
+          </div>
+        ))}
       </div>
     </section>
   );
