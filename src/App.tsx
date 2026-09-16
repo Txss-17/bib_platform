@@ -42,6 +42,7 @@ import NotFound from "./pages/NotFound";
 import BrandPreview from "./pages/BrandPreview";
 import Store from "./pages/Store";
 import StoreProduct from "./pages/StoreProduct";
+import StoreCartPage from "./pages/StoreCart";
 import Recycler from "./pages/customer/Recycler";
 import Unsubscribe from "./pages/Unsubscribe";
 
