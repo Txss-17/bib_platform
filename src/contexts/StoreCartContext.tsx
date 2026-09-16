@@ -96,6 +96,7 @@ export function StoreCartProvider({
   children: ReactNode;
 }) {
   const [items, setItems] = useState<StoreCartItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
 
   /* =======================================================
      INITIALISATION
@@ -106,12 +107,14 @@ export function StoreCartProvider({
       const stored = localStorage.getItem(STORAGE_KEY);
 
       if (!stored) {
+        setHydrated(true);
         return;
       }
 
       const parsed: unknown = JSON.parse(stored);
 
       if (!Array.isArray(parsed)) {
+        setHydrated(true);
         return;
       }
 
@@ -123,24 +126,48 @@ export function StoreCartProvider({
 
           const value = item as Record<string, unknown>;
 
+          const validBoutiqueSlug =
+            value.boutiqueSlug === undefined ||
+            typeof value.boutiqueSlug === "string";
+
+          const validBoutiqueUrl =
+            value.boutiqueUrl === undefined ||
+            typeof value.boutiqueUrl === "string";
+
           return (
             typeof value.productId === "string" &&
             typeof value.productName === "string" &&
             typeof value.productImage === "string" &&
             typeof value.price === "number" &&
             Number.isFinite(value.price) &&
+            value.price >= 0 &&
             typeof value.quantity === "number" &&
             Number.isFinite(value.quantity) &&
             value.quantity > 0 &&
+            value.quantity <= 99 &&
             typeof value.boutiqueId === "string" &&
-            typeof value.boutiqueName === "string"
+            typeof value.boutiqueName === "string" &&
+            validBoutiqueSlug &&
+            validBoutiqueUrl
           );
         },
-      );
+      ).map((item) => ({
+        ...item,
+        quantity: Math.min(
+          99,
+          Math.max(1, Math.floor(item.quantity)),
+        ),
+      }));
 
       setItems(validItems);
     } catch {
-      localStorage.removeItem(STORAGE_KEY);
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        // localStorage indisponible.
+      }
+    } finally {
+      setHydrated(true);
     }
   }, []);
 
@@ -149,6 +176,10 @@ export function StoreCartProvider({
      ======================================================= */
 
   useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+
     try {
       localStorage.setItem(
         STORAGE_KEY,
@@ -158,7 +189,7 @@ export function StoreCartProvider({
       // Le panier reste fonctionnel en mémoire
       // si localStorage n'est pas disponible.
     }
-  }, [items]);
+  }, [items, hydrated]);
 
   /* =======================================================
      AJOUT
