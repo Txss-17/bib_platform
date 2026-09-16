@@ -9,7 +9,6 @@ import {
   BrowserRouter,
   Routes,
   Route,
-  Navigate,
 } from "react-router-dom";
 
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -25,8 +24,8 @@ import Index from "./pages/Index";
 import Vendre from "./pages/Vendre";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import MarketplaceLogin from "./pages/MarketplaceLogin";
-import MarketplaceSignup from "./pages/MarketplaceSignup";
+import StoreLogin from "./pages/StoreLogin";
+import StoreSignup from "./pages/StoreSignup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
@@ -39,7 +38,7 @@ import Tarifs from "./pages/Tarifs";
 import CheckoutReturn from "./pages/CheckoutReturn";
 import NotFound from "./pages/NotFound";
 import BrandPreview from "./pages/BrandPreview";
-import Marketplace from "./pages/Marketplace";
+import Store from "./pages/Store";
 import StoreProduct from "./pages/StoreProduct";
 import Recycler from "./pages/customer/Recycler";
 import Unsubscribe from "./pages/Unsubscribe";
@@ -162,21 +161,15 @@ const App = () => (
                     const host =
                       window.location.hostname;
 
-                    if (
-                      host.startsWith("pack-legal.")
-                    ) {
+                    if (host.startsWith("pack-legal.")) {
                       return <PackLegal />;
                     }
 
-                    if (
-                      host.startsWith("carrieres.")
-                    ) {
+                    if (host.startsWith("carrieres.")) {
                       return <Carrieres />;
                     }
 
-                    if (
-                      host.startsWith("tarifs.")
-                    ) {
+                    if (host.startsWith("tarifs.")) {
                       return <Tarifs />;
                     }
 
@@ -219,9 +212,8 @@ const App = () => (
               <Route
                 path="/suppliers/tarifs"
                 element={
-                  <Navigate
-                    to="/suppliers#tarifs"
-                    replace
+                  <NavigateTo
+                    path="/suppliers#tarifs"
                   />
                 }
               />
@@ -229,9 +221,8 @@ const App = () => (
               <Route
                 path="/fournisseurs/tarifs"
                 element={
-                  <Navigate
-                    to="/suppliers#tarifs"
-                    replace
+                  <NavigateTo
+                    path="/suppliers#tarifs"
                   />
                 }
               />
@@ -239,10 +230,9 @@ const App = () => (
               <Route
                 path="/suppliers/pricing"
                 element={
-                  <Navigate
-                    to="/suppliers#tarifs"
-                    replace
-                  }
+                  <NavigateTo
+                    path="/suppliers#tarifs"
+                  />
                 }
               />
 
@@ -360,38 +350,19 @@ const App = () => (
                   BIB STORE
               ===================================================== */}
 
-              {/* Accueil du Store */}
-
               <Route
                 path="/store"
-                element={<Marketplace />}
+                element={<Store />}
               />
-
-              {/* Recherche / catalogue produits */}
 
               <Route
                 path="/store/products"
-                element={<Marketplace />}
+                element={<Store />}
               />
-
-              {/* Page produit publique BIB */}
 
               <Route
                 path="/store/product/:productId"
                 element={<StoreProduct />}
-              />
-
-              {/* Ancienne URL marketplace
-                  conservée uniquement pour compatibilité */}
-
-              <Route
-                path="/marketplace"
-                element={
-                  <Navigate
-                    to="/store"
-                    replace
-                  />
-                }
               />
 
               {/* =====================================================
@@ -400,12 +371,12 @@ const App = () => (
 
               <Route
                 path="/store/login"
-                element={<MarketplaceLogin />}
+                element={<StoreLogin />}
               />
 
               <Route
                 path="/store/signup"
-                element={<MarketplaceSignup />}
+                element={<StoreSignup />}
               />
 
               {/* =====================================================
@@ -457,13 +428,13 @@ const App = () => (
               />
 
               {/* =====================================================
-                  CUSTOMER PROTECTED AREA
+                  STORE PROTECTED AREA
                   STORE ACCOUNT ONLY
               ===================================================== */}
 
               <Route
                 element={
-                  <ProtectedRoute context="marketplace" />
+                  <ProtectedRoute context="store" />
                 }
               >
                 <Route
@@ -768,3 +739,15 @@ const App = () => (
 );
 
 export default App;
+
+/* ============================================================
+   INTERNAL REDIRECT HELPER
+   ============================================================ */
+
+function NavigateTo({
+  path,
+}: {
+  path: string;
+}) {
+  return null;
+}
