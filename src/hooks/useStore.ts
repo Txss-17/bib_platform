@@ -1,6 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+/* =========================================================
+   TYPES
+   ========================================================= */
+
 export interface StoreProductPreview {
   id: string;
   name: string;
@@ -28,31 +32,35 @@ export interface StoreBoutique {
   tagline: string | null;
   logo_url: string | null;
   cover_image_url: string | null;
-
   has_protection: boolean;
-
   product_count: number;
   product_previews: StoreProductPreview[];
-
-  /**
-   * Stories publiées depuis le StudioEditor / HighlightsManager.
-   *
-   * Source DB :
-   * boutiques.highlight_media
-   */
   stories: StoreStory[];
-
   market: string;
   created_at: string;
-
   total_sales: number;
   recycling_points: number;
 }
 
+export interface StoreProduct {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  price: number;
+  boutique_id: string;
+  boutique_name: string;
+  boutique_slug: string;
+  boutique_category: string;
+  created_at: string;
+}
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
 function normalizeStories(value: unknown): StoreStory[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
+  if (!Array.isArray(value)) return [];
 
   return value.filter((story): story is StoreStory => {
     if (!story || typeof story !== "object") {
@@ -69,6 +77,10 @@ function normalizeStories(value: unknown): StoreStory[] {
     );
   });
 }
+
+/* =========================================================
+   BOUTIQUES
+   ========================================================= */
 
 export function useStoreBoutiques() {
   return useQuery({
@@ -115,73 +127,264 @@ export function useStoreBoutiques() {
         throw error;
       }
 
-      return (boutiques ?? []).map((boutique: any): StoreBoutique => {
-        const products = boutique.products ?? [];
+      return (boutiques ?? []).map(
+        (boutique: any): StoreBoutique => {
+          const products = boutique.products ?? [];
 
-        const productPreviews: StoreProductPreview[] = products
-          .slice(0, 8)
-          .map((product: any) => ({
-            id: product.id,
-            name:
-              product.supplier_products?.name ??
-              "Produit",
-            image_url:
-              product.supplier_products?.image_url ??
-              null,
-            price: Number(product.public_price ?? 0),
-          }));
+          const productPreviews: StoreProductPreview[] =
+            products.slice(0, 8).map((product: any) => ({
+              id: product.id,
+              name:
+                product.supplier_products?.name ??
+                "Produit",
+              image_url:
+                product.supplier_products?.image_url ??
+                null,
+              price: Number(
+                product.public_price ?? 0,
+              ),
+            }));
 
-        const totalSales = products.reduce(
-          (total: number, product: any) =>
-            total +
-            Number(product.cumulative_sales ?? 0),
-          0,
+          const totalSales = products.reduce(
+            (total: number, product: any) =>
+              total +
+              Number(
+                product.cumulative_sales ?? 0,
+              ),
+            0,
+          );
+
+          const orders = boutique.orders ?? [];
+
+          const market =
+            orders[0]?.market ?? "EU";
+
+          const recyclingPoints = (
+            boutique.recycling_scans ?? []
+          ).reduce(
+            (total: number, scan: any) =>
+              total +
+              Number(scan.points ?? 0),
+            0,
+          );
+
+          const stories = normalizeStories(
+            boutique.highlight_media,
+          );
+
+          return {
+            id: boutique.id,
+            name: boutique.name,
+            slug: boutique.slug,
+            category: boutique.category,
+            description:
+              boutique.description,
+            tagline:
+              boutique.tagline,
+            logo_url:
+              boutique.logo_url,
+            cover_image_url:
+              boutique.cover_image_url,
+            has_protection:
+              boutique.has_protection ??
+              false,
+            product_count:
+              products.length,
+            product_previews:
+              productPreviews,
+            stories,
+            market,
+            created_at:
+              boutique.created_at,
+            total_sales:
+              totalSales,
+            recycling_points:
+              recyclingPoints,
+          };
+        },
+      );
+    },
+  });
+}
+
+/* =========================================================
+   PRODUITS DU STORE
+   ========================================================= */
+
+export function useStoreProducts() {
+  return useQuery({
+    queryKey: ["store-products"],
+
+    queryFn: async (): Promise<StoreProduct[]> => {
+      const { data, error } = await supabase
+        .from("products")
+        .select(`
+          id,
+          public_price,
+          status,
+          created_at,
+          supplier_products (
+            name,
+            description,
+            image_url
+          ),
+          boutiques!inner (
+            id,
+            name,
+            slug,
+            category,
+            status
+          )
+        `)
+        .eq("status", "active")
+        .eq("boutiques.status", "published")
+        .order("created_at", {
+          ascending: false,
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      return (data ?? []).map(
+        (product: any): StoreProduct => ({
+          id: product.id,
+
+          name:
+            product.supplier_products?.name ??
+            "Produit",
+
+          description:
+            product.supplier_products
+              ?.description ??
+            null,
+
+          image_url:
+            product.supplier_products
+              ?.image_url ??
+            null,
+
+          price: Number(
+            product.public_price ?? 0,
+          ),
+
+          boutique_id:
+            product.boutiques?.id ?? "",
+
+          boutique_name:
+            product.boutiques?.name ??
+            "Boutique",
+
+          boutique_slug:
+            product.boutiques?.slug ??
+            "",
+
+          boutique_category:
+            product.boutiques?.category ??
+            "Autres",
+
+          created_at:
+            product.created_at,
+        }),
+      );
+    },
+  });
+}
+
+/* =========================================================
+   PRODUIT UNIQUE
+   ========================================================= */
+
+export function useStoreProduct(
+  productId?: string,
+) {
+  return useQuery({
+    queryKey: [
+      "store-product",
+      productId,
+    ],
+
+    enabled: Boolean(productId),
+
+    queryFn: async (): Promise<StoreProduct> => {
+      if (!productId) {
+        throw new Error(
+          "productId is required",
         );
+      }
 
-        const orders = boutique.orders ?? [];
+      const { data, error } = await supabase
+        .from("products")
+        .select(`
+          id,
+          public_price,
+          status,
+          created_at,
+          supplier_products (
+            name,
+            description,
+            image_url
+          ),
+          boutiques!inner (
+            id,
+            name,
+            slug,
+            category,
+            status
+          )
+        `)
+        .eq("id", productId)
+        .eq("status", "active")
+        .eq("boutiques.status", "published")
+        .single();
 
-        const market =
-          orders[0]?.market ??
-          "EU";
+      if (error) {
+        throw error;
+      }
 
-        const recyclingPoints = (
-          boutique.recycling_scans ?? []
-        ).reduce(
-          (total: number, scan: any) =>
-            total +
-            Number(scan.points ?? 0),
-          0,
+      if (!data) {
+        throw new Error(
+          "Produit introuvable",
         );
+      }
 
-        const stories = normalizeStories(
-          boutique.highlight_media,
-        );
+      return {
+        id: data.id,
 
-        return {
-          id: boutique.id,
-          name: boutique.name,
-          slug: boutique.slug,
-          category: boutique.category,
-          description: boutique.description,
-          tagline: boutique.tagline,
-          logo_url: boutique.logo_url,
-          cover_image_url: boutique.cover_image_url,
+        name:
+          (data as any).supplier_products
+            ?.name ?? "Produit",
 
-          has_protection:
-            boutique.has_protection ?? false,
+        description:
+          (data as any).supplier_products
+            ?.description ?? null,
 
-          product_count: products.length,
-          product_previews: productPreviews,
+        image_url:
+          (data as any).supplier_products
+            ?.image_url ?? null,
 
-          stories,
+        price: Number(
+          (data as any).public_price ?? 0,
+        ),
 
-          market,
-          created_at: boutique.created_at,
+        boutique_id:
+          (data as any).boutiques?.id ?? "",
 
-          total_sales: totalSales,
-          recycling_points: recyclingPoints,
-        };
-      });
+        boutique_name:
+          (data as any).boutiques?.name ??
+          "Boutique",
+
+        boutique_slug:
+          (data as any).boutiques?.slug ??
+          "",
+
+        boutique_category:
+          (data as any).boutiques?.category ??
+          "Autres",
+
+        created_at:
+          (data as any).created_at,
+      };
     },
   });
 }
