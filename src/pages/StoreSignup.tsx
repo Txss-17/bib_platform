@@ -16,7 +16,6 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   ArrowRight,
-  CheckCircle,
   Eye,
   EyeOff,
   Gift,
@@ -29,7 +28,7 @@ import {
 } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
-export default function MarketplaceSignup() {
+export default function StoreSignup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -47,7 +46,7 @@ export default function MarketplaceSignup() {
   const [searchParams] = useSearchParams();
 
   /**
-   * Marketplace customer destination.
+   * Store customer destination.
    *
    * This account covers the complete BIB customer ecosystem:
    * - Store
@@ -64,15 +63,15 @@ export default function MarketplaceSignup() {
     "/store";
 
   /**
-   * Only customer-facing destinations are allowed.
-   * Platform routes must never be reached through Marketplace signup.
+   * Only Store/customer destinations are allowed.
+   *
+   * Platform routes must never be reached through Store signup.
    */
-  const isCustomerPath =
-    from.startsWith("/store") ||
-    from.startsWith("/recycler") ||
-    from.startsWith("/marketplace");
+  const isStorePath =
+    from === "/store" ||
+    from.startsWith("/store/");
 
-  const destination = isCustomerPath ? from : "/store";
+  const destination = isStorePath ? from : "/store";
 
   const getErrorMessage = (errorMsg: string) => {
     const normalizedMessage = errorMsg.toLowerCase();
@@ -101,6 +100,13 @@ export default function MarketplaceSignup() {
 
     setError(null);
 
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail) {
+      setError("Veuillez saisir votre adresse e-mail.");
+      return;
+    }
+
     if (password.length < 8) {
       setError("Le mot de passe doit contenir au moins 8 caractères.");
       return;
@@ -113,11 +119,15 @@ export default function MarketplaceSignup() {
 
     setLoading(true);
 
+    /**
+     * New customer accounts are explicitly created
+     * with the Store account type.
+     */
     const { error } = await signUp(
-    email.trim(),
-    password,
-    fullName.trim(),
-    "marketplace"
+      normalizedEmail,
+      password,
+      undefined,
+      "store"
     );
 
     if (error) {
@@ -127,18 +137,18 @@ export default function MarketplaceSignup() {
     }
 
     /**
-     * Depending on the Supabase configuration, signUp may require
-     * email confirmation before the session becomes active.
+     * If Supabase requires email confirmation, the authentication
+     * context will handle the absence of an active session.
      *
-     * We therefore redirect to the requested customer destination
-     * only when the authentication context confirms the session.
+     * When signup creates an active session, the user can continue
+     * directly to the requested Store destination.
      */
     navigate(destination, { replace: true });
   };
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Customer signup */}
+      {/* Store signup */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           {/* Header */}
@@ -158,6 +168,7 @@ export default function MarketplaceSignup() {
                 <span className="font-bold text-2xl text-foreground leading-none">
                   BIB
                 </span>
+
                 <span className="text-xs text-muted-foreground">
                   Store
                 </span>
@@ -189,7 +200,7 @@ export default function MarketplaceSignup() {
 
                 {/* Email */}
                 <div className="space-y-2">
-                  <Label htmlFor="marketplace-signup-email">
+                  <Label htmlFor="store-signup-email">
                     {t("login.email")}
                   </Label>
 
@@ -200,7 +211,7 @@ export default function MarketplaceSignup() {
                     />
 
                     <Input
-                      id="marketplace-signup-email"
+                      id="store-signup-email"
                       type="email"
                       placeholder="vous@exemple.com"
                       value={email}
@@ -214,7 +225,7 @@ export default function MarketplaceSignup() {
 
                 {/* Password */}
                 <div className="space-y-2">
-                  <Label htmlFor="marketplace-signup-password">
+                  <Label htmlFor="store-signup-password">
                     Mot de passe
                   </Label>
 
@@ -225,7 +236,7 @@ export default function MarketplaceSignup() {
                     />
 
                     <Input
-                      id="marketplace-signup-password"
+                      id="store-signup-password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={password}
@@ -262,7 +273,7 @@ export default function MarketplaceSignup() {
 
                 {/* Confirm password */}
                 <div className="space-y-2">
-                  <Label htmlFor="marketplace-signup-confirm-password">
+                  <Label htmlFor="store-signup-confirm-password">
                     Confirmer le mot de passe
                   </Label>
 
@@ -273,7 +284,7 @@ export default function MarketplaceSignup() {
                     />
 
                     <Input
-                      id="marketplace-signup-confirm-password"
+                      id="store-signup-confirm-password"
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={confirmPassword}
