@@ -13,10 +13,10 @@ export interface StoreProductPreview {
 }
 
 /* =========================================================
-   STORE HIGHLIGHT
+   STORE STORY
    ========================================================= */
 
-export interface StoreHighlight {
+export interface StoreStory {
   id: string;
   kind: "image" | "video";
   url: string;
