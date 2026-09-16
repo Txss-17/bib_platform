@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
-export type ProtectedContext = "platform" | "marketplace";
+export type ProtectedContext = "platform" | "store";
 
 interface ProtectedRouteProps {
   context: ProtectedContext;
@@ -38,7 +38,7 @@ export function ProtectedRoute({
       location.pathname + location.search;
 
     const loginPath =
-      context === "marketplace"
+      context === "store"
         ? "/store/login"
         : "/login";
 
@@ -85,13 +85,13 @@ export function ProtectedRoute({
   }
 
   /*
-   * COMPTE MARKETPLACE
+   * COMPTE STORE
    *
    * Autorisé uniquement dans les routes
-   * protégées de l'espace client.
+   * protégées de l'espace client Store.
    */
-  if (context === "marketplace") {
-    if (accountType !== "marketplace") {
+  if (context === "store") {
+    if (accountType !== "store") {
       return (
         <Navigate
           to="/dashboard"
