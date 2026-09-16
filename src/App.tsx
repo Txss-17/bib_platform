@@ -135,6 +135,39 @@ import {
 const queryClient = new QueryClient();
 
 // ============================================================
+// ROOT HOST ROUTING
+// ============================================================
+
+function RootPage() {
+  if (typeof window === "undefined") {
+    return <Index />;
+  }
+
+  const host = window.location.hostname;
+
+  if (host.startsWith("pack-legal.")) {
+    return <PackLegal />;
+  }
+
+  if (host.startsWith("carrieres.")) {
+    return <Carrieres />;
+  }
+
+  if (host.startsWith("tarifs.")) {
+    return <Tarifs />;
+  }
+
+  if (
+    host.startsWith("logistics.") ||
+    host.startsWith("logistique.")
+  ) {
+    return <Ops />;
+  }
+
+  return <Index />;
+}
+
+// ============================================================
 // APP
 // ============================================================
 
@@ -149,43 +182,13 @@ const App = () => (
           <AuthProvider>
             <StoreCartProvider>
               <Routes>
-
                 {/* =====================================================
                     PUBLIC ROOT
                 ===================================================== */}
 
                 <Route
                   path="/"
-                  element={
-                    (() => {
-                      if (typeof window === "undefined") {
-                        return <Index />;
-                      }
-
-                      const host = window.location.hostname;
-
-                      if (host.startsWith("pack-legal.")) {
-                        return <PackLegal />;
-                      }
-
-                      if (host.startsWith("carrieres.")) {
-                        return <Carrieres />;
-                      }
-
-                      if (host.startsWith("tarifs.")) {
-                        return <Tarifs />;
-                      }
-
-                      if (
-                        host.startsWith("logistics.") ||
-                        host.startsWith("logistique.")
-                      ) {
-                        return <Ops />;
-                      }
-
-                      return <Index />;
-                    })()
-                  }
+                  element={<RootPage />}
                 />
 
                 <Route
@@ -353,7 +356,7 @@ const App = () => (
                 />
 
                 {/* =====================================================
-                    BIB STORE
+                    BIB STORE — PUBLIC DISCOVERY
                 ===================================================== */}
 
                 <Route
@@ -372,18 +375,16 @@ const App = () => (
                 />
 
                 {/* =====================================================
-                    STORE CART
+                    BIB STORE — CART
                 ===================================================== */}
 
                 <Route
                   path="/store/cart"
-                  element={
-                    <StoreCartPage />
-                  }
+                  element={<StoreCartPage />}
                 />
 
                 {/* =====================================================
-                    STORE CUSTOMER AUTHENTICATION
+                    BIB STORE — AUTHENTICATION
                 ===================================================== */}
 
                 <Route
@@ -445,8 +446,7 @@ const App = () => (
                 />
 
                 {/* =====================================================
-                    STORE PROTECTED AREA
-                    STORE ACCOUNT ONLY
+                    STORE — PROTECTED CUSTOMER AREA
                 ===================================================== */}
 
                 <Route
@@ -466,8 +466,7 @@ const App = () => (
                 </Route>
 
                 {/* =====================================================
-                    PLATFORM PROTECTED AREA
-                    BIB PLATFORM / MERCHANT ACCOUNTS ONLY
+                    PLATFORM — PROTECTED AREA
                 ===================================================== */}
 
                 <Route
@@ -746,7 +745,6 @@ const App = () => (
                   path="*"
                   element={<NotFound />}
                 />
-
               </Routes>
             </StoreCartProvider>
           </AuthProvider>
