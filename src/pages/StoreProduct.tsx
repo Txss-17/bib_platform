@@ -19,9 +19,9 @@ import {
 } from "lucide-react";
 
 import {
-  useMarketplaceBoutiques,
-  type MarketplaceBoutique,
-} from "@/hooks/useMarketplace";
+  useStoreBoutiques,
+  type StoreBoutique,
+} from "@/hooks/useStore";
 import { Logo } from "@/components/Logo";
 import { useSEO } from "@/hooks/useSEO";
 
@@ -29,8 +29,8 @@ import { useSEO } from "@/hooks/useSEO";
    TYPES
    ========================================================= */
 
-type MarketplaceProductPreview =
-  MarketplaceBoutique["product_previews"][number];
+type StoreProductPreview =
+  StoreBoutique["product_previews"][number];
 
 interface CartItem {
   productId: string;
@@ -47,7 +47,7 @@ interface CartItem {
    HELPERS
    ========================================================= */
 
-function getProductId(product: MarketplaceProductPreview): string {
+function getProductId(product: StoreProductPreview): string {
   return String(
     (product as any).id ??
       (product as any).product_id ??
@@ -55,7 +55,7 @@ function getProductId(product: MarketplaceProductPreview): string {
   );
 }
 
-function getProductPrice(product: MarketplaceProductPreview): number {
+function getProductPrice(product: StoreProductPreview): number {
   const raw =
     (product as any).price ??
     (product as any).public_price ??
@@ -68,7 +68,7 @@ function getProductPrice(product: MarketplaceProductPreview): number {
 }
 
 function getProductImage(
-  product: MarketplaceProductPreview,
+  product: StoreProductPreview,
 ): string {
   return (
     (product as any).image_url ??
@@ -79,7 +79,7 @@ function getProductImage(
 }
 
 function getProductDescription(
-  product: MarketplaceProductPreview,
+  product: StoreProductPreview,
 ): string {
   return (
     (product as any).description ??
@@ -89,7 +89,7 @@ function getProductDescription(
 }
 
 function getProductImages(
-  product: MarketplaceProductPreview,
+  product: StoreProductPreview,
 ): string[] {
   const images = [
     (product as any).image_url,
@@ -109,7 +109,7 @@ function getProductImages(
 }
 
 function getBoutiqueUrl(
-  boutique: MarketplaceBoutique,
+  boutique: StoreBoutique,
 ): string | undefined {
   return (
     (boutique as any).website_url ??
@@ -130,7 +130,7 @@ export default function StoreProduct() {
   const {
     data: boutiques = [],
     isLoading,
-  } = useMarketplaceBoutiques();
+  } = useStoreBoutiques();
 
   const [quantity, setQuantity] = useState(1);
   const [imageIndex, setImageIndex] = useState(0);
@@ -357,9 +357,7 @@ export default function StoreProduct() {
         {/* PRODUIT */}
 
         <section className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)] lg:gap-12">
-          {/* =================================================
-              GALERIE
-             ================================================= */}
+          {/* GALERIE */}
 
           <div>
             <div className="relative aspect-square overflow-hidden rounded-[28px] border border-border bg-muted">
@@ -470,9 +468,7 @@ export default function StoreProduct() {
             )}
           </div>
 
-          {/* =================================================
-              INFORMATIONS
-             ================================================= */}
+          {/* INFORMATIONS */}
 
           <div className="flex flex-col">
             {/* BOUTIQUE */}
@@ -485,9 +481,7 @@ export default function StoreProduct() {
                 <Store className="h-4 w-4" />
               </span>
 
-              <span>
-                {boutique.name}
-              </span>
+              <span>{boutique.name}</span>
 
               <Check className="h-4 w-4 text-primary" />
 
@@ -650,9 +644,7 @@ export default function StoreProduct() {
           </div>
         </section>
 
-        {/* =================================================
-            INFORMATION ACHAT
-           ================================================= */}
+        {/* INFORMATION ACHAT */}
 
         <section className="mt-14 border-t border-border pt-8">
           <div className="grid gap-4 md:grid-cols-3">
@@ -680,7 +672,7 @@ export default function StoreProduct() {
 
           <p>
             © {new Date().getFullYear()} Brand-In-A-Box ·
-            Marketplace officiel
+            Store officiel
           </p>
 
           <Link
