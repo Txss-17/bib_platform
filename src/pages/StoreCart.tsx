@@ -9,7 +9,12 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
   useStoreCart,
@@ -28,7 +33,9 @@ function formatPrice(price: number) {
   }).format(price);
 }
 
-function getBoutiqueDestination(group: StoreCartBoutiqueGroup) {
+function getBoutiqueDestination(
+  group: StoreCartBoutiqueGroup,
+) {
   if (group.boutiqueUrl) {
     return group.boutiqueUrl;
   }
@@ -55,6 +62,8 @@ function StoreCartItemRow({
   onDecrease: () => void;
   onRemove: () => void;
 }) {
+  const isAtMaximumQuantity = item.quantity >= 99;
+
   return (
     <div className="flex gap-4 py-5">
       {/* Product image */}
@@ -81,7 +90,7 @@ function StoreCartItemRow({
             </h3>
 
             <p className="mt-1 text-sm text-muted-foreground">
-              {formatPrice(item.price)} l'unité
+              {formatPrice(item.price)} l’unité
             </p>
           </div>
 
@@ -97,12 +106,16 @@ function StoreCartItemRow({
 
         <div className="mt-4 flex items-center justify-between gap-4">
           {/* Quantity */}
-          <div className="flex items-center rounded-lg border">
+          <div
+            className="flex items-center rounded-lg border"
+            aria-label={`Quantité de ${item.productName}`}
+          >
             <button
               type="button"
               onClick={onDecrease}
-              aria-label="Diminuer la quantité"
-              className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+              aria-label={`Diminuer la quantité de ${item.productName}`}
+              className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+              disabled={item.quantity <= 1}
             >
               <Minus className="h-3.5 w-3.5" />
             </button>
@@ -114,8 +127,9 @@ function StoreCartItemRow({
             <button
               type="button"
               onClick={onIncrease}
-              aria-label="Augmenter la quantité"
-              className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+              aria-label={`Augmenter la quantité de ${item.productName}`}
+              className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+              disabled={isAtMaximumQuantity}
             >
               <Plus className="h-3.5 w-3.5" />
             </button>
@@ -155,7 +169,7 @@ function BoutiqueCartGroup({
     <Card>
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+          <div className="min-w-0">
             <CardTitle className="text-base">
               {group.boutiqueName}
             </CardTitle>
@@ -170,6 +184,7 @@ function BoutiqueCartGroup({
             asChild
             variant="outline"
             size="sm"
+            className="shrink-0"
           >
             {isExternal ? (
               <a
@@ -206,7 +221,7 @@ function BoutiqueCartGroup({
 
         <div className="flex items-center justify-between pt-4">
           <span className="text-sm text-muted-foreground">
-            Sous-total
+            Sous-total indicatif
           </span>
 
           <span className="font-semibold">
@@ -237,26 +252,47 @@ function BoutiqueCartGroup({
 
 function EmptyStoreCart() {
   return (
-    <div className="mx-auto flex min-h-[60vh] max-w-xl flex-col items-center justify-center px-6 text-center">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-        <ShoppingBag className="h-7 w-7 text-muted-foreground" />
+    <main className="min-h-screen bg-background">
+      <div className="border-b">
+        <div className="mx-auto flex max-w-7xl items-center px-4 py-5 sm:px-6 lg:px-8">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+          >
+            <Link to="/store">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Retour au Store
+            </Link>
+          </Button>
+        </div>
       </div>
 
-      <h1 className="mt-6 text-2xl font-semibold">
-        Votre panier Store est vide
-      </h1>
+      <div className="mx-auto flex min-h-[70vh] max-w-xl flex-col items-center justify-center px-6 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+          <ShoppingBag className="h-7 w-7 text-muted-foreground" />
+        </div>
 
-      <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-        Ajoutez des produits depuis les boutiques présentes
-        dans BIB Store pour les retrouver ici.
-      </p>
+        <p className="mt-6 text-sm font-medium text-muted-foreground">
+          BIB Store
+        </p>
 
-      <Button asChild className="mt-6">
-        <Link to="/store">
-          Découvrir les boutiques
-        </Link>
-      </Button>
-    </div>
+        <h1 className="mt-1 text-2xl font-semibold">
+          Votre panier est vide
+        </h1>
+
+        <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+          Ajoutez des produits depuis les boutiques présentes
+          dans BIB Store pour les retrouver ici.
+        </p>
+
+        <Button asChild className="mt-6">
+          <Link to="/store">
+            Découvrir les boutiques
+          </Link>
+        </Button>
+      </div>
+    </main>
   );
 }
 
@@ -273,6 +309,7 @@ export default function StoreCart() {
     updateQuantity,
     removeItem,
     clearBoutique,
+    clearCart,
   } = useStoreCart();
 
   if (isEmpty) {
@@ -280,6 +317,10 @@ export default function StoreCart() {
   }
 
   const handleIncrease = (item: StoreCartItem) => {
+    if (item.quantity >= 99) {
+      return;
+    }
+
     updateQuantity(
       item.productId,
       item.boutiqueId,
@@ -288,6 +329,10 @@ export default function StoreCart() {
   };
 
   const handleDecrease = (item: StoreCartItem) => {
+    if (item.quantity <= 1) {
+      return;
+    }
+
     updateQuantity(
       item.productId,
       item.boutiqueId,
@@ -306,7 +351,7 @@ export default function StoreCart() {
     <main className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b">
-        <div className="mx-auto flex max-w-7xl items-center px-4 py-5 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5 sm:px-6 lg:px-8">
           <Button
             asChild
             variant="ghost"
@@ -316,6 +361,17 @@ export default function StoreCart() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Continuer mes recherches
             </Link>
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={clearCart}
+            className="text-muted-foreground hover:text-destructive"
+          >
+            <Trash2 className="mr-2 h-3.5 w-3.5" />
+            Vider le panier
           </Button>
         </div>
       </div>
@@ -333,9 +389,13 @@ export default function StoreCart() {
 
           <p className="mt-2 text-sm text-muted-foreground">
             {totalItems}{" "}
-            {totalItems > 1 ? "articles sélectionnés" : "article sélectionné"}{" "}
+            {totalItems > 1
+              ? "articles sélectionnés"
+              : "article sélectionné"}{" "}
             dans {boutiqueGroups.length}{" "}
-            {boutiqueGroups.length > 1 ? "boutiques" : "boutique"}.
+            {boutiqueGroups.length > 1
+              ? "boutiques"
+              : "boutique"}.
           </p>
         </div>
 
@@ -349,7 +409,9 @@ export default function StoreCart() {
                 onIncrease={handleIncrease}
                 onDecrease={handleDecrease}
                 onRemove={handleRemove}
-                onClear={() => clearBoutique(group.boutiqueId)}
+                onClear={() =>
+                  clearBoutique(group.boutiqueId)
+                }
               />
             ))}
           </div>
@@ -370,9 +432,7 @@ export default function StoreCart() {
                       Articles
                     </span>
 
-                    <span>
-                      {totalItems}
-                    </span>
+                    <span>{totalItems}</span>
                   </div>
 
                   <div className="flex justify-between gap-4">
@@ -380,17 +440,13 @@ export default function StoreCart() {
                       Boutiques
                     </span>
 
-                    <span>
-                      {boutiqueGroups.length}
-                    </span>
+                    <span>{boutiqueGroups.length}</span>
                   </div>
 
                   <Separator />
 
                   <div className="flex justify-between gap-4 text-base font-semibold">
-                    <span>
-                      Total indicatif
-                    </span>
+                    <span>Total indicatif</span>
 
                     <span>
                       {formatPrice(totalPrice)}
@@ -400,9 +456,10 @@ export default function StoreCart() {
 
                 <div className="mt-6 rounded-xl bg-muted/50 p-4">
                   <p className="text-xs leading-5 text-muted-foreground">
-                    BIB Store ne traite pas le paiement de votre commande.
-                    Chaque achat est finalisé directement auprès de la
-                    boutique concernée.
+                    Le panier BIB Store sert à regrouper vos
+                    sélections. BIB ne traite pas le paiement ici.
+                    Chaque achat est finalisé directement auprès de
+                    la boutique concernée.
                   </p>
                 </div>
               </CardContent>
