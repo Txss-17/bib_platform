@@ -1,121 +1,499 @@
 import type { OnboardingConfig } from "@/components/standalone/PartnerOnboardingWizard";
 
+/**
+ * Configuration d'onboarding des partenaires BIB.
+ *
+ * Important :
+ * - Ce parcours intervient après la présélection.
+ * - Il ne constitue pas la candidature publique.
+ * - Les engagements contractuels définitifs sont traités séparément
+ *   lorsque cela est nécessaire.
+ */
+
+/* -------------------------------------------------------------------------- */
+/* Fournisseurs                                                                */
+/* -------------------------------------------------------------------------- */
+
 export const SUPPLIERS_ONBOARDING_CONFIG: OnboardingConfig = {
   portal: "suppliers",
+
   title: "Onboarding Fournisseur",
-  subtitle: "Activation opérationnelle après présélection.",
+
+  subtitle:
+    "Finalisation du dossier et préparation de l’intégration opérationnelle après présélection.",
+
   documents: [
-    { id: "kbis", label: "Extrait Kbis / équivalent", required: true, hint: "Moins de 3 mois." },
-    { id: "rib", label: "RIB / IBAN société", required: true, hint: "Au nom de la société uniquement." },
-    { id: "insurance", label: "Attestation RC Pro", required: true, hint: "En cours de validité, couverture export incluse." },
-    { id: "tax", label: "Attestation fiscale / TVA", required: true },
-    { id: "quality", label: "Certifications qualité (ISO, OEKO-TEX, GOTS…)", required: false, hint: "Joindre une copie scannée si disponible." },
-    { id: "social_audit", label: "Audit social récent (Sedex, BSCI…)", required: false },
-    { id: "samples_photos", label: "Photos atelier / lignes de production", required: true, hint: "ZIP ou PDF — vue d'ensemble + zones de contrôle qualité.", accept: "application/pdf,image/png,image/jpeg,application/zip" },
-  ],
-  commitments: [
-    { id: "audit", title: "Audit qualité annoncé sous 48h de préavis", text: "Notre Ops Manager peut auditer vos lignes 1 fois / an minimum, avec préavis court." },
-    { id: "hub", title: "Expédition systématique vers le hub BIB", text: "Aucune expédition directe vers le client final — tout transite par notre entrepôt de contrôle qualité." },
-    { id: "portal", title: "Mise à jour des statuts via portail Suppliers", text: "Production, expédition, incidents : tout passe par le portail. Email seul = non recevable." },
-    { id: "sla", title: "Respect des délais avec pénalités contractuelles", text: "Retard non justifié > 10 jours = pénalité forfaitaire prévue au contrat." },
-    { id: "moq", title: "MOQ et tarifs gelés pour 12 mois", text: "Toute hausse > 5% doit être notifiée 60 jours à l'avance." },
-    { id: "exclusivity", title: "Pas de revente parallèle aux clients BIB", text: "Les références référencées chez BIB ne peuvent être vendues directement aux mêmes acheteurs sans accord écrit." },
-  ],
-  integration: [
-    { id: "pickup_address", label: "Adresse de collecte (pickup)", type: "text", required: true, placeholder: "Rue, code postal, ville, pays" },
-    { id: "ops_contact", label: "Contact Ops dédié", type: "text", required: true, placeholder: "Nom + fonction" },
-    { id: "ops_email", label: "Email Ops", type: "email", required: true },
-    { id: "ops_phone", label: "Téléphone Ops (heures ouvrées)", type: "tel", required: true },
     {
-      id: "edi_mode",
-      label: "Mode de transmission préféré des commandes",
+      id: "company_registration",
+      label: "Kbis ou justificatif d’immatriculation équivalent",
+      required: true,
+      hint:
+        "Document officiel permettant d’identifier l’entreprise et son activité.",
+      accept: ".pdf,.jpg,.jpeg,.png",
+    },
+
+    {
+      id: "bank_details",
+      label: "RIB / IBAN professionnel",
+      required: true,
+      hint:
+        "Coordonnées bancaires correspondant à l’entité contractante.",
+      accept: ".pdf,.jpg,.jpeg,.png",
+    },
+
+    {
+      id: "professional_insurance",
+      label: "Attestation d’assurance professionnelle",
+      required: true,
+      hint:
+        "Attestation en cours de validité couvrant l’activité concernée.",
+      accept: ".pdf,.jpg,.jpeg,.png",
+    },
+
+    {
+      id: "tax_documents",
+      label: "Informations fiscales / TVA",
+      required: true,
+      hint:
+        "Documents ou justificatifs permettant de vérifier le statut fiscal applicable.",
+      accept: ".pdf,.jpg,.jpeg,.png",
+    },
+
+    {
+      id: "quality_certifications",
+      label: "Certifications ou documents qualité",
+      required: false,
+      hint:
+        "ISO, normes sectorielles, procédures qualité ou autres justificatifs pertinents.",
+      accept: ".pdf,.jpg,.jpeg,.png,.zip",
+    },
+
+    {
+      id: "social_compliance",
+      label: "Documents sociaux ou audits de conformité",
+      required: false,
+      hint:
+        "À fournir lorsque ces éléments existent ou sont pertinents pour l’activité.",
+      accept: ".pdf,.jpg,.jpeg,.png,.zip",
+    },
+
+    {
+      id: "production_environment",
+      label: "Présentation du site ou de l’environnement de production",
+      required: true,
+      hint:
+        "Photos ou documents permettant de comprendre les capacités et conditions de production.",
+      accept: ".pdf,.jpg,.jpeg,.png,.zip",
+    },
+  ],
+
+  commitments: [
+    {
+      id: "quality_controls",
+      title: "Contrôles qualité et conformité",
+      text:
+        "J’accepte que BIB puisse effectuer ou demander les contrôles nécessaires à la qualification des produits, du fournisseur et de leur conformité.",
+    },
+
+    {
+      id: "traceability",
+      title: "Traçabilité",
+      text:
+        "Je m’engage à fournir les informations nécessaires à l’identification et à la traçabilité des produits, références ou lots lorsque cela est requis.",
+    },
+
+    {
+      id: "operational_information",
+      title: "Informations opérationnelles",
+      text:
+        "Je m’engage à maintenir à jour les informations nécessaires au traitement des commandes : disponibilité, délais habituels, caractéristiques produits et contraintes opérationnelles.",
+    },
+
+    {
+      id: "shipping_process",
+      title: "Processus d’expédition",
+      text:
+        "Je m’engage à respecter le schéma logistique défini avec BIB pour les références validées, notamment les modalités de préparation, de remise au transporteur et de transmission des informations de suivi.",
+    },
+
+    {
+      id: "product_compliance",
+      title: "Conformité des produits",
+      text:
+        "Je confirme que les informations communiquées concernant les produits sont exactes et que les références proposées respectent les exigences réglementaires applicables à leur commercialisation.",
+    },
+
+    {
+      id: "changes_notification",
+      title: "Notification des changements",
+      text:
+        "Je m’engage à signaler les changements significatifs susceptibles d’affecter les produits, les capacités de production, les délais, la conformité ou les conditions opérationnelles.",
+    },
+  ],
+
+  integration: [
+    {
+      id: "pickup_address",
+      label: "Adresse principale de préparation / expédition",
+      type: "text",
+      required: true,
+      placeholder:
+        "Adresse complète du site concerné",
+      hint:
+        "Indiquez le site depuis lequel les produits seront préparés ou remis au dispositif logistique défini avec BIB.",
+    },
+
+    {
+      id: "operational_contact",
+      label: "Contact opérationnel",
+      type: "text",
+      required: true,
+      placeholder:
+        "Nom et prénom",
+      hint:
+        "Personne référente pour les échanges opérationnels avec BIB.",
+    },
+
+    {
+      id: "operational_email",
+      label: "Email opérationnel",
+      type: "email",
+      required: true,
+      placeholder:
+        "operations@entreprise.com",
+    },
+
+    {
+      id: "operational_phone",
+      label: "Téléphone opérationnel",
+      type: "tel",
+      required: true,
+      placeholder:
+        "+33 ...",
+    },
+
+    {
+      id: "transmission_mode",
+      label: "Mode de transmission opérationnelle privilégié",
       type: "select",
       required: true,
       options: [
-        { value: "portal", label: "Portail BIB uniquement" },
-        { value: "email", label: "Portail + notification email" },
-        { value: "api", label: "API / Webhook (intégration directe)" },
-        { value: "edi", label: "EDI (EDIFACT / X12)" },
+        {
+          value: "portal",
+          label: "Portail BIB",
+        },
+        {
+          value: "portal_email",
+          label: "Portail BIB + email",
+        },
+        {
+          value: "api_webhook",
+          label: "API / webhook",
+        },
+        {
+          value: "edi",
+          label: "EDI",
+        },
+        {
+          value: "other",
+          label: "Autre mode à définir avec BIB",
+        },
       ],
+      hint:
+        "Le portail constitue le mode de fonctionnement de référence lorsque aucune intégration technique spécifique n’est requise.",
     },
-    { id: "erp", label: "ERP / outil interne utilisé", type: "text", required: false, placeholder: "SAP, Odoo, Cegid, autre…" },
-    { id: "lead_time_confirm", label: "Délai garanti (commande validée → expédition)", type: "text", required: true, placeholder: "Ex. 12 jours ouvrés" },
-    { id: "notes", label: "Précisions techniques", type: "textarea", required: false, placeholder: "Contraintes douanières, packaging spécifique, langues étiquettes…" },
+
+    {
+      id: "erp",
+      label: "ERP / logiciel de gestion utilisé",
+      type: "text",
+      required: false,
+      placeholder:
+        "Nom du logiciel",
+      hint:
+        "Indiquez votre outil de gestion si une intégration ou un échange de données doit être étudié.",
+    },
+
+    {
+      id: "usual_lead_time",
+      label: "Délai habituel de préparation / production",
+      type: "text",
+      required: true,
+      placeholder:
+        "Ex. 3 à 5 jours ouvrés",
+      hint:
+        "Indiquez votre délai habituel après validation de la commande.",
+    },
+
+    {
+      id: "technical_notes",
+      label: "Contraintes ou informations techniques",
+      type: "textarea",
+      required: false,
+      placeholder:
+        "Contraintes de conditionnement, stockage, manipulation, minimums, spécificités produits...",
+    },
   ],
+
   pilot: {
-    title: "Commande pilote",
+    title: "Préparation du pilote",
+
     description:
-      "Décrivez la référence proposée pour la commande pilote (1 à 3 SKU). Notre Ops Manager validera la fiche, la grille tarifaire et la fenêtre de production avant de déclencher la première commande test.",
+      "Lorsque cela est pertinent, BIB peut organiser une phase pilote afin de vérifier les conditions opérationnelles avant le référencement définitif.",
+
     placeholder:
-      "Référence, matière, dimensions, MOQ proposé, prix unitaire HT, fenêtre de production disponible, observations qualité.",
+      "Indiquez les références envisagées pour le pilote, les matières, dimensions, MOQ éventuels, prix indicatifs HT, délais habituels et toute information utile à la préparation du test.",
   },
 };
 
+/* -------------------------------------------------------------------------- */
+/* Partenaires logistiques                                                    */
+/* -------------------------------------------------------------------------- */
+
 export const OPS_ONBOARDING_CONFIG: OnboardingConfig = {
   portal: "ops",
+
   title: "Onboarding Partenaire Logistique",
-  subtitle: "Activation opérationnelle après présélection — du KYC au pilote.",
+
+  subtitle:
+    "Finalisation du dossier et préparation de l’intégration logistique après présélection.",
+
   documents: [
-    { id: "kbis", label: "Extrait Kbis / équivalent", required: true, hint: "Moins de 3 mois." },
-    { id: "rib", label: "RIB / IBAN société", required: true },
-    { id: "rc_pro", label: "Attestation RC Pro logistique", required: true, hint: "Couverture marchandises transportées + entrepôt." },
-    { id: "licence", label: "Licence transport / autorisation 3PL", required: true, hint: "Selon votre pays de licence." },
-    { id: "iso", label: "Certifications (ISO 9001, ISO 14001, AEO…)", required: false },
-    { id: "sla_history", label: "Rapport SLA des 3 derniers mois", required: true, hint: "PDF ou export structuré — taux livraison à temps, incidents, retours." },
-    { id: "warehouse_layout", label: "Plan / photos de l'entrepôt principal", required: true, hint: "Plan de masse + photos zones picking & expédition.", accept: "application/pdf,image/png,image/jpeg,application/zip" },
+    {
+      id: "company_registration",
+      label: "Kbis ou justificatif d’immatriculation équivalent",
+      required: true,
+      hint:
+        "Document officiel permettant d’identifier l’entreprise et son activité.",
+      accept: ".pdf,.jpg,.jpeg,.png",
+    },
+
+    {
+      id: "bank_details",
+      label: "RIB / IBAN professionnel",
+      required: true,
+      hint:
+        "Coordonnées bancaires correspondant à l’entité contractante.",
+      accept: ".pdf,.jpg,.jpeg,.png",
+    },
+
+    {
+      id: "professional_insurance",
+      label: "Attestation d’assurance professionnelle",
+      required: true,
+      hint:
+        "Attestation couvrant les activités logistiques concernées.",
+      accept: ".pdf,.jpg,.jpeg,.png",
+    },
+
+    {
+      id: "transport_authorization",
+      label: "Licences, autorisations ou justificatifs professionnels",
+      required: true,
+      hint:
+        "Documents requis selon les activités de transport, stockage ou préparation exercées.",
+      accept: ".pdf,.jpg,.jpeg,.png,.zip",
+    },
+
+    {
+      id: "quality_certifications",
+      label: "Certifications ou référentiels qualité",
+      required: false,
+      hint:
+        "ISO ou autres certifications pertinentes pour les opérations proposées.",
+      accept: ".pdf,.jpg,.jpeg,.png,.zip",
+    },
+
+    {
+      id: "service_history",
+      label: "Références ou éléments de performance opérationnelle",
+      required: false,
+      hint:
+        "Références clients, indicateurs ou documents permettant de comprendre l’expérience opérationnelle.",
+      accept: ".pdf,.jpg,.jpeg,.png,.zip",
+    },
+
+    {
+      id: "warehouse_environment",
+      label: "Présentation des installations",
+      required: true,
+      hint:
+        "Photos ou documents présentant les espaces de stockage, préparation ou traitement concernés.",
+      accept: ".pdf,.jpg,.jpeg,.png,.zip",
+    },
   ],
+
   commitments: [
-    { id: "sla", title: "SLA livraison ≥ 95% garanti contractuellement", text: "En dessous de 90% sur 30 jours consécutifs : mise en observation puis suspension avec préavis 30 jours." },
-    { id: "tracking", title: "Tracking temps réel transmis au client final", text: "Lien public ou webhook — communicable directement à l'acheteur BIB." },
-    { id: "ops_dedicated", title: "Ops Manager dédié en heures ouvrées UE", text: "Un interlocuteur unique nommé, joignable < 2h. Pas de support généraliste." },
-    { id: "report", title: "Rapport de performance mensuel structuré", text: "Taux livraison, incidents, retours, délais — export CSV/JSON ou portail." },
-    { id: "insurance", title: "Couverture marchandises valeur déclarée", text: "Assurance ad valorem activée par défaut — pas de plafond inférieur à la valeur déclarée." },
-    { id: "data", title: "Données client traitées en RGPD strict", text: "Conservation limitée, sous-traitants validés, pas de revente ni profilage marketing." },
+    {
+      id: "service_quality",
+      title: "Qualité de service",
+      text:
+        "J’accepte de respecter les niveaux de service et procédures opérationnelles définis avec BIB pour les activités effectivement confiées.",
+    },
+
+    {
+      id: "tracking",
+      title: "Traçabilité des opérations",
+      text:
+        "Je m’engage à fournir les informations nécessaires au suivi des opérations logistiques et à la traçabilité des expéditions lorsque celle-ci est requise.",
+    },
+
+    {
+      id: "operational_contact",
+      title: "Référent opérationnel",
+      text:
+        "Je m’engage à désigner un interlocuteur opérationnel identifiable pour les échanges avec BIB.",
+    },
+
+    {
+      id: "performance_reporting",
+      title: "Suivi des performances",
+      text:
+        "J’accepte le suivi des indicateurs opérationnels convenus avec BIB et la transmission des informations nécessaires à leur analyse.",
+    },
+
+    {
+      id: "insurance",
+      title: "Assurance et responsabilité",
+      text:
+        "Je confirme disposer des assurances et autorisations nécessaires à l’exercice des prestations proposées et m’engage à maintenir leur validité.",
+    },
+
+    {
+      id: "data_protection",
+      title: "Protection des données",
+      text:
+        "Je m’engage à appliquer les exigences de confidentialité et de protection des données applicables aux opérations réalisées pour BIB.",
+    },
   ],
+
   integration: [
-    { id: "hub_address", label: "Adresse hub / entrepôt principal", type: "text", required: true, placeholder: "Rue, code postal, ville, pays" },
-    { id: "ops_contact", label: "Ops Manager dédié", type: "text", required: true, placeholder: "Nom + fonction" },
-    { id: "ops_email", label: "Email Ops Manager", type: "email", required: true },
-    { id: "ops_phone", label: "Téléphone Ops (24/7 si possible)", type: "tel", required: true },
+    {
+      id: "facility_address",
+      label: "Adresse du site logistique principal",
+      type: "text",
+      required: true,
+      placeholder:
+        "Adresse complète",
+      hint:
+        "Indiquez le site concerné par les opérations envisagées.",
+    },
+
+    {
+      id: "operational_manager",
+      label: "Responsable / référent opérationnel",
+      type: "text",
+      required: true,
+      placeholder:
+        "Nom et prénom",
+    },
+
+    {
+      id: "operational_email",
+      label: "Email opérationnel",
+      type: "email",
+      required: true,
+      placeholder:
+        "operations@entreprise.com",
+    },
+
+    {
+      id: "operational_phone",
+      label: "Téléphone opérationnel",
+      type: "tel",
+      required: true,
+      placeholder:
+        "+33 ...",
+    },
+
     {
       id: "integration_mode",
-      label: "Mode d'intégration préféré",
+      label: "Mode d’intégration privilégié",
       type: "select",
       required: true,
       options: [
-        { value: "webhook", label: "Webhook (push d'événements vers BIB)" },
-        { value: "api", label: "API REST (BIB → 3PL)" },
-        { value: "edi", label: "EDI logistique (ORDERS / DESADV / RECADV)" },
-        { value: "csv", label: "Échange CSV / SFTP" },
-        { value: "portal", label: "Saisie manuelle dans le portail BIB" },
+        {
+          value: "portal",
+          label: "Portail BIB",
+        },
+        {
+          value: "api",
+          label: "API / webhook",
+        },
+        {
+          value: "edi",
+          label: "EDI",
+        },
+        {
+          value: "csv",
+          label: "Échange de fichiers CSV",
+        },
+        {
+          value: "other",
+          label: "Autre mode à définir avec BIB",
+        },
       ],
+      hint:
+        "Le niveau d’intégration sera défini selon les besoins opérationnels et les capacités des systèmes concernés.",
     },
-    { id: "tracking_provider", label: "Fournisseur tracking (interne / Aftership / autre)", type: "text", required: true },
-    { id: "wms", label: "WMS utilisé", type: "text", required: false, placeholder: "Logfire, Manhattan, Boostmyshop, autre…" },
+
+    {
+      id: "tracking_provider",
+      label: "Solution de suivi / tracking",
+      type: "text",
+      required: true,
+      placeholder:
+        "Nom du transporteur ou de la solution de tracking",
+    },
+
+    {
+      id: "wms",
+      label: "WMS / logiciel logistique",
+      type: "text",
+      required: false,
+      placeholder:
+        "Nom du WMS ou logiciel utilisé",
+    },
+
     {
       id: "carriers",
-      label: "Transporteurs principaux opérés",
-      type: "select",
+      label: "Transporteurs utilisés",
+      type: "text",
       required: true,
-      options: [
-        { value: "multi-eu", label: "Multi-transporteurs UE (Colissimo, DPD, GLS, UPS…)" },
-        { value: "express", label: "Express dominant (Chronopost, DHL Express…)" },
-        { value: "premium", label: "Premium uniquement (FedEx Priority, UPS Express Saver…)" },
-        { value: "regional", label: "Régional / spécialiste pays" },
-      ],
+      placeholder:
+        "Ex. Chronopost, Colissimo, DHL...",
+      hint:
+        "Indiquez les transporteurs susceptibles d’être utilisés dans le périmètre BIB.",
     },
-    { id: "notes", label: "Précisions techniques", type: "textarea", required: false, placeholder: "Contraintes douane, retours, packaging spécifique, langues étiquettes…" },
+
+    {
+      id: "operational_notes",
+      label: "Contraintes ou informations opérationnelles",
+      type: "textarea",
+      required: false,
+      placeholder:
+        "Horaires, capacité, stockage, préparation, zones couvertes, contraintes particulières...",
+    },
   ],
+
   pilot: {
-    title: "Pilote opérationnel",
+    title: "Préparation du pilote opérationnel",
+
     description:
-      "Décrivez la fenêtre proposée pour la phase pilote : volumes, transporteurs mobilisés, format de reporting et critères de succès. Notre Ops Manager validera et déclenchera le go-live progressif.",
+      "Lorsque cela est pertinent, BIB peut organiser un pilote afin de vérifier les flux, les données de suivi, les délais et les conditions opérationnelles avant une montée en charge.",
+
     placeholder:
-      "Volumes / semaine, zones couvertes, transporteurs activés, KPI cibles (taux livraison, NPS, incidents), date de démarrage souhaitée.",
+      "Indiquez le volume hebdomadaire envisageable, les zones couvertes, les transporteurs mobilisables, les principaux KPI suivis, la période de démarrage souhaitée et toute contrainte utile.",
   },
 };
+
+/* -------------------------------------------------------------------------- */
+/* Export centralisé                                                           */
+/* -------------------------------------------------------------------------- */
 
 export const PARTNER_ONBOARDING_CONFIGS = {
   suppliers: SUPPLIERS_ONBOARDING_CONFIG,
   ops: OPS_ONBOARDING_CONFIG,
 } as const;
+
+export default PARTNER_ONBOARDING_CONFIGS;
