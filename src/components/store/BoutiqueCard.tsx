@@ -20,19 +20,11 @@ import type {
 interface BoutiqueCardProps {
   boutique: StoreBoutique;
   isFavorite?: boolean;
-  onToggleFavorite?: (
-    boutique: StoreBoutique,
-  ) => void;
+  onToggleFavorite?: (boutique: StoreBoutique) => void;
 }
 
-/* =========================================================
-   HELPERS
-   ========================================================= */
-
 function isStoryActive(story: StoreStory, now: number) {
-  if (!story.url || story.enabled === false) {
-    return false;
-  }
+  if (!story.url || story.enabled === false) return false;
 
   const startsAt = story.starts_at
     ? new Date(story.starts_at).getTime()
@@ -42,40 +34,14 @@ function isStoryActive(story: StoreStory, now: number) {
     ? new Date(story.ends_at).getTime()
     : null;
 
-  if (
-    startsAt !== null &&
-    Number.isNaN(startsAt)
-  ) {
-    return false;
-  }
+  if (startsAt !== null && Number.isNaN(startsAt)) return false;
+  if (endsAt !== null && Number.isNaN(endsAt)) return false;
 
-  if (
-    endsAt !== null &&
-    Number.isNaN(endsAt)
-  ) {
-    return false;
-  }
-
-  if (
-    startsAt !== null &&
-    now < startsAt
-  ) {
-    return false;
-  }
-
-  if (
-    endsAt !== null &&
-    now >= endsAt
-  ) {
-    return false;
-  }
+  if (startsAt !== null && now < startsAt) return false;
+  if (endsAt !== null && now >= endsAt) return false;
 
   return true;
 }
-
-/* =========================================================
-   COMPONENT
-   ========================================================= */
 
 export function BoutiqueCard({
   boutique,
@@ -83,48 +49,35 @@ export function BoutiqueCard({
   onToggleFavorite,
 }: BoutiqueCardProps) {
   const [now, setNow] = useState(() => Date.now());
-  const [activeStoryIndex, setActiveStoryIndex] =
-    useState(0);
-
-  const [imageError, setImageError] =
-    useState(false);
+  const [activeStoryIndex, setActiveStoryIndex] = useState(0);
+  const [mediaError, setMediaError] = useState(false);
 
   /*
-   * Refresh périodiquement l'heure locale afin que
-   * les Stories programmées apparaissent/disparaissent
-   * automatiquement sans recharger la page.
+   * Refresh periodically so scheduled Stories automatically
+   * become active/inactive without requiring a page reload.
    */
   useEffect(() => {
     const interval = window.setInterval(() => {
       setNow(Date.now());
     }, 30_000);
 
-    return () => {
-      window.clearInterval(interval);
-    };
+    return () => window.clearInterval(interval);
   }, []);
 
-  /* ---------------------------------------------------------
-     STORIES ACTIVES
-     --------------------------------------------------------- */
-
   const activeStories = useMemo<StoreStory[]>(() => {
-    return (boutique.stories ?? []).filter(
-      (story) => isStoryActive(story, now),
+    return (boutique.stories ?? []).filter((story) =>
+      isStoryActive(story, now),
     );
   }, [boutique.stories, now]);
 
-  /* ---------------------------------------------------------
-     STORY ACTIVE
-     --------------------------------------------------------- */
+  const activeStory = activeStories[activeStoryIndex];
 
-  const activeStory =
-    activeStories[activeStoryIndex];
-
-  /* ---------------------------------------------------------
-     MEDIA AFFICHÉE
-     --------------------------------------------------------- */
-
+  /*
+   * Priority:
+   * 1. Active Story
+   * 2. Boutique Hero image
+   * 3. Boutique logo
+   */
   const mediaUrl =
     activeStory?.url ||
     boutique.cover_image_url ||
@@ -132,14 +85,12 @@ export function BoutiqueCard({
     "";
 
   /*
-   * Si une Story expire alors qu'elle était affichée,
-   * son index peut devenir invalide.
+   * Keep the current index valid when Stories
+   * are added, removed or become inactive.
    */
   useEffect(() => {
     setActiveStoryIndex((currentIndex) => {
-      if (activeStories.length === 0) {
-        return 0;
-      }
+      if (activeStories.length === 0) return 0;
 
       return Math.min(
         currentIndex,
@@ -147,54 +98,36 @@ export function BoutiqueCard({
       );
     });
 
-    setImageError(false);
-  }, [
-    activeStories.length,
-    boutique.id,
-  ]);
+    setMediaError(false);
+  }, [activeStories.length, boutique.id]);
 
   /*
-   * Si la boutique change complètement,
-   * on repart de la première Story.
+   * Reset Story rotation when changing boutique.
    */
   useEffect(() => {
     setActiveStoryIndex(0);
-    setImageError(false);
+    setMediaError(false);
   }, [boutique.id]);
 
-  /* ---------------------------------------------------------
-     ROTATION DES STORIES
-     --------------------------------------------------------- */
-
+  /*
+   * Stories rotate automatically.
+   * No visual Story indicators are displayed.
+   */
   useEffect(() => {
-    if (activeStories.length <= 1) {
-      return;
-    }
+    if (activeStories.length <= 1) return;
 
     const interval = window.setInterval(() => {
       setActiveStoryIndex((currentIndex) =>
-        currentIndex >=
-        activeStories.length - 1
+        currentIndex >= activeStories.length - 1
           ? 0
           : currentIndex + 1,
       );
     }, 3_200);
 
-    return () => {
-      window.clearInterval(interval);
-    };
+    return () => window.clearInterval(interval);
   }, [activeStories.length]);
 
-  /* ---------------------------------------------------------
-     URL BOUTIQUE
-     --------------------------------------------------------- */
-
-  const boutiqueUrl =
-    `/store/boutique/${boutique.slug}`;
-
-  /* ---------------------------------------------------------
-     FAVORIS
-     --------------------------------------------------------- */
+  const boutiqueUrl = `/store/boutique/${boutique.slug}`;
 
   const handleFavoriteClick = (
     event: MouseEvent<HTMLButtonElement>,
@@ -205,10 +138,6 @@ export function BoutiqueCard({
     onToggleFavorite?.(boutique);
   };
 
-  /* =========================================================
-     RENDER
-     ========================================================= */
-
   return (
     <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-[20px] border border-border/70 bg-background shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md">
       <Link
@@ -216,12 +145,9 @@ export function BoutiqueCard({
         aria-label={`Voir la boutique ${boutique.name}`}
         className="flex h-full min-w-0 flex-col outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       >
-        {/* =================================================
-            MEDIA
-            ================================================= */}
-
+        {/* Media */}
         <div className="relative aspect-[5/3] shrink-0 overflow-hidden bg-muted">
-          {mediaUrl && !imageError ? (
+          {mediaUrl && !mediaError ? (
             activeStory?.kind === "video" ? (
               <video
                 key={mediaUrl}
@@ -230,9 +156,7 @@ export function BoutiqueCard({
                 muted
                 loop
                 playsInline
-                onError={() =>
-                  setImageError(true)
-                }
+                onError={() => setMediaError(true)}
                 className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
               />
             ) : (
@@ -241,9 +165,7 @@ export function BoutiqueCard({
                 src={mediaUrl}
                 alt=""
                 loading="lazy"
-                onError={() =>
-                  setImageError(true)
-                }
+                onError={() => setMediaError(true)}
                 className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
               />
             )
@@ -257,41 +179,13 @@ export function BoutiqueCard({
             </div>
           )}
 
-          {/* Overlay */}
+          {/* Very subtle image protection */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/[0.12] via-transparent to-transparent"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/[0.08] via-transparent to-transparent"
           />
 
-          {/* =================================================
-              STORY INDICATORS
-              ================================================= */}
-
-          {activeStories.length > 1 && (
-            <div
-              aria-hidden="true"
-              className="absolute left-3 right-3 top-3 flex gap-1"
-            >
-              {activeStories.map(
-                (story, index) => (
-                  <span
-                    key={story.id}
-                    className={`h-0.5 min-w-0 flex-1 rounded-full transition-colors ${
-                      index ===
-                      activeStoryIndex
-                        ? "bg-white"
-                        : "bg-white/45"
-                    }`}
-                  />
-                ),
-              )}
-            </div>
-          )}
-
-          {/* =================================================
-              FAVORITE
-              ================================================= */}
-
+          {/* Favorite */}
           <button
             type="button"
             onClick={handleFavoriteClick}
@@ -315,10 +209,7 @@ export function BoutiqueCard({
           </button>
         </div>
 
-        {/* =================================================
-            INFORMATIONS BOUTIQUE
-            ================================================= */}
-
+        {/* Boutique information */}
         <div className="flex min-h-[140px] flex-1 flex-col bg-white p-3 sm:min-h-[145px] sm:p-3.5">
           <h3 className="line-clamp-1 text-[15px] font-semibold leading-tight text-slate-950">
             {boutique.name}
@@ -341,10 +232,6 @@ export function BoutiqueCard({
           ) : (
             <div className="min-h-[30px]" />
           )}
-
-          {/* =================================================
-              FOOTER
-              ================================================= */}
 
           <div className="mt-auto flex min-w-0 items-center justify-between gap-2 pt-3">
             <div className="flex min-w-0 items-center gap-1.5 text-[10px] font-medium text-slate-600 sm:text-[11px]">
