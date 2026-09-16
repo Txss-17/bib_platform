@@ -22,6 +22,7 @@ import {
   useStoreBoutiques,
   type StoreBoutique,
 } from "@/hooks/useStore";
+import { useStoreCart } from "@/contexts/StoreCartContext";
 import { Logo } from "@/components/Logo";
 import { useSEO } from "@/hooks/useSEO";
 
@@ -31,17 +32,6 @@ import { useSEO } from "@/hooks/useSEO";
 
 type StoreProductPreview =
   StoreBoutique["product_previews"][number];
-
-interface CartItem {
-  productId: string;
-  productName: string;
-  productImage: string;
-  price: number;
-  quantity: number;
-  boutiqueId: string;
-  boutiqueName: string;
-  boutiqueUrl?: string;
-}
 
 /* =========================================================
    HELPERS
@@ -132,6 +122,11 @@ export default function StoreProduct() {
     isLoading,
   } = useStoreBoutiques();
 
+  const {
+    addItem,
+    getItemQuantity,
+  } = useStoreCart();
+
   const [quantity, setQuantity] = useState(1);
   const [imageIndex, setImageIndex] = useState(0);
   const [added, setAdded] = useState(false);
@@ -176,6 +171,11 @@ export default function StoreProduct() {
 
   const productName = product?.name ?? "Produit";
 
+  const existingQuantity =
+    productId && boutique
+      ? getItemQuantity(productId, boutique.id)
+      : 0;
+
   /* =======================================================
      SEO
      ======================================================= */
@@ -190,7 +190,7 @@ export default function StoreProduct() {
   });
 
   /* =======================================================
-     PANIER
+     PANIER STORE
      ======================================================= */
 
   const addToCart = () => {
@@ -198,56 +198,18 @@ export default function StoreProduct() {
       return;
     }
 
-    const existingRaw = localStorage.getItem("bib-cart");
-
-    let cart: CartItem[] = [];
-
-    try {
-      const parsed = existingRaw
-        ? JSON.parse(existingRaw)
-        : [];
-
-      if (Array.isArray(parsed)) {
-        cart = parsed;
-      }
-    } catch {
-      cart = [];
-    }
-
-    const existingIndex = cart.findIndex(
-      (item) =>
-        item.productId === productId &&
-        item.boutiqueId === boutique.id,
-    );
-
-    const item: CartItem = {
-      productId,
-      productName,
-      productImage: getProductImage(product),
-      price,
+    addItem(
+      {
+        productId,
+        productName,
+        productImage: getProductImage(product),
+        price,
+        boutiqueId: boutique.id,
+        boutiqueName: boutique.name,
+        boutiqueSlug: boutique.slug,
+        boutiqueUrl: getBoutiqueUrl(boutique),
+      },
       quantity,
-      boutiqueId: boutique.id,
-      boutiqueName: boutique.name,
-      boutiqueUrl: getBoutiqueUrl(boutique),
-    };
-
-    if (existingIndex >= 0) {
-      cart[existingIndex] = {
-        ...cart[existingIndex],
-        quantity:
-          cart[existingIndex].quantity + quantity,
-      };
-    } else {
-      cart.push(item);
-    }
-
-    localStorage.setItem(
-      "bib-cart",
-      JSON.stringify(cart),
-    );
-
-    window.dispatchEvent(
-      new CustomEvent("bib:cart-updated"),
     );
 
     setAdded(true);
@@ -367,8 +329,6 @@ export default function StoreProduct() {
                 className="h-full w-full object-cover"
               />
 
-              {/* BADGE BIB */}
-
               <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full border border-border/60 bg-background/95 px-3 py-2 text-xs font-semibold shadow-sm backdrop-blur">
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-[7px] font-bold text-background">
                   BIB
@@ -376,8 +336,6 @@ export default function StoreProduct() {
 
                 <span>Vérifié par BIB</span>
               </div>
-
-              {/* FAVORI */}
 
               <button
                 type="button"
@@ -401,8 +359,6 @@ export default function StoreProduct() {
                   strokeWidth={1.8}
                 />
               </button>
-
-              {/* NAVIGATION IMAGE */}
 
               {images.length > 1 && (
                 <>
@@ -440,8 +396,6 @@ export default function StoreProduct() {
               )}
             </div>
 
-            {/* MINIATURES */}
-
             {images.length > 1 && (
               <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
                 {images.map((image, index) => (
@@ -471,10 +425,8 @@ export default function StoreProduct() {
           {/* INFORMATIONS */}
 
           <div className="flex flex-col">
-            {/* BOUTIQUE */}
-
             <Link
-              to={`/store/boutique/${boutique.id}`}
+              to={`/store/boutique/${boutique.slug}`}
               className="group inline-flex w-fit items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground"
             >
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
@@ -490,21 +442,15 @@ export default function StoreProduct() {
               </span>
             </Link>
 
-            {/* TITRE */}
-
             <h1 className="mt-5 max-w-2xl font-display text-3xl font-semibold leading-tight sm:text-4xl">
               {productName}
             </h1>
-
-            {/* PRIX */}
 
             <div className="mt-5">
               <span className="font-mono text-2xl font-semibold tabular-nums">
                 {price.toFixed(2)} €
               </span>
             </div>
-
-            {/* DESCRIPTION */}
 
             <div className="mt-6 border-t border-border pt-6">
               <h2 className="text-sm font-semibold">
@@ -515,8 +461,6 @@ export default function StoreProduct() {
                 {getProductDescription(product)}
               </p>
             </div>
-
-            {/* GARANTIE BIB */}
 
             <div className="mt-6 rounded-2xl border border-border bg-muted/30 p-4">
               <div className="flex gap-3">
@@ -576,6 +520,12 @@ export default function StoreProduct() {
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
+
+              {existingQuantity > 0 && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {existingQuantity} déjà dans votre panier Store.
+                </p>
+              )}
             </div>
 
             {/* CTA */}
