@@ -20,7 +20,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 
-import { useSEO } from "@/hooks/useSEO";
+import { useSEO } from "@/hooks/useSEO.ts";
 import { Logo } from "@/components/Logo";
 
 type OrderStatus =
