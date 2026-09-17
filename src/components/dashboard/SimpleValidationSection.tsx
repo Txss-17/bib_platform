@@ -1,40 +1,4 @@
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { 
-  Package, ShoppingBag, Eye, CheckCircle2, Camera, 
-  Loader2, AlertTriangle, ArrowRight, Upload 
-} from "lucide-react";
-import { 
-  useSampleValidation, useOrderSample, useReceiveSample, useValidateSample,
-  getSampleStatusLabel, getSampleStatusColor, type SampleStatus
-} from "@/hooks/useSampleValidation";
-import { toast } from "sonner";
-
-interface SampleValidationPanelProps {
-  productId: string;
-  productName: string;
-  compact?: boolean;
-}
-
-const steps = [
-  { key: "ordered" as const, label: "Commander", icon: ShoppingBag, description: "Commander un échantillon" },
-  { key: "received" as const, label: "Tester", icon: Eye, description: "Tester le produit" },
-  { key: "validated" as const, label: "Valider", icon: CheckCircle2, description: "Valider l'échantillon" },
-];
-
-function getStepIndex(status: SampleStatus): number {
-  switch (status) {
-    case "none": return -1;
-    case "ordered": return 0;
-    case "received": return 1;
-    case "validated": return 2;
-  }
-}
-
-export function SampleValidationPanel({ productId, productName, compact = false }: SampleValidationPanelProps) {import { useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
