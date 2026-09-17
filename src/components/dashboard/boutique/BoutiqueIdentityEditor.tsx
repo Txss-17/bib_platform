@@ -47,7 +47,7 @@ interface Props {
  * Identity editor: logo, palette, typography, voice — with live preview of
  * the 3 critical surfaces (Home, Product, Checkout).
  */
-export function BoutiqueIdentityPanel({
+export function BoutiqueIdentityEditor({
   themeSettings,
   setThemeSettings,
   boutiqueName,
