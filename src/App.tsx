@@ -41,6 +41,7 @@ import CheckoutReturn from "./pages/CheckoutReturn";
 import NotFound from "./pages/NotFound";
 import BrandPreview from "./pages/BrandPreview";
 import Store from "./pages/Store";
+import StoreBoutique from "@/components/store/StoreBoutique";
 import StoreCatalog from "@/pages/StoreCatalog";
 import StoreProduct from "@/components/store/StoreProduct";
 import StoreCartPage from "./pages/StoreCart";
@@ -364,6 +365,11 @@ const App = () => (
                   path="/store"
                   element={<Store />}
                 />
+
+                <Route
+                  path="/store/boutique/:slug"
+                  element={<StoreBoutique />}
+                  />
 
                 <Route
                   path="/store/products"
