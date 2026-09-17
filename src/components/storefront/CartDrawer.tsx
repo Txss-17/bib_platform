@@ -30,6 +30,38 @@ export function CartDrawer({
   primaryColor,
   boutiqueId,
   boutiqueName,
+}: CartDrawerProps) {import { useState } from "react";
+import {
+  Minus,
+  Plus,
+  ShoppingBag,
+  Trash2,
+} from "lucide-react";
+
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+
+import { useCart } from "@/contexts/CartContext";
+import { useStorefrontContext } from "@/contexts/StorefrontContext";
+import { trackStorefrontEvent } from "@/lib/storefrontTracking";
+
+import { CheckoutForm } from "./CheckoutForm";
+
+interface CartDrawerProps {
+  primaryColor: string;
+  boutiqueId: string;
+  boutiqueName: string;
+}
+
+export function CartDrawer({
+  primaryColor,
+  boutiqueId,
+  boutiqueName,
 }: CartDrawerProps) {
   const {
     items,
@@ -41,16 +73,53 @@ export function CartDrawer({
     totalItems,
   } = useCart();
 
-  const [showCheckout, setShowCheckout] = useState(false);
+  const [showCheckout, setShowCheckout] =
+    useState(false);
 
-  const ctx = useStorefrontContext();
+  const storefront =
+    useStorefrontContext();
 
   /*
-   * The storefront context is the canonical boutique identity.
-   * The prop remains as a safe fallback for legacy/preview callers.
+   * StorefrontContext is the canonical source
+   * for the current public storefront.
+   *
+   * Props remain as a fallback for legacy callers
+   * and preview contexts.
    */
-  const trackedBoutiqueId =
-    ctx?.boutiqueId || boutiqueId;
+  const currentBoutiqueId =
+    storefront?.boutiqueId || boutiqueId;
+
+  const currentBoutiqueName =
+    storefront?.boutiqueName || boutiqueName;
+
+  const handleOpenCheckout = () => {
+    if (items.length === 0) {
+      return;
+    }
+
+    trackStorefrontEvent(
+      currentBoutiqueId,
+      "checkout_start",
+      {
+        metadata: {
+          items: totalItems,
+          total: totalPrice,
+        },
+      },
+    );
+
+    setShowCheckout(true);
+  };
+
+  const handleClose = (
+    open: boolean,
+  ) => {
+    setIsOpen(open);
+
+    if (!open) {
+      setShowCheckout(false);
+    }
+  };
 
   /*
    * --------------------------------------------------------------------------
@@ -62,9 +131,11 @@ export function CartDrawer({
     return (
       <Sheet
         open={isOpen}
-        onOpenChange={setIsOpen}
+        onOpenChange={handleClose}
       >
-        <SheetContent className="flex w-full flex-col overflow-y-auto sm:max-w-lg">
+        <SheetContent
+          className="flex w-full flex-col overflow-y-auto sm:max-w-lg"
+        >
           <SheetHeader>
             <SheetTitle>
               Finaliser votre commande
@@ -72,10 +143,12 @@ export function CartDrawer({
           </SheetHeader>
 
           <CheckoutForm
-            boutiqueId={boutiqueId}
-            boutiqueName={boutiqueName}
+            boutiqueId={currentBoutiqueId}
+            boutiqueName={currentBoutiqueName}
             primaryColor={primaryColor}
-            onBack={() => setShowCheckout(false)}
+            onBack={() =>
+              setShowCheckout(false)
+            }
           />
         </SheetContent>
       </Sheet>
@@ -91,15 +164,11 @@ export function CartDrawer({
   return (
     <Sheet
       open={isOpen}
-      onOpenChange={(open) => {
-        setIsOpen(open);
-
-        if (!open) {
-          setShowCheckout(false);
-        }
-      }}
+      onOpenChange={handleClose}
     >
-      <SheetContent className="flex w-full flex-col sm:max-w-lg">
+      <SheetContent
+        className="flex w-full flex-col sm:max-w-lg"
+      >
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <ShoppingBag
@@ -130,15 +199,16 @@ export function CartDrawer({
               </p>
 
               <p className="mt-1 text-sm text-gray-400">
-                Ajoutez des produits pour commencer.
+                Ajoutez des produits pour
+                commencer.
               </p>
             </div>
           </div>
         ) : (
           <>
-            {/* -------------------------------------------------------------- */}
-            {/* Items                                                           */}
-            {/* -------------------------------------------------------------- */}
+            {/* ---------------------------------------------------------------- */}
+            {/* Cart items                                                       */}
+            {/* ---------------------------------------------------------------- */}
 
             <div className="flex-1 space-y-4 overflow-y-auto py-4">
               {items.map((item) => (
@@ -169,7 +239,9 @@ export function CartDrawer({
 
                     <p
                       className="mt-1 text-sm font-semibold"
-                      style={{ color: primaryColor }}
+                      style={{
+                        color: primaryColor,
+                      }}
                     >
                       {item.price.toFixed(2)} €
                     </p>
@@ -236,9 +308,9 @@ export function CartDrawer({
               ))}
             </div>
 
-            {/* -------------------------------------------------------------- */}
-            {/* Summary                                                         */}
-            {/* -------------------------------------------------------------- */}
+            {/* ---------------------------------------------------------------- */}
+            {/* Summary                                                          */}
+            {/* ---------------------------------------------------------------- */}
 
             <div className="space-y-3 border-t border-gray-200 pt-4">
               <div className="flex justify-between text-sm">
@@ -258,7 +330,9 @@ export function CartDrawer({
 
                 <span
                   className="text-lg font-bold"
-                  style={{ color: primaryColor }}
+                  style={{
+                    color: primaryColor,
+                  }}
                 >
                   {totalPrice.toFixed(2)} €
                 </span>
@@ -268,30 +342,22 @@ export function CartDrawer({
                 type="button"
                 className="w-full text-white"
                 style={{
-                  backgroundColor: primaryColor,
+                  backgroundColor:
+                    primaryColor,
                 }}
-                onClick={() => {
-                  trackStorefrontEvent(
-                    trackedBoutiqueId,
-                    "checkout_start",
-                    {
-                      metadata: {
-                        items: totalItems,
-                        total: totalPrice,
-                      },
-                    },
-                  );
-
-                  setShowCheckout(true);
-                }}
+                onClick={
+                  handleOpenCheckout
+                }
               >
                 Finaliser la commande
               </Button>
 
               <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
-                Vous êtes sur le site de {boutiqueName}.
+                Vous êtes sur le site de{" "}
+                {currentBoutiqueName}.
                 <br />
-                Votre commande est traitée par cette boutique.
+                Votre commande est traitée
+                par cette boutique.
               </p>
             </div>
           </>
