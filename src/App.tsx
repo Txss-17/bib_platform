@@ -30,7 +30,7 @@ import Store from "@/pages/Store";
 import StoreBoutique from "./pages/StoreBoutique";
 import StoreCatalog from "@/pages/StoreCatalog";
 import StoreProduct from "@/pages/StoreProduct";
-import StoreCartPage from "@/pages/StoreCartPage";
+import StoreCart from "@/pages/StoreCart";
 import Recycler from "@/pages/Recycler";
 import Unsubscribe from "@/pages/Unsubscribe";
 
