@@ -27,7 +27,7 @@ import CheckoutReturn from "@/pages/CheckoutReturn";
 import NotFound from "@/pages/NotFound";
 import BrandPreview from "@/pages/BrandPreview";
 import Store from "@/pages/Store";
-import StoreBoutique from "@/pages/StoreBoutique";
+import StoreBoutique from "./pages/StoreBoutique";
 import StoreCatalog from "@/pages/StoreCatalog";
 import StoreProduct from "@/pages/StoreProduct";
 import StoreCartPage from "@/pages/StoreCartPage";
