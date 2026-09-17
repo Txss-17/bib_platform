@@ -283,7 +283,7 @@ export default function App() {
                   />
 
                   <Route
-                    path="/store/product"
+                    path="/store/store-product"
                     element={<StoreProduct />
 
                   <Route
@@ -340,10 +340,16 @@ export default function App() {
                     element={<Unsubscribe />}
                   />
 
-                  <Rout
+                  <Route
                     path="/recycler"
-                    element={<Recycler />
+                    element={<Recycler />}
+                  />
 
+                  <Route
+                    path="/recycler/:slug"
+                    element={<Recycler />}
+                  />
+                  
                   {/* =====================================================
                       STORE — CUSTOMER AREA
                   ===================================================== */}
