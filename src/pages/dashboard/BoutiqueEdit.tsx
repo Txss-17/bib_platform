@@ -36,7 +36,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { BoutiqueIdentityPanel } from "@/components/dashboard/boutique/BoutiqueIdentityPanel";
+import { BoutiqueIdentityEditor } from "@/components/dashboard/boutique/BoutiqueIdentityEditor";
 import { BrandStudioWizard } from "@/components/dashboard/boutique/BrandStudioWizard";
 import { StudioEditor } from "@/components/dashboard/boutique/StudioEditor";
 import { HighlightsManager } from "@/components/dashboard/boutique/HighlightsManager";
