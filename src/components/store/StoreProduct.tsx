@@ -11,8 +11,6 @@ import {
   ChevronRight,
   Heart,
   Loader2,
-  Minus,
-  Plus,
   ShoppingCart,
   Store,
   ShieldCheck,
@@ -22,7 +20,6 @@ import {
   useStoreProduct,
   type StoreProduct as StoreProductData,
 } from "@/hooks/useStore";
-import { useStoreCart } from "@/contexts/StoreCartContext";
 import { Logo } from "@/components/Logo";
 import { useSEO } from "@/hooks/useSEO";
 
@@ -72,14 +69,7 @@ export default function StoreProduct() {
     isError,
   } = useStoreProduct(productId);
 
-  const {
-    addItem,
-    getItemQuantity,
-  } = useStoreCart();
-
-  const [quantity, setQuantity] = useState(1);
   const [imageIndex, setImageIndex] = useState(0);
-  const [added, setAdded] = useState(false);
   const [favorite, setFavorite] = useState(false);
 
   /* =======================================================
@@ -97,12 +87,6 @@ export default function StoreProduct() {
   const productName =
     product?.name ?? "Produit";
 
-  const price =
-    typeof product?.price === "number" &&
-    Number.isFinite(product.price)
-      ? product.price
-      : 0;
-
   const boutiqueId =
     product?.boutique_id ?? "";
 
@@ -112,12 +96,10 @@ export default function StoreProduct() {
   const boutiqueSlug =
     product?.boutique_slug ?? "";
 
-  const existingQuantity =
-    productId && boutiqueId
-      ? getItemQuantity(
-          productId,
-          boutiqueId,
-        )
+  const price =
+    typeof product?.price === "number" &&
+    Number.isFinite(product.price)
+      ? product.price
       : 0;
 
   /* =======================================================
@@ -133,33 +115,6 @@ export default function StoreProduct() {
       ? getProductDescription(product)
       : "Découvrez les produits sélectionnés par Brand-In-A-Box.",
   });
-
-  /* =======================================================
-     PANIER STORE
-     ======================================================= */
-
-  const addToCart = () => {
-    if (!product || !productId) {
-      return;
-    }
-
-    addItem(
-      {
-        productId,
-        productName,
-        productImage:
-          product.image_url ??
-          "/placeholder.svg",
-        price,
-        boutiqueId,
-        boutiqueName,
-        boutiqueSlug,
-      },
-      quantity,
-    );
-
-    setAdded(true);
-  };
 
   /* =======================================================
      CHARGEMENT
@@ -476,121 +431,23 @@ export default function StoreProduct() {
               </div>
             </div>
 
-            {/* QUANTITÉ */}
-
-            <div className="mt-7">
-              <p className="mb-2 text-sm font-medium">
-                Quantité
-              </p>
-
-              <div className="flex h-11 w-fit items-center overflow-hidden rounded-full border border-border">
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setQuantity(
-                      (current) =>
-                        Math.max(
-                          1,
-                          current - 1,
-                        ),
-                    )
-                  }
-                  disabled={quantity <= 1}
-                  aria-label="Diminuer la quantité"
-                  className="flex h-full w-11 items-center justify-center text-muted-foreground transition hover:bg-muted disabled:opacity-40"
-                >
-                  <Minus className="h-4 w-4" />
-                </button>
-
-                <span className="flex w-10 justify-center text-sm font-semibold tabular-nums">
-                  {quantity}
-                </span>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setQuantity(
-                      (current) =>
-                        Math.min(
-                          99,
-                          current + 1,
-                        ),
-                    )
-                  }
-                  disabled={quantity >= 99}
-                  aria-label="Augmenter la quantité"
-                  className="flex h-full w-11 items-center justify-center text-muted-foreground transition hover:bg-muted disabled:opacity-40"
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
-              </div>
-
-              {existingQuantity > 0 && (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {existingQuantity} déjà dans
-                  votre panier Store.
-                </p>
-              )}
-            </div>
-
             {/* =================================================
-                CTA VERS LA BOUTIQUE BIB
+                CTA VERS LA BOUTIQUE RÉELLE
                ================================================= */}
 
-            <div className="mt-6">
+            <div className="mt-7">
               <Link
-                to={`/store/boutique/${boutiqueSlug}`}
+                to={`/boutique/${boutiqueSlug}/product/${productId}`}
                 className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:brightness-110 active:scale-[0.98]"
               >
-                Voir la boutique
+                Voir dans la boutique
                 <Store className="h-4 w-4" />
               </Link>
 
               <p className="mt-3 text-center text-xs leading-relaxed text-muted-foreground">
-                Consultez la boutique et poursuivez
-                votre parcours d'achat depuis son
-                espace dédié.
-              </p>
-            </div>
-
-            {/* =================================================
-                PANIER STORE
-               ================================================= */}
-
-            <div className="mt-5 border-t border-border pt-5">
-
-              <button
-                type="button"
-                onClick={addToCart}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-background px-6 text-sm font-semibold transition hover:bg-muted active:scale-[0.98]"
-              >
-                {added ? (
-                  <>
-                    <Check className="h-4 w-4" />
-                    Ajouté au panier Store
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart className="h-4 w-4" />
-                    Ajouter au panier Store
-                  </>
-                )}
-              </button>
-
-              {added && (
-                <Link
-                  to="/store/cart"
-                  className="mt-2 inline-flex w-full items-center justify-center text-xs font-medium text-primary hover:underline"
-                >
-                  Voir le panier Store
-                </Link>
-              )}
-
-              <p className="mt-2 text-center text-[11px] leading-relaxed text-muted-foreground">
-                Le panier Store permet de conserver
-                plusieurs produits avant de poursuivre
-                vers les boutiques concernées.
+                Retrouvez ce produit directement dans
+                la boutique pour consulter les détails,
+                choisir la quantité et poursuivre votre achat.
               </p>
             </div>
 
@@ -613,9 +470,9 @@ export default function StoreProduct() {
 
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                     BIB facilite la découverte du
-                    produit. La consultation du produit,
-                    le panier et le parcours d'achat
-                    se poursuivent depuis la boutique.
+                    produit. Le panier, la quantité
+                    et le parcours d'achat se poursuivent
+                    directement depuis la boutique.
                   </p>
                 </div>
               </div>
