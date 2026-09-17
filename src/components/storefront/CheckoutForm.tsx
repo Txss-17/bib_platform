@@ -1,36 +1,4 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useCart } from "@/contexts/CartContext";
-import { ArrowLeft, MapPin } from "lucide-react";
-import { StorefrontEmbeddedCheckout } from "@/components/payments/StorefrontEmbeddedCheckout";
-
-interface CheckoutFormProps {
-  boutiqueId: string;
-  boutiqueName: string;
-  primaryColor: string;
-  onBack: () => void;
-}
-
-function getSavedProfile() {
-  try {
-    const raw =
-      localStorage.getItem("bib_customer_profile") ||
-      localStorage.getItem("linksy_customer_profile");
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return null;
-}
-
-function saveProfile(data: Record<string, string>) {
-  try {
-    localStorage.setItem("bib_customer_profile", JSON.stringify(data));
-  } catch {}
-}
-
-export function CheckoutForm({ boutiqueId, boutiqueName, primaryColor, onBack }: CheckoutFormProps) {import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   ArrowLeft,
