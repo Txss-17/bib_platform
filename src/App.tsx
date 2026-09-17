@@ -1,8 +1,16 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import {
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+} from "react-router-dom";
 
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -10,7 +18,10 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { CartProvider } from "@/contexts/CartContext";
 import { StoreCartProvider } from "@/contexts/StoreCartContext";
 
-// Public / authentication
+/* =====================================================
+   PUBLIC / AUTHENTICATION
+===================================================== */
+
 import Index from "@/pages/Index";
 import Vendre from "@/pages/Vendre";
 import Login from "@/pages/Login";
@@ -20,7 +31,10 @@ import StoreSignup from "@/pages/StoreSignup";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 
-// General
+/* =====================================================
+   GENERAL / BIB STORE
+===================================================== */
+
 import Dashboard from "@/pages/Dashboard";
 import Tarifs from "@/pages/Tarifs";
 import CheckoutReturn from "@/pages/CheckoutReturn";
@@ -34,7 +48,10 @@ import StoreCart from "@/pages/StoreCart";
 import Recycler from "@/pages/customer/Recycler";
 import Unsubscribe from "@/pages/Unsubscribe";
 
-// Suppliers / operations
+/* =====================================================
+   SUPPLIERS / OPERATIONS
+===================================================== */
+
 import Suppliers from "@/pages/Suppliers";
 import SuppliersApply from "@/pages/SuppliersApply";
 import Ops from "@/pages/Ops";
@@ -46,10 +63,16 @@ import PartnerOnboardingPortal from "@/pages/PartnerOnboardingPortal";
 import SuppliersPortal from "@/pages/SuppliersPortal";
 import OpsPortal from "@/pages/OpsPortal";
 
-// BIB Talent
+/* =====================================================
+   BIB TALENT
+===================================================== */
+
 import BibTalent from "@/pages/BibTalent";
 
-// Dashboard
+/* =====================================================
+   DASHBOARD
+===================================================== */
+
 import Ventes from "@/pages/Ventes";
 import Commandes from "@/pages/Commandes";
 import Produits from "@/pages/Produits";
@@ -71,7 +94,10 @@ import Marketing from "@/pages/Marketing";
 import VentesPrivees from "@/pages/VentesPrivees";
 import VentesPriveesPOS from "@/pages/VentesPriveesPOS";
 
-// Public boutique
+/* =====================================================
+   PUBLIC BOUTIQUE — REAL COMMERCE
+===================================================== */
+
 import BoutiquePublic from "@/pages/BoutiquePublic";
 import BoutiqueAllProducts from "@/pages/BoutiqueAllProducts";
 import BoutiqueCategory from "@/pages/BoutiqueCategory";
@@ -83,7 +109,10 @@ import BoutiqueCGUPage from "@/pages/BoutiqueCGUPage";
 import BoutiqueAboutPage from "@/pages/BoutiqueAboutPage";
 import BoutiqueCustomPage from "@/pages/BoutiqueCustomPage";
 
-// Institutional / marketing
+/* =====================================================
+   INSTITUTIONAL / MARKETING
+===================================================== */
+
 import Carrieres from "@/pages/Carrieres";
 import CarrieresPostes from "@/pages/CarrieresPostes";
 import APropos from "@/pages/APropos";
@@ -92,13 +121,24 @@ import CentreAideFaq from "@/pages/CentreAideFaq";
 import CentreAideGuide from "@/pages/CentreAideGuide";
 import PackLegal from "@/pages/PackLegal";
 
-// Legal
+/* =====================================================
+   LEGAL
+===================================================== */
+
 import MentionsLegales from "@/pages/MentionsLegales";
 import CGU from "@/pages/CGU";
 import Confidentialite from "@/pages/Confidentialite";
 import Cookies from "@/pages/Cookies";
 
+/* =====================================================
+   QUERY CLIENT
+===================================================== */
+
 const queryClient = new QueryClient();
+
+/* =====================================================
+   ROOT HOST ROUTING
+===================================================== */
 
 function RootPage() {
   if (typeof window === "undefined") {
@@ -129,6 +169,10 @@ function RootPage() {
   return <Index />;
 }
 
+/* =====================================================
+   APPLICATION
+===================================================== */
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -145,13 +189,30 @@ export default function App() {
                       ROOT / PUBLIC
                   ===================================================== */}
 
-                  <Route path="/" element={<RootPage />} />
-                  <Route path="/landing" element={<Index />} />
+                  <Route
+                    path="/"
+                    element={<RootPage />}
+                  />
 
-                  <Route path="/vendre" element={<Vendre />} />
+                  <Route
+                    path="/landing"
+                    element={<Index />}
+                  />
 
-                  <Route path="/tarifs" element={<Tarifs />} />
-                  <Route path="/pricing" element={<Tarifs />} />
+                  <Route
+                    path="/vendre"
+                    element={<Vendre />}
+                  />
+
+                  <Route
+                    path="/tarifs"
+                    element={<Tarifs />}
+                  />
+
+                  <Route
+                    path="/pricing"
+                    element={<Tarifs />}
+                  />
 
                   {/* =====================================================
                       SUPPLIERS
@@ -159,24 +220,49 @@ export default function App() {
 
                   <Route
                     path="/suppliers/tarifs"
-                    element={<Navigate to="/suppliers#tarifs" replace />}
-                  />
-                  <Route
-                    path="/fournisseurs/tarifs"
-                    element={<Navigate to="/suppliers#tarifs" replace />}
-                  />
-                  <Route
-                    path="/suppliers/pricing"
-                    element={<Navigate to="/suppliers#tarifs" replace />}
+                    element={
+                      <Navigate
+                        to="/suppliers#tarifs"
+                        replace
+                      />
+                    }
                   />
 
-                  <Route path="/suppliers" element={<Suppliers />} />
-                  <Route path="/fournisseurs" element={<Suppliers />} />
+                  <Route
+                    path="/fournisseurs/tarifs"
+                    element={
+                      <Navigate
+                        to="/suppliers#tarifs"
+                        replace
+                      />
+                    }
+                  />
+
+                  <Route
+                    path="/suppliers/pricing"
+                    element={
+                      <Navigate
+                        to="/suppliers#tarifs"
+                        replace
+                      />
+                    }
+                  />
+
+                  <Route
+                    path="/suppliers"
+                    element={<Suppliers />}
+                  />
+
+                  <Route
+                    path="/fournisseurs"
+                    element={<Suppliers />}
+                  />
 
                   <Route
                     path="/suppliers/apply"
                     element={<SuppliersApply />}
                   />
+
                   <Route
                     path="/fournisseurs/candidature"
                     element={<SuppliersApply />}
@@ -190,14 +276,18 @@ export default function App() {
                   <Route
                     path="/suppliers/reprendre"
                     element={
-                      <PartnerOnboardingResume partnerType="supplier" />
+                      <PartnerOnboardingResume
+                        partnerType="supplier"
+                      />
                     }
                   />
 
                   <Route
                     path="/suppliers/resume"
                     element={
-                      <PartnerOnboardingResume partnerType="supplier" />
+                      <PartnerOnboardingResume
+                        partnerType="supplier"
+                      />
                     }
                   />
 
@@ -215,14 +305,26 @@ export default function App() {
                       OPERATIONS / LOGISTICS
                   ===================================================== */}
 
-                  <Route path="/ops" element={<Ops />} />
-                  <Route path="/logistics" element={<Ops />} />
-                  <Route path="/logistique" element={<Ops />} />
+                  <Route
+                    path="/ops"
+                    element={<Ops />}
+                  />
+
+                  <Route
+                    path="/logistics"
+                    element={<Ops />}
+                  />
+
+                  <Route
+                    path="/logistique"
+                    element={<Ops />}
+                  />
 
                   <Route
                     path="/ops/apply"
                     element={<OpsApply />}
                   />
+
                   <Route
                     path="/ops/candidature"
                     element={<OpsApply />}
@@ -232,6 +334,7 @@ export default function App() {
                     path="/logistics/apply"
                     element={<OpsApply />}
                   />
+
                   <Route
                     path="/logistique/candidature"
                     element={<OpsApply />}
@@ -245,14 +348,18 @@ export default function App() {
                   <Route
                     path="/ops/reprendre"
                     element={
-                      <PartnerOnboardingResume partnerType="ops" />
+                      <PartnerOnboardingResume
+                        partnerType="ops"
+                      />
                     }
                   />
 
                   <Route
                     path="/ops/resume"
                     element={
-                      <PartnerOnboardingResume partnerType="ops" />
+                      <PartnerOnboardingResume
+                        partnerType="ops"
+                      />
                     }
                   />
 
@@ -267,10 +374,13 @@ export default function App() {
                   />
 
                   {/* =====================================================
-                      BIB STORE — DISCOVERY
+                      BIB STORE — DISCOVERY ONLY
                   ===================================================== */}
 
-                  <Route path="/store" element={<Store />} />
+                  <Route
+                    path="/store"
+                    element={<Store />}
+                  />
 
                   <Route
                     path="/store/boutique/:slug"
@@ -283,8 +393,9 @@ export default function App() {
                   />
 
                   <Route
-                    path="/store/store-product"
-                    element={<StoreProduct />
+                    path="/store/product/:productId"
+                    element={<StoreProduct />}
+                  />
 
                   <Route
                     path="/store/cart"
@@ -305,12 +416,21 @@ export default function App() {
                       AUTHENTICATION
                   ===================================================== */}
 
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
+                  <Route
+                    path="/login"
+                    element={<Login />}
+                  />
+
+                  <Route
+                    path="/signup"
+                    element={<Signup />}
+                  />
+
                   <Route
                     path="/forgot-password"
                     element={<ForgotPassword />}
                   />
+
                   <Route
                     path="/reset-password"
                     element={<ResetPassword />}
@@ -340,16 +460,6 @@ export default function App() {
                     element={<Unsubscribe />}
                   />
 
-                  <Route
-                    path="/recycler"
-                    element={<Recycler />}
-                  />
-
-                  <Route
-                    path="/recycler/:slug"
-                    element={<Recycler />}
-                  />
-                  
                   {/* =====================================================
                       STORE — CUSTOMER AREA
                   ===================================================== */}
@@ -636,7 +746,7 @@ export default function App() {
                   />
 
                   {/* =====================================================
-                      CARRIÈRES / BIB TALENT
+                      CAREERS / BIB TALENT
                   ===================================================== */}
 
                   <Route
@@ -654,7 +764,6 @@ export default function App() {
                     element={<BibTalent />}
                   />
 
-                  {/* Ancienne URL conservée comme redirection */}
                   <Route
                     path="/bib-talent"
                     element={
@@ -756,7 +865,10 @@ export default function App() {
                       FALLBACK
                   ===================================================== */}
 
-                  <Route path="*" element={<NotFound />} />
+                  <Route
+                    path="*"
+                    element={<NotFound />}
+                  />
                 </Routes>
               </StoreCartProvider>
             </AuthProvider>
