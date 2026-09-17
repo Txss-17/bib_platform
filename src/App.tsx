@@ -31,7 +31,7 @@ import StoreBoutique from "./pages/StoreBoutique";
 import StoreCatalog from "@/pages/StoreCatalog";
 import StoreProduct from "@/pages/StoreProduct";
 import StoreCart from "@/pages/StoreCart";
-import Recycler from "@/pages/Recycler";
+import Recycler from "@/pages/customer/Recycler";
 import Unsubscribe from "@/pages/Unsubscribe";
 
 // Suppliers / operations
