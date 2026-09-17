@@ -1,76 +1,277 @@
-import { useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import {
-  ArrowRight,
-  ChevronLeft,
-  ChevronRight,
-  ClipboardList,
-  Heart,
-  Home,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
+import {
   Search,
-  ShoppingBag,
+  Check,
+  ChevronRight,
+  Loader2,
   User,
+  Heart,
+  ShoppingCart,
+  House,
+  ClipboardList,
+  MoreHorizontal,
+  SlidersHorizontal,
+  ArrowRight,
 } from "lucide-react";
 
-import { useAuth } from "@/contexts/AuthContext";
 import {
-  useCustomerProfile,
-} from "@/hooks/useCustomerProfile";
-import { useStoreBoutiques } from "@/hooks/useStore";
-import { useStoreCart } from "@/hooks/useStoreCart";
+  useStoreBoutiques,
+  type StoreBoutique,
+} from "@/hooks/useStore";
 
-import StoreIntro from "@/components/store/StoreIntro";
-import StoreAccountBar from "@/components/store/StoreAccountBar";
-import BoutiqueCard from "@/components/store/BoutiqueCard";
-
-const storeHeroImage =
-  "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1800&q=85";
+import { useStoreCart } from "@/contexts/StoreCartContext";
+import { BoutiqueCard } from "@/components/store/BoutiqueCard";
+import { Logo } from "@/components/Logo";
+import { Input } from "@/components/ui/input";
+import { useSEO } from "@/hooks/useSEO";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCustomerProfile } from "@/hooks/useCustomerProfile";
 
 export default function Store() {
-  const navigate = useNavigate();
+  const {
+    data: boutiques = [],
+    isLoading,
+  } = useStoreBoutiques();
 
-  const { user } = useAuth();
-  const { data: customerProfile } = useCustomerProfile();
-  const { data: boutiques = [], isLoading } = useStoreBoutiques();
-  const { items: cartItems = [] } = useStoreCart();
+  const [searchParams, setSearchParams] =
+    useSearchParams();
 
-  const [search, setSearch] = useState("");
-  const boutiquesRailRef = useRef<HTMLDivElement>(null);
-
-  const isSubscriber = Boolean(customerProfile);
-
-  const cartCount = useMemo(
-    () =>
-      cartItems.reduce(
-        (total: number, item: any) =>
-          total + Number(item.quantity ?? 1),
-        0,
-      ),
-    [cartItems],
+  const [search, setSearch] = useState(
+    searchParams.get("q") ?? "",
   );
 
-  /**
-   * ---------------------------------------------------------
-   * Navigation
-   * ---------------------------------------------------------
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const { user, accountType } = useAuth();
+
+  const { totalItems } = useStoreCart();
+
+  const { data: customer } =
+    useCustomerProfile();
+
+  /*
+   * Le compte Store correspond au compte
+   * client BIB.
    */
+  const isStoreAccount =
+    !!user && accountType === "store";
+
+  /*
+   * TEMPORAIRE :
+   *
+   * Tant que le statut réel BIB Abonné n'est pas
+   * exposé par le profil client, un compte Store
+   * authentifié dispose de l'espace client.
+   *
+   * Cette variable devra ensuite être remplacée
+   * par le véritable statut d'abonnement.
+   */
+  const isSubscriber = isStoreAccount;
+
+  const initial = (
+    customer?.full_name ||
+    user?.email ||
+    "?"
+  )
+    .trim()
+    .charAt(0)
+    .toUpperCase();
+
+  /* =========================================================
+     SYNCHRONISATION DE LA RECHERCHE AVEC L'URL
+     ========================================================= */
+
+  useEffect(() => {
+    const next = new URLSearchParams(
+      searchParams,
+    );
+
+    const value = search.trim();
+
+    if (value) {
+      next.set("q", value);
+    } else {
+      next.delete("q");
+    }
+
+    if (
+      next.toString() !==
+      searchParams.toString()
+    ) {
+      setSearchParams(
+        next,
+        { replace: true },
+      );
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
+
+  /* =========================================================
+     SEO
+     ========================================================= */
+
+  useSEO({
+    title:
+      "Store BIB — Boutiques et produits sélectionnés",
+    description:
+      "Découvrez les boutiques et produits sélectionnés par Brand-In-A-Box.",
+  });
+
+  const query =
+    search.trim().toLowerCase();
+
+  /* =========================================================
+     RECHERCHE
+     ========================================================= */
+
+  const filteredBoutiques =
+    useMemo(() => {
+      if (!query) {
+        return boutiques;
+      }
+
+      return boutiques.filter(
+        (boutique) => {
+          const content = [
+            boutique.name,
+            boutique.category,
+            boutique.tagline,
+            boutique.description,
+            ...boutique.product_previews.map(
+              (product) =>
+                product.name,
+            ),
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+
+          return content.includes(query);
+        },
+      );
+    }, [boutiques, query]);
+
+  /* =========================================================
+     TENDANCES
+     ========================================================= */
+
+  const trendingBoutiques =
+    useMemo(
+      () =>
+        [...filteredBoutiques]
+          .sort(
+            (a, b) =>
+              b.total_sales -
+              a.total_sales,
+          )
+          .slice(0, 12),
+      [filteredBoutiques],
+    );
+
+  /* =========================================================
+     NOUVEAUTÉS
+     ========================================================= */
+
+  const newestBoutiques =
+    useMemo(
+      () =>
+        [...filteredBoutiques]
+          .sort(
+            (a, b) =>
+              new Date(
+                b.created_at,
+              ).getTime() -
+              new Date(
+                a.created_at,
+              ).getTime(),
+          )
+          .slice(0, 12),
+      [filteredBoutiques],
+    );
+
+  /* =========================================================
+     CATÉGORIES
+     ========================================================= */
+
+  const boutiquesByCategory =
+    useMemo(() => {
+      const categories =
+        new Map<
+          string,
+          StoreBoutique[]
+        >();
+
+      for (const boutique of filteredBoutiques) {
+        const category =
+          boutique.category ||
+          "Autres";
+
+        if (
+          !categories.has(category)
+        ) {
+          categories.set(
+            category,
+            [],
+          );
+        }
+
+        categories
+          .get(category)!
+          .push(boutique);
+      }
+
+      return Array.from(
+        categories.entries(),
+      );
+    }, [filteredBoutiques]);
+
+  /* =========================================================
+     IMAGE HERO
+     ========================================================= */
+
+  const storeHeroImage =
+    useMemo(
+      () =>
+        trendingBoutiques[0]
+          ?.cover_image_url ||
+        newestBoutiques[0]
+          ?.cover_image_url ||
+        boutiques[0]
+          ?.cover_image_url ||
+        "",
+      [
+        trendingBoutiques,
+        newestBoutiques,
+        boutiques,
+      ],
+    );
+
+  /* =========================================================
+     NAVIGATION
+     ========================================================= */
 
   const goToProducts = () => {
     const value = search.trim();
 
     navigate(
       value
-        ? `/store/products?q=${encodeURIComponent(value)}`
-        : "/store/products",
-    );
-  };
-
-  const submitSearch = () => {
-    const value = search.trim();
-
-    navigate(
-      value
-        ? `/store/products?q=${encodeURIComponent(value)}`
+        ? `/store/products?q=${encodeURIComponent(
+            value,
+          )}`
         : "/store/products",
     );
   };
@@ -83,8 +284,17 @@ export default function Store() {
     navigate("/store/favorites");
   };
 
+  const goToCart = () => {
+    navigate("/store/cart");
+  };
+
   const goToAccount = () => {
     if (!user) {
+      navigate("/store/login");
+      return;
+    }
+
+    if (accountType !== "store") {
       navigate("/store/login");
       return;
     }
@@ -92,392 +302,726 @@ export default function Store() {
     navigate("/store/account");
   };
 
-  const scrollBoutiques = (direction: "left" | "right") => {
-    const container = boutiquesRailRef.current;
+  const submitSearch = () => {
+    const value = search.trim();
 
-    if (!container) return;
-
-    const amount = Math.min(
-      container.clientWidth * 0.8,
-      720,
+    navigate(
+      value
+        ? `/store/products?q=${encodeURIComponent(
+            value,
+          )}`
+        : "/store/products",
     );
-
-    container.scrollBy({
-      left: direction === "left" ? -amount : amount,
-      behavior: "smooth",
-    });
   };
 
-  /**
-   * ---------------------------------------------------------
-   * Derived data
-   * ---------------------------------------------------------
-   */
+  const activateAccount = () => {
+    if (!user) {
+      navigate("/store/signup");
+      return;
+    }
 
-  const featuredBoutiques = useMemo(() => {
-    return boutiques.filter(Boolean);
-  }, [boutiques]);
+    if (accountType !== "store") {
+      navigate("/store/signup");
+      return;
+    }
+
+    navigate("/store/account");
+  };
+
+  const goToOrderTracking = () => {
+    navigate("/order-tracking");
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+
       {/* =====================================================
           HEADER
-          ===================================================== */}
+         ===================================================== */}
 
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-4 px-4 sm:px-6 lg:px-8">
-          {/* Logo */}
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-xl">
+        <div className="container mx-auto flex min-h-[68px] max-w-7xl items-center gap-3 px-4 py-3">
+
+          {/* LOGO */}
+
           <Link
             to="/store"
-            className="flex shrink-0 items-center gap-2"
-            aria-label="BIB Store"
+            aria-label="Accueil du Store BIB"
+            className="shrink-0"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-foreground text-sm font-bold text-background">
-              B
-            </div>
-
-            <span className="hidden text-sm font-semibold tracking-tight sm:block">
-              BIB Store
-            </span>
+            <Logo
+              iconSize={30}
+              asLink={false}
+            />
           </Link>
 
-          {/* Search */}
+          {/* NAVIGATION DESKTOP */}
+
+          <nav className="hidden items-center gap-1 lg:flex">
+
+            <button
+              type="button"
+              onClick={goToProducts}
+              className={`rounded-full px-3 py-2 text-sm font-medium transition ${
+                location.pathname.startsWith(
+                  "/store/products",
+                )
+                  ? "bg-muted text-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              Produits
+            </button>
+
+            {isSubscriber && (
+              <button
+                type="button"
+                onClick={goToOrders}
+                className={`rounded-full px-3 py-2 text-sm font-medium transition ${
+                  location.pathname.startsWith(
+                    "/store/orders",
+                  )
+                    ? "bg-muted text-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                Mes commandes
+              </button>
+            )}
+
+            {isSubscriber && (
+              <button
+                type="button"
+                onClick={goToFavorites}
+                className={`rounded-full px-3 py-2 text-sm font-medium transition ${
+                  location.pathname.startsWith(
+                    "/store/favorites",
+                  )
+                    ? "bg-muted text-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                Favoris
+              </button>
+            )}
+          </nav>
+
+          {/* RECHERCHE */}
+
           <form
             onSubmit={(event) => {
               event.preventDefault();
               submitSearch();
             }}
-            className="mx-auto flex w-full max-w-xl items-center"
+            className="relative mx-auto flex min-w-0 flex-1 lg:max-w-xl"
           >
-            <div className="relative w-full">
-              <Search
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                aria-hidden="true"
-              />
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
-              <input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Rechercher un produit, une boutique..."
-                aria-label="Rechercher dans BIB Store"
-                className="h-10 w-full rounded-full border bg-muted/40 pl-10 pr-4 text-sm outline-none transition focus:border-foreground/30 focus:bg-background focus:ring-2 focus:ring-foreground/10"
-              />
-            </div>
+            <Input
+              value={search}
+              onChange={(event) =>
+                setSearch(
+                  event.target.value,
+                )
+              }
+              placeholder="Rechercher une boutique, un produit…"
+              className="h-10 rounded-full border-border bg-muted/50 pl-10 pr-11 text-sm focus-visible:ring-primary/40"
+            />
+
+            {search.trim() && (
+              <button
+                type="submit"
+                aria-label="Valider la recherche"
+                className="absolute right-1 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-primary text-primary-foreground transition hover:brightness-110 active:scale-95"
+              >
+                <Check className="h-4 w-4" />
+              </button>
+            )}
           </form>
 
-          {/* Desktop actions */}
-          <nav
-            aria-label="Navigation BIB Store"
-            className="hidden items-center gap-1 lg:flex"
-          >
+          {/* ACTIONS */}
+
+          <div className="flex shrink-0 items-center gap-1">
+
             <button
               type="button"
               onClick={goToFavorites}
-              className="inline-flex h-10 items-center gap-2 rounded-full px-3 text-sm font-medium transition hover:bg-muted"
+              aria-label="Favoris"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition hover:bg-muted active:scale-95"
             >
-              <Heart className="h-4 w-4" />
-              <span>Favoris</span>
+              <Heart
+                className="h-5 w-5"
+                strokeWidth={1.8}
+              />
             </button>
+
+            {/* PANIER STORE */}
 
             <button
               type="button"
-              onClick={goToOrders}
-              className="inline-flex h-10 items-center gap-2 rounded-full px-3 text-sm font-medium transition hover:bg-muted"
+              onClick={goToCart}
+              aria-label={`Panier${
+                totalItems > 0
+                  ? `, ${totalItems} article${
+                      totalItems > 1
+                        ? "s"
+                        : ""
+                    }`
+                  : ""
+              }`}
+              className="relative flex h-10 w-10 items-center justify-center rounded-full text-foreground transition hover:bg-muted active:scale-95"
             >
-              <ClipboardList className="h-4 w-4" />
-              <span>Commandes</span>
+              <ShoppingCart
+                className="h-5 w-5"
+                strokeWidth={1.8}
+              />
+
+              {totalItems > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
+                  {totalItems > 99
+                    ? "99+"
+                    : totalItems}
+                </span>
+              )}
             </button>
+
+            {/* COMPTE */}
 
             <button
               type="button"
               onClick={goToAccount}
-              className="inline-flex h-10 items-center gap-2 rounded-full px-3 text-sm font-medium transition hover:bg-muted"
+              aria-label="Compte"
+              className="relative flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-semibold text-foreground transition hover:bg-muted/70 active:scale-95"
             >
-              <User className="h-4 w-4" />
-              <span>Compte</span>
-            </button>
-
-            <Link
-              to="/store/cart"
-              className="relative ml-1 inline-flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-muted"
-              aria-label={`Panier${cartCount > 0 ? `, ${cartCount} article${cartCount > 1 ? "s" : ""}` : ""}`}
-            >
-              <ShoppingBag className="h-5 w-5" />
-
-              {cartCount > 0 && (
-                <span className="absolute right-0.5 top-0.5 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-bold text-background">
-                  {cartCount > 99 ? "99+" : cartCount}
-                </span>
+              {user ? (
+                <span>{initial}</span>
+              ) : (
+                <User className="h-5 w-5" />
               )}
-            </Link>
-          </nav>
+
+              {user && (
+                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
+              )}
+            </button>
+          </div>
         </div>
       </header>
 
       {/* =====================================================
-          MAIN
-          ===================================================== */}
+          CONTENU
+         ===================================================== */}
 
-      <main className="pb-24 lg:pb-10">
-        {/* Hero */}
-        <section className="mx-auto max-w-[1600px] px-4 pt-5 sm:px-6 lg:px-8 lg:pt-8">
+      <main className="container mx-auto max-w-7xl px-4 pb-28 lg:pb-12">
+
+        {/* HERO */}
+
+        {!query && (
           <StoreIntro
             isSubscriber={isSubscriber}
             imageUrl={storeHeroImage}
             onPrimaryAction={goToProducts}
           />
-        </section>
+        )}
 
-        {/* Account / subscription contextual bar */}
-        <section className="mx-auto max-w-[1600px] px-4 pt-5 sm:px-6 lg:px-8">
+        {/* COMPTE / SUIVI */}
+
+        {!query && !isSubscriber && (
           <StoreAccountBar
-            isSubscriber={isSubscriber}
-            user={user}
-            onAccount={goToAccount}
+            onActivateAccount={activateAccount}
+            onTrackOrder={goToOrderTracking}
           />
-        </section>
+        )}
 
-        {/* ===================================================
-            BOUTIQUES
-            =================================================== */}
+        {/* CHARGEMENT */}
 
-        <section
-          aria-labelledby="boutiques-heading"
-          className="mx-auto max-w-[1600px] px-4 pt-10 sm:px-6 lg:px-8 lg:pt-14"
-        >
-          <div className="mb-5 flex items-end justify-between gap-4">
-            <div>
-              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                BIB Store
-              </p>
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
+            <Loader2 className="h-6 w-6 animate-spin" />
 
-              <h2
-                id="boutiques-heading"
-                className="text-2xl font-semibold tracking-tight sm:text-3xl"
-              >
-                Découvrez les boutiques
-              </h2>
-
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-                Explorez les boutiques sélectionnées et vérifiées par BIB,
-                puis découvrez leurs produits.
-              </p>
-            </div>
-
-            <div className="hidden items-center gap-2 sm:flex">
-              <button
-                type="button"
-                onClick={() => scrollBoutiques("left")}
-                className="flex h-10 w-10 items-center justify-center rounded-full border bg-background transition hover:bg-muted"
-                aria-label="Boutiques précédentes"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => scrollBoutiques("right")}
-                className="flex h-10 w-10 items-center justify-center rounded-full border bg-background transition hover:bg-muted"
-                aria-label="Boutiques suivantes"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
+            <p className="text-sm">
+              Chargement des boutiques…
+            </p>
           </div>
+        ) : filteredBoutiques.length === 0 ? (
+          <div className="mt-8 rounded-3xl border border-dashed border-border bg-muted/30 px-5 py-16 text-center">
+            <p className="text-lg font-semibold">
+              Aucun résultat
+            </p>
 
-          {isLoading ? (
-            <div
-              className="flex gap-4 overflow-hidden"
-              aria-label="Chargement des boutiques"
+            <p className="mt-2 text-sm text-muted-foreground">
+              Essayez un autre mot-clé.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              className="mt-5 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:brightness-110"
             >
-              {Array.from({ length: 4 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="min-w-[260px] flex-1 animate-pulse overflow-hidden rounded-2xl border bg-muted/40 sm:min-w-[300px]"
-                >
-                  <div className="aspect-[4/3] bg-muted" />
-
-                  <div className="space-y-3 p-4">
-                    <div className="h-5 w-2/3 rounded bg-muted" />
-                    <div className="h-4 w-full rounded bg-muted" />
-                    <div className="h-4 w-1/2 rounded bg-muted" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : featuredBoutiques.length === 0 ? (
-            <div className="rounded-2xl border border-dashed p-10 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                <ShoppingBag className="h-5 w-5 text-muted-foreground" />
-              </div>
-
-              <h3 className="mt-4 text-base font-semibold">
-                Les boutiques arrivent bientôt
-              </h3>
-
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-                Le catalogue BIB est en cours de préparation.
-              </p>
-
-              <button
-                type="button"
-                onClick={goToProducts}
-                className="mt-5 inline-flex h-10 items-center gap-2 rounded-full bg-foreground px-5 text-sm font-semibold text-background transition hover:opacity-90"
-              >
-                Découvrir les produits
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
-          ) : (
-            <div
-              ref={boutiquesRailRef}
-              className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            >
-              {featuredBoutiques.map((boutique) => (
-                <div
-                  key={boutique.id}
-                  className="w-[82vw] max-w-[380px] shrink-0 snap-start sm:w-[360px] lg:w-[calc((100%-48px)/4)]"
-                >
-                  <BoutiqueCard boutique={boutique} />
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* All boutiques */}
-          {!isLoading && featuredBoutiques.length > 0 && (
-            <div className="mt-6 flex justify-center">
-              <Link
-                to="/store/boutiques"
-                className="inline-flex h-10 items-center gap-2 rounded-full border px-5 text-sm font-semibold transition hover:bg-muted"
-              >
-                Voir toutes les boutiques
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          )}
-        </section>
-
-        {/* ===================================================
-            PRODUCT DISCOVERY CTA
-            =================================================== */}
-
-        <section className="mx-auto max-w-[1600px] px-4 pt-12 sm:px-6 lg:px-8 lg:pt-16">
-          <div className="overflow-hidden rounded-3xl border bg-muted/30">
-            <div className="grid items-center gap-8 p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:p-10">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Catalogue BIB
-                </p>
-
-                <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
-                  Trouvez directement les produits qui vous intéressent.
-                </h2>
-
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-                  Parcourez le catalogue global BIB, filtrez les produits et
-                  consultez leur fiche avant de poursuivre votre parcours
-                  auprès de la boutique concernée.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={goToProducts}
-                className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-foreground px-6 text-sm font-semibold text-background transition hover:opacity-90"
-              >
-                Découvrir les produits
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
+              Réinitialiser la recherche
+            </button>
           </div>
-        </section>
+        ) : query ? (
+          <Rail
+            title={`Résultats pour "${search.trim()}"`}
+            subtitle={`${filteredBoutiques.length} boutique${
+              filteredBoutiques.length > 1
+                ? "s"
+                : ""
+            }`}
+            items={filteredBoutiques}
+            showFilter
+          />
+        ) : (
+          <>
+            <Rail
+              title="Tendances"
+              subtitle="Les boutiques les plus populaires"
+              items={trendingBoutiques}
+              accent
+              showFilter
+            />
+
+            <Rail
+              title="Nouveautés"
+              subtitle="Les dernières boutiques"
+              items={newestBoutiques}
+              showFilter
+            />
+
+            {boutiquesByCategory.map(
+              ([category, categoryBoutiques]) => (
+                <Rail
+                  key={category}
+                  title={category}
+                  subtitle={`${categoryBoutiques.length} boutique${
+                    categoryBoutiques.length > 1
+                      ? "s"
+                      : ""
+                  }`}
+                  items={categoryBoutiques}
+                  showFilter
+                />
+              ),
+            )}
+          </>
+        )}
       </main>
 
       {/* =====================================================
-          MOBILE NAVIGATION
-          ===================================================== */}
+          NAVIGATION MOBILE
+         ===================================================== */}
 
-      <nav
-        aria-label="Navigation mobile"
-        className="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
-      >
-        <div className="mx-auto grid h-16 max-w-lg grid-cols-5">
-          <MobileNavButton
-            icon={<Home className="h-5 w-5" />}
-            label="Accueil"
-            active
-            onClick={() => navigate("/store")}
+      {isSubscriber && (
+        <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background/95 backdrop-blur-xl lg:hidden">
+          <div className="mx-auto flex h-16 max-w-lg items-center justify-around px-3 pb-[env(safe-area-inset-bottom)]">
+
+            <MobileNavButton
+              label="Accueil"
+              active={
+                location.pathname === "/store"
+              }
+              onClick={() =>
+                navigate("/store")
+              }
+            >
+              <House
+                className="h-5 w-5"
+                strokeWidth={1.8}
+              />
+            </MobileNavButton>
+
+            <MobileNavButton
+              label="Produits"
+              active={location.pathname.startsWith(
+                "/store/products",
+              )}
+              onClick={goToProducts}
+            >
+              <Search
+                className="h-5 w-5"
+                strokeWidth={1.8}
+              />
+            </MobileNavButton>
+
+            <MobileNavButton
+              label="Commandes"
+              active={location.pathname.startsWith(
+                "/store/orders",
+              )}
+              onClick={goToOrders}
+            >
+              <ClipboardList
+                className="h-5 w-5"
+                strokeWidth={1.8}
+              />
+            </MobileNavButton>
+
+            <MobileNavButton
+              label="Plus"
+              active={false}
+              onClick={goToAccount}
+            >
+              <MoreHorizontal
+                className="h-5 w-5"
+                strokeWidth={1.8}
+              />
+            </MobileNavButton>
+          </div>
+        </nav>
+      )}
+
+      {/* =====================================================
+          FOOTER
+         ===================================================== */}
+
+      <footer className="border-t border-border bg-muted/30">
+        <div className="container mx-auto flex max-w-7xl flex-col items-center gap-2 px-4 py-6 text-center text-xs text-muted-foreground sm:flex-row sm:justify-between sm:text-left">
+
+          <Logo
+            iconSize={20}
+            asLink={false}
           />
 
-          <MobileNavButton
-            icon={<Search className="h-5 w-5" />}
-            label="Produits"
-            onClick={goToProducts}
-          />
+          <p>
+            © {new Date().getFullYear()}{" "}
+            Brand-In-A-Box · Store officiel
+          </p>
 
-          <MobileNavButton
-            icon={
-              <div className="relative">
-                <ShoppingBag className="h-5 w-5" />
-
-                {cartCount > 0 && (
-                  <span className="absolute -right-2 -top-2 flex min-h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-[9px] font-bold text-background">
-                    {cartCount > 99 ? "99+" : cartCount}
-                  </span>
-                )}
-              </div>
-            }
-            label="Panier"
-            onClick={() => navigate("/store/cart")}
-          />
-
-          <MobileNavButton
-            icon={<ClipboardList className="h-5 w-5" />}
-            label="Commandes"
-            onClick={goToOrders}
-          />
-
-          <MobileNavButton
-            icon={<User className="h-5 w-5" />}
-            label="Compte"
-            onClick={goToAccount}
-          />
+          <Link
+            to="/"
+            className="transition hover:text-foreground"
+          >
+            Brand-In-A-Box
+          </Link>
         </div>
-      </nav>
+      </footer>
     </div>
   );
 }
 
-/* ===========================================================
-   MOBILE NAV BUTTON
-   =========================================================== */
+/* =========================================================
+   HERO STORE
+   ========================================================= */
+
+interface StoreIntroProps {
+  isSubscriber: boolean;
+  imageUrl?: string;
+  onPrimaryAction: () => void;
+}
+
+function StoreIntro({
+  isSubscriber,
+  imageUrl,
+  onPrimaryAction,
+}: StoreIntroProps) {
+  return (
+    <section className="mb-5 mt-6 overflow-hidden rounded-[28px] border border-border bg-[#f7f5f0] sm:mt-8">
+      <div className="grid items-stretch lg:grid-cols-[1fr_0.9fr]">
+
+        <div className="flex flex-col justify-center px-6 py-9 sm:px-8 sm:py-11 lg:px-10 lg:py-12">
+
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+            {isSubscriber
+              ? "Votre espace BIB"
+              : "Des marques engagées"}
+          </p>
+
+          <h1 className="max-w-xl font-display text-3xl font-semibold leading-tight text-foreground sm:text-4xl lg:text-[42px]">
+            {isSubscriber
+              ? "Découvrez, suivez et retrouvez vos boutiques préférées."
+              : "Des produits sélectionnés avec soin."}
+          </h1>
+
+          <p className="mt-4 max-w-lg text-sm leading-relaxed text-muted-foreground sm:text-base">
+            {isSubscriber
+              ? "Explorez de nouvelles boutiques, retrouvez vos favoris et gardez vos commandes au même endroit."
+              : "Découvrez des boutiques indépendantes et des produits sélectionnés selon les exigences BIB."}
+          </p>
+
+          <button
+            type="button"
+            onClick={onPrimaryAction}
+            className="mt-6 inline-flex h-11 w-fit items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:brightness-110 active:scale-[0.98]"
+          >
+            Découvrir les produits
+          </button>
+        </div>
+
+        <div className="relative min-h-[230px] overflow-hidden bg-muted sm:min-h-[280px] lg:min-h-[340px]">
+
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="eager"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-muted">
+              <span className="font-display text-5xl font-semibold text-foreground/10">
+                BIB
+              </span>
+            </div>
+          )}
+
+          <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-transparent" />
+
+          <div className="absolute right-4 top-4 flex items-center gap-2 rounded-full bg-white/95 px-3 py-2 text-xs font-semibold text-slate-900 shadow-sm backdrop-blur-sm sm:right-6 sm:top-6">
+
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-950 text-[9px] font-bold text-white">
+              BIB
+            </span>
+
+            <span>
+              Vérifié par BIB
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* =========================================================
+   COMPTE / SUIVI
+   ========================================================= */
+
+interface StoreAccountBarProps {
+  onActivateAccount: () => void;
+  onTrackOrder: () => void;
+}
+
+function StoreAccountBar({
+  onActivateAccount,
+  onTrackOrder,
+}: StoreAccountBarProps) {
+  return (
+    <section className="mb-7 overflow-hidden rounded-2xl border border-border bg-muted/35">
+      <div className="grid gap-0 sm:grid-cols-[1.25fr_1fr]">
+
+        <div className="flex min-w-0 flex-col justify-between gap-4 px-4 py-4 sm:px-5 sm:py-4">
+
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-foreground">
+              Activez votre compte BIB
+            </p>
+
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              Suivez vos boutiques favorites, retrouvez vos commandes et profitez de votre espace BIB.
+            </p>
+
+            <p className="mt-2 text-sm font-semibold text-foreground">
+              BIB Abonné · 4,99 €/mois
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onActivateAccount}
+            className="inline-flex h-9 w-fit items-center justify-center gap-1.5 rounded-full bg-foreground px-4 text-xs font-semibold text-background transition hover:opacity-85 active:scale-[0.98]"
+          >
+            Activer mon compte
+            <ArrowRight className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        <div className="flex min-w-0 flex-col justify-between gap-3 border-t border-border/70 px-4 py-4 sm:border-l sm:border-t-0 sm:px-5 sm:py-4">
+
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-foreground">
+              Vous avez déjà commandé ?
+            </p>
+
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              Suivez l’avancement de votre commande, même sans compte abonné.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={onTrackOrder}
+            className="inline-flex h-9 w-fit items-center justify-center gap-1.5 rounded-full border border-border bg-background px-4 text-xs font-semibold text-foreground transition hover:bg-muted active:scale-[0.98]"
+          >
+            Suivre ma commande
+            <ArrowRight className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* =========================================================
+   MOBILE NAVIGATION
+   ========================================================= */
+
+interface MobileNavButtonProps {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}
 
 function MobileNavButton({
-  icon,
   label,
-  active = false,
+  active,
   onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-  onClick: () => void;
-}) {
+  children,
+}: MobileNavButtonProps) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={[
-        "flex flex-col items-center justify-center gap-1 text-[10px] transition",
+      className={`flex min-w-[64px] flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[11px] transition ${
         active
-          ? "font-semibold text-foreground"
-          : "text-muted-foreground hover:text-foreground",
-      ].join(" ")}
-      aria-current={active ? "page" : undefined}
+          ? "font-semibold text-primary"
+          : "text-muted-foreground hover:text-foreground"
+      }`}
     >
-      {icon}
-      <span>{label}</span>
+      {children}
+
+      <span>
+        {label}
+      </span>
     </button>
+  );
+}
+
+/* =========================================================
+   RAIL
+   ========================================================= */
+
+interface RailProps {
+  title: string;
+  subtitle?: string;
+  items: StoreBoutique[];
+  accent?: boolean;
+  showFilter?: boolean;
+}
+
+function Rail({
+  title,
+  subtitle,
+  items,
+  accent,
+  showFilter,
+}: RailProps) {
+  const railRef =
+    useRef<HTMLDivElement>(null);
+
+  if (items.length === 0) {
+    return null;
+  }
+
+  const scroll = (
+    direction: 1 | -1,
+  ) => {
+    const element =
+      railRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    element.scrollBy({
+      left:
+        direction *
+        element.clientWidth *
+        0.85,
+      behavior: "smooth",
+    });
+  };
+
+  const handleFilterClick = () => {
+    window.dispatchEvent(
+      new CustomEvent(
+        "bib:open-store-filters",
+        {
+          detail: {
+            section: title,
+          },
+        },
+      ),
+    );
+  };
+
+  return (
+    <section className="mt-8 sm:mt-10">
+
+      <div className="mb-3 flex items-center justify-between gap-3">
+
+        <div className="min-w-0">
+
+          <h2
+            className={`font-display text-lg font-semibold leading-tight sm:text-xl ${
+              accent
+                ? "text-primary"
+                : "text-foreground"
+            }`}
+          >
+            {title}
+          </h2>
+
+          {subtitle && (
+            <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground sm:text-sm">
+              {subtitle}
+            </p>
+          )}
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2">
+
+          {showFilter && (
+            <button
+              type="button"
+              onClick={handleFilterClick}
+              aria-label={`Filtrer ${title}`}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-foreground transition hover:bg-muted active:scale-95"
+            >
+              <SlidersHorizontal
+                className="h-4 w-4"
+                strokeWidth={1.8}
+              />
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => scroll(1)}
+            aria-label={`Voir plus dans ${title}`}
+            className="hidden h-9 w-9 items-center justify-center rounded-full bg-muted text-foreground transition hover:bg-muted/70 active:scale-95 sm:flex"
+          >
+            <ChevronRight
+              className="h-4 w-4"
+              strokeWidth={1.8}
+            />
+          </button>
+        </div>
+      </div>
+
+      <div
+        ref={railRef}
+        className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 scrollbar-none sm:gap-4"
+      >
+        {items.map((boutique) => (
+          <div
+            key={boutique.id}
+            className="
+              w-[210px]
+              shrink-0
+              snap-start
+              sm:w-[220px]
+              md:w-[230px]
+              lg:w-[240px]
+              xl:w-[250px]
+            "
+          >
+            <BoutiqueCard
+              boutique={boutique}
+            />
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
