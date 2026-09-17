@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { OrderWithProduct } from "@/hooks/useOrders";
 import { useValidateOrder } from "@/hooks/useOrders";
 import type { Database } from "@/integrations/supabase/types";
-import { OrderIssuePanel } from "./OrderIssuePanel";
+import { OrderIssueSection } from "./OrderIssueSection";
 import { toast } from "sonner";
 
 type LogisticsStatus = Database["public"]["Enums"]["logistics_status"];
