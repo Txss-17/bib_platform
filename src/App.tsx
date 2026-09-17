@@ -43,7 +43,7 @@ import BrandPreview from "@/pages/BrandPreview";
 import Store from "@/pages/Store";
 import StoreBoutique from "@/pages/StoreBoutique";
 import StoreCatalog from "@/pages/StoreCatalog";
-import StoreProduct from "@/pages/StoreProduct";
+import StoreProduct from "@/components/store/StoreProduct";
 import StoreCart from "@/pages/StoreCart";
 import Recycler from "@/pages/customer/Recycler";
 import Unsubscribe from "@/pages/Unsubscribe";
