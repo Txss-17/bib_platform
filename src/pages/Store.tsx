@@ -29,7 +29,7 @@ import {
 import {
   useStoreBoutiques,
   type StoreBoutique,
-} from "@/hooks/useStore";
+} from "@/hooks/useMarketplace";
 
 import { useStoreCart } from "@/contexts/StoreCartContext";
 import { BoutiqueCard } from "@/components/store/BoutiqueCard";
@@ -40,261 +40,188 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCustomerProfile } from "@/hooks/useCustomerProfile";
 
 export default function Store() {
-  const {
-    data: boutiques = [],
-    isLoading,
-  } = useStoreBoutiques();
+  const { data: boutiques = [], isLoading } = useStoreBoutiques();
 
-  const [searchParams, setSearchParams] =
-    useSearchParams();
-
-  const [search, setSearch] = useState(
-    searchParams.get("q") ?? "",
-  );
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [search, setSearch] = useState(searchParams.get("q") ?? "");
 
   const navigate = useNavigate();
   const location = useLocation();
 
   const { user, accountType } = useAuth();
-
   const { totalItems } = useStoreCart();
-
-  const { data: customer } =
-    useCustomerProfile();
+  const { data: customer } = useCustomerProfile();
 
   /*
-   * Le compte Store correspond au compte
-   * client BIB.
+   * BIB Store:
+   *
+   * Visiteur / compte non-abonné
+   * → découverte uniquement
+   *
+   * BIB Abonné
+   * → découverte + favoris + panier + commandes + espace personnel
+   *
+   * On ne considère donc plus simplement "compte Store" comme
+   * "abonné". Le statut d'abonnement doit être fourni par le profil.
+   *
+   * En attendant que le champ d'abonnement définitif soit branché,
+   * le compte Store constitue le point d'entrée de l'espace abonné.
    */
-  const isStoreAccount =
-    !!user && accountType === "store";
+  const isStoreAccount = !!user && accountType === "store";
 
-  /*
-   * TEMPORAIRE :
-   *
-   * Tant que le statut réel BIB Abonné n'est pas
-   * exposé par le profil client, un compte Store
-   * authentifié dispose de l'espace client.
-   *
-   * Cette variable devra ensuite être remplacée
-   * par le véritable statut d'abonnement.
-   */
   const isSubscriber = isStoreAccount;
 
-  const initial = (
-    customer?.full_name ||
-    user?.email ||
-    "?"
-  )
-    .trim()
-    .charAt(0)
-    .toUpperCase();
+  const initial =
+    (customer?.full_name || user?.email || "?")
+      .trim()
+      .charAt(0)
+      .toUpperCase();
 
-  /* =========================================================
-     SYNCHRONISATION DE LA RECHERCHE AVEC L'URL
-     ========================================================= */
+  /* -------------------------------------------------------------
+   * Search synchronization
+   * ------------------------------------------------------------- */
 
   useEffect(() => {
-    const next = new URLSearchParams(
-      searchParams,
-    );
+    const urlQuery = searchParams.get("q") ?? "";
 
-    const value = search.trim();
+    if (urlQuery !== search) {
+      setSearch(urlQuery);
+    }
+  }, [searchParams]);
 
-    if (value) {
-      next.set("q", value);
+  useEffect(() => {
+    const currentQuery = searchParams.get("q") ?? "";
+    const nextQuery = search.trim();
+
+    if (currentQuery === nextQuery) return;
+
+    const nextParams = new URLSearchParams(searchParams);
+
+    if (nextQuery) {
+      nextParams.set("q", nextQuery);
     } else {
-      next.delete("q");
+      nextParams.delete("q");
     }
 
-    if (
-      next.toString() !==
-      searchParams.toString()
-    ) {
-      setSearchParams(
-        next,
-        { replace: true },
-      );
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setSearchParams(nextParams, { replace: true });
   }, [search]);
 
-  /* =========================================================
-     SEO
-     ========================================================= */
-
   useSEO({
-    title:
-      "Store BIB — Boutiques et produits sélectionnés",
+    title: "BIB Store — Découvrez des boutiques vérifiées",
     description:
-      "Découvrez les boutiques et produits sélectionnés par Brand-In-A-Box.",
+      "Découvrez des produits et des boutiques sélectionnés avec soin par BIB.",
   });
 
-  const query =
-    search.trim().toLowerCase();
+  const query = search.trim().toLowerCase();
 
-  /* =========================================================
-     RECHERCHE
-     ========================================================= */
+  /* -------------------------------------------------------------
+   * Boutique filtering
+   * ------------------------------------------------------------- */
 
-  const filteredBoutiques =
-    useMemo(() => {
-      if (!query) {
-        return boutiques;
-      }
+  const filteredBoutiques = useMemo(() => {
+    if (!query) return boutiques;
 
-      return boutiques.filter(
-        (boutique) => {
-          const content = [
-            boutique.name,
-            boutique.category,
-            boutique.tagline,
-            boutique.description,
-            ...boutique.product_previews.map(
-              (product) =>
-                product.name,
-            ),
-          ]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase();
+    return boutiques.filter((boutique: StoreBoutique) => {
+      const searchable = [
+        boutique.name,
+        boutique.category,
+        boutique.tagline,
+        boutique.description,
+        ...(boutique.product_preview_names ?? []),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
 
-          return content.includes(query);
-        },
-      );
-    }, [boutiques, query]);
+      return searchable.includes(query);
+    });
+  }, [boutiques, query]);
 
-  /* =========================================================
-     TENDANCES
-     ========================================================= */
+  const trendingBoutiques = useMemo(() => {
+    return [...boutiques]
+      .sort(
+        (a, b) =>
+          (b.total_sales ?? 0) -
+          (a.total_sales ?? 0),
+      )
+      .slice(0, 12);
+  }, [boutiques]);
 
-  const trendingBoutiques =
-    useMemo(
-      () =>
-        [...filteredBoutiques]
-          .sort(
-            (a, b) =>
-              b.total_sales -
-              a.total_sales,
-          )
-          .slice(0, 12),
-      [filteredBoutiques],
-    );
+  const newestBoutiques = useMemo(() => {
+    return [...boutiques]
+      .sort((a, b) => {
+        const aDate = a.created_at
+          ? new Date(a.created_at).getTime()
+          : 0;
 
-  /* =========================================================
-     NOUVEAUTÉS
-     ========================================================= */
+        const bDate = b.created_at
+          ? new Date(b.created_at).getTime()
+          : 0;
 
-  const newestBoutiques =
-    useMemo(
-      () =>
-        [...filteredBoutiques]
-          .sort(
-            (a, b) =>
-              new Date(
-                b.created_at,
-              ).getTime() -
-              new Date(
-                a.created_at,
-              ).getTime(),
-          )
-          .slice(0, 12),
-      [filteredBoutiques],
-    );
+        return bDate - aDate;
+      })
+      .slice(0, 12);
+  }, [boutiques]);
 
-  /* =========================================================
-     CATÉGORIES
-     ========================================================= */
+  const boutiquesByCategory = useMemo(() => {
+    const grouped = new Map<string, StoreBoutique[]>();
 
-  const boutiquesByCategory =
-    useMemo(() => {
-      const categories =
-        new Map<
-          string,
-          StoreBoutique[]
-        >();
+    boutiques.forEach((boutique) => {
+      const category = boutique.category?.trim();
 
-      for (const boutique of filteredBoutiques) {
-        const category =
-          boutique.category ||
-          "Autres";
+      if (!category) return;
 
-        if (
-          !categories.has(category)
-        ) {
-          categories.set(
-            category,
-            [],
-          );
-        }
+      const existing = grouped.get(category) ?? [];
+      grouped.set(category, [...existing, boutique]);
+    });
 
-        categories
-          .get(category)!
-          .push(boutique);
-      }
-
-      return Array.from(
-        categories.entries(),
-      );
-    }, [filteredBoutiques]);
-
-  /* =========================================================
-     IMAGE HERO
-     ========================================================= */
+    return grouped;
+  }, [boutiques]);
 
   const storeHeroImage =
-    useMemo(
-      () =>
-        trendingBoutiques[0]
-          ?.cover_image_url ||
-        newestBoutiques[0]
-          ?.cover_image_url ||
-        boutiques[0]
-          ?.cover_image_url ||
-        "",
-      [
-        trendingBoutiques,
-        newestBoutiques,
-        boutiques,
-      ],
-    );
+    trendingBoutiques[0]?.cover_url ??
+    newestBoutiques[0]?.cover_url ??
+    boutiques[0]?.cover_url ??
+    null;
 
-  /* =========================================================
-     NAVIGATION
-     ========================================================= */
+  /* -------------------------------------------------------------
+   * Navigation
+   * ------------------------------------------------------------- */
 
   const goToProducts = () => {
-    const value = search.trim();
+    const params = new URLSearchParams();
+
+    if (search.trim()) {
+      params.set("q", search.trim());
+    }
+
+    const queryString = params.toString();
 
     navigate(
-      value
-        ? `/store/products?q=${encodeURIComponent(
-            value,
-          )}`
-        : "/store/products",
+      `/store/products${queryString ? `?${queryString}` : ""}`,
     );
   };
 
   const goToOrders = () => {
+    if (!isSubscriber) return;
+
     navigate("/store/orders");
   };
 
   const goToFavorites = () => {
+    if (!isSubscriber) return;
+
     navigate("/store/favorites");
   };
 
   const goToCart = () => {
+    if (!isSubscriber) return;
+
     navigate("/store/cart");
   };
 
   const goToAccount = () => {
-    if (!user) {
-      navigate("/store/login");
-      return;
-    }
-
-    if (accountType !== "store") {
+    if (!isSubscriber) {
       navigate("/store/login");
       return;
     }
@@ -302,219 +229,171 @@ export default function Store() {
     navigate("/store/account");
   };
 
-  const submitSearch = () => {
-    const value = search.trim();
-
-    navigate(
-      value
-        ? `/store/products?q=${encodeURIComponent(
-            value,
-          )}`
-        : "/store/products",
-    );
+  const submitSearch = (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
+    event.preventDefault();
+    goToProducts();
   };
 
   const activateAccount = () => {
-    if (!user) {
-      navigate("/store/signup");
+    if (isSubscriber) {
+      navigate("/store/account");
       return;
     }
 
-    if (accountType !== "store") {
-      navigate("/store/signup");
-      return;
-    }
-
-    navigate("/store/account");
+    navigate("/store/signup");
   };
 
   const goToOrderTracking = () => {
     navigate("/order-tracking");
   };
 
+  /* -------------------------------------------------------------
+   * Render
+   * ------------------------------------------------------------- */
+
   return (
     <div className="min-h-screen bg-background text-foreground">
-
-      {/* =====================================================
-          HEADER
-         ===================================================== */}
-
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-xl">
-        <div className="container mx-auto flex min-h-[68px] max-w-7xl items-center gap-3 px-4 py-3">
-
-          {/* LOGO */}
-
+      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
           <Link
             to="/store"
-            aria-label="Accueil du Store BIB"
             className="shrink-0"
+            aria-label="BIB Store"
           >
-            <Logo
-              iconSize={30}
-              asLink={false}
-            />
+            <Logo />
           </Link>
 
-          {/* NAVIGATION DESKTOP */}
-
-          <nav className="hidden items-center gap-1 lg:flex">
-
-            <button
-              type="button"
-              onClick={goToProducts}
-              className={`rounded-full px-3 py-2 text-sm font-medium transition ${
-                location.pathname.startsWith(
-                  "/store/products",
-                )
-                  ? "bg-muted text-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          <nav className="hidden items-center gap-6 md:flex">
+            <Link
+              to="/store/products"
+              className={`text-sm font-medium transition-colors ${
+                location.pathname.startsWith("/store/products")
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Produits
-            </button>
+            </Link>
 
             {isSubscriber && (
-              <button
-                type="button"
-                onClick={goToOrders}
-                className={`rounded-full px-3 py-2 text-sm font-medium transition ${
-                  location.pathname.startsWith(
-                    "/store/orders",
-                  )
-                    ? "bg-muted text-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                Mes commandes
-              </button>
-            )}
+              <>
+                <button
+                  type="button"
+                  onClick={goToOrders}
+                  className={`text-sm font-medium transition-colors ${
+                    location.pathname.startsWith("/store/orders")
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Mes commandes
+                </button>
 
-            {isSubscriber && (
-              <button
-                type="button"
-                onClick={goToFavorites}
-                className={`rounded-full px-3 py-2 text-sm font-medium transition ${
-                  location.pathname.startsWith(
-                    "/store/favorites",
-                  )
-                    ? "bg-muted text-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                Favoris
-              </button>
+                <button
+                  type="button"
+                  onClick={goToFavorites}
+                  className={`text-sm font-medium transition-colors ${
+                    location.pathname.startsWith("/store/favorites")
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Favoris
+                </button>
+              </>
             )}
           </nav>
 
-          {/* RECHERCHE */}
-
           <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              submitSearch();
-            }}
-            className="relative mx-auto flex min-w-0 flex-1 lg:max-w-xl"
+            onSubmit={submitSearch}
+            className="ml-auto hidden min-w-0 flex-1 md:block md:max-w-md"
           >
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
-            <Input
-              value={search}
-              onChange={(event) =>
-                setSearch(
-                  event.target.value,
-                )
-              }
-              placeholder="Rechercher une boutique, un produit…"
-              className="h-10 rounded-full border-border bg-muted/50 pl-10 pr-11 text-sm focus-visible:ring-primary/40"
-            />
-
-            {search.trim() && (
-              <button
-                type="submit"
-                aria-label="Valider la recherche"
-                className="absolute right-1 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-primary text-primary-foreground transition hover:brightness-110 active:scale-95"
-              >
-                <Check className="h-4 w-4" />
-              </button>
-            )}
+              <Input
+                value={search}
+                onChange={(event) =>
+                  setSearch(event.target.value)
+                }
+                placeholder="Rechercher une boutique ou un produit"
+                className="pl-9"
+              />
+            </div>
           </form>
 
-          {/* ACTIONS */}
+          <div className="ml-auto flex items-center gap-1 md:ml-0">
+            {isSubscriber && (
+              <>
+                <button
+                  type="button"
+                  onClick={goToFavorites}
+                  aria-label="Favoris"
+                  className="hidden h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-muted sm:flex"
+                >
+                  <Heart className="h-5 w-5" />
+                </button>
 
-          <div className="flex shrink-0 items-center gap-1">
+                <button
+                  type="button"
+                  onClick={goToCart}
+                  aria-label="Panier"
+                  className="relative flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-muted"
+                >
+                  <ShoppingCart className="h-5 w-5" />
 
-            <button
-              type="button"
-              onClick={goToFavorites}
-              aria-label="Favoris"
-              className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition hover:bg-muted active:scale-95"
-            >
-              <Heart
-                className="h-5 w-5"
-                strokeWidth={1.8}
-              />
-            </button>
-
-            {/* PANIER STORE */}
-
-            <button
-              type="button"
-              onClick={goToCart}
-              aria-label={`Panier${
-                totalItems > 0
-                  ? `, ${totalItems} article${
-                      totalItems > 1
-                        ? "s"
-                        : ""
-                    }`
-                  : ""
-              }`}
-              className="relative flex h-10 w-10 items-center justify-center rounded-full text-foreground transition hover:bg-muted active:scale-95"
-            >
-              <ShoppingCart
-                className="h-5 w-5"
-                strokeWidth={1.8}
-              />
-
-              {totalItems > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
-                  {totalItems > 99
-                    ? "99+"
-                    : totalItems}
-                </span>
-              )}
-            </button>
-
-            {/* COMPTE */}
+                  {totalItems > 0 && (
+                    <span className="absolute right-0 top-0 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+                      {totalItems > 99 ? "99+" : totalItems}
+                    </span>
+                  )}
+                </button>
+              </>
+            )}
 
             <button
               type="button"
               onClick={goToAccount}
-              aria-label="Compte"
-              className="relative flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-semibold text-foreground transition hover:bg-muted/70 active:scale-95"
+              aria-label={
+                isSubscriber
+                  ? "Mon compte"
+                  : "Créer un compte BIB Abonné"
+              }
+              className="flex h-10 w-10 items-center justify-center rounded-full border bg-background transition-colors hover:bg-muted"
             >
-              {user ? (
-                <span>{initial}</span>
+              {isSubscriber ? (
+                <span className="text-sm font-semibold">
+                  {initial}
+                </span>
               ) : (
                 <User className="h-5 w-5" />
-              )}
-
-              {user && (
-                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
               )}
             </button>
           </div>
         </div>
+
+        {/* Mobile search */}
+        <div className="border-t px-4 py-3 md:hidden">
+          <form onSubmit={submitSearch}>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+              <Input
+                value={search}
+                onChange={(event) =>
+                  setSearch(event.target.value)
+                }
+                placeholder="Rechercher"
+                className="pl-9"
+              />
+            </div>
+          </form>
+        </div>
       </header>
 
-      {/* =====================================================
-          CONTENU
-         ===================================================== */}
-
-      <main className="container mx-auto max-w-7xl px-4 pb-28 lg:pb-12">
-
-        {/* HERO */}
-
+      <main className="pb-24 md:pb-0">
         {!query && (
           <StoreIntro
             isSubscriber={isSubscriber}
@@ -523,258 +402,246 @@ export default function Store() {
           />
         )}
 
-        {/* COMPTE / SUIVI */}
-
         {!query && !isSubscriber && (
           <StoreAccountBar
-            onActivateAccount={activateAccount}
+            onActivate={activateAccount}
             onTrackOrder={goToOrderTracking}
           />
         )}
 
-        {/* CHARGEMENT */}
-
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-24 text-muted-foreground">
-            <Loader2 className="h-6 w-6 animate-spin" />
-
-            <p className="text-sm">
-              Chargement des boutiques…
-            </p>
-          </div>
-        ) : filteredBoutiques.length === 0 ? (
-          <div className="mt-8 rounded-3xl border border-dashed border-border bg-muted/30 px-5 py-16 text-center">
-            <p className="text-lg font-semibold">
-              Aucun résultat
-            </p>
-
-            <p className="mt-2 text-sm text-muted-foreground">
-              Essayez un autre mot-clé.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setSearch("")}
-              className="mt-5 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:brightness-110"
-            >
-              Réinitialiser la recherche
-            </button>
+          <div className="flex min-h-[40vh] items-center justify-center">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : query ? (
-          <Rail
-            title={`Résultats pour "${search.trim()}"`}
-            subtitle={`${filteredBoutiques.length} boutique${
-              filteredBoutiques.length > 1
-                ? "s"
-                : ""
-            }`}
-            items={filteredBoutiques}
-            showFilter
-          />
+          <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+            <div className="mb-6">
+              <p className="text-sm text-muted-foreground">
+                Résultats pour
+              </p>
+
+              <h2 className="text-2xl font-semibold">
+                « {search.trim()} »
+              </h2>
+            </div>
+
+            {filteredBoutiques.length === 0 ? (
+              <div className="rounded-2xl border bg-card p-10 text-center">
+                <SlidersHorizontal className="mx-auto mb-4 h-8 w-8 text-muted-foreground" />
+
+                <h3 className="text-lg font-semibold">
+                  Aucun résultat
+                </h3>
+
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Essayez une autre recherche.
+                </p>
+              </div>
+            ) : (
+              <Rail
+                title="Boutiques correspondantes"
+                boutiques={filteredBoutiques}
+              />
+            )}
+          </section>
         ) : (
-          <>
-            <Rail
-              title="Tendances"
-              subtitle="Les boutiques les plus populaires"
-              items={trendingBoutiques}
-              accent
-              showFilter
-            />
+          <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+            {trendingBoutiques.length > 0 && (
+              <Rail
+                title="En ce moment"
+                boutiques={trendingBoutiques}
+              />
+            )}
 
-            <Rail
-              title="Nouveautés"
-              subtitle="Les dernières boutiques"
-              items={newestBoutiques}
-              showFilter
-            />
-
-            {boutiquesByCategory.map(
-              ([category, categoryBoutiques]) => (
+            {newestBoutiques.length > 0 && (
+              <div className="mt-12">
                 <Rail
-                  key={category}
-                  title={category}
-                  subtitle={`${categoryBoutiques.length} boutique${
-                    categoryBoutiques.length > 1
-                      ? "s"
-                      : ""
-                  }`}
-                  items={categoryBoutiques}
-                  showFilter
+                  title="Nouvelles boutiques"
+                  boutiques={newestBoutiques}
                 />
+              </div>
+            )}
+
+            {Array.from(boutiquesByCategory.entries()).map(
+              ([category, categoryBoutiques]) => (
+                <div
+                  key={category}
+                  className="mt-12"
+                >
+                  <Rail
+                    title={category}
+                    boutiques={categoryBoutiques.slice(0, 12)}
+                  />
+                </div>
               ),
             )}
-          </>
+          </div>
         )}
       </main>
 
-      {/* =====================================================
-          NAVIGATION MOBILE
-         ===================================================== */}
-
+      {/* Mobile navigation uniquement pour les abonnés */}
       {isSubscriber && (
-        <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background/95 backdrop-blur-xl lg:hidden">
-          <div className="mx-auto flex h-16 max-w-lg items-center justify-around px-3 pb-[env(safe-area-inset-bottom)]">
-
+        <nav className="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 backdrop-blur md:hidden">
+          <div className="mx-auto grid max-w-lg grid-cols-4">
             <MobileNavButton
+              icon={<House className="h-5 w-5" />}
               label="Accueil"
-              active={
-                location.pathname === "/store"
-              }
-              onClick={() =>
-                navigate("/store")
-              }
-            >
-              <House
-                className="h-5 w-5"
-                strokeWidth={1.8}
-              />
-            </MobileNavButton>
+              active={location.pathname === "/store"}
+              onClick={() => navigate("/store")}
+            />
 
             <MobileNavButton
+              icon={<Search className="h-5 w-5" />}
               label="Produits"
               active={location.pathname.startsWith(
                 "/store/products",
               )}
               onClick={goToProducts}
-            >
-              <Search
-                className="h-5 w-5"
-                strokeWidth={1.8}
-              />
-            </MobileNavButton>
+            />
 
             <MobileNavButton
+              icon={<ClipboardList className="h-5 w-5" />}
               label="Commandes"
               active={location.pathname.startsWith(
                 "/store/orders",
               )}
               onClick={goToOrders}
-            >
-              <ClipboardList
-                className="h-5 w-5"
-                strokeWidth={1.8}
-              />
-            </MobileNavButton>
+            />
 
             <MobileNavButton
+              icon={<MoreHorizontal className="h-5 w-5" />}
               label="Plus"
-              active={false}
+              active={
+                location.pathname.startsWith(
+                  "/store/account",
+                ) ||
+                location.pathname.startsWith(
+                  "/store/favorites",
+                )
+              }
               onClick={goToAccount}
-            >
-              <MoreHorizontal
-                className="h-5 w-5"
-                strokeWidth={1.8}
-              />
-            </MobileNavButton>
+            />
           </div>
         </nav>
       )}
 
-      {/* =====================================================
-          FOOTER
-         ===================================================== */}
+      <footer className="border-t">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 text-sm text-muted-foreground sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+          <div>
+            © {new Date().getFullYear()} BIB
+          </div>
 
-      <footer className="border-t border-border bg-muted/30">
-        <div className="container mx-auto flex max-w-7xl flex-col items-center gap-2 px-4 py-6 text-center text-xs text-muted-foreground sm:flex-row sm:justify-between sm:text-left">
+          <div className="flex flex-wrap gap-4">
+            <Link
+              to="/centre-aide"
+              className="hover:text-foreground"
+            >
+              Centre d'aide
+            </Link>
 
-          <Logo
-            iconSize={20}
-            asLink={false}
-          />
+            <Link
+              to="/pack-legal"
+              className="hover:text-foreground"
+            >
+              Informations légales
+            </Link>
 
-          <p>
-            © {new Date().getFullYear()}{" "}
-            Brand-In-A-Box · Store officiel
-          </p>
-
-          <Link
-            to="/"
-            className="transition hover:text-foreground"
-          >
-            Brand-In-A-Box
-          </Link>
+            <Link
+              to="/a-propos"
+              className="hover:text-foreground"
+            >
+              À propos
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
   );
 }
 
-/* =========================================================
-   HERO STORE
-   ========================================================= */
-
-interface StoreIntroProps {
-  isSubscriber: boolean;
-  imageUrl?: string;
-  onPrimaryAction: () => void;
-}
+/* =============================================================
+ * Hero
+ * ============================================================= */
 
 function StoreIntro({
   isSubscriber,
   imageUrl,
   onPrimaryAction,
-}: StoreIntroProps) {
+}: {
+  isSubscriber: boolean;
+  imageUrl: string | null;
+  onPrimaryAction: () => void;
+}) {
   return (
-    <section className="mb-5 mt-6 overflow-hidden rounded-[28px] border border-border bg-[#f7f5f0] sm:mt-8">
-      <div className="grid items-stretch lg:grid-cols-[1fr_0.9fr]">
+    <section className="border-b">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:px-8 lg:py-16">
+        <div className="max-w-2xl">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1.5 text-xs font-medium">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+              <Check className="h-3 w-3" />
+            </span>
 
-        <div className="flex flex-col justify-center px-6 py-9 sm:px-8 sm:py-11 lg:px-10 lg:py-12">
-
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
             {isSubscriber
               ? "Votre espace BIB"
               : "Des marques engagées"}
-          </p>
+          </div>
 
-          <h1 className="max-w-xl font-display text-3xl font-semibold leading-tight text-foreground sm:text-4xl lg:text-[42px]">
+          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
             {isSubscriber
               ? "Découvrez, suivez et retrouvez vos boutiques préférées."
               : "Des produits sélectionnés avec soin."}
           </h1>
 
-          <p className="mt-4 max-w-lg text-sm leading-relaxed text-muted-foreground sm:text-base">
+          <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
             {isSubscriber
-              ? "Explorez de nouvelles boutiques, retrouvez vos favoris et gardez vos commandes au même endroit."
-              : "Découvrez des boutiques indépendantes et des produits sélectionnés selon les exigences BIB."}
+              ? "Explorez les boutiques vérifiées par BIB, découvrez leurs produits et retrouvez facilement vos sélections."
+              : "Explorez les boutiques vérifiées par BIB et découvrez des produits sélectionnés avec soin."}
           </p>
 
-          <button
-            type="button"
-            onClick={onPrimaryAction}
-            className="mt-6 inline-flex h-11 w-fit items-center justify-center rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:brightness-110 active:scale-[0.98]"
-          >
-            Découvrir les produits
-          </button>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={onPrimaryAction}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              Découvrir les produits
+              <ArrowRight className="h-4 w-4" />
+            </button>
+
+            {!isSubscriber && (
+              <Link
+                to="/store/signup"
+                className="inline-flex h-11 items-center justify-center rounded-full border px-6 text-sm font-semibold transition-colors hover:bg-muted"
+              >
+                Devenir BIB Abonné
+              </Link>
+            )}
+          </div>
         </div>
 
-        <div className="relative min-h-[230px] overflow-hidden bg-muted sm:min-h-[280px] lg:min-h-[340px]">
+        <div className="relative overflow-hidden rounded-3xl border bg-muted">
+          <div className="aspect-[4/3]">
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt="Boutique BIB"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <Logo />
+              </div>
+            )}
+          </div>
 
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover"
-              loading="eager"
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-muted">
-              <span className="font-display text-5xl font-semibold text-foreground/10">
-                BIB
+          <div className="absolute bottom-4 left-4 right-4 rounded-2xl border bg-background/90 p-4 shadow-sm backdrop-blur">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <Check className="h-3.5 w-3.5" />
               </span>
+
+              Verified by BIB
             </div>
-          )}
-
-          <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-transparent to-transparent" />
-
-          <div className="absolute right-4 top-4 flex items-center gap-2 rounded-full bg-white/95 px-3 py-2 text-xs font-semibold text-slate-900 shadow-sm backdrop-blur-sm sm:right-6 sm:top-6">
-
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-950 text-[9px] font-bold text-white">
-              BIB
-            </span>
-
-            <span>
-              Vérifié par BIB
-            </span>
           </div>
         </div>
       </div>
@@ -782,68 +649,46 @@ function StoreIntro({
   );
 }
 
-/* =========================================================
-   COMPTE / SUIVI
-   ========================================================= */
-
-interface StoreAccountBarProps {
-  onActivateAccount: () => void;
-  onTrackOrder: () => void;
-}
+/* =============================================================
+ * Non-subscriber account bar
+ * ============================================================= */
 
 function StoreAccountBar({
-  onActivateAccount,
+  onActivate,
   onTrackOrder,
-}: StoreAccountBarProps) {
+}: {
+  onActivate: () => void;
+  onTrackOrder: () => void;
+}) {
   return (
-    <section className="mb-7 overflow-hidden rounded-2xl border border-border bg-muted/35">
-      <div className="grid gap-0 sm:grid-cols-[1.25fr_1fr]">
+    <section className="border-b bg-muted/40">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+        <div>
+          <p className="font-medium">
+            Vous découvrez BIB pour la première fois ?
+          </p>
 
-        <div className="flex min-w-0 flex-col justify-between gap-4 px-4 py-4 sm:px-5 sm:py-4">
-
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-foreground">
-              Activez votre compte BIB
-            </p>
-
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              Suivez vos boutiques favorites, retrouvez vos commandes et profitez de votre espace BIB.
-            </p>
-
-            <p className="mt-2 text-sm font-semibold text-foreground">
-              BIB Abonné · 4,99 €/mois
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={onActivateAccount}
-            className="inline-flex h-9 w-fit items-center justify-center gap-1.5 rounded-full bg-foreground px-4 text-xs font-semibold text-background transition hover:opacity-85 active:scale-[0.98]"
-          >
-            Activer mon compte
-            <ArrowRight className="h-3.5 w-3.5" />
-          </button>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Créez votre espace BIB Abonné pour accéder aux
+            favoris, au panier et au suivi de vos commandes.
+          </p>
         </div>
 
-        <div className="flex min-w-0 flex-col justify-between gap-3 border-t border-border/70 px-4 py-4 sm:border-l sm:border-t-0 sm:px-5 sm:py-4">
-
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-foreground">
-              Vous avez déjà commandé ?
-            </p>
-
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              Suivez l’avancement de votre commande, même sans compte abonné.
-            </p>
-          </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={onActivate}
+            className="inline-flex h-10 items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground"
+          >
+            Créer mon espace
+          </button>
 
           <button
             type="button"
             onClick={onTrackOrder}
-            className="inline-flex h-9 w-fit items-center justify-center gap-1.5 rounded-full border border-border bg-background px-4 text-xs font-semibold text-foreground transition hover:bg-muted active:scale-[0.98]"
+            className="inline-flex h-10 items-center justify-center rounded-full border px-5 text-sm font-medium hover:bg-background"
           >
-            Suivre ma commande
-            <ArrowRight className="h-3.5 w-3.5" />
+            Suivre une commande
           </button>
         </div>
       </div>
@@ -851,174 +696,94 @@ function StoreAccountBar({
   );
 }
 
-/* =========================================================
-   MOBILE NAVIGATION
-   ========================================================= */
-
-interface MobileNavButtonProps {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-  children: ReactNode;
-}
+/* =============================================================
+ * Mobile navigation
+ * ============================================================= */
 
 function MobileNavButton({
+  icon,
   label,
   active,
   onClick,
-  children,
-}: MobileNavButtonProps) {
+}: {
+  icon: ReactNode;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex min-w-[64px] flex-col items-center justify-center gap-1 rounded-xl py-1.5 text-[11px] transition ${
+      className={`flex flex-col items-center justify-center gap-1 py-3 text-xs transition-colors ${
         active
-          ? "font-semibold text-primary"
-          : "text-muted-foreground hover:text-foreground"
+          ? "text-foreground"
+          : "text-muted-foreground"
       }`}
     >
-      {children}
-
-      <span>
-        {label}
-      </span>
+      {icon}
+      <span>{label}</span>
     </button>
   );
 }
 
-/* =========================================================
-   RAIL
-   ========================================================= */
-
-interface RailProps {
-  title: string;
-  subtitle?: string;
-  items: StoreBoutique[];
-  accent?: boolean;
-  showFilter?: boolean;
-}
+/* =============================================================
+ * Boutique rail
+ * ============================================================= */
 
 function Rail({
   title,
-  subtitle,
-  items,
-  accent,
-  showFilter,
-}: RailProps) {
-  const railRef =
-    useRef<HTMLDivElement>(null);
+  boutiques,
+}: {
+  title: string;
+  boutiques: StoreBoutique[];
+}) {
+  const railRef = useRef<HTMLDivElement | null>(null);
 
-  if (items.length === 0) {
-    return null;
-  }
+  const scrollNext = () => {
+    const element = railRef.current;
 
-  const scroll = (
-    direction: 1 | -1,
-  ) => {
-    const element =
-      railRef.current;
-
-    if (!element) {
-      return;
-    }
+    if (!element) return;
 
     element.scrollBy({
-      left:
-        direction *
-        element.clientWidth *
-        0.85,
+      left: element.clientWidth * 0.85,
       behavior: "smooth",
     });
   };
 
-  const handleFilterClick = () => {
-    window.dispatchEvent(
-      new CustomEvent(
-        "bib:open-store-filters",
-        {
-          detail: {
-            section: title,
-          },
-        },
-      ),
-    );
-  };
+  if (boutiques.length === 0) return null;
 
   return (
-    <section className="mt-8 sm:mt-10">
-
-      <div className="mb-3 flex items-center justify-between gap-3">
-
-        <div className="min-w-0">
-
-          <h2
-            className={`font-display text-lg font-semibold leading-tight sm:text-xl ${
-              accent
-                ? "text-primary"
-                : "text-foreground"
-            }`}
-          >
+    <section>
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-semibold sm:text-2xl">
             {title}
           </h2>
-
-          {subtitle && (
-            <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground sm:text-sm">
-              {subtitle}
-            </p>
-          )}
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
-
-          {showFilter && (
-            <button
-              type="button"
-              onClick={handleFilterClick}
-              aria-label={`Filtrer ${title}`}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-foreground transition hover:bg-muted active:scale-95"
-            >
-              <SlidersHorizontal
-                className="h-4 w-4"
-                strokeWidth={1.8}
-              />
-            </button>
-          )}
-
+        {boutiques.length > 3 && (
           <button
             type="button"
-            onClick={() => scroll(1)}
-            aria-label={`Voir plus dans ${title}`}
-            className="hidden h-9 w-9 items-center justify-center rounded-full bg-muted text-foreground transition hover:bg-muted/70 active:scale-95 sm:flex"
+            onClick={scrollNext}
+            aria-label={`Voir davantage de boutiques dans ${title}`}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-colors hover:bg-muted"
           >
-            <ChevronRight
-              className="h-4 w-4"
-              strokeWidth={1.8}
-            />
+            <ChevronRight className="h-4 w-4" />
           </button>
-        </div>
+        )}
       </div>
 
       <div
         ref={railRef}
-        className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 scrollbar-none sm:gap-4"
+        className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 scrollbar-none"
       >
-        {items.map((boutique) => (
+        {boutiques.map((boutique) => (
           <div
             key={boutique.id}
-            className="
-              w-[210px]
-              shrink-0
-              snap-start
-              sm:w-[220px]
-              md:w-[230px]
-              lg:w-[240px]
-              xl:w-[250px]
-            "
+            className="w-[78vw] max-w-[320px] shrink-0 snap-start sm:w-[280px] lg:w-[300px]"
           >
-            <BoutiqueCard
-              boutique={boutique}
-            />
+            <BoutiqueCard boutique={boutique} />
           </div>
         ))}
       </div>
