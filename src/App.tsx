@@ -289,7 +289,7 @@ export default function App() {
 
                   <Route
                     path="/store/cart"
-                    element={<StoreCartPage />}
+                    element={<StoreCart />}
                   />
 
                   <Route
