@@ -27,7 +27,7 @@ import CheckoutReturn from "@/pages/CheckoutReturn";
 import NotFound from "@/pages/NotFound";
 import BrandPreview from "@/pages/BrandPreview";
 import Store from "@/pages/Store";
-import StoreBoutique from "./pages/StoreBoutique";
+import StoreBoutique from "@/pages/StoreBoutique";
 import StoreCatalog from "@/pages/StoreCatalog";
 import StoreProduct from "@/pages/StoreProduct";
 import StoreCart from "@/pages/StoreCart";
@@ -283,9 +283,8 @@ export default function App() {
                   />
 
                   <Route
-                    path="/store/boutique/:slug"
-                    element={<StoreBoutique />}
-                    />
+                    path="/store/product"
+                    element={<StoreProduct />
 
                   <Route
                     path="/store/cart"
@@ -340,6 +339,10 @@ export default function App() {
                     path="/unsubscribe"
                     element={<Unsubscribe />}
                   />
+
+                  <Rout
+                    path="/recycler"
+                    element={<Recycler />
 
                   {/* =====================================================
                       STORE — CUSTOMER AREA
