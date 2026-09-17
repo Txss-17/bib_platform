@@ -32,7 +32,7 @@ import {
   type SampleStatus,
 } from "@/hooks/useSampleValidation";
 import { useSupplierProductsRealtime } from "@/hooks/useSupplierProducts";
-import { SampleValidationPanel } from "@/components/dashboard/SampleValidationPanel";
+import { SampleValidationSection } from "@/components/dashboard/SampleValidationSection";
 import { ProductMediaDialog } from "@/components/dashboard/products/ProductMediaDialog";
 import { EditProductDialog } from "@/components/dashboard/products/EditProductDialog";
 import { ReviewSampleDialog } from "@/components/dashboard/products/ReviewSampleDialog";
