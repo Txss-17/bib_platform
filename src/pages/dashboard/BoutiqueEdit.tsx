@@ -39,7 +39,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { BoutiqueIdentityEditor } from "@/components/dashboard/boutique/BoutiqueIdentityEditor";
 import { BrandStudioWizard } from "@/components/dashboard/boutique/BrandStudioWizard";
 import { StudioEditor } from "@/components/dashboard/boutique/StudioEditor";
-import { HighlightsManager } from "@/components/dashboard/boutique/HighlightsManager";
+import { StoriesManager } from "@/components/dashboard/boutique/StoriesManager";
 import { GallerySectionEditor } from "@/components/dashboard/boutique/GallerySectionEditor";
 
 const colorSchemes = [
