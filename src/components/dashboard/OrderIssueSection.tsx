@@ -2,61 +2,6 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { AlertTriangle, Clock, CheckCircle, XCircle, ArrowUpCircle, MessageSquare } from "lucide-react";
-import {
-  useOrderIssues,
-  useIssueResponses,
-  useRespondToIssue,
-  ISSUE_TYPE_LABELS,
-  ISSUE_STATUS_LABELS,
-  ISSUE_ACTION_LABELS,
-  type OrderIssue,
-  type IssueAction,
-  type IssueStatus,
-} from "@/hooks/useOrderIssues";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "@/hooks/use-toast";
-
-const statusIcons: Record<string, React.ElementType> = {
-  pending: Clock,
-  accepted: CheckCircle,
-  refused: XCircle,
-  resolved: CheckCircle,
-  escalated: ArrowUpCircle,
-};
-
-const statusColors: Record<string, string> = {
-  pending: "bg-warning/15 text-warning",
-  accepted: "bg-success/15 text-success",
-  refused: "bg-destructive/15 text-destructive",
-  resolved: "bg-info/15 text-info",
-  escalated: "bg-warning/15 text-warning",
-};
-
-interface OrderIssuePanelProps {
-  orderId: string;
-}
-
-export function OrderIssuePanel({ orderId }: OrderIssuePanelProps) {
-  const { data: issues = [], isLoading } = useOrderIssues(orderId);
-
-  if (isLoading) return <p className="text-xs text-muted-foreground">Chargement des signalements...</p>;
-  if (issues.length === 0) return <p className="text-xs text-muted-foreground italic">Aucun signalement pour cette commande.</p>;
-
-  return (
-    <div className="space-y-3">
-      {issues.map((issue) => (
-        <IssueCard key={issue.id} issue={issue} />
-      ))}
-    </div>
-  );
-}
-
-function IssueCard({ issue }: { issue: OrderIssue }) {import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   AlertTriangle,
   Clock,
