@@ -30,38 +30,6 @@ export function CartDrawer({
   primaryColor,
   boutiqueId,
   boutiqueName,
-}: CartDrawerProps) {import { useState } from "react";
-import {
-  Minus,
-  Plus,
-  ShoppingBag,
-  Trash2,
-} from "lucide-react";
-
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-
-import { useCart } from "@/contexts/CartContext";
-import { useStorefrontContext } from "@/contexts/StorefrontContext";
-import { trackStorefrontEvent } from "@/lib/storefrontTracking";
-
-import { CheckoutForm } from "./CheckoutForm";
-
-interface CartDrawerProps {
-  primaryColor: string;
-  boutiqueId: string;
-  boutiqueName: string;
-}
-
-export function CartDrawer({
-  primaryColor,
-  boutiqueId,
-  boutiqueName,
 }: CartDrawerProps) {
   const {
     items,
