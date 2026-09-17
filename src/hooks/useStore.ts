@@ -56,11 +56,79 @@ export interface StoreProduct {
 }
 
 /* =========================================================
+   INTERNAL TYPES
+   ========================================================= */
+
+interface StoreProductRow {
+  id: string;
+  public_price: number | null;
+  status: string;
+  created_at: string;
+  supplier_products:
+    | {
+        name: string;
+        description: string | null;
+        image_url: string | null;
+      }
+    | null;
+  boutiques:
+    | {
+        id: string;
+        name: string;
+        slug: string;
+        category: string;
+        status: string;
+      }
+    | null;
+}
+
+interface StoreBoutiqueProductRow {
+  id: string;
+  public_price: number | null;
+  status: string;
+  cumulative_sales: number | null;
+  supplier_products:
+    | {
+        name: string;
+        image_url: string | null;
+      }
+    | null;
+}
+
+interface StoreOrderRow {
+  id: string;
+  market: string | null;
+}
+
+interface StoreRecyclingScanRow {
+  points: number | null;
+}
+
+interface StoreBoutiqueRow {
+  id: string;
+  name: string;
+  slug: string;
+  category: string;
+  description: string | null;
+  tagline: string | null;
+  logo_url: string | null;
+  cover_image_url: string | null;
+  has_protection: boolean | null;
+  highlight_media: unknown;
+  created_at: string;
+  products: StoreBoutiqueProductRow[];
+  orders: StoreOrderRow[];
+  recycling_scans: StoreRecyclingScanRow[];
+}
+
+/* =========================================================
    HELPERS
    ========================================================= */
 
 function normalizeStories(value: unknown): StoreStory[] {
-  if (!Array.isArray(value)) return [];
+  if (!Array.isArray(value)) {
+    return [];
+  }
 
   return value.filter((story): story is StoreStory => {
     if (!story || typeof story !== "object") {
@@ -71,23 +139,71 @@ function normalizeStories(value: unknown): StoreStory[] {
 
     return (
       typeof item.id === "string" &&
-      (item.kind === "image" || item.kind === "video") &&
+      item.id.length > 0 &&
+      (item.kind === "image" ||
+        item.kind === "video") &&
       typeof item.url === "string" &&
       item.url.length > 0
     );
   });
 }
 
+function normalizeStoreProduct(
+  product: StoreProductRow,
+): StoreProduct {
+  const supplierProduct =
+    product.supplier_products;
+
+  const boutique = product.boutiques;
+
+  return {
+    id: product.id,
+
+    name:
+      supplierProduct?.name?.trim() ||
+      "Produit",
+
+    description:
+      supplierProduct?.description ?? null,
+
+    image_url:
+      supplierProduct?.image_url ?? null,
+
+    price: Number(
+      product.public_price ?? 0,
+    ),
+
+    boutique_id:
+      boutique?.id ?? "",
+
+    boutique_name:
+      boutique?.name?.trim() ||
+      "Boutique",
+
+    boutique_slug:
+      boutique?.slug ?? "",
+
+    boutique_category:
+      boutique?.category?.trim() ||
+      "Autres",
+
+    created_at:
+      product.created_at,
+  };
+}
+
 /* =========================================================
-   BOUTIQUES
+   BOUTIQUES DU STORE
    ========================================================= */
 
 export function useStoreBoutiques() {
   return useQuery({
     queryKey: ["store-boutiques"],
 
-    queryFn: async (): Promise<StoreBoutique[]> => {
-      const { data: boutiques, error } = await supabase
+    queryFn: async (): Promise<
+      StoreBoutique[]
+    > => {
+      const { data, error } = await supabase
         .from("boutiques")
         .select(`
           id,
@@ -121,83 +237,136 @@ export function useStoreBoutiques() {
         `)
         .eq("status", "published")
         .eq("products.status", "active")
-        .order("created_at", { ascending: false });
+        .order("created_at", {
+          ascending: false,
+        });
 
       if (error) {
         throw error;
       }
 
-      return (boutiques ?? []).map(
-        (boutique: any): StoreBoutique => {
-          const products = boutique.products ?? [];
+      const rows =
+        (data ?? []) as unknown as StoreBoutiqueRow[];
 
-          const productPreviews: StoreProductPreview[] =
-            products.slice(0, 8).map((product: any) => ({
-              id: product.id,
-              name:
-                product.supplier_products?.name ??
-                "Produit",
-              image_url:
-                product.supplier_products?.image_url ??
-                null,
-              price: Number(
-                product.public_price ?? 0,
-              ),
-            }));
+      return rows.map(
+        (boutique): StoreBoutique => {
+          const products =
+            boutique.products ?? [];
 
-          const totalSales = products.reduce(
-            (total: number, product: any) =>
-              total +
-              Number(
-                product.cumulative_sales ?? 0,
-              ),
-            0,
-          );
+          const productPreviews =
+            products
+              .slice(0, 8)
+              .map(
+                (
+                  product,
+                ): StoreProductPreview => ({
+                  id: product.id,
 
-          const orders = boutique.orders ?? [];
+                  name:
+                    product.supplier_products
+                      ?.name?.trim() ||
+                    "Produit",
+
+                  image_url:
+                    product
+                      .supplier_products
+                      ?.image_url ??
+                    null,
+
+                  price: Number(
+                    product.public_price ?? 0,
+                  ),
+                }),
+              );
+
+          const totalSales =
+            products.reduce(
+              (total, product) =>
+                total +
+                Number(
+                  product.cumulative_sales ??
+                    0,
+                ),
+              0,
+            );
+
+          const orders =
+            boutique.orders ?? [];
 
           const market =
-            orders[0]?.market ?? "EU";
+            orders.find(
+              (order) =>
+                typeof order.market ===
+                  "string" &&
+                order.market.trim()
+                  .length > 0,
+            )?.market ?? "EU";
 
-          const recyclingPoints = (
-            boutique.recycling_scans ?? []
-          ).reduce(
-            (total: number, scan: any) =>
-              total +
-              Number(scan.points ?? 0),
-            0,
-          );
-
-          const stories = normalizeStories(
-            boutique.highlight_media,
-          );
+          const recyclingPoints =
+            (
+              boutique.recycling_scans ??
+              []
+            ).reduce(
+              (total, scan) =>
+                total +
+                Number(
+                  scan.points ?? 0,
+                ),
+              0,
+            );
 
           return {
             id: boutique.id,
-            name: boutique.name,
+
+            name:
+              boutique.name?.trim() ||
+              "Boutique",
+
             slug: boutique.slug,
-            category: boutique.category,
+
+            category:
+              boutique.category?.trim() ||
+              "Autres",
+
             description:
-              boutique.description,
+              boutique.description ??
+              null,
+
             tagline:
-              boutique.tagline,
+              boutique.tagline ??
+              null,
+
             logo_url:
-              boutique.logo_url,
+              boutique.logo_url ??
+              null,
+
             cover_image_url:
-              boutique.cover_image_url,
+              boutique.cover_image_url ??
+              null,
+
             has_protection:
               boutique.has_protection ??
               false,
+
             product_count:
               products.length,
+
             product_previews:
               productPreviews,
-            stories,
+
+            stories:
+              normalizeStories(
+                boutique.highlight_media,
+              ),
+
             market,
+
             created_at:
               boutique.created_at,
+
             total_sales:
               totalSales,
+
             recycling_points:
               recyclingPoints,
           };
@@ -215,7 +384,9 @@ export function useStoreProducts() {
   return useQuery({
     queryKey: ["store-products"],
 
-    queryFn: async (): Promise<StoreProduct[]> => {
+    queryFn: async (): Promise<
+      StoreProduct[]
+    > => {
       const { data, error } = await supabase
         .from("products")
         .select(`
@@ -237,7 +408,10 @@ export function useStoreProducts() {
           )
         `)
         .eq("status", "active")
-        .eq("boutiques.status", "published")
+        .eq(
+          "boutiques.status",
+          "published",
+        )
         .order("created_at", {
           ascending: false,
         });
@@ -246,47 +420,16 @@ export function useStoreProducts() {
         throw error;
       }
 
-      return (data ?? []).map(
-        (product: any): StoreProduct => ({
-          id: product.id,
+      const rows =
+        (data ?? []) as unknown as StoreProductRow[];
 
-          name:
-            product.supplier_products?.name ??
-            "Produit",
-
-          description:
-            product.supplier_products
-              ?.description ??
-            null,
-
-          image_url:
-            product.supplier_products
-              ?.image_url ??
-            null,
-
-          price: Number(
-            product.public_price ?? 0,
-          ),
-
-          boutique_id:
-            product.boutiques?.id ?? "",
-
-          boutique_name:
-            product.boutiques?.name ??
-            "Boutique",
-
-          boutique_slug:
-            product.boutiques?.slug ??
-            "",
-
-          boutique_category:
-            product.boutiques?.category ??
-            "Autres",
-
-          created_at:
-            product.created_at,
-        }),
-      );
+      return rows
+        .filter(
+          (product) =>
+            Boolean(product.boutiques?.id) &&
+            Boolean(product.boutiques?.slug),
+        )
+        .map(normalizeStoreProduct);
     },
   });
 }
@@ -335,7 +478,10 @@ export function useStoreProduct(
         `)
         .eq("id", productId)
         .eq("status", "active")
-        .eq("boutiques.status", "published")
+        .eq(
+          "boutiques.status",
+          "published",
+        )
         .single();
 
       if (error) {
@@ -348,43 +494,21 @@ export function useStoreProduct(
         );
       }
 
-      return {
-        id: data.id,
+      const product =
+        data as unknown as StoreProductRow;
 
-        name:
-          (data as any).supplier_products
-            ?.name ?? "Produit",
+      if (
+        !product.boutiques?.id ||
+        !product.boutiques?.slug
+      ) {
+        throw new Error(
+          "Boutique du produit introuvable",
+        );
+      }
 
-        description:
-          (data as any).supplier_products
-            ?.description ?? null,
-
-        image_url:
-          (data as any).supplier_products
-            ?.image_url ?? null,
-
-        price: Number(
-          (data as any).public_price ?? 0,
-        ),
-
-        boutique_id:
-          (data as any).boutiques?.id ?? "",
-
-        boutique_name:
-          (data as any).boutiques?.name ??
-          "Boutique",
-
-        boutique_slug:
-          (data as any).boutiques?.slug ??
-          "",
-
-        boutique_category:
-          (data as any).boutiques?.category ??
-          "Autres",
-
-        created_at:
-          (data as any).created_at,
-      };
+      return normalizeStoreProduct(
+        product,
+      );
     },
   });
 }
