@@ -283,9 +283,9 @@ export default function App() {
                   />
 
                   <Route
-                    path="/store/product/:productId"
-                    element={<StoreProduct />}
-                  />
+                    path="/store/boutique/:slug"
+                    element={<StoreBoutique />}
+                    />
 
                   <Route
                     path="/store/cart"
