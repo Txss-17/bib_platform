@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { BusinessDocuments } from "@/components/dashboard/BusinessDocuments";
 import { EmailMarketingSettings } from "@/components/dashboard/EmailMarketingSettings";
 import { BoutiqueAlertsSettings } from "@/components/dashboard/BoutiqueAlertsSettings";
-import { SubscriptionPanel } from "@/components/payments/SubscriptionPanel";
+import { SubscriptionSection } from "@/components/payments/SubscriptionSection";
 import { useOpenBillingPortal, useUserSubscriptions } from "@/hooks/useSubscriptions";
 import { Plus, Minus, Store, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
