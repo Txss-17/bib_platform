@@ -4,729 +4,645 @@ import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
   ArrowRight,
-  Check,
-  Heart,
-  Loader2,
-  Package,
+  CheckCircle2,
+  ExternalLink,
+  Leaf,
   ShieldCheck,
   ShoppingBag,
-  Store as StoreIcon,
+  Store,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
-
 import { useSEO } from "@/hooks/useSEO";
-import { BoutiqueCard } from "@/components/store/BoutiqueCard";
 
 interface BoutiqueRow {
   id: string;
   name: string;
   slug: string;
-  status: string;
+  status: "draft" | "published";
   category: string | null;
   description: string | null;
-  tagline: string | null;
   logo_url: string | null;
-  cover_image_url: string | null;
-  user_id: string | null;
-  theme_settings: unknown;
+  cover_url: string | null;
+  seo_title: string | null;
+  seo_description: string | null;
+  target_markets: string[] | null;
 }
 
-interface ProductRow {
+interface SupplierProductRow {
   id: string;
-  public_price: number | null;
-  status: string;
-  cumulative_sales: number | null;
-  supplier_products:
-    | {
-        name: string;
-        image_url: string | null;
-        category: string | null;
-      }
-    | null;
+  name: string;
+  description: string | null;
+  category: string | null;
+  image_url: string | null;
 }
 
 interface ProductMediaRow {
   product_id: string;
-  url: string;
+  media_url: string;
   position: number | null;
+  is_selected: boolean | null;
+}
+
+interface ProductRow {
+  id: string;
+  boutique_id: string;
+  supplier_product_id: string;
+  public_price: number;
+  status: "active" | "paused";
+  stock_quantity: number;
+  cumulative_sales: number;
+  supplier_products:
+    | SupplierProductRow
+    | SupplierProductRow[]
+    | null;
 }
 
 interface StoreBoutiqueProduct {
   id: string;
   name: string;
-  price: number;
-  image_url: string | null;
+  description: string | null;
   category: string | null;
-  isPopular: boolean;
+  price: number;
+  imageUrl: string | null;
+  images: string[];
+  stockQuantity: number;
+  cumulativeSales: number;
+}
+
+function getSupplierProduct(
+  value: ProductRow["supplier_products"],
+): SupplierProductRow | null {
+  if (!value) return null;
+  return Array.isArray(value) ? value[0] ?? null : value;
+}
+
+function formatPrice(value: number) {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  }).format(value);
 }
 
 export default function StoreBoutique() {
   const { slug } = useParams<{ slug: string }>();
 
-  const {
-    data,
-    isLoading,
-    error,
-  } = useQuery({
+  const boutiqueQuery = useQuery({
     queryKey: ["store-boutique", slug],
-
+    enabled: Boolean(slug),
     queryFn: async () => {
-      if (!slug) {
-        throw new Error("Boutique introuvable");
-      }
+      if (!slug) throw new Error("Boutique introuvable.");
 
-      /*
-       * -------------------------------------------------------------
-       * Boutique
-       * -------------------------------------------------------------
-       */
-
-      const { data: boutiqueData, error: boutiqueError } =
-        await supabase
-          .from("boutiques")
-          .select(`
+      const { data, error } = await supabase
+        .from("boutiques")
+        .select(
+          `
             id,
             name,
             slug,
             status,
             category,
             description,
-            tagline,
             logo_url,
-            cover_image_url,
-            user_id,
-            theme_settings
-          `)
-          .eq("slug", slug)
-          .eq("status", "published")
-          .single();
+            cover_url,
+            seo_title,
+            seo_description,
+            target_markets
+          `,
+        )
+        .eq("slug", slug)
+        .eq("status", "published")
+        .maybeSingle();
 
-      if (boutiqueError) {
-        throw boutiqueError;
-      }
+      if (error) throw error;
 
-      const boutique =
-        boutiqueData as BoutiqueRow;
+      return data as BoutiqueRow | null;
+    },
+  });
 
-      /*
-       * -------------------------------------------------------------
-       * Products
-       *
-       * BIB Store only presents the commercial selection.
-       * Payment remains on /boutique/:slug.
-       * -------------------------------------------------------------
-       */
+  const boutique = boutiqueQuery.data;
 
-      const { data: productData, error: productError } =
-        await supabase
-          .from("products")
-          .select(`
+  const productsQuery = useQuery({
+    queryKey: ["store-boutique-products", boutique?.id],
+    enabled: Boolean(boutique?.id),
+    queryFn: async () => {
+      if (!boutique?.id) return [];
+
+      const { data, error } = await supabase
+        .from("products")
+        .select(
+          `
             id,
+            boutique_id,
+            supplier_product_id,
             public_price,
             status,
+            stock_quantity,
             cumulative_sales,
             supplier_products (
+              id,
               name,
-              image_url,
-              category
+              description,
+              category,
+              image_url
             )
-          `)
-          .eq("boutique_id", boutique.id)
-          .eq("status", "active")
-          .order("cumulative_sales", {
-            ascending: false,
-          })
-          .limit(12);
-
-      if (productError) {
-        throw productError;
-      }
-
-      const rows =
-        (productData as ProductRow[] | null) ?? [];
-
-      /*
-       * -------------------------------------------------------------
-       * Product media
-       * -------------------------------------------------------------
-       */
-
-      const productIds = rows.map(
-        (product) => product.id,
-      );
-
-      const mediaByProduct: Record<
-        string,
-        string[]
-      > = {};
-
-      if (productIds.length > 0) {
-        const { data: mediaData } = await supabase
-          .from("product_media" as any)
-          .select(
-            "product_id,url,position",
-          )
-          .in(
-            "product_id",
-            productIds,
-          )
-          .eq(
-            "is_selected",
-            true,
-          )
-          .order(
-            "position",
-            {
-              ascending: true,
-            },
-          );
-
-        const media =
-          (mediaData as ProductMediaRow[] | null) ??
-          [];
-
-        media.forEach((item) => {
-          if (
-            !item.product_id ||
-            !item.url
-          ) {
-            return;
-          }
-
-          if (!mediaByProduct[item.product_id]) {
-            mediaByProduct[item.product_id] = [];
-          }
-
-          mediaByProduct[item.product_id].push(
-            item.url,
-          );
-        });
-      }
-
-      const products: StoreBoutiqueProduct[] =
-        rows.map((product, index) => {
-          const gallery =
-            mediaByProduct[product.id] ?? [];
-
-          const fallback =
-            product.supplier_products?.image_url ??
-            null;
-
-          const images =
-            gallery.length > 0
-              ? gallery
-              : fallback
-                ? [fallback]
-                : [];
-
-          return {
-            id: product.id,
-            name:
-              product.supplier_products?.name ??
-              "Produit",
-            price: Number(
-              product.public_price ?? 0,
-            ),
-            image_url:
-              images[0] ?? fallback,
-            category:
-              product.supplier_products?.category ??
-              null,
-            isPopular: index < 3,
-          };
+          `,
+        )
+        .eq("boutique_id", boutique.id)
+        .eq("status", "active")
+        .order("cumulative_sales", {
+          ascending: false,
         });
 
-      return {
-        boutique,
-        products,
-      };
+      if (error) throw error;
+
+      return (data ?? []) as ProductRow[];
     },
-
-    enabled: Boolean(slug),
   });
 
-  /*
-   * -------------------------------------------------------------
-   * SEO
-   * -------------------------------------------------------------
-   */
+  const productIds = useMemo(
+    () => (productsQuery.data ?? []).map((product) => product.id),
+    [productsQuery.data],
+  );
+
+  const mediaQuery = useQuery({
+    queryKey: ["store-boutique-product-media", productIds],
+    enabled: productIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_media")
+        .select(
+          `
+            product_id,
+            media_url,
+            position,
+            is_selected
+          `,
+        )
+        .in("product_id", productIds)
+        .eq("is_selected", true)
+        .order("position", {
+          ascending: true,
+        });
+
+      if (error) throw error;
+
+      return (data ?? []) as ProductMediaRow[];
+    },
+  });
+
+  const products = useMemo<StoreBoutiqueProduct[]>(() => {
+    const mediaByProduct = new Map<string, string[]>();
+
+    for (const media of mediaQuery.data ?? []) {
+      const current = mediaByProduct.get(media.product_id) ?? [];
+
+      if (!current.includes(media.media_url)) {
+        current.push(media.media_url);
+      }
+
+      mediaByProduct.set(media.product_id, current);
+    }
+
+    return (productsQuery.data ?? [])
+      .map((product) => {
+        const supplierProduct = getSupplierProduct(
+          product.supplier_products,
+        );
+
+        if (!supplierProduct) return null;
+
+        const images = mediaByProduct.get(product.id) ?? [];
+
+        return {
+          id: product.id,
+          name: supplierProduct.name,
+          description: supplierProduct.description,
+          category:
+            supplierProduct.category ?? boutique?.category ?? null,
+          price: Number(product.public_price),
+          imageUrl:
+            images[0] ??
+            supplierProduct.image_url ??
+            null,
+          images,
+          stockQuantity: Number(product.stock_quantity ?? 0),
+          cumulativeSales: Number(
+            product.cumulative_sales ?? 0,
+          ),
+        };
+      })
+      .filter(Boolean) as StoreBoutiqueProduct[];
+  }, [productsQuery.data, mediaQuery.data, boutique?.category]);
 
   useSEO({
-    title: data?.boutique?.name
-      ? `${data.boutique.name} — BIB Store`
-      : "Boutique — BIB Store",
-
+    title:
+      boutique?.seo_title ||
+      `${boutique?.name ?? "Boutique"} — Vérifiée par BIB`,
     description:
-      data?.boutique?.description ??
-      data?.boutique?.tagline ??
-      "Découvrez cette boutique vérifiée sur BIB Store.",
-
-    image:
-      data?.boutique?.cover_image_url ??
-      data?.boutique?.logo_url ??
-      undefined,
-
-    type: "website",
-
-    keywords: [
-      data?.boutique?.name,
-      data?.boutique?.category,
-      "BIB",
-      "Brand-In-A-Box",
-      "boutique",
-      "produits",
-    ].filter(Boolean) as string[],
+      boutique?.seo_description ||
+      boutique?.description ||
+      `Découvrez ${boutique?.name ?? "cette boutique"} sur BIB et explorez sa sélection de produits vérifiés.`,
+    canonical: slug
+      ? `/store/boutique/${slug}`
+      : "/store",
   });
 
-  const category = useMemo(() => {
-    return data?.boutique?.category?.trim() || null;
-  }, [data?.boutique?.category]);
-
-  /*
-   * -------------------------------------------------------------
-   * Loading
-   * -------------------------------------------------------------
-   */
+  const isLoading =
+    boutiqueQuery.isLoading ||
+    (Boolean(boutique?.id) &&
+      (productsQuery.isLoading || mediaQuery.isLoading));
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2
-            className="h-8 w-8 animate-spin text-muted-foreground"
-            aria-hidden="true"
-          />
-
-          <p className="text-sm text-muted-foreground">
-            Chargement de la boutique...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  /*
-   * -------------------------------------------------------------
-   * Error / not found
-   * -------------------------------------------------------------
-   */
-
-  if (error || !data?.boutique) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
-        <div className="max-w-md text-center">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full border bg-background">
-            <StoreIcon className="h-6 w-6 text-muted-foreground" />
+      <div className="min-h-screen bg-background">
+        <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-6">
+          <div className="text-center">
+            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-foreground" />
+            <p className="text-sm text-muted-foreground">
+              Chargement de la boutique…
+            </p>
           </div>
-
-          <h1 className="text-2xl font-semibold">
-            Boutique introuvable
-          </h1>
-
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Cette boutique n&apos;existe pas ou n&apos;est
-            pas actuellement disponible sur BIB.
-          </p>
-
-          <Link
-            to="/store"
-            className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Retour au Store
-          </Link>
         </div>
       </div>
     );
   }
 
-  const { boutique, products } = data;
+  if (boutiqueQuery.isError || !boutique) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="mx-auto flex min-h-screen max-w-2xl items-center justify-center px-6">
+          <div className="w-full rounded-2xl border bg-card p-8 text-center shadow-sm">
+            <Store className="mx-auto mb-5 h-10 w-10 text-muted-foreground" />
 
-  /*
-   * -------------------------------------------------------------
-   * Main presentation
-   * -------------------------------------------------------------
-   */
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Boutique introuvable
+            </h1>
+
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              Cette boutique n’est pas disponible ou n’est plus
+              publiée sur BIB.
+            </p>
+
+            <Link
+              to="/store"
+              className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Retour au Store
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const displayedProducts = products.slice(0, 8);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* ---------------------------------------------------------
-       * Header
-       * --------------------------------------------------------- */}
-
+      {/* Header */}
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link
             to="/store"
-            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="hidden sm:inline">
               Retour au Store
             </span>
-            <span className="sm:hidden">
-              Store
-            </span>
           </Link>
 
+          <div className="flex min-w-0 items-center gap-3">
+            {boutique.logo_url ? (
+              <img
+                src={boutique.logo_url}
+                alt=""
+                className="h-9 w-9 rounded-full border object-cover"
+              />
+            ) : (
+              <div className="flex h-9 w-9 items-center justify-center rounded-full border bg-muted">
+                <Store className="h-4 w-4 text-muted-foreground" />
+              </div>
+            )}
+
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">
+                {boutique.name}
+              </p>
+
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                Vérifiée par BIB
+              </div>
+            </div>
+          </div>
+
           <Link
-            to={`/boutique/${encodeURIComponent(
-              boutique.slug,
-            )}`}
-            className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+            to={`/boutique/${encodeURIComponent(boutique.slug)}`}
+            className="inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
           >
-            <ShoppingBag className="h-4 w-4" />
             <span className="hidden sm:inline">
-              Voir la boutique
+              Visiter la boutique
             </span>
-            <span className="sm:hidden">
-              Boutique
-            </span>
+            <ExternalLink className="h-4 w-4" />
           </Link>
         </div>
       </header>
 
       <main>
-        {/* -------------------------------------------------------
-         * Hero
-         * ------------------------------------------------------- */}
-
+        {/* Hero */}
         <section className="border-b">
-          <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-            <div className="overflow-hidden rounded-3xl border bg-muted">
-              <div className="relative aspect-[16/9] min-h-[320px] sm:min-h-[420px]">
-                {boutique.cover_image_url ? (
+          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+            <div className="relative overflow-hidden rounded-2xl border bg-muted">
+              <div className="relative aspect-[16/7] min-h-[260px] w-full">
+                {boutique.cover_url ? (
                   <img
-                    src={boutique.cover_image_url}
-                    alt={boutique.name}
+                    src={boutique.cover_url}
+                    alt=""
                     className="absolute inset-0 h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center bg-muted">
-                    {boutique.logo_url ? (
-                      <img
-                        src={boutique.logo_url}
-                        alt={boutique.name}
-                        className="max-h-32 max-w-[50%] object-contain"
-                      />
-                    ) : (
-                      <StoreIcon className="h-16 w-16 text-muted-foreground" />
-                    )}
-                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-muted via-background to-muted" />
                 )}
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
 
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white sm:p-10">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-semibold text-foreground">
-                      <Check className="h-3.5 w-3.5" />
-                      Verified by BIB
-                    </span>
+                <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="max-w-3xl text-white">
+                      <div className="mb-3 flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          Verified by BIB
+                        </span>
 
-                    {category && (
-                      <span className="rounded-full border border-white/30 bg-black/20 px-3 py-1.5 text-xs font-medium backdrop-blur">
-                        {category}
-                      </span>
-                    )}
+                        {boutique.category && (
+                          <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+                            {boutique.category}
+                          </span>
+                        )}
+                      </div>
+
+                      <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
+                        {boutique.name}
+                      </h1>
+
+                      {boutique.description && (
+                        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/85 sm:text-base">
+                          {boutique.description}
+                        </p>
+                      )}
+                    </div>
+
+                    <Link
+                      to={`/boutique/${encodeURIComponent(boutique.slug)}`}
+                      className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+                    >
+                      Découvrir la boutique
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
                   </div>
-
-                  <h1 className="mt-4 max-w-3xl text-3xl font-semibold tracking-tight sm:text-5xl">
-                    {boutique.name}
-                  </h1>
-
-                  {boutique.tagline && (
-                    <p className="mt-3 max-w-2xl text-base text-white/85 sm:text-lg">
-                      {boutique.tagline}
-                    </p>
-                  )}
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* -------------------------------------------------------
-         * Boutique information
-         * ------------------------------------------------------- */}
-
-        <section>
-          <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1fr_320px] lg:px-8 lg:py-16">
-            <div>
-              <div className="flex items-start gap-5">
-                <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border bg-muted">
-                  {boutique.logo_url ? (
-                    <img
-                      src={boutique.logo_url}
-                      alt={boutique.name}
-                      className="h-full w-full object-contain"
-                    />
-                  ) : (
-                    <StoreIcon className="h-8 w-8 text-muted-foreground" />
-                  )}
-                </div>
-
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-2xl font-semibold">
-                      {boutique.name}
-                    </h2>
-
-                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-                      <ShieldCheck className="h-3.5 w-3.5" />
-                      Vérifiée par BIB
-                    </span>
-                  </div>
-
-                  {category && (
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {category}
-                    </p>
-                  )}
-                </div>
+        {/* Trust / information */}
+        <section className="border-b">
+          <div className="mx-auto grid max-w-7xl gap-4 px-4 py-8 sm:px-6 md:grid-cols-3">
+            <div className="rounded-xl border bg-card p-5">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                <ShieldCheck className="h-5 w-5" />
               </div>
 
-              {boutique.description && (
-                <div className="mt-8 max-w-3xl">
-                  <h3 className="text-lg font-semibold">
-                    À propos de cette boutique
-                  </h3>
+              <h2 className="font-semibold">
+                Boutique vérifiée
+              </h2>
 
-                  <p className="mt-3 whitespace-pre-line text-sm leading-7 text-muted-foreground sm:text-base">
-                    {boutique.description}
-                  </p>
-                </div>
-              )}
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                BIB référence des boutiques sélectionnées et
+                vérifiées avant leur présence sur le Store.
+              </p>
             </div>
 
-            {/* Trust card */}
-            <aside className="h-fit rounded-2xl border bg-card p-5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                  <ShieldCheck className="h-5 w-5 text-primary" />
-                </div>
-
-                <div>
-                  <p className="font-semibold">
-                    Vérifiée par BIB
-                  </p>
-
-                  <p className="text-xs text-muted-foreground">
-                    Sélection BIB
-                  </p>
-                </div>
+            <div className="rounded-xl border bg-card p-5">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                <ShoppingBag className="h-5 w-5" />
               </div>
 
-              <div className="mt-5 space-y-4 border-t pt-5">
-                <div className="flex items-start gap-3">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+              <h2 className="font-semibold">
+                Sélection découverte
+              </h2>
 
-                  <p className="text-sm text-muted-foreground">
-                    Boutique intégrée au réseau BIB.
-                  </p>
-                </div>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Cette page sert à découvrir la sélection de la
+                boutique avant de poursuivre vers son espace marchand.
+              </p>
+            </div>
 
-                <div className="flex items-start gap-3">
-                  <Package className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-
-                  <p className="text-sm text-muted-foreground">
-                    Produits présentés à partir de la
-                    sélection active de la boutique.
-                  </p>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <ShoppingBag className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-
-                  <p className="text-sm text-muted-foreground">
-                    Les achats sont réalisés directement
-                    dans la boutique.
-                  </p>
-                </div>
+            <div className="rounded-xl border bg-card p-5">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                <Leaf className="h-5 w-5" />
               </div>
+
+              <h2 className="font-semibold">
+                Approche responsable
+              </h2>
+
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Les informations et sélections présentées sur BIB
+                sont organisées autour d’une logique de confiance
+                et de traçabilité.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Products */}
+        <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12">
+          <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Sélection BIB
+              </p>
+
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
+                Produits de {boutique.name}
+              </h2>
+
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                Découvrez une sélection de produits disponibles
+                dans cette boutique.
+              </p>
+            </div>
+
+            {products.length > 0 && (
+              <Link
+                to={`/boutique/${encodeURIComponent(
+                  boutique.slug,
+                )}/products`}
+                className="inline-flex items-center gap-2 text-sm font-medium hover:underline"
+              >
+                Voir tous les produits
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
+          </div>
+
+          {productsQuery.isError ? (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
+              Impossible de charger les produits de cette boutique.
+            </div>
+          ) : displayedProducts.length === 0 ? (
+            <div className="rounded-xl border bg-card p-10 text-center">
+              <ShoppingBag className="mx-auto mb-4 h-9 w-9 text-muted-foreground" />
+
+              <h3 className="font-semibold">
+                Aucun produit disponible
+              </h3>
+
+              <p className="mt-2 text-sm text-muted-foreground">
+                Cette boutique ne possède actuellement aucun
+                produit publié.
+              </p>
 
               <Link
                 to={`/boutique/${encodeURIComponent(
                   boutique.slug,
                 )}`}
-                className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                className="mt-5 inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium hover:bg-muted"
               >
-                Découvrir la boutique
+                Visiter la boutique
                 <ArrowRight className="h-4 w-4" />
               </Link>
-            </aside>
-          </div>
-        </section>
-
-        {/* -------------------------------------------------------
-         * Products
-         * ------------------------------------------------------- */}
-
-        {products.length > 0 && (
-          <section className="border-t bg-muted/30">
-            <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Sélection
-                  </p>
-
-                  <h2 className="mt-1 text-2xl font-semibold sm:text-3xl">
-                    Découvrez les produits
-                  </h2>
-
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                    Une sélection des produits actuellement
-                    proposés par cette boutique.
-                  </p>
-                </div>
-
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+              {displayedProducts.map((product) => (
                 <Link
-                  to={`/boutique/${encodeURIComponent(
-                    boutique.slug,
-                  )}/products`}
-                  className="inline-flex items-center gap-2 text-sm font-semibold"
+                  key={product.id}
+                  to={`/store/product/${product.id}`}
+                  className="group overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-md"
                 >
-                  Voir tous les produits
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </div>
+                  <div className="relative aspect-square overflow-hidden bg-muted">
+                    {product.imageUrl ? (
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <ShoppingBag className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    )}
 
-              <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-                {products.map((product) => (
-                  <Link
-                    key={product.id}
-                    to={`/store/product/${encodeURIComponent(
-                      product.id,
-                    )}`}
-                    className="group overflow-hidden rounded-2xl border bg-background transition-shadow hover:shadow-md"
-                  >
-                    <div className="relative aspect-square overflow-hidden bg-muted">
-                      {product.image_url ? (
-                        <img
-                          src={product.image_url}
-                          alt={product.name}
-                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center">
-                          <Package className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                      )}
+                    {product.cumulativeSales > 0 && (
+                      <span className="absolute left-2 top-2 rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-medium backdrop-blur">
+                        Populaire
+                      </span>
+                    )}
 
-                      {product.isPopular && (
-                        <span className="absolute left-3 top-3 rounded-full bg-background/95 px-2.5 py-1 text-[11px] font-semibold">
-                          Populaire
+                    {product.stockQuantity > 0 &&
+                      product.stockQuantity <= 5 && (
+                        <span className="absolute bottom-2 left-2 rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-medium backdrop-blur">
+                          Plus que {product.stockQuantity}
                         </span>
                       )}
-                    </div>
+                  </div>
 
-                    <div className="p-4">
-                      <p className="line-clamp-2 text-sm font-medium">
-                        {product.name}
+                  <div className="p-3.5 sm:p-4">
+                    {product.category && (
+                      <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                        {product.category}
                       </p>
+                    )}
 
-                      {product.category && (
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {product.category}
-                        </p>
-                      )}
+                    <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-medium leading-5">
+                      {product.name}
+                    </h3>
 
-                      <p className="mt-3 text-sm font-semibold">
-                        {product.price.toFixed(2)} €
-                      </p>
+                    <p className="mt-2 text-sm font-semibold">
+                      {formatPrice(product.price)}
+                    </p>
+
+                    <div className="mt-3 flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
+                      Découvrir
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                     </div>
-                  </Link>
-                ))}
-              </div>
-
-              <div className="mt-8 flex justify-center">
-                <Link
-                  to={`/boutique/${encodeURIComponent(
-                    boutique.slug,
-                  )}/products`}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border px-6 text-sm font-semibold transition-colors hover:bg-background"
-                >
-                  Explorer tous les produits
-                  <ArrowRight className="h-4 w-4" />
+                  </div>
                 </Link>
-              </div>
+              ))}
             </div>
-          </section>
-        )}
+          )}
 
-        {/* -------------------------------------------------------
-         * Final CTA
-         * ------------------------------------------------------- */}
-
-        <section>
-          <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-            <div className="rounded-3xl border bg-card px-6 py-10 text-center sm:px-10">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <ShoppingBag className="h-5 w-5 text-primary" />
-              </div>
-
-              <h2 className="mt-5 text-2xl font-semibold">
-                Prêt à découvrir {boutique.name} ?
-              </h2>
-
-              <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-                Retrouvez l&apos;ensemble de la sélection et
-                effectuez vos achats directement sur la boutique.
-              </p>
-
-              <div className="mt-7 flex flex-wrap justify-center gap-3">
-                <Link
-                  to={`/boutique/${encodeURIComponent(
-                    boutique.slug,
-                  )}`}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground"
-                >
-                  Visiter la boutique
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-
-                <Link
-                  to="/store"
-                  className="inline-flex h-11 items-center justify-center rounded-full border px-6 text-sm font-medium hover:bg-muted"
-                >
-                  Continuer mes découvertes
-                </Link>
-              </div>
+          {products.length > displayedProducts.length && (
+            <div className="mt-8 text-center">
+              <Link
+                to={`/boutique/${encodeURIComponent(
+                  boutique.slug,
+                )}/products`}
+                className="inline-flex items-center gap-2 rounded-lg border px-5 py-3 text-sm font-medium transition-colors hover:bg-muted"
+              >
+                Découvrir tous les produits
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
+          )}
+        </section>
+
+        {/* Final CTA */}
+        <section className="border-t bg-muted/30">
+          <div className="mx-auto max-w-4xl px-4 py-12 text-center sm:px-6 sm:py-16">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border bg-background">
+              <Store className="h-5 w-5" />
+            </div>
+
+            <h2 className="mt-5 text-2xl font-semibold tracking-tight sm:text-3xl">
+              Vous souhaitez découvrir {boutique.name} ?
+            </h2>
+
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
+              Poursuivez vers la boutique pour consulter son
+              catalogue complet et effectuer vos achats directement
+              auprès de son espace marchand.
+            </p>
+
+            <Link
+              to={`/boutique/${encodeURIComponent(
+                boutique.slug,
+              )}`}
+              className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              Visiter {boutique.name}
+              <ExternalLink className="h-4 w-4" />
+            </Link>
           </div>
         </section>
       </main>
 
-      {/* ---------------------------------------------------------
-       * Footer
-       * --------------------------------------------------------- */}
-
+      {/* Footer */}
       <footer className="border-t">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 text-sm text-muted-foreground sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p>
-            © {new Date().getFullYear()} BIB
+            © {new Date().getFullYear()} BIB — Brand-in-a-box
           </p>
 
-          <div className="flex flex-wrap gap-4">
+          <div className="flex items-center gap-4">
             <Link
-              to="/centre-aide"
-              className="hover:text-foreground"
+              to="/store"
+              className="transition-colors hover:text-foreground"
             >
-              Centre d&apos;aide
-            </Link>
-
-            <Link
-              to="/pack-legal"
-              className="hover:text-foreground"
-            >
-              Informations légales
+              BIB Store
             </Link>
 
             <Link
               to="/a-propos"
-              className="hover:text-foreground"
+              className="transition-colors hover:text-foreground"
             >
               À propos
             </Link>
