@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   Link,
   useNavigate,
@@ -12,14 +12,16 @@ import {
   Heart,
   Loader2,
   ShoppingCart,
-  Store,
   ShieldCheck,
+  Store,
 } from "lucide-react";
 
 import {
   useStoreProduct,
   type StoreProduct as StoreProductData,
 } from "@/hooks/useStore";
+import { useFavorites } from "@/hooks/useFavorites";
+
 import { Logo } from "@/components/Logo";
 import { useSEO } from "@/hooks/useSEO";
 
@@ -53,6 +55,13 @@ function getProductDescription(
   return "Découvrez ce produit proposé par une boutique référencée dans le réseau BIB.";
 }
 
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  }).format(price);
+}
+
 /* =========================================================
    PAGE
    ========================================================= */
@@ -69,8 +78,10 @@ export default function StoreProduct() {
     isError,
   } = useStoreProduct(productId);
 
-  const [imageIndex, setImageIndex] = useState(0);
-  const [favorite, setFavorite] = useState(false);
+  const {
+    toggleFavorite,
+    isFavorite,
+  } = useFavorites();
 
   /* =======================================================
      DONNÉES PRODUIT
@@ -87,9 +98,6 @@ export default function StoreProduct() {
   const productName =
     product?.name ?? "Produit";
 
-  const boutiqueId =
-    product?.boutique_id ?? "";
-
   const boutiqueName =
     product?.boutique_name ?? "Boutique";
 
@@ -101,6 +109,11 @@ export default function StoreProduct() {
     Number.isFinite(product.price)
       ? product.price
       : 0;
+
+  const productIsFavorite =
+    product
+      ? isFavorite(product.id)
+      : false;
 
   /* =======================================================
      SEO
@@ -117,7 +130,7 @@ export default function StoreProduct() {
   });
 
   /* =======================================================
-     CHARGEMENT
+     LOADING
      ======================================================= */
 
   if (isLoading) {
@@ -128,7 +141,10 @@ export default function StoreProduct() {
         <main className="flex min-h-[70vh] items-center justify-center">
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
-            Chargement du produit…
+
+            <span>
+              Chargement du produit…
+            </span>
           </div>
         </main>
       </div>
@@ -136,7 +152,7 @@ export default function StoreProduct() {
   }
 
   /* =======================================================
-     PRODUIT INTROUVABLE / ERREUR
+     ERROR / NOT FOUND
      ======================================================= */
 
   if (
@@ -183,7 +199,6 @@ export default function StoreProduct() {
       <StoreHeader />
 
       <main className="container mx-auto max-w-7xl px-4 pb-16">
-
         {/* =================================================
             BREADCRUMB
            ================================================= */}
@@ -222,6 +237,7 @@ export default function StoreProduct() {
           className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
+
           Retour
         </button>
 
@@ -230,138 +246,24 @@ export default function StoreProduct() {
            ================================================= */}
 
         <section className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)] lg:gap-12">
-
           {/* =================================================
               GALERIE
              ================================================= */}
 
-          <div>
-            <div className="relative aspect-square overflow-hidden rounded-[28px] border border-border bg-muted">
-
-              <img
-                src={
-                  images[imageIndex] ??
-                  "/placeholder.svg"
-                }
-                alt={productName}
-                className="h-full w-full object-cover"
-              />
-
-              {/* BADGE BIB */}
-
-              <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full border border-border/60 bg-background/95 px-3 py-2 text-xs font-semibold shadow-sm backdrop-blur">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-[7px] font-bold text-background">
-                  BIB
-                </span>
-
-                <span>
-                  Vérifié par BIB
-                </span>
-              </div>
-
-              {/* FAVORI */}
-
-              <button
-                type="button"
-                onClick={() =>
-                  setFavorite(
-                    (current) => !current,
-                  )
-                }
-                aria-label={
-                  favorite
-                    ? "Retirer des favoris"
-                    : "Ajouter aux favoris"
-                }
-                aria-pressed={favorite}
-                className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-background/95 text-foreground shadow-sm backdrop-blur transition hover:bg-background active:scale-95"
-              >
-                <Heart
-                  className="h-5 w-5"
-                  fill={
-                    favorite
-                      ? "currentColor"
-                      : "none"
-                  }
-                  strokeWidth={1.8}
-                />
-              </button>
-
-              {/* NAVIGATION IMAGES */}
-
-              {images.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setImageIndex(
-                        (current) =>
-                          current === 0
-                            ? images.length - 1
-                            : current - 1,
-                      )
-                    }
-                    aria-label="Image précédente"
-                    className="absolute left-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border/60 bg-background/95 shadow-sm transition hover:bg-background active:scale-95"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setImageIndex(
-                        (current) =>
-                          (current + 1) %
-                          images.length,
-                      )
-                    }
-                    aria-label="Image suivante"
-                    className="absolute right-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border/60 bg-background/95 shadow-sm transition hover:bg-background active:scale-95"
-                  >
-                    <ChevronRight className="h-5 w-5" />
-                  </button>
-                </>
-              )}
-            </div>
-
-            {/* MINIATURES */}
-
-            {images.length > 1 && (
-              <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
-                {images.map(
-                  (image, index) => (
-                    <button
-                      key={`${image}-${index}`}
-                      type="button"
-                      onClick={() =>
-                        setImageIndex(index)
-                      }
-                      aria-label={`Afficher l'image ${index + 1}`}
-                      className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition ${
-                        imageIndex === index
-                          ? "border-primary"
-                          : "border-border"
-                      }`}
-                    >
-                      <img
-                        src={image}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    </button>
-                  ),
-                )}
-              </div>
-            )}
-          </div>
+          <ProductGallery
+            productName={productName}
+            images={images}
+            favorite={productIsFavorite}
+            onToggleFavorite={() =>
+              toggleFavorite(product.id)
+            }
+          />
 
           {/* =================================================
               INFORMATIONS PRODUIT
              ================================================= */}
 
           <div className="flex flex-col">
-
             {/* BOUTIQUE */}
 
             <Link
@@ -389,11 +291,11 @@ export default function StoreProduct() {
               {productName}
             </h1>
 
-            {/* PRIX */}
+            {/* PRIX PUBLIC */}
 
             <div className="mt-5">
               <span className="font-mono text-2xl font-semibold tabular-nums">
-                {price.toFixed(2)} €
+                {formatPrice(price)}
               </span>
             </div>
 
@@ -405,13 +307,13 @@ export default function StoreProduct() {
               </h2>
 
               <p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">
-                {getProductDescription(
-                  product,
-                )}
+                {getProductDescription(product)}
               </p>
             </div>
 
-            {/* CONFIANCE BIB */}
+            {/* =================================================
+                CONFIANCE BIB
+               ================================================= */}
 
             <div className="mt-6 rounded-2xl border border-border bg-muted/30 p-4">
               <div className="flex gap-3">
@@ -423,41 +325,42 @@ export default function StoreProduct() {
                   </p>
 
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    Ce produit est présenté par
-                    BIB dans le cadre de son réseau
-                    de boutiques référencées.
+                    Ce produit est présenté dans le
+                    BIB Store par une boutique
+                    référencée et vérifiée par BIB.
                   </p>
                 </div>
               </div>
             </div>
 
             {/* =================================================
-                CTA VERS LA BOUTIQUE RÉELLE
+                CTA VERS LA VRAIE BOUTIQUE
                ================================================= */}
 
             <div className="mt-7">
               <Link
-                to={`/boutique/${boutiqueSlug}/product/${productId}`}
+                to={`/boutique/${boutiqueSlug}/product/${product.id}`}
                 className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition hover:brightness-110 active:scale-[0.98]"
               >
                 Voir dans la boutique
+
                 <Store className="h-4 w-4" />
               </Link>
 
               <p className="mt-3 text-center text-xs leading-relaxed text-muted-foreground">
-                Retrouvez ce produit directement dans
-                la boutique pour consulter les détails,
-                choisir la quantité et poursuivre votre achat.
+                Retrouvez ce produit directement
+                dans la boutique pour consulter
+                ses détails et poursuivre votre
+                achat.
               </p>
             </div>
 
             {/* =================================================
-                RAPPEL BOUTIQUE
+                RAPPEL DU PARCOURS
                ================================================= */}
 
             <div className="mt-7 border-t border-border pt-6">
               <div className="flex items-start gap-3">
-
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
                   <Store className="h-5 w-5" />
                 </div>
@@ -470,9 +373,9 @@ export default function StoreProduct() {
 
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                     BIB facilite la découverte du
-                    produit. Le panier, la quantité
-                    et le parcours d'achat se poursuivent
-                    directement depuis la boutique.
+                    produit. Le parcours d'achat se
+                    poursuit directement depuis la
+                    boutique.
                   </p>
                 </div>
               </div>
@@ -481,25 +384,24 @@ export default function StoreProduct() {
         </section>
 
         {/* =================================================
-            INFORMATIONS
+            INFORMATIONS COMPLÉMENTAIRES
            ================================================= */}
 
         <section className="mt-14 border-t border-border pt-8">
           <div className="grid gap-4 md:grid-cols-3">
-
             <InfoCard
               title="Référencé par BIB"
               text="Les produits présentés dans le Store proviennent de boutiques intégrées au réseau BIB."
             />
 
             <InfoCard
-              title="Une boutique pour chaque achat"
-              text="BIB centralise la découverte. Le parcours d'achat se poursuit depuis la boutique concernée."
+              title="Découverte avant achat"
+              text="Le BIB Store permet de découvrir les produits et les boutiques avant de poursuivre vers leur espace de vente."
             />
 
             <InfoCard
               title="Votre boutique reste votre destination"
-              text="Vous retrouvez ensuite l'univers, les informations et le parcours propres à la boutique."
+              text="Le parcours commercial et les informations propres à la boutique sont accessibles depuis sa fiche produit."
             />
           </div>
         </section>
@@ -511,7 +413,6 @@ export default function StoreProduct() {
 
       <footer className="border-t border-border bg-muted/30">
         <div className="container mx-auto flex max-w-7xl flex-col items-center gap-2 px-4 py-6 text-center text-xs text-muted-foreground sm:flex-row sm:justify-between sm:text-left">
-
           <Logo
             iconSize={20}
             asLink={false}
@@ -535,17 +436,160 @@ export default function StoreProduct() {
 }
 
 /* =========================================================
-   HEADER
+   PRODUCT GALLERY
+   ========================================================= */
+
+interface ProductGalleryProps {
+  productName: string;
+  images: string[];
+  favorite: boolean;
+  onToggleFavorite: () => void;
+}
+
+function ProductGallery({
+  productName,
+  images,
+  favorite,
+  onToggleFavorite,
+}: ProductGalleryProps) {
+  const [imageIndex, setImageIndex] =
+    useState(0);
+
+  const currentImage =
+    images[imageIndex] ??
+    "/placeholder.svg";
+
+  return (
+    <div>
+      {/* MAIN IMAGE */}
+
+      <div className="relative aspect-square overflow-hidden rounded-[28px] border border-border bg-muted">
+        <img
+          src={currentImage}
+          alt={productName}
+          className="h-full w-full object-cover"
+        />
+
+        {/* BIB BADGE */}
+
+        <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full border border-border/60 bg-background/95 px-3 py-2 text-xs font-semibold shadow-sm backdrop-blur">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-[7px] font-bold text-background">
+            BIB
+          </span>
+
+          <span>
+            Vérifié par BIB
+          </span>
+        </div>
+
+        {/* FAVORITE */}
+
+        <button
+          type="button"
+          onClick={onToggleFavorite}
+          aria-label={
+            favorite
+              ? "Retirer des favoris"
+              : "Ajouter aux favoris"
+          }
+          aria-pressed={favorite}
+          className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-background/95 text-foreground shadow-sm backdrop-blur transition hover:bg-background active:scale-95"
+        >
+          <Heart
+            className="h-5 w-5"
+            fill={
+              favorite
+                ? "currentColor"
+                : "none"
+            }
+            strokeWidth={1.8}
+          />
+        </button>
+
+        {/* PREVIOUS */}
+
+        {images.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={() =>
+                setImageIndex(
+                  (current) =>
+                    current === 0
+                      ? images.length - 1
+                      : current - 1,
+                )
+              }
+              aria-label="Image précédente"
+              className="absolute left-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border/60 bg-background/95 shadow-sm transition hover:bg-background active:scale-95"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+
+            {/* NEXT */}
+
+            <button
+              type="button"
+              onClick={() =>
+                setImageIndex(
+                  (current) =>
+                    (current + 1) %
+                    images.length,
+                )
+              }
+              aria-label="Image suivante"
+              className="absolute right-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-border/60 bg-background/95 shadow-sm transition hover:bg-background active:scale-95"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* THUMBNAILS */}
+
+      {images.length > 1 && (
+        <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
+          {images.map((image, index) => (
+            <button
+              key={`${image}-${index}`}
+              type="button"
+              onClick={() =>
+                setImageIndex(index)
+              }
+              aria-label={`Afficher l'image ${index + 1}`}
+              className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition ${
+                imageIndex === index
+                  ? "border-primary"
+                  : "border-border"
+              }`}
+            >
+              <img
+                src={image}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* =========================================================
+   STORE HEADER
    ========================================================= */
 
 function StoreHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-xl">
       <div className="container mx-auto flex min-h-[68px] max-w-7xl items-center gap-3 px-4 py-3">
+        {/* BRAND */}
 
         <Link
           to="/store"
-          aria-label="Accueil BIB"
+          aria-label="Accueil BIB Store"
           className="shrink-0"
         >
           <Logo
@@ -553,6 +597,8 @@ function StoreHeader() {
             asLink={false}
           />
         </Link>
+
+        {/* NAVIGATION */}
 
         <nav className="hidden items-center gap-1 lg:flex">
           <Link
@@ -570,7 +616,16 @@ function StoreHeader() {
           </Link>
         </nav>
 
+        {/* ACTIONS */}
+
         <div className="ml-auto flex items-center gap-1">
+          <Link
+            to="/store/account"
+            className="hidden rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground sm:block"
+          >
+            Compte
+          </Link>
+
           <Link
             to="/store/cart"
             aria-label="Panier Store"
