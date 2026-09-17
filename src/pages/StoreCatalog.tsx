@@ -13,7 +13,10 @@ import {
   X,
 } from "lucide-react";
 
-import { useStoreProducts, type StoreProduct } from "@/hooks/useStore";
+import {
+  useStoreProducts,
+  type StoreProduct,
+} from "@/hooks/useStore";
 import { useFavorites } from "@/hooks/useFavorites";
 
 import { Button } from "@/components/ui/button";
@@ -50,15 +53,6 @@ function formatPrice(price: number) {
   }).format(price);
 }
 
-function getInitials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-}
-
 function normalizeSearch(value: string) {
   return value
     .normalize("NFD")
@@ -82,9 +76,12 @@ function ProductCard({
 }) {
   return (
     <article className="group min-w-0">
+      {/* Product image */}
+
       <div className="relative overflow-hidden rounded-2xl bg-muted/40">
         <Link
           to={`/store/product/${product.id}`}
+          aria-label={`Voir ${product.name}`}
           className="block aspect-square overflow-hidden"
         >
           {product.image_url ? (
@@ -100,6 +97,8 @@ function ProductCard({
             </div>
           )}
         </Link>
+
+        {/* Favorite */}
 
         <button
           type="button"
@@ -126,15 +125,17 @@ function ProductCard({
         </button>
       </div>
 
+      {/* Product information */}
+
       <div className="pt-3">
         <div className="mb-1 flex items-start justify-between gap-3">
           <Link
             to={`/store/product/${product.id}`}
             className="min-w-0 flex-1"
           >
-            <h3 className="line-clamp-2 text-sm font-medium leading-5 transition-colors hover:text-primary">
+            <h2 className="line-clamp-2 text-sm font-medium leading-5 transition-colors hover:text-primary">
               {product.name}
-            </h3>
+            </h2>
           </Link>
 
           <span className="shrink-0 text-sm font-semibold">
@@ -142,13 +143,20 @@ function ProductCard({
           </span>
         </div>
 
+        {/* Boutique */}
+
         <Link
           to={`/store/boutique/${product.boutique_slug}`}
           className="inline-flex max-w-full items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           <Store className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{product.boutique_name}</span>
+
+          <span className="truncate">
+            {product.boutique_name}
+          </span>
         </Link>
+
+        {/* Category */}
 
         {product.boutique_category && (
           <div className="mt-2">
@@ -174,7 +182,10 @@ function CatalogLoading() {
     <div className="flex min-h-[420px] items-center justify-center">
       <div className="flex flex-col items-center gap-3 text-muted-foreground">
         <Loader2 className="h-7 w-7 animate-spin" />
-        <span className="text-sm">Chargement des produits…</span>
+
+        <span className="text-sm">
+          Chargement des produits…
+        </span>
       </div>
     </div>
   );
@@ -200,15 +211,15 @@ function CatalogError({
           Impossible de charger les produits
         </h2>
 
-        <p className="mt-2 text-sm text-muted-foreground">
-          Une erreur est survenue lors du chargement du Store.
-          Réessayez dans quelques instants.
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          Une erreur est survenue lors du chargement du
+          Store. Réessayez dans quelques instants.
         </p>
 
         <Button
           type="button"
           variant="outline"
-          className="mt-5"
+          className="mt-5 rounded-xl"
           onClick={onRetry}
         >
           Réessayer
@@ -240,7 +251,7 @@ function EmptyCatalog({
           Aucun produit trouvé
         </h2>
 
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
           {hasFilters
             ? "Aucun produit ne correspond aux critères sélectionnés."
             : "Aucun produit n'est actuellement disponible dans le Store."}
@@ -250,7 +261,7 @@ function EmptyCatalog({
           <Button
             type="button"
             variant="outline"
-            className="mt-5"
+            className="mt-5 rounded-xl"
             onClick={onReset}
           >
             Réinitialiser les filtres
@@ -281,34 +292,40 @@ export default function StoreCatalog() {
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
-  const [sort, setSort] = useState<SortOption>("recent");
-  const [favoritesOnly, setFavoritesOnly] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sort, setSort] =
+    useState<SortOption>("recent");
+  const [favoritesOnly, setFavoritesOnly] =
+    useState(false);
+  const [filtersOpen, setFiltersOpen] =
+    useState(false);
 
-  /* ---------------------------------------------------------
+  /* =======================================================
      CATEGORIES
-     --------------------------------------------------------- */
+     ======================================================= */
 
   const categories = useMemo(() => {
     const uniqueCategories = new Set<string>();
 
     products.forEach((product) => {
-      if (product.boutique_category) {
-        uniqueCategories.add(product.boutique_category);
+      const value = product.boutique_category?.trim();
+
+      if (value) {
+        uniqueCategories.add(value);
       }
     });
 
-    return Array.from(uniqueCategories).sort((a, b) =>
-      a.localeCompare(b, "fr"),
+    return Array.from(uniqueCategories).sort(
+      (a, b) => a.localeCompare(b, "fr"),
     );
   }, [products]);
 
-  /* ---------------------------------------------------------
-     FILTER + SEARCH + SORT
-     --------------------------------------------------------- */
+  /* =======================================================
+     FILTER / SEARCH / SORT
+     ======================================================= */
 
   const filteredProducts = useMemo(() => {
-    const normalizedSearch = normalizeSearch(search);
+    const normalizedSearch =
+      normalizeSearch(search);
 
     const result = products.filter((product) => {
       const searchableText = normalizeSearch(
@@ -351,14 +368,18 @@ export default function StoreCatalog() {
           return a.name.localeCompare(
             b.name,
             "fr",
-            { sensitivity: "base" },
+            {
+              sensitivity: "base",
+            },
           );
 
         case "name-desc":
           return b.name.localeCompare(
             a.name,
             "fr",
-            { sensitivity: "base" },
+            {
+              sensitivity: "base",
+            },
           );
 
         case "recent":
@@ -378,9 +399,9 @@ export default function StoreCatalog() {
     favorites,
   ]);
 
-  /* ---------------------------------------------------------
+  /* =======================================================
      FILTER STATE
-     --------------------------------------------------------- */
+     ======================================================= */
 
   const hasFilters =
     Boolean(search.trim()) ||
@@ -400,9 +421,9 @@ export default function StoreCatalog() {
     setFavoritesOnly(false);
   };
 
-  /* ---------------------------------------------------------
+  /* =======================================================
      RENDER
-     --------------------------------------------------------- */
+     ======================================================= */
 
   return (
     <div className="min-h-screen bg-background">
@@ -416,8 +437,8 @@ export default function StoreCatalog() {
 
           <Link
             to="/store"
-            className="flex shrink-0 items-center gap-2"
             aria-label="BIB Store"
+            className="flex shrink-0 items-center gap-2"
           >
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-foreground text-sm font-bold text-background">
               B
@@ -427,6 +448,7 @@ export default function StoreCatalog() {
               <div className="text-sm font-semibold leading-none">
                 BIB
               </div>
+
               <div className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
                 Store
               </div>
@@ -451,7 +473,7 @@ export default function StoreCatalog() {
             </Link>
           </nav>
 
-          {/* Search */}
+          {/* Desktop search */}
 
           <div className="relative ml-auto hidden max-w-md flex-1 lg:block">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -477,7 +499,7 @@ export default function StoreCatalog() {
             )}
           </div>
 
-          {/* Actions */}
+          {/* Header actions */}
 
           <div className="flex items-center gap-1">
             <Link
@@ -508,7 +530,7 @@ export default function StoreCatalog() {
               onChange={(event) =>
                 setSearch(event.target.value)
               }
-              placeholder="Rechercher"
+              placeholder="Rechercher un produit ou une boutique"
               className="h-10 rounded-xl bg-muted/50 pl-9 pr-9"
             />
 
@@ -562,7 +584,7 @@ export default function StoreCatalog() {
           </div>
         </section>
 
-        {/* Mobile filter toggle */}
+        {/* Mobile filter controls */}
 
         <div className="mb-5 flex gap-2 lg:hidden">
           <Button
@@ -570,11 +592,15 @@ export default function StoreCatalog() {
             variant="outline"
             className="rounded-xl"
             onClick={() =>
-              setFiltersOpen((current) => !current)
+              setFiltersOpen(
+                (current) => !current,
+              )
             }
           >
             <SlidersHorizontal className="mr-2 h-4 w-4" />
+
             Filtres
+
             {activeFilterCount > 0 && (
               <span className="ml-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1.5 text-[10px] text-background">
                 {activeFilterCount}
@@ -587,7 +613,9 @@ export default function StoreCatalog() {
               type="button"
               variant="secondary"
               className="rounded-xl"
-              onClick={() => setFavoritesOnly(false)}
+              onClick={() =>
+                setFavoritesOnly(false)
+              }
             >
               <Heart className="mr-2 h-4 w-4 fill-current" />
               Favoris
@@ -601,7 +629,9 @@ export default function StoreCatalog() {
 
         <div
           className={`mb-8 ${
-            filtersOpen ? "block" : "hidden"
+            filtersOpen
+              ? "block"
+              : "hidden"
           } lg:block`}
         >
           <div className="rounded-2xl border bg-card p-4">
@@ -638,11 +668,14 @@ export default function StoreCatalog() {
                 <Select
                   value={sort}
                   onValueChange={(value) =>
-                    setSort(value as SortOption)
+                    setSort(
+                      value as SortOption,
+                    )
                   }
                 >
                   <SelectTrigger className="w-full rounded-xl sm:w-[210px]">
                     <ArrowDownUp className="mr-2 h-4 w-4 text-muted-foreground" />
+
                     <SelectValue />
                   </SelectTrigger>
 
@@ -692,6 +725,7 @@ export default function StoreCatalog() {
                         : ""
                     }`}
                   />
+
                   Favoris
                 </Button>
               </div>
@@ -735,16 +769,22 @@ export default function StoreCatalog() {
             aria-label="Produits BIB Store"
             className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-5 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-10"
           >
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                isFavorite={isFavorite(product.id)}
-                onToggleFavorite={() =>
-                  toggleFavorite(product.id)
-                }
-              />
-            ))}
+            {filteredProducts.map(
+              (product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isFavorite={isFavorite(
+                    product.id,
+                  )}
+                  onToggleFavorite={() =>
+                    toggleFavorite(
+                      product.id,
+                    )
+                  }
+                />
+              ),
+            )}
           </section>
         )}
 
@@ -760,8 +800,8 @@ export default function StoreCatalog() {
 
               <div className="flex flex-col gap-3 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
                 <p>
-                  Les produits présentés sont proposés par
-                  les boutiques du réseau BIB.
+                  Les produits présentés sont proposés
+                  par les boutiques du réseau BIB.
                 </p>
 
                 <Link
@@ -769,6 +809,7 @@ export default function StoreCatalog() {
                   className="inline-flex items-center gap-1 font-medium text-foreground hover:underline"
                 >
                   Retour au Store
+
                   <ChevronDown className="h-3.5 w-3.5 -rotate-90" />
                 </Link>
               </div>
