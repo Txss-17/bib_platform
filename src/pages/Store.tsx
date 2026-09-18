@@ -604,7 +604,9 @@ function StoreIntro({
               onClick={onPrimaryAction}
               className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
             >
-              Découvrir les produits
+              {isSubscriber
+                ? "Découvrir les produits"
+                : "Découvrir les produits"
               <ArrowRight className="h-4 w-4" />
             </button>
 
