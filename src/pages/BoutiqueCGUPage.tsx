@@ -1,4 +1,4 @@
 import { useParams, Link } from "react-router-dom";
 
-export default fuction BoutiqudCGUPage () {
+export default fuction BoutiqueCGUPage () {
 }
