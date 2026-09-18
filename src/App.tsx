@@ -46,7 +46,7 @@ import StoreCatalog from "@/pages/StoreCatalog";
 import StoreCart from "@/pages/StoreCart";
 import Recycler from "@/pages/customer/Recycler";
 import Unsubscribe from "@/pages/Unsubscribe";
-import StoreProduct from "@pages/StoreProduct";
+import StoreProduct from "@/pages/StoreProduct";
 
 /* =====================================================
    SUPPLIERS / OPERATIONS
