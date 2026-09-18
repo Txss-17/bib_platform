@@ -104,10 +104,10 @@ import BoutiqueAllProducts from "@/pages/BoutiqueAllProducts";
 import BoutiqueCategory from "@/pages/BoutiqueCategory";
 import ProductPublic from "@/pages/ProductPublic";
 import OrderTracking from "@/pages/OrderTracking";
-import BoutiqueFAQPage from "@/pages/dashboard/BoutiqueFAQPage";
-import BoutiqueCGVPage from "@/pages/dashboard/BoutiqueCGVPage";
-import BoutiqueCGUPage from "@/pages/dashboard/BoutiqueCGUPage";
-import BoutiqueAboutPage from "@/pages/dashboard/BoutiqueAboutPage";
+import BoutiqueFAQPage from "@/pages/BoutiqueFAQPage";
+import BoutiqueCGVPage from "@/pages/BoutiqueCGVPage";
+import BoutiqueCGUPage from "@/pages/BoutiqueCGUPage";
+import BoutiqueAboutPage from "@/pages/BoutiqueAboutPage";
 
 /* =====================================================
    INSTITUTIONAL / MARKETING
