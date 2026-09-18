@@ -93,6 +93,7 @@ import Clients from "@/pages/dashboard/Clients";
 import Marketing from "@/pages/dashboard/Marketing";
 import VentesPrivees from "@/pages/dashboard/VentesPrivees";
 import VentesPriveesPOS from "@/pages/dashboard/VentesPriveesPOS";
+import BoutiqueCustomPage from "@/pages/dashboard/BoutiqueCustomPage";
 
 /* =====================================================
    PUBLIC BOUTIQUE — REAL COMMERCE
@@ -103,11 +104,10 @@ import BoutiqueAllProducts from "@/pages/BoutiqueAllProducts";
 import BoutiqueCategory from "@/pages/BoutiqueCategory";
 import ProductPublic from "@/pages/ProductPublic";
 import OrderTracking from "@/pages/OrderTracking";
-import BoutiqueFAQPage from "@/pages/BoutiqueFAQPage";
-import BoutiqueCGVPage from "@/pages/BoutiqueCGVPage";
-import BoutiqueCGUPage from "@/pages/BoutiqueCGUPage";
-import BoutiqueAboutPage from "@/pages/BoutiqueAboutPage";
-import BoutiqueCustomPage from "@/pages/BoutiqueCustomPage";
+import BoutiqueFAQPage from "@/pages/dashboard/BoutiqueFAQPage";
+import BoutiqueCGVPage from "@/pages/dashboard/BoutiqueCGVPage";
+import BoutiqueCGUPage from "@/pages/dashboard/BoutiqueCGUPage";
+import BoutiqueAboutPage from "@/pages/dashboard/BoutiqueAboutPage";
 
 /* =====================================================
    INSTITUTIONAL / MARKETING
@@ -675,6 +675,11 @@ export default function App() {
                     }
                   />
 
+                  <Route
+                    path="/boutique/:slug/page/:pageSlug"
+                    element={<BoutiqueCustomPage />}
+                  />                  
+
                   {/* =====================================================
                       PUBLIC BOUTIQUE — REAL COMMERCE
                   ===================================================== */}
@@ -738,11 +743,6 @@ export default function App() {
                   <Route
                     path="/boutique/:slug/about"
                     element={<BoutiqueAboutPage />}
-                  />
-
-                  <Route
-                    path="/boutique/:slug/page/:pageSlug"
-                    element={<BoutiqueCustomPage />}
                   />
 
                   {/* =====================================================
