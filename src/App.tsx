@@ -85,7 +85,7 @@ import BoutiqueEdit from "@/pages/dashboard/BoutiqueEdit";
 import BoutiqueAnalytics from "@/pages/dashboard/BoutiqueAnalytics";
 import Parametres from "@/pages/dashboard/Parametres";
 import Aide from "@/pages/dashboard/Aide";
-import RelancesOnboarding from "@/pages/RelancesOnboarding";
+import RelancesOnboarding from "@/pages/dashboard/RelancesOnboarding";
 import MesTickets from "@/pages/dashboard/MesTickets";
 import AdminDocuments from "@/pages/dashboard/AdminDocuments";
 import Equipe from "@/pages/dashboard/Equipe";
