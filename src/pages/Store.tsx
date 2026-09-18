@@ -606,7 +606,7 @@ function StoreIntro({
             >
               {isSubscriber
                 ? "Découvrir les produits"
-                : "Découvrir les produits"
+                : "Découvrir les produits"}
               <ArrowRight className="h-4 w-4" />
             </button>
 
