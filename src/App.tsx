@@ -125,10 +125,10 @@ import PackLegal from "@/pages/PackLegal";
    LEGAL
 ===================================================== */
 
-import MentionsLegales from "@/pages/MentionsLegales";
-import CGU from "@/pages/CGU";
-import Confidentialite from "@/pages/Confidentialite";
-import Cookies from "@/pages/Cookies";
+import MentionsLegales from "@/pages/LegalPages";
+import CGU from "@/pages/LegalPages";
+import Confidentialite from "@/pages/LegalPages";
+import Cookies from "@/pages/LegalPages";
 
 /* =====================================================
    QUERY CLIENT
