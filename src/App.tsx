@@ -73,26 +73,26 @@ import BibTalent from "@/pages/BibTalent";
    DASHBOARD
 ===================================================== */
 
-import Ventes from "@/pages/Ventes";
-import Commandes from "@/pages/Commandes";
-import Produits from "@/pages/Produits";
-import ProduitsFournisseurs from "@/pages/ProduitsFournisseurs";
-import Paiements from "@/pages/Paiements";
-import SEOAnalytics from "@/pages/SEOAnalytics";
-import Boutiques from "@/pages/Boutiques";
-import BoutiqueCreate from "@/pages/BoutiqueCreate";
-import BoutiqueEdit from "@/pages/BoutiqueEdit";
-import BoutiqueAnalytics from "@/pages/BoutiqueAnalytics";
-import Parametres from "@/pages/Parametres";
+import Ventes from "@/pages/dashboard/Ventes";
+import Commandes from "@/pages/dashboard/Commandes";
+import Produits from "@/pages/dashboard/Produits";
+import ProduitsFournisseurs from "@/pages/dashboard/ProduitsFournisseurs";
+import Paiements from "@/pages/dashboard/Paiements";
+import SEOAnalytics from "@/pages/dashboard/SEOAnalytics";
+import Boutiques from "@/pages/dashboard/Boutiques";
+import BoutiqueCreate from "@/pages/dashboard/BoutiqueCreate";
+import BoutiqueEdit from "@/pages/dashboard/BoutiqueEdit";
+import BoutiqueAnalytics from "@/pages/dashboard/BoutiqueAnalytics";
+import Parametres from "@/pages/dashboard/Parametres";
 import Aide from "@/pages/Aide";
 import RelancesOnboarding from "@/pages/RelancesOnboarding";
-import MesTickets from "@/pages/MesTickets";
-import AdminDocuments from "@/pages/AdminDocuments";
-import Equipe from "@/pages/Equipe";
-import Clients from "@/pages/Clients";
-import Marketing from "@/pages/Marketing";
-import VentesPrivees from "@/pages/VentesPrivees";
-import VentesPriveesPOS from "@/pages/VentesPriveesPOS";
+import MesTickets from "@/pages/dashboard/MesTickets";
+import AdminDocuments from "@/pages/dashboard/AdminDocuments";
+import Equipe from "@/pages/dashboard/Equipe";
+import Clients from "@/pages/dashboard/Clients";
+import Marketing from "@/pages/dashboard/Marketing";
+import VentesPrivees from "@/pages/dashboard/VentesPrivees";
+import VentesPriveesPOS from "@/pages/dashboard/VentesPriveesPOS";
 
 /* =====================================================
    PUBLIC BOUTIQUE — REAL COMMERCE
