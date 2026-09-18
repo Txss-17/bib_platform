@@ -1,6 +1,6 @@
 ---
-name: Marketplace
-description: Public marketplace at /marketplace with boutique cards, random product stories, customer accounts, gift cards funded by recycling
+name: Store
+description: Public marketplace at /store with boutique cards, random product stories, customer accounts, gift cards funded by recycling
 type: feature
 ---
 **Route :** `/marketplace`
@@ -11,9 +11,9 @@ Vitrine publique listant toutes les boutiques en statut `published` :
 - Hero avec 3 trust badges : « 0 stock, 0 logistique », « Produits audités », « Recyclage récompensé »
 - Clic sur une carte → `/boutique/:slug`
 
-**Hook :** `useMarketplaceBoutiques()` (`src/hooks/useMarketplace.ts`) — charge les boutiques publiées + jusqu'à 8 produits actifs par boutique pour les stories.
+**Hook :** `usStoreBoutiques()` (`src/hooks/useStore.ts`) — charge les boutiques publiées + jusqu'à 8 produits actifs par boutique pour les stories.
 
-**Composants :** `src/components/marketplace/BoutiqueCard.tsx`
+**Composants :** `src/components/store/BoutiqueCard.tsx`
 
 **Modèle de données associé :**
 - `customer_profiles` — compte client marketplace (auth Supabase distincte du vendeur)
