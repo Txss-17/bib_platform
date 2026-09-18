@@ -29,7 +29,7 @@ import {
 import {
   useStoreBoutiques,
   type StoreBoutique,
-} from "@/hooks/useMarketplace";
+} from "@/hooks/useStore";
 
 import { useStoreCart } from "@/contexts/StoreCartContext";
 import { BoutiqueCard } from "@/components/store/BoutiqueCard";
