@@ -45,9 +45,13 @@ import Store from "@/pages/Store";
 import StoreBoutique from "@/pages/StoreBoutique";
 import StoreCatalog from "@/pages/StoreCatalog";
 import StoreCart from "@/pages/StoreCart";
+import StoreSubscriberAccount from "@/pages/StoreSubscriberAccount";
+import StoreSubscriberFavorites from "@/pages/StoreSubscriberFavorites";
+import StoreSubscriberOrders from "@/pages/StoreSubscriberOrders";
 import Recycler from "@/pages/customer/Recycler";
 import Unsubscribe from "@/pages/Unsubscribe";
 import StoreProduct from "@/pages/StoreProduct";
+import StoreSubscriberLayout from "@/components/StoreSubscriberLayout";
 
 /* =====================================================
    SUPPLIERS / OPERATIONS
@@ -304,6 +308,11 @@ export default function App() {
                   />
 
                   <Route
+                    path="/suppliers/onboarding/resume"
+                    element={<Navigate to="/suppliers/resume?portal=suppliers" replace />}
+                  />
+
+                  <Route
                     path="/suppliers/resume"
                     element={<PartnerOnboardingResume />}
                   />
@@ -368,6 +377,11 @@ export default function App() {
                   />
 
                   <Route
+                    path="/ops/onboarding/resume"
+                    element={<Navigate to="/ops/resume?portal=ops" replace />}
+                  />
+
+                  <Route
                     path="/ops/resume"
                     element={<PartnerOnboardingResume />}
                   />
@@ -421,6 +435,29 @@ export default function App() {
                     element={<StoreSignup />}
                   />
 
+                  <Route
+                    element={
+                      <ProtectedRoute context="store">
+                        <StoreSubscriberLayout />
+                      </ProtectedRoute>
+                    }
+                  >
+                    <Route
+                      path="/store/account"
+                      element={<StoreSubscriberAccount />}
+                    />
+
+                    <Route
+                      path="/store/favorites"
+                      element={<StoreSubscriberFavorites />}
+                    />
+
+                    <Route
+                      path="/store/orders"
+                      element={<StoreSubscriberOrders />}
+                    />
+                  </Route>
+
                   {/* =====================================================
                       AUTHENTICATION
                   ===================================================== */}
@@ -465,6 +502,11 @@ export default function App() {
                   />
 
                   <Route
+                    path="/suivi-commande"
+                    element={<Navigate to="/order-tracking" replace />}
+                  />
+
+                  <Route
                     path="/unsubscribe"
                     element={<Unsubscribe />}
                   />
@@ -475,6 +517,15 @@ export default function App() {
 
                   <Route
                     path="/store/recycler"
+                    element={
+                      <ProtectedRoute context="store">
+                        <Recycler />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  <Route
+                    path="/recycler"
                     element={
                       <ProtectedRoute context="store">
                         <Recycler />
@@ -619,6 +670,11 @@ export default function App() {
                         <RelancesOnboarding />
                       </ProtectedRoute>
                     }
+                  />
+
+                  <Route
+                    path="/dashboard/parametres/relances"
+                    element={<Navigate to="/dashboard/relances-onboarding" replace />}
                   />
 
                   <Route
@@ -847,8 +903,18 @@ export default function App() {
                   />
 
                   <Route
+                    path="/terms"
+                    element={<Navigate to="/cgu" replace />}
+                  />
+
+                  <Route
                     path="/confidentialite"
                     element={<Confidentialite />}
+                  />
+
+                  <Route
+                    path="/privacy"
+                    element={<Navigate to="/confidentialite" replace />}
                   />
 
                   <Route
