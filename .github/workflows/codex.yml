@@ -8,21 +8,27 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   codex:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: write
-
     steps:
-      - name: Checkout BIB
+      - name: Checkout repository
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
+      - name: Create Codex branch
+        run: |
+          BRANCH="codex/${{ github.run_id }}"
+          git checkout -b "$BRANCH"
+          echo "BRANCH=$BRANCH" >> "$GITHUB_ENV"
+
       - name: Run Codex
-        id: codex
         uses: openai/codex-action@v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
@@ -30,14 +36,52 @@ jobs:
           prompt: |
             Tu travailles sur le dépôt Brand-in-a-box (BIB).
 
-            Instruction de l'utilisateur :
+            Instruction :
             ${{ inputs.prompt }}
 
-            Analyse d'abord le code existant.
-            N'effectue que les modifications nécessaires.
-            Respecte l'architecture et les conventions déjà présentes.
-            Ne supprime aucun fonctionnement existant sans raison.
-            Vérifie les imports, les types et les éventuelles erreurs
-            introduites par tes modifications.
+            Règles :
+            - Analyse le code existant avant toute modification.
+            - Respecte l'architecture actuelle du projet.
+            - Ne supprime aucun fonctionnement existant sans nécessité.
+            - Effectue uniquement les changements nécessaires.
+            - Vérifie les imports et les types.
+            - Vérifie les erreurs potentielles introduites.
+            - Si un test ou un build pertinent existe, exécute-le.
+            - Ne modifie jamais les secrets.
+            - Ne modifie jamais les fichiers de configuration GitHub
+              sauf si l'instruction le demande explicitement.
+
+      - name: Check changes
+        run: |
+          git status --short
+          git diff --stat
+
+      - name: Commit changes
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "Aucune modification effectuée."
+            exit 0
+          fi
+
+          git config user.name "BIB Codex"
+          git config user.email "codex@brand-in-a-box.space"
+
+          git add .
+          git commit -m "chore: codex changes"
+
+      - name: Push branch
+        run: |
+          git push origin "$BRANCH"
+
+      - name: Create Pull Request
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "Codex: ${{ inputs.prompt }}" \
+            --body "Pull Request générée automatiquement par Codex.
+
+            Instruction exécutée :
+            ${{ inputs.prompt }}"
