@@ -1,0 +1,43 @@
+name: BIB Codex
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "Instruction à donner à Codex"
+        required: true
+        type: string
+
+jobs:
+  codex:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout BIB
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Run Codex
+        id: codex
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          permission-profile: ":workspace"
+          prompt: |
+            Tu travailles sur le dépôt Brand-in-a-box (BIB).
+
+            Instruction de l'utilisateur :
+            ${{ inputs.prompt }}
+
+            Analyse d'abord le code existant.
+            N'effectue que les modifications nécessaires.
+            Respecte l'architecture et les conventions déjà présentes.
+            Ne supprime aucun fonctionnement existant sans raison.
+            Vérifie les imports, les types et les éventuelles erreurs
+            introduites par tes modifications.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
