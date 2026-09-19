@@ -10,6 +10,7 @@ import {
   Navigate,
   Route,
   Routes,
+  useParams,
 } from "react-router-dom";
 
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -60,6 +61,8 @@ import SuppliersOnboarding from "@/pages/SuppliersOnboarding";
 import OpsOnboarding from "@/pages/OpsOnboarding";
 import PartnerOnboardingResume from "@/pages/PartnerOnboardingResume";
 import PartnerOnboardingPortal from "@/pages/PartnerOnboardingPortal";
+import { suppliersOnboardingConfig } from "@/pages/SuppliersOnboarding";
+import { opsOnboardingConfig } from "@/pages/OpsOnboarding";
 import SuppliersPortal from "@/pages/SuppliersPortal";
 import OpsPortal from "@/pages/OpsPortal";
 
@@ -125,10 +128,12 @@ import PackLegal from "@/pages/PackLegal";
    LEGAL
 ===================================================== */
 
-import MentionsLegales from "@/pages/LegalPages";
-import CGU from "@/pages/LegalPages";
-import Confidentialite from "@/pages/LegalPages";
-import Cookies from "@/pages/LegalPages";
+import {
+  MentionsLegales,
+  CGU,
+  Confidentialite,
+  Cookies,
+} from "@/pages/LegalPages";
 
 /* =====================================================
    QUERY CLIENT
@@ -167,6 +172,26 @@ function RootPage() {
   }
 
   return <Index />;
+}
+
+function PartnerPortalRoute({
+  portal,
+}: {
+  portal: "suppliers" | "ops";
+}) {
+  const { token = "" } = useParams();
+  const config =
+    portal === "suppliers"
+      ? suppliersOnboardingConfig
+      : opsOnboardingConfig;
+
+  return (
+    <PartnerOnboardingPortal
+      portal={portal}
+      token={token}
+      config={config}
+    />
+  );
 }
 
 /* =====================================================
@@ -275,20 +300,12 @@ export default function App() {
 
                   <Route
                     path="/suppliers/reprendre"
-                    element={
-                      <PartnerOnboardingResume
-                        partnerType="supplier"
-                      />
-                    }
+                    element={<Navigate to="/suppliers/resume?portal=suppliers" replace />}
                   />
 
                   <Route
                     path="/suppliers/resume"
-                    element={
-                      <PartnerOnboardingResume
-                        partnerType="supplier"
-                      />
-                    }
+                    element={<PartnerOnboardingResume />}
                   />
 
                   <Route
@@ -298,7 +315,7 @@ export default function App() {
 
                   <Route
                     path="/suppliers/portal/:token"
-                    element={<PartnerOnboardingPortal />}
+                    element={<PartnerPortalRoute portal="suppliers" />}
                   />
 
                   {/* =====================================================
@@ -347,20 +364,12 @@ export default function App() {
 
                   <Route
                     path="/ops/reprendre"
-                    element={
-                      <PartnerOnboardingResume
-                        partnerType="ops"
-                      />
-                    }
+                    element={<Navigate to="/ops/resume?portal=ops" replace />}
                   />
 
                   <Route
                     path="/ops/resume"
-                    element={
-                      <PartnerOnboardingResume
-                        partnerType="ops"
-                      />
-                    }
+                    element={<PartnerOnboardingResume />}
                   />
 
                   <Route
@@ -370,7 +379,7 @@ export default function App() {
 
                   <Route
                     path="/ops/portal/:token"
-                    element={<PartnerOnboardingPortal />}
+                    element={<PartnerPortalRoute portal="ops" />}
                   />
 
                   {/* =====================================================
@@ -467,7 +476,7 @@ export default function App() {
                   <Route
                     path="/store/recycler"
                     element={
-                      <ProtectedRoute>
+                      <ProtectedRoute context="store">
                         <Recycler />
                       </ProtectedRoute>
                     }
@@ -476,7 +485,7 @@ export default function App() {
                   <Route
                     path="/store/recycler/:slug"
                     element={
-                      <ProtectedRoute>
+                      <ProtectedRoute context="store">
                         <Recycler />
                       </ProtectedRoute>
                     }

@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
-import { PartnerOnboardingWizard, OnboardingConfig } from "@/components/standalone/PartnerOnboardingWizard";
+import PartnerOnboardingWizard, {
+  type OnboardingConfig,
+} from "@/components/standalone/PartnerOnboardingWizard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSEO } from "@/hooks/useSEO";
 import { ArrowLeft } from "lucide-react";
 
-const config: OnboardingConfig = {
+export const opsOnboardingConfig: OnboardingConfig = {
   portal: "ops",
   title: "Onboarding Partenaire Logistique",
   subtitle: "Activation opérationnelle après présélection — du KYC au pilote.",
@@ -98,7 +100,7 @@ export default function OpsOnboarding() {
             Reprendre mon dossier
           </Link>
         </p>
-        <PartnerOnboardingWizard config={config} />
+        <PartnerOnboardingWizard config={opsOnboardingConfig} />
       </section>
     </StandaloneLayout>
   );

@@ -32,7 +32,7 @@ import {
   type SampleStatus,
 } from "@/hooks/useSampleValidation";
 import { useSupplierProductsRealtime } from "@/hooks/useSupplierProducts";
-import { SampleValidationSection } from "@/components/dashboard/SampleValidationSection";
+import { SimpleValidationSection } from "@/components/dashboard/SimpleValidationSection";
 import { ProductMediaDialog } from "@/components/dashboard/products/ProductMediaDialog";
 import { EditProductDialog } from "@/components/dashboard/products/EditProductDialog";
 import { ReviewSampleDialog } from "@/components/dashboard/products/ReviewSampleDialog";
@@ -614,7 +614,7 @@ export default function Produits() {
             <DialogTitle className="text-base">Validation du produit</DialogTitle>
           </DialogHeader>
           {selectedProductId && selectedProduct && (
-            <SampleValidationPanel
+            <SimpleValidationSection
               productId={selectedProductId}
               productName={selectedProduct.supplier_products?.name || "Produit"}
             />

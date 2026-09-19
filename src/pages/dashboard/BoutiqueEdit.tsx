@@ -969,7 +969,7 @@ export default function BoutiqueEdit() {
 
             {/* Identity tab — brand foundations + 3-screen preview */}
             <TabsContent value="identity">
-              <BoutiqueIdentityPanel
+              <BoutiqueIdentityEditor
                 themeSettings={themeSettings}
                 setThemeSettings={setThemeSettings}
                 boutiqueName={boutique?.name || ""}
@@ -1863,7 +1863,7 @@ export default function BoutiqueEdit() {
 
             {/* Marketplace highlights — promo / new collection visuals shown on /store */}
             <TabsContent value="highlights">
-              {id && <HighlightsManager boutiqueId={id} />}
+              {id && <StoriesManager boutiqueId={id} />}
             </TabsContent>
           </Tabs>
         </div>

@@ -144,7 +144,7 @@ export default function PartnerOnboardingResume() {
       return;
     }
 
-    navigate(`/portal/onboarding/${response.access_token}`);
+    navigate(`/${portal}/portal/${response.access_token}`);
   }
 
   return (

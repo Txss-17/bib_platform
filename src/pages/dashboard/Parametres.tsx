@@ -333,7 +333,7 @@ export default function Parametres() {
           {/* Abonnement */}
           <TabsContent value="abonnement" className="mt-4">
             <div className="space-y-4">
-              <SubscriptionPanel />
+              <SubscriptionSection />
               <AddOnsCompact onOpenPortal={() => portal.mutate()} portalPending={portal.isPending} hasSub={subs.length > 0} />
             </div>
           </TabsContent>

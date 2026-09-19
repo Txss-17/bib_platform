@@ -136,7 +136,7 @@ Deno.serve(async (req) => {
 
   // Confirmation email to the partner
   const origin = req.headers.get('origin') ?? 'https://brand-in-a-box.space'
-  const portalUrl = `${origin}/portal/onboarding/${access_token}`
+  const portalUrl = `${origin}/${sub.portal}/portal/${access_token}`
   try {
     await fetch(`${SUPABASE_URL}/functions/v1/send-transactional-email`, {
       method: 'POST',

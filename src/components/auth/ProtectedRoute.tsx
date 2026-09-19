@@ -4,12 +4,12 @@ import { useAuth } from "@/contexts/AuthContext";
 export type ProtectedContext = "platform" | "store";
 
 interface ProtectedRouteProps {
-  context: ProtectedContext;
+  context?: ProtectedContext;
   children?: React.ReactNode;
 }
 
 export function ProtectedRoute({
-  context,
+  context = "platform",
   children,
 }: ProtectedRouteProps) {
   const {

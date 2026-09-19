@@ -185,7 +185,7 @@ export function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDial
               <AlertTriangle className="w-4 h-4 text-warning" />
               Signalements
             </h4>
-            <OrderIssuePanel orderId={order.id} />
+            <OrderIssueSection orderId={order.id} />
           </div>
         </div>
       </DialogContent>
