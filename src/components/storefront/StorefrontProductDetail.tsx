@@ -398,7 +398,6 @@ export function StorefrontProductDetail() {
         "add_to_cart",
         {
           productId: product.id,
-          quantity: allowedQuantity,
         },
       );
 

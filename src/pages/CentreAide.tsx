@@ -69,7 +69,7 @@ export default function CentreAide() {
           (item) =>
             normalize(item.q).includes(q) ||
             normalize(item.a).includes(q) ||
-            normalize(category.title).includes(q),
+            normalize(category.label).includes(q),
         ),
       }))
       .filter((category) => category.items.length > 0);
@@ -244,11 +244,11 @@ export default function CentreAide() {
                   {filteredFaq.flatMap((category) =>
                     category.items.slice(0, 6).map((item) => (
                       <Card
-                        key={`${category.title}-${item.q}`}
+                        key={`${category.label}-${item.q}`}
                         className="p-5 transition-shadow hover:shadow-md"
                       >
                         <p className="text-xs font-semibold uppercase tracking-wider text-bib-gold">
-                          {category.title}
+                          {category.label}
                         </p>
 
                         <h3 className="mt-1 font-semibold text-bib-marine">
@@ -375,11 +375,11 @@ export default function CentreAide() {
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {faq.slice(0, 6).map((category) => (
                   <Card
-                    key={category.title}
+                    key={category.label}
                     className="flex h-full flex-col p-5"
                   >
                     <h3 className="font-semibold text-bib-marine">
-                      {category.title}
+                      {category.label}
                     </h3>
 
                     <div className="mt-4 flex-1 space-y-3">

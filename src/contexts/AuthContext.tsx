@@ -1,5 +1,6 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -13,6 +14,7 @@ import type {
   User,
   AuthError,
 } from "@supabase/supabase-js";
+import type { Tables } from "@/integrations/supabase/types";
 
 /* =========================================================
    ACCOUNT TYPES
@@ -31,6 +33,8 @@ interface AuthContextType {
   session: Session | null;
   accountType: AccountType | null;
   loading: boolean;
+  profile: Tables<"profiles"> | null;
+  refreshProfile: () => Promise<void>;
 
   signIn: (
     email: string,
@@ -84,6 +88,29 @@ export function AuthProvider({
 
   const [loading, setLoading] =
     useState(true);
+
+  const [profile, setProfile] =
+    useState<Tables<"profiles"> | null>(null);
+
+  const refreshProfile = useCallback(async () => {
+    if (!user) {
+      setProfile(null);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Unable to load user profile", error);
+      return;
+    }
+
+    setProfile(data);
+  }, [user]);
 
   /* =======================================================
      RESOLVE ACCOUNT TYPE
@@ -176,6 +203,19 @@ export function AuthProvider({
           ),
         );
 
+        if (currentUser) {
+          void supabase
+            .from("profiles")
+            .select("*")
+            .eq("user_id", currentUser.id)
+            .maybeSingle()
+            .then(({ data }) => {
+              if (mounted) setProfile(data);
+            });
+        } else {
+          setProfile(null);
+        }
+
         setLoading(false);
       });
 
@@ -214,6 +254,19 @@ export function AuthProvider({
               currentUser,
             ),
           );
+
+          if (currentUser) {
+            void supabase
+              .from("profiles")
+              .select("*")
+              .eq("user_id", currentUser.id)
+              .maybeSingle()
+              .then(({ data }) => {
+                if (mounted) setProfile(data);
+              });
+          } else {
+            setProfile(null);
+          }
 
           setLoading(false);
         },
@@ -316,6 +369,7 @@ export function AuthProvider({
     setUser(null);
     setSession(null);
     setAccountType(null);
+    setProfile(null);
   };
 
   /* =======================================================
@@ -329,6 +383,8 @@ export function AuthProvider({
         session,
         accountType,
         loading,
+        profile,
+        refreshProfile,
         signIn,
         signUp,
         signOut,

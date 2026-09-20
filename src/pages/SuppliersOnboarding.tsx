@@ -79,8 +79,8 @@ export default function SuppliersOnboarding() {
           <Link to="/suppliers"><ArrowLeft className="w-4 h-4 mr-1.5" /> Présentation</Link>
         </Button>
         <Badge variant="secondary" className="mb-3">Activation · Réservé aux fournisseurs présélectionnés</Badge>
-        <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">{config.title}</h1>
-        <p className="text-sm sm:text-base text-muted-foreground mt-3 max-w-2xl">{config.subtitle}</p>
+        <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">{suppliersOnboardingConfig.title}</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-3 max-w-2xl">{suppliersOnboardingConfig.subtitle}</p>
         <p className="text-xs text-muted-foreground mt-2 mb-8">
           Déjà commencé ?{" "}
           <Link to="/suppliers/onboarding/resume?portal=suppliers" className="underline text-primary">

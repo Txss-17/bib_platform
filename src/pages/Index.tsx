@@ -17,6 +17,7 @@ import {
 
 import founderImg from "@/assets/landing-founder0.jpg";
 import unboxingImg from "@/assets/landing-unboxing.jpg";
+import partenairesImg from "@/assets/réseau-partenaires.png";
 
 const Index = () => {
   useSEO({
@@ -192,7 +193,7 @@ const Index = () => {
                 <div className="overflow-hidden rounded-[2rem] bg-bib-marine shadow-[0_30px_80px_rgba(20,35,55,0.14)]">
                   <div className="aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5]">
                     <img
-                      src={partenairesimg}
+                      src={partenairesImg}
                       alt="Préparation d'une commande dans l'environnement BIB"
                       className="h-full w-full object-cover"
                     />
