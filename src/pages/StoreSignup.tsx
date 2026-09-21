@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import {
   Link,
   useLocation,
@@ -70,11 +71,27 @@ export default function StoreSignup() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
+  /*
+   * Le paramètre next est conservé pendant tout le parcours.
+   *
+   * Pour l'activation BIB Abonné :
+   *
+   * /store/signup?next=/store/subscribe
+   *
+   * devient après création :
+   *
+   * /store/subscribe
+   */
   const requestedDestination =
     searchParams.get("next") ||
     location.state?.from?.pathname ||
     "/store/subscribe";
 
+  /*
+   * On n'autorise ici que des destinations Store.
+   * Cela évite qu'un paramètre next externe puisse
+   * transformer cette page en redirection ouverte.
+   */
   const isStorePath =
     requestedDestination === "/store" ||
     requestedDestination.startsWith("/store/");
@@ -86,8 +103,11 @@ export default function StoreSignup() {
   const isSubscriberFlow =
     destination === "/store/subscribe";
 
-  const getErrorMessage = (message: string) => {
-    const normalized = message.toLowerCase();
+  const getErrorMessage = (
+    message: string,
+  ) => {
+    const normalized =
+      message.toLowerCase();
 
     if (
       message === "Load failed" ||
@@ -100,9 +120,34 @@ export default function StoreSignup() {
 
     if (
       normalized.includes("already registered") ||
-      normalized.includes("user already registered")
+      normalized.includes(
+        "user already registered",
+      )
     ) {
-      return "Un compte existe déjà avec cette adresse e-mail. Connectez-vous pour continuer.";
+      return (
+        "Un compte existe déjà avec cette adresse e-mail. " +
+        "Connectez-vous pour continuer."
+      );
+    }
+
+    if (
+      normalized.includes(
+        "password should be at least",
+      )
+    ) {
+      return (
+        "Le mot de passe doit contenir au moins 8 caractères."
+      );
+    }
+
+    if (
+      normalized.includes(
+        "invalid email",
+      )
+    ) {
+      return (
+        "Veuillez saisir une adresse e-mail valide."
+      );
     }
 
     return message;
@@ -142,25 +187,42 @@ export default function StoreSignup() {
 
     setLoading(true);
 
-    const { data, error: signUpError } =
-      await signUp(
-        normalizedEmail,
-        password,
-        undefined,
-        "store",
-      );
+    /*
+     * Le compte créé ici est toujours un compte Store/client.
+     *
+     * IMPORTANT :
+     * account_type = store
+     * ne signifie PAS que le client est déjà abonné.
+     *
+     * L'abonnement BIB Abonné sera créé ensuite par Stripe
+     * et confirmé par le webhook.
+     */
+    const {
+      data,
+      error: signUpError,
+    } = await signUp(
+      normalizedEmail,
+      password,
+      undefined,
+      "store",
+    );
 
     if (signUpError) {
       setError(
-        getErrorMessage(signUpError.message),
+        getErrorMessage(
+          signUpError.message,
+        ),
       );
       setLoading(false);
       return;
     }
 
-    /**
-     * Supabase peut exiger une confirmation e-mail.
-     * Dans ce cas, la session n'existe pas encore.
+    /*
+     * Si Supabase exige la confirmation e-mail,
+     * aucune session n'est encore disponible.
+     *
+     * On ne tente donc pas d'envoyer l'utilisateur
+     * directement vers Stripe.
      */
     if (!data.session) {
       setConfirmationRequired(true);
@@ -168,15 +230,29 @@ export default function StoreSignup() {
       return;
     }
 
+    /*
+     * Compte créé + session disponible.
+     *
+     * Dans le flux BIB Abonné, on retourne vers
+     * /store/subscribe où Stripe sera affiché.
+     */
     navigate(destination, {
       replace: true,
     });
   };
 
+  const loginUrl =
+    `/store/login?next=${encodeURIComponent(
+      destination,
+    )}`;
+
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto grid min-h-screen max-w-7xl lg:grid-cols-2">
-        {/* Formulaire */}
+        {/* =====================================================
+            FORMULAIRE
+            ===================================================== */}
+
         <div className="flex items-center justify-center p-6 sm:p-8 lg:p-12">
           <div className="w-full max-w-md">
             <div className="mb-8 flex items-center justify-between">
@@ -207,10 +283,12 @@ export default function StoreSignup() {
 
             <Card className="border-border/50 shadow-lg">
               <CardHeader>
-                <div className="mb-3 inline-flex w-fit items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
-                  <Check className="h-3.5 w-3.5" />
-                  BIB Abonné
-                </div>
+                {isSubscriberFlow && (
+                  <div className="mb-3 inline-flex w-fit items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
+                    <Check className="h-3.5 w-3.5" />
+                    BIB Abonné
+                  </div>
+                )}
 
                 <CardTitle className="text-2xl">
                   {isSubscriberFlow
@@ -226,7 +304,10 @@ export default function StoreSignup() {
               </CardHeader>
 
               <CardContent>
-                {/* Prix AVANT création du compte */}
+                {/* =================================================
+                    OFFRE BIB ABONNÉ
+                    ================================================= */}
+
                 {isSubscriberFlow && (
                   <div className="mb-6 rounded-2xl border bg-muted/30 p-5">
                     <div className="flex items-end justify-between gap-4">
@@ -268,8 +349,21 @@ export default function StoreSignup() {
                         Avantages et cartes cadeaux
                       </Benefit>
                     </div>
+
+                    <div className="mt-4 border-t pt-4">
+                      <p className="text-xs leading-5 text-muted-foreground">
+                        Le compte client est gratuit à
+                        créer. L'accès BIB Abonné devient
+                        actif uniquement après confirmation
+                        du paiement de 4,99 € par mois.
+                      </p>
+                    </div>
                   </div>
                 )}
+
+                {/* =================================================
+                    CONFIRMATION E-MAIL
+                    ================================================= */}
 
                 {confirmationRequired ? (
                   <div className="space-y-5">
@@ -277,10 +371,12 @@ export default function StoreSignup() {
                       <AlertDescription>
                         Un e-mail de confirmation vient
                         d'être envoyé à{" "}
-                        <strong>{email}</strong>.
-                        Confirmez votre adresse puis
+                        <strong>
+                          {email}
+                        </strong>
+                        . Confirmez votre adresse puis
                         reconnectez-vous pour poursuivre
-                        l'activation de BIB Abonné.
+                        votre activation.
                       </AlertDescription>
                     </Alert>
 
@@ -289,9 +385,7 @@ export default function StoreSignup() {
                       className="w-full"
                     >
                       <Link
-                        to={`/store/login?next=${encodeURIComponent(
-                          destination,
-                        )}`}
+                        to={loginUrl}
                       >
                         Se connecter et continuer
                         <ArrowRight className="ml-2 h-4 w-4" />
@@ -299,6 +393,10 @@ export default function StoreSignup() {
                     </Button>
                   </div>
                 ) : (
+                  /* =================================================
+                     FORMULAIRE DE CRÉATION
+                     ================================================= */
+
                   <form
                     onSubmit={handleSubmit}
                     className="space-y-4"
@@ -310,6 +408,8 @@ export default function StoreSignup() {
                         </AlertDescription>
                       </Alert>
                     )}
+
+                    {/* E-MAIL */}
 
                     <div className="space-y-2">
                       <Label htmlFor="store-signup-email">
@@ -325,7 +425,9 @@ export default function StoreSignup() {
                           placeholder="vous@exemple.com"
                           value={email}
                           onChange={(event) =>
-                            setEmail(event.target.value)
+                            setEmail(
+                              event.target.value,
+                            )
                           }
                           className="pl-10"
                           autoComplete="email"
@@ -333,6 +435,8 @@ export default function StoreSignup() {
                         />
                       </div>
                     </div>
+
+                    {/* MOT DE PASSE */}
 
                     <div className="space-y-2">
                       <Label htmlFor="store-signup-password">
@@ -365,10 +469,16 @@ export default function StoreSignup() {
                           type="button"
                           onClick={() =>
                             setShowPassword(
-                              (current) => !current,
+                              (current) =>
+                                !current,
                             )
                           }
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          aria-label={
+                            showPassword
+                              ? "Masquer le mot de passe"
+                              : "Afficher le mot de passe"
+                          }
                         >
                           {showPassword ? (
                             <EyeOff className="h-4 w-4" />
@@ -382,6 +492,8 @@ export default function StoreSignup() {
                         8 caractères minimum.
                       </p>
                     </div>
+
+                    {/* CONFIRMATION MOT DE PASSE */}
 
                     <div className="space-y-2">
                       <Label htmlFor="store-signup-confirm-password">
@@ -399,7 +511,9 @@ export default function StoreSignup() {
                               : "password"
                           }
                           placeholder="••••••••"
-                          value={confirmPassword}
+                          value={
+                            confirmPassword
+                          }
                           onChange={(event) =>
                             setConfirmPassword(
                               event.target.value,
@@ -414,10 +528,16 @@ export default function StoreSignup() {
                           type="button"
                           onClick={() =>
                             setShowConfirmPassword(
-                              (current) => !current,
+                              (current) =>
+                                !current,
                             )
                           }
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          aria-label={
+                            showConfirmPassword
+                              ? "Masquer la confirmation du mot de passe"
+                              : "Afficher la confirmation du mot de passe"
+                          }
                         >
                           {showConfirmPassword ? (
                             <EyeOff className="h-4 w-4" />
@@ -427,6 +547,8 @@ export default function StoreSignup() {
                         </button>
                       </div>
                     </div>
+
+                    {/* ACTION */}
 
                     <Button
                       type="submit"
@@ -450,12 +572,14 @@ export default function StoreSignup() {
               </CardContent>
 
               <CardFooter className="flex flex-col gap-4">
+                {/* =================================================
+                    CONNEXION
+                    ================================================= */}
+
                 <div className="text-center text-sm text-muted-foreground">
                   Vous avez déjà un compte ?{" "}
                   <Link
-                    to={`/store/login?next=${encodeURIComponent(
-                      destination,
-                    )}`}
+                    to={loginUrl}
                     className="font-medium text-primary hover:underline"
                   >
                     Se connecter
@@ -473,7 +597,10 @@ export default function StoreSignup() {
           </div>
         </div>
 
-        {/* Présentation */}
+        {/* =====================================================
+            PRÉSENTATION
+            ===================================================== */}
+
         <div className="hidden bg-gradient-to-br from-primary/10 via-accent/5 to-background p-12 lg:flex lg:items-center">
           <div className="mx-auto max-w-lg">
             <h2 className="text-3xl font-bold">
@@ -481,34 +608,43 @@ export default function StoreSignup() {
             </h2>
 
             <p className="mt-4 text-muted-foreground">
-              Votre compte constitue votre identité client.
-              L'abonnement BIB Abonné est ensuite activé
-              séparément après paiement.
+              Votre compte constitue votre identité
+              client. L'abonnement BIB Abonné est ensuite
+              activé séparément après paiement.
             </p>
 
             <div className="mt-8 space-y-5">
               <Benefit
-                icon={<Star className="h-5 w-5" />}
+                icon={
+                  <Star className="h-5 w-5" />
+                }
               >
                 Boutiques et produits favoris
               </Benefit>
 
               <Benefit
-                icon={<Recycle className="h-5 w-5" />}
+                icon={
+                  <Recycle className="h-5 w-5" />
+                }
               >
                 Recyclage et points
               </Benefit>
 
               <Benefit
-                icon={<Gift className="h-5 w-5" />}
+                icon={
+                  <Gift className="h-5 w-5" />
+                }
               >
                 Avantages et cartes cadeaux
               </Benefit>
 
               <Benefit
-                icon={<Shield className="h-5 w-5" />}
+                icon={
+                  <Shield className="h-5 w-5" />
+                }
               >
-                Un compte client distinct de l'espace marchand
+                Un compte client distinct de l'espace
+                marchand
               </Benefit>
             </div>
           </div>
@@ -517,6 +653,10 @@ export default function StoreSignup() {
     </div>
   );
 }
+
+/* =========================================================
+   BENEFIT
+   ========================================================= */
 
 function Benefit({
   children,
@@ -528,7 +668,9 @@ function Benefit({
   return (
     <div className="flex items-center gap-3 text-sm">
       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-        {icon ?? <Check className="h-3.5 w-3.5" />}
+        {icon ?? (
+          <Check className="h-3.5 w-3.5" />
+        )}
       </div>
 
       <span>{children}</span>
