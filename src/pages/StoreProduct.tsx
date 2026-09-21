@@ -1,1288 +1,528 @@
+import { useMemo } from "react";
 import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  ExternalLink,
+  Heart,
+  Loader2,
+  ShieldCheck,
+  ShoppingBag,
+  Store,
+} from "lucide-react";
+import {
+  Link,
+  useParams,
+} from "react-router-dom";
 
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  useStoreProduct,
+} from "@/hooks/useStore";
+import {
+  useFavorites,
+} from "@/hooks/useFavorites";
+import {
+  useSEO,
+} from "@/hooks/useSEO";
 
-const LEGACY_PRODUCT_STORAGE_KEY =
-  "linksy-favorites";
-
-const GUEST_PRODUCT_STORAGE_KEY =
-  "bib-store-favorites:guest";
-
-const GUEST_BOUTIQUE_STORAGE_KEY =
-  "bib-store-boutique-favorites:guest";
-
-/**
- * Les tables customer_*_favorites peuvent ne pas encore
- * être présentes dans les types Supabase générés localement.
- *
- * Le schéma SQL et les politiques RLS restent la source
- * d'autorité côté base.
- */
-const favoritesDb = supabase as any;
-
-type FavoriteStorageMode =
-  | "guest"
-  | "account";
-
-function normalizeId(
-  value: string,
+function formatPrice(
+  value: number,
 ): string {
-  return value.trim();
+  return new Intl.NumberFormat(
+    "fr-FR",
+    {
+      style: "currency",
+      currency: "EUR",
+    },
+  ).format(value);
 }
 
-function uniqueIds(
-  values: string[],
-): string[] {
-  return Array.from(
-    new Set(
-      values
-        .map(normalizeId)
-        .filter(Boolean),
-    ),
-  );
-}
+export default function StoreProduct() {
+  const {
+    productId,
+  } = useParams<{
+    productId: string;
+  }>();
 
-/* ============================================================
-   LOCAL STORAGE — PRODUITS
-   ============================================================ */
-
-function readGuestProductFavorites(): string[] {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    const current =
-      localStorage.getItem(
-        GUEST_PRODUCT_STORAGE_KEY,
-      );
-
-    if (current) {
-      const parsed = JSON.parse(
-        current,
-      );
-
-      if (Array.isArray(parsed)) {
-        return uniqueIds(
-          parsed.filter(
-            (
-              value,
-            ): value is string =>
-              typeof value ===
-                "string" &&
-              value.trim().length > 0,
-          ),
-        );
-      }
-    }
-
-    /*
-     * Migration de l'ancienne clé Linksy.
-     */
-    const legacy =
-      localStorage.getItem(
-        LEGACY_PRODUCT_STORAGE_KEY,
-      );
-
-    if (!legacy) {
-      return [];
-    }
-
-    const parsed = JSON.parse(
-      legacy,
-    );
-
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    const migrated =
-      uniqueIds(
-        parsed.filter(
-          (
-            value,
-          ): value is string =>
-            typeof value ===
-              "string" &&
-            value.trim().length > 0,
-        ),
-      );
-
-    if (migrated.length > 0) {
-      localStorage.setItem(
-        GUEST_PRODUCT_STORAGE_KEY,
-        JSON.stringify(
-          migrated,
-        ),
-      );
-    }
-
-    return migrated;
-  } catch {
-    return [];
-  }
-}
-
-function writeGuestProductFavorites(
-  favorites: string[],
-) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    localStorage.setItem(
-      GUEST_PRODUCT_STORAGE_KEY,
-      JSON.stringify(
-        uniqueIds(favorites),
-      ),
-    );
-  } catch {
-    // Le stockage local peut être indisponible.
-  }
-}
-
-/* ============================================================
-   LOCAL STORAGE — BOUTIQUES
-   ============================================================ */
-
-function readGuestBoutiqueFavorites(): string[] {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    const value =
-      localStorage.getItem(
-        GUEST_BOUTIQUE_STORAGE_KEY,
-      );
-
-    if (!value) {
-      return [];
-    }
-
-    const parsed = JSON.parse(
-      value,
-    );
-
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return uniqueIds(
-      parsed.filter(
-        (
-          item,
-        ): item is string =>
-          typeof item ===
-            "string" &&
-          item.trim().length > 0,
-      ),
-    );
-  } catch {
-    return [];
-  }
-}
-
-function writeGuestBoutiqueFavorites(
-  favorites: string[],
-) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    localStorage.setItem(
-      GUEST_BOUTIQUE_STORAGE_KEY,
-      JSON.stringify(
-        uniqueIds(favorites),
-      ),
-    );
-  } catch {
-    // Le stockage local peut être indisponible.
-  }
-}
-
-/* ============================================================
-   HOOK
-   ============================================================ */
-
-export function useFavorites() {
-  const { user } = useAuth();
-
-  const userId =
-    user?.id ?? null;
-
-  const storageMode: FavoriteStorageMode =
-    useMemo(
-      () =>
-        userId
-          ? "account"
-          : "guest",
-      [userId],
-    );
-
-  const [
-    favorites,
-    setFavorites,
-  ] = useState<string[]>(() =>
-    userId
-      ? []
-      : readGuestProductFavorites(),
-  );
-
-  const [
-    boutiqueFavorites,
-    setBoutiqueFavorites,
-  ] = useState<string[]>(() =>
-    userId
-      ? []
-      : readGuestBoutiqueFavorites(),
-  );
-
-  const [
+  const {
+    data: product,
     isLoading,
-    setIsLoading,
-  ] = useState(
-    Boolean(userId),
+    isError,
+    refetch,
+  } = useStoreProduct(
+    productId,
   );
 
-  /* ==========================================================
-     CHARGEMENT DU COMPTE
-     ========================================================== */
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadAccountFavorites() {
-      if (!userId) {
-        setFavorites(
-          readGuestProductFavorites(),
-        );
-
-        setBoutiqueFavorites(
-          readGuestBoutiqueFavorites(),
-        );
-
-        setIsLoading(false);
-
-        return;
-      }
-
-      setIsLoading(true);
-
-      try {
-        const [
-          productResult,
-          boutiqueResult,
-        ] = await Promise.all([
-          favoritesDb
-            .from(
-              "customer_product_favorites",
-            )
-            .select(
-              "product_id",
-            )
-            .eq(
-              "user_id",
-              userId,
-            )
-            .order(
-              "created_at",
-              {
-                ascending: false,
-              },
-            ),
-
-          favoritesDb
-            .from(
-              "customer_boutique_favorites",
-            )
-            .select(
-              "boutique_id",
-            )
-            .eq(
-              "user_id",
-              userId,
-            )
-            .order(
-              "created_at",
-              {
-                ascending: false,
-              },
-            ),
-        ]);
-
-        if (productResult.error) {
-          throw productResult.error;
-        }
-
-        if (boutiqueResult.error) {
-          throw boutiqueResult.error;
-        }
-
-        const accountProducts =
-          uniqueIds(
-            (
-              productResult.data ??
-              []
-            )
-              .map(
-                (row: {
-                  product_id?: unknown;
-                }) =>
-                  row.product_id,
-              )
-              .filter(
-                (
-                  value: unknown,
-                ): value is string =>
-                  typeof value ===
-                    "string" &&
-                  value.trim()
-                    .length > 0,
-              ),
-          );
-
-        const accountBoutiques =
-          uniqueIds(
-            (
-              boutiqueResult.data ??
-              []
-            )
-              .map(
-                (row: {
-                  boutique_id?: unknown;
-                }) =>
-                  row.boutique_id,
-              )
-              .filter(
-                (
-                  value: unknown,
-                ): value is string =>
-                  typeof value ===
-                    "string" &&
-                  value.trim()
-                    .length > 0,
-              ),
-          );
-
-        /*
-         * ======================================================
-         * MIGRATION DES FAVORIS PRODUITS INVITÉS
-         * ======================================================
-         */
-
-        const guestProducts =
-          readGuestProductFavorites();
-
-        const missingProducts =
-          guestProducts.filter(
-            (productId) =>
-              !accountProducts.includes(
-                productId,
-              ),
-          );
-
-        if (
-          missingProducts.length >
-          0
-        ) {
-          const rows =
-            missingProducts.map(
-              (productId) => ({
-                user_id:
-                  userId,
-                product_id:
-                  productId,
-              }),
-            );
-
-          const {
-            error:
-              insertProductsError,
-          } = await favoritesDb
-            .from(
-              "customer_product_favorites",
-            )
-            .upsert(
-              rows,
-              {
-                onConflict:
-                  "user_id,product_id",
-                ignoreDuplicates:
-                  true,
-              },
-            );
-
-          if (insertProductsError) {
-            throw insertProductsError;
-          }
-
-          accountProducts.push(
-            ...missingProducts,
-          );
-        }
-
-        /*
-         * ======================================================
-         * MIGRATION DES FAVORIS BOUTIQUES INVITÉS
-         * ======================================================
-         */
-
-        const guestBoutiques =
-          readGuestBoutiqueFavorites();
-
-        const missingBoutiques =
-          guestBoutiques.filter(
-            (boutiqueId) =>
-              !accountBoutiques.includes(
-                boutiqueId,
-              ),
-          );
-
-        if (
-          missingBoutiques.length >
-          0
-        ) {
-          const rows =
-            missingBoutiques.map(
-              (boutiqueId) => ({
-                user_id:
-                  userId,
-                boutique_id:
-                  boutiqueId,
-              }),
-            );
-
-          const {
-            error:
-              insertBoutiquesError,
-          } = await favoritesDb
-            .from(
-              "customer_boutique_favorites",
-            )
-            .upsert(
-              rows,
-              {
-                onConflict:
-                  "user_id,boutique_id",
-                ignoreDuplicates:
-                  true,
-              },
-            );
-
-          if (insertBoutiquesError) {
-            throw insertBoutiquesError;
-          }
-
-          accountBoutiques.push(
-            ...missingBoutiques,
-          );
-        }
-
-        /*
-         * Les favoris invités ont maintenant été transférés
-         * dans le compte.
-         */
-        if (
-          missingProducts.length >
-            0 ||
-          guestProducts.length === 0
-        ) {
-          writeGuestProductFavorites(
-            [],
-          );
-        }
-
-        if (
-          missingBoutiques.length >
-            0 ||
-          guestBoutiques.length === 0
-        ) {
-          writeGuestBoutiqueFavorites(
-            [],
-          );
-        }
-
-        /*
-         * Nettoyage de l'ancienne clé Linksy.
-         */
-        if (
-          typeof window !==
-          "undefined"
-        ) {
-          try {
-            localStorage.removeItem(
-              LEGACY_PRODUCT_STORAGE_KEY,
-            );
-          } catch {
-            // Rien à faire.
-          }
-        }
-
-        if (!cancelled) {
-          setFavorites(
-            uniqueIds(
-              accountProducts,
-            ),
-          );
-
-          setBoutiqueFavorites(
-            uniqueIds(
-              accountBoutiques,
-            ),
-          );
-        }
-      } catch (error) {
-        console.error(
-          "Impossible de charger les favoris BIB Store.",
-          error,
-        );
-
-        /*
-         * On conserve les éventuels favoris locaux
-         * plutôt que de présenter une liste vide.
-         */
-        if (!cancelled) {
-          setFavorites(
-            readGuestProductFavorites(),
-          );
-
-          setBoutiqueFavorites(
-            readGuestBoutiqueFavorites(),
-          );
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    void loadAccountFavorites();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
-
-  /* ==========================================================
-     PRODUITS
-     ========================================================== */
-
-  const toggleFavorite =
-    useCallback(
-      async (
-        productId: string,
-      ) => {
-        const normalizedId =
-          normalizeId(
-            productId,
-          );
-
-        if (!normalizedId) {
-          return;
-        }
-
-        const currentlyFavorite =
-          favorites.includes(
-            normalizedId,
-          );
-
-        /*
-         * Visiteur.
-         */
-        if (!userId) {
-          setFavorites(
-            (current) => {
-              const next =
-                current.includes(
-                  normalizedId,
-                )
-                  ? current.filter(
-                      (id) =>
-                        id !==
-                        normalizedId,
-                    )
-                  : [
-                      ...current,
-                      normalizedId,
-                    ];
-
-              writeGuestProductFavorites(
-                next,
-              );
-
-              return next;
-            },
-          );
-
-          return;
-        }
-
-        /*
-         * Compte connecté — ajout.
-         */
-        if (!currentlyFavorite) {
-          setFavorites(
-            (current) =>
-              current.includes(
-                normalizedId,
-              )
-                ? current
-                : [
-                    ...current,
-                    normalizedId,
-                  ],
-          );
-
-          const {
-            error,
-          } = await favoritesDb
-            .from(
-              "customer_product_favorites",
-            )
-            .upsert(
-              {
-                user_id:
-                  userId,
-                product_id:
-                  normalizedId,
-              },
-              {
-                onConflict:
-                  "user_id,product_id",
-                ignoreDuplicates:
-                  true,
-              },
-            );
-
-          if (error) {
-            console.error(
-              "Impossible d'ajouter le produit aux favoris.",
-              error,
-            );
-
-            setFavorites(
-              (current) =>
-                current.filter(
-                  (id) =>
-                    id !==
-                    normalizedId,
-                ),
-            );
-          }
-
-          return;
-        }
-
-        /*
-         * Compte connecté — suppression.
-         */
-        setFavorites(
-          (current) =>
-            current.filter(
-              (id) =>
-                id !== normalizedId,
-            ),
-        );
-
-        const {
-          error,
-        } = await favoritesDb
-          .from(
-            "customer_product_favorites",
-          )
-          .delete()
-          .eq(
-            "user_id",
-            userId,
-          )
-          .eq(
-            "product_id",
-            normalizedId,
-          );
-
-        if (error) {
-          console.error(
-            "Impossible de supprimer le produit des favoris.",
-            error,
-          );
-
-          setFavorites(
-            (current) =>
-              current.includes(
-                normalizedId,
-              )
-                ? current
-                : [
-                    ...current,
-                    normalizedId,
-                  ],
-          );
-        }
-      },
-      [
-        favorites,
-        userId,
-      ],
-    );
-
-  const isFavorite =
-    useCallback(
-      (productId: string) =>
-        favorites.includes(
-          normalizeId(
-            productId,
-          ),
-        ),
-      [favorites],
-    );
-
-  const removeFavorite =
-    useCallback(
-      async (
-        productId: string,
-      ) => {
-        const normalizedId =
-          normalizeId(
-            productId,
-          );
-
-        if (!normalizedId) {
-          return;
-        }
-
-        if (
-          !favorites.includes(
-            normalizedId,
-          )
-        ) {
-          return;
-        }
-
-        setFavorites(
-          (current) =>
-            current.filter(
-              (id) =>
-                id !== normalizedId,
-            ),
-        );
-
-        if (!userId) {
-          writeGuestProductFavorites(
-            favorites.filter(
-              (id) =>
-                id !==
-                normalizedId,
-            ),
-          );
-
-          return;
-        }
-
-        const {
-          error,
-        } = await favoritesDb
-          .from(
-            "customer_product_favorites",
-          )
-          .delete()
-          .eq(
-            "user_id",
-            userId,
-          )
-          .eq(
-            "product_id",
-            normalizedId,
-          );
-
-        if (error) {
-          console.error(
-            "Impossible de supprimer le produit des favoris.",
-            error,
-          );
-
-          setFavorites(
-            (current) =>
-              current.includes(
-                normalizedId,
-              )
-                ? current
-                : [
-                    ...current,
-                    normalizedId,
-                  ],
-          );
-        }
-      },
-      [
-        favorites,
-        userId,
-      ],
-    );
-
-  const clearFavorites =
-    useCallback(
-      async () => {
-        const previous =
-          favorites;
-
-        setFavorites([]);
-
-        if (!userId) {
-          writeGuestProductFavorites(
-            [],
-          );
-
-          return;
-        }
-
-        const {
-          error,
-        } = await favoritesDb
-          .from(
-            "customer_product_favorites",
-          )
-          .delete()
-          .eq(
-            "user_id",
-            userId,
-          );
-
-        if (error) {
-          console.error(
-            "Impossible de supprimer les favoris produits.",
-            error,
-          );
-
-          setFavorites(
-            previous,
-          );
-        }
-      },
-      [
-        favorites,
-        userId,
-      ],
-    );
-
-  /* ==========================================================
-     BOUTIQUES
-     ========================================================== */
-
-  const toggleBoutiqueFavorite =
-    useCallback(
-      async (
-        boutiqueId: string,
-      ) => {
-        const normalizedId =
-          normalizeId(
-            boutiqueId,
-          );
-
-        if (!normalizedId) {
-          return;
-        }
-
-        const currentlyFavorite =
-          boutiqueFavorites.includes(
-            normalizedId,
-          );
-
-        /*
-         * Visiteur.
-         */
-        if (!userId) {
-          setBoutiqueFavorites(
-            (current) => {
-              const next =
-                current.includes(
-                  normalizedId,
-                )
-                  ? current.filter(
-                      (id) =>
-                        id !==
-                        normalizedId,
-                    )
-                  : [
-                      ...current,
-                      normalizedId,
-                    ];
-
-              writeGuestBoutiqueFavorites(
-                next,
-              );
-
-              return next;
-            },
-          );
-
-          return;
-        }
-
-        /*
-         * Compte connecté — ajout.
-         */
-        if (!currentlyFavorite) {
-          setBoutiqueFavorites(
-            (current) =>
-              current.includes(
-                normalizedId,
-              )
-                ? current
-                : [
-                    ...current,
-                    normalizedId,
-                  ],
-          );
-
-          const {
-            error,
-          } = await favoritesDb
-            .from(
-              "customer_boutique_favorites",
-            )
-            .upsert(
-              {
-                user_id:
-                  userId,
-                boutique_id:
-                  normalizedId,
-              },
-              {
-                onConflict:
-                  "user_id,boutique_id",
-                ignoreDuplicates:
-                  true,
-              },
-            );
-
-          if (error) {
-            console.error(
-              "Impossible d'ajouter la boutique aux favoris.",
-              error,
-            );
-
-            setBoutiqueFavorites(
-              (current) =>
-                current.filter(
-                  (id) =>
-                    id !==
-                    normalizedId,
-                ),
-            );
-          }
-
-          return;
-        }
-
-        /*
-         * Compte connecté — suppression.
-         */
-        setBoutiqueFavorites(
-          (current) =>
-            current.filter(
-              (id) =>
-                id !== normalizedId,
-            ),
-        );
-
-        const {
-          error,
-        } = await favoritesDb
-          .from(
-            "customer_boutique_favorites",
-          )
-          .delete()
-          .eq(
-            "user_id",
-            userId,
-          )
-          .eq(
-            "boutique_id",
-            normalizedId,
-          );
-
-        if (error) {
-          console.error(
-            "Impossible de supprimer la boutique des favoris.",
-            error,
-          );
-
-          setBoutiqueFavorites(
-            (current) =>
-              current.includes(
-                normalizedId,
-              )
-                ? current
-                : [
-                    ...current,
-                    normalizedId,
-                  ],
-          );
-        }
-      },
-      [
-        boutiqueFavorites,
-        userId,
-      ],
-    );
-
-  const isBoutiqueFavorite =
-    useCallback(
-      (boutiqueId: string) =>
-        boutiqueFavorites.includes(
-          normalizeId(
-            boutiqueId,
-          ),
-        ),
-      [boutiqueFavorites],
-    );
-
-  const removeBoutiqueFavorite =
-    useCallback(
-      async (
-        boutiqueId: string,
-      ) => {
-        const normalizedId =
-          normalizeId(
-            boutiqueId,
-          );
-
-        if (!normalizedId) {
-          return;
-        }
-
-        if (
-          !boutiqueFavorites.includes(
-            normalizedId,
-          )
-        ) {
-          return;
-        }
-
-        setBoutiqueFavorites(
-          (current) =>
-            current.filter(
-              (id) =>
-                id !== normalizedId,
-            ),
-        );
-
-        if (!userId) {
-          writeGuestBoutiqueFavorites(
-            boutiqueFavorites.filter(
-              (id) =>
-                id !==
-                normalizedId,
-            ),
-          );
-
-          return;
-        }
-
-        const {
-          error,
-        } = await favoritesDb
-          .from(
-            "customer_boutique_favorites",
-          )
-          .delete()
-          .eq(
-            "user_id",
-            userId,
-          )
-          .eq(
-            "boutique_id",
-            normalizedId,
-          );
-
-        if (error) {
-          console.error(
-            "Impossible de supprimer la boutique des favoris.",
-            error,
-          );
-
-          setBoutiqueFavorites(
-            (current) =>
-              current.includes(
-                normalizedId,
-              )
-                ? current
-                : [
-                    ...current,
-                    normalizedId,
-                  ],
-          );
-        }
-      },
-      [
-        boutiqueFavorites,
-        userId,
-      ],
-    );
-
-  const clearBoutiqueFavorites =
-    useCallback(
-      async () => {
-        const previous =
-          boutiqueFavorites;
-
-        setBoutiqueFavorites([]);
-
-        if (!userId) {
-          writeGuestBoutiqueFavorites(
-            [],
-          );
-
-          return;
-        }
-
-        const {
-          error,
-        } = await favoritesDb
-          .from(
-            "customer_boutique_favorites",
-          )
-          .delete()
-          .eq(
-            "user_id",
-            userId,
-          );
-
-        if (error) {
-          console.error(
-            "Impossible de supprimer les favoris boutiques.",
-            error,
-          );
-
-          setBoutiqueFavorites(
-            previous,
-          );
-        }
-      },
-      [
-        boutiqueFavorites,
-        userId,
-      ],
-    );
-
-  /* ==========================================================
-     RESET GLOBAL
-     ========================================================== */
-
-  const clearAllFavorites =
-    useCallback(
-      async () => {
-        const previousProducts =
-          favorites;
-
-        const previousBoutiques =
-          boutiqueFavorites;
-
-        setFavorites([]);
-
-        setBoutiqueFavorites([]);
-
-        if (!userId) {
-          writeGuestProductFavorites(
-            [],
-          );
-
-          writeGuestBoutiqueFavorites(
-            [],
-          );
-
-          return;
-        }
-
-        const [
-          productResult,
-          boutiqueResult,
-        ] = await Promise.all([
-          favoritesDb
-            .from(
-              "customer_product_favorites",
-            )
-            .delete()
-            .eq(
-              "user_id",
-              userId,
-            ),
-
-          favoritesDb
-            .from(
-              "customer_boutique_favorites",
-            )
-            .delete()
-            .eq(
-              "user_id",
-              userId,
-            ),
-        ]);
-
-        if (
-          productResult.error ||
-          boutiqueResult.error
-        ) {
-          console.error(
-            "Impossible de supprimer tous les favoris.",
-            productResult.error ??
-              boutiqueResult.error,
-          );
-
-          setFavorites(
-            previousProducts,
-          );
-
-          setBoutiqueFavorites(
-            previousBoutiques,
-          );
-        }
-      },
-      [
-        favorites,
-        boutiqueFavorites,
-        userId,
-      ],
-    );
-
-  return {
-    /*
-     * Produits
-     */
-    favorites,
-    toggleFavorite,
+  const {
     isFavorite,
-    removeFavorite,
-    clearFavorites,
+    toggleFavorite,
+    isLoading:
+      favoritesLoading,
+  } = useFavorites();
 
-    /*
-     * Boutiques
-     */
-    boutiqueFavorites,
-    toggleBoutiqueFavorite,
-    isBoutiqueFavorite,
-    removeBoutiqueFavorite,
-    clearBoutiqueFavorites,
+  const favorite = useMemo(
+    () =>
+      product
+        ? isFavorite(product.id)
+        : false,
+    [
+      product,
+      isFavorite,
+    ],
+  );
 
-    /*
-     * Global
-     */
-    clearAllFavorites,
+  useSEO({
+    title: product
+      ? `${product.name} — ${product.boutique_name} | BIB`
+      : "Produit | BIB Store",
 
-    /*
-     * État
-     */
-    isLoading,
-    storageMode,
-  };
+    description:
+      product?.description ||
+      (product
+        ? `Découvrez ${product.name} proposé par ${product.boutique_name}, boutique vérifiée par BIB.`
+        : "Découvrez les produits des boutiques vérifiées par BIB."),
+
+    image:
+      product?.image_url ||
+      undefined,
+
+    type: "store",
+
+    keywords: [
+      product?.name,
+      product?.boutique_name,
+      product?.boutique_category,
+      "BIB",
+      "Brand-in-a-box",
+    ].filter(Boolean) as string[],
+  });
+
+  /*
+   * ============================================================
+   * ÉTAT DE CHARGEMENT
+   * ============================================================
+   */
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="flex min-h-[70vh] items-center justify-center px-6">
+          <div className="text-center">
+            <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-muted-foreground" />
+
+            <p className="text-sm text-muted-foreground">
+              Chargement du produit…
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /*
+   * ============================================================
+   * PRODUIT INTROUVABLE
+   * ============================================================
+   */
+
+  if (
+    isError ||
+    !product
+  ) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="mx-auto flex min-h-[70vh] max-w-2xl items-center justify-center px-6">
+          <div className="w-full rounded-2xl border bg-card p-8 text-center shadow-sm">
+            <ShoppingBag className="mx-auto mb-5 h-10 w-10 text-muted-foreground" />
+
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Produit introuvable
+            </h1>
+
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              Ce produit n'est pas
+              disponible dans le Store BIB
+              ou n'est plus publié.
+            </p>
+
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Link
+                to="/store/products"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              >
+                <ArrowLeft className="h-4 w-4" />
+
+                Voir les produits
+              </Link>
+
+              <button
+                type="button"
+                onClick={() =>
+                  void refetch()
+                }
+                className="inline-flex items-center gap-2 rounded-lg border px-5 py-3 text-sm font-semibold transition-colors hover:bg-muted"
+              >
+                Réessayer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /*
+   * ============================================================
+   * ROUTES
+   * ============================================================
+   */
+
+  const boutiqueStoreUrl =
+    `/store/boutique/${encodeURIComponent(
+      product.boutique_slug,
+    )}`;
+
+  const merchantProductUrl =
+    `/boutique/${encodeURIComponent(
+      product.boutique_slug,
+    )}/product/${product.id}`;
+
+  const merchantProductsUrl =
+    `/boutique/${encodeURIComponent(
+      product.boutique_slug,
+    )}/products`;
+
+  /*
+   * ============================================================
+   * PAGE
+   * ============================================================
+   */
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      {/* ========================================================
+          HEADER
+         ======================================================== */}
+
+      <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+          <Link
+            to="/store/products"
+            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+
+            <span className="hidden sm:inline">
+              Retour aux produits
+            </span>
+
+            <span className="sm:hidden">
+              Retour
+            </span>
+          </Link>
+
+          <Link
+            to={boutiqueStoreUrl}
+            className="flex min-w-0 items-center gap-2 text-sm font-medium"
+          >
+            <Store className="h-4 w-4 shrink-0 text-muted-foreground" />
+
+            <span className="max-w-[180px] truncate sm:max-w-none">
+              {product.boutique_name}
+            </span>
+          </Link>
+        </div>
+      </header>
+
+      <main>
+        {/* ======================================================
+            PRODUCT
+           ====================================================== */}
+
+        <section>
+          <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+            <div className="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] lg:items-start lg:gap-14">
+              {/* =================================================
+                  IMAGE
+                 ================================================= */}
+
+              <div className="relative overflow-hidden rounded-2xl border bg-muted">
+                <div className="aspect-square">
+                  {product.image_url ? (
+                    <img
+                      src={product.image_url}
+                      alt={product.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <ShoppingBag className="h-16 w-16 text-muted-foreground/40" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="absolute left-4 top-4">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border bg-background/90 px-3 py-1.5 text-xs font-medium shadow-sm backdrop-blur">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+
+                    Vérifié par BIB
+                  </span>
+                </div>
+              </div>
+
+              {/* =================================================
+                  DETAILS
+                 ================================================= */}
+
+              <div className="lg:pt-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <Link
+                      to={boutiqueStoreUrl}
+                      className="inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <Store className="h-3.5 w-3.5" />
+
+                      {product.boutique_name}
+                    </Link>
+
+                    <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+                      {product.name}
+                    </h1>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void toggleFavorite(
+                        product.id,
+                      )
+                    }
+                    disabled={
+                      favoritesLoading
+                    }
+                    aria-label={
+                      favorite
+                        ? `Retirer ${product.name} des favoris`
+                        : `Ajouter ${product.name} aux favoris`
+                    }
+                    aria-pressed={
+                      favorite
+                    }
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border bg-background transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {favoritesLoading ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <Heart
+                        className="h-5 w-5"
+                        fill={
+                          favorite
+                            ? "currentColor"
+                            : "none"
+                        }
+                        strokeWidth={
+                          1.8
+                        }
+                      />
+                    )}
+                  </button>
+                </div>
+
+                <div className="mt-6 flex items-center gap-3">
+                  <span className="text-2xl font-semibold">
+                    {formatPrice(
+                      product.price,
+                    )}
+                  </span>
+
+                  {product.boutique_category && (
+                    <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
+                      {
+                        product.boutique_category
+                      }
+                    </span>
+                  )}
+                </div>
+
+                {product.description && (
+                  <div className="mt-7 border-t pt-6">
+                    <h2 className="text-sm font-semibold">
+                      À propos du produit
+                    </h2>
+
+                    <p className="mt-3 whitespace-pre-line text-sm leading-7 text-muted-foreground">
+                      {
+                        product.description
+                      }
+                    </p>
+                  </div>
+                )}
+
+                {/* =================================================
+                    TRUST BLOCK
+                   ================================================= */}
+
+                <div className="mt-7 rounded-2xl border bg-card p-5">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted">
+                      <ShieldCheck className="h-5 w-5" />
+                    </div>
+
+                    <div>
+                      <h2 className="font-semibold">
+                        Produit référencé par BIB
+                      </h2>
+
+                      <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
+                        BIB présente ce produit
+                        dans son réseau de
+                        boutiques vérifiées.
+                        Les informations
+                        commerciales et l'achat
+                        sont gérés directement
+                        par la boutique.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* =================================================
+                    COMMERCIAL CTA
+                   ================================================= */}
+
+                <div className="mt-7 space-y-3">
+                  <Link
+                    to={merchantProductUrl}
+                    className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                  >
+                    Voir dans la boutique
+
+                    <ExternalLink className="h-4 w-4" />
+                  </Link>
+
+                  <Link
+                    to={merchantProductsUrl}
+                    className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border bg-background px-6 text-sm font-medium transition-colors hover:bg-muted"
+                  >
+                    Voir les autres produits
+
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+
+                <p className="mt-4 text-center text-xs leading-5 text-muted-foreground">
+                  L'achat et le paiement sont
+                  effectués directement sur la
+                  boutique marchande.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ======================================================
+            BOUTIQUE LINK
+           ====================================================== */}
+
+        <section className="border-y bg-muted/30">
+          <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+            <div className="flex flex-col gap-5 rounded-2xl border bg-card p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+              <div className="flex items-start gap-4">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted">
+                  <Store className="h-5 w-5" />
+                </div>
+
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                    Boutique
+                  </p>
+
+                  <h2 className="mt-1 text-lg font-semibold">
+                    {product.boutique_name}
+                  </h2>
+
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Découvrez l'ensemble de
+                    sa sélection sur BIB.
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                to={boutiqueStoreUrl}
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border px-5 py-3 text-sm font-semibold transition-colors hover:bg-muted"
+              >
+                Découvrir la boutique
+
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ======================================================
+            DISCOVERY EXPLANATION
+           ====================================================== */}
+
+        <section>
+          <div className="mx-auto max-w-3xl px-4 py-12 text-center sm:px-6 sm:py-16">
+            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full border bg-muted">
+              <ShoppingBag className="h-5 w-5" />
+            </div>
+
+            <h2 className="mt-5 text-2xl font-semibold tracking-tight">
+              BIB facilite la découverte
+            </h2>
+
+            <p className="mt-3 text-sm leading-7 text-muted-foreground">
+              Le Store BIB permet de découvrir
+              des produits et des boutiques
+              vérifiées. Lorsque vous souhaitez
+              acheter, vous êtes redirigé vers
+              la boutique concernée pour
+              poursuivre votre parcours
+              commercial.
+            </p>
+          </div>
+        </section>
+      </main>
+
+      {/* ========================================================
+          FOOTER
+         ======================================================== */}
+
+      <footer className="border-t">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+          <p>
+            © {new Date().getFullYear()} BIB —
+            Brand-in-a-box
+          </p>
+
+          <div className="flex flex-wrap items-center gap-4">
+            <Link
+              to="/store"
+              className="transition-colors hover:text-foreground"
+            >
+              BIB Store
+            </Link>
+
+            <Link
+              to={boutiqueStoreUrl}
+              className="transition-colors hover:text-foreground"
+            >
+              {product.boutique_name}
+            </Link>
+
+            <Link
+              to="/a-propos"
+              className="transition-colors hover:text-foreground"
+            >
+              À propos
+            </Link>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
 }
