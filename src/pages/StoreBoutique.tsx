@@ -1,8 +1,5 @@
 import {
-  useCallback,
-  useEffect,
   useMemo,
-  useState,
 } from "react";
 import {
   ArrowLeft,
@@ -16,14 +13,18 @@ import {
   ShoppingBag,
   Store,
 } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import {
+  Link,
+  useParams,
+} from "react-router-dom";
+import {
+  useQuery,
+} from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useFavorites } from "@/hooks/useFavorites";
 import { useSEO } from "@/hooks/useSEO";
-
-const favoritesDb = supabase as any;
 
 interface BoutiqueRow {
   id: string;
@@ -106,18 +107,12 @@ export default function StoreBoutique() {
 
   const { user } = useAuth();
 
-  const [isFavorite, setIsFavorite] =
-    useState(false);
-
-  const [
-    isFavoriteLoading,
-    setIsFavoriteLoading,
-  ] = useState(false);
-
-  const [
-    favoriteError,
-    setFavoriteError,
-  ] = useState<string | null>(null);
+  const {
+    boutiqueFavorites,
+    toggleBoutiqueFavorite,
+    isBoutiqueFavorite,
+    isLoading: favoritesLoading,
+  } = useFavorites();
 
   /*
    * ============================================================
@@ -127,7 +122,10 @@ export default function StoreBoutique() {
    * Cette page appartient au Store BIB.
    *
    * Elle permet uniquement de découvrir la boutique et sa
-   * sélection. Le commerce reste sur /boutique/:slug.
+   * sélection.
+   *
+   * L'achat reste effectué sur la boutique marchande :
+   * /boutique/:slug
    */
 
   const boutiqueQuery = useQuery({
@@ -175,6 +173,26 @@ export default function StoreBoutique() {
 
   const boutique =
     boutiqueQuery.data;
+
+  /*
+   * ============================================================
+   * FAVORI BOUTIQUE
+   * ============================================================
+   */
+
+  const boutiqueIsFavorite = useMemo(() => {
+    if (!boutique?.id) {
+      return false;
+    }
+
+    return isBoutiqueFavorite(
+      boutique.id,
+    );
+  }, [
+    boutique?.id,
+    isBoutiqueFavorite,
+    boutiqueFavorites,
+  ]);
 
   /*
    * ============================================================
@@ -239,8 +257,9 @@ export default function StoreBoutique() {
         throw error;
       }
 
-      return (data ??
-        []) as ProductRow[];
+      return (
+        data ?? []
+      ) as ProductRow[];
     },
   });
 
@@ -293,16 +312,20 @@ export default function StoreBoutique() {
           "is_selected",
           true,
         )
-        .order("position", {
-          ascending: true,
-        });
+        .order(
+          "position",
+          {
+            ascending: true,
+          },
+        );
 
       if (error) {
         throw error;
       }
 
-      return (data ??
-        []) as ProductMediaRow[];
+      return (
+        data ?? []
+      ) as ProductMediaRow[];
     },
   });
 
@@ -432,187 +455,6 @@ export default function StoreBoutique() {
 
   /*
    * ============================================================
-   * FAVORI BOUTIQUE
-   * ============================================================
-   *
-   * Un favori est lié au compte utilisateur.
-   *
-   * RLS :
-   * user_id = auth.uid()
-   */
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadFavorite() {
-      if (
-        !user?.id ||
-        !boutique?.id
-      ) {
-        setIsFavorite(false);
-        return;
-      }
-
-      try {
-        const {
-          data,
-          error,
-        } = await favoritesDb
-          .from(
-            "customer_boutique_favorites",
-          )
-          .select("id")
-          .eq(
-            "user_id",
-            user.id,
-          )
-          .eq(
-            "boutique_id",
-            boutique.id,
-          )
-          .maybeSingle();
-
-        if (error) {
-          throw error;
-        }
-
-        if (!cancelled) {
-          setIsFavorite(
-            Boolean(data),
-          );
-        }
-      } catch (error) {
-        console.error(
-          "Impossible de charger le favori boutique.",
-          error,
-        );
-
-        if (!cancelled) {
-          setIsFavorite(false);
-        }
-      }
-    }
-
-    void loadFavorite();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    user?.id,
-    boutique?.id,
-  ]);
-
-  const toggleBoutiqueFavorite =
-    useCallback(async () => {
-      if (!boutique?.id) {
-        return;
-      }
-
-      /*
-       * Le visiteur doit créer ou utiliser son compte
-       * pour conserver ses favoris.
-       */
-      if (!user?.id) {
-        const next =
-          `${window.location.pathname}${window.location.search}`;
-
-        window.location.href =
-          `/store/login?next=${encodeURIComponent(
-            next,
-          )}`;
-
-        return;
-      }
-
-      setIsFavoriteLoading(true);
-      setFavoriteError(null);
-
-      const previousState =
-        isFavorite;
-
-      /*
-       * Optimistic UI.
-       */
-      setIsFavorite(
-        !previousState,
-      );
-
-      try {
-        if (previousState) {
-          const {
-            error,
-          } = await favoritesDb
-            .from(
-              "customer_boutique_favorites",
-            )
-            .delete()
-            .eq(
-              "user_id",
-              user.id,
-            )
-            .eq(
-              "boutique_id",
-              boutique.id,
-            );
-
-          if (error) {
-            throw error;
-          }
-        } else {
-          const {
-            error,
-          } = await favoritesDb
-            .from(
-              "customer_boutique_favorites",
-            )
-            .upsert(
-              {
-                user_id:
-                  user.id,
-                boutique_id:
-                  boutique.id,
-              },
-              {
-                onConflict:
-                  "user_id,boutique_id",
-                ignoreDuplicates:
-                  true,
-              },
-            );
-
-          if (error) {
-            throw error;
-          }
-        }
-      } catch (error) {
-        console.error(
-          "Impossible de modifier le favori boutique.",
-          error,
-        );
-
-        setIsFavorite(
-          previousState,
-        );
-
-        setFavoriteError(
-          previousState
-            ? "Impossible de retirer cette boutique des favoris."
-            : "Impossible d'ajouter cette boutique aux favoris.",
-        );
-      } finally {
-        setIsFavoriteLoading(
-          false,
-        );
-      }
-    }, [
-      boutique?.id,
-      user?.id,
-      isFavorite,
-    ]);
-
-  /*
-   * ============================================================
    * SEO
    * ============================================================
    */
@@ -649,17 +491,38 @@ export default function StoreBoutique() {
 
   /*
    * ============================================================
+   * ACTION FAVORI
+   * ============================================================
+   */
+
+  const handleToggleFavorite =
+    async () => {
+      if (!boutique?.id) {
+        return;
+      }
+
+      await toggleBoutiqueFavorite(
+        boutique.id,
+      );
+    };
+
+  /*
+   * ============================================================
    * ÉTATS
    * ============================================================
    */
 
   const isLoading =
     boutiqueQuery.isLoading ||
-    (Boolean(
-      boutique?.id,
-    ) &&
-      (productsQuery.isLoading ||
-        mediaQuery.isLoading));
+    (
+      Boolean(
+        boutique?.id,
+      ) &&
+      (
+        productsQuery.isLoading ||
+        mediaQuery.isLoading
+      )
+    );
 
   if (isLoading) {
     return (
@@ -764,33 +627,33 @@ export default function StoreBoutique() {
           <button
             type="button"
             onClick={() =>
-              void toggleBoutiqueFavorite()
+              void handleToggleFavorite()
             }
             disabled={
-              isFavoriteLoading
+              favoritesLoading
             }
             aria-label={
-              isFavorite
+              boutiqueIsFavorite
                 ? `Retirer ${boutique.name} des favoris`
                 : `Ajouter ${boutique.name} aux favoris`
             }
             aria-pressed={
-              isFavorite
+              boutiqueIsFavorite
             }
             title={
-              isFavorite
+              boutiqueIsFavorite
                 ? "Retirer des favoris"
                 : "Ajouter aux favoris"
             }
             className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border bg-background transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isFavoriteLoading ? (
+            {favoritesLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Heart
                 className="h-5 w-5"
                 fill={
-                  isFavorite
+                  boutiqueIsFavorite
                     ? "currentColor"
                     : "none"
                 }
@@ -862,27 +725,27 @@ export default function StoreBoutique() {
                       <button
                         type="button"
                         onClick={() =>
-                          void toggleBoutiqueFavorite()
+                          void handleToggleFavorite()
                         }
                         disabled={
-                          isFavoriteLoading
+                          favoritesLoading
                         }
                         className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/30 bg-black/20 px-4 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-black/30 disabled:cursor-not-allowed disabled:opacity-60"
                       >
-                        {isFavoriteLoading ? (
+                        {favoritesLoading ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
                           <Heart
                             className="h-4 w-4"
                             fill={
-                              isFavorite
+                              boutiqueIsFavorite
                                 ? "currentColor"
                                 : "none"
                             }
                           />
                         )}
 
-                        {isFavorite
+                        {boutiqueIsFavorite
                           ? "Dans mes favoris"
                           : "Ajouter aux favoris"}
                       </button>
@@ -902,15 +765,6 @@ export default function StoreBoutique() {
                 </div>
               </div>
             </div>
-
-            {favoriteError && (
-              <div
-                role="alert"
-                className="mt-4 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
-              >
-                {favoriteError}
-              </div>
-            )}
           </div>
         </section>
 
@@ -1079,13 +933,13 @@ export default function StoreBoutique() {
                         0 &&
                         product.stockQuantity <=
                           5 && (
-                          <span className="absolute bottom-2 left-2 rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-medium backdrop-blur">
-                            Plus que{" "}
-                            {
-                              product.stockQuantity
-                            }
-                          </span>
-                        )}
+                        <span className="absolute bottom-2 left-2 rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-medium backdrop-blur">
+                          Plus que{" "}
+                          {
+                            product.stockQuantity
+                          }
+                        </span>
+                      )}
                     </div>
 
                     <div className="p-3.5 sm:p-4">
@@ -1162,27 +1016,27 @@ export default function StoreBoutique() {
               <button
                 type="button"
                 onClick={() =>
-                  void toggleBoutiqueFavorite()
+                  void handleToggleFavorite()
                 }
                 disabled={
-                  isFavoriteLoading
+                  favoritesLoading
                 }
                 className="inline-flex items-center gap-2 rounded-lg border bg-background px-5 py-3 text-sm font-semibold transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isFavoriteLoading ? (
+                {favoritesLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Heart
                     className="h-4 w-4"
                     fill={
-                      isFavorite
+                      boutiqueIsFavorite
                         ? "currentColor"
                         : "none"
                     }
                   />
                 )}
 
-                {isFavorite
+                {boutiqueIsFavorite
                   ? "Dans mes favoris"
                   : "Ajouter aux favoris"}
               </button>
