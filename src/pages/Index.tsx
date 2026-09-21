@@ -17,7 +17,7 @@ import {
 
 import founderImg from "@/assets/landing-founder0.jpg";
 import unboxingImg from "@/assets/landing-unboxing.jpg";
-import partenerImg from "@/assets/landing-partener.png";
+import partenerImg from "@/assets/landing-partener.jpg";
 
 const Index = () => {
   useSEO({
