@@ -8,77 +8,63 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
-const LEGACY_STORAGE_KEY = "linksy-favorites";
-const GUEST_STORAGE_KEY = "bib-store-favorites:guest";
+const LEGACY_PRODUCT_STORAGE_KEY =
+  "linksy-favorites";
+
+const GUEST_PRODUCT_STORAGE_KEY =
+  "bib-store-favorites:guest";
+
+const GUEST_BOUTIQUE_STORAGE_KEY =
+  "bib-store-boutique-favorites:guest";
 
 /**
- * Les tables ajoutées par la migration customer_favorites
- * peuvent ne pas encore être présentes dans les types Supabase
- * générés localement.
+ * Les tables customer_*_favorites peuvent ne pas encore
+ * être présentes dans les types Supabase générés localement.
  *
- * On conserve donc le client Supabase comme source d'exécution
- * pour cette nouvelle couche, sans dépendre immédiatement d'une
- * régénération manuelle de types.
+ * On conserve donc le client Supabase comme source
+ * d'exécution pour cette couche.
  */
 const favoritesDb = supabase as any;
 
-function readLocalFavorites(): string[] {
+function sanitizeIds(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return Array.from(
+    new Set(
+      value.filter(
+        (item): item is string =>
+          typeof item === "string" &&
+          item.trim().length > 0,
+      ),
+    ),
+  );
+}
+
+function readStorageIds(
+  key: string,
+): string[] {
   if (typeof window === "undefined") {
     return [];
   }
 
   try {
-    const current = localStorage.getItem(
-      GUEST_STORAGE_KEY,
-    );
+    const raw = localStorage.getItem(key);
 
-    if (current) {
-      const parsed = JSON.parse(current);
-
-      if (Array.isArray(parsed)) {
-        return parsed.filter(
-          (value): value is string =>
-            typeof value === "string" &&
-            value.trim().length > 0,
-        );
-      }
-    }
-
-    const legacy = localStorage.getItem(
-      LEGACY_STORAGE_KEY,
-    );
-
-    if (!legacy) {
+    if (!raw) {
       return [];
     }
 
-    const parsed = JSON.parse(legacy);
-
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    const migrated = parsed.filter(
-      (value): value is string =>
-        typeof value === "string" &&
-        value.trim().length > 0,
-    );
-
-    if (migrated.length > 0) {
-      localStorage.setItem(
-        GUEST_STORAGE_KEY,
-        JSON.stringify(migrated),
-      );
-    }
-
-    return migrated;
+    return sanitizeIds(JSON.parse(raw));
   } catch {
     return [];
   }
 }
 
-function writeLocalFavorites(
-  favorites: string[],
+function writeStorageIds(
+  key: string,
+  ids: string[],
 ) {
   if (typeof window === "undefined") {
     return;
@@ -86,48 +72,138 @@ function writeLocalFavorites(
 
   try {
     localStorage.setItem(
-      GUEST_STORAGE_KEY,
-      JSON.stringify(favorites),
+      key,
+      JSON.stringify(
+        Array.from(new Set(ids)),
+      ),
     );
   } catch {
     // localStorage peut être indisponible ou saturé.
   }
 }
 
+function removeStorageKey(key: string) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Rien à faire si le stockage local n'est pas accessible.
+  }
+}
+
 /**
- * Gestion des favoris produits du BIB Store.
+ * Lit les favoris produits visiteurs.
  *
- * Architecture :
+ * Une ancienne installation de Linksy utilisait
+ * "linksy-favorites". Cette valeur est migrée vers
+ * la nouvelle clé BIB Store.
+ */
+function readGuestProductFavorites(): string[] {
+  const current = readStorageIds(
+    GUEST_PRODUCT_STORAGE_KEY,
+  );
+
+  if (current.length > 0) {
+    return current;
+  }
+
+  const legacy = readStorageIds(
+    LEGACY_PRODUCT_STORAGE_KEY,
+  );
+
+  if (legacy.length > 0) {
+    writeStorageIds(
+      GUEST_PRODUCT_STORAGE_KEY,
+      legacy,
+    );
+
+    removeStorageKey(
+      LEGACY_PRODUCT_STORAGE_KEY,
+    );
+  }
+
+  return legacy;
+}
+
+function writeGuestProductFavorites(
+  ids: string[],
+) {
+  writeStorageIds(
+    GUEST_PRODUCT_STORAGE_KEY,
+    ids,
+  );
+}
+
+function readGuestBoutiqueFavorites(): string[] {
+  return readStorageIds(
+    GUEST_BOUTIQUE_STORAGE_KEY,
+  );
+}
+
+function writeGuestBoutiqueFavorites(
+  ids: string[],
+) {
+  writeStorageIds(
+    GUEST_BOUTIQUE_STORAGE_KEY,
+    ids,
+  );
+}
+
+function clearGuestFavorites() {
+  removeStorageKey(
+    GUEST_PRODUCT_STORAGE_KEY,
+  );
+
+  removeStorageKey(
+    LEGACY_PRODUCT_STORAGE_KEY,
+  );
+
+  removeStorageKey(
+    GUEST_BOUTIQUE_STORAGE_KEY,
+  );
+}
+
+/**
+ * Gestion centralisée des favoris du BIB Store.
  *
- * - visiteur non connecté :
- *     persistance locale temporaire ;
+ * Produits :
+ * - visiteur : localStorage
+ * - compte : customer_product_favorites
  *
- * - utilisateur connecté :
- *     persistance Supabase dans
- *     customer_product_favorites ;
+ * Boutiques :
+ * - visiteur : localStorage
+ * - compte : customer_boutique_favorites
  *
- * - la clé user_id correspond à auth.users.id ;
- *
- * - les politiques RLS Supabase garantissent qu'un utilisateur
- *   ne peut lire/modifier que ses propres favoris.
- *
- * L'API publique du hook reste compatible avec les composants
- * existants du projet.
+ * Les politiques RLS côté Supabase garantissent qu'un
+ * utilisateur connecté ne peut manipuler que ses propres
+ * favoris.
  */
 export function useFavorites() {
   const { user } = useAuth();
 
   const userId = user?.id ?? null;
 
-  const [favorites, setFavorites] = useState<string[]>(() =>
+  const [favorites, setFavorites] =
+    useState<string[]>(() =>
+      userId
+        ? []
+        : readGuestProductFavorites(),
+    );
+
+  const [
+    boutiqueFavorites,
+    setBoutiqueFavorites,
+  ] = useState<string[]>(() =>
     userId
       ? []
-      : readLocalFavorites(),
+      : readGuestBoutiqueFavorites(),
   );
 
-  const [isLoading, setIsLoading] = useState(
-    !!userId,
-  );
+  const [isLoading, setIsLoading] =
+    useState(!!userId);
 
   const storageMode = useMemo(
     () => (userId ? "account" : "guest"),
@@ -135,77 +211,106 @@ export function useFavorites() {
   );
 
   /**
-   * Charge les favoris depuis Supabase lorsqu'un compte
-   * authentifié est disponible.
-   *
-   * Lorsqu'un utilisateur se connecte, les éventuels favoris
-   * visiteurs sont également fusionnés dans son compte.
+   * Charge les favoris du compte et fusionne
+   * les éventuels favoris créés avant connexion.
    */
   useEffect(() => {
     let cancelled = false;
 
     async function loadFavorites() {
       if (!userId) {
-        setFavorites(readLocalFavorites());
+        setFavorites(
+          readGuestProductFavorites(),
+        );
+
+        setBoutiqueFavorites(
+          readGuestBoutiqueFavorites(),
+        );
+
         setIsLoading(false);
+
         return;
       }
 
       setIsLoading(true);
 
       try {
-        const {
-          data,
-          error,
-        } = await favoritesDb
-          .from("customer_product_favorites")
-          .select("product_id")
-          .eq("user_id", userId)
-          .order("created_at", {
-            ascending: false,
-          });
+        const [
+          productResult,
+          boutiqueResult,
+        ] = await Promise.all([
+          favoritesDb
+            .from(
+              "customer_product_favorites",
+            )
+            .select("product_id")
+            .eq("user_id", userId)
+            .order("created_at", {
+              ascending: false,
+            }),
 
-        if (error) {
-          throw error;
+          favoritesDb
+            .from(
+              "customer_boutique_favorites",
+            )
+            .select("boutique_id")
+            .eq("user_id", userId)
+            .order("created_at", {
+              ascending: false,
+            }),
+        ]);
+
+        if (productResult.error) {
+          throw productResult.error;
         }
 
-        const accountFavorites = (
-          data ?? []
-        )
-          .map(
-            (row: {
-              product_id?: unknown;
-            }) => row.product_id,
-          )
-          .filter(
-            (value: unknown): value is string =>
-              typeof value === "string" &&
-              value.trim().length > 0,
+        if (boutiqueResult.error) {
+          throw boutiqueResult.error;
+        }
+
+        const accountProductFavorites =
+          sanitizeIds(
+            (productResult.data ?? []).map(
+              (row: {
+                product_id?: unknown;
+              }) => row.product_id,
+            ),
           );
 
-        /*
-         * Migration douce des favoris locaux.
-         *
-         * Elle permet à un visiteur de commencer à enregistrer
-         * des produits avant sa connexion, puis de retrouver
-         * ces favoris dans son compte.
-         */
-        const localFavorites =
-          readLocalFavorites();
+        const accountBoutiqueFavorites =
+          sanitizeIds(
+            (boutiqueResult.data ?? []).map(
+              (row: {
+                boutique_id?: unknown;
+              }) => row.boutique_id,
+            ),
+          );
 
-        const missingLocalFavorites =
-          localFavorites.filter(
+        const guestProductFavorites =
+          readGuestProductFavorites();
+
+        const guestBoutiqueFavorites =
+          readGuestBoutiqueFavorites();
+
+        const missingProducts =
+          guestProductFavorites.filter(
             (productId) =>
-              !accountFavorites.includes(
+              !accountProductFavorites.includes(
                 productId,
               ),
           );
 
-        if (
-          missingLocalFavorites.length > 0
-        ) {
+        const missingBoutiques =
+          guestBoutiqueFavorites.filter(
+            (boutiqueId) =>
+              !accountBoutiqueFavorites.includes(
+                boutiqueId,
+              ),
+          );
+
+        if (missingProducts.length > 0) {
           const rows =
-            missingLocalFavorites.map(
+            missingProducts.map(
               (productId) => ({
                 user_id: userId,
                 product_id: productId,
@@ -228,35 +333,65 @@ export function useFavorites() {
             throw insertError;
           }
 
-          accountFavorites.push(
-            ...missingLocalFavorites,
+          accountProductFavorites.push(
+            ...missingProducts,
           );
-
-          /*
-           * Les favoris ont été transférés au compte.
-           * On peut donc supprimer la copie locale.
-           */
-          if (
-            typeof window !== "undefined"
-          ) {
-            try {
-              localStorage.removeItem(
-                GUEST_STORAGE_KEY,
-              );
-              localStorage.removeItem(
-                LEGACY_STORAGE_KEY,
-              );
-            } catch {
-              // Rien à faire si le stockage local
-              // n'est pas accessible.
-            }
-          }
         }
+
+        if (missingBoutiques.length > 0) {
+          const rows =
+            missingBoutiques.map(
+              (boutiqueId) => ({
+                user_id: userId,
+                boutique_id: boutiqueId,
+              }),
+            );
+
+          const {
+            error: insertError,
+          } = await favoritesDb
+            .from(
+              "customer_boutique_favorites",
+            )
+            .upsert(rows, {
+              onConflict:
+                "user_id,boutique_id",
+              ignoreDuplicates: true,
+            });
+
+          if (insertError) {
+            throw insertError;
+          }
+
+          accountBoutiqueFavorites.push(
+            ...missingBoutiques,
+          );
+        }
+
+        /*
+         * Dès que le compte a été chargé, les favoris
+         * visiteurs ont été fusionnés ou vérifiés.
+         *
+         * On supprime donc les copies locales afin
+         * d'éviter les doublons ou une nouvelle migration
+         * au prochain chargement.
+         */
+        clearGuestFavorites();
 
         if (!cancelled) {
           setFavorites(
             Array.from(
-              new Set(accountFavorites),
+              new Set(
+                accountProductFavorites,
+              ),
+            ),
+          );
+
+          setBoutiqueFavorites(
+            Array.from(
+              new Set(
+                accountBoutiqueFavorites,
+              ),
             ),
           );
         }
@@ -267,13 +402,16 @@ export function useFavorites() {
         );
 
         /*
-         * En cas d'erreur réseau temporaire, on conserve
-         * l'état local déjà disponible plutôt que d'effacer
-         * visuellement les favoris de l'utilisateur.
+         * En cas d'erreur réseau ou Supabase,
+         * on ne détruit pas les favoris visiteurs.
          */
         if (!cancelled) {
           setFavorites(
-            readLocalFavorites(),
+            readGuestProductFavorites(),
+          );
+
+          setBoutiqueFavorites(
+            readGuestBoutiqueFavorites(),
           );
         }
       } finally {
@@ -291,14 +429,11 @@ export function useFavorites() {
   }, [userId]);
 
   /**
-   * Ajoute ou retire un produit des favoris.
-   *
-   * Visiteur :
-   *   -> localStorage
-   *
-   * Compte connecté :
-   *   -> Supabase
+   * -------------------------------------------------------
+   * PRODUITS
+   * -------------------------------------------------------
    */
+
   const toggleFavorite = useCallback(
     async (productId: string) => {
       const normalizedId =
@@ -312,7 +447,8 @@ export function useFavorites() {
         favorites.includes(normalizedId);
 
       /*
-       * Visiteur non connecté.
+       * Visiteur :
+       * persistance locale uniquement.
        */
       if (!userId) {
         setFavorites((current) => {
@@ -327,7 +463,9 @@ export function useFavorites() {
                   normalizedId,
                 ];
 
-          writeLocalFavorites(next);
+          writeGuestProductFavorites(
+            next,
+          );
 
           return next;
         });
@@ -336,13 +474,18 @@ export function useFavorites() {
       }
 
       /*
-       * Compte connecté : ajout.
+       * Compte connecté :
+       * ajout optimiste.
        */
       if (!currentlyFavorite) {
-        setFavorites((current) => [
-          ...current,
-          normalizedId,
-        ]);
+        setFavorites((current) =>
+          current.includes(normalizedId)
+            ? current
+            : [
+                ...current,
+                normalizedId,
+              ],
+        );
 
         const {
           error,
@@ -364,7 +507,7 @@ export function useFavorites() {
 
         if (error) {
           console.error(
-            "Impossible d'ajouter le favori.",
+            "Impossible d'ajouter le favori produit.",
             error,
           );
 
@@ -380,7 +523,8 @@ export function useFavorites() {
       }
 
       /*
-       * Compte connecté : suppression.
+       * Compte connecté :
+       * suppression optimiste.
        */
       setFavorites((current) =>
         current.filter(
@@ -403,13 +547,10 @@ export function useFavorites() {
 
       if (error) {
         console.error(
-          "Impossible de supprimer le favori.",
+          "Impossible de supprimer le favori produit.",
           error,
         );
 
-        /*
-         * Restauration optimiste en cas d'échec.
-         */
         setFavorites((current) =>
           current.includes(normalizedId)
             ? current
@@ -423,9 +564,6 @@ export function useFavorites() {
     [favorites, userId],
   );
 
-  /**
-   * Vérifie si un produit est actuellement favori.
-   */
   const isFavorite = useCallback(
     (productId: string) =>
       favorites.includes(
@@ -434,9 +572,6 @@ export function useFavorites() {
     [favorites],
   );
 
-  /**
-   * Retire explicitement un produit des favoris.
-   */
   const removeFavorite = useCallback(
     async (productId: string) => {
       const normalizedId =
@@ -446,10 +581,26 @@ export function useFavorites() {
         return;
       }
 
+      if (!userId) {
+        setFavorites((current) => {
+          const next =
+            current.filter(
+              (id) =>
+                id !== normalizedId,
+            );
+
+          writeGuestProductFavorites(
+            next,
+          );
+
+          return next;
+        });
+
+        return;
+      }
+
       const wasFavorite =
-        favorites.includes(
-          normalizedId,
-        );
+        favorites.includes(normalizedId);
 
       if (!wasFavorite) {
         return;
@@ -461,21 +612,6 @@ export function useFavorites() {
         ),
       );
 
-      /*
-       * Visiteur : uniquement local.
-       */
-      if (!userId) {
-        const next = favorites.filter(
-          (id) => id !== normalizedId,
-        );
-
-        writeLocalFavorites(next);
-        return;
-      }
-
-      /*
-       * Compte : suppression Supabase.
-       */
       const {
         error,
       } = await favoritesDb
@@ -491,7 +627,7 @@ export function useFavorites() {
 
       if (error) {
         console.error(
-          "Impossible de supprimer le favori.",
+          "Impossible de supprimer le favori produit.",
           error,
         );
 
@@ -508,27 +644,21 @@ export function useFavorites() {
     [favorites, userId],
   );
 
-  /**
-   * Supprime tous les favoris du contexte courant.
-   */
   const clearFavorites =
     useCallback(async () => {
       const previousFavorites =
         favorites;
 
-      setFavorites([]);
-
-      /*
-       * Visiteur.
-       */
       if (!userId) {
-        writeLocalFavorites([]);
+        setFavorites([]);
+
+        writeGuestProductFavorites([]);
+
         return;
       }
 
-      /*
-       * Compte connecté.
-       */
+      setFavorites([]);
+
       const {
         error,
       } = await favoritesDb
@@ -540,7 +670,7 @@ export function useFavorites() {
 
       if (error) {
         console.error(
-          "Impossible de supprimer les favoris.",
+          "Impossible de supprimer les favoris produits.",
           error,
         );
 
@@ -550,12 +680,384 @@ export function useFavorites() {
       }
     }, [favorites, userId]);
 
+  /**
+   * -------------------------------------------------------
+   * BOUTIQUES
+   * -------------------------------------------------------
+   */
+
+  const toggleBoutiqueFavorite =
+    useCallback(
+      async (boutiqueId: string) => {
+        const normalizedId =
+          boutiqueId.trim();
+
+        if (!normalizedId) {
+          return;
+        }
+
+        const currentlyFavorite =
+          boutiqueFavorites.includes(
+            normalizedId,
+          );
+
+        /*
+         * Visiteur :
+         * persistance locale.
+         */
+        if (!userId) {
+          setBoutiqueFavorites(
+            (current) => {
+              const next =
+                current.includes(
+                  normalizedId,
+                )
+                  ? current.filter(
+                      (id) =>
+                        id !==
+                        normalizedId,
+                    )
+                  : [
+                      ...current,
+                      normalizedId,
+                    ];
+
+              writeGuestBoutiqueFavorites(
+                next,
+              );
+
+              return next;
+            },
+          );
+
+          return;
+        }
+
+        /*
+         * Compte connecté :
+         * ajout.
+         */
+        if (!currentlyFavorite) {
+          setBoutiqueFavorites(
+            (current) =>
+              current.includes(
+                normalizedId,
+              )
+                ? current
+                : [
+                    ...current,
+                    normalizedId,
+                  ],
+          );
+
+          const {
+            error,
+          } = await favoritesDb
+            .from(
+              "customer_boutique_favorites",
+            )
+            .upsert(
+              {
+                user_id: userId,
+                boutique_id:
+                  normalizedId,
+              },
+              {
+                onConflict:
+                  "user_id,boutique_id",
+                ignoreDuplicates: true,
+              },
+            );
+
+          if (error) {
+            console.error(
+              "Impossible d'ajouter la boutique aux favoris.",
+              error,
+            );
+
+            setBoutiqueFavorites(
+              (current) =>
+                current.filter(
+                  (id) =>
+                    id !==
+                    normalizedId,
+                ),
+            );
+          }
+
+          return;
+        }
+
+        /*
+         * Compte connecté :
+         * suppression.
+         */
+        setBoutiqueFavorites(
+          (current) =>
+            current.filter(
+              (id) =>
+                id !== normalizedId,
+            ),
+        );
+
+        const {
+          error,
+        } = await favoritesDb
+          .from(
+            "customer_boutique_favorites",
+          )
+          .delete()
+          .eq("user_id", userId)
+          .eq(
+            "boutique_id",
+            normalizedId,
+          );
+
+        if (error) {
+          console.error(
+            "Impossible de supprimer la boutique des favoris.",
+            error,
+          );
+
+          setBoutiqueFavorites(
+            (current) =>
+              current.includes(
+                normalizedId,
+              )
+                ? current
+                : [
+                    ...current,
+                    normalizedId,
+                  ],
+          );
+        }
+      },
+      [boutiqueFavorites, userId],
+    );
+
+  const isBoutiqueFavorite =
+    useCallback(
+      (boutiqueId: string) =>
+        boutiqueFavorites.includes(
+          boutiqueId.trim(),
+        ),
+      [boutiqueFavorites],
+    );
+
+  const removeBoutiqueFavorite =
+    useCallback(
+      async (boutiqueId: string) => {
+        const normalizedId =
+          boutiqueId.trim();
+
+        if (!normalizedId) {
+          return;
+        }
+
+        if (!userId) {
+          setBoutiqueFavorites(
+            (current) => {
+              const next =
+                current.filter(
+                  (id) =>
+                    id !==
+                    normalizedId,
+                );
+
+              writeGuestBoutiqueFavorites(
+                next,
+              );
+
+              return next;
+            },
+          );
+
+          return;
+        }
+
+        const wasFavorite =
+          boutiqueFavorites.includes(
+            normalizedId,
+          );
+
+        if (!wasFavorite) {
+          return;
+        }
+
+        setBoutiqueFavorites(
+          (current) =>
+            current.filter(
+              (id) =>
+                id !== normalizedId,
+            ),
+        );
+
+        const {
+          error,
+        } = await favoritesDb
+          .from(
+            "customer_boutique_favorites",
+          )
+          .delete()
+          .eq("user_id", userId)
+          .eq(
+            "boutique_id",
+            normalizedId,
+          );
+
+        if (error) {
+          console.error(
+            "Impossible de supprimer la boutique des favoris.",
+            error,
+          );
+
+          setBoutiqueFavorites(
+            (current) =>
+              current.includes(
+                normalizedId,
+              )
+                ? current
+                : [
+                    ...current,
+                    normalizedId,
+                  ],
+          );
+        }
+      },
+      [boutiqueFavorites, userId],
+    );
+
+  const clearBoutiqueFavorites =
+    useCallback(async () => {
+      const previousFavorites =
+        boutiqueFavorites;
+
+      if (!userId) {
+        setBoutiqueFavorites([]);
+
+        writeGuestBoutiqueFavorites(
+          [],
+        );
+
+        return;
+      }
+
+      setBoutiqueFavorites([]);
+
+      const {
+        error,
+      } = await favoritesDb
+        .from(
+          "customer_boutique_favorites",
+        )
+        .delete()
+        .eq("user_id", userId);
+
+      if (error) {
+        console.error(
+          "Impossible de supprimer les favoris boutiques.",
+          error,
+        );
+
+        setBoutiqueFavorites(
+          previousFavorites,
+        );
+      }
+    }, [boutiqueFavorites, userId]);
+
+  /**
+   * Supprime tous les favoris produits ET boutiques.
+   */
+  const clearAllFavorites =
+    useCallback(async () => {
+      const previousProducts =
+        favorites;
+
+      const previousBoutiques =
+        boutiqueFavorites;
+
+      if (!userId) {
+        setFavorites([]);
+        setBoutiqueFavorites([]);
+
+        clearGuestFavorites();
+
+        return;
+      }
+
+      setFavorites([]);
+      setBoutiqueFavorites([]);
+
+      const [
+        productResult,
+        boutiqueResult,
+      ] = await Promise.all([
+        favoritesDb
+          .from(
+            "customer_product_favorites",
+          )
+          .delete()
+          .eq("user_id", userId),
+
+        favoritesDb
+          .from(
+            "customer_boutique_favorites",
+          )
+          .delete()
+          .eq("user_id", userId),
+      ]);
+
+      if (
+        productResult.error ||
+        boutiqueResult.error
+      ) {
+        console.error(
+          "Impossible de supprimer tous les favoris.",
+          productResult.error ??
+            boutiqueResult.error,
+        );
+
+        setFavorites(
+          previousProducts,
+        );
+
+        setBoutiqueFavorites(
+          previousBoutiques,
+        );
+      }
+    }, [
+      favorites,
+      boutiqueFavorites,
+      userId,
+    ]);
+
   return {
+    /*
+     * Produits
+     */
     favorites,
     toggleFavorite,
     isFavorite,
     removeFavorite,
     clearFavorites,
+
+    /*
+     * Boutiques
+     */
+    boutiqueFavorites,
+    toggleBoutiqueFavorite,
+    isBoutiqueFavorite,
+    removeBoutiqueFavorite,
+    clearBoutiqueFavorites,
+
+    /*
+     * Global
+     */
+    clearAllFavorites,
+
+    /*
+     * État
+     */
     isLoading,
     storageMode,
   };
