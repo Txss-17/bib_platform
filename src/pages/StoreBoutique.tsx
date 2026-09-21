@@ -1,6 +1,4 @@
-import {
-  useMemo,
-} from "react";
+import { useMemo } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -17,12 +15,9 @@ import {
   Link,
   useParams,
 } from "react-router-dom";
-import {
-  useQuery,
-} from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useSEO } from "@/hooks/useSEO";
 
@@ -93,7 +88,7 @@ function getSupplierProduct(
     : value;
 }
 
-function formatPrice(value: number) {
+function formatPrice(value: number): string {
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
     currency: "EUR",
@@ -104,8 +99,6 @@ export default function StoreBoutique() {
   const { slug } = useParams<{
     slug: string;
   }>();
-
-  const { user } = useAuth();
 
   const {
     boutiqueFavorites,
@@ -121,10 +114,15 @@ export default function StoreBoutique() {
    *
    * Cette page appartient au Store BIB.
    *
-   * Elle permet uniquement de découvrir la boutique et sa
-   * sélection.
+   * Elle sert uniquement à découvrir :
+   * - la boutique ;
+   * - son identité ;
+   * - ses produits ;
+   * - son statut de boutique vérifiée.
    *
-   * L'achat reste effectué sur la boutique marchande :
+   * L'achat n'est jamais effectué dans cette page.
+   * Le parcours commercial continue sur :
+   *
    * /boutique/:slug
    */
 
@@ -171,8 +169,7 @@ export default function StoreBoutique() {
     },
   });
 
-  const boutique =
-    boutiqueQuery.data;
+  const boutique = boutiqueQuery.data;
 
   /*
    * ============================================================
@@ -206,9 +203,7 @@ export default function StoreBoutique() {
       boutique?.id,
     ],
 
-    enabled: Boolean(
-      boutique?.id,
-    ),
+    enabled: Boolean(boutique?.id),
 
     queryFn: async () => {
       if (!boutique?.id) {
@@ -266,8 +261,7 @@ export default function StoreBoutique() {
   const productIds = useMemo(
     () =>
       (
-        productsQuery.data ??
-        []
+        productsQuery.data ?? []
       ).map(
         (product) =>
           product.id,
@@ -377,8 +371,7 @@ export default function StoreBoutique() {
         }
 
         return (
-          productsQuery.data ??
-          []
+          productsQuery.data ?? []
         )
           .map((product) => {
             const supplierProduct =
@@ -386,9 +379,7 @@ export default function StoreBoutique() {
                 product.supplier_products,
               );
 
-            if (
-              !supplierProduct
-            ) {
+            if (!supplierProduct) {
               return null;
             }
 
@@ -484,10 +475,26 @@ export default function StoreBoutique() {
       "BIB",
       "Brand-In-A-Box",
       "boutique vérifiée",
-    ].filter(
-      Boolean,
-    ) as string[],
+    ].filter(Boolean) as string[],
   });
+
+  /*
+   * ============================================================
+   * ROUTE COMMERCIALE
+   * ============================================================
+   */
+
+  const merchantBoutiqueUrl = boutique
+    ? `/boutique/${encodeURIComponent(
+        boutique.slug,
+      )}`
+    : "/store";
+
+  const merchantProductsUrl = boutique
+    ? `/boutique/${encodeURIComponent(
+        boutique.slug,
+      )}/products`
+    : "/store";
 
   /*
    * ============================================================
@@ -515,9 +522,7 @@ export default function StoreBoutique() {
   const isLoading =
     boutiqueQuery.isLoading ||
     (
-      Boolean(
-        boutique?.id,
-      ) &&
+      Boolean(boutique?.id) &&
       (
         productsQuery.isLoading ||
         mediaQuery.isLoading
@@ -599,9 +604,7 @@ export default function StoreBoutique() {
           <div className="flex min-w-0 items-center gap-3">
             {boutique.logo_url ? (
               <img
-                src={
-                  boutique.logo_url
-                }
+                src={boutique.logo_url}
                 alt=""
                 className="h-9 w-9 rounded-full border object-cover"
               />
@@ -629,17 +632,13 @@ export default function StoreBoutique() {
             onClick={() =>
               void handleToggleFavorite()
             }
-            disabled={
-              favoritesLoading
-            }
+            disabled={favoritesLoading}
             aria-label={
               boutiqueIsFavorite
                 ? `Retirer ${boutique.name} des favoris`
                 : `Ajouter ${boutique.name} aux favoris`
             }
-            aria-pressed={
-              boutiqueIsFavorite
-            }
+            aria-pressed={boutiqueIsFavorite}
             title={
               boutiqueIsFavorite
                 ? "Retirer des favoris"
@@ -675,9 +674,7 @@ export default function StoreBoutique() {
               <div className="relative aspect-[16/7] min-h-[280px] w-full">
                 {boutique.cover_image_url ? (
                   <img
-                    src={
-                      boutique.cover_image_url
-                    }
+                    src={boutique.cover_image_url}
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover"
                   />
@@ -715,9 +712,7 @@ export default function StoreBoutique() {
 
                     {boutique.description && (
                       <p className="mt-3 max-w-2xl text-sm leading-6 text-white/80 sm:text-base">
-                        {
-                          boutique.description
-                        }
+                        {boutique.description}
                       </p>
                     )}
 
@@ -727,9 +722,7 @@ export default function StoreBoutique() {
                         onClick={() =>
                           void handleToggleFavorite()
                         }
-                        disabled={
-                          favoritesLoading
-                        }
+                        disabled={favoritesLoading}
                         className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/30 bg-black/20 px-4 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-black/30 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {favoritesLoading ? (
@@ -751,9 +744,7 @@ export default function StoreBoutique() {
                       </button>
 
                       <Link
-                        to={`/boutique/${encodeURIComponent(
-                          boutique.slug,
-                        )}`}
+                        to={merchantBoutiqueUrl}
                         className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90"
                       >
                         Visiter la boutique
@@ -852,9 +843,7 @@ export default function StoreBoutique() {
 
             {products.length > 0 && (
               <Link
-                to={`/boutique/${encodeURIComponent(
-                  boutique.slug,
-                )}/products`}
+                to={merchantProductsUrl}
                 className="inline-flex items-center gap-2 text-sm font-medium hover:underline"
               >
                 Voir tous les produits
@@ -885,9 +874,7 @@ export default function StoreBoutique() {
               </p>
 
               <Link
-                to={`/boutique/${encodeURIComponent(
-                  boutique.slug,
-                )}`}
+                to={merchantBoutiqueUrl}
                 className="mt-5 inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium hover:bg-muted"
               >
                 Visiter la boutique
@@ -907,12 +894,8 @@ export default function StoreBoutique() {
                     <div className="relative aspect-square overflow-hidden bg-muted">
                       {product.imageUrl ? (
                         <img
-                          src={
-                            product.imageUrl
-                          }
-                          alt={
-                            product.name
-                          }
+                          src={product.imageUrl}
+                          alt={product.name}
                           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                           loading="lazy"
                         />
@@ -929,25 +912,19 @@ export default function StoreBoutique() {
                         </span>
                       )}
 
-                      {product.stockQuantity >
-                        0 &&
-                        product.stockQuantity <=
-                          5 && (
-                        <span className="absolute bottom-2 left-2 rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-medium backdrop-blur">
-                          Plus que{" "}
-                          {
-                            product.stockQuantity
-                          }
-                        </span>
-                      )}
+                      {product.stockQuantity > 0 &&
+                        product.stockQuantity <= 5 && (
+                          <span className="absolute bottom-2 left-2 rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-medium backdrop-blur">
+                            Plus que{" "}
+                            {product.stockQuantity}
+                          </span>
+                        )}
                     </div>
 
                     <div className="p-3.5 sm:p-4">
                       {product.category && (
                         <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                          {
-                            product.category
-                          }
+                          {product.category}
                         </p>
                       )}
 
@@ -956,9 +933,7 @@ export default function StoreBoutique() {
                       </h3>
 
                       <p className="mt-2 text-sm font-semibold">
-                        {formatPrice(
-                          product.price,
-                        )}
+                        {formatPrice(product.price)}
                       </p>
 
                       <div className="mt-3 flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
@@ -977,9 +952,7 @@ export default function StoreBoutique() {
             displayedProducts.length && (
             <div className="mt-8 text-center">
               <Link
-                to={`/boutique/${encodeURIComponent(
-                  boutique.slug,
-                )}/products`}
+                to={merchantProductsUrl}
                 className="inline-flex items-center gap-2 rounded-lg border px-5 py-3 text-sm font-medium transition-colors hover:bg-muted"
               >
                 Découvrir tous les produits
@@ -1018,9 +991,7 @@ export default function StoreBoutique() {
                 onClick={() =>
                   void handleToggleFavorite()
                 }
-                disabled={
-                  favoritesLoading
-                }
+                disabled={favoritesLoading}
                 className="inline-flex items-center gap-2 rounded-lg border bg-background px-5 py-3 text-sm font-semibold transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {favoritesLoading ? (
@@ -1042,9 +1013,7 @@ export default function StoreBoutique() {
               </button>
 
               <Link
-                to={`/boutique/${encodeURIComponent(
-                  boutique.slug,
-                )}`}
+                to={merchantBoutiqueUrl}
                 className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
                 Visiter{" "}
@@ -1064,9 +1033,8 @@ export default function StoreBoutique() {
       <footer className="border-t">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p>
-            ©{" "}
-            {new Date().getFullYear()}{" "}
-            BIB — Brand-in-a-box
+            © {new Date().getFullYear()} BIB —
+            Brand-in-a-box
           </p>
 
           <div className="flex items-center gap-4">
