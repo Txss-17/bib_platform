@@ -52,8 +52,8 @@ const Index = () => {
                 <div className="overflow-hidden rounded-[2rem] bg-bib-marine shadow-[0_30px_80px_rgba(20,35,55,0.14)]">
                   <div className="aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5]">
                     <img
-                      src={founderImg}
-                      alt="Créatrice développant sa marque"
+                      src={unboxingImg}
+                      alt="Marque à découvrir"
                       className="h-full w-full object-cover"
                     />
                   </div>
@@ -195,7 +195,7 @@ const Index = () => {
                     <img
                       src={partenerImg}
                       alt="Préparation d'une commande dans l'environnement BIB"
-                      className="h-full w-full object-cover"
+                      className="w-full h-full object-cover"
                     />
                   </div>
                 </div>
