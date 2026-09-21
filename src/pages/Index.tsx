@@ -195,7 +195,7 @@ const Index = () => {
                     <img
                       src={partenerImg}
                       alt="Préparation d'une commande dans l'environnement BIB"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   </div>
                 </div>
