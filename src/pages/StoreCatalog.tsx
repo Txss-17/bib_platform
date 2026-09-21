@@ -31,20 +31,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 
-/* =========================================================
-   TYPES
-   ========================================================= */
-
 type SortOption =
   | "recent"
   | "price-asc"
   | "price-desc"
   | "name-asc"
   | "name-desc";
-
-/* =========================================================
-   HELPERS
-   ========================================================= */
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat("fr-FR", {
@@ -60,10 +52,6 @@ function normalizeSearch(value: string): string {
     .toLowerCase()
     .trim();
 }
-
-/* =========================================================
-   PRODUCT CARD
-   ========================================================= */
 
 function ProductCard({
   product,
@@ -113,10 +101,20 @@ function ProductCard({
         >
           <Heart
             className="h-[18px] w-[18px]"
-            fill={favorite ? "currentColor" : "none"}
+            fill={
+              favorite
+                ? "currentColor"
+                : "none"
+            }
             strokeWidth={1.8}
           />
         </button>
+
+        <div className="absolute bottom-3 left-3">
+          <span className="inline-flex items-center rounded-full bg-background/90 px-2.5 py-1 text-[10px] font-medium shadow-sm backdrop-blur">
+            Vérifié par BIB
+          </span>
+        </div>
       </div>
 
       <div className="pt-3">
@@ -136,7 +134,9 @@ function ProductCard({
         </div>
 
         <Link
-          to={`/store/boutique/${product.boutique_slug}`}
+          to={`/store/boutique/${encodeURIComponent(
+            product.boutique_slug,
+          )}`}
           className="inline-flex max-w-full items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           <Store className="h-3.5 w-3.5 shrink-0" />
@@ -161,10 +161,6 @@ function ProductCard({
   );
 }
 
-/* =========================================================
-   LOADING
-   ========================================================= */
-
 function CatalogLoading() {
   return (
     <div className="flex min-h-[420px] items-center justify-center">
@@ -178,10 +174,6 @@ function CatalogLoading() {
     </div>
   );
 }
-
-/* =========================================================
-   ERROR
-   ========================================================= */
 
 function CatalogError({
   onRetry,
@@ -216,10 +208,6 @@ function CatalogError({
     </div>
   );
 }
-
-/* =========================================================
-   EMPTY STATE
-   ========================================================= */
 
 function EmptyCatalog({
   hasFilters,
@@ -259,10 +247,6 @@ function EmptyCatalog({
     </div>
   );
 }
-
-/* =========================================================
-   STORE HEADER
-   ========================================================= */
 
 function StoreHeader() {
   return (
@@ -326,10 +310,6 @@ function StoreHeader() {
   );
 }
 
-/* =========================================================
-   SEARCH FIELD
-   ========================================================= */
-
 function CatalogSearch({
   value,
   onChange,
@@ -343,7 +323,9 @@ function CatalogSearch({
 
       <Input
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) =>
+          onChange(event.target.value)
+        }
         placeholder="Rechercher un produit ou une boutique"
         aria-label="Rechercher un produit ou une boutique"
         className="h-11 rounded-xl bg-muted/50 pl-9 pr-9"
@@ -363,10 +345,6 @@ function CatalogSearch({
   );
 }
 
-/* =========================================================
-   CATALOG
-   ========================================================= */
-
 export default function StoreCatalog() {
   const {
     data: products = [],
@@ -381,21 +359,28 @@ export default function StoreCatalog() {
     isFavorite,
   } = useFavorites();
 
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("all");
+  const [search, setSearch] =
+    useState("");
+
+  const [category, setCategory] =
+    useState("all");
+
   const [sort, setSort] =
     useState<SortOption>("recent");
-  const [favoritesOnly, setFavoritesOnly] =
-    useState(false);
-  const [filtersOpen, setFiltersOpen] =
-    useState(false);
 
-  /* =======================================================
-     CATEGORIES
-     ======================================================= */
+  const [
+    favoritesOnly,
+    setFavoritesOnly,
+  ] = useState(false);
+
+  const [
+    filtersOpen,
+    setFiltersOpen,
+  ] = useState(false);
 
   const categories = useMemo(() => {
-    const uniqueCategories = new Set<string>();
+    const uniqueCategories =
+      new Set<string>();
 
     products.forEach((product) => {
       const value =
@@ -406,86 +391,95 @@ export default function StoreCatalog() {
       }
     });
 
-    return Array.from(uniqueCategories).sort(
-      (a, b) => a.localeCompare(b, "fr"),
+    return Array.from(
+      uniqueCategories,
+    ).sort((a, b) =>
+      a.localeCompare(b, "fr"),
     );
   }, [products]);
-
-  /* =======================================================
-     FILTER / SEARCH / SORT
-     ======================================================= */
 
   const filteredProducts = useMemo(() => {
     const normalizedSearch =
       normalizeSearch(search);
 
-    const result = products.filter((product) => {
-      const searchableText =
-        normalizeSearch(
-          [
-            product.name,
-            product.description ?? "",
-            product.boutique_name,
-            product.boutique_category ?? "",
-          ].join(" "),
+    const result = products.filter(
+      (product) => {
+        const searchableText =
+          normalizeSearch(
+            [
+              product.name,
+              product.description ?? "",
+              product.boutique_name,
+              product.boutique_category ??
+                "",
+            ].join(" "),
+          );
+
+        const matchesSearch =
+          !normalizedSearch ||
+          searchableText.includes(
+            normalizedSearch,
+          );
+
+        const matchesCategory =
+          category === "all" ||
+          product.boutique_category ===
+            category;
+
+        const matchesFavorites =
+          !favoritesOnly ||
+          favorites.includes(
+            product.id,
+          );
+
+        return (
+          matchesSearch &&
+          matchesCategory &&
+          matchesFavorites
         );
+      },
+    );
 
-      const matchesSearch =
-        !normalizedSearch ||
-        searchableText.includes(
-          normalizedSearch,
-        );
+    return [...result].sort(
+      (a, b) => {
+        switch (sort) {
+          case "price-asc":
+            return a.price - b.price;
 
-      const matchesCategory =
-        category === "all" ||
-        product.boutique_category ===
-          category;
+          case "price-desc":
+            return b.price - a.price;
 
-      const matchesFavorites =
-        !favoritesOnly ||
-        favorites.includes(product.id);
+          case "name-asc":
+            return a.name.localeCompare(
+              b.name,
+              "fr",
+              {
+                sensitivity: "base",
+              },
+            );
 
-      return (
-        matchesSearch &&
-        matchesCategory &&
-        matchesFavorites
-      );
-    });
+          case "name-desc":
+            return b.name.localeCompare(
+              a.name,
+              "fr",
+              {
+                sensitivity: "base",
+              },
+            );
 
-    return [...result].sort((a, b) => {
-      switch (sort) {
-        case "price-asc":
-          return a.price - b.price;
-
-        case "price-desc":
-          return b.price - a.price;
-
-        case "name-asc":
-          return a.name.localeCompare(
-            b.name,
-            "fr",
-            {
-              sensitivity: "base",
-            },
-          );
-
-        case "name-desc":
-          return b.name.localeCompare(
-            a.name,
-            "fr",
-            {
-              sensitivity: "base",
-            },
-          );
-
-        case "recent":
-        default:
-          return (
-            new Date(b.created_at).getTime() -
-            new Date(a.created_at).getTime()
-          );
-      }
-    });
+          case "recent":
+          default:
+            return (
+              new Date(
+                b.created_at,
+              ).getTime() -
+              new Date(
+                a.created_at,
+              ).getTime()
+            );
+        }
+      },
+    );
   }, [
     products,
     search,
@@ -494,10 +488,6 @@ export default function StoreCatalog() {
     favoritesOnly,
     favorites,
   ]);
-
-  /* =======================================================
-     FILTER STATE
-     ======================================================= */
 
   const hasFilters =
     Boolean(search.trim()) ||
@@ -517,19 +507,11 @@ export default function StoreCatalog() {
     setFavoritesOnly(false);
   };
 
-  /* =======================================================
-     RENDER
-     ======================================================= */
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       <StoreHeader />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-        {/* =================================================
-            INTRO
-           ================================================= */}
-
         <section className="mb-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
@@ -550,20 +532,18 @@ export default function StoreCatalog() {
               </p>
             </div>
 
-            {!isLoading && !isError && (
-              <div className="text-sm text-muted-foreground">
-                {filteredProducts.length}{" "}
-                {filteredProducts.length > 1
-                  ? "produits"
-                  : "produit"}
-              </div>
-            )}
+            {!isLoading &&
+              !isError && (
+                <div className="text-sm text-muted-foreground">
+                  {filteredProducts.length}{" "}
+                  {filteredProducts.length >
+                  1
+                    ? "produits"
+                    : "produit"}
+                </div>
+              )}
           </div>
         </section>
-
-        {/* =================================================
-            SEARCH
-           ================================================= */}
 
         <section
           aria-label="Recherche"
@@ -574,10 +554,6 @@ export default function StoreCatalog() {
             onChange={setSearch}
           />
         </section>
-
-        {/* =================================================
-            MOBILE FILTER CONTROLS
-           ================================================= */}
 
         <div className="mb-5 flex gap-2 lg:hidden">
           <Button
@@ -617,16 +593,14 @@ export default function StoreCatalog() {
           )}
         </div>
 
-        {/* =================================================
-            FILTER BAR
-           ================================================= */}
-
         <div
-          className={`mb-8 ${
+          className={[
+            "mb-8",
             filtersOpen
               ? "block"
-              : "hidden"
-          } lg:block`}
+              : "hidden",
+            "lg:block",
+          ].join(" ")}
         >
           <div className="rounded-2xl border bg-card p-4">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -709,11 +683,12 @@ export default function StoreCatalog() {
                   }
                 >
                   <Heart
-                    className={`mr-2 h-4 w-4 ${
+                    className={[
+                      "mr-2 h-4 w-4",
                       favoritesOnly
                         ? "fill-current"
-                        : ""
-                    }`}
+                        : "",
+                    ].join(" ")}
                   />
 
                   Favoris
@@ -736,10 +711,6 @@ export default function StoreCatalog() {
           </div>
         </div>
 
-        {/* =================================================
-            CONTENT
-           ================================================= */}
-
         {isLoading ? (
           <CatalogLoading />
         ) : isError ? (
@@ -748,7 +719,8 @@ export default function StoreCatalog() {
               void refetch();
             }}
           />
-        ) : filteredProducts.length === 0 ? (
+        ) : filteredProducts.length ===
+          0 ? (
           <EmptyCatalog
             hasFilters={hasFilters}
             onReset={resetFilters}
@@ -767,7 +739,7 @@ export default function StoreCatalog() {
                     product.id,
                   )}
                   onToggleFavorite={() =>
-                    toggleFavorite(
+                    void toggleFavorite(
                       product.id,
                     )
                   }
@@ -777,21 +749,18 @@ export default function StoreCatalog() {
           </section>
         )}
 
-        {/* =================================================
-            FOOTER INFO
-           ================================================= */}
-
         {!isLoading &&
           !isError &&
-          filteredProducts.length > 0 && (
+          filteredProducts.length >
+            0 && (
             <div className="mt-12">
               <Separator />
 
               <div className="flex flex-col gap-3 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
                 <p>
-                  Les produits présentés sont proposés
-                  par des boutiques vérifiées du réseau
-                  BIB.
+                  Les produits présentés sont
+                  proposés par des boutiques
+                  vérifiées du réseau BIB.
                 </p>
 
                 <Link
@@ -806,10 +775,6 @@ export default function StoreCatalog() {
             </div>
           )}
       </main>
-
-      {/* =================================================
-          FOOTER
-         ================================================= */}
 
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
