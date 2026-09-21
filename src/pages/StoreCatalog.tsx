@@ -46,14 +46,14 @@ type SortOption =
    HELPERS
    ========================================================= */
 
-function formatPrice(price: number) {
+function formatPrice(price: number): string {
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
     currency: "EUR",
   }).format(price);
 }
 
-function normalizeSearch(value: string) {
+function normalizeSearch(value: string): string {
   return value
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -67,17 +67,15 @@ function normalizeSearch(value: string) {
 
 function ProductCard({
   product,
-  isFavorite,
+  favorite,
   onToggleFavorite,
 }: {
   product: StoreProduct;
-  isFavorite: boolean;
+  favorite: boolean;
   onToggleFavorite: () => void;
 }) {
   return (
     <article className="group min-w-0">
-      {/* Product image */}
-
       <div className="relative overflow-hidden rounded-2xl bg-muted/40">
         <Link
           to={`/store/product/${product.id}`}
@@ -98,34 +96,28 @@ function ProductCard({
           )}
         </Link>
 
-        {/* Favorite */}
-
         <button
           type="button"
           aria-label={
-            isFavorite
+            favorite
               ? `Retirer ${product.name} des favoris`
               : `Ajouter ${product.name} aux favoris`
           }
-          aria-pressed={isFavorite}
+          aria-pressed={favorite}
           onClick={(event) => {
             event.preventDefault();
             event.stopPropagation();
             onToggleFavorite();
           }}
-          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-background/90 shadow-sm backdrop-blur transition hover:bg-background"
+          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-background/90 shadow-sm backdrop-blur transition hover:bg-background active:scale-95"
         >
           <Heart
-            className={`h-[18px] w-[18px] transition ${
-              isFavorite
-                ? "fill-current text-foreground"
-                : "text-foreground"
-            }`}
+            className="h-[18px] w-[18px]"
+            fill={favorite ? "currentColor" : "none"}
+            strokeWidth={1.8}
           />
         </button>
       </div>
-
-      {/* Product information */}
 
       <div className="pt-3">
         <div className="mb-1 flex items-start justify-between gap-3">
@@ -143,8 +135,6 @@ function ProductCard({
           </span>
         </div>
 
-        {/* Boutique */}
-
         <Link
           to={`/store/boutique/${product.boutique_slug}`}
           className="inline-flex max-w-full items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
@@ -155,8 +145,6 @@ function ProductCard({
             {product.boutique_name}
           </span>
         </Link>
-
-        {/* Category */}
 
         {product.boutique_category && (
           <div className="mt-2">
@@ -212,8 +200,8 @@ function CatalogError({
         </h2>
 
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Une erreur est survenue lors du chargement du
-          Store. Réessayez dans quelques instants.
+          Une erreur est survenue lors du chargement
+          du Store. Réessayez dans quelques instants.
         </p>
 
         <Button
@@ -273,6 +261,90 @@ function EmptyCatalog({
 }
 
 /* =========================================================
+   STORE HEADER
+   ========================================================= */
+
+function StoreHeader() {
+  return (
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-xl">
+      <div className="mx-auto flex min-h-[68px] max-w-7xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
+        <Link
+          to="/store"
+          aria-label="Accueil BIB Store"
+          className="flex shrink-0 items-center gap-2"
+        >
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-foreground text-sm font-bold text-background">
+            B
+          </div>
+
+          <div className="hidden sm:block">
+            <div className="text-sm font-semibold leading-none">
+              BIB
+            </div>
+
+            <div className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+              Store
+            </div>
+          </div>
+        </Link>
+
+        <nav
+          aria-label="Navigation BIB Store"
+          className="hidden items-center gap-1 md:flex"
+        >
+          <Link
+            to="/store"
+            className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            Accueil
+          </Link>
+
+          <Link
+            to="/store/products"
+            className="rounded-lg bg-muted px-3 py-2 text-sm font-medium text-foreground"
+          >
+            Produits
+          </Link>
+        </nav>
+
+        <div className="relative ml-auto hidden max-w-xl flex-1 lg:block">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+          <Input
+            aria-label="Rechercher"
+            placeholder="Rechercher un produit ou une boutique"
+            className="h-10 rounded-xl border-muted bg-muted/50 pl-9"
+            id="desktop-store-search"
+          />
+        </div>
+
+        <div className="flex items-center gap-1">
+          <Link
+            to="/store"
+            className="hidden rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:block"
+          >
+            Découvrir les boutiques
+          </Link>
+        </div>
+      </div>
+
+      <div className="border-t px-4 py-3 lg:hidden">
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+          <Input
+            aria-label="Rechercher"
+            placeholder="Rechercher un produit ou une boutique"
+            className="h-10 rounded-xl bg-muted/50 pl-9"
+            id="mobile-store-search"
+          />
+        </div>
+      </div>
+    </header>
+  );
+}
+
+/* =========================================================
    CATALOG
    ========================================================= */
 
@@ -307,7 +379,8 @@ export default function StoreCatalog() {
     const uniqueCategories = new Set<string>();
 
     products.forEach((product) => {
-      const value = product.boutique_category?.trim();
+      const value =
+        product.boutique_category?.trim();
 
       if (value) {
         uniqueCategories.add(value);
@@ -328,22 +401,26 @@ export default function StoreCatalog() {
       normalizeSearch(search);
 
     const result = products.filter((product) => {
-      const searchableText = normalizeSearch(
-        [
-          product.name,
-          product.description ?? "",
-          product.boutique_name,
-          product.boutique_category,
-        ].join(" "),
-      );
+      const searchableText =
+        normalizeSearch(
+          [
+            product.name,
+            product.description ?? "",
+            product.boutique_name,
+            product.boutique_category ?? "",
+          ].join(" "),
+        );
 
       const matchesSearch =
         !normalizedSearch ||
-        searchableText.includes(normalizedSearch);
+        searchableText.includes(
+          normalizedSearch,
+        );
 
       const matchesCategory =
         category === "all" ||
-        product.boutique_category === category;
+        product.boutique_category ===
+          category;
 
       const matchesFavorites =
         !favoritesOnly ||
@@ -426,140 +503,20 @@ export default function StoreCatalog() {
      ======================================================= */
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* =====================================================
-          HEADER
-          ===================================================== */}
-
-      <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-          {/* Brand */}
-
-          <Link
-            to="/store"
-            aria-label="BIB Store"
-            className="flex shrink-0 items-center gap-2"
-          >
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-foreground text-sm font-bold text-background">
-              B
-            </div>
-
-            <div className="hidden sm:block">
-              <div className="text-sm font-semibold leading-none">
-                BIB
-              </div>
-
-              <div className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                Store
-              </div>
-            </div>
-          </Link>
-
-          {/* Navigation */}
-
-          <nav className="hidden items-center gap-1 md:flex">
-            <Link
-              to="/store"
-              className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              Accueil
-            </Link>
-
-            <Link
-              to="/store/products"
-              className="rounded-lg bg-muted px-3 py-2 text-sm font-medium text-foreground"
-            >
-              Produits
-            </Link>
-          </nav>
-
-          {/* Desktop search */}
-
-          <div className="relative ml-auto hidden max-w-md flex-1 lg:block">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-
-            <Input
-              value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
-              placeholder="Rechercher un produit ou une boutique"
-              className="h-10 rounded-xl border-muted bg-muted/50 pl-9 pr-9"
-            />
-
-            {search && (
-              <button
-                type="button"
-                aria-label="Effacer la recherche"
-                onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-
-          {/* Header actions */}
-
-          <div className="flex items-center gap-1">
-            <Link
-              to="/store/account"
-              className="hidden rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:block"
-            >
-              Compte
-            </Link>
-
-            <Link
-              to="/store/cart"
-              aria-label="Panier"
-              className="flex h-10 w-10 items-center justify-center rounded-xl transition-colors hover:bg-muted"
-            >
-              <ShoppingBag className="h-[19px] w-[19px]" />
-            </Link>
-          </div>
-        </div>
-
-        {/* Mobile search */}
-
-        <div className="border-t px-4 py-3 lg:hidden">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-
-            <Input
-              value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
-              placeholder="Rechercher un produit ou une boutique"
-              className="h-10 rounded-xl bg-muted/50 pl-9 pr-9"
-            />
-
-            {search && (
-              <button
-                type="button"
-                aria-label="Effacer la recherche"
-                onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* =====================================================
-          MAIN
-          ===================================================== */}
+    <div className="min-h-screen bg-background text-foreground">
+      <StoreHeader />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-        {/* Intro */}
+        {/* =================================================
+            INTRO
+           ================================================= */}
 
         <section className="mb-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
                 <Sparkles className="h-3.5 w-3.5" />
+
                 BIB Store
               </div>
 
@@ -568,8 +525,9 @@ export default function StoreCatalog() {
               </h1>
 
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-                Découvrez les produits proposés par les
-                boutiques vérifiées du réseau BIB.
+                Découvrez une sélection de produits
+                proposés par les boutiques vérifiées
+                du réseau BIB.
               </p>
             </div>
 
@@ -584,7 +542,9 @@ export default function StoreCatalog() {
           </div>
         </section>
 
-        {/* Mobile filter controls */}
+        {/* =================================================
+            MOBILE FILTER CONTROLS
+           ================================================= */}
 
         <div className="mb-5 flex gap-2 lg:hidden">
           <Button
@@ -618,14 +578,15 @@ export default function StoreCatalog() {
               }
             >
               <Heart className="mr-2 h-4 w-4 fill-current" />
+
               Favoris
             </Button>
           )}
         </div>
 
-        {/* ===================================================
+        {/* =================================================
             FILTER BAR
-            =================================================== */}
+           ================================================= */}
 
         <div
           className={`mb-8 ${
@@ -637,8 +598,6 @@ export default function StoreCatalog() {
           <div className="rounded-2xl border bg-card p-4">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                {/* Category */}
-
                 <Select
                   value={category}
                   onValueChange={setCategory}
@@ -652,18 +611,18 @@ export default function StoreCatalog() {
                       Toutes les catégories
                     </SelectItem>
 
-                    {categories.map((item) => (
-                      <SelectItem
-                        key={item}
-                        value={item}
-                      >
-                        {item}
-                      </SelectItem>
-                    ))}
+                    {categories.map(
+                      (item) => (
+                        <SelectItem
+                          key={item}
+                          value={item}
+                        >
+                          {item}
+                        </SelectItem>
+                      ),
+                    )}
                   </SelectContent>
                 </Select>
-
-                {/* Sort */}
 
                 <Select
                   value={sort}
@@ -702,8 +661,6 @@ export default function StoreCatalog() {
                   </SelectContent>
                 </Select>
 
-                {/* Favorites */}
-
                 <Button
                   type="button"
                   variant={
@@ -730,8 +687,6 @@ export default function StoreCatalog() {
                 </Button>
               </div>
 
-              {/* Reset */}
-
               {hasFilters && (
                 <Button
                   type="button"
@@ -740,6 +695,7 @@ export default function StoreCatalog() {
                   onClick={resetFilters}
                 >
                   <X className="mr-2 h-4 w-4" />
+
                   Réinitialiser
                 </Button>
               )}
@@ -747,9 +703,47 @@ export default function StoreCatalog() {
           </div>
         </div>
 
-        {/* ===================================================
+        {/* =================================================
+            SEARCH
+           ================================================= */}
+
+        <div className="mb-8 lg:hidden">
+          <label
+            htmlFor="catalog-search"
+            className="sr-only"
+          >
+            Rechercher un produit ou une boutique
+          </label>
+
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+            <Input
+              id="catalog-search"
+              value={search}
+              onChange={(event) =>
+                setSearch(event.target.value)
+              }
+              placeholder="Rechercher un produit ou une boutique"
+              className="h-11 rounded-xl bg-muted/50 pl-9 pr-9"
+            />
+
+            {search && (
+              <button
+                type="button"
+                aria-label="Effacer la recherche"
+                onClick={() => setSearch("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* =================================================
             CONTENT
-            =================================================== */}
+           ================================================= */}
 
         {isLoading ? (
           <CatalogLoading />
@@ -774,7 +768,7 @@ export default function StoreCatalog() {
                 <ProductCard
                   key={product.id}
                   product={product}
-                  isFavorite={isFavorite(
+                  favorite={isFavorite(
                     product.id,
                   )}
                   onToggleFavorite={() =>
@@ -788,9 +782,9 @@ export default function StoreCatalog() {
           </section>
         )}
 
-        {/* ===================================================
+        {/* =================================================
             FOOTER INFO
-            =================================================== */}
+           ================================================= */}
 
         {!isLoading &&
           !isError &&
@@ -801,14 +795,15 @@ export default function StoreCatalog() {
               <div className="flex flex-col gap-3 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
                 <p>
                   Les produits présentés sont proposés
-                  par les boutiques du réseau BIB.
+                  par des boutiques vérifiées du réseau
+                  BIB.
                 </p>
 
                 <Link
                   to="/store"
                   className="inline-flex items-center gap-1 font-medium text-foreground hover:underline"
                 >
-                  Retour au Store
+                  Découvrir les boutiques
 
                   <ChevronDown className="h-3.5 w-3.5 -rotate-90" />
                 </Link>
@@ -817,11 +812,11 @@ export default function StoreCatalog() {
           )}
       </main>
 
-      {/* =====================================================
+      {/* =================================================
           FOOTER
-          ===================================================== */}
+         ================================================= */}
 
-      <footer className="border-t">
+      <footer className="border-t border-border">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground text-[10px] font-bold text-background">
@@ -829,25 +824,17 @@ export default function StoreCatalog() {
             </div>
 
             <span>
-              BIB Store — découverte de boutiques vérifiées
+              BIB Store — découverte de produits
+              et de boutiques vérifiées
             </span>
           </div>
 
-          <div className="flex items-center gap-4">
-            <Link
-              to="/store/account"
-              className="transition-colors hover:text-foreground"
-            >
-              Compte
-            </Link>
-
-            <Link
-              to="/store/cart"
-              className="transition-colors hover:text-foreground"
-            >
-              Panier
-            </Link>
-          </div>
+          <Link
+            to="/store"
+            className="transition-colors hover:text-foreground"
+          >
+            Découvrir les boutiques
+          </Link>
         </div>
       </footer>
     </div>
