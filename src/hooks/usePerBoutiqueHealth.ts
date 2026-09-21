@@ -1,149 +1,436 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+
+export type BoutiqueHealthSignal =
+  | "ok"
+  | "warning"
+  | "critical";
+
+export type BoutiqueHealthLevel =
+  | "excellent"
+  | "good"
+  | "fair"
+  | "poor";
 
 export interface PerBoutiqueHealth {
   boutiqueId: string;
-  score: number; // 0-100
-  level: "excellent" | "good" | "fair" | "poor";
+  score: number;
+  level: BoutiqueHealthLevel;
+
   signals: {
-    publish: "ok" | "warning" | "critical";
-    products: "ok" | "warning" | "critical";
-    fulfillment: "ok" | "warning" | "critical";
-    stock: "ok" | "warning" | "critical";
+    publish: BoutiqueHealthSignal;
+    products: BoutiqueHealthSignal;
+    fulfillment: BoutiqueHealthSignal;
+    stock: BoutiqueHealthSignal;
   };
+
   metrics: {
     activeProducts: number;
     totalProducts: number;
+
     pendingOrders: number;
     deliveredOrders: number;
     totalOrders: number;
+
+    /**
+     * Stock réel non disponible dans le modèle actuel.
+     * Ces valeurs restent à 0 tant qu'une source de stock
+     * fiable n'est pas branchée.
+     */
     criticalStock: number;
     lowStock: number;
   };
 }
 
+interface BoutiqueRow {
+  id: string;
+  status: string | null;
+}
+
+interface ProductRow {
+  id: string;
+  boutique_id: string;
+  status: string | null;
+}
+
+interface OrderRow {
+  boutique_id: string | null;
+  logistics_status: string | null;
+}
+
+const QUERY_KEY = "per-boutique-health";
+
+function getHealthLevel(
+  score: number,
+): BoutiqueHealthLevel {
+  if (score >= 85) {
+    return "excellent";
+  }
+
+  if (score >= 65) {
+    return "good";
+  }
+
+  if (score >= 40) {
+    return "fair";
+  }
+
+  return "poor";
+}
+
+function getSignalScore(
+  signal: BoutiqueHealthSignal,
+): number {
+  switch (signal) {
+    case "ok":
+      return 25;
+
+    case "warning":
+      return 12;
+
+    case "critical":
+      return 0;
+  }
+}
+
+function getPublicationSignal(
+  status: string | null,
+): BoutiqueHealthSignal {
+  if (status === "published") {
+    return "ok";
+  }
+
+  if (
+    status === "draft" ||
+    status === "onboarding" ||
+    status === "in_progress" ||
+    status === "ready"
+  ) {
+    return "warning";
+  }
+
+  return "critical";
+}
+
+function getProductSignal(
+  activeProducts: number,
+): BoutiqueHealthSignal {
+  if (activeProducts === 0) {
+    return "critical";
+  }
+
+  if (activeProducts < 3) {
+    return "warning";
+  }
+
+  return "ok";
+}
+
+function getFulfillmentSignal(
+  totalOrders: number,
+  deliveredOrders: number,
+): BoutiqueHealthSignal {
+  if (totalOrders === 0) {
+    return "warning";
+  }
+
+  const fulfillmentRate =
+    deliveredOrders / totalOrders;
+
+  if (fulfillmentRate >= 0.7) {
+    return "ok";
+  }
+
+  if (fulfillmentRate >= 0.4) {
+    return "warning";
+  }
+
+  return "critical";
+}
+
+function getStockSignal(): BoutiqueHealthSignal {
+  /**
+   * Le modèle actuel ne contient pas de quantité de stock
+   * exploitable de manière fiable.
+   *
+   * On ne dégrade donc pas artificiellement la santé d'une
+   * boutique sur ce critère.
+   */
+  return "ok";
+}
+
 /**
- * Aggregates a 0-100 health score *per boutique* of the current seller.
- * Uses a single batch query per relation (boutiques → products → orders)
- * so the cost stays linear in the number of boutiques.
+ * Calcule la santé opérationnelle de chaque boutique
+ * appartenant à l'utilisateur connecté.
+ *
+ * La santé est volontairement limitée aux données réellement
+ * disponibles :
+ *
+ * - publication de la boutique ;
+ * - disponibilité de produits actifs ;
+ * - fulfillment des commandes ;
+ * - stock, uniquement lorsque cette donnée deviendra fiable.
+ *
+ * Le frontend ne constitue pas une autorité de sécurité :
+ * les requêtes restent soumises aux RLS Supabase.
  */
 export function usePerBoutiqueHealth() {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ["per-boutique-health", user?.id],
+    queryKey: [QUERY_KEY, user?.id],
+
     enabled: !!user,
-    queryFn: async () => {
-      if (!user) return new Map<string, PerBoutiqueHealth>();
 
-      const { data: boutiques } = await supabase
-        .from("boutiques")
-        .select("id, status")
-        .eq("user_id", user.id);
-      if (!boutiques || boutiques.length === 0) {
-        return new Map<string, PerBoutiqueHealth>();
+    queryFn: async (): Promise<
+      Map<string, PerBoutiqueHealth>
+    > => {
+      if (!user) {
+        return new Map();
       }
-      const ids = boutiques.map((b) => b.id);
 
-      const [{ data: products }, { data: orders }] = await Promise.all([
+      const { data: boutiques, error: boutiquesError } =
+        await supabase
+          .from("boutiques")
+          .select("id, status")
+          .eq("user_id", user.id);
+
+      if (boutiquesError) {
+        throw boutiquesError;
+      }
+
+      const boutiqueRows =
+        (boutiques ?? []) as BoutiqueRow[];
+
+      if (boutiqueRows.length === 0) {
+        return new Map();
+      }
+
+      const boutiqueIds = boutiqueRows.map(
+        (boutique) => boutique.id,
+      );
+
+      const [
+        { data: products, error: productsError },
+        { data: orders, error: ordersError },
+      ] = await Promise.all([
         supabase
           .from("products")
-          .select("id, boutique_id, status, supplier_products(moq)")
-          .in("boutique_id", ids),
+          .select(
+            "id, boutique_id, status",
+          )
+          .in("boutique_id", boutiqueIds),
+
         supabase
           .from("orders")
-          .select("boutique_id, logistics_status")
-          .in("boutique_id", ids),
+          .select(
+            "boutique_id, logistics_status",
+          )
+          .in("boutique_id", boutiqueIds),
       ]);
 
-      const map = new Map<string, PerBoutiqueHealth>();
+      if (productsError) {
+        throw productsError;
+      }
 
-      for (const b of boutiques) {
-        const prod = (products || []).filter((p: any) => p.boutique_id === b.id);
-        const ord = (orders || []).filter((o: any) => o.boutique_id === b.id);
+      if (ordersError) {
+        throw ordersError;
+      }
 
-        const totalProducts = prod.length;
-        const activeProducts = prod.filter((p: any) => p.status === "active").length;
+      const productRows =
+        (products ?? []) as ProductRow[];
 
-        const totalOrders = ord.length;
-        const deliveredOrders = ord.filter(
-          (o: any) => o.logistics_status === "delivered",
-        ).length;
-        const pendingOrders = ord.filter(
-          (o: any) =>
-            o.logistics_status === "pending" || o.logistics_status === "processing",
-        ).length;
+      const orderRows =
+        (orders ?? []) as OrderRow[];
 
-        // Stock proxy: products without a real stock column → estimate using moq.
-        // Critical/low remain 0 until a true stock column exists.
+      const productsByBoutique = new Map<
+        string,
+        ProductRow[]
+      >();
+
+      for (const product of productRows) {
+        const current =
+          productsByBoutique.get(
+            product.boutique_id,
+          ) ?? [];
+
+        current.push(product);
+
+        productsByBoutique.set(
+          product.boutique_id,
+          current,
+        );
+      }
+
+      const ordersByBoutique = new Map<
+        string,
+        OrderRow[]
+      >();
+
+      for (const order of orderRows) {
+        if (!order.boutique_id) {
+          continue;
+        }
+
+        const current =
+          ordersByBoutique.get(
+            order.boutique_id,
+          ) ?? [];
+
+        current.push(order);
+
+        ordersByBoutique.set(
+          order.boutique_id,
+          current,
+        );
+      }
+
+      const healthMap =
+        new Map<string, PerBoutiqueHealth>();
+
+      for (const boutique of boutiqueRows) {
+        const boutiqueProducts =
+          productsByBoutique.get(
+            boutique.id,
+          ) ?? [];
+
+        const boutiqueOrders =
+          ordersByBoutique.get(
+            boutique.id,
+          ) ?? [];
+
+        const totalProducts =
+          boutiqueProducts.length;
+
+        const activeProducts =
+          boutiqueProducts.filter(
+            (product) =>
+              product.status === "active",
+          ).length;
+
+        const totalOrders =
+          boutiqueOrders.length;
+
+        const deliveredOrders =
+          boutiqueOrders.filter(
+            (order) =>
+              order.logistics_status ===
+              "delivered",
+          ).length;
+
+        const pendingOrders =
+          boutiqueOrders.filter(
+            (order) =>
+              order.logistics_status ===
+                "pending" ||
+              order.logistics_status ===
+                "processing",
+          ).length;
+
+        /**
+         * Aucun champ de stock réel n'est actuellement
+         * disponible dans cette vue.
+         */
         const criticalStock = 0;
         const lowStock = 0;
 
-        const publishSig =
-          b.status === "published" ? "ok" : b.status === "draft" ? "warning" : "critical";
-        const productsSig =
-          activeProducts === 0 ? "critical" : activeProducts < 3 ? "warning" : "ok";
-        const fulfillment = totalOrders > 0 ? deliveredOrders / totalOrders : 1;
-        const fulfillmentSig =
-          totalOrders === 0
-            ? "warning"
-            : fulfillment >= 0.7
-              ? "ok"
-              : fulfillment >= 0.4
-                ? "warning"
-                : "critical";
-        const stockSig: "ok" | "warning" | "critical" =
-          criticalStock > 0 ? "critical" : lowStock > 0 ? "warning" : "ok";
+        const publishSignal =
+          getPublicationSignal(
+            boutique.status,
+          );
 
-        const sigArr = [publishSig, productsSig, fulfillmentSig, stockSig] as const;
+        const productsSignal =
+          getProductSignal(
+            activeProducts,
+          );
+
+        const fulfillmentSignal =
+          getFulfillmentSignal(
+            totalOrders,
+            deliveredOrders,
+          );
+
+        const stockSignal =
+          getStockSignal();
+
+        const signals = [
+          publishSignal,
+          productsSignal,
+          fulfillmentSignal,
+          stockSignal,
+        ];
+
         const score = Math.min(
           100,
-          Math.round(
-            sigArr.reduce(
-              (acc, s) => acc + (s === "ok" ? 25 : s === "warning" ? 12 : 0),
-              0,
-            ),
+          signals.reduce(
+            (total, signal) =>
+              total + getSignalScore(signal),
+            0,
           ),
         );
-        const level: PerBoutiqueHealth["level"] =
-          score >= 85 ? "excellent" : score >= 65 ? "good" : score >= 40 ? "fair" : "poor";
 
-        map.set(b.id, {
-          boutiqueId: b.id,
+        healthMap.set(boutique.id, {
+          boutiqueId: boutique.id,
           score,
-          level,
+          level: getHealthLevel(score),
+
           signals: {
-            publish: publishSig,
-            products: productsSig,
-            fulfillment: fulfillmentSig,
-            stock: stockSig,
+            publish: publishSignal,
+            products: productsSignal,
+            fulfillment: fulfillmentSignal,
+            stock: stockSignal,
           },
+
           metrics: {
             activeProducts,
             totalProducts,
+
             pendingOrders,
             deliveredOrders,
             totalOrders,
+
             criticalStock,
             lowStock,
           },
         });
       }
 
-      return map;
+      return healthMap;
     },
   });
 }
 
-export function useBoutiqueHealthFor(boutiqueId?: string) {
-  const { data: map, isLoading } = usePerBoutiqueHealth();
-  return useMemo(
-    () => ({
-      health: boutiqueId ? map?.get(boutiqueId) : undefined,
-      loading: isLoading,
-    }),
-    [map, boutiqueId, isLoading],
-  );
+/**
+ * Retourne uniquement la santé d'une boutique donnée.
+ *
+ * Le calcul reste mutualisé avec usePerBoutiqueHealth()
+ * afin d'éviter une requête supplémentaire par boutique.
+ */
+export function useBoutiqueHealthFor(
+  boutiqueId?: string,
+) {
+  const {
+    data: healthMap,
+    isLoading,
+    isFetching,
+    error,
+  } = usePerBoutiqueHealth();
+
+  const health = useMemo(() => {
+    if (!boutiqueId || !healthMap) {
+      return undefined;
+    }
+
+    return healthMap.get(boutiqueId);
+  }, [boutiqueId, healthMap]);
+
+  return {
+    health,
+    loading: isLoading,
+    isFetching,
+    error,
+  };
 }
