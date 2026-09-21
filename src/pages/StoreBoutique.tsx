@@ -5,11 +5,6 @@ import {
   useState,
 } from "react";
 import {
-  Link,
-  useParams,
-} from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
@@ -21,6 +16,8 @@ import {
   ShoppingBag,
   Store,
 } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,13 +29,12 @@ interface BoutiqueRow {
   id: string;
   name: string;
   slug: string;
-  status: "draft" | "published";
+  status: string;
   category: string | null;
   description: string | null;
+  tagline: string | null;
   logo_url: string | null;
-  cover_url: string | null;
-  seo_title: string | null;
-  seo_description: string | null;
+  cover_image_url: string | null;
   target_markets: string[] | null;
 }
 
@@ -52,19 +48,20 @@ interface SupplierProductRow {
 
 interface ProductMediaRow {
   product_id: string;
-  media_url: string;
+  url: string | null;
+  media_url?: string | null;
   position: number | null;
-  is_selected: boolean | null;
+  is_selected?: boolean | null;
 }
 
 interface ProductRow {
   id: string;
   boutique_id: string;
   supplier_product_id: string;
-  public_price: number;
-  status: "active" | "paused";
-  stock_quantity: number;
-  cumulative_sales: number;
+  public_price: number | null;
+  status: string;
+  stock_quantity: number | null;
+  cumulative_sales: number | null;
   supplier_products:
     | SupplierProductRow
     | SupplierProductRow[]
@@ -96,25 +93,21 @@ function getSupplierProduct(
 }
 
 function formatPrice(value: number) {
-  return new Intl.NumberFormat(
-    "fr-FR",
-    {
-      style: "currency",
-      currency: "EUR",
-    },
-  ).format(value);
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  }).format(value);
 }
 
 export default function StoreBoutique() {
-  const { slug } =
-    useParams<{ slug: string }>();
+  const { slug } = useParams<{
+    slug: string;
+  }>();
 
   const { user } = useAuth();
 
-  const [
-    isFavorite,
-    setIsFavorite,
-  ] = useState(false);
+  const [isFavorite, setIsFavorite] =
+    useState(false);
 
   const [
     isFavoriteLoading,
@@ -124,16 +117,24 @@ export default function StoreBoutique() {
   const [
     favoriteError,
     setFavoriteError,
-  ] = useState<string | null>(
-    null,
-  );
+  ] = useState<string | null>(null);
+
+  /*
+   * ============================================================
+   * BOUTIQUE
+   * ============================================================
+   *
+   * Cette page appartient au Store BIB.
+   *
+   * Elle permet uniquement de découvrir la boutique et sa
+   * sélection. Le commerce reste sur /boutique/:slug.
+   */
 
   const boutiqueQuery = useQuery({
-    queryKey: [
-      "store-boutique",
-      slug,
-    ],
+    queryKey: ["store-boutique", slug],
+
     enabled: Boolean(slug),
+
     queryFn: async () => {
       if (!slug) {
         throw new Error(
@@ -154,10 +155,9 @@ export default function StoreBoutique() {
             status,
             category,
             description,
+            tagline,
             logo_url,
-            cover_url,
-            seo_title,
-            seo_description,
+            cover_image_url,
             target_markets
           `,
         )
@@ -176,66 +176,73 @@ export default function StoreBoutique() {
   const boutique =
     boutiqueQuery.data;
 
-  const productsQuery =
-    useQuery({
-      queryKey: [
-        "store-boutique-products",
-        boutique?.id,
-      ],
-      enabled: Boolean(
-        boutique?.id,
-      ),
-      queryFn: async () => {
-        if (!boutique?.id) {
-          return [];
-        }
+  /*
+   * ============================================================
+   * PRODUITS
+   * ============================================================
+   */
 
-        const {
-          data,
-          error,
-        } = await supabase
-          .from("products")
-          .select(
-            `
+  const productsQuery = useQuery({
+    queryKey: [
+      "store-boutique-products",
+      boutique?.id,
+    ],
+
+    enabled: Boolean(
+      boutique?.id,
+    ),
+
+    queryFn: async () => {
+      if (!boutique?.id) {
+        return [];
+      }
+
+      const {
+        data,
+        error,
+      } = await supabase
+        .from("products")
+        .select(
+          `
+            id,
+            boutique_id,
+            supplier_product_id,
+            public_price,
+            status,
+            stock_quantity,
+            cumulative_sales,
+            supplier_products (
               id,
-              boutique_id,
-              supplier_product_id,
-              public_price,
-              status,
-              stock_quantity,
-              cumulative_sales,
-              supplier_products (
-                id,
-                name,
-                description,
-                category,
-                image_url
-              )
-            `,
-          )
-          .eq(
-            "boutique_id",
-            boutique.id,
-          )
-          .eq(
-            "status",
-            "active",
-          )
-          .order(
-            "cumulative_sales",
-            {
-              ascending: false,
-            },
-          );
+              name,
+              description,
+              category,
+              image_url
+            )
+          `,
+        )
+        .eq(
+          "boutique_id",
+          boutique.id,
+        )
+        .eq(
+          "status",
+          "active",
+        )
+        .order(
+          "cumulative_sales",
+          {
+            ascending: false,
+          },
+        );
 
-        if (error) {
-          throw error;
-        }
+      if (error) {
+        throw error;
+      }
 
-        return (data ??
-          []) as ProductRow[];
-      },
-    });
+      return (data ??
+        []) as ProductRow[];
+    },
+  });
 
   const productIds = useMemo(
     () =>
@@ -249,23 +256,31 @@ export default function StoreBoutique() {
     [productsQuery.data],
   );
 
+  /*
+   * ============================================================
+   * PRODUCT MEDIA
+   * ============================================================
+   */
+
   const mediaQuery = useQuery({
     queryKey: [
       "store-boutique-product-media",
       productIds,
     ],
+
     enabled:
       productIds.length > 0,
+
     queryFn: async () => {
       const {
         data,
         error,
       } = await supabase
-        .from("product_media")
+        .from("product_media" as any)
         .select(
           `
             product_id,
-            media_url,
+            url,
             position,
             is_selected
           `,
@@ -291,6 +306,12 @@ export default function StoreBoutique() {
     },
   });
 
+  /*
+   * ============================================================
+   * NORMALISATION DES PRODUITS
+   * ============================================================
+   */
+
   const products =
     useMemo<StoreBoutiqueProduct[]>(
       () => {
@@ -302,6 +323,15 @@ export default function StoreBoutique() {
 
         for (const media of
           mediaQuery.data ?? []) {
+          const mediaUrl =
+            media.url ??
+            media.media_url ??
+            null;
+
+          if (!mediaUrl) {
+            continue;
+          }
+
           const current =
             mediaByProduct.get(
               media.product_id,
@@ -309,11 +339,11 @@ export default function StoreBoutique() {
 
           if (
             !current.includes(
-              media.media_url,
+              mediaUrl,
             )
           ) {
             current.push(
-              media.media_url,
+              mediaUrl,
             );
           }
 
@@ -333,7 +363,9 @@ export default function StoreBoutique() {
                 product.supplier_products,
               );
 
-            if (!supplierProduct) {
+            if (
+              !supplierProduct
+            ) {
               return null;
             }
 
@@ -341,6 +373,10 @@ export default function StoreBoutique() {
               mediaByProduct.get(
                 product.id,
               ) ?? [];
+
+            const fallbackImage =
+              supplierProduct.image_url ??
+              null;
 
             return {
               id: product.id,
@@ -357,13 +393,13 @@ export default function StoreBoutique() {
                 null,
 
               price: Number(
-                product.public_price,
+                product.public_price ??
+                  0,
               ),
 
               imageUrl:
                 images[0] ??
-                supplierProduct.image_url ??
-                null,
+                fallbackImage,
 
               images,
 
@@ -381,8 +417,11 @@ export default function StoreBoutique() {
             };
           })
           .filter(
-            Boolean,
-          ) as StoreBoutiqueProduct[];
+            (
+              product,
+            ): product is StoreBoutiqueProduct =>
+              product !== null,
+          );
       },
       [
         productsQuery.data,
@@ -392,15 +431,14 @@ export default function StoreBoutique() {
     );
 
   /*
-   * =========================================================
+   * ============================================================
    * FAVORI BOUTIQUE
-   * =========================================================
+   * ============================================================
    *
-   * Le favori appartient au compte authentifié.
+   * Un favori est lié au compte utilisateur.
    *
-   * Les RLS de customer_boutique_favorites garantissent
-   * qu'un utilisateur ne peut lire/modifier que son propre
-   * favori.
+   * RLS :
+   * user_id = auth.uid()
    */
 
   useEffect(() => {
@@ -472,7 +510,8 @@ export default function StoreBoutique() {
       }
 
       /*
-       * Un visiteur doit d'abord avoir un compte.
+       * Le visiteur doit créer ou utiliser son compte
+       * pour conserver ses favoris.
        */
       if (!user?.id) {
         const next =
@@ -493,7 +532,7 @@ export default function StoreBoutique() {
         isFavorite;
 
       /*
-       * Mise à jour optimiste.
+       * Optimistic UI.
        */
       setIsFavorite(
         !previousState,
@@ -552,9 +591,6 @@ export default function StoreBoutique() {
           error,
         );
 
-        /*
-         * Rollback si Supabase échoue.
-         */
         setIsFavorite(
           previousState,
         );
@@ -575,20 +611,47 @@ export default function StoreBoutique() {
       isFavorite,
     ]);
 
+  /*
+   * ============================================================
+   * SEO
+   * ============================================================
+   */
+
   useSEO({
     title:
-      boutique?.seo_title ||
-      `${boutique?.name ?? "Boutique"} — Vérifiée par BIB`,
+      boutique?.name
+        ? `${boutique.name} — Vérifiée par BIB`
+        : "Boutique — BIB",
 
     description:
-      boutique?.seo_description ||
       boutique?.description ||
-      `Découvrez ${boutique?.name ?? "cette boutique"} sur BIB et explorez sa sélection de produits vérifiés.`,
+      (boutique?.name
+        ? `Découvrez ${boutique.name} sur BIB et explorez sa sélection de produits vérifiés.`
+        : "Découvrez les boutiques vérifiées par BIB."),
 
-    canonical: slug
-      ? `/store/boutique/${slug}`
-      : "/store",
+    image:
+      boutique?.cover_image_url ||
+      boutique?.logo_url ||
+      undefined,
+
+    type: "store",
+
+    keywords: [
+      boutique?.name,
+      boutique?.category,
+      "BIB",
+      "Brand-In-A-Box",
+      "boutique vérifiée",
+    ].filter(
+      Boolean,
+    ) as string[],
   });
+
+  /*
+   * ============================================================
+   * ÉTATS
+   * ============================================================
+   */
 
   const isLoading =
     boutiqueQuery.isLoading ||
@@ -603,7 +666,7 @@ export default function StoreBoutique() {
       <div className="min-h-screen bg-background">
         <div className="mx-auto flex min-h-screen max-w-7xl items-center justify-center px-6">
           <div className="text-center">
-            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-foreground" />
+            <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-muted-foreground" />
 
             <p className="text-sm text-muted-foreground">
               Chargement de la boutique…
@@ -653,9 +716,9 @@ export default function StoreBoutique() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* =======================================================
+      {/* ========================================================
           HEADER
-         ======================================================= */}
+         ======================================================== */}
 
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
@@ -698,78 +761,59 @@ export default function StoreBoutique() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* =================================================
-                FAVORI BOUTIQUE
-               ================================================= */}
-
-            <button
-              type="button"
-              onClick={() =>
-                void toggleBoutiqueFavorite()
-              }
-              disabled={
-                isFavoriteLoading
-              }
-              aria-label={
-                isFavorite
-                  ? `Retirer ${boutique.name} des favoris`
-                  : `Ajouter ${boutique.name} aux favoris`
-              }
-              aria-pressed={
-                isFavorite
-              }
-              title={
-                isFavorite
-                  ? "Retirer des favoris"
-                  : "Ajouter aux favoris"
-              }
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border bg-background text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isFavoriteLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Heart
-                  className="h-5 w-5"
-                  fill={
-                    isFavorite
-                      ? "currentColor"
-                      : "none"
-                  }
-                  strokeWidth={1.8}
-                />
-              )}
-            </button>
-
-            <Link
-              to={`/boutique/${encodeURIComponent(
-                boutique.slug,
-              )}`}
-              className="inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
-            >
-              <span className="hidden sm:inline">
-                Visiter la boutique
-              </span>
-
-              <ExternalLink className="h-4 w-4" />
-            </Link>
-          </div>
+          <button
+            type="button"
+            onClick={() =>
+              void toggleBoutiqueFavorite()
+            }
+            disabled={
+              isFavoriteLoading
+            }
+            aria-label={
+              isFavorite
+                ? `Retirer ${boutique.name} des favoris`
+                : `Ajouter ${boutique.name} aux favoris`
+            }
+            aria-pressed={
+              isFavorite
+            }
+            title={
+              isFavorite
+                ? "Retirer des favoris"
+                : "Ajouter aux favoris"
+            }
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border bg-background transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isFavoriteLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Heart
+                className="h-5 w-5"
+                fill={
+                  isFavorite
+                    ? "currentColor"
+                    : "none"
+                }
+                strokeWidth={1.8}
+              />
+            )}
+          </button>
         </div>
       </header>
 
       <main>
-        {/* =====================================================
+        {/* ======================================================
             HERO
-           ===================================================== */}
+           ====================================================== */}
 
         <section className="border-b">
           <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
             <div className="relative overflow-hidden rounded-2xl border bg-muted">
-              <div className="relative aspect-[16/7] min-h-[260px] w-full">
-                {boutique.cover_url ? (
+              <div className="relative aspect-[16/7] min-h-[280px] w-full">
+                {boutique.cover_image_url ? (
                   <img
                     src={
-                      boutique.cover_url
+                      boutique.cover_image_url
                     }
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover"
@@ -778,41 +822,43 @@ export default function StoreBoutique() {
                   <div className="absolute inset-0 bg-gradient-to-br from-muted via-background to-muted" />
                 )}
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
 
                 <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                    <div className="max-w-3xl text-white">
-                      <div className="mb-3 flex flex-wrap items-center gap-2">
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
-                          <CheckCircle2 className="h-3.5 w-3.5" />
+                  <div className="max-w-3xl text-white">
+                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
 
-                          Verified by BIB
+                        Verified by BIB
+                      </span>
+
+                      {boutique.category && (
+                        <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+                          {boutique.category}
                         </span>
-
-                        {boutique.category && (
-                          <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
-                            {
-                              boutique.category
-                            }
-                          </span>
-                        )}
-                      </div>
-
-                      <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
-                        {boutique.name}
-                      </h1>
-
-                      {boutique.description && (
-                        <p className="mt-3 max-w-2xl text-sm leading-6 text-white/85 sm:text-base">
-                          {
-                            boutique.description
-                          }
-                        </p>
                       )}
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
+                    <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
+                      {boutique.name}
+                    </h1>
+
+                    {boutique.tagline && (
+                      <p className="mt-3 text-base font-medium text-white/90 sm:text-lg">
+                        {boutique.tagline}
+                      </p>
+                    )}
+
+                    {boutique.description && (
+                      <p className="mt-3 max-w-2xl text-sm leading-6 text-white/80 sm:text-base">
+                        {
+                          boutique.description
+                        }
+                      </p>
+                    )}
+
+                    <div className="mt-5 flex flex-wrap gap-3">
                       <button
                         type="button"
                         onClick={() =>
@@ -821,7 +867,7 @@ export default function StoreBoutique() {
                         disabled={
                           isFavoriteLoading
                         }
-                        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-white/30 bg-black/20 px-4 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-black/30 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/30 bg-black/20 px-4 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-black/30 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {isFavoriteLoading ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -845,11 +891,11 @@ export default function StoreBoutique() {
                         to={`/boutique/${encodeURIComponent(
                           boutique.slug,
                         )}`}
-                        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90"
                       >
-                        Découvrir la boutique
+                        Visiter la boutique
 
-                        <ArrowRight className="h-4 w-4" />
+                        <ExternalLink className="h-4 w-4" />
                       </Link>
                     </div>
                   </div>
@@ -868,9 +914,9 @@ export default function StoreBoutique() {
           </div>
         </section>
 
-        {/* =====================================================
-            TRUST / INFORMATION
-           ===================================================== */}
+        {/* ======================================================
+            TRUST
+           ====================================================== */}
 
         <section className="border-b">
           <div className="mx-auto grid max-w-7xl gap-4 px-4 py-8 sm:px-6 md:grid-cols-3">
@@ -885,8 +931,9 @@ export default function StoreBoutique() {
 
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 BIB référence des boutiques
-                sélectionnées et vérifiées avant leur
-                présence sur le Store.
+                sélectionnées et vérifiées
+                avant leur présence dans
+                son réseau.
               </p>
             </div>
 
@@ -896,13 +943,14 @@ export default function StoreBoutique() {
               </div>
 
               <h2 className="font-semibold">
-                Sélection découverte
+                Découvrir avant d’acheter
               </h2>
 
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Cette page sert à découvrir la
-                sélection de la boutique avant de
-                poursuivre vers son espace marchand.
+                Le Store BIB sert à découvrir
+                les produits et les boutiques.
+                L’achat se poursuit ensuite
+                directement sur la boutique.
               </p>
             </div>
 
@@ -912,22 +960,22 @@ export default function StoreBoutique() {
               </div>
 
               <h2 className="font-semibold">
-                Approche responsable
+                Réseau BIB
               </h2>
 
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Les informations et sélections
-                présentées sur BIB sont organisées autour
-                d’une logique de confiance et de
-                traçabilité.
+                BIB organise sa sélection
+                autour de la confiance, de
+                la traçabilité et de la
+                visibilité des marchands.
               </p>
             </div>
           </div>
         </section>
 
-        {/* =====================================================
+        {/* ======================================================
             PRODUCTS
-           ===================================================== */}
+           ====================================================== */}
 
         <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12">
           <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -942,9 +990,9 @@ export default function StoreBoutique() {
               </h2>
 
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Découvrez une sélection de
-                produits disponibles dans cette
-                boutique.
+                Découvrez une sélection
+                des produits proposés par
+                cette boutique.
               </p>
             </div>
 
@@ -964,8 +1012,8 @@ export default function StoreBoutique() {
 
           {productsQuery.isError ? (
             <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
-              Impossible de charger les produits
-              de cette boutique.
+              Impossible de charger les
+              produits de cette boutique.
             </div>
           ) : displayedProducts.length ===
             0 ? (
@@ -978,7 +1026,8 @@ export default function StoreBoutique() {
 
               <p className="mt-2 text-sm text-muted-foreground">
                 Cette boutique ne possède
-                actuellement aucun produit publié.
+                actuellement aucun produit
+                publié.
               </p>
 
               <Link
@@ -1087,9 +1136,9 @@ export default function StoreBoutique() {
           )}
         </section>
 
-        {/* =====================================================
+        {/* ======================================================
             FINAL CTA
-           ===================================================== */}
+           ====================================================== */}
 
         <section className="border-t bg-muted/30">
           <div className="mx-auto max-w-4xl px-4 py-12 text-center sm:px-6 sm:py-16">
@@ -1098,15 +1147,15 @@ export default function StoreBoutique() {
             </div>
 
             <h2 className="mt-5 text-2xl font-semibold tracking-tight sm:text-3xl">
-              Vous souhaitez découvrir{" "}
-              {boutique.name} ?
+              Découvrir{" "}
+              {boutique.name}
             </h2>
 
             <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-              Poursuivez vers la boutique pour
-              consulter son catalogue complet et
-              effectuer vos achats directement auprès
-              de son espace marchand.
+              Consultez le catalogue complet
+              et poursuivez directement
+              vers la boutique pour vos
+              achats.
             </p>
 
             <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -1154,9 +1203,9 @@ export default function StoreBoutique() {
         </section>
       </main>
 
-      {/* =======================================================
+      {/* ========================================================
           FOOTER
-         ======================================================= */}
+         ======================================================== */}
 
       <footer className="border-t">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
