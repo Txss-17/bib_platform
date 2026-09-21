@@ -15,7 +15,6 @@ import {
   Users,
 } from "lucide-react";
 
-import founderImg from "@/assets/landing-founder0.jpg";
 import unboxingImg from "@/assets/landing-unboxing.jpg";
 import partenerImg from "@/assets/landing-partener.jpg";
 
@@ -59,6 +58,7 @@ const Index = () => {
                   </div>
                 </div>
 
+                {/* Badge */}
                 <div className="absolute -bottom-5 -right-3 rounded-2xl border border-bib-marine/10 bg-white px-5 py-4 shadow-xl sm:-right-6">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-bib-marine/5">
@@ -190,16 +190,15 @@ const Index = () => {
 
               {/* Image */}
               <div className="relative order-1 lg:order-2">
-                <div className="overflow-hidden rounded-[2rem] bg-bib-marine shadow-[0_30px_80px_rgba(20,35,55,0.14)]">
-                  <div className="aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5]">
-                    <img
-                      src={partenerImg}
-                      alt="Préparation d'une commande dans l'environnement BIB"
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
+                <div className="rounded-[2rem] bg-bib-marine shadow-[0_30px_80px_rgba(20,35,55,0.14)]">
+                  <img
+                    src={partenerImg}
+                    alt="Préparation d'une commande dans l'environnement BIB"
+                    className="block h-auto w-full rounded-[2rem]"
+                  />
                 </div>
 
+                {/* Badge */}
                 <div className="absolute -bottom-5 -left-3 rounded-2xl border border-bib-marine/10 bg-white px-5 py-4 shadow-xl sm:-left-6">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-bib-gold/10">
@@ -538,7 +537,9 @@ function PriceFeature({ text }: { text: string }) {
         />
       </span>
 
-      <span className="text-sm text-white/70">{text}</span>
+      <span className="text-sm text-white/70">
+        {text}
+      </span>
     </div>
   );
 }
