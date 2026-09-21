@@ -3,15 +3,9 @@ import {
   Heart,
   Package,
   Settings,
-  ShoppingBag,
 } from "lucide-react";
 
 const navigation = [
-  {
-    to: "/store/cart",
-    label: "Panier",
-    icon: ShoppingBag,
-  },
   {
     to: "/store/favorites",
     label: "Favoris",
@@ -34,10 +28,10 @@ export default function StoreSubscriberLayout() {
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6 lg:px-8">
         <nav
-          aria-label="Espace abonné BIB"
+          aria-label="Espace BIB Abonné"
           className="overflow-x-auto rounded-2xl border bg-card"
         >
-          <div className="flex min-w-max items-center p-1.5">
+          <div className="flex min-w-max items-center gap-1 p-1.5">
             {navigation.map((item) => {
               const Icon = item.icon;
 
