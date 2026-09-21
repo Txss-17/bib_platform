@@ -6,60 +6,44 @@ import {
 } from "react";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const LEGACY_STORAGE_KEY = "linksy-favorites";
-const STORAGE_KEY_PREFIX = "bib-store-favorites";
+const GUEST_STORAGE_KEY = "bib-store-favorites:guest";
 
-function getStorageKey(userId?: string | null) {
-  if (userId) {
-    return `${STORAGE_KEY_PREFIX}:${userId}`;
-  }
+/**
+ * Les tables ajoutées par la migration customer_favorites
+ * peuvent ne pas encore être présentes dans les types Supabase
+ * générés localement.
+ *
+ * On conserve donc le client Supabase comme source d'exécution
+ * pour cette nouvelle couche, sans dépendre immédiatement d'une
+ * régénération manuelle de types.
+ */
+const favoritesDb = supabase as any;
 
-  return `${STORAGE_KEY_PREFIX}:guest`;
-}
-
-function readFavorites(storageKey: string): string[] {
+function readLocalFavorites(): string[] {
   if (typeof window === "undefined") {
     return [];
   }
 
   try {
-    const stored = localStorage.getItem(storageKey);
-
-    if (!stored) {
-      return [];
-    }
-
-    const parsed = JSON.parse(stored);
-
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
-
-    return parsed.filter(
-      (value): value is string =>
-        typeof value === "string" &&
-        value.trim().length > 0,
+    const current = localStorage.getItem(
+      GUEST_STORAGE_KEY,
     );
-  } catch {
-    return [];
-  }
-}
 
-function migrateLegacyFavorites(
-  storageKey: string,
-): string[] {
-  if (typeof window === "undefined") {
-    return [];
-  }
+    if (current) {
+      const parsed = JSON.parse(current);
 
-  const existing = readFavorites(storageKey);
+      if (Array.isArray(parsed)) {
+        return parsed.filter(
+          (value): value is string =>
+            typeof value === "string" &&
+            value.trim().length > 0,
+        );
+      }
+    }
 
-  if (existing.length > 0) {
-    return existing;
-  }
-
-  try {
     const legacy = localStorage.getItem(
       LEGACY_STORAGE_KEY,
     );
@@ -82,7 +66,7 @@ function migrateLegacyFavorites(
 
     if (migrated.length > 0) {
       localStorage.setItem(
-        storageKey,
+        GUEST_STORAGE_KEY,
         JSON.stringify(migrated),
       );
     }
@@ -93,89 +77,360 @@ function migrateLegacyFavorites(
   }
 }
 
+function writeLocalFavorites(
+  favorites: string[],
+) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    localStorage.setItem(
+      GUEST_STORAGE_KEY,
+      JSON.stringify(favorites),
+    );
+  } catch {
+    // localStorage peut être indisponible ou saturé.
+  }
+}
+
 /**
  * Gestion des favoris produits du BIB Store.
  *
- * Cette version conserve temporairement la persistance locale.
+ * Architecture :
  *
- * - Les visiteurs non connectés utilisent un espace "guest".
- * - Les utilisateurs connectés disposent d'un espace propre à
- *   leur compte.
- * - L'ancien stockage Linksy est migré automatiquement.
+ * - visiteur non connecté :
+ *     persistance locale temporaire ;
  *
- * La persistance Supabase pourra ensuite remplacer cette couche
- * sans modifier les composants consommateurs du hook.
+ * - utilisateur connecté :
+ *     persistance Supabase dans
+ *     customer_product_favorites ;
+ *
+ * - la clé user_id correspond à auth.users.id ;
+ *
+ * - les politiques RLS Supabase garantissent qu'un utilisateur
+ *   ne peut lire/modifier que ses propres favoris.
+ *
+ * L'API publique du hook reste compatible avec les composants
+ * existants du projet.
  */
 export function useFavorites() {
   const { user } = useAuth();
 
-  const storageKey = useMemo(
-    () => getStorageKey(user?.id),
-    [user?.id],
+  const userId = user?.id ?? null;
+
+  const [favorites, setFavorites] = useState<string[]>(() =>
+    userId
+      ? []
+      : readLocalFavorites(),
   );
 
-  const [favorites, setFavorites] = useState<string[]>(
-    () => migrateLegacyFavorites(storageKey),
+  const [isLoading, setIsLoading] = useState(
+    !!userId,
+  );
+
+  const storageMode = useMemo(
+    () => (userId ? "account" : "guest"),
+    [userId],
   );
 
   /**
-   * Recharge les favoris lorsque le compte courant change.
+   * Charge les favoris depuis Supabase lorsqu'un compte
+   * authentifié est disponible.
    *
-   * Cela évite qu'un utilisateur connecté récupère les favoris
-   * d'un autre compte restés en mémoire dans le composant.
+   * Lorsqu'un utilisateur se connecte, les éventuels favoris
+   * visiteurs sont également fusionnés dans son compte.
    */
   useEffect(() => {
-    setFavorites(
-      migrateLegacyFavorites(storageKey),
-    );
-  }, [storageKey]);
+    let cancelled = false;
 
-  /**
-   * Persiste les favoris pour le contexte courant.
-   */
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
+    async function loadFavorites() {
+      if (!userId) {
+        setFavorites(readLocalFavorites());
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+
+      try {
+        const {
+          data,
+          error,
+        } = await favoritesDb
+          .from("customer_product_favorites")
+          .select("product_id")
+          .eq("user_id", userId)
+          .order("created_at", {
+            ascending: false,
+          });
+
+        if (error) {
+          throw error;
+        }
+
+        const accountFavorites = (
+          data ?? []
+        )
+          .map(
+            (row: {
+              product_id?: unknown;
+            }) => row.product_id,
+          )
+          .filter(
+            (value: unknown): value is string =>
+              typeof value === "string" &&
+              value.trim().length > 0,
+          );
+
+        /*
+         * Migration douce des favoris locaux.
+         *
+         * Elle permet à un visiteur de commencer à enregistrer
+         * des produits avant sa connexion, puis de retrouver
+         * ces favoris dans son compte.
+         */
+        const localFavorites =
+          readLocalFavorites();
+
+        const missingLocalFavorites =
+          localFavorites.filter(
+            (productId) =>
+              !accountFavorites.includes(
+                productId,
+              ),
+          );
+
+        if (
+          missingLocalFavorites.length > 0
+        ) {
+          const rows =
+            missingLocalFavorites.map(
+              (productId) => ({
+                user_id: userId,
+                product_id: productId,
+              }),
+            );
+
+          const {
+            error: insertError,
+          } = await favoritesDb
+            .from(
+              "customer_product_favorites",
+            )
+            .upsert(rows, {
+              onConflict:
+                "user_id,product_id",
+              ignoreDuplicates: true,
+            });
+
+          if (insertError) {
+            throw insertError;
+          }
+
+          accountFavorites.push(
+            ...missingLocalFavorites,
+          );
+
+          /*
+           * Les favoris ont été transférés au compte.
+           * On peut donc supprimer la copie locale.
+           */
+          if (
+            typeof window !== "undefined"
+          ) {
+            try {
+              localStorage.removeItem(
+                GUEST_STORAGE_KEY,
+              );
+              localStorage.removeItem(
+                LEGACY_STORAGE_KEY,
+              );
+            } catch {
+              // Rien à faire si le stockage local
+              // n'est pas accessible.
+            }
+          }
+        }
+
+        if (!cancelled) {
+          setFavorites(
+            Array.from(
+              new Set(accountFavorites),
+            ),
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Impossible de charger les favoris BIB Store.",
+          error,
+        );
+
+        /*
+         * En cas d'erreur réseau temporaire, on conserve
+         * l'état local déjà disponible plutôt que d'effacer
+         * visuellement les favoris de l'utilisateur.
+         */
+        if (!cancelled) {
+          setFavorites(
+            readLocalFavorites(),
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
     }
 
-    try {
-      localStorage.setItem(
-        storageKey,
-        JSON.stringify(favorites),
-      );
-    } catch {
-      // localStorage peut être indisponible ou saturé.
-    }
-  }, [favorites, storageKey]);
+    void loadFavorites();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
 
   /**
    * Ajoute ou retire un produit des favoris.
+   *
+   * Visiteur :
+   *   -> localStorage
+   *
+   * Compte connecté :
+   *   -> Supabase
    */
   const toggleFavorite = useCallback(
-    (productId: string) => {
-      const normalizedId = productId.trim();
+    async (productId: string) => {
+      const normalizedId =
+        productId.trim();
 
       if (!normalizedId) {
         return;
       }
 
+      const currentlyFavorite =
+        favorites.includes(normalizedId);
+
+      /*
+       * Visiteur non connecté.
+       */
+      if (!userId) {
+        setFavorites((current) => {
+          const next =
+            current.includes(normalizedId)
+              ? current.filter(
+                  (id) =>
+                    id !== normalizedId,
+                )
+              : [
+                  ...current,
+                  normalizedId,
+                ];
+
+          writeLocalFavorites(next);
+
+          return next;
+        });
+
+        return;
+      }
+
+      /*
+       * Compte connecté : ajout.
+       */
+      if (!currentlyFavorite) {
+        setFavorites((current) => [
+          ...current,
+          normalizedId,
+        ]);
+
+        const {
+          error,
+        } = await favoritesDb
+          .from(
+            "customer_product_favorites",
+          )
+          .upsert(
+            {
+              user_id: userId,
+              product_id: normalizedId,
+            },
+            {
+              onConflict:
+                "user_id,product_id",
+              ignoreDuplicates: true,
+            },
+          );
+
+        if (error) {
+          console.error(
+            "Impossible d'ajouter le favori.",
+            error,
+          );
+
+          setFavorites((current) =>
+            current.filter(
+              (id) =>
+                id !== normalizedId,
+            ),
+          );
+        }
+
+        return;
+      }
+
+      /*
+       * Compte connecté : suppression.
+       */
       setFavorites((current) =>
-        current.includes(normalizedId)
-          ? current.filter(
-              (id) => id !== normalizedId,
-            )
-          : [...current, normalizedId],
+        current.filter(
+          (id) => id !== normalizedId,
+        ),
       );
+
+      const {
+        error,
+      } = await favoritesDb
+        .from(
+          "customer_product_favorites",
+        )
+        .delete()
+        .eq("user_id", userId)
+        .eq(
+          "product_id",
+          normalizedId,
+        );
+
+      if (error) {
+        console.error(
+          "Impossible de supprimer le favori.",
+          error,
+        );
+
+        /*
+         * Restauration optimiste en cas d'échec.
+         */
+        setFavorites((current) =>
+          current.includes(normalizedId)
+            ? current
+            : [
+                ...current,
+                normalizedId,
+              ],
+        );
+      }
     },
-    [],
+    [favorites, userId],
   );
 
   /**
-   * Vérifie si un produit est dans les favoris.
+   * Vérifie si un produit est actuellement favori.
    */
   const isFavorite = useCallback(
     (productId: string) =>
-      favorites.includes(productId),
+      favorites.includes(
+        productId.trim(),
+      ),
     [favorites],
   );
 
@@ -183,10 +438,20 @@ export function useFavorites() {
    * Retire explicitement un produit des favoris.
    */
   const removeFavorite = useCallback(
-    (productId: string) => {
-      const normalizedId = productId.trim();
+    async (productId: string) => {
+      const normalizedId =
+        productId.trim();
 
       if (!normalizedId) {
+        return;
+      }
+
+      const wasFavorite =
+        favorites.includes(
+          normalizedId,
+        );
+
+      if (!wasFavorite) {
         return;
       }
 
@@ -195,16 +460,95 @@ export function useFavorites() {
           (id) => id !== normalizedId,
         ),
       );
+
+      /*
+       * Visiteur : uniquement local.
+       */
+      if (!userId) {
+        const next = favorites.filter(
+          (id) => id !== normalizedId,
+        );
+
+        writeLocalFavorites(next);
+        return;
+      }
+
+      /*
+       * Compte : suppression Supabase.
+       */
+      const {
+        error,
+      } = await favoritesDb
+        .from(
+          "customer_product_favorites",
+        )
+        .delete()
+        .eq("user_id", userId)
+        .eq(
+          "product_id",
+          normalizedId,
+        );
+
+      if (error) {
+        console.error(
+          "Impossible de supprimer le favori.",
+          error,
+        );
+
+        setFavorites((current) =>
+          current.includes(normalizedId)
+            ? current
+            : [
+                ...current,
+                normalizedId,
+              ],
+        );
+      }
     },
-    [],
+    [favorites, userId],
   );
 
   /**
-   * Vide tous les favoris du contexte courant.
+   * Supprime tous les favoris du contexte courant.
    */
-  const clearFavorites = useCallback(() => {
-    setFavorites([]);
-  }, []);
+  const clearFavorites =
+    useCallback(async () => {
+      const previousFavorites =
+        favorites;
+
+      setFavorites([]);
+
+      /*
+       * Visiteur.
+       */
+      if (!userId) {
+        writeLocalFavorites([]);
+        return;
+      }
+
+      /*
+       * Compte connecté.
+       */
+      const {
+        error,
+      } = await favoritesDb
+        .from(
+          "customer_product_favorites",
+        )
+        .delete()
+        .eq("user_id", userId);
+
+      if (error) {
+        console.error(
+          "Impossible de supprimer les favoris.",
+          error,
+        );
+
+        setFavorites(
+          previousFavorites,
+        );
+      }
+    }, [favorites, userId]);
 
   return {
     favorites,
@@ -212,5 +556,7 @@ export function useFavorites() {
     isFavorite,
     removeFavorite,
     clearFavorites,
+    isLoading,
+    storageMode,
   };
 }
