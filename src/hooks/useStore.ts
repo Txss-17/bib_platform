@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
 
 /* =========================================================
-   TYPES
+   TYPES PUBLICS DU STORE
    ========================================================= */
 
 export interface StoreProductPreview {
@@ -56,7 +57,7 @@ export interface StoreProduct {
 }
 
 /* =========================================================
-   INTERNAL TYPES
+   TYPES SUPABASE
    ========================================================= */
 
 interface StoreProductRow {
@@ -64,6 +65,7 @@ interface StoreProductRow {
   public_price: number | null;
   status: string;
   created_at: string;
+
   supplier_products:
     | {
         name: string;
@@ -71,6 +73,7 @@ interface StoreProductRow {
         image_url: string | null;
       }
     | null;
+
   boutiques:
     | {
         id: string;
@@ -87,6 +90,7 @@ interface StoreBoutiqueProductRow {
   public_price: number | null;
   status: string;
   cumulative_sales: number | null;
+
   supplier_products:
     | {
         name: string;
@@ -116,6 +120,7 @@ interface StoreBoutiqueRow {
   has_protection: boolean | null;
   highlight_media: unknown;
   created_at: string;
+
   products: StoreBoutiqueProductRow[];
   orders: StoreOrderRow[];
   recycling_scans: StoreRecyclingScanRow[];
@@ -125,27 +130,47 @@ interface StoreBoutiqueRow {
    HELPERS
    ========================================================= */
 
-function normalizeStories(value: unknown): StoreStory[] {
+function normalizeText(
+  value: string | null | undefined,
+  fallback: string,
+): string {
+  const normalized =
+    typeof value === "string"
+      ? value.trim()
+      : "";
+
+  return normalized || fallback;
+}
+
+function normalizeStories(
+  value: unknown,
+): StoreStory[] {
   if (!Array.isArray(value)) {
     return [];
   }
 
-  return value.filter((story): story is StoreStory => {
-    if (!story || typeof story !== "object") {
-      return false;
-    }
+  return value.filter(
+    (story): story is StoreStory => {
+      if (
+        !story ||
+        typeof story !== "object"
+      ) {
+        return false;
+      }
 
-    const item = story as Partial<StoreStory>;
+      const item =
+        story as Partial<StoreStory>;
 
-    return (
-      typeof item.id === "string" &&
-      item.id.length > 0 &&
-      (item.kind === "image" ||
-        item.kind === "video") &&
-      typeof item.url === "string" &&
-      item.url.length > 0
-    );
-  });
+      return (
+        typeof item.id === "string" &&
+        item.id.length > 0 &&
+        (item.kind === "image" ||
+          item.kind === "video") &&
+        typeof item.url === "string" &&
+        item.url.length > 0
+      );
+    },
+  );
 }
 
 function normalizeStoreProduct(
@@ -154,20 +179,24 @@ function normalizeStoreProduct(
   const supplierProduct =
     product.supplier_products;
 
-  const boutique = product.boutiques;
+  const boutique =
+    product.boutiques;
 
   return {
     id: product.id,
 
-    name:
-      supplierProduct?.name?.trim() ||
+    name: normalizeText(
+      supplierProduct?.name,
       "Produit",
+    ),
 
     description:
-      supplierProduct?.description ?? null,
+      supplierProduct?.description ??
+      null,
 
     image_url:
-      supplierProduct?.image_url ?? null,
+      supplierProduct?.image_url ??
+      null,
 
     price: Number(
       product.public_price ?? 0,
@@ -176,16 +205,19 @@ function normalizeStoreProduct(
     boutique_id:
       boutique?.id ?? "",
 
-    boutique_name:
-      boutique?.name?.trim() ||
+    boutique_name: normalizeText(
+      boutique?.name,
       "Boutique",
+    ),
 
     boutique_slug:
       boutique?.slug ?? "",
 
     boutique_category:
-      boutique?.category?.trim() ||
-      "Autres",
+      normalizeText(
+        boutique?.category,
+        "Autres",
+      ),
 
     created_at:
       product.created_at,
@@ -193,7 +225,7 @@ function normalizeStoreProduct(
 }
 
 /* =========================================================
-   BOUTIQUES DU STORE
+   BOUTIQUES DU BIB STORE
    ========================================================= */
 
 export function useStoreBoutiques() {
@@ -203,43 +235,47 @@ export function useStoreBoutiques() {
     queryFn: async (): Promise<
       StoreBoutique[]
     > => {
-      const { data, error } = await supabase
-        .from("boutiques")
-        .select(`
-          id,
-          name,
-          slug,
-          category,
-          description,
-          tagline,
-          logo_url,
-          cover_image_url,
-          has_protection,
-          highlight_media,
-          created_at,
-          products!inner (
+      const { data, error } =
+        await supabase
+          .from("boutiques")
+          .select(`
             id,
-            public_price,
-            status,
-            cumulative_sales,
-            supplier_products (
-              name,
-              image_url
+            name,
+            slug,
+            category,
+            description,
+            tagline,
+            logo_url,
+            cover_image_url,
+            has_protection,
+            highlight_media,
+            created_at,
+            products!inner (
+              id,
+              public_price,
+              status,
+              cumulative_sales,
+              supplier_products (
+                name,
+                image_url
+              )
+            ),
+            orders (
+              id,
+              market
+            ),
+            recycling_scans (
+              points
             )
-          ),
-          orders (
-            id,
-            market
-          ),
-          recycling_scans (
-            points
+          `)
+          .eq("status", "published")
+          .eq(
+            "products.status",
+            "active",
           )
-        `)
-        .eq("status", "published")
-        .eq("products.status", "active")
-        .order("created_at", {
-          ascending: false,
-        });
+          .order("created_at", {
+            ascending: false,
+          });
 
       if (error) {
         throw error;
@@ -249,7 +285,9 @@ export function useStoreBoutiques() {
         (data ?? []) as unknown as StoreBoutiqueRow[];
 
       return rows.map(
-        (boutique): StoreBoutique => {
+        (
+          boutique,
+        ): StoreBoutique => {
           const products =
             boutique.products ?? [];
 
@@ -262,10 +300,12 @@ export function useStoreBoutiques() {
                 ): StoreProductPreview => ({
                   id: product.id,
 
-                  name:
-                    product.supplier_products
-                      ?.name?.trim() ||
+                  name: normalizeText(
+                    product
+                      .supplier_products
+                      ?.name,
                     "Produit",
+                  ),
 
                   image_url:
                     product
@@ -274,14 +314,18 @@ export function useStoreBoutiques() {
                     null,
 
                   price: Number(
-                    product.public_price ?? 0,
+                    product.public_price ??
+                      0,
                   ),
                 }),
               );
 
           const totalSales =
             products.reduce(
-              (total, product) =>
+              (
+                total,
+                product,
+              ) =>
                 total +
                 Number(
                   product.cumulative_sales ??
@@ -307,7 +351,10 @@ export function useStoreBoutiques() {
               boutique.recycling_scans ??
               []
             ).reduce(
-              (total, scan) =>
+              (
+                total,
+                scan,
+              ) =>
                 total +
                 Number(
                   scan.points ?? 0,
@@ -318,15 +365,17 @@ export function useStoreBoutiques() {
           return {
             id: boutique.id,
 
-            name:
-              boutique.name?.trim() ||
+            name: normalizeText(
+              boutique.name,
               "Boutique",
+            ),
 
             slug: boutique.slug,
 
-            category:
-              boutique.category?.trim() ||
+            category: normalizeText(
+              boutique.category,
               "Autres",
+            ),
 
             description:
               boutique.description ??
@@ -377,7 +426,7 @@ export function useStoreBoutiques() {
 }
 
 /* =========================================================
-   PRODUITS DU STORE
+   PRODUITS DU BIB STORE
    ========================================================= */
 
 export function useStoreProducts() {
@@ -387,34 +436,35 @@ export function useStoreProducts() {
     queryFn: async (): Promise<
       StoreProduct[]
     > => {
-      const { data, error } = await supabase
-        .from("products")
-        .select(`
-          id,
-          public_price,
-          status,
-          created_at,
-          supplier_products (
-            name,
-            description,
-            image_url
-          ),
-          boutiques!inner (
+      const { data, error } =
+        await supabase
+          .from("products")
+          .select(`
             id,
-            name,
-            slug,
-            category,
-            status
+            public_price,
+            status,
+            created_at,
+            supplier_products (
+              name,
+              description,
+              image_url
+            ),
+            boutiques!inner (
+              id,
+              name,
+              slug,
+              category,
+              status
+            )
+          `)
+          .eq("status", "active")
+          .eq(
+            "boutiques.status",
+            "published",
           )
-        `)
-        .eq("status", "active")
-        .eq(
-          "boutiques.status",
-          "published",
-        )
-        .order("created_at", {
-          ascending: false,
-        });
+          .order("created_at", {
+            ascending: false,
+          });
 
       if (error) {
         throw error;
@@ -426,8 +476,12 @@ export function useStoreProducts() {
       return rows
         .filter(
           (product) =>
-            Boolean(product.boutiques?.id) &&
-            Boolean(product.boutiques?.slug),
+            Boolean(
+              product.boutiques?.id,
+            ) &&
+            Boolean(
+              product.boutiques?.slug,
+            ),
         )
         .map(normalizeStoreProduct);
     },
@@ -449,66 +503,68 @@ export function useStoreProduct(
 
     enabled: Boolean(productId),
 
-    queryFn: async (): Promise<StoreProduct> => {
-      if (!productId) {
-        throw new Error(
-          "productId is required",
+    queryFn:
+      async (): Promise<StoreProduct> => {
+        if (!productId) {
+          throw new Error(
+            "productId is required",
+          );
+        }
+
+        const { data, error } =
+          await supabase
+            .from("products")
+            .select(`
+              id,
+              public_price,
+              status,
+              created_at,
+              supplier_products (
+                name,
+                description,
+                image_url
+              ),
+              boutiques!inner (
+                id,
+                name,
+                slug,
+                category,
+                status
+              )
+            `)
+            .eq("id", productId)
+            .eq("status", "active")
+            .eq(
+              "boutiques.status",
+              "published",
+            )
+            .single();
+
+        if (error) {
+          throw error;
+        }
+
+        if (!data) {
+          throw new Error(
+            "Produit introuvable",
+          );
+        }
+
+        const product =
+          data as unknown as StoreProductRow;
+
+        if (
+          !product.boutiques?.id ||
+          !product.boutiques?.slug
+        ) {
+          throw new Error(
+            "Boutique du produit introuvable",
+          );
+        }
+
+        return normalizeStoreProduct(
+          product,
         );
-      }
-
-      const { data, error } = await supabase
-        .from("products")
-        .select(`
-          id,
-          public_price,
-          status,
-          created_at,
-          supplier_products (
-            name,
-            description,
-            image_url
-          ),
-          boutiques!inner (
-            id,
-            name,
-            slug,
-            category,
-            status
-          )
-        `)
-        .eq("id", productId)
-        .eq("status", "active")
-        .eq(
-          "boutiques.status",
-          "published",
-        )
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      if (!data) {
-        throw new Error(
-          "Produit introuvable",
-        );
-      }
-
-      const product =
-        data as unknown as StoreProductRow;
-
-      if (
-        !product.boutiques?.id ||
-        !product.boutiques?.slug
-      ) {
-        throw new Error(
-          "Boutique du produit introuvable",
-        );
-      }
-
-      return normalizeStoreProduct(
-        product,
-      );
-    },
+      },
   });
 }
