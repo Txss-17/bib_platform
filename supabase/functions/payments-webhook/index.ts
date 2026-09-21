@@ -11,19 +11,116 @@ let _supabase:
 
 function getSupabase() {
   if (!_supabase) {
-    _supabase =
-      createClient(
-        Deno.env.get(
-          "SUPABASE_URL",
-        )!,
-        Deno.env.get(
-          "SUPABASE_SERVICE_ROLE_KEY",
-        )!,
-      );
+    _supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
   }
 
   return _supabase;
 }
+
+/* =========================================================
+   CONSTANTS
+   ========================================================= */
+
+const BIB_SUBSCRIBER_KIND = "bib_subscriber";
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+/**
+ * Retourne les informations Stripe du premier
+ * abonnement présent dans la subscription.
+ */
+function getSubscriptionItem(subscription: any) {
+  return subscription.items?.data?.[0] ?? null;
+}
+
+/**
+ * Récupère le prix Stripe utilisé par l'abonnement.
+ *
+ * BIB utilise éventuellement lovable_external_id
+ * comme identifiant applicatif du prix.
+ */
+function getPriceId(subscription: any): string | null {
+  const item = getSubscriptionItem(subscription);
+
+  return (
+    item?.price?.metadata?.lovable_external_id ??
+    item?.price?.id ??
+    null
+  );
+}
+
+function getProductId(subscription: any): string | null {
+  const item = getSubscriptionItem(subscription);
+
+  return item?.price?.product ?? null;
+}
+
+function getPeriodStart(subscription: any): number | null {
+  const item = getSubscriptionItem(subscription);
+
+  return (
+    item?.current_period_start ??
+    subscription.current_period_start ??
+    null
+  );
+}
+
+function getPeriodEnd(subscription: any): number | null {
+  const item = getSubscriptionItem(subscription);
+
+  return (
+    item?.current_period_end ??
+    subscription.current_period_end ??
+    null
+  );
+}
+
+function toISOStringOrNull(
+  timestamp: number | null | undefined,
+): string | null {
+  if (!timestamp) {
+    return null;
+  }
+
+  return new Date(
+    timestamp * 1000,
+  ).toISOString();
+}
+
+/**
+ * Seuls ces statuts sont considérés comme donnant
+ * actuellement accès à l'abonnement.
+ */
+function isActiveSubscriptionStatus(
+  status: string | null | undefined,
+): boolean {
+  return (
+    status === "active" ||
+    status === "trialing"
+  );
+}
+
+/**
+ * Identifie un abonnement BIB Abonné uniquement
+ * à partir de ses metadata Stripe.
+ */
+function isBibSubscriber(
+  subscription: any,
+): boolean {
+  return (
+    subscription.metadata?.kind ===
+    BIB_SUBSCRIBER_KIND
+  );
+}
+
+/* =========================================================
+   SUBSCRIPTION CREATED
+   ========================================================= */
 
 async function handleSubscriptionCreated(
   subscription: any,
@@ -34,153 +131,150 @@ async function handleSubscriptionCreated(
 
   if (!userId) {
     console.error(
-      "No userId in subscription metadata",
+      "Subscription created without userId metadata",
+      {
+        subscriptionId: subscription.id,
+        kind:
+          subscription.metadata?.kind ??
+          null,
+      },
     );
+
     return;
   }
 
-  const item =
-    subscription.items?.data?.[0];
-
   const priceId =
-    item?.price?.metadata
-      ?.lovable_external_id ||
-    item?.price?.id;
+    getPriceId(subscription);
 
   const productId =
-    item?.price?.product;
+    getProductId(subscription);
 
   const periodStart =
-    item?.current_period_start ??
-    subscription.current_period_start;
+    getPeriodStart(subscription);
 
   const periodEnd =
-    item?.current_period_end ??
-    subscription.current_period_end;
+    getPeriodEnd(subscription);
 
   const kind =
-    subscription.metadata
-      ?.kind ||
+    subscription.metadata?.kind ??
     "plan";
 
-  await getSupabase()
-    .from("subscriptions")
-    .upsert(
-      {
-        user_id: userId,
+  const { error } =
+    await getSupabase()
+      .from("subscriptions")
+      .upsert(
+        {
+          user_id: userId,
 
-        stripe_subscription_id:
-          subscription.id,
+          stripe_subscription_id:
+            subscription.id,
 
-        stripe_customer_id:
-          subscription.customer,
+          stripe_customer_id:
+            subscription.customer ??
+            null,
 
-        product_id:
-          productId,
+          product_id:
+            productId,
 
-        price_id:
-          priceId,
+          price_id:
+            priceId,
 
-        status:
-          subscription.status,
+          status:
+            subscription.status,
 
-        current_period_start:
-          periodStart
-            ? new Date(
-                periodStart * 1000,
-              ).toISOString()
-            : null,
+          current_period_start:
+            toISOStringOrNull(
+              periodStart,
+            ),
 
-        current_period_end:
-          periodEnd
-            ? new Date(
-                periodEnd * 1000,
-              ).toISOString()
-            : null,
+          current_period_end:
+            toISOStringOrNull(
+              periodEnd,
+            ),
 
-        cancel_at_period_end:
-          subscription.cancel_at_period_end ||
-          false,
+          cancel_at_period_end:
+            Boolean(
+              subscription.cancel_at_period_end,
+            ),
 
-        environment:
-          env,
+          environment:
+            env,
 
-        kind,
+          kind,
 
-        updated_at:
-          new Date().toISOString(),
-      },
-      {
-        onConflict:
-          "stripe_subscription_id",
-      },
+          updated_at:
+            new Date().toISOString(),
+        },
+        {
+          onConflict:
+            "stripe_subscription_id",
+        },
+      );
+
+  if (error) {
+    throw new Error(
+      `Unable to persist subscription creation: ${error.message}`,
     );
+  }
+
+  console.log(
+    "Subscription persisted",
+    {
+      subscriptionId:
+        subscription.id,
+
+      userId,
+
+      kind,
+
+      status:
+        subscription.status,
+
+      environment:
+        env,
+    },
+  );
 }
+
+/* =========================================================
+   SUBSCRIPTION UPDATED
+   ========================================================= */
 
 async function handleSubscriptionUpdated(
   subscription: any,
   env: StripeEnv,
 ) {
-  const item =
-    subscription.items?.data?.[0];
-
   const priceId =
-    item?.price?.metadata
-      ?.lovable_external_id ||
-    item?.price?.id;
+    getPriceId(subscription);
 
   const productId =
-    item?.price?.product;
+    getProductId(subscription);
 
   const periodStart =
-    item?.current_period_start ??
-    subscription.current_period_start;
+    getPeriodStart(subscription);
 
   const periodEnd =
-    item?.current_period_end ??
-    subscription.current_period_end;
+    getPeriodEnd(subscription);
 
-  const kind =
-    subscription.metadata
-      ?.kind ||
-    "plan";
-
-  await getSupabase()
+  /**
+   * Stripe renvoie normalement les metadata
+   * présentes sur l'abonnement.
+   *
+   * Si kind est absent d'un événement de mise à jour,
+   * on ne doit surtout pas transformer un abonnement
+   * BIB Abonné en abonnement marchand "plan".
+   *
+   * On récupère donc l'enregistrement existant
+   * avant de choisir la valeur finale.
+   */
+  const {
+    data: existingSubscription,
+    error:
+      existingSubscriptionError,
+  } = await getSupabase()
     .from("subscriptions")
-    .update(
-      {
-        status:
-          subscription.status,
-
-        product_id:
-          productId,
-
-        price_id:
-          priceId,
-
-        current_period_start:
-          periodStart
-            ? new Date(
-                periodStart * 1000,
-              ).toISOString()
-            : null,
-
-        current_period_end:
-          periodEnd
-            ? new Date(
-                periodEnd * 1000,
-              ).toISOString()
-            : null,
-
-        cancel_at_period_end:
-          subscription.cancel_at_period_end ||
-          false,
-
-        kind,
-
-        updated_at:
-          new Date().toISOString(),
-      },
+    .select(
+      "id, user_id, kind, environment",
     )
     .eq(
       "stripe_subscription_id",
@@ -189,14 +283,127 @@ async function handleSubscriptionUpdated(
     .eq(
       "environment",
       env,
+    )
+    .maybeSingle();
+
+  if (existingSubscriptionError) {
+    throw new Error(
+      `Unable to load existing subscription: ${existingSubscriptionError.message}`,
     );
+  }
+
+  const metadataKind =
+    subscription.metadata?.kind;
+
+  const kind =
+    metadataKind ??
+    existingSubscription?.kind ??
+    "plan";
+
+  const update = {
+    status:
+      subscription.status,
+
+    product_id:
+      productId,
+
+    price_id:
+      priceId,
+
+    current_period_start:
+      toISOStringOrNull(
+        periodStart,
+      ),
+
+    current_period_end:
+      toISOStringOrNull(
+        periodEnd,
+      ),
+
+    cancel_at_period_end:
+      Boolean(
+        subscription.cancel_at_period_end,
+      ),
+
+    kind,
+
+    updated_at:
+      new Date().toISOString(),
+  };
+
+  const {
+    error,
+  } = await getSupabase()
+    .from("subscriptions")
+    .update(update)
+    .eq(
+      "stripe_subscription_id",
+      subscription.id,
+    )
+    .eq(
+      "environment",
+      env,
+    );
+
+  if (error) {
+    throw new Error(
+      `Unable to update subscription: ${error.message}`,
+    );
+  }
+
+  console.log(
+    "Subscription updated",
+    {
+      subscriptionId:
+        subscription.id,
+
+      kind,
+
+      status:
+        subscription.status,
+
+      environment:
+        env,
+    },
+  );
 }
+
+/* =========================================================
+   SUBSCRIPTION DELETED
+   ========================================================= */
 
 async function handleSubscriptionDeleted(
   subscription: any,
   env: StripeEnv,
 ) {
-  await getSupabase()
+  const {
+    data: existingSubscription,
+    error:
+      existingSubscriptionError,
+  } = await getSupabase()
+    .from("subscriptions")
+    .select(
+      "id, user_id, kind",
+    )
+    .eq(
+      "stripe_subscription_id",
+      subscription.id,
+    )
+    .eq(
+      "environment",
+      env,
+    )
+    .maybeSingle();
+
+  if (existingSubscriptionError) {
+    throw new Error(
+      `Unable to load subscription before cancellation: ${existingSubscriptionError.message}`,
+    );
+  }
+
+  const {
+    error,
+  } = await getSupabase()
     .from("subscriptions")
     .update({
       status:
@@ -216,25 +423,58 @@ async function handleSubscriptionDeleted(
       "environment",
       env,
     );
+
+  if (error) {
+    throw new Error(
+      `Unable to cancel subscription: ${error.message}`,
+    );
+  }
+
+  console.log(
+    "Subscription canceled",
+    {
+      subscriptionId:
+        subscription.id,
+
+      userId:
+        existingSubscription?.user_id ??
+        null,
+
+      kind:
+        existingSubscription?.kind ??
+        subscription.metadata?.kind ??
+        null,
+
+      environment:
+        env,
+    },
+  );
 }
 
+/* =========================================================
+   CHECKOUT COMPLETED
+   ========================================================= */
+
+/**
+ * checkout.session.completed est utilisé ici
+ * uniquement pour le paiement d'une commande boutique.
+ *
+ * BIB Abonné est une subscription Stripe et son état
+ * de référence est customer.subscription.*.
+ */
 async function handleCheckoutCompleted(
   session: any,
 ) {
   const kind =
     session.metadata?.kind;
 
-  if (
-    kind !==
-    "storefront"
-  ) {
+  if (kind !== "storefront") {
     return;
   }
 
   const orderIds =
     (
-      session.metadata
-        ?.orderIds ||
+      session.metadata?.orderIds ??
       ""
     )
       .split(",")
@@ -242,12 +482,16 @@ async function handleCheckoutCompleted(
 
   if (!orderIds.length) {
     console.warn(
-      "storefront checkout completed without orderIds",
+      "Storefront checkout completed without orderIds",
     );
+
     return;
   }
 
-  await getSupabase()
+  const {
+    error:
+      orderUpdateError,
+  } = await getSupabase()
     .from("orders")
     .update({
       payment_status:
@@ -264,123 +508,154 @@ async function handleCheckoutCompleted(
       orderIds,
     );
 
+  if (orderUpdateError) {
+    throw new Error(
+      `Unable to update storefront orders: ${orderUpdateError.message}`,
+    );
+  }
+
   try {
     const supabase =
       getSupabase();
 
     const {
       data: orders,
-    } =
-      await supabase
-        .from("orders")
-        .select(
-          "id, order_number, customer_email, customer_name, amount, boutique_id, product_id, products(name)",
-        )
-        .in(
-          "id",
-          orderIds,
-        );
+      error:
+        ordersError,
+    } = await supabase
+      .from("orders")
+      .select(
+        "id, order_number, customer_email, customer_name, amount, boutique_id, product_id, products(name)",
+      )
+      .in(
+        "id",
+        orderIds,
+      );
 
-    if (orders?.length) {
-      const boutiqueIds =
-        [
-          ...new Set(
-            orders
-              .map(
-                (order: any) =>
-                  order.boutique_id,
-              )
-              .filter(Boolean),
-          ),
-        ];
+    if (ordersError) {
+      console.error(
+        "Unable to load orders after checkout",
+        ordersError,
+      );
 
-      const {
-        data: settings,
-      } =
-        await supabase
-          .from(
-            "boutique_email_settings",
-          )
-          .select(
-            "boutique_id, gmail_connected, auto_send_order_confirmation",
-          )
-          .in(
-            "boutique_id",
-            boutiqueIds,
-          );
+      return;
+    }
 
-      const enabled =
-        new Set(
-          (settings ?? [])
-            .filter(
-              (setting: any) =>
-                setting.gmail_connected &&
-                setting.auto_send_order_confirmation,
-            )
+    if (!orders?.length) {
+      return;
+    }
+
+    const boutiqueIds =
+      [
+        ...new Set(
+          orders
             .map(
-              (setting: any) =>
-                setting.boutique_id,
-            ),
-        );
-
-      await Promise.all(
-        orders
-          .filter(
-            (order: any) =>
-              order.customer_email &&
-              enabled.has(
+              (order: any) =>
                 order.boutique_id,
-              ),
+            )
+            .filter(Boolean),
+        ),
+      ];
+
+    if (!boutiqueIds.length) {
+      return;
+    }
+
+    const {
+      data: settings,
+      error:
+        settingsError,
+    } = await supabase
+      .from(
+        "boutique_email_settings",
+      )
+      .select(
+        "boutique_id, gmail_connected, auto_send_order_confirmation",
+      )
+      .in(
+        "boutique_id",
+        boutiqueIds,
+      );
+
+    if (settingsError) {
+      console.error(
+        "Unable to load boutique email settings",
+        settingsError,
+      );
+
+      return;
+    }
+
+    const enabled =
+      new Set(
+        (settings ?? [])
+          .filter(
+            (setting: any) =>
+              setting.gmail_connected &&
+              setting.auto_send_order_confirmation,
           )
           .map(
-            (order: any) =>
-              supabase.functions
-                .invoke(
-                  "send-boutique-email",
-                  {
-                    body: {
-                      boutique_id:
-                        order.boutique_id,
-
-                      type:
-                        "order_confirmation",
-
-                      recipient_email:
-                        order.customer_email,
-
-                      variables: {
-                        customer_name:
-                          order.customer_name ??
-                          "",
-
-                        order_number:
-                          order.order_number ??
-                          "",
-
-                        product_name:
-                          order.products
-                            ?.name ??
-                          "",
-
-                        amount:
-                          String(
-                            order.amount ??
-                              "",
-                          ),
-                      },
-                    },
-                  },
-                )
-                .catch(
-                  (error) =>
-                    console.error(
-                      "send-boutique-email failed",
-                      error,
-                    ),
-                ),
+            (setting: any) =>
+              setting.boutique_id,
           ),
       );
-    }
+
+    await Promise.all(
+      orders
+        .filter(
+          (order: any) =>
+            order.customer_email &&
+            enabled.has(
+              order.boutique_id,
+            ),
+        )
+        .map(
+          (order: any) =>
+            supabase.functions
+              .invoke(
+                "send-boutique-email",
+                {
+                  body: {
+                    boutique_id:
+                      order.boutique_id,
+
+                    type:
+                      "order_confirmation",
+
+                    recipient_email:
+                      order.customer_email,
+
+                    variables: {
+                      customer_name:
+                        order.customer_name ??
+                        "",
+
+                      order_number:
+                        order.order_number ??
+                        "",
+
+                      product_name:
+                        order.products?.name ??
+                        "",
+
+                      amount:
+                        String(
+                          order.amount ??
+                            "",
+                        ),
+                    },
+                  },
+                },
+              )
+              .catch(
+                (error) =>
+                  console.error(
+                    "send-boutique-email failed",
+                    error,
+                  ),
+              ),
+        ),
+    );
   } catch (error) {
     console.error(
       "Auto email after checkout failed",
@@ -388,6 +663,10 @@ async function handleCheckoutCompleted(
     );
   }
 }
+
+/* =========================================================
+   WEBHOOK DISPATCH
+   ========================================================= */
 
 async function handleWebhook(
   req: Request,
@@ -399,9 +678,17 @@ async function handleWebhook(
       env,
     );
 
-  switch (
-    event.type
-  ) {
+  console.log(
+    "Stripe webhook received",
+    {
+      type:
+        event.type,
+      environment:
+        env,
+    },
+  );
+
+  switch (event.type) {
     case "customer.subscription.created":
       await handleSubscriptionCreated(
         event.data.object,
@@ -431,17 +718,18 @@ async function handleWebhook(
 
     default:
       console.log(
-        "Unhandled event:",
+        "Unhandled Stripe event:",
         event.type,
       );
   }
 }
 
+/* =========================================================
+   HTTP HANDLER
+   ========================================================= */
+
 Deno.serve(async (req) => {
-  if (
-    req.method !==
-    "POST"
-  ) {
+  if (req.method !== "POST") {
     return new Response(
       "Method not allowed",
       {
@@ -458,10 +746,8 @@ Deno.serve(async (req) => {
     );
 
   if (
-    rawEnv !==
-      "sandbox" &&
-    rawEnv !==
-      "live"
+    rawEnv !== "sandbox" &&
+    rawEnv !== "live"
   ) {
     return new Response(
       JSON.stringify({
@@ -504,9 +790,19 @@ Deno.serve(async (req) => {
     );
 
     return new Response(
-      "Webhook error",
+      JSON.stringify({
+        received: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Webhook error",
+      }),
       {
         status: 400,
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
       },
     );
   }
