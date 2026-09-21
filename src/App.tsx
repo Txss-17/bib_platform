@@ -41,6 +41,7 @@ import Tarifs from "@/pages/Tarifs";
 import CheckoutReturn from "@/pages/CheckoutReturn";
 import NotFound from "@/pages/NotFound";
 import BrandPreview from "@/pages/BrandPreview";
+
 import Store from "@/pages/Store";
 import StoreBoutique from "@/pages/StoreBoutique";
 import StoreCatalog from "@/pages/StoreCatalog";
@@ -48,6 +49,8 @@ import StoreCart from "@/pages/StoreCart";
 import StoreSubscriberAccount from "@/pages/StoreSubscriberAccount";
 import StoreSubscriberFavorites from "@/pages/StoreSubscriberFavorites";
 import StoreSubscriberOrders from "@/pages/StoreSubscriberOrders";
+import StoreSubscriberSubscribe from "@/pages/StoreSubscriberSubscribe";
+
 import Recycler from "@/pages/customer/Recycler";
 import Unsubscribe from "@/pages/Unsubscribe";
 import StoreProduct from "@/pages/StoreProduct";
@@ -65,8 +68,15 @@ import SuppliersOnboarding from "@/pages/SuppliersOnboarding";
 import OpsOnboarding from "@/pages/OpsOnboarding";
 import PartnerOnboardingResume from "@/pages/PartnerOnboardingResume";
 import PartnerOnboardingPortal from "@/pages/PartnerOnboardingPortal";
-import { suppliersOnboardingConfig } from "@/pages/SuppliersOnboarding";
-import { opsOnboardingConfig } from "@/pages/OpsOnboarding";
+
+import {
+  suppliersOnboardingConfig,
+} from "@/pages/SuppliersOnboarding";
+
+import {
+  opsOnboardingConfig,
+} from "@/pages/OpsOnboarding";
+
 import SuppliersPortal from "@/pages/SuppliersPortal";
 import OpsPortal from "@/pages/OpsPortal";
 
@@ -184,6 +194,7 @@ function PartnerPortalRoute({
   portal: "suppliers" | "ops";
 }) {
   const { token = "" } = useParams();
+
   const config =
     portal === "suppliers"
       ? suppliersOnboardingConfig
@@ -204,7 +215,7 @@ function PartnerPortalRoute({
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider clientName={undefined} client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -304,12 +315,22 @@ export default function App() {
 
                   <Route
                     path="/suppliers/reprendre"
-                    element={<Navigate to="/suppliers/resume?portal=suppliers" replace />}
+                    element={
+                      <Navigate
+                        to="/suppliers/resume?portal=suppliers"
+                        replace
+                      />
+                    }
                   />
 
                   <Route
                     path="/suppliers/onboarding/resume"
-                    element={<Navigate to="/suppliers/resume?portal=suppliers" replace />}
+                    element={
+                      <Navigate
+                        to="/suppliers/resume?portal=suppliers"
+                        replace
+                      />
+                    }
                   />
 
                   <Route
@@ -324,7 +345,11 @@ export default function App() {
 
                   <Route
                     path="/suppliers/portal/:token"
-                    element={<PartnerPortalRoute portal="suppliers" />}
+                    element={
+                      <PartnerPortalRoute
+                        portal="suppliers"
+                      />
+                    }
                   />
 
                   {/* =====================================================
@@ -373,12 +398,22 @@ export default function App() {
 
                   <Route
                     path="/ops/reprendre"
-                    element={<Navigate to="/ops/resume?portal=ops" replace />}
+                    element={
+                      <Navigate
+                        to="/ops/resume?portal=ops"
+                        replace
+                      />
+                    }
                   />
 
                   <Route
                     path="/ops/onboarding/resume"
-                    element={<Navigate to="/ops/resume?portal=ops" replace />}
+                    element={
+                      <Navigate
+                        to="/ops/resume?portal=ops"
+                        replace
+                      />
+                    }
                   />
 
                   <Route
@@ -393,11 +428,15 @@ export default function App() {
 
                   <Route
                     path="/ops/portal/:token"
-                    element={<PartnerPortalRoute portal="ops" />}
+                    element={
+                      <PartnerPortalRoute
+                        portal="ops"
+                      />
+                    }
                   />
 
                   {/* =====================================================
-                      BIB STORE — DISCOVERY ONLY
+                      BIB STORE
                   ===================================================== */}
 
                   <Route
@@ -420,6 +459,7 @@ export default function App() {
                     element={<StoreProduct />}
                   />
 
+                  {/* Legacy cart route kept during migration. */}
                   <Route
                     path="/store/cart"
                     element={<StoreCart />}
@@ -435,6 +475,23 @@ export default function App() {
                     element={<StoreSignup />}
                   />
 
+                  {/* =====================================================
+                      BIB ABONNÉ — PAYMENT
+                  ===================================================== */}
+
+                  <Route
+                    path="/store/subscribe"
+                    element={
+                      <ProtectedRoute context="store">
+                        <StoreSubscriberSubscribe />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  {/* =====================================================
+                      BIB ABONNÉ — CUSTOMER AREA
+                  ===================================================== */}
+
                   <Route
                     element={
                       <ProtectedRoute context="store">
@@ -444,17 +501,23 @@ export default function App() {
                   >
                     <Route
                       path="/store/account"
-                      element={<StoreSubscriberAccount />}
+                      element={
+                        <StoreSubscriberAccount />
+                      }
                     />
 
                     <Route
                       path="/store/favorites"
-                      element={<StoreSubscriberFavorites />}
+                      element={
+                        <StoreSubscriberFavorites />
+                      }
                     />
 
                     <Route
                       path="/store/orders"
-                      element={<StoreSubscriberOrders />}
+                      element={
+                        <StoreSubscriberOrders />
+                      }
                     />
                   </Route>
 
@@ -503,7 +566,12 @@ export default function App() {
 
                   <Route
                     path="/suivi-commande"
-                    element={<Navigate to="/order-tracking" replace />}
+                    element={
+                      <Navigate
+                        to="/order-tracking"
+                        replace
+                      />
+                    }
                   />
 
                   <Route
@@ -512,7 +580,7 @@ export default function App() {
                   />
 
                   {/* =====================================================
-                      STORE — CUSTOMER AREA
+                      STORE — CUSTOMER FEATURES
                   ===================================================== */}
 
                   <Route
@@ -674,7 +742,12 @@ export default function App() {
 
                   <Route
                     path="/dashboard/parametres/relances"
-                    element={<Navigate to="/dashboard/relances-onboarding" replace />}
+                    element={
+                      <Navigate
+                        to="/dashboard/relances-onboarding"
+                        replace
+                      />
+                    }
                   />
 
                   <Route
@@ -743,7 +816,7 @@ export default function App() {
                   <Route
                     path="/boutique/:slug/page/:pageSlug"
                     element={<BoutiqueCustomPage />}
-                  />                  
+                  />
 
                   {/* =====================================================
                       PUBLIC BOUTIQUE — REAL COMMERCE
@@ -904,7 +977,12 @@ export default function App() {
 
                   <Route
                     path="/terms"
-                    element={<Navigate to="/cgu" replace />}
+                    element={
+                      <Navigate
+                        to="/cgu"
+                        replace
+                      />
+                    }
                   />
 
                   <Route
@@ -914,7 +992,12 @@ export default function App() {
 
                   <Route
                     path="/privacy"
-                    element={<Navigate to="/confidentialite" replace />}
+                    element={
+                      <Navigate
+                        to="/confidentialite"
+                        replace
+                      />
+                    }
                   />
 
                   <Route
