@@ -1,10 +1,12 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+
 import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
+
 import {
   BrowserRouter,
   Navigate,
@@ -102,7 +104,7 @@ import BoutiqueEdit from "@/pages/dashboard/BoutiqueEdit";
 import BoutiqueAnalytics from "@/pages/dashboard/BoutiqueAnalytics";
 import Parametres from "@/pages/dashboard/Parametres";
 import Aide from "@/pages/dashboard/Aide";
-import RelancesOnboarding from "./pages/dashboard/RelancesOnboarding";
+import RelancesOnboarding from "@/pages/dashboard/RelancesOnboarding";
 import MesTickets from "@/pages/dashboard/MesTickets";
 import AdminDocuments from "@/pages/dashboard/AdminDocuments";
 import Equipe from "@/pages/dashboard/Equipe";
@@ -164,7 +166,8 @@ function RootPage() {
     return <Index />;
   }
 
-  const host = window.location.hostname;
+  const host =
+    window.location.hostname;
 
   if (host.startsWith("pack-legal.")) {
     return <PackLegal />;
@@ -188,12 +191,17 @@ function RootPage() {
   return <Index />;
 }
 
+/* =====================================================
+   PARTNER PORTAL ROUTING
+===================================================== */
+
 function PartnerPortalRoute({
   portal,
 }: {
   portal: "suppliers" | "ops";
 }) {
-  const { token = "" } = useParams();
+  const { token = "" } =
+    useParams();
 
   const config =
     portal === "suppliers"
@@ -215,7 +223,7 @@ function PartnerPortalRoute({
 
 export default function App() {
   return (
-    <QueryClientProvider clientName={undefined} client={queryClient}>
+    <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -225,9 +233,9 @@ export default function App() {
             <AuthProvider>
               <StoreCartProvider>
                 <Routes>
-                  {/* =====================================================
+                  {/* =================================================
                       ROOT / PUBLIC
-                  ===================================================== */}
+                  ================================================= */}
 
                   <Route
                     path="/"
@@ -254,9 +262,9 @@ export default function App() {
                     element={<Tarifs />}
                   />
 
-                  {/* =====================================================
+                  {/* =================================================
                       SUPPLIERS
-                  ===================================================== */}
+                  ================================================= */}
 
                   <Route
                     path="/suppliers/tarifs"
@@ -352,9 +360,9 @@ export default function App() {
                     }
                   />
 
-                  {/* =====================================================
+                  {/* =================================================
                       OPERATIONS / LOGISTICS
-                  ===================================================== */}
+                  ================================================= */}
 
                   <Route
                     path="/ops"
@@ -435,9 +443,9 @@ export default function App() {
                     }
                   />
 
-                  {/* =====================================================
-                      BIB STORE
-                  ===================================================== */}
+                  {/* =================================================
+                      BIB STORE — DISCOVERY
+                  ================================================= */}
 
                   <Route
                     path="/store"
@@ -459,11 +467,20 @@ export default function App() {
                     element={<StoreProduct />}
                   />
 
-                  {/* Legacy cart route kept during migration. */}
+                  {/* =================================================
+                      LEGACY BIB STORE CART
+                      
+                      Conservé temporairement pendant la migration.
+                  ================================================= */}
+
                   <Route
                     path="/store/cart"
                     element={<StoreCart />}
                   />
+
+                  {/* =================================================
+                      STORE CUSTOMER AUTHENTICATION
+                  ================================================= */}
 
                   <Route
                     path="/store/login"
@@ -475,9 +492,9 @@ export default function App() {
                     element={<StoreSignup />}
                   />
 
-                  {/* =====================================================
-                      BIB ABONNÉ — PAYMENT
-                  ===================================================== */}
+                  {/* =================================================
+                      BIB ABONNÉ — ACTIVATION / PAYMENT
+                  ================================================= */}
 
                   <Route
                     path="/store/subscribe"
@@ -488,9 +505,16 @@ export default function App() {
                     }
                   />
 
-                  {/* =====================================================
+                  {/* =================================================
                       BIB ABONNÉ — CUSTOMER AREA
-                  ===================================================== */}
+                      
+                      Ces routes nécessitent :
+                      1. un utilisateur authentifié
+                      2. un compte de type store
+                      
+                      Le statut BIB Abonné reste vérifié
+                      au niveau des pages/hooks concernés.
+                  ================================================= */}
 
                   <Route
                     element={
@@ -521,9 +545,9 @@ export default function App() {
                     />
                   </Route>
 
-                  {/* =====================================================
-                      AUTHENTICATION
-                  ===================================================== */}
+                  {/* =================================================
+                      AUTHENTICATION — PLATFORM
+                  ================================================= */}
 
                   <Route
                     path="/login"
@@ -545,9 +569,9 @@ export default function App() {
                     element={<ResetPassword />}
                   />
 
-                  {/* =====================================================
+                  {/* =================================================
                       GENERAL
-                  ===================================================== */}
+                  ================================================= */}
 
                   <Route
                     path="/checkout/return"
@@ -579,9 +603,9 @@ export default function App() {
                     element={<Unsubscribe />}
                   />
 
-                  {/* =====================================================
+                  {/* =================================================
                       STORE — CUSTOMER FEATURES
-                  ===================================================== */}
+                  ================================================= */}
 
                   <Route
                     path="/store/recycler"
@@ -610,9 +634,9 @@ export default function App() {
                     }
                   />
 
-                  {/* =====================================================
+                  {/* =================================================
                       DASHBOARD
-                  ===================================================== */}
+                  ================================================= */}
 
                   <Route
                     path="/dashboard"
@@ -818,9 +842,9 @@ export default function App() {
                     element={<BoutiqueCustomPage />}
                   />
 
-                  {/* =====================================================
+                  {/* =================================================
                       PUBLIC BOUTIQUE — REAL COMMERCE
-                  ===================================================== */}
+                  ================================================= */}
 
                   <Route
                     path="/boutique/:slug"
@@ -883,9 +907,9 @@ export default function App() {
                     element={<BoutiqueAboutPage />}
                   />
 
-                  {/* =====================================================
+                  {/* =================================================
                       CAREERS / BIB TALENT
-                  ===================================================== */}
+                  ================================================= */}
 
                   <Route
                     path="/carrieres"
@@ -912,9 +936,9 @@ export default function App() {
                     }
                   />
 
-                  {/* =====================================================
+                  {/* =================================================
                       INSTITUTIONAL / HELP
-                  ===================================================== */}
+                  ================================================= */}
 
                   <Route
                     path="/a-propos"
@@ -961,9 +985,9 @@ export default function App() {
                     element={<PackLegal />}
                   />
 
-                  {/* =====================================================
+                  {/* =================================================
                       LEGAL
-                  ===================================================== */}
+                  ================================================= */}
 
                   <Route
                     path="/mentions-legales"
@@ -1005,9 +1029,9 @@ export default function App() {
                     element={<Cookies />}
                   />
 
-                  {/* =====================================================
+                  {/* =================================================
                       CAREERS ALIASES
-                  ===================================================== */}
+                  ================================================= */}
 
                   <Route
                     path="/careers"
@@ -1019,9 +1043,9 @@ export default function App() {
                     element={<CarrieresPostes />}
                   />
 
-                  {/* =====================================================
+                  {/* =================================================
                       FALLBACK
-                  ===================================================== */}
+                  ================================================= */}
 
                   <Route
                     path="*"
