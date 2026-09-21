@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -7,47 +12,128 @@ export interface Subscription {
   price_id: string;
   product_id: string;
   status: string;
+  current_period_start?: string | null;
   current_period_end: string | null;
   cancel_at_period_end: boolean | null;
   stripe_subscription_id: string;
+  stripe_customer_id?: string | null;
   environment: string;
   kind: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-/** Returns all subscriptions for the current user (plans + add-ons). */
+/**
+ * Statuts qui donnent actuellement accès à un abonnement.
+ */
+export function isActiveSubscription(
+  subscription: Subscription,
+): boolean {
+  return (
+    subscription.status === "active" ||
+    subscription.status === "trialing"
+  );
+}
+
+/**
+ * Identifie spécifiquement BIB Abonné.
+ *
+ * Un compte Store n'est PAS automatiquement abonné.
+ */
+export function isBibSubscriber(
+  subscription: Subscription,
+): boolean {
+  return (
+    subscription.kind === "bib_subscriber" &&
+    isActiveSubscription(subscription)
+  );
+}
+
+/**
+ * Retourne l'abonnement BIB Abonné actif
+ * de l'utilisateur courant.
+ */
+export function useBibSubscriberSubscription() {
+  const { data: subscriptions = [], ...query } =
+    useUserSubscriptions();
+
+  const subscription =
+    subscriptions.find(isBibSubscriber) ?? null;
+
+  return {
+    ...query,
+    data: subscription,
+    subscription,
+    isSubscriber: !!subscription,
+  };
+}
+
+/**
+ * Retourne tous les abonnements de l'utilisateur courant.
+ */
 export function useUserSubscriptions() {
   const { user } = useAuth();
+
   return useQuery({
     queryKey: ["subscriptions", user?.id],
     enabled: !!user,
+
     queryFn: async (): Promise<Subscription[]> => {
+      if (!user) {
+        return [];
+      }
+
       const { data, error } = await supabase
         .from("subscriptions")
         .select("*")
-        .eq("user_id", user!.id)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
+        .eq("user_id", user.id)
+        .order("created_at", {
+          ascending: false,
+        });
+
+      if (error) {
+        throw error;
+      }
+
       return (data ?? []) as Subscription[];
     },
   });
 }
 
-/** Opens the Stripe customer portal so the user can manage their subscriptions. */
+/**
+ * Ouvre le portail Stripe de gestion des abonnements.
+ */
 export function useOpenBillingPortal() {
   return useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.functions.invoke("create-portal-session", {
-        body: { returnUrl: `${window.location.origin}/dashboard/parametres` },
-      });
+      const { data, error } =
+        await supabase.functions.invoke(
+          "create-portal-session",
+          {
+            body: {
+              returnUrl:
+                `${window.location.origin}/store/account`,
+            },
+          },
+        );
+
       if (error || !data?.url) {
-        throw new Error(error?.message || "Impossible d'ouvrir le portail de facturation");
+        throw new Error(
+          error?.message ||
+            "Impossible d'ouvrir le portail de facturation",
+        );
       }
+
       window.location.href = data.url;
     },
   });
 }
 
 export function useInvalidateSubscriptions() {
-  const qc = useQueryClient();
-  return () => qc.invalidateQueries({ queryKey: ["subscriptions"] });
+  const queryClient = useQueryClient();
+
+  return () =>
+    queryClient.invalidateQueries({
+      queryKey: ["subscriptions"],
+    });
 }
