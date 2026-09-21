@@ -307,40 +307,59 @@ function StoreHeader() {
           </Link>
         </nav>
 
-        <div className="relative ml-auto hidden max-w-xl flex-1 lg:block">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-
-          <Input
-            aria-label="Rechercher"
-            placeholder="Rechercher un produit ou une boutique"
-            className="h-10 rounded-xl border-muted bg-muted/50 pl-9"
-            id="desktop-store-search"
-          />
-        </div>
-
-        <div className="flex items-center gap-1">
+        <div className="ml-auto flex items-center gap-1">
           <Link
             to="/store"
-            className="hidden rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:block"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            Découvrir les boutiques
+            <span className="hidden sm:inline">
+              Découvrir les boutiques
+            </span>
+
+            <span className="sm:hidden">
+              Boutiques
+            </span>
           </Link>
         </div>
       </div>
-
-      <div className="border-t px-4 py-3 lg:hidden">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-
-          <Input
-            aria-label="Rechercher"
-            placeholder="Rechercher un produit ou une boutique"
-            className="h-10 rounded-xl bg-muted/50 pl-9"
-            id="mobile-store-search"
-          />
-        </div>
-      </div>
     </header>
+  );
+}
+
+/* =========================================================
+   SEARCH FIELD
+   ========================================================= */
+
+function CatalogSearch({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="relative">
+      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+      <Input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder="Rechercher un produit ou une boutique"
+        aria-label="Rechercher un produit ou une boutique"
+        className="h-11 rounded-xl bg-muted/50 pl-9 pr-9"
+      />
+
+      {value && (
+        <button
+          type="button"
+          aria-label="Effacer la recherche"
+          onClick={() => onChange("")}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -512,7 +531,7 @@ export default function StoreCatalog() {
            ================================================= */}
 
         <section className="mb-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <div className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
                 <Sparkles className="h-3.5 w-3.5" />
@@ -540,6 +559,20 @@ export default function StoreCatalog() {
               </div>
             )}
           </div>
+        </section>
+
+        {/* =================================================
+            SEARCH
+           ================================================= */}
+
+        <section
+          aria-label="Recherche"
+          className="mb-5"
+        >
+          <CatalogSearch
+            value={search}
+            onChange={setSearch}
+          />
         </section>
 
         {/* =================================================
@@ -700,44 +733,6 @@ export default function StoreCatalog() {
                 </Button>
               )}
             </div>
-          </div>
-        </div>
-
-        {/* =================================================
-            SEARCH
-           ================================================= */}
-
-        <div className="mb-8 lg:hidden">
-          <label
-            htmlFor="catalog-search"
-            className="sr-only"
-          >
-            Rechercher un produit ou une boutique
-          </label>
-
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-
-            <Input
-              id="catalog-search"
-              value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
-              placeholder="Rechercher un produit ou une boutique"
-              className="h-11 rounded-xl bg-muted/50 pl-9 pr-9"
-            />
-
-            {search && (
-              <button
-                type="button"
-                aria-label="Effacer la recherche"
-                onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
           </div>
         </div>
 
