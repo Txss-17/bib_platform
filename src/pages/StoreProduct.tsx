@@ -11,9 +11,9 @@ import {
   ChevronRight,
   Heart,
   Loader2,
-  ShoppingCart,
   ShieldCheck,
   Store,
+  User,
 } from "lucide-react";
 
 import {
@@ -21,6 +21,8 @@ import {
   type StoreProduct as StoreProductData,
 } from "@/hooks/useStore";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useAuth } from "@/contexts/AuthContext";
+import { useBibSubscriberSubscription } from "@/hooks/useSubscriptions";
 
 import { Logo } from "@/components/Logo";
 import { useSEO } from "@/hooks/useSEO";
@@ -83,9 +85,11 @@ export default function StoreProduct() {
     isFavorite,
   } = useFavorites();
 
-  /* =======================================================
-     DONNÉES PRODUIT
-     ======================================================= */
+  const { user } = useAuth();
+
+  const {
+    isSubscriber,
+  } = useBibSubscriberSubscription();
 
   const images = useMemo(
     () =>
@@ -99,7 +103,8 @@ export default function StoreProduct() {
     product?.name ?? "Produit";
 
   const boutiqueName =
-    product?.boutique_name ?? "Boutique";
+    product?.boutique_name ??
+    "Boutique";
 
   const boutiqueSlug =
     product?.boutique_slug ?? "";
@@ -115,10 +120,6 @@ export default function StoreProduct() {
       ? isFavorite(product.id)
       : false;
 
-  /* =======================================================
-     SEO
-     ======================================================= */
-
   useSEO({
     title: product
       ? `${productName} — ${boutiqueName} | BIB Store`
@@ -129,6 +130,24 @@ export default function StoreProduct() {
       : "Découvrez les produits sélectionnés par Brand-In-A-Box.",
   });
 
+  const goToSubscriber = () => {
+    if (!user) {
+      navigate(
+        `/store/login?next=${encodeURIComponent(
+          `/store/product/${productId ?? ""}`,
+        )}`,
+      );
+      return;
+    }
+
+    if (!isSubscriber) {
+      navigate("/store/subscribe");
+      return;
+    }
+
+    navigate("/store/account");
+  };
+
   /* =======================================================
      LOADING
      ======================================================= */
@@ -136,7 +155,10 @@ export default function StoreProduct() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background text-foreground">
-        <StoreHeader />
+        <StoreHeader
+          isSubscriber={isSubscriber}
+          onAccount={goToSubscriber}
+        />
 
         <main className="flex min-h-[70vh] items-center justify-center">
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -162,11 +184,14 @@ export default function StoreProduct() {
   ) {
     return (
       <div className="min-h-screen bg-background text-foreground">
-        <StoreHeader />
+        <StoreHeader
+          isSubscriber={isSubscriber}
+          onAccount={goToSubscriber}
+        />
 
         <main className="container mx-auto flex max-w-3xl flex-col items-center justify-center px-4 py-24 text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-            <ShoppingCart className="h-6 w-6 text-muted-foreground" />
+            <Store className="h-6 w-6 text-muted-foreground" />
           </div>
 
           <h1 className="mt-5 text-2xl font-semibold">
@@ -196,13 +221,12 @@ export default function StoreProduct() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <StoreHeader />
+      <StoreHeader
+        isSubscriber={isSubscriber}
+        onAccount={goToSubscriber}
+      />
 
       <main className="container mx-auto max-w-7xl px-4 pb-16">
-        {/* =================================================
-            BREADCRUMB
-           ================================================= */}
-
         <div className="flex items-center gap-2 overflow-hidden py-5 text-xs text-muted-foreground">
           <Link
             to="/store"
@@ -227,10 +251,6 @@ export default function StoreProduct() {
           </span>
         </div>
 
-        {/* =================================================
-            RETOUR
-           ================================================= */}
-
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -241,15 +261,7 @@ export default function StoreProduct() {
           Retour
         </button>
 
-        {/* =================================================
-            PRODUIT
-           ================================================= */}
-
         <section className="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)] lg:gap-12">
-          {/* =================================================
-              GALERIE
-             ================================================= */}
-
           <ProductGallery
             productName={productName}
             images={images}
@@ -259,13 +271,7 @@ export default function StoreProduct() {
             }
           />
 
-          {/* =================================================
-              INFORMATIONS PRODUIT
-             ================================================= */}
-
           <div className="flex flex-col">
-            {/* BOUTIQUE */}
-
             <Link
               to={`/store/boutique/${boutiqueSlug}`}
               className="group flex w-fit items-center gap-2 text-sm text-muted-foreground"
@@ -285,21 +291,15 @@ export default function StoreProduct() {
               </span>
             </Link>
 
-            {/* NOM */}
-
             <h1 className="mt-5 max-w-2xl font-display text-3xl font-semibold leading-tight sm:text-4xl">
               {productName}
             </h1>
-
-            {/* PRIX PUBLIC */}
 
             <div className="mt-5">
               <span className="font-mono text-2xl font-semibold tabular-nums">
                 {formatPrice(price)}
               </span>
             </div>
-
-            {/* DESCRIPTION */}
 
             <div className="mt-6 border-t border-border pt-6">
               <h2 className="text-sm font-semibold">
@@ -311,10 +311,6 @@ export default function StoreProduct() {
               </p>
             </div>
 
-            {/* =================================================
-                CONFIANCE BIB
-               ================================================= */}
-
             <div className="mt-6 rounded-2xl border border-border bg-muted/30 p-4">
               <div className="flex gap-3">
                 <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
@@ -325,17 +321,13 @@ export default function StoreProduct() {
                   </p>
 
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    Ce produit est présenté dans le
-                    BIB Store par une boutique
+                    Ce produit est présenté dans
+                    le BIB Store par une boutique
                     référencée et vérifiée par BIB.
                   </p>
                 </div>
               </div>
             </div>
-
-            {/* =================================================
-                CTA VERS LA VRAIE BOUTIQUE
-               ================================================= */}
 
             <div className="mt-7">
               <Link
@@ -355,10 +347,6 @@ export default function StoreProduct() {
               </p>
             </div>
 
-            {/* =================================================
-                RAPPEL DU PARCOURS
-               ================================================= */}
-
             <div className="mt-7 border-t border-border pt-6">
               <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
@@ -373,19 +361,15 @@ export default function StoreProduct() {
 
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                     BIB facilite la découverte du
-                    produit. Le parcours d'achat se
-                    poursuit directement depuis la
-                    boutique.
+                    produit. Le parcours d'achat
+                    se poursuit directement depuis
+                    la boutique.
                   </p>
                 </div>
               </div>
             </div>
           </div>
         </section>
-
-        {/* =================================================
-            INFORMATIONS COMPLÉMENTAIRES
-           ================================================= */}
 
         <section className="mt-14 border-t border-border pt-8">
           <div className="grid gap-4 md:grid-cols-3">
@@ -406,10 +390,6 @@ export default function StoreProduct() {
           </div>
         </section>
       </main>
-
-      {/* =====================================================
-          FOOTER
-         ===================================================== */}
 
       <footer className="border-t border-border bg-muted/30">
         <div className="container mx-auto flex max-w-7xl flex-col items-center gap-2 px-4 py-6 text-center text-xs text-muted-foreground sm:flex-row sm:justify-between sm:text-left">
@@ -461,16 +441,12 @@ function ProductGallery({
 
   return (
     <div>
-      {/* MAIN IMAGE */}
-
       <div className="relative aspect-square overflow-hidden rounded-[28px] border border-border bg-muted">
         <img
           src={currentImage}
           alt={productName}
           className="h-full w-full object-cover"
         />
-
-        {/* BIB BADGE */}
 
         <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full border border-border/60 bg-background/95 px-3 py-2 text-xs font-semibold shadow-sm backdrop-blur">
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-[7px] font-bold text-background">
@@ -481,8 +457,6 @@ function ProductGallery({
             Vérifié par BIB
           </span>
         </div>
-
-        {/* FAVORITE */}
 
         <button
           type="button"
@@ -506,8 +480,6 @@ function ProductGallery({
           />
         </button>
 
-        {/* PREVIOUS */}
-
         {images.length > 1 && (
           <>
             <button
@@ -525,8 +497,6 @@ function ProductGallery({
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
-
-            {/* NEXT */}
 
             <button
               type="button"
@@ -546,31 +516,33 @@ function ProductGallery({
         )}
       </div>
 
-      {/* THUMBNAILS */}
-
       {images.length > 1 && (
         <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
-          {images.map((image, index) => (
-            <button
-              key={`${image}-${index}`}
-              type="button"
-              onClick={() =>
-                setImageIndex(index)
-              }
-              aria-label={`Afficher l'image ${index + 1}`}
-              className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition ${
-                imageIndex === index
-                  ? "border-primary"
-                  : "border-border"
-              }`}
-            >
-              <img
-                src={image}
-                alt=""
-                className="h-full w-full object-cover"
-              />
-            </button>
-          ))}
+          {images.map(
+            (image, index) => (
+              <button
+                key={`${image}-${index}`}
+                type="button"
+                onClick={() =>
+                  setImageIndex(index)
+                }
+                aria-label={`Afficher l'image ${
+                  index + 1
+                }`}
+                className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition ${
+                  imageIndex === index
+                    ? "border-primary"
+                    : "border-border"
+                }`}
+              >
+                <img
+                  src={image}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              </button>
+            ),
+          )}
         </div>
       )}
     </div>
@@ -581,12 +553,16 @@ function ProductGallery({
    STORE HEADER
    ========================================================= */
 
-function StoreHeader() {
+function StoreHeader({
+  isSubscriber,
+  onAccount,
+}: {
+  isSubscriber: boolean;
+  onAccount: () => void;
+}) {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-xl">
       <div className="container mx-auto flex min-h-[68px] max-w-7xl items-center gap-3 px-4 py-3">
-        {/* BRAND */}
-
         <Link
           to="/store"
           aria-label="Accueil BIB Store"
@@ -597,8 +573,6 @@ function StoreHeader() {
             asLink={false}
           />
         </Link>
-
-        {/* NAVIGATION */}
 
         <nav className="hidden items-center gap-1 lg:flex">
           <Link
@@ -616,26 +590,36 @@ function StoreHeader() {
           </Link>
         </nav>
 
-        {/* ACTIONS */}
-
         <div className="ml-auto flex items-center gap-1">
-          <Link
-            to="/store/account"
-            className="hidden rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground sm:block"
-          >
-            Compte
-          </Link>
+          {isSubscriber && (
+            <Link
+              to="/store/favorites"
+              aria-label="Favoris"
+              className="hidden h-10 w-10 items-center justify-center rounded-full text-foreground transition hover:bg-muted sm:flex"
+            >
+              <Heart
+                className="h-5 w-5"
+                strokeWidth={1.8}
+              />
+            </Link>
+          )}
 
-          <Link
-            to="/store/cart"
-            aria-label="Panier Store"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition hover:bg-muted active:scale-95"
+          <button
+            type="button"
+            onClick={onAccount}
+            aria-label={
+              isSubscriber
+                ? "Mon compte"
+                : "BIB Abonné"
+            }
+            className="flex h-10 w-10 items-center justify-center rounded-full border bg-background text-foreground transition hover:bg-muted"
           >
-            <ShoppingCart
-              className="h-5 w-5"
-              strokeWidth={1.8}
-            />
-          </Link>
+            {isSubscriber ? (
+              <User className="h-5 w-5" />
+            ) : (
+              <User className="h-5 w-5" />
+            )}
+          </button>
         </div>
       </div>
     </header>
