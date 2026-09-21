@@ -53,6 +53,7 @@ interface ProductRow {
     | {
         name: string | null;
         slug: string | null;
+        status?: string | null;
       }
     | null;
 }
@@ -64,6 +65,7 @@ interface BoutiqueRow {
   description: string | null;
   logo_url: string | null;
   cover_image_url: string | null;
+  status?: string | null;
 }
 
 function formatPrice(
@@ -109,27 +111,23 @@ export default function StoreSubscriberFavorites() {
    * PRODUITS FAVORIS
    * ============================================================
    *
-   * useFavorites() fournit les IDs.
+   * useFavorites() est la source de vérité pour les IDs.
    *
-   * Cette page récupère uniquement les données publiques
+   * Cette requête ne récupère que les informations publiques
    * nécessaires à l'affichage.
    */
 
   const productQuery = useQuery({
     queryKey: [
-      "store-subscriber-favorite-products",
+      "store-favorite-products",
       favorites,
     ],
 
     enabled:
-      Boolean(user?.id) &&
       favorites.length > 0,
 
     queryFn: async () => {
-      if (
-        !user?.id ||
-        favorites.length === 0
-      ) {
+      if (favorites.length === 0) {
         return [];
       }
 
@@ -146,9 +144,10 @@ export default function StoreSubscriberFavorites() {
               name,
               image_url
             ),
-            boutiques (
+            boutiques!inner (
               name,
-              slug
+              slug,
+              status
             )
           `,
         )
@@ -159,6 +158,10 @@ export default function StoreSubscriberFavorites() {
         .eq(
           "status",
           "active",
+        )
+        .eq(
+          "boutiques.status",
+          "published",
         );
 
       if (queryError) {
@@ -175,8 +178,7 @@ export default function StoreSubscriberFavorites() {
     useMemo<FavoriteProduct[]>(
       () =>
         (
-          productQuery.data ??
-          []
+          productQuery.data ?? []
         )
           .map((product) => {
             const boutique =
@@ -193,15 +195,21 @@ export default function StoreSubscriberFavorites() {
               id: product.id,
 
               name:
-                product.supplier_products?.name?.trim() ||
+                product
+                  .supplier_products
+                  ?.name
+                  ?.trim() ||
                 "Produit",
 
               image_url:
-                product.supplier_products?.image_url ??
+                product
+                  .supplier_products
+                  ?.image_url ??
                 null,
 
               price: Number(
-                product.public_price ?? 0,
+                product.public_price ??
+                  0,
               ),
 
               boutique_name:
@@ -231,18 +239,17 @@ export default function StoreSubscriberFavorites() {
 
   const boutiqueQuery = useQuery({
     queryKey: [
-      "store-subscriber-favorite-boutiques",
+      "store-favorite-boutiques",
       boutiqueFavorites,
     ],
 
     enabled:
-      Boolean(user?.id) &&
       boutiqueFavorites.length > 0,
 
     queryFn: async () => {
       if (
-        !user?.id ||
-        boutiqueFavorites.length === 0
+        boutiqueFavorites.length ===
+        0
       ) {
         return [];
       }
@@ -259,7 +266,8 @@ export default function StoreSubscriberFavorites() {
             slug,
             description,
             logo_url,
-            cover_image_url
+            cover_image_url,
+            status
           `,
         )
         .in(
@@ -285,8 +293,7 @@ export default function StoreSubscriberFavorites() {
     useMemo<FavoriteBoutique[]>(
       () =>
         (
-          boutiqueQuery.data ??
-          []
+          boutiqueQuery.data ?? []
         )
           .map((boutique) => {
             if (
@@ -386,6 +393,12 @@ export default function StoreSubscriberFavorites() {
       }
     };
 
+  /*
+   * Les IDs sont ceux réellement enregistrés.
+   * Les données affichées peuvent être inférieures si un produit
+   * ou une boutique n'est plus publié.
+   */
+
   const totalFavorites =
     favorites.length +
     boutiqueFavorites.length;
@@ -446,11 +459,7 @@ export default function StoreSubscriberFavorites() {
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* ======================================================
-            HEADER
-           ====================================================== */}
-
-        <div className="mb-8">
+        <header className="mb-8">
           <p className="text-sm font-medium text-muted-foreground">
             BIB Store
           </p>
@@ -464,11 +473,7 @@ export default function StoreSubscriberFavorites() {
             que vous souhaitez garder dans votre
             espace BIB.
           </p>
-        </div>
-
-        {/* ======================================================
-            SUMMARY
-           ====================================================== */}
+        </header>
 
         <section className="mb-8 rounded-2xl border bg-card p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -505,10 +510,6 @@ export default function StoreSubscriberFavorites() {
           </div>
         </section>
 
-        {/* ======================================================
-            ERROR
-           ====================================================== */}
-
         {error && (
           <div
             role="alert"
@@ -518,21 +519,18 @@ export default function StoreSubscriberFavorites() {
           </div>
         )}
 
-        {/* ======================================================
-            TABS
-           ====================================================== */}
-
         <div className="mb-6 flex gap-2 border-b">
           <button
             type="button"
             onClick={() =>
               setActiveTab("products")
             }
-            className={`relative px-4 pb-3 text-sm font-medium transition-colors ${
+            className={[
+              "relative px-4 pb-3 text-sm font-medium transition-colors",
               activeTab === "products"
                 ? "text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+                : "text-muted-foreground hover:text-foreground",
+            ].join(" ")}
           >
             Produits
 
@@ -551,11 +549,12 @@ export default function StoreSubscriberFavorites() {
             onClick={() =>
               setActiveTab("boutiques")
             }
-            className={`relative px-4 pb-3 text-sm font-medium transition-colors ${
+            className={[
+              "relative px-4 pb-3 text-sm font-medium transition-colors",
               activeTab === "boutiques"
                 ? "text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+                : "text-muted-foreground hover:text-foreground",
+            ].join(" ")}
           >
             Boutiques
 
@@ -570,10 +569,6 @@ export default function StoreSubscriberFavorites() {
           </button>
         </div>
 
-        {/* ======================================================
-            LOADING
-           ====================================================== */}
-
         {isLoading ? (
           <div className="flex min-h-[420px] items-center justify-center rounded-2xl border bg-card">
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -586,10 +581,6 @@ export default function StoreSubscriberFavorites() {
           </div>
         ) : (
           <>
-            {/* ==================================================
-                PRODUCTS
-               ================================================== */}
-
             {activeTab ===
               "products" && (
               <>
@@ -601,6 +592,17 @@ export default function StoreSubscriberFavorites() {
                     }
                     title="Aucun produit favori"
                     description="Les produits que vous ajoutez à vos favoris apparaîtront ici."
+                    actionLabel="Découvrir les produits"
+                    actionHref="/store/products"
+                  />
+                ) : products.length ===
+                  0 ? (
+                  <EmptyState
+                    icon={
+                      <Heart className="h-8 w-8" />
+                    }
+                    title="Produits indisponibles"
+                    description="Les produits enregistrés dans vos favoris ne sont plus actuellement disponibles dans le catalogue BIB."
                     actionLabel="Découvrir les produits"
                     actionHref="/store/products"
                   />
@@ -699,10 +701,6 @@ export default function StoreSubscriberFavorites() {
               </>
             )}
 
-            {/* ==================================================
-                BOUTIQUES
-               ================================================== */}
-
             {activeTab ===
               "boutiques" && (
               <>
@@ -714,6 +712,17 @@ export default function StoreSubscriberFavorites() {
                     }
                     title="Aucune boutique favorite"
                     description="Les boutiques que vous souhaitez retrouver rapidement apparaîtront ici."
+                    actionLabel="Découvrir les boutiques"
+                    actionHref="/store"
+                  />
+                ) : boutiques.length ===
+                  0 ? (
+                  <EmptyState
+                    icon={
+                      <Store className="h-8 w-8" />
+                    }
+                    title="Boutiques indisponibles"
+                    description="Les boutiques enregistrées dans vos favoris ne sont plus actuellement publiées dans le catalogue BIB."
                     actionLabel="Découvrir les boutiques"
                     actionHref="/store"
                   />
@@ -824,10 +833,6 @@ export default function StoreSubscriberFavorites() {
             )}
           </>
         )}
-
-        {/* ======================================================
-            ACTIVE TAB SUMMARY
-           ====================================================== */}
 
         {!isLoading &&
           activeCount > 0 && (
