@@ -63,24 +63,38 @@ export default function StoreLogin() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  const from =
+  /*
+   * Le parcours peut arriver ici avec :
+   *
+   * /store/login?next=/store/subscribe
+   *
+   * ou avec une destination Store classique.
+   */
+  const requestedDestination =
     searchParams.get("next") ||
     location.state?.from?.pathname ||
     "/store";
 
+  /*
+   * Sécurité de la redirection :
+   * seules les routes internes du Store sont acceptées.
+   */
   const isStorePath =
-    from === "/store" ||
-    from.startsWith("/store/");
+    requestedDestination === "/store" ||
+    requestedDestination.startsWith("/store/");
 
   const destination = isStorePath
-    ? from
+    ? requestedDestination
     : "/store";
 
   const isSubscriberFlow =
     destination === "/store/subscribe";
 
-  const getErrorMessage = (message: string) => {
-    const normalized = message.toLowerCase();
+  const getErrorMessage = (
+    message: string,
+  ) => {
+    const normalized =
+      message.toLowerCase();
 
     if (
       message === "Load failed" ||
@@ -99,6 +113,17 @@ export default function StoreLogin() {
       return t("auth.error.invalid");
     }
 
+    if (
+      normalized.includes(
+        "email not confirmed",
+      )
+    ) {
+      return (
+        "Votre adresse e-mail n'est pas encore confirmée. " +
+        "Consultez votre boîte mail avant de vous connecter."
+      );
+    }
+
     return message;
   };
 
@@ -108,13 +133,32 @@ export default function StoreLogin() {
     event.preventDefault();
 
     setError(null);
+
+    const normalizedEmail =
+      email.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      setError(
+        "Veuillez saisir votre adresse e-mail.",
+      );
+      return;
+    }
+
+    if (!password) {
+      setError(
+        "Veuillez saisir votre mot de passe.",
+      );
+      return;
+    }
+
     setLoading(true);
 
-    const { error: signInError } =
-      await signIn(
-        email.trim(),
-        password,
-      );
+    const {
+      error: signInError,
+    } = await signIn(
+      normalizedEmail,
+      password,
+    );
 
     if (signInError) {
       setError(
@@ -122,18 +166,37 @@ export default function StoreLogin() {
           signInError.message,
         ),
       );
+
       setLoading(false);
       return;
     }
 
+    /*
+     * IMPORTANT :
+     * La connexion ne donne pas automatiquement
+     * le statut BIB Abonné.
+     *
+     * Si destination = /store/subscribe,
+     * cette page vérifiera ensuite l'abonnement réel
+     * via subscriptions.kind = "bib_subscriber".
+     */
     navigate(destination, {
       replace: true,
     });
   };
 
+  const signupUrl =
+    `/store/signup?next=${encodeURIComponent(
+      destination,
+    )}`;
+
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto grid min-h-screen max-w-7xl lg:grid-cols-2">
+        {/* =====================================================
+            FORMULAIRE
+            ===================================================== */}
+
         <div className="flex items-center justify-center p-6 sm:p-8 lg:p-12">
           <div className="w-full max-w-md">
             <div className="mb-8 flex items-center justify-between">
@@ -196,6 +259,8 @@ export default function StoreLogin() {
                     </Alert>
                   )}
 
+                  {/* E-MAIL */}
+
                   <div className="space-y-2">
                     <Label htmlFor="store-email">
                       {t("login.email")}
@@ -210,7 +275,9 @@ export default function StoreLogin() {
                         placeholder="vous@exemple.com"
                         value={email}
                         onChange={(event) =>
-                          setEmail(event.target.value)
+                          setEmail(
+                            event.target.value,
+                          )
                         }
                         className="pl-10"
                         autoComplete="email"
@@ -218,6 +285,8 @@ export default function StoreLogin() {
                       />
                     </div>
                   </div>
+
+                  {/* MOT DE PASSE */}
 
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -259,10 +328,16 @@ export default function StoreLogin() {
                         type="button"
                         onClick={() =>
                           setShowPassword(
-                            (current) => !current,
+                            (current) =>
+                              !current,
                           )
                         }
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                        aria-label={
+                          showPassword
+                            ? "Masquer le mot de passe"
+                            : "Afficher le mot de passe"
+                        }
                       >
                         {showPassword ? (
                           <EyeOff className="h-4 w-4" />
@@ -272,6 +347,8 @@ export default function StoreLogin() {
                       </button>
                     </div>
                   </div>
+
+                  {/* ACTION */}
 
                   <Button
                     type="submit"
@@ -294,18 +371,27 @@ export default function StoreLogin() {
               </CardContent>
 
               <CardFooter className="flex flex-col gap-5">
+                {/* =================================================
+                    CRÉATION DE COMPTE
+                    ================================================= */}
+
                 <div className="text-center text-sm text-muted-foreground">
                   {t("login.noaccount")}{" "}
 
                   <Link
-                    to={`/store/signup?next=${encodeURIComponent(
-                      destination,
-                    )}`}
+                    to={signupUrl}
                     className="font-medium text-primary hover:underline"
                   >
                     {t("login.create")}
                   </Link>
                 </div>
+
+                <Link
+                  to="/store"
+                  className="text-center text-xs text-muted-foreground hover:text-foreground hover:underline"
+                >
+                  Retour au Store
+                </Link>
 
                 <Link
                   to="/login"
@@ -317,6 +403,10 @@ export default function StoreLogin() {
             </Card>
           </div>
         </div>
+
+        {/* =====================================================
+            PRÉSENTATION
+            ===================================================== */}
 
         <div className="hidden bg-gradient-to-br from-primary/10 via-accent/5 to-background p-12 lg:flex lg:items-center">
           <div className="mx-auto max-w-lg">
@@ -331,31 +421,41 @@ export default function StoreLogin() {
 
             <div className="mt-8 space-y-5">
               <Benefit
-                icon={<ShoppingBag className="h-5 w-5" />}
+                icon={
+                  <ShoppingBag className="h-5 w-5" />
+                }
               >
                 Boutiques et commandes
               </Benefit>
 
               <Benefit
-                icon={<Recycle className="h-5 w-5" />}
+                icon={
+                  <Recycle className="h-5 w-5" />
+                }
               >
                 Recyclage BIB
               </Benefit>
 
               <Benefit
-                icon={<Star className="h-5 w-5" />}
+                icon={
+                  <Star className="h-5 w-5" />
+                }
               >
                 Points et avantages
               </Benefit>
 
               <Benefit
-                icon={<Gift className="h-5 w-5" />}
+                icon={
+                  <Gift className="h-5 w-5" />
+                }
               >
                 Cartes cadeaux
               </Benefit>
 
               <Benefit
-                icon={<Shield className="h-5 w-5" />}
+                icon={
+                  <Shield className="h-5 w-5" />
+                }
               >
                 Compte client séparé de l'espace marchand
               </Benefit>
@@ -366,6 +466,10 @@ export default function StoreLogin() {
     </div>
   );
 }
+
+/* =========================================================
+   BENEFIT
+   ========================================================= */
 
 function Benefit({
   icon,
