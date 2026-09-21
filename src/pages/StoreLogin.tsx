@@ -1,16 +1,19 @@
 import { useState } from "react";
+
 import {
   Link,
   useLocation,
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
 import {
   Card,
   CardContent,
@@ -19,6 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
 import {
   Alert,
   AlertDescription,
@@ -42,9 +46,15 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 export default function StoreLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+
+  const [showPassword, setShowPassword] =
+    useState(false);
+
+  const [error, setError] =
+    useState<string | null>(null);
+
+  const [loading, setLoading] =
+    useState(false);
 
   const { signIn } = useAuth();
   const { t } = useLanguage();
@@ -53,35 +63,11 @@ export default function StoreLogin() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  /*
-   * Destination demandée après authentification.
-   *
-   * Le compte Store donne accès à l'ensemble de l'espace
-   * client BIB :
-   *
-   * - Store
-   * - boutiques suivies
-   * - commandes
-   * - cartes cadeaux
-   * - points
-   * - recyclage
-   * - abonnement BIB
-   *
-   * Le recyclage utilise la même identité client et ne possède
-   * pas de système d'authentification indépendant.
-   */
   const from =
     searchParams.get("next") ||
     location.state?.from?.pathname ||
     "/store";
 
-  /*
-   * Routes autorisées après une authentification Store.
-   *
-   * Une destination provenant de la plateforme BIB ou d'une
-   * autre zone externe est ignorée afin qu'un compte Store
-   * ne puisse pas être utilisé pour accéder à la plateforme.
-   */
   const isStorePath =
     from === "/store" ||
     from.startsWith("/store/");
@@ -90,43 +76,51 @@ export default function StoreLogin() {
     ? from
     : "/store";
 
-  const getErrorMessage = (errorMsg: string) => {
-    const normalizedMessage = errorMsg.toLowerCase();
+  const isSubscriberFlow =
+    destination === "/store/subscribe";
+
+  const getErrorMessage = (message: string) => {
+    const normalized = message.toLowerCase();
 
     if (
-      errorMsg === "Load failed" ||
-      normalizedMessage.includes("fetch") ||
-      normalizedMessage.includes("network") ||
-      normalizedMessage.includes("failed to fetch")
+      message === "Load failed" ||
+      normalized.includes("fetch") ||
+      normalized.includes("network") ||
+      normalized.includes("failed to fetch")
     ) {
       return t("auth.error.network");
     }
 
     if (
-      errorMsg.includes("Invalid login credentials")
+      normalized.includes(
+        "invalid login credentials",
+      )
     ) {
       return t("auth.error.invalid");
     }
 
-    return errorMsg;
+    return message;
   };
 
   const handleSubmit = async (
-    event: React.FormEvent
+    event: React.FormEvent,
   ) => {
     event.preventDefault();
 
     setError(null);
     setLoading(true);
 
-    const { error: signInError } = await signIn(
-      email.trim(),
-      password
-    );
+    const { error: signInError } =
+      await signIn(
+        email.trim(),
+        password,
+      );
 
     if (signInError) {
       setError(
-        getErrorMessage(signInError.message)
+        getErrorMessage(
+          signInError.message,
+        ),
       );
       setLoading(false);
       return;
@@ -138,326 +132,255 @@ export default function StoreLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* =====================================================
-          STORE CUSTOMER AUTHENTICATION
-      ===================================================== */}
-
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
-
-          {/* BIB Store header */}
-          <div className="flex items-center justify-between mb-8">
-            <Link
-              to="/store"
-              className="flex items-center gap-2"
-              aria-label="BIB Store"
-            >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">
-                  B
-                </span>
-              </div>
-
-              <div className="flex flex-col">
-                <span className="font-bold text-2xl text-foreground leading-none">
-                  BIB
-                </span>
-
-                <span className="text-xs text-muted-foreground">
-                  Store
-                </span>
-              </div>
-            </Link>
-
-            <LanguageSwitcher />
-          </div>
-
-          {/* Authentication card */}
-          <Card className="border-border/50 shadow-lg">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold">
-                {t("login.title")}
-              </CardTitle>
-
-              <CardDescription>
-                {t("login.desc")}
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent>
-              <form
-                onSubmit={handleSubmit}
-                className="space-y-4"
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto grid min-h-screen max-w-7xl lg:grid-cols-2">
+        <div className="flex items-center justify-center p-6 sm:p-8 lg:p-12">
+          <div className="w-full max-w-md">
+            <div className="mb-8 flex items-center justify-between">
+              <Link
+                to="/store"
+                className="flex items-center gap-2"
+                aria-label="BIB Store"
               >
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertDescription>
-                      {error}
-                    </AlertDescription>
-                  </Alert>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent">
+                  <span className="text-lg font-bold text-primary-foreground">
+                    B
+                  </span>
+                </div>
+
+                <div>
+                  <div className="text-2xl font-bold leading-none">
+                    BIB
+                  </div>
+
+                  <div className="text-xs text-muted-foreground">
+                    Store
+                  </div>
+                </div>
+              </Link>
+
+              <LanguageSwitcher />
+            </div>
+
+            <Card className="border-border/50 shadow-lg">
+              <CardHeader>
+                {isSubscriberFlow && (
+                  <div className="mb-3 inline-flex w-fit items-center rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
+                    BIB Abonné · 4,99 €/mois
+                  </div>
                 )}
 
-                {/* Email */}
-                <div className="space-y-2">
-                  <Label htmlFor="store-email">
-                    {t("login.email")}
-                  </Label>
+                <CardTitle className="text-2xl">
+                  {isSubscriberFlow
+                    ? "Continuer avec mon compte"
+                    : t("login.title")}
+                </CardTitle>
 
-                  <div className="relative">
-                    <Mail
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
-                      aria-hidden="true"
-                    />
+                <CardDescription>
+                  {isSubscriberFlow
+                    ? "Connectez-vous pour poursuivre vers l'activation de BIB Abonné."
+                    : t("login.desc")}
+                </CardDescription>
+              </CardHeader>
 
-                    <Input
-                      id="store-email"
-                      type="email"
-                      placeholder="vous@exemple.com"
-                      value={email}
-                      onChange={(event) =>
-                        setEmail(event.target.value)
-                      }
-                      className="pl-10"
-                      autoComplete="email"
-                      required
-                    />
-                  </div>
-                </div>
+              <CardContent>
+                <form
+                  onSubmit={handleSubmit}
+                  className="space-y-4"
+                >
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertDescription>
+                        {error}
+                      </AlertDescription>
+                    </Alert>
+                  )}
 
-                {/* Password */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="store-password">
-                      {t("login.password")}
+                  <div className="space-y-2">
+                    <Label htmlFor="store-email">
+                      {t("login.email")}
                     </Label>
 
-                    <Link
-                      to="/forgot-password"
-                      className="text-sm text-primary hover:underline"
-                    >
-                      {t("login.forgot")}
-                    </Link>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+                      <Input
+                        id="store-email"
+                        type="email"
+                        placeholder="vous@exemple.com"
+                        value={email}
+                        onChange={(event) =>
+                          setEmail(event.target.value)
+                        }
+                        className="pl-10"
+                        autoComplete="email"
+                        required
+                      />
+                    </div>
                   </div>
 
-                  <div className="relative">
-                    <Lock
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
-                      aria-hidden="true"
-                    />
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="store-password">
+                        {t("login.password")}
+                      </Label>
 
-                    <Input
-                      id="store-password"
-                      type={
-                        showPassword
-                          ? "text"
-                          : "password"
-                      }
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(event) =>
-                        setPassword(event.target.value)
-                      }
-                      className="pl-10 pr-10"
-                      autoComplete="current-password"
-                      required
-                    />
+                      <Link
+                        to="/forgot-password"
+                        className="text-sm text-primary hover:underline"
+                      >
+                        {t("login.forgot")}
+                      </Link>
+                    </div>
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowPassword(
-                          (current) => !current
-                        )
-                      }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      aria-label={
-                        showPassword
-                          ? "Masquer le mot de passe"
-                          : "Afficher le mot de passe"
-                      }
-                    >
-                      {showPassword ? (
-                        <EyeOff className="w-4 h-4" />
-                      ) : (
-                        <Eye className="w-4 h-4" />
-                      )}
-                    </button>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+                      <Input
+                        id="store-password"
+                        type={
+                          showPassword
+                            ? "text"
+                            : "password"
+                        }
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(event) =>
+                          setPassword(
+                            event.target.value,
+                          )
+                        }
+                        className="pl-10 pr-10"
+                        autoComplete="current-password"
+                        required
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowPassword(
+                            (current) => !current,
+                          )
+                        }
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
                   </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full gap-2"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+                    ) : (
+                      <>
+                        {isSubscriberFlow
+                          ? "Se connecter et continuer"
+                          : t("login.submit")}
+
+                        <ArrowRight className="h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+
+              <CardFooter className="flex flex-col gap-5">
+                <div className="text-center text-sm text-muted-foreground">
+                  {t("login.noaccount")}{" "}
+
+                  <Link
+                    to={`/store/signup?next=${encodeURIComponent(
+                      destination,
+                    )}`}
+                    className="font-medium text-primary hover:underline"
+                  >
+                    {t("login.create")}
+                  </Link>
                 </div>
 
-                {/* Submit */}
-                <Button
-                  type="submit"
-                  className="w-full gap-2"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      {t("login.submit")}
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-
-            <CardFooter className="flex flex-col gap-5">
-              <div className="text-center text-sm text-muted-foreground">
-                {t("login.noaccount")}{" "}
-
-                <Link
-                  to={`/store/signup?next=${encodeURIComponent(
-                    destination
-                  )}`}
-                  className="text-primary font-medium hover:underline"
-                >
-                  {t("login.create")}
-                </Link>
-              </div>
-
-              {/* Platform access remains explicitly separated */}
-              <div className="text-center">
                 <Link
                   to="/login"
-                  className="text-xs text-muted-foreground hover:text-foreground hover:underline"
+                  className="text-center text-xs text-muted-foreground hover:text-foreground hover:underline"
                 >
                   Accès plateforme BIB
                 </Link>
-              </div>
-            </CardFooter>
-          </Card>
-        </div>
-      </div>
-
-      {/* =====================================================
-          STORE CUSTOMER ECOSYSTEM
-      ===================================================== */}
-
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary/10 via-accent/5 to-background items-center justify-center p-12">
-        <div className="max-w-lg">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
-            Votre espace BIB
-          </h2>
-
-          <p className="text-muted-foreground mb-8">
-            Un seul compte pour retrouver vos boutiques,
-            vos commandes, vos avantages et votre activité
-            de recyclage.
-          </p>
-
-          <div className="space-y-5">
-
-            {/* Orders */}
-            <div className="flex items-center gap-4">
-              <div className="p-2 rounded-full bg-primary/10">
-                <ShoppingBag
-                  className="w-5 h-5 text-primary"
-                  aria-hidden="true"
-                />
-              </div>
-
-              <div>
-                <p className="font-medium text-foreground">
-                  Vos boutiques et commandes
-                </p>
-
-                <p className="text-sm text-muted-foreground">
-                  Retrouvez vos achats et suivez vos
-                  commandes depuis votre espace client.
-                </p>
-              </div>
-            </div>
-
-            {/* Recycling */}
-            <div className="flex items-center gap-4">
-              <div className="p-2 rounded-full bg-primary/10">
-                <Recycle
-                  className="w-5 h-5 text-primary"
-                  aria-hidden="true"
-                />
-              </div>
-
-              <div>
-                <p className="font-medium text-foreground">
-                  Recyclage BIB
-                </p>
-
-                <p className="text-sm text-muted-foreground">
-                  Scannez le QR code de vos emballages
-                  éligibles et validez votre recyclage.
-                </p>
-              </div>
-            </div>
-
-            {/* Points */}
-            <div className="flex items-center gap-4">
-              <div className="p-2 rounded-full bg-primary/10">
-                <Star
-                  className="w-5 h-5 text-primary"
-                  aria-hidden="true"
-                />
-              </div>
-
-              <div>
-                <p className="font-medium text-foreground">
-                  Vos points
-                </p>
-
-                <p className="text-sm text-muted-foreground">
-                  Consultez les points cumulés grâce à
-                  vos actions éligibles.
-                </p>
-              </div>
-            </div>
-
-            {/* Gift cards */}
-            <div className="flex items-center gap-4">
-              <div className="p-2 rounded-full bg-primary/10">
-                <Gift
-                  className="w-5 h-5 text-primary"
-                  aria-hidden="true"
-                />
-              </div>
-
-              <div>
-                <p className="font-medium text-foreground">
-                  Vos avantages
-                </p>
-
-                <p className="text-sm text-muted-foreground">
-                  Gérez vos cartes cadeaux et les avantages
-                  associés à votre compte.
-                </p>
-              </div>
-            </div>
+              </CardFooter>
+            </Card>
           </div>
+        </div>
 
-          {/* Account security */}
-          <div className="mt-8 p-4 rounded-xl bg-card border border-border/50">
-            <div className="flex items-center gap-3">
-              <Shield
-                className="w-8 h-8 text-primary"
-                aria-hidden="true"
-              />
+        <div className="hidden bg-gradient-to-br from-primary/10 via-accent/5 to-background p-12 lg:flex lg:items-center">
+          <div className="mx-auto max-w-lg">
+            <h2 className="text-3xl font-bold">
+              Votre espace client BIB
+            </h2>
 
-              <div>
-                <p className="font-medium text-foreground">
-                  Un seul compte client
-                </p>
+            <p className="mt-4 text-muted-foreground">
+              Votre compte vous permet de retrouver vos
+              boutiques, commandes et avantages.
+            </p>
 
-                <p className="text-sm text-muted-foreground">
-                  Votre compte BIB vous accompagne dans
-                  tout votre parcours client, du suivi de
-                  commande au recyclage.
-                </p>
-              </div>
+            <div className="mt-8 space-y-5">
+              <Benefit
+                icon={<ShoppingBag className="h-5 w-5" />}
+              >
+                Boutiques et commandes
+              </Benefit>
+
+              <Benefit
+                icon={<Recycle className="h-5 w-5" />}
+              >
+                Recyclage BIB
+              </Benefit>
+
+              <Benefit
+                icon={<Star className="h-5 w-5" />}
+              >
+                Points et avantages
+              </Benefit>
+
+              <Benefit
+                icon={<Gift className="h-5 w-5" />}
+              >
+                Cartes cadeaux
+              </Benefit>
+
+              <Benefit
+                icon={<Shield className="h-5 w-5" />}
+              >
+                Compte client séparé de l'espace marchand
+              </Benefit>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function Benefit({
+  icon,
+  children,
+}: {
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-3 text-sm">
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+        {icon}
+      </div>
+
+      <span>{children}</span>
     </div>
   );
 }
