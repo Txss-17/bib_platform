@@ -12,40 +12,183 @@ import {
   UserRound,
 } from "lucide-react";
 
-type SubscriberAccount = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  memberSince: string;
-  subscriptionStatus: "active" | "inactive";
-  subscriptionPrice: number;
-  nextBillingDate?: string;
-};
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  useBibSubscriberSubscription,
+  useOpenBillingPortal,
+} from "@/hooks/useSubscriptions";
 
-const subscriber: SubscriberAccount = {
-  firstName: "Votre",
-  lastName: "Compte",
-  email: "—",
-  memberSince: "—",
-  subscriptionStatus: "active",
-  subscriptionPrice: 4.99,
-};
-
-const storage = {
-  used: 37,
-  limit: 100,
-};
+const BIB_SUBSCRIBER_PRICE = 4.99;
 
 export default function StoreSubscriberAccount() {
-  const storagePercentage = Math.min(
-    100,
-    Math.round((storage.used / storage.limit) * 100)
-  );
+  const { user, profile, loading: authLoading } = useAuth();
+
+  const {
+    subscription,
+    isSubscriber,
+    isLoading: subscriptionLoading,
+  } = useBibSubscriberSubscription();
+
+  const billingPortal = useOpenBillingPortal();
+
+  const loading =
+    authLoading || subscriptionLoading;
 
   const fullName =
-    subscriber.firstName === "Votre"
-      ? "Votre compte"
-      : `${subscriber.firstName} ${subscriber.lastName}`;
+    profile?.full_name ||
+    user?.user_metadata?.full_name ||
+    "Votre compte";
+
+  const email =
+    user?.email || "—";
+
+  const subscriptionStatus =
+    subscription?.status === "trialing"
+      ? "Essai"
+      : subscription?.status === "active"
+        ? "Actif"
+        : "Inactif";
+
+  const subscriptionPrice =
+    BIB_SUBSCRIBER_PRICE.toFixed(2).replace(".", ",");
+
+  const memberSince =
+    subscription?.created_at
+      ? formatDate(subscription.created_at)
+      : "—";
+
+  const nextBillingDate =
+    subscription?.current_period_end
+      ? formatDate(subscription.current_period_end)
+      : null;
+
+  const cancelAtPeriodEnd =
+    subscription?.cancel_at_period_end === true;
+
+  const handleBillingPortal = () => {
+    billingPortal.mutate();
+  };
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 w-48 rounded bg-muted" />
+            <div className="h-4 w-96 max-w-full rounded bg-muted" />
+
+            <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+              <div className="space-y-6">
+                <div className="h-56 rounded-2xl bg-muted" />
+                <div className="h-72 rounded-2xl bg-muted" />
+              </div>
+
+              <div className="h-64 rounded-2xl bg-muted" />
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (!user) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="mx-auto flex min-h-[60vh] max-w-xl items-center justify-center px-4 py-12 text-center">
+          <div>
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+              <UserRound className="h-6 w-6 text-muted-foreground" />
+            </div>
+
+            <h1 className="mt-5 text-2xl font-semibold">
+              Connectez-vous à votre compte
+            </h1>
+
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Votre espace abonné est accessible uniquement
+              après connexion.
+            </p>
+
+            <Link
+              to="/store/login?next=%2Fstore%2Faccount"
+              className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              Se connecter
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (!isSubscriber) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl rounded-2xl border bg-card p-6 text-center sm:p-8">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+              <CreditCard className="h-6 w-6 text-muted-foreground" />
+            </div>
+
+            <p className="mt-5 text-sm font-medium text-muted-foreground">
+              BIB Store
+            </p>
+
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+              Activez BIB Abonné
+            </h1>
+
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
+              Votre compte Store existe, mais aucun abonnement
+              BIB Abonné actif n'est actuellement associé à ce compte.
+            </p>
+
+            <div className="mt-6 rounded-2xl border bg-muted/30 p-5 text-left">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="font-semibold">
+                    BIB Abonné
+                  </h2>
+
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Accédez aux fonctionnalités réservées aux abonnés.
+                  </p>
+                </div>
+
+                <div className="shrink-0 text-right">
+                  <p className="text-xl font-semibold">
+                    {subscriptionPrice} €
+                  </p>
+
+                  <p className="text-xs text-muted-foreground">
+                    / mois
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-2 sm:grid-cols-2">
+                <FeatureItem label="Favoris" />
+                <FeatureItem label="Commandes" />
+                <FeatureItem label="Suivi des commandes" />
+                <FeatureItem label="Programme de recyclage" />
+                <FeatureItem label="Points et avantages" />
+                <FeatureItem label="Cartes cadeaux" />
+              </div>
+            </div>
+
+            <Link
+              to="/store/subscribe"
+              className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              Activer BIB Abonné
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background">
@@ -61,8 +204,8 @@ export default function StoreSubscriberAccount() {
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Gérez votre espace abonné, votre abonnement et les données
-            enregistrées dans BIB Store.
+            Gérez votre espace abonné, votre abonnement et
+            vos fonctionnalités BIB Store.
           </p>
         </div>
 
@@ -95,12 +238,12 @@ export default function StoreSubscriberAccount() {
 
                 <InfoField
                   label="Adresse e-mail"
-                  value={subscriber.email}
+                  value={email}
                 />
 
                 <InfoField
                   label="Membre depuis"
-                  value={subscriber.memberSince}
+                  value={memberSince}
                 />
 
                 <InfoField
@@ -111,13 +254,10 @@ export default function StoreSubscriberAccount() {
               </div>
 
               <div className="border-t px-5 py-4">
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-                >
-                  Modifier mes informations
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </button>
+                <p className="text-xs leading-5 text-muted-foreground">
+                  La gestion des informations de compte est
+                  effectuée depuis votre compte BIB.
+                </p>
               </div>
             </section>
 
@@ -141,29 +281,40 @@ export default function StoreSubscriberAccount() {
                 <div className="rounded-2xl border bg-muted/30 p-5">
                   <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-semibold">
                           BIB Abonné
                         </h3>
 
                         <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
                           <Check className="h-3 w-3" />
-                          Actif
+                          {subscriptionStatus}
                         </span>
                       </div>
 
                       <p className="mt-2 text-sm text-muted-foreground">
-                        Accès aux fonctionnalités de l'espace abonné BIB
-                        Store.
+                        Accès aux fonctionnalités de l'espace
+                        abonné BIB Store.
                       </p>
+
+                      {cancelAtPeriodEnd && nextBillingDate && (
+                        <p className="mt-3 text-sm text-amber-600">
+                          Votre abonnement prendra fin le{" "}
+                          <strong>{nextBillingDate}</strong>.
+                        </p>
+                      )}
+
+                      {!cancelAtPeriodEnd && nextBillingDate && (
+                        <p className="mt-3 text-sm text-muted-foreground">
+                          Prochaine échéance :{" "}
+                          <strong>{nextBillingDate}</strong>
+                        </p>
+                      )}
                     </div>
 
                     <div className="text-left sm:text-right">
                       <p className="text-xl font-semibold">
-                        {subscriber.subscriptionPrice
-                          .toFixed(2)
-                          .replace(".", ",")}{" "}
-                        €
+                        {subscriptionPrice} €
                       </p>
 
                       <p className="text-xs text-muted-foreground">
@@ -173,146 +324,90 @@ export default function StoreSubscriberAccount() {
                   </div>
 
                   <div className="mt-5 grid gap-2 sm:grid-cols-2">
-                    <FeatureItem label="Panier BIB Store" />
                     <FeatureItem label="Favoris" />
-                    <FeatureItem label="Historique des commandes" />
-                    <FeatureItem label="Espace personnel" />
+                    <FeatureItem label="Commandes" />
+                    <FeatureItem label="Suivi des commandes" />
+                    <FeatureItem label="Programme de recyclage" />
+                    <FeatureItem label="Points et avantages" />
+                    <FeatureItem label="Cartes cadeaux" />
                   </div>
                 </div>
 
                 <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                   <button
                     type="button"
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-full border px-5 text-sm font-medium transition-colors hover:bg-muted"
+                    onClick={handleBillingPortal}
+                    disabled={billingPortal.isPending}
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-full border px-5 text-sm font-medium transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    Gérer l'abonnement
+                    <CreditCard className="h-4 w-4" />
+
+                    {billingPortal.isPending
+                      ? "Ouverture..."
+                      : "Gérer l'abonnement"}
                   </button>
 
-                  <button
-                    type="button"
+                  <Link
+                    to="/store/orders"
                     className="inline-flex h-10 items-center justify-center gap-2 rounded-full px-5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    Historique de facturation
-                  </button>
+                    Mes commandes
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
                 </div>
+
+                {billingPortal.isError && (
+                  <p className="mt-3 text-sm text-destructive">
+                    Impossible d'ouvrir le portail de facturation.
+                    Veuillez réessayer.
+                  </p>
+                )}
               </div>
             </section>
 
-            {/* Storage */}
+            {/* Personal space */}
             <section className="rounded-2xl border bg-card">
               <div className="flex items-center justify-between border-b px-5 py-5">
                 <div>
                   <h2 className="font-semibold">
-                    Stockage BIB Store
+                    Mon espace BIB
                   </h2>
 
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Gestion des données enregistrées dans votre espace.
+                    Retrouvez vos fonctionnalités réservées aux abonnés.
                   </p>
                 </div>
 
                 <ShieldCheck className="h-5 w-5 text-muted-foreground" />
               </div>
 
-              <div className="p-5">
-                <div className="flex items-end justify-between gap-4">
-                  <div>
-                    <p className="text-2xl font-semibold">
-                      {storage.used}
-                      <span className="text-base font-normal text-muted-foreground">
-                        {" "}
-                        / {storage.limit}
-                      </span>
-                    </p>
-
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      éléments enregistrés
-                    </p>
-                  </div>
-
-                  <p className="text-sm font-medium">
-                    {storagePercentage} %
-                  </p>
-                </div>
-
-                <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-primary transition-all"
-                    style={{
-                      width: `${storagePercentage}%`,
-                    }}
-                  />
-                </div>
-
-                <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                  <StorageItem
-                    label="Favoris"
-                    value="37"
-                    icon={<Heart className="h-4 w-4" />}
-                  />
-
-                  <StorageItem
-                    label="Panier"
-                    value="0"
-                    icon={<ShoppingBag className="h-4 w-4" />}
-                  />
-
-                  <StorageItem
-                    label="Autres"
-                    value="0"
-                    icon={<Package className="h-4 w-4" />}
-                  />
-                </div>
-
-                <Link
-                  to="/store/favorites"
-                  className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-                >
-                  Gérer mes données enregistrées
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </section>
-
-            {/* Quick access */}
-            <section className="rounded-2xl border bg-card">
-              <div className="border-b px-5 py-5">
-                <h2 className="font-semibold">
-                  Mon espace Store
-                </h2>
-
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Accès rapide aux fonctionnalités de votre compte.
-                </p>
-              </div>
-
-              <div className="divide-y">
-                <AccountLink
-                  to="/store/cart"
-                  icon={<ShoppingBag className="h-5 w-5" />}
-                  title="Mon panier"
-                  description="Produits enregistrés avant de poursuivre chez les boutiques."
-                />
-
-                <AccountLink
+              <div className="grid gap-3 p-5 sm:grid-cols-2">
+                <AccountCard
                   to="/store/favorites"
                   icon={<Heart className="h-5 w-5" />}
                   title="Mes favoris"
-                  description="Produits et boutiques que vous avez enregistrés."
+                  description="Retrouvez les produits et boutiques que vous avez enregistrés."
                 />
 
-                <AccountLink
+                <AccountCard
                   to="/store/orders"
                   icon={<Package className="h-5 w-5" />}
                   title="Mes commandes"
-                  description="Historique des commandes associées à votre compte."
+                  description="Consultez vos commandes et leur suivi."
                 />
 
-                <AccountLink
+                <AccountCard
+                  to="/store/cart"
+                  icon={<ShoppingBag className="h-5 w-5" />}
+                  title="Mon panier"
+                  description="Retrouvez les produits préparés avant de continuer chez les boutiques."
+                />
+
+                <AccountCard
                   to="/store/account"
                   icon={<Settings className="h-5 w-5" />}
-                  title="Paramètres"
-                  description="Préférences et gestion de votre espace BIB."
+                  title="Mon compte"
+                  description="Gérez votre espace et votre abonnement BIB."
                 />
               </div>
             </section>
@@ -331,27 +426,29 @@ export default function StoreSubscriberAccount() {
                 </h2>
 
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Retrouvez vos produits, boutiques et commandes au même
-                  endroit.
+                  Retrouvez vos produits, boutiques et commandes
+                  au même endroit.
                 </p>
               </div>
 
               <div className="space-y-3 p-5">
-                <SidebarStat
-                  label="Favoris"
-                  value={String(storage.used)}
+                <SidebarLink
+                  label="Mes favoris"
                   to="/store/favorites"
                 />
 
-                <SidebarStat
-                  label="Commandes"
-                  value="0"
+                <SidebarLink
+                  label="Mes commandes"
                   to="/store/orders"
                 />
 
-                <SidebarStat
-                  label="Stockage"
-                  value={`${storagePercentage}%`}
+                <SidebarLink
+                  label="Mon panier"
+                  to="/store/cart"
+                />
+
+                <SidebarLink
+                  label="Gérer mon abonnement"
                   to="/store/account"
                 />
               </div>
@@ -361,6 +458,25 @@ export default function StoreSubscriberAccount() {
       </div>
     </main>
   );
+}
+
+function formatDate(
+  value: string,
+): string {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "—";
+  }
+
+  return new Intl.DateTimeFormat(
+    "fr-FR",
+    {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    },
+  ).format(date);
 }
 
 function InfoField({
@@ -392,7 +508,11 @@ function InfoField({
   );
 }
 
-function FeatureItem({ label }: { label: string }) {
+function FeatureItem({
+  label,
+}: {
+  label: string;
+}) {
   return (
     <div className="flex items-center gap-2 text-sm">
       <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10">
@@ -404,33 +524,7 @@ function FeatureItem({ label }: { label: string }) {
   );
 }
 
-function StorageItem({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-xl border bg-background p-3">
-      <div className="flex items-center gap-2 text-muted-foreground">
-        {icon}
-
-        <span className="text-xs font-medium">
-          {label}
-        </span>
-      </div>
-
-      <p className="mt-2 text-lg font-semibold">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function AccountLink({
+function AccountCard({
   to,
   icon,
   title,
@@ -444,34 +538,36 @@ function AccountLink({
   return (
     <Link
       to={to}
-      className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-muted/40"
+      className="group rounded-2xl border p-4 transition-colors hover:bg-muted/40"
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
-        {icon}
+      <div className="flex items-start gap-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
+          {icon}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-medium">
+              {title}
+            </p>
+
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+          </div>
+
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+            {description}
+          </p>
+        </div>
       </div>
-
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium">
-          {title}
-        </p>
-
-        <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
-          {description}
-        </p>
-      </div>
-
-      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
     </Link>
   );
 }
 
-function SidebarStat({
+function SidebarLink({
   label,
-  value,
   to,
 }: {
   label: string;
-  value: string;
   to: string;
 }) {
   return (
@@ -483,10 +579,7 @@ function SidebarStat({
         {label}
       </span>
 
-      <span className="inline-flex items-center gap-1 text-sm font-semibold">
-        {value}
-        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-      </span>
+      <ChevronRight className="h-4 w-4 text-muted-foreground" />
     </Link>
   );
 }
