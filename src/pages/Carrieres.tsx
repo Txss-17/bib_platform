@@ -1,307 +1,223 @@
+import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Button } from "@/components/ui/button";
 import { useSEO } from "@/hooks/useSEO";
+import {
+  ArrowRight,
+  Code2,
+  FlaskConical,
+  Megaphone,
+  Settings2,
+  Users,
+} from "lucide-react";
 
-export default function BibTalent() {
-  useSEO({
-    title: "BIB Talent — Construire BIB ensemble",
+const domains = [
+  {
+    icon: Code2,
+    title: "Tech",
     description:
-      "BIB Talent réunit les personnes qui souhaitent contribuer à la construction de Brand-in-a-box avant son lancement, à travers la Tech, la R&D, la Communication et les Opérations.",
+      "Construire les infrastructures, interfaces et outils qui permettent à BIB de fonctionner de manière fiable et évolutive.",
+  },
+  {
+    icon: FlaskConical,
+    title: "R&D & Product",
+    description:
+      "Explorer, tester et structurer les produits, parcours et solutions qui feront évoluer progressivement l'écosystème BIB.",
+  },
+  {
+    icon: Megaphone,
+    title: "Communication",
+    description:
+      "Construire l'identité de BIB, développer sa visibilité et rendre sa vision compréhensible auprès de son écosystème.",
+  },
+  {
+    icon: Settings2,
+    title: "Opérations",
+    description:
+      "Structurer les opérations, les partenaires et les processus nécessaires au développement concret de BIB.",
+  },
+];
+
+const Carrieres = () => {
+  useSEO({
+    title: "Carrières | Brand-in-a-box",
+    description:
+      "Découvrez les domaines dans lesquels contribuer à la construction de Brand-in-a-box et les opportunités actuellement identifiées.",
   });
 
-  const talentFormUrl =
-    "https://docs.google.com/forms/d/e/1FAIpQLSemotUUORqFwUdM60S1BAW-79YzSm-5TiocRvm-wuTUiCevvg/viewform";
-
   return (
-    <div className="min-h-screen bg-bib-ivory text-bib-marine">
+    <div className="min-h-screen bg-background text-foreground">
       <Header />
 
       <main>
         {/* HERO */}
-        <section className="relative overflow-hidden bg-bib-marine text-bib-ivory">
-          <div
-            className="absolute -top-32 -right-24 h-[520px] w-[520px] rounded-full bg-bib-gold/10 blur-3xl"
-            aria-hidden="true"
-          />
+        <section className="border-b border-border">
+          <div className="mx-auto max-w-6xl px-6 py-20 md:px-8 md:py-28">
+            <div className="max-w-3xl">
+              <p className="mb-5 text-sm font-semibold uppercase tracking-[0.18em] text-primary">
+                Carrières
+              </p>
 
-          <div
-            className="absolute -bottom-40 -left-32 h-[420px] w-[420px] rounded-full bg-bib-gold/5 blur-3xl"
-            aria-hidden="true"
-          />
-
-          <div className="container relative mx-auto px-4 py-24 sm:px-6 lg:px-8 lg:py-32">
-            <div className="max-w-4xl">
-              <span className="inline-flex items-center rounded-full bg-bib-ivory/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-bib-ivory">
-                BIB TALENT
-              </span>
-
-              <h1 className="mt-6 font-display text-4xl font-bold leading-[1.05] sm:text-5xl lg:text-7xl">
-                <span className="text-bib-gold">
-                  Build BIB with us.
-                </span>
+              <h1 className="text-4xl font-semibold tracking-tight md:text-6xl">
+                Construire BIB,
                 <br />
-                Before everyone else.
+                dès maintenant.
               </h1>
 
-              <p className="mt-7 max-w-2xl text-lg leading-relaxed text-bib-ivory/80 sm:text-xl">
-                Brand-in-a-box est encore en construction. BIB Talent rassemble
-                un premier cercle de personnes prêtes à réfléchir, tester,
-                challenger et contribuer à ce que BIB deviendra.
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground md:text-xl">
+                Brand-in-a-box est un projet en construction. Nous préparons
+                progressivement l'écosystème, les outils et les équipes qui
+                permettront à BIB de se développer durablement.
               </p>
-
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                <Button
-                  asChild
-                  variant="premium"
-                  size="lg"
-                  className="group"
-                >
-                  <a
-                    href={talentFormUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Rejoindre BIB Talent
-                  </a>
-                </Button>
-
-                <a
-                  href="#discover"
-                  className="inline-flex items-center justify-center rounded-md border border-bib-ivory/20 px-6 py-3 text-sm font-semibold text-bib-ivory transition hover:bg-bib-ivory/10"
-                >
-                  Découvrir le programme
-                </a>
-              </div>
             </div>
           </div>
         </section>
 
-        {/* VIDEO */}
-        <section className="bg-bib-ivory py-16 sm:py-20">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-5xl">
-              <div className="mb-8 max-w-2xl">
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-bib-gold">
-                  The beginning
-                </span>
-
-                <h2 className="mt-3 font-display text-3xl font-bold sm:text-4xl">
-                  BIB se construit maintenant.
-                </h2>
-
-                <p className="mt-4 text-bib-marine/70">
-                  Avant les équipes, les bureaux et le lancement, il y a une
-                  phase essentielle : construire les fondations.
-                </p>
-              </div>
-
-              <div className="overflow-hidden rounded-2xl bg-bib-marine shadow-xl">
-                <video
-                  className="block h-auto w-full"
-                  controls
-                  playsInline
-                  preload="metadata"
-                >
-                  <source
-                    src="/assets/bib-talent.mp4"
-                    type="video/mp4"
-                  />
-                  Votre navigateur ne prend pas en charge la lecture vidéo.
-                </video>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* DISCOVER */}
-        <section id="discover" className="bg-white py-20 sm:py-24">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+        {/* PRÉFIGURATION */}
+        <section className="border-b border-border">
+          <div className="mx-auto max-w-6xl px-6 py-16 md:px-8 md:py-24">
+            <div className="grid gap-12 md:grid-cols-[0.8fr_1.2fr] md:items-start">
               <div>
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-bib-gold">
-                  Pourquoi BIB Talent ?
-                </span>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
+                  Une phase de préfiguration
+                </p>
 
-                <h2 className="mt-3 font-display text-3xl font-bold sm:text-4xl">
-                  Ne pas simplement rejoindre un projet.
+                <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
+                  Avant les équipes,
                   <br />
-                  <span className="text-bib-gold">
-                    Contribuer à le construire.
-                  </span>
+                  construire les fondations.
                 </h2>
               </div>
 
-              <div className="space-y-5 text-bib-marine/70 leading-relaxed">
+              <div className="space-y-5 text-base leading-7 text-muted-foreground">
                 <p>
-                  BIB est un projet en phase de construction. Cette période
-                  permet encore de remettre en question les idées, les
-                  processus et les choix qui formeront l'entreprise.
+                  BIB est actuellement dans une phase de préfiguration. Cette
+                  période permet de tester les parcours, structurer les
+                  premières briques du projet et préparer son développement
+                  futur.
                 </p>
 
                 <p>
-                  BIB Talent est pensé comme un premier espace de collaboration
-                  entre le projet et des profils qui souhaitent apporter leurs
-                  compétences, leur regard et leur capacité à expérimenter.
+                  Les premières contributions permettent notamment d'explorer
+                  les besoins techniques, produit, opérationnels et de
+                  communication avant la structuration progressive de
+                  véritables équipes.
                 </p>
 
                 <p>
-                  L'objectif n'est pas de constituer immédiatement une grande
-                  équipe, mais de créer progressivement une culture et une
-                  manière de travailler.
+                  Les besoins évolueront avec la progression du projet. Les
+                  opportunités présentées ne constituent donc pas
+                  nécessairement des postes ouverts au recrutement.
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* POLES */}
-        <section className="bg-bib-ivory py-20 sm:py-24">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* DOMAINES */}
+        <section className="bg-muted/30">
+          <div className="mx-auto max-w-6xl px-6 py-16 md:px-8 md:py-24">
+            <div className="max-w-2xl">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
+                Domaines
+              </p>
+
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
+                Plusieurs expertises pour construire BIB.
+              </h2>
+
+              <p className="mt-5 text-base leading-7 text-muted-foreground">
+                Le développement de BIB repose sur des compétences
+                complémentaires. Les besoins et les profils recherchés
+                évolueront selon les différentes étapes du projet.
+              </p>
+            </div>
+
+            <div className="mt-12 grid gap-5 md:grid-cols-2">
+              {domains.map((domain) => {
+                const Icon = domain.icon;
+
+                return (
+                  <article
+                    key={domain.title}
+                    className="rounded-2xl border border-border bg-background p-7"
+                  >
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-muted/40">
+                      <Icon className="h-5 w-5" />
+                    </div>
+
+                    <h3 className="mt-6 text-xl font-semibold">
+                      {domain.title}
+                    </h3>
+
+                    <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                      {domain.description}
+                    </p>
+                  </article>
+                );
+              })}
+            </div>
+
+            <div className="mt-10 text-center">
+              <Link
+                to="/carrieres/postes"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-border px-6 text-sm font-semibold transition-colors hover:bg-muted"
+              >
+                Voir les opportunités identifiées
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ESPRIT */}
+        <section className="border-b border-border">
+          <div className="mx-auto max-w-6xl px-6 py-16 md:px-8 md:py-24">
             <div className="mx-auto max-w-3xl text-center">
-              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-bib-gold">
-                Contribute
-              </span>
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-border">
+                <Users className="h-5 w-5" />
+              </div>
 
-              <h2 className="mt-3 font-display text-3xl font-bold sm:text-4xl">
-                Plusieurs façons de contribuer
+              <h2 className="mt-6 text-3xl font-semibold tracking-tight md:text-4xl">
+                Construire avec méthode.
               </h2>
 
-              <p className="mt-4 text-bib-marine/70">
-                Les premiers besoins sont organisés autour de plusieurs
-                domaines. Les missions évolueront avec le développement de BIB.
+              <p className="mt-5 text-base leading-7 text-muted-foreground">
+                Nous privilégions une approche progressive : comprendre,
+                tester, documenter et améliorer avant de déployer. Les
+                contributions sont donc pensées en fonction des besoins réels
+                du projet et de son niveau de maturité.
               </p>
             </div>
+          </div>
+        </section>
 
-            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                {
-                  title: "Tech",
-                  text: "Architecture, développement, automatisation, données et outils internes.",
-                },
-                {
-                  title: "R&D / Product",
-                  text: "Recherche, expérimentation, conception de services et amélioration du produit.",
-                },
-                {
-                  title: "Communication",
-                  text: "Identité, contenu, storytelling, présence digitale et communication du projet.",
-                },
-                {
-                  title: "Opérations",
-                  text: "Processus, fournisseurs, logistique, qualité, audit et structuration opérationnelle.",
-                },
-              ].map((pole) => (
-                <div
-                  key={pole.title}
-                  className="rounded-2xl border border-bib-marine/10 bg-white p-6 shadow-sm"
+        {/* BIB TALENT */}
+        <section>
+          <div className="mx-auto max-w-6xl px-6 py-20 md:px-8 md:py-28">
+            <div className="rounded-3xl border border-border bg-muted/30 px-6 py-12 text-center md:px-12 md:py-16">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
+                BIB Talent
+              </p>
+
+              <h2 className="mx-auto mt-4 max-w-2xl text-3xl font-semibold tracking-tight md:text-4xl">
+                Vous souhaitez découvrir la préfiguration de BIB ?
+              </h2>
+
+              <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground">
+                Découvrez BIB Talent, son fonctionnement et les possibilités
+                de contribuer au projet au cours de cette phase.
+              </p>
+
+              <div className="mt-8">
+                <Link
+                  to="/carrieres/talent"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
                 >
-                  <div className="mb-5 h-1 w-10 rounded-full bg-bib-gold" />
-
-                  <h3 className="font-display text-xl font-bold">
-                    {pole.title}
-                  </h3>
-
-                  <p className="mt-3 text-sm leading-relaxed text-bib-marine/65">
-                    {pole.text}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* HOW IT WORKS */}
-        <section className="bg-bib-marine py-20 text-bib-ivory sm:py-24">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl">
-              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-bib-gold">
-                The process
-              </span>
-
-              <h2 className="mt-3 font-display text-3xl font-bold sm:text-4xl">
-                Comment rejoindre BIB Talent ?
-              </h2>
-            </div>
-
-            <div className="mt-12 grid gap-8 md:grid-cols-4">
-              {[
-                ["01", "Candidater", "Présentez votre profil, vos compétences et ce que vous souhaitez apporter."],
-                ["02", "Échanger", "Un premier échange permet de comprendre vos intérêts et vos domaines de contribution."],
-                ["03", "Expérimenter", "Les premières missions permettent de tester la collaboration et la manière de travailler."],
-                ["04", "Construire", "Les collaborations peuvent évoluer avec la maturité et les besoins de BIB."],
-              ].map(([number, title, text]) => (
-                <div key={number}>
-                  <span className="text-sm font-semibold text-bib-gold">
-                    {number}
-                  </span>
-
-                  <h3 className="mt-3 font-display text-xl font-bold">
-                    {title}
-                  </h3>
-
-                  <p className="mt-3 text-sm leading-relaxed text-bib-ivory/65">
-                    {text}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* CLARIFICATION */}
-        <section className="bg-white py-20 sm:py-24">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-3xl rounded-2xl border border-bib-marine/10 bg-bib-ivory p-8 sm:p-10">
-              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-bib-gold">
-                À savoir
-              </span>
-
-              <h2 className="mt-3 font-display text-2xl font-bold sm:text-3xl">
-                Une phase de préfiguration, pas une promesse d'emploi.
-              </h2>
-
-              <p className="mt-4 leading-relaxed text-bib-marine/70">
-                BIB Talent accompagne la phase de construction et de
-                préfiguration de BIB. Participer au programme ne constitue pas
-                une promesse d'embauche, un contrat de travail ou une garantie
-                de collaboration future.
-              </p>
-
-              <p className="mt-4 leading-relaxed text-bib-marine/70">
-                Les modalités de collaboration pourront évoluer lorsque BIB
-                entrera dans ses différentes phases de développement.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* FINAL CTA */}
-        <section className="bg-bib-ivory py-20 sm:py-28">
-          <div className="container mx-auto px-4 text-center sm:px-6 lg:px-8">
-            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-bib-gold">
-              BIB TALENT
-            </span>
-
-            <h2 className="mx-auto mt-4 max-w-3xl font-display text-4xl font-bold leading-tight sm:text-5xl">
-              The first chapter is being written now.
-            </h2>
-
-            <p className="mx-auto mt-5 max-w-2xl text-bib-marine/70">
-              Si vous souhaitez contribuer à cette première phase, présentez
-              votre profil et vos motivations.
-            </p>
-
-            <div className="mt-8">
-              <Button asChild variant="premium" size="lg">
-                <a
-                  href={talentFormUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Rejoindre BIB Talent
-                </a>
-              </Button>
+                  Découvrir BIB Talent
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
             </div>
           </div>
         </section>
@@ -310,4 +226,6 @@ export default function BibTalent() {
       <Footer />
     </div>
   );
-}
+};
+
+export default Carrieres;
