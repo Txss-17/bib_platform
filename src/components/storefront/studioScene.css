@@ -1,190 +1,795 @@
-/* Studio Scene — Mode Pro CSS
- * Frame presets, layout helpers, button overrides, entry animations.
- * Scoped via .studio-scope wrapper from <SceneStyleScope>.
- */
+/* ==========================================================================
+   BIB Studio Scene
+   --------------------------------------------------------------------------
+   Styles partagés par les scènes générées par le Brand Studio.
 
+   Objectifs :
+   - conserver les presets graphiques existants ;
+   - respecter les variables injectées par StudioSceneRenderer ;
+   - éviter les débordements horizontaux ;
+   - fonctionner de 320 px à 1600 px+ ;
+   - préserver les images et médias ;
+   - respecter prefers-reduced-motion ;
+   - rester compatible avec les scènes existantes.
+   ========================================================================== */
+
+.studio-root,
 .studio-scope {
   position: relative;
   isolation: isolate;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
-/* ---------- Frame presets (apply on first <section> child) ---------- */
+/* --------------------------------------------------------------------------
+   Base responsive safeguards
+   -------------------------------------------------------------------------- */
+
+.studio-root *,
+.studio-scope * {
+  box-sizing: border-box;
+}
+
+.studio-root img,
+.studio-scope img,
+.studio-root video,
+.studio-scope video,
+.studio-root iframe,
+.studio-scope iframe {
+  max-width: 100%;
+}
+
+.studio-root img,
+.studio-scope img {
+  height: auto;
+}
+
+.studio-root iframe,
+.studio-scope iframe {
+  border: 0;
+}
+
+.studio-root a,
+.studio-scope a,
+.studio-root button,
+.studio-scope button {
+  max-width: 100%;
+}
+
+.studio-root h1,
+.studio-root h2,
+.studio-root h3,
+.studio-root h4,
+.studio-scope h1,
+.studio-scope h2,
+.studio-scope h3,
+.studio-scope h4 {
+  overflow-wrap: anywhere;
+}
+
+.studio-root p,
+.studio-scope p {
+  overflow-wrap: anywhere;
+}
+
+.studio-root input,
+.studio-root textarea,
+.studio-root select,
+.studio-scope input,
+.studio-scope textarea,
+.studio-scope select {
+  max-width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   Frame presets
+   -------------------------------------------------------------------------- */
+
 .studio-frame-rounded > section,
-.studio-frame-rounded > div > section { border-radius: 1rem; overflow: hidden; }
+.studio-frame-rounded > div > section {
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
 .studio-frame-rounded-xl > section,
-.studio-frame-rounded-xl > div > section { border-radius: 2rem; overflow: hidden; }
+.studio-frame-rounded-xl > div > section {
+  border-radius: 2rem;
+  overflow: hidden;
+}
+
 .studio-frame-sharp > section,
-.studio-frame-sharp > div > section { border-radius: 0; }
+.studio-frame-sharp > div > section {
+  border-radius: 0;
+}
+
 .studio-frame-inset {
   padding: 1.25rem;
 }
+
 .studio-frame-inset > section,
 .studio-frame-inset > div > section {
   border-radius: 1.25rem;
   overflow: hidden;
-  box-shadow: 0 1px 0 hsl(var(--studio-ink) / 0.08), 0 30px 60px -30px hsl(var(--studio-ink) / 0.25);
+  box-shadow:
+    0 1px 0 hsl(var(--studio-ink) / 0.08),
+    0 30px 60px -30px hsl(var(--studio-ink) / 0.25);
 }
+
 .studio-frame-blob > section,
 .studio-frame-blob > div > section {
-  border-radius: 42% 58% 60% 40% / 50% 45% 55% 50%;
+  border-radius:
+    42% 58% 60% 40% /
+    50% 45% 55% 50%;
   overflow: hidden;
 }
+
 .studio-frame-ticket > section,
 .studio-frame-ticket > div > section {
   --notch: 18px;
+
   -webkit-mask:
-    radial-gradient(circle var(--notch) at 0 50%, transparent 98%, #000) ,
-    radial-gradient(circle var(--notch) at 100% 50%, transparent 98%, #000);
+    radial-gradient(
+      circle var(--notch) at 0 50%,
+      transparent 98%,
+      #000
+    ),
+    radial-gradient(
+      circle var(--notch) at 100% 50%,
+      transparent 98%,
+      #000
+    );
+
   -webkit-mask-composite: source-in;
-          mask-composite: intersect;
+  mask-composite: intersect;
 }
+
 .studio-frame-tilt {
   transform: rotate(-1.2deg);
-  transition: transform .4s ease;
+  transition: transform 0.4s ease;
 }
-.studio-frame-tilt:hover { transform: rotate(0); }
 
-/* ---------- Pro frame variables (set by inspector presets / per-corner radii) ---------- */
+.studio-frame-tilt:hover {
+  transform: rotate(0);
+}
+
+/* --------------------------------------------------------------------------
+   Pro frame variables
+   -------------------------------------------------------------------------- */
+
 .studio-scope.has-frame-vars > section,
 .studio-scope.has-frame-vars > div > section {
   border-top-left-radius: var(--studio-r-tl, 0px);
   border-top-right-radius: var(--studio-r-tr, 0px);
   border-bottom-right-radius: var(--studio-r-br, 0px);
   border-bottom-left-radius: var(--studio-r-bl, 0px);
+
   border-style: solid;
   border-width: var(--studio-border-w, 0px);
-  border-color: var(--studio-border-c, hsl(var(--studio-ink) / 0.18));
+  border-color:
+    var(
+      --studio-border-c,
+      hsl(var(--studio-ink) / 0.18)
+    );
+
   box-shadow: var(--studio-shadow, none);
+
   overflow: hidden;
-  transition: box-shadow .3s ease, transform .3s ease;
+
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
 }
 
-/* Pro presets — set CSS vars consumed by the rule above */
-.studio-preset-flat       { --studio-r-tl: 0px;   --studio-r-tr: 0px;   --studio-r-br: 0px;   --studio-r-bl: 0px;   --studio-border-w: 0px;   --studio-shadow: none; }
-.studio-preset-soft       { --studio-r-tl: 18px;  --studio-r-tr: 18px;  --studio-r-br: 18px;  --studio-r-bl: 18px;  --studio-border-w: 0px;   --studio-shadow: 0 8px 24px -10px hsl(var(--studio-ink) / 0.18); }
-.studio-preset-elevated   { --studio-r-tl: 22px;  --studio-r-tr: 22px;  --studio-r-br: 22px;  --studio-r-bl: 22px;  --studio-border-w: 0px;   --studio-shadow: 0 30px 70px -25px hsl(var(--studio-ink) / 0.35), 0 10px 25px -10px hsl(var(--studio-ink) / 0.18); }
-.studio-preset-outline    { --studio-r-tl: 14px;  --studio-r-tr: 14px;  --studio-r-br: 14px;  --studio-r-bl: 14px;  --studio-border-w: 1.5px; --studio-shadow: none; }
-.studio-preset-glass      { --studio-r-tl: 26px;  --studio-r-tr: 26px;  --studio-r-br: 26px;  --studio-r-bl: 26px;  --studio-border-w: 1px;   --studio-border-c: hsl(0 0% 100% / 0.35); --studio-shadow: 0 20px 60px -20px hsl(var(--studio-ink) / 0.35); }
+/* --------------------------------------------------------------------------
+   Pro presets
+   -------------------------------------------------------------------------- */
+
+.studio-preset-flat {
+  --studio-r-tl: 0px;
+  --studio-r-tr: 0px;
+  --studio-r-br: 0px;
+  --studio-r-bl: 0px;
+  --studio-border-w: 0px;
+  --studio-shadow: none;
+}
+
+.studio-preset-soft {
+  --studio-r-tl: 18px;
+  --studio-r-tr: 18px;
+  --studio-r-br: 18px;
+  --studio-r-bl: 18px;
+  --studio-border-w: 0px;
+  --studio-shadow:
+    0 8px 24px -10px
+    hsl(var(--studio-ink) / 0.18);
+}
+
+.studio-preset-elevated {
+  --studio-r-tl: 22px;
+  --studio-r-tr: 22px;
+  --studio-r-br: 22px;
+  --studio-r-bl: 22px;
+  --studio-border-w: 0px;
+  --studio-shadow:
+    0 30px 70px -25px
+      hsl(var(--studio-ink) / 0.35),
+    0 10px 25px -10px
+      hsl(var(--studio-ink) / 0.18);
+}
+
+.studio-preset-outline {
+  --studio-r-tl: 14px;
+  --studio-r-tr: 14px;
+  --studio-r-br: 14px;
+  --studio-r-bl: 14px;
+  --studio-border-w: 1.5px;
+  --studio-shadow: none;
+}
+
+.studio-preset-glass {
+  --studio-r-tl: 26px;
+  --studio-r-tr: 26px;
+  --studio-r-br: 26px;
+  --studio-r-bl: 26px;
+  --studio-border-w: 1px;
+  --studio-border-c: hsl(0 0% 100% / 0.35);
+  --studio-shadow:
+    0 20px 60px -20px
+    hsl(var(--studio-ink) / 0.35);
+}
+
 .studio-preset-glass > section,
-.studio-preset-glass > div > section { backdrop-filter: blur(14px) saturate(140%); }
-.studio-preset-spotlight  { --studio-r-tl: 24px;  --studio-r-tr: 24px;  --studio-r-br: 24px;  --studio-r-bl: 24px;  --studio-border-w: 0px;   --studio-shadow: 0 0 0 1px hsl(var(--studio-ink) / 0.06), 0 50px 90px -40px hsl(var(--studio-primary, var(--studio-ink)) / 0.45); }
-.studio-preset-polaroid   { --studio-r-tl: 6px;   --studio-r-tr: 6px;   --studio-r-br: 6px;   --studio-r-bl: 6px;   --studio-border-w: 0px;   --studio-shadow: 0 1px 0 hsl(var(--studio-ink) / 0.08), 0 18px 40px -18px hsl(var(--studio-ink) / 0.4); }
+.studio-preset-glass > div > section {
+  backdrop-filter: blur(14px) saturate(140%);
+}
+
+.studio-preset-spotlight {
+  --studio-r-tl: 24px;
+  --studio-r-tr: 24px;
+  --studio-r-br: 24px;
+  --studio-r-bl: 24px;
+  --studio-border-w: 0px;
+  --studio-shadow:
+    0 0 0 1px
+      hsl(var(--studio-ink) / 0.06),
+    0 50px 90px -40px
+      hsl(
+        var(--studio-primary, var(--studio-ink))
+        / 0.45
+      );
+}
+
+.studio-preset-polaroid {
+  --studio-r-tl: 6px;
+  --studio-r-tr: 6px;
+  --studio-r-br: 6px;
+  --studio-r-bl: 6px;
+  --studio-border-w: 0px;
+  --studio-shadow:
+    0 1px 0 hsl(var(--studio-ink) / 0.08),
+    0 18px 40px -18px
+      hsl(var(--studio-ink) / 0.4);
+}
+
 .studio-preset-polaroid > section,
-.studio-preset-polaroid > div > section { padding-bottom: 3.5rem !important; background: hsl(0 0% 100%); }
-.studio-preset-neo        { --studio-r-tl: 16px;  --studio-r-tr: 16px;  --studio-r-br: 16px;  --studio-r-bl: 16px;  --studio-border-w: 2px;   --studio-border-c: hsl(var(--studio-ink) / 0.95); --studio-shadow: 8px 8px 0 0 hsl(var(--studio-ink) / 0.95); }
+.studio-preset-polaroid > div > section {
+  padding-bottom: 3.5rem !important;
+  background: hsl(0 0% 100%);
+}
 
-/* ---------- Padding ---------- */
+.studio-preset-neo {
+  --studio-r-tl: 16px;
+  --studio-r-tr: 16px;
+  --studio-r-br: 16px;
+  --studio-r-bl: 16px;
+  --studio-border-w: 2px;
+  --studio-border-c:
+    hsl(var(--studio-ink) / 0.95);
+  --studio-shadow:
+    8px 8px 0 0
+    hsl(var(--studio-ink) / 0.95);
+}
+
+/* --------------------------------------------------------------------------
+   Padding
+   -------------------------------------------------------------------------- */
+
 .studio-pad-compact > section,
-.studio-pad-compact > div > section { padding-top: 2rem !important; padding-bottom: 2rem !important; }
-.studio-pad-spacious > section,
-.studio-pad-spacious > div > section { padding-top: 6rem !important; padding-bottom: 6rem !important; }
+.studio-pad-compact > div > section {
+  padding-top: 2rem !important;
+  padding-bottom: 2rem !important;
+}
 
-/* ---------- Background overlays ---------- */
+.studio-pad-spacious > section,
+.studio-pad-spacious > div > section {
+  padding-top: 6rem !important;
+  padding-bottom: 6rem !important;
+}
+
+/* --------------------------------------------------------------------------
+   Background media
+   -------------------------------------------------------------------------- */
+
 .studio-bg-layer {
   position: absolute;
   inset: 0;
   z-index: 0;
+
   pointer-events: none;
+
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
 }
+
 .studio-bg-video {
   position: absolute;
   inset: 0;
+
   width: 100%;
   height: 100%;
+
   object-fit: cover;
+
   z-index: 0;
   pointer-events: none;
 }
+
 .studio-bg-overlay {
   position: absolute;
   inset: 0;
+
   z-index: 1;
   pointer-events: none;
-  background: hsl(var(--studio-ink) / var(--studio-bg-overlay, 0.4));
+
+  background:
+    hsl(
+      var(--studio-ink)
+      /
+      var(--studio-bg-overlay, 0.4)
+    );
 }
-.studio-scope.has-bg-media > * { position: relative; z-index: 2; }
-.studio-scope.has-bg-media > .studio-bg-layer,
-.studio-scope.has-bg-media > .studio-bg-video,
-.studio-scope.has-bg-media > .studio-bg-overlay { z-index: 0; }
-.studio-scope.has-bg-media > .studio-bg-overlay { z-index: 1; }
-/* Make inner section transparent so our background shows */
+
+.studio-scope.has-bg-media > * {
+  position: relative;
+  z-index: 2;
+}
+
+.studio-scope.has-bg-media
+  > .studio-bg-layer,
+.studio-scope.has-bg-media
+  > .studio-bg-video,
+.studio-scope.has-bg-media
+  > .studio-bg-overlay {
+  z-index: 0;
+}
+
+.studio-scope.has-bg-media
+  > .studio-bg-overlay {
+  z-index: 1;
+}
+
 .studio-scope.has-bg-media > section,
 .studio-scope.has-bg-media > div > section {
   background: transparent !important;
+  color: #fff;
 }
-.studio-scope.has-bg-media > section,
-.studio-scope.has-bg-media > div > section { color: #fff; }
 
-/* ---------- Button shape overrides ---------- */
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
+
 .studio-btn-pill a[href]:not(.no-studio-btn),
 .studio-btn-pill button:not(.no-studio-btn):not([class*="ghost"]) {
   border-radius: 9999px !important;
 }
+
 .studio-btn-rounded a[href]:not(.no-studio-btn),
 .studio-btn-rounded button:not(.no-studio-btn):not([class*="ghost"]) {
   border-radius: 0.75rem !important;
 }
+
 .studio-btn-square a[href]:not(.no-studio-btn),
 .studio-btn-square button:not(.no-studio-btn):not([class*="ghost"]) {
   border-radius: 0 !important;
 }
+
 .studio-btn-floating a[href]:not(.no-studio-btn),
 .studio-btn-floating button:not(.no-studio-btn):not([class*="ghost"]) {
-  box-shadow: 0 14px 40px hsl(var(--studio-ink) / 0.35);
+  box-shadow:
+    0 14px 40px
+    hsl(var(--studio-ink) / 0.35);
+
   transform: translateY(0);
-  transition: transform .25s ease, box-shadow .25s ease;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
+
 .studio-btn-floating a[href]:not(.no-studio-btn):hover,
 .studio-btn-floating button:not(.no-studio-btn):not([class*="ghost"]):hover {
   transform: translateY(-3px);
-  box-shadow: 0 22px 55px hsl(var(--studio-ink) / 0.45);
+
+  box-shadow:
+    0 22px 55px
+    hsl(var(--studio-ink) / 0.45);
 }
+
 .studio-btn-outline a[href]:not(.no-studio-btn),
 .studio-btn-outline button:not(.no-studio-btn):not([class*="ghost"]) {
   background: transparent !important;
   border: 1.5px solid currentColor !important;
 }
+
 .studio-btn-ghost a[href]:not(.no-studio-btn),
 .studio-btn-ghost button:not(.no-studio-btn) {
   background: transparent !important;
   box-shadow: none !important;
 }
+
 .studio-btn-size-sm a[href]:not(.no-studio-btn),
 .studio-btn-size-sm button:not(.no-studio-btn):not([class*="ghost"]) {
   padding: 0.5rem 1rem !important;
   font-size: 0.8rem !important;
 }
+
 .studio-btn-size-lg a[href]:not(.no-studio-btn),
 .studio-btn-size-lg button:not(.no-studio-btn):not([class*="ghost"]) {
   padding: 1rem 2.25rem !important;
   font-size: 1.05rem !important;
 }
 
-/* ---------- Entry animations ---------- */
+/* --------------------------------------------------------------------------
+   Entry animations
+   -------------------------------------------------------------------------- */
+
 .studio-anim {
   opacity: 0;
+
   transition:
-    opacity var(--studio-anim-dur, .8s) ease,
-    transform var(--studio-anim-dur, .8s) cubic-bezier(.2,.7,.2,1),
-    filter var(--studio-anim-dur, .8s) ease;
-  transition-delay: var(--studio-anim-delay, 0ms);
-  will-change: opacity, transform, filter;
+    opacity var(--studio-anim-dur, 0.8s) ease,
+    transform var(--studio-anim-dur, 0.8s)
+      cubic-bezier(0.2, 0.7, 0.2, 1),
+    filter var(--studio-anim-dur, 0.8s) ease;
+
+  transition-delay:
+    var(--studio-anim-delay, 0ms);
+
+  will-change:
+    opacity,
+    transform,
+    filter;
 }
-.studio-anim-fade-up { transform: translateY(40px); }
-.studio-anim-slide-left { transform: translateX(-60px); }
-.studio-anim-slide-right { transform: translateX(60px); }
-.studio-anim-zoom { transform: scale(.94); }
-.studio-anim-blur { filter: blur(14px); }
+
+.studio-anim-fade-up {
+  transform: translateY(40px);
+}
+
+.studio-anim-slide-left {
+  transform: translateX(-60px);
+}
+
+.studio-anim-slide-right {
+  transform: translateX(60px);
+}
+
+.studio-anim-zoom {
+  transform: scale(0.94);
+}
+
+.studio-anim-blur {
+  filter: blur(14px);
+}
+
 .studio-anim.is-visible {
   opacity: 1;
   transform: none;
   filter: none;
 }
 
-/* Reduced motion respect */
+/* --------------------------------------------------------------------------
+   Small mobile — 320–389 px
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 389px) {
+  .studio-frame-inset {
+    padding: 0.5rem;
+  }
+
+  .studio-frame-rounded > section,
+  .studio-frame-rounded > div > section {
+    border-radius: 0.75rem;
+  }
+
+  .studio-frame-rounded-xl > section,
+  .studio-frame-rounded-xl > div > section {
+    border-radius: 1rem;
+  }
+
+  .studio-frame-blob > section,
+  .studio-frame-blob > div > section {
+    border-radius: 24px;
+  }
+
+  .studio-frame-ticket > section,
+  .studio-frame-ticket > div > section {
+    -webkit-mask: none;
+    mask: none;
+  }
+
+  .studio-preset-glass {
+    --studio-r-tl: 16px;
+    --studio-r-tr: 16px;
+    --studio-r-br: 16px;
+    --studio-r-bl: 16px;
+  }
+
+  .studio-preset-elevated {
+    --studio-r-tl: 16px;
+    --studio-r-tr: 16px;
+    --studio-r-br: 16px;
+    --studio-r-bl: 16px;
+  }
+
+  .studio-preset-spotlight {
+    --studio-r-tl: 16px;
+    --studio-r-tr: 16px;
+    --studio-r-br: 16px;
+    --studio-r-bl: 16px;
+  }
+
+  .studio-pad-spacious > section,
+  .studio-pad-spacious > div > section {
+    padding-top: 3.5rem !important;
+    padding-bottom: 3.5rem !important;
+  }
+
+  .studio-pad-compact > section,
+  .studio-pad-compact > div > section {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+
+  .studio-btn-size-lg a[href]:not(.no-studio-btn),
+  .studio-btn-size-lg button:not(.no-studio-btn):not([class*="ghost"]) {
+    padding: 0.85rem 1.25rem !important;
+    font-size: 0.95rem !important;
+  }
+
+  .studio-scope.has-frame-vars > section,
+  .studio-scope.has-frame-vars > div > section {
+    border-width: min(
+      var(--studio-border-w, 0px),
+      1px
+    );
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Mobile — 390–767 px
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 767px) {
+  .studio-root {
+    overflow-x: clip;
+  }
+
+  .studio-scope {
+    overflow-x: clip;
+  }
+
+  .studio-frame-tilt {
+    transform: none;
+  }
+
+  .studio-frame-tilt:hover {
+    transform: none;
+  }
+
+  .studio-frame-inset {
+    padding: 0.75rem;
+  }
+
+  .studio-frame-inset > section,
+  .studio-frame-inset > div > section {
+    border-radius: 1rem;
+  }
+
+  .studio-frame-blob > section,
+  .studio-frame-blob > div > section {
+    border-radius: 1.5rem;
+  }
+
+  .studio-frame-ticket > section,
+  .studio-frame-ticket > div > section {
+    -webkit-mask: none;
+    mask: none;
+  }
+
+  .studio-scope.has-frame-vars > section,
+  .studio-scope.has-frame-vars > div > section {
+    border-top-left-radius:
+      min(var(--studio-r-tl, 0px), 20px);
+    border-top-right-radius:
+      min(var(--studio-r-tr, 0px), 20px);
+    border-bottom-right-radius:
+      min(var(--studio-r-br, 0px), 20px);
+    border-bottom-left-radius:
+      min(var(--studio-r-bl, 0px), 20px);
+  }
+
+  .studio-scope.has-bg-media > section,
+  .studio-scope.has-bg-media > div > section {
+    min-height: 0;
+  }
+
+  .studio-bg-video {
+    min-height: 100%;
+  }
+
+  .studio-btn-floating a[href]:not(.no-studio-btn),
+  .studio-btn-floating button:not(.no-studio-btn):not([class*="ghost"]) {
+    box-shadow:
+      0 8px 24px
+      hsl(var(--studio-ink) / 0.25);
+  }
+
+  .studio-btn-floating a[href]:not(.no-studio-btn):hover,
+  .studio-btn-floating button:not(.no-studio-btn):not([class*="ghost"]):hover {
+    transform: none;
+  }
+
+  .studio-anim-fade-up {
+    transform: translateY(20px);
+  }
+
+  .studio-anim-slide-left {
+    transform: translateX(-24px);
+  }
+
+  .studio-anim-slide-right {
+    transform: translateX(24px);
+  }
+
+  .studio-anim-zoom {
+    transform: scale(0.98);
+  }
+
+  .studio-anim-blur {
+    filter: blur(7px);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Tablet — 768–1023 px
+   -------------------------------------------------------------------------- */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .studio-frame-inset {
+    padding: 1rem;
+  }
+
+  .studio-frame-blob > section,
+  .studio-frame-blob > div > section {
+    border-radius: 28px;
+  }
+
+  .studio-frame-ticket > section,
+  .studio-frame-ticket > div > section {
+    --notch: 12px;
+  }
+
+  .studio-preset-elevated {
+    --studio-shadow:
+      0 20px 45px -20px
+      hsl(var(--studio-ink) / 0.3);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Laptop — 1024–1439 px
+   -------------------------------------------------------------------------- */
+
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .studio-root {
+    max-width: 100%;
+  }
+
+  .studio-frame-inset {
+    padding: 1.25rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Large desktop — 1440 px+
+   -------------------------------------------------------------------------- */
+
+@media (min-width: 1440px) {
+  .studio-root {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .studio-frame-inset {
+    padding: 1.5rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Touch devices
+   -------------------------------------------------------------------------- */
+
+@media (hover: none) and (pointer: coarse) {
+  .studio-frame-tilt {
+    transform: none;
+  }
+
+  .studio-frame-tilt:hover {
+    transform: none;
+  }
+
+  .studio-btn-floating a[href]:not(.no-studio-btn),
+  .studio-btn-floating button:not(.no-studio-btn):not([class*="ghost"]) {
+    transform: none;
+  }
+
+  .studio-btn-floating a[href]:not(.no-studio-btn):hover,
+  .studio-btn-floating button:not(.no-studio-btn):not([class*="ghost"]):hover {
+    transform: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion
+   -------------------------------------------------------------------------- */
+
 @media (prefers-reduced-motion: reduce) {
-  .studio-anim { opacity: 1 !important; transform: none !important; filter: none !important; transition: none !important; }
-  .studio-frame-tilt { transform: none !important; }
+  .studio-anim {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+
+  .studio-frame-tilt {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .studio-btn-floating a[href]:not(.no-studio-btn),
+  .studio-btn-floating button:not(.no-studio-btn):not([class*="ghost"]) {
+    transition: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Print
+   -------------------------------------------------------------------------- */
+
+@media print {
+  .studio-root,
+  .studio-scope {
+    overflow: visible !important;
+  }
+
+  .studio-bg-video {
+    display: none;
+  }
+
+  .studio-bg-overlay {
+    display: none;
+  }
+
+  .studio-anim {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  .studio-frame-tilt {
+    transform: none !important;
+  }
 }
