@@ -1,29 +1,63 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+
 import { useAuth } from "@/contexts/AuthContext";
-import type { Tables, TablesInsert } from "@/integrations/supabase/types";
+import { supabase } from "@/integrations/supabase/client";
+import type {
+  Tables,
+  TablesInsert,
+  TablesUpdate,
+} from "@/integrations/supabase/types";
 
 type Boutique = Tables<"boutiques">;
 type BoutiqueInsert = TablesInsert<"boutiques">;
+type BoutiqueUpdate = TablesUpdate<"boutiques">;
+
+const boutiquesQueryKey = (userId?: string) => [
+  "boutiques",
+  userId,
+];
+
+const boutiqueStatsQueryKey = (userId?: string) => [
+  "boutique-stats",
+  userId,
+];
+
+function requireUserId(userId?: string): string {
+  if (!userId) {
+    throw new Error("Utilisateur non authentifié.");
+  }
+
+  return userId;
+}
 
 export function useBoutiques() {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ["boutiques", user?.id],
-    queryFn: async () => {
-      if (!user) return [];
+    queryKey: boutiquesQueryKey(user?.id),
+    enabled: !!user,
+
+    queryFn: async (): Promise<Boutique[]> => {
+      const userId = requireUserId(user?.id);
 
       const { data, error } = await supabase
         .from("boutiques")
         .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+        .eq("user_id", userId)
+        .order("created_at", {
+          ascending: false,
+        });
 
-      if (error) throw error;
-      return data as Boutique[];
+      if (error) {
+        throw error;
+      }
+
+      return data ?? [];
     },
-    enabled: !!user,
   });
 }
 
@@ -31,27 +65,37 @@ export function useBoutiqueStats() {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ["boutique-stats", user?.id],
+    queryKey: boutiqueStatsQueryKey(user?.id),
+    enabled: !!user,
+
     queryFn: async () => {
-      if (!user) return { total: 0, published: 0, draft: 0 };
+      const userId = requireUserId(user?.id);
 
       const { data, error } = await supabase
         .from("boutiques")
-        .select("status")
-        .eq("user_id", user.id);
+        .select("id, status")
+        .eq("user_id", userId);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
-      const published = data?.filter((b) => b.status === "published").length || 0;
-      const draft = data?.filter((b) => b.status === "draft").length || 0;
+      const boutiques = data ?? [];
+
+      const published = boutiques.filter(
+        (boutique) => boutique.status === "published",
+      ).length;
+
+      const draft = boutiques.filter(
+        (boutique) => boutique.status === "draft",
+      ).length;
 
       return {
-        total: data?.length || 0,
+        total: boutiques.length,
         published,
         draft,
       };
     },
-    enabled: !!user,
   });
 }
 
@@ -60,43 +104,129 @@ export function useCreateBoutique() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (boutique: Omit<BoutiqueInsert, "user_id">) => {
-      if (!user) throw new Error("User not authenticated");
+    mutationFn: async (
+      boutique: Omit<BoutiqueInsert, "user_id">,
+    ): Promise<Boutique> => {
+      const userId = requireUserId(user?.id);
 
       const { data, error } = await supabase
         .from("boutiques")
         .insert({
           ...boutique,
-          user_id: user.id,
+          user_id: userId,
         })
-        .select()
+        .select("*")
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
+
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["boutiques"] });
-      queryClient.invalidateQueries({ queryKey: ["boutique-stats"] });
+
+    onSuccess: async (boutique) => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: boutiquesQueryKey(user?.id),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: boutiqueStatsQueryKey(user?.id),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["boutique", boutique.id],
+        }),
+      ]);
+    },
+  });
+}
+
+export function useUpdateBoutique() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({
+      boutiqueId,
+      updates,
+    }: {
+      boutiqueId: string;
+      updates: BoutiqueUpdate;
+    }): Promise<Boutique> => {
+      const userId = requireUserId(user?.id);
+
+      const { data, error } = await supabase
+        .from("boutiques")
+        .update(updates)
+        .eq("id", boutiqueId)
+        .eq("user_id", userId)
+        .select("*")
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    },
+
+    onSuccess: async (boutique) => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: boutiquesQueryKey(user?.id),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: boutiqueStatsQueryKey(user?.id),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["boutique", boutique.id],
+        }),
+      ]);
     },
   });
 }
 
 export function useDeleteBoutique() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: async (boutiqueId: string) => {
-      const { error } = await supabase
+      const userId = requireUserId(user?.id);
+
+      const { data, error } = await supabase
         .from("boutiques")
         .delete()
-        .eq("id", boutiqueId);
+        .eq("id", boutiqueId)
+        .eq("user_id", userId)
+        .select("id")
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error(
+          "Boutique introuvable ou accès non autorisé.",
+        );
+      }
+
+      return data.id;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["boutiques"] });
-      queryClient.invalidateQueries({ queryKey: ["boutique-stats"] });
+
+    onSuccess: async (boutiqueId) => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: boutiquesQueryKey(user?.id),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: boutiqueStatsQueryKey(user?.id),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["boutique", boutiqueId],
+        }),
+      ]);
     },
   });
 }
