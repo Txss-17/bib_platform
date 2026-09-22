@@ -1517,7 +1517,8 @@ function TrustWallScene({
   content: any;
   displayFont: string;
 }) {
-  const variant = content.variant || "press-first";
+  const variant =
+    content.variant || "press-first";
 
   const reviews =
     (content.reviews ?? []) as Array<{
@@ -1529,7 +1530,9 @@ function TrustWallScene({
     (content.badges ?? []) as string[];
 
   const press =
-    (content.press ?? content.logos ?? []) as Array<
+    (content.press ??
+      content.logos ??
+      []) as Array<
       | string
       | {
           name: string;
@@ -1539,11 +1542,11 @@ function TrustWallScene({
 
   const renderPress = () => (
     <div>
-      <p className="text-[11px] uppercase tracking-[0.25em] opacity-50 mb-6">
+      <p className="text-[11px] uppercase tracking-[0.25em] opacity-50 mb-7 text-center">
         {content.pressLabel || "Vu dans"}
       </p>
 
-      <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-5">
+      <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
         {press.map((item, i) => {
           const name =
             typeof item === "string"
@@ -1565,9 +1568,10 @@ function TrustWallScene({
           ) : (
             <span
               key={i}
-              className="text-sm tracking-[0.12em] opacity-70"
+              className="text-sm tracking-[0.14em] opacity-70"
               style={{
-                fontFamily: `${displayFont}, serif`,
+                fontFamily:
+                  `${displayFont}, serif`,
               }}
             >
               {name.toUpperCase()}
@@ -1580,22 +1584,26 @@ function TrustWallScene({
 
   const renderReviews = () => (
     <div className="grid md:grid-cols-2 gap-5">
-      {reviews.map((r, i) => (
+      {reviews.map((review, i) => (
         <blockquote
           key={i}
-          className="rounded-lg p-6 text-left"
+          className="rounded-xl p-6 md:p-8 border border-border/30"
           style={{
             background: "white",
-            boxShadow:
-              "0 1px 2px rgba(0,0,0,0.04)",
           }}
         >
-          <p className="italic leading-relaxed">
-            « {r.quote} »
+          <p
+            className="text-lg md:text-xl leading-relaxed"
+            style={{
+              fontFamily:
+                `${displayFont}, serif`,
+            }}
+          >
+            “{review.quote}”
           </p>
 
-          <footer className="text-sm opacity-60 mt-4">
-            — {r.author}
+          <footer className="text-sm opacity-60 mt-5">
+            — {review.author}
           </footer>
         </blockquote>
       ))}
@@ -1607,10 +1615,12 @@ function TrustWallScene({
       {badges.map((badge) => (
         <span
           key={badge}
-          className="px-4 py-2 rounded-full text-xs font-medium"
+          className="px-5 py-2.5 rounded-full text-xs font-medium border"
           style={{
             background:
-              "hsl(var(--studio-primary) / 0.08)",
+              "hsl(var(--studio-primary) / 0.06)",
+            borderColor:
+              "hsl(var(--studio-primary) / 0.12)",
             color:
               "hsl(var(--studio-primary))",
           }}
@@ -1623,14 +1633,14 @@ function TrustWallScene({
 
   return (
     <section
-      className="py-20"
+      className="py-20 md:py-24"
       style={{
         background:
           "hsl(var(--studio-surface))",
       }}
     >
       <div className="max-w-5xl mx-auto px-6">
-        <div className="text-center mb-12">
+        <div className="text-center mb-14">
           {content.eyebrow && (
             <p className="text-xs uppercase tracking-[0.25em] opacity-50 mb-4">
               {content.eyebrow}
@@ -1640,48 +1650,68 @@ function TrustWallScene({
           <h2
             className="text-3xl md:text-5xl"
             style={{
-              fontFamily: `${displayFont}, serif`,
+              fontFamily:
+                `${displayFont}, serif`,
             }}
           >
             {content.title}
           </h2>
 
           {content.subtitle && (
-            <p className="max-w-2xl mx-auto mt-3 opacity-70">
+            <p className="max-w-2xl mx-auto mt-4 opacity-70">
               {content.subtitle}
             </p>
           )}
         </div>
 
         {variant === "reviews-first" && (
-          <div className="space-y-12">
-            {renderReviews()}
-            {badges.length > 0 && renderBadges()}
-            {press.length > 0 && renderPress()}
+          <div className="space-y-14">
+            {reviews.length > 0 &&
+              renderReviews()}
+
+            {badges.length > 0 &&
+              renderBadges()}
+
+            {press.length > 0 &&
+              renderPress()}
           </div>
         )}
 
         {variant === "badges-row" && (
-          <div className="space-y-12">
-            {badges.length > 0 && renderBadges()}
-            {press.length > 0 && renderPress()}
-            {reviews.length > 0 && renderReviews()}
+          <div className="space-y-14">
+            {badges.length > 0 && (
+              <div className="py-7 border-y border-border/30">
+                {renderBadges()}
+              </div>
+            )}
+
+            {press.length > 0 &&
+              renderPress()}
+
+            {reviews.length > 0 &&
+              renderReviews()}
           </div>
         )}
 
-        {variant !== "reviews-first" &&
-          variant !== "badges-row" && (
-            <div className="space-y-12">
-              {press.length > 0 && renderPress()}
-              {reviews.length > 0 && renderReviews()}
-              {badges.length > 0 && renderBadges()}
-            </div>
-          )}
+        {variant === "press-first" && (
+          <div className="space-y-14">
+            {press.length > 0 && (
+              <div className="pb-10 border-b border-border/30">
+                {renderPress()}
+              </div>
+            )}
+
+            {reviews.length > 0 &&
+              renderReviews()}
+
+            {badges.length > 0 &&
+              renderBadges()}
+          </div>
+        )}
       </div>
     </section>
   );
 }
-
 function CtaStickyScene({
   content,
   displayFont,
