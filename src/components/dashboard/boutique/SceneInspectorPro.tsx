@@ -1,3 +1,4 @@
+import SceneVariantPicker from "./SceneVariantPicker";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -362,21 +363,11 @@ export function SceneInspectorPro({
       </div>
 
       {def && def.variants.length > 1 && (
-        <div>
-          <Label className="text-xs">Variante</Label>
-          <Select value={scene.variant} onValueChange={(v) => onPatch({ variant: v })}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {def.variants.map((v) => (
-                <SelectItem key={v} value={v}>
-                  {v}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <SceneVariantPicker
+          sceneType={scene.scene_type}
+          value={scene.variant}
+          onChange={(variant) => onPatch({ variant })}
+        />
       )}
 
       {/* STYLE — hériter / personnaliser */}
