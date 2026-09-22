@@ -343,24 +343,40 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     },
   },
   {
-    id: "stats-counter",
-    role: "stats",
-    name: "Chiffres clés",
-    tagline: "3-4 KPIs animés (clients, années, pays…)",
-    description:
-      "Bloc compteurs avec chiffres en gros, idéal pour rassurer.",
-    variants: ["centered", "split", "minimal"],
-    previewKey: "stats-counter",
-    defaultContent: {
-      title: "Quelques chiffres",
-      stats: [
-        { value: "10K+", label: "Clients satisfaits" },
-        { value: "98%", label: "Avis 5 étoiles" },
-        { value: "48h", label: "Livraison moyenne" },
-        { value: "2 ans", label: "Garantie" },
-      ],
-    },
+  id: "stats-counter",
+  role: "stats",
+  name: "Chiffres clés",
+  tagline: "3-4 chiffres clés mis en avant",
+  description:
+    "Bloc de chiffres clés avec valeurs grand format, idéal pour présenter des indicateurs et renforcer la confiance.",
+  variants: [
+    "centered",
+    "split",
+    "minimal",
+  ],
+  previewKey: "stats-counter",
+  defaultContent: {
+    title: "Quelques chiffres",
+    stats: [
+      {
+        value: "10K+",
+        label: "Clients satisfaits",
+      },
+      {
+        value: "98%",
+        label: "Avis 5 étoiles",
+      },
+      {
+        value: "48h",
+        label: "Livraison moyenne",
+      },
+      {
+        value: "2 ans",
+        label: "Garantie",
+      },
+    ],
   },
+    
   {
     id: "video-fullscreen",
     role: "video",
