@@ -974,40 +974,46 @@ function StoryScrollyScene({
       image?: string | null;
     }>;
 
-  const variant = content.variant || "alternating";
+  const variant =
+    content.variant || "alternating";
 
   if (variant === "centered") {
     return (
       <section className="py-20 md:py-28">
-        <div className="max-w-3xl mx-auto px-6 space-y-20">
-          {chapters.map((c, i) => (
-            <article key={i} className="text-center">
-              {c.image && (
+        <div className="max-w-3xl mx-auto px-6 space-y-24">
+          {chapters.map((chapter, i) => (
+            <article
+              key={i}
+              className="text-center"
+            >
+              {chapter.image && (
                 <div
-                  className="aspect-[16/9] rounded-xl overflow-hidden mb-8 bg-cover bg-center"
+                  className="aspect-[16/9] rounded-2xl overflow-hidden mb-9 bg-cover bg-center"
                   style={{
-                    backgroundImage: `url(${c.image})`,
+                    backgroundImage:
+                      `url(${chapter.image})`,
                   }}
                 />
               )}
 
-              {c.eyebrow && (
-                <span className="text-xs uppercase tracking-[0.2em] opacity-60">
-                  {c.eyebrow}
+              {chapter.eyebrow && (
+                <span className="text-xs uppercase tracking-[0.2em] opacity-50">
+                  {chapter.eyebrow}
                 </span>
               )}
 
               <h2
-                className="text-3xl md:text-5xl mt-3 mb-4"
+                className="text-3xl md:text-5xl mt-3 mb-5"
                 style={{
-                  fontFamily: `${displayFont}, serif`,
+                  fontFamily:
+                    `${displayFont}, serif`,
                 }}
               >
-                {c.title}
+                {chapter.title}
               </h2>
 
               <p className="opacity-80 leading-relaxed max-w-2xl mx-auto">
-                {c.body}
+                {chapter.body}
               </p>
             </article>
           ))}
@@ -1019,53 +1025,56 @@ function StoryScrollyScene({
   if (variant === "side-pinned") {
     return (
       <section className="py-20 md:py-28">
-        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-[0.8fr_1.2fr] gap-12">
+        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-[0.75fr_1.25fr] gap-14">
           <div className="md:sticky md:top-24 md:self-start">
             {content.eyebrow && (
-              <span className="text-xs uppercase tracking-[0.2em] opacity-60">
+              <span className="text-xs uppercase tracking-[0.2em] opacity-50">
                 {content.eyebrow}
               </span>
             )}
 
             <h2
-              className="text-4xl md:text-6xl mt-3"
+              className="text-4xl md:text-6xl mt-3 leading-tight"
               style={{
-                fontFamily: `${displayFont}, serif`,
+                fontFamily:
+                  `${displayFont}, serif`,
               }}
             >
               {content.title || "Notre histoire"}
             </h2>
           </div>
 
-          <div className="space-y-20">
-            {chapters.map((c, i) => (
+          <div className="space-y-24">
+            {chapters.map((chapter, i) => (
               <article key={i}>
-                {c.image && (
+                {chapter.image && (
                   <div
-                    className="aspect-[16/10] rounded-xl overflow-hidden mb-6 bg-cover bg-center"
+                    className="aspect-[16/10] rounded-2xl overflow-hidden mb-7 bg-cover bg-center"
                     style={{
-                      backgroundImage: `url(${c.image})`,
+                      backgroundImage:
+                        `url(${chapter.image})`,
                     }}
                   />
                 )}
 
-                {c.eyebrow && (
-                  <span className="text-xs uppercase tracking-[0.2em] opacity-60">
-                    {c.eyebrow}
+                {chapter.eyebrow && (
+                  <span className="text-xs uppercase tracking-[0.2em] opacity-50">
+                    {chapter.eyebrow}
                   </span>
                 )}
 
                 <h3
-                  className="text-2xl md:text-4xl mt-2 mb-3"
+                  className="text-2xl md:text-4xl mt-2 mb-4"
                   style={{
-                    fontFamily: `${displayFont}, serif`,
+                    fontFamily:
+                      `${displayFont}, serif`,
                   }}
                 >
-                  {c.title}
+                  {chapter.title}
                 </h3>
 
                 <p className="opacity-80 leading-relaxed">
-                  {c.body}
+                  {chapter.body}
                 </p>
               </article>
             ))}
@@ -1077,65 +1086,136 @@ function StoryScrollyScene({
 
   return (
     <section className="py-20 md:py-32">
-      <div className="max-w-5xl mx-auto px-6 space-y-24">
-        {chapters.map((c, i) => (
-          <div
-            key={i}
-            className={`grid md:grid-cols-2 gap-10 items-center ${
-              i % 2
-                ? "md:[&>*:first-child]:order-2"
-                : ""
-            }`}
-          >
-            <div>
-              {c.eyebrow && (
-                <span className="text-xs uppercase tracking-[0.2em] opacity-60">
-                  {c.eyebrow}
-                </span>
-              )}
+      <div className="max-w-6xl mx-auto px-6 space-y-28">
+        {chapters.map((chapter, i) => {
+          const imageFirst = i % 2 === 0;
 
-              <h2
-                className="text-3xl md:text-4xl mt-3 mb-4"
-                style={{
-                  fontFamily: `${displayFont}, serif`,
-                }}
+          return (
+            <article
+              key={i}
+              className="grid md:grid-cols-2 gap-10 md:gap-16 items-center"
+            >
+              <div
+                className={
+                  imageFirst
+                    ? "md:order-1"
+                    : "md:order-2"
+                }
               >
-                {c.title}
-              </h2>
+                {chapter.eyebrow && (
+                  <span className="text-xs uppercase tracking-[0.2em] opacity-50">
+                    {chapter.eyebrow}
+                  </span>
+                )}
 
-              <p className="opacity-80 leading-relaxed">
-                {c.body}
-              </p>
-            </div>
+                <h2
+                  className="text-3xl md:text-5xl mt-3 mb-5"
+                  style={{
+                    fontFamily:
+                      `${displayFont}, serif`,
+                  }}
+                >
+                  {chapter.title}
+                </h2>
 
-            <div
-              className="aspect-[4/5] rounded-lg bg-cover bg-center"
-              style={{
-                backgroundImage: c.image
-                  ? `url(${c.image})`
-                  : undefined,
-                background: c.image
-                  ? undefined
-                  : `linear-gradient(
-                      135deg,
-                      hsl(var(--studio-primary) / 0.15),
-                      hsl(var(--studio-accent) / 0.25)
-                    )`,
-              }}
-            />
-          </div>
-        ))}
+                <p className="opacity-80 leading-relaxed max-w-xl">
+                  {chapter.body}
+                </p>
+              </div>
+
+              <div
+                className={
+                  imageFirst
+                    ? "md:order-2"
+                    : "md:order-1"
+                }
+              >
+                <div
+                  className="aspect-[4/5] rounded-2xl overflow-hidden bg-cover bg-center"
+                  style={{
+                    background: chapter.image
+                      ? `url(${chapter.image}) center/cover`
+                      : `linear-gradient(
+                          135deg,
+                          hsl(var(--studio-primary) / 0.15),
+                          hsl(var(--studio-accent) / 0.25)
+                        )`,
+                  }}
+                />
+              </div>
+            </article>
+          );
+        })}
       </div>
     </section>
   );
 }
+
+function LookbookScene({
+  content,
+  displayFont,
+  products,
+}: {
+  content: any;
+  displayFont: string;
+  products: Product[];
+}) {
+  const pool = (
+    content.images?.length
+      ? content.images
+      : products
+          .map((product) => product.image_url)
+          .filter(Boolean)
+  ) as string[];
+
+  const items = pool.slice(0, 8);
+
+  const variant =
+    content.variant || "asymmetric";
+
+  const heading = (
+    <div className="text-center mb-12">
+      {content.eyebrow && (
+        <p className="text-xs uppercase tracking-[0.25em] opacity-50 mb-4">
+          {content.eyebrow}
+        </p>
+      )}
+
+      <h2
+        className="text-3xl md:text-5xl"
+        style={{
+          fontFamily:
+            `${displayFont}, serif`,
+        }}
+      >
+        {content.title}
+      </h2>
+
+      {content.subtitle && (
+        <p className="opacity-70 mt-3 max-w-2xl mx-auto">
+          {content.subtitle}
+        </p>
+      )}
+    </div>
+  );
+
+  const imageStyle = (src?: string) => ({
+    background: src
+      ? `url(${src}) center/cover`
+      : `linear-gradient(
+          135deg,
+          hsl(var(--studio-primary) / 0.25),
+          hsl(var(--studio-accent) / 0.25)
+        )`,
+  });
 
   if (variant === "tiled") {
     return (
       <section
         className="py-20"
         style={{
-          background: "hsl(var(--studio-ink))",
+          background:
+            "hsl(var(--studio-ink))",
           color: "white",
         }}
       >
@@ -1146,15 +1226,8 @@ function StoryScrollyScene({
             {items.map((src, i) => (
               <div
                 key={i}
-                className="aspect-square rounded overflow-hidden bg-cover bg-center"
-                style={{
-                  backgroundImage: src
-                    ? `url(${src})`
-                    : undefined,
-                  background: src
-                    ? undefined
-                    : "hsl(var(--studio-primary))",
-                }}
+                className="aspect-square rounded-lg overflow-hidden bg-cover bg-center"
+                style={imageStyle(src)}
               />
             ))}
           </div>
@@ -1168,41 +1241,58 @@ function StoryScrollyScene({
       <section
         className="py-20"
         style={{
-          background: "hsl(var(--studio-ink))",
+          background:
+            "hsl(var(--studio-ink))",
           color: "white",
         }}
       >
         <div className="max-w-6xl mx-auto px-6">
           {heading}
 
-          <div className="space-y-8">
+          <div className="space-y-12">
             {items.map((src, i) => (
-              <div
+              <article
                 key={i}
-                className={`grid md:grid-cols-2 gap-6 items-center ${
-                  i % 2
-                    ? "md:[&>*:first-child]:order-2"
-                    : ""
-                }`}
+                className="grid md:grid-cols-2 gap-8 md:gap-14 items-center"
               >
                 <div
-                  className="aspect-[4/3] rounded overflow-hidden bg-cover bg-center"
-                  style={{
-                    backgroundImage: src
-                      ? `url(${src})`
-                      : undefined,
-                    background: src
-                      ? undefined
-                      : "hsl(var(--studio-primary))",
-                  }}
-                />
-
-                <div className="px-2 md:px-8">
-                  <span className="text-xs uppercase tracking-[0.2em] opacity-50">
-                    Look {String(i + 1).padStart(2, "0")}
-                  </span>
+                  className={
+                    i % 2 === 0
+                      ? "md:order-1"
+                      : "md:order-2"
+                  }
+                >
+                  <div
+                    className="aspect-[4/3] rounded-xl overflow-hidden bg-cover bg-center"
+                    style={imageStyle(src)}
+                  />
                 </div>
-              </div>
+
+                <div
+                  className={
+                    i % 2 === 0
+                      ? "md:order-2"
+                      : "md:order-1"
+                  }
+                >
+                  <span className="text-xs uppercase tracking-[0.2em] opacity-50">
+                    Look{" "}
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+
+                  {content.lookTitles?.[i] && (
+                    <h3
+                      className="text-2xl md:text-4xl mt-3"
+                      style={{
+                        fontFamily:
+                          `${displayFont}, serif`,
+                      }}
+                    >
+                      {content.lookTitles[i]}
+                    </h3>
+                  )}
+                </div>
+              </article>
             ))}
           </div>
         </div>
@@ -1214,7 +1304,8 @@ function StoryScrollyScene({
     <section
       className="py-20"
       style={{
-        background: "hsl(var(--studio-ink))",
+        background:
+          "hsl(var(--studio-ink))",
         color: "white",
       }}
     >
@@ -1225,16 +1316,12 @@ function StoryScrollyScene({
           {items.map((src, i) => (
             <div
               key={i}
-              className={`relative overflow-hidden rounded ${
-                i % 5 === 0
-                  ? "row-span-2 aspect-[3/5]"
-                  : "aspect-[3/4]"
-              }`}
-              style={{
-                background: src
-                  ? `url(${src}) center/cover`
-                  : "hsl(var(--studio-primary))",
-              }}
+              className={
+                i === 0 || i === 5
+                  ? "relative row-span-2 aspect-[3/5] rounded-xl overflow-hidden"
+                  : "relative aspect-[3/4] rounded-xl overflow-hidden"
+              }
+              style={imageStyle(src)}
             />
           ))}
         </div>
@@ -1423,7 +1510,6 @@ function ShowcaseScene({
     </section>
   );
 }
-
 function TrustWallScene({
   content,
   displayFont,
