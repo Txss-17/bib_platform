@@ -294,44 +294,131 @@ export function SceneInspectorPro({
   };
 
   const generic = (
-    <>
-      {"title" in c && (
-        <div>
-          <Label className="text-xs">Titre</Label>
-          <Input value={c.title ?? ""} onChange={(e) => setField("title", e.target.value)} />
-        </div>
-      )}
-      {"subtitle" in c && (
-        <div>
-          <Label className="text-xs">Sous-titre</Label>
-          <Textarea
-            rows={2}
-            value={c.subtitle ?? ""}
-            onChange={(e) => setField("subtitle", e.target.value)}
-          />
-        </div>
-      )}
-      {"ctaLabel" in c && (
-        <div>
-          <Label className="text-xs">CTA principal</Label>
-          <Input
-            value={c.ctaLabel ?? ""}
-            onChange={(e) => setField("ctaLabel", e.target.value)}
-          />
-        </div>
-      )}
-      {"ctaSecondaryLabel" in c && (
-        <div>
-          <Label className="text-xs">CTA secondaire</Label>
-          <Input
-            value={c.ctaSecondaryLabel ?? ""}
-            onChange={(e) => setField("ctaSecondaryLabel", e.target.value)}
-          />
-        </div>
-      )}
-    </>
-  );
+  <>
+    {"title" in c && (
+      <div>
+        <Label className="text-xs">
+          Titre
+        </Label>
 
+        <Input
+          value={c.title ?? ""}
+          onChange={(e) =>
+            setField(
+              "title",
+              e.target.value,
+            )
+          }
+        />
+      </div>
+    )}
+
+    {"subtitle" in c && (
+      <div>
+        <Label className="text-xs">
+          Sous-titre
+        </Label>
+
+        <Textarea
+          rows={2}
+          value={c.subtitle ?? ""}
+          onChange={(e) =>
+            setField(
+              "subtitle",
+              e.target.value,
+            )
+          }
+        />
+      </div>
+    )}
+
+    {"ctaLabel" in c && (
+      <div className="space-y-2">
+        <div>
+          <Label className="text-xs">
+            CTA principal
+          </Label>
+
+          <Input
+            placeholder="Ex. Découvrir"
+            value={c.ctaLabel ?? ""}
+            onChange={(e) =>
+              setField(
+                "ctaLabel",
+                e.target.value,
+              )
+            }
+          />
+        </div>
+
+        <div>
+          <Label className="text-xs">
+            Destination du CTA principal
+          </Label>
+
+          <Input
+            placeholder="#shop ou https://…"
+            value={c.ctaUrl ?? ""}
+            onChange={(e) =>
+              setField(
+                "ctaUrl",
+                e.target.value,
+              )
+            }
+          />
+
+          <p className="text-[10px] opacity-50 mt-1">
+            Utilise une ancre comme #shop,
+            une route interne ou une URL
+            complète.
+          </p>
+        </div>
+      </div>
+    )}
+
+    {"ctaSecondaryLabel" in c && (
+      <div className="space-y-2">
+        <div>
+          <Label className="text-xs">
+            CTA secondaire
+          </Label>
+
+          <Input
+            placeholder="Ex. En savoir plus"
+            value={
+              c.ctaSecondaryLabel ?? ""
+            }
+            onChange={(e) =>
+              setField(
+                "ctaSecondaryLabel",
+                e.target.value,
+              )
+            }
+          />
+        </div>
+
+        <div>
+          <Label className="text-xs">
+            Destination du CTA secondaire
+          </Label>
+
+          <Input
+            placeholder="#newsletter ou https://…"
+            value={
+              c.ctaSecondaryUrl ?? ""
+            }
+            onChange={(e) =>
+              setField(
+                "ctaSecondaryUrl",
+                e.target.value,
+              )
+            }
+          />
+        </div>
+      </div>
+    )}
+  </>
+);
   return (
     <Card className="p-3 mt-4 space-y-3">
       <div className="flex items-center justify-between">
@@ -519,45 +606,210 @@ export function SceneInspectorPro({
         </>
       )}
 
-      {/* SHOWCASE MAGAZINE */}
-      {scene.scene_type === "showcase-magazine" && (
-        <>
-          {generic}
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Label className="text-xs">Forme des cadres</Label>
-              <Select
-                value={c.cardShape ?? "rounded"}
-                onValueChange={(v) => setField("cardShape", v)}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="square">Carré</SelectItem>
-                  <SelectItem value="rounded">Arrondi</SelectItem>
-                  <SelectItem value="rounded-xl">Très arrondi</SelectItem>
-                  <SelectItem value="circle">Cercle</SelectItem>
-                  <SelectItem value="arch">Arche</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-xs">Style cadre</Label>
-              <Select
-                value={c.cardStyle ?? "minimal"}
-                onValueChange={(v) => setField("cardStyle", v)}
-              >
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="minimal">Minimal</SelectItem>
-                  <SelectItem value="card">Carte (ombre)</SelectItem>
-                  <SelectItem value="bordered">Avec bordure</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </>
-      )}
+     {/* SHOWCASE MAGAZINE */}
+{scene.scene_type ===
+  "showcase-magazine" && (
+  <>
+    {generic}
 
+    <div className="grid grid-cols-2 gap-2">
+      <div>
+        <Label className="text-xs">
+          Forme des cadres
+        </Label>
+
+        <Select
+          value={
+            c.cardShape ?? "rounded"
+          }
+          onValueChange={(v) =>
+            setField(
+              "cardShape",
+              v,
+            )
+          }
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value="square">
+              Carré
+            </SelectItem>
+
+            <SelectItem value="rounded">
+              Arrondi
+            </SelectItem>
+
+            <SelectItem value="rounded-xl">
+              Très arrondi
+            </SelectItem>
+
+            <SelectItem value="circle">
+              Cercle
+            </SelectItem>
+
+            <SelectItem value="arch">
+              Arche
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label className="text-xs">
+          Style cadre
+        </Label>
+
+        <Select
+          value={
+            c.cardStyle ?? "minimal"
+          }
+          onValueChange={(v) =>
+            setField(
+              "cardStyle",
+              v,
+            )
+          }
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value="minimal">
+              Minimal
+            </SelectItem>
+
+            <SelectItem value="card">
+              Carte (ombre)
+            </SelectItem>
+
+            <SelectItem value="bordered">
+              Avec bordure
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+
+    {products.length > 0 && (
+      <div>
+        <Label className="text-xs flex items-center justify-between mb-1">
+          <span>
+            Produits présentés
+          </span>
+
+          <button
+            type="button"
+            onClick={() =>
+              setField(
+                "productIds",
+                [],
+              )
+            }
+            className="text-[10px] text-primary hover:underline"
+          >
+            Sélection automatique
+          </button>
+        </Label>
+
+        <div className="max-h-48 overflow-auto rounded-md border border-border/40 p-2 space-y-1">
+          {products.map(
+            (product) => {
+              const ids =
+                (c.productIds ??
+                  []) as string[];
+
+              const automatic =
+                ids.length === 0;
+
+              const checked =
+                automatic ||
+                ids.includes(
+                  product.id,
+                );
+
+              return (
+                <label
+                  key={product.id}
+                  className="flex items-center gap-2 rounded px-1.5 py-1 text-xs cursor-pointer hover:bg-muted/50"
+                >
+                  <input
+                    type="checkbox"
+                    checked={
+                      checked
+                    }
+                    onChange={(
+                      e,
+                    ) => {
+                      const current =
+                        automatic
+                          ? products.map(
+                              (
+                                item,
+                              ) =>
+                                item.id,
+                            )
+                          : ids;
+
+                      const next =
+                        e.target
+                          .checked
+                          ? Array.from(
+                              new Set([
+                                ...current,
+                                product.id,
+                              ]),
+                            )
+                          : current.filter(
+                              (
+                                id,
+                              ) =>
+                                id !==
+                                product.id,
+                            );
+
+                      setField(
+                        "productIds",
+                        next.length ===
+                          products.length
+                          ? []
+                          : next,
+                      );
+                    }}
+                  />
+
+                  {product.image_url && (
+                    <span
+                      className="w-7 h-7 rounded bg-muted bg-cover bg-center shrink-0"
+                      style={{
+                        backgroundImage:
+                          `url(${product.image_url})`,
+                      }}
+                    />
+                  )}
+
+                  <span className="truncate">
+                    {product.name}
+                  </span>
+                </label>
+              );
+            },
+          )}
+        </div>
+
+        <p className="text-[10px] opacity-50 mt-1">
+          Sans sélection manuelle,
+          BIB utilise automatiquement
+          les premiers produits selon
+          la variante choisie.
+        </p>
+      </div>
+    )}
+  </>
+)}
       {/* MARQUEE STRIP */}
       {scene.scene_type === "marquee-strip" && (
         <>
@@ -806,49 +1058,227 @@ export function SceneInspectorPro({
         </>
       )}
 
-      {/* TRUST WALL */}
-      {scene.scene_type === "trust-wall" && (
-        <>
-          {generic}
-          <div>
-            <Label className="text-xs mb-2 block">Avis clients</Label>
-            <ListEditor
-              items={(c.reviews ?? []) as Array<Record<string, any>>}
-              factory={() => ({ author: "", quote: "", rating: 5 })}
-              addLabel="Ajouter un avis"
-              onChange={(next) => setField("reviews", next)}
-              renderItem={(r, update) => (
-                <>
-                  <Input
-                    placeholder="Auteur"
-                    value={r.author ?? ""}
-                    onChange={(e) => update({ author: e.target.value })}
-                  />
-                  <Textarea
-                    rows={2}
-                    placeholder="Citation"
-                    value={r.quote ?? ""}
-                    onChange={(e) => update({ quote: e.target.value })}
-                  />
-                </>
-              )}
-            />
-          </div>
-          <div>
-            <Label className="text-xs mb-2 block">Badges (un par ligne)</Label>
-            <Textarea
-              rows={3}
-              value={(c.badges ?? []).join("\n")}
+     {/* TRUST WALL */}
+{scene.scene_type ===
+  "trust-wall" && (
+  <>
+    {generic}
+
+    <div>
+      <Label className="text-xs mb-2 block">
+        Avis clients
+      </Label>
+
+      <ListEditor
+        items={
+          (c.reviews ??
+            []) as Array<
+            Record<string, any>
+          >
+        }
+        factory={() => ({
+          author: "",
+          quote: "",
+          rating: 5,
+        })}
+        addLabel="Ajouter un avis"
+        onChange={(next) =>
+          setField(
+            "reviews",
+            next,
+          )
+        }
+        renderItem={(
+          review,
+          update,
+        ) => (
+          <>
+            <Input
+              placeholder="Auteur"
+              value={
+                review.author ?? ""
+              }
               onChange={(e) =>
-                setField(
-                  "badges",
-                  e.target.value.split("\n").map((s) => s.trim()).filter(Boolean),
-                )
+                update({
+                  author:
+                    e.target.value,
+                })
               }
             />
-          </div>
-        </>
-      )}
+
+            <Textarea
+              rows={2}
+              placeholder="Citation"
+              value={
+                review.quote ?? ""
+              }
+              onChange={(e) =>
+                update({
+                  quote:
+                    e.target.value,
+                })
+              }
+            />
+          </>
+        )}
+      />
+    </div>
+
+    <div>
+      <Label className="text-xs mb-2 block">
+        Badges de confiance
+      </Label>
+
+      <Textarea
+        rows={3}
+        placeholder={
+          "Paiement sécurisé\nLivraison suivie\nProduits vérifiés"
+        }
+        value={
+          (c.badges ?? []).join(
+            "\n",
+          )
+        }
+        onChange={(e) =>
+          setField(
+            "badges",
+            e.target.value
+              .split("\n")
+              .map((s) =>
+                s.trim(),
+              )
+              .filter(Boolean),
+          )
+        }
+      />
+
+      <p className="text-[10px] opacity-50 mt-1">
+        Un badge par ligne.
+      </p>
+    </div>
+
+    <div>
+      <Label className="text-xs">
+        Libellé presse
+      </Label>
+
+      <Input
+        placeholder="Vu dans"
+        value={
+          c.pressLabel ?? ""
+        }
+        onChange={(e) =>
+          setField(
+            "pressLabel",
+            e.target.value,
+          )
+        }
+      />
+    </div>
+
+    <div>
+      <Label className="text-xs mb-2 block">
+        Presse et références
+      </Label>
+
+      <ListEditor
+        items={
+          (
+            c.pressLogos ??
+            c.press ??
+            c.logos ??
+            []
+          ).map(
+            (
+              item:
+                | string
+                | {
+                    name?: string;
+                    url?: string | null;
+                  },
+            ) =>
+              typeof item ===
+              "string"
+                ? {
+                    name: item,
+                    url: "",
+                  }
+                : {
+                    name:
+                      item.name ??
+                      "",
+                    url:
+                      item.url ??
+                      "",
+                  },
+          )
+        }
+        factory={() => ({
+          name: "",
+          url: "",
+        })}
+        addLabel="Ajouter une référence"
+        onChange={(next) =>
+          setField(
+            "pressLogos",
+            next
+              .filter(
+                (item) =>
+                  item.name?.trim() ||
+                  item.url?.trim(),
+              )
+              .map((item) => ({
+                name:
+                  item.name?.trim() ??
+                  "",
+                url:
+                  item.url?.trim() ||
+                  null,
+              })),
+          )
+        }
+        renderItem={(
+          item,
+          update,
+        ) => (
+          <>
+            <Input
+              placeholder="Nom — ex. Vogue"
+              value={
+                item.name ?? ""
+              }
+              onChange={(e) =>
+                update({
+                  name:
+                    e.target.value,
+                })
+              }
+            />
+
+            <Input
+              placeholder="URL du logo — optionnel"
+              value={
+                item.url ?? ""
+              }
+              onChange={(e) =>
+                update({
+                  url:
+                    e.target.value,
+                })
+              }
+            />
+
+            <p className="text-[10px] opacity-50">
+              Sans URL, le nom est
+              affiché sous forme
+              typographique.
+            </p>
+          </>
+        )}
+      />
+    </div>
+  </>
+)}
 
       {/* FAQ */}
       {scene.scene_type === "faq-accordion" && (
@@ -1232,21 +1662,202 @@ export function SceneInspectorPro({
       )}
 
       {/* CTA STICKY */}
-      {scene.scene_type === "cta-sticky" && (
-        <>
-          {generic}
-          <div className="flex items-center justify-between rounded-md border border-border/40 px-2 py-1.5">
-            <div>
-              <Label className="text-xs">Barre fixe mobile</Label>
-              <p className="text-[10px] opacity-60">Affiche un bouton d'achat permanent en bas d'écran sur mobile.</p>
-            </div>
-            <Switch
-              checked={!!c.stickyEnabled}
-              onCheckedChange={(v) => setField("stickyEnabled", v)}
-            />
-          </div>
-        </>
-      )}
+{scene.scene_type ===
+  "cta-sticky" && (
+  <>
+    {generic}
+
+    <div className="flex items-center justify-between gap-4 rounded-md border border-border/40 px-3 py-2">
+      <div>
+        <Label className="text-xs">
+          Barre fixe
+        </Label>
+
+        <p className="text-[10px] opacity-60 mt-0.5">
+          Active la barre d'action
+          permanente lorsque la variante
+          « Sticky only » est utilisée.
+        </p>
+      </div>
+
+      <Switch
+        checked={
+          c.stickyEnabled !==
+          false
+        }
+        onCheckedChange={(v) =>
+          setField(
+            "stickyEnabled",
+            v,
+          )
+        }
+      />
+    </div>
+
+    <div>
+      <Label className="text-xs">
+        Texte de la barre fixe
+      </Label>
+
+      <Input
+        placeholder={
+          c.title ||
+          "Découvrir la collection"
+        }
+        value={
+          c.stickyLabel ?? ""
+        }
+        onChange={(e) =>
+          setField(
+            "stickyLabel",
+            e.target.value,
+          )
+        }
+      />
+
+      <p className="text-[10px] opacity-50 mt-1">
+        Si ce champ est vide, le titre
+        principal de la scène est utilisé.
+      </p>
+    </div>
+
+    <div>
+      <Label className="text-xs">
+        Sous-texte de la barre
+      </Label>
+
+      <Input
+        placeholder="Livraison offerte dès 50 €"
+        value={
+          c.stickySubtitle ?? ""
+        }
+        onChange={(e) =>
+          setField(
+            "stickySubtitle",
+            e.target.value,
+          )
+        }
+      />
+    </div>
+
+    {scene.variant ===
+      "split-newsletter" && (
+      <div className="space-y-3 rounded-md border border-border/40 p-3">
+        <div>
+          <p className="text-xs font-medium">
+            Newsletter
+          </p>
+
+          <p className="text-[10px] opacity-50">
+            Contenu du formulaire affiché
+            dans cette variante.
+          </p>
+        </div>
+
+        <div>
+          <Label className="text-xs">
+            Sur-titre
+          </Label>
+
+          <Input
+            placeholder="Newsletter"
+            value={
+              c.newsletterEyebrow ??
+              ""
+            }
+            onChange={(e) =>
+              setField(
+                "newsletterEyebrow",
+                e.target.value,
+              )
+            }
+          />
+        </div>
+
+        <div>
+          <Label className="text-xs">
+            Titre newsletter
+          </Label>
+
+          <Input
+            placeholder="Restez informé"
+            value={
+              c.newsletterTitle ??
+              ""
+            }
+            onChange={(e) =>
+              setField(
+                "newsletterTitle",
+                e.target.value,
+              )
+            }
+          />
+        </div>
+
+        <div>
+          <Label className="text-xs">
+            Description
+          </Label>
+
+          <Textarea
+            rows={2}
+            placeholder="Recevez nos nouveautés directement dans votre boîte mail."
+            value={
+              c.newsletterSubtitle ??
+              ""
+            }
+            onChange={(e) =>
+              setField(
+                "newsletterSubtitle",
+                e.target.value,
+              )
+            }
+          />
+        </div>
+
+        <div>
+          <Label className="text-xs">
+            Placeholder email
+          </Label>
+
+          <Input
+            placeholder="Votre email"
+            value={
+              c.newsletterPlaceholder ??
+              ""
+            }
+            onChange={(e) =>
+              setField(
+                "newsletterPlaceholder",
+                e.target.value,
+              )
+            }
+          />
+        </div>
+
+        <div>
+          <Label className="text-xs">
+            Texte du bouton
+          </Label>
+
+          <Input
+            placeholder="S'inscrire"
+            value={
+              c.newsletterCtaLabel ??
+              ""
+            }
+            onChange={(e) =>
+              setField(
+                "newsletterCtaLabel",
+                e.target.value,
+              )
+            }
+          />
+        </div>
+      </div>
+    )}
+  </>
+)}
 
       {/* PRODUCT SPOTLIGHT */}
       {scene.scene_type === "product-spotlight" && (
