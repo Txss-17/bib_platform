@@ -804,6 +804,7 @@ function HeroCinemaScene({
   content: any;
   displayFont: string;
 }) {
+  const variant = content.variant || "fullscreen";
   const fullPage = !!content.fullPageBackground;
 
   const align =
@@ -813,6 +814,107 @@ function HeroCinemaScene({
         ? "text-right items-end"
         : "text-center items-center";
 
+  if (variant === "type-only") {
+    return (
+      <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden">
+        <div className="max-w-4xl px-6 text-center">
+          {content.eyebrow && (
+            <p className="text-xs uppercase tracking-[0.25em] opacity-60 mb-5">
+              {content.eyebrow}
+            </p>
+          )}
+
+          <h1
+            className="text-5xl md:text-7xl lg:text-8xl leading-[0.95] mb-6"
+            style={{
+              fontFamily: `${displayFont}, serif`,
+            }}
+          >
+            {content.title}
+          </h1>
+
+          {content.subtitle && (
+            <p className="text-lg md:text-xl opacity-70 max-w-2xl mx-auto mb-8">
+              {content.subtitle}
+            </p>
+          )}
+
+          {content.ctaLabel && (
+            <a
+              href="#shop"
+              className="inline-block rounded-full px-8 py-3 text-sm font-medium"
+              style={{
+                background: "hsl(var(--studio-accent))",
+                color: "hsl(var(--studio-ink))",
+              }}
+            >
+              {content.ctaLabel}
+            </a>
+          )}
+        </div>
+      </section>
+    );
+  }
+
+  if (variant === "split") {
+    return (
+      <section className="min-h-[78vh] grid md:grid-cols-2 overflow-hidden">
+        <div
+          className="min-h-[45vh] md:min-h-0 bg-cover bg-center"
+          style={{
+            background: content.backgroundImage
+              ? `url(${content.backgroundImage}) center/cover`
+              : `linear-gradient(
+                  135deg,
+                  hsl(var(--studio-primary)),
+                  hsl(var(--studio-accent))
+                )`,
+          }}
+        />
+
+        <div
+          className={`flex items-center px-8 md:px-12 lg:px-16 py-16 ${align}`}
+        >
+          <div className="max-w-xl">
+            {content.eyebrow && (
+              <p className="text-xs uppercase tracking-[0.25em] opacity-60 mb-5">
+                {content.eyebrow}
+              </p>
+            )}
+
+            <h1
+              className="text-4xl md:text-6xl leading-tight mb-6"
+              style={{
+                fontFamily: `${displayFont}, serif`,
+              }}
+            >
+              {content.title}
+            </h1>
+
+            {content.subtitle && (
+              <p className="text-lg opacity-75 mb-8">
+                {content.subtitle}
+              </p>
+            )}
+
+            {content.ctaLabel && (
+              <a
+                href="#shop"
+                className="inline-block rounded-full px-8 py-3 text-sm font-medium"
+                style={{
+                  background: "hsl(var(--studio-accent))",
+                  color: "hsl(var(--studio-ink))",
+                }}
+              >
+                {content.ctaLabel}
+              </a>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section
       className="relative min-h-[88vh] flex items-center justify-center overflow-hidden"
@@ -820,22 +922,50 @@ function HeroCinemaScene({
         background: fullPage
           ? "transparent"
           : content.backgroundImage
-            ? `linear-gradient(hsl(var(--studio-ink) / ${content.overlayOpacity ?? 0.45}), hsl(var(--studio-ink) / ${content.overlayOpacity ?? 0.45})), url(${content.backgroundImage}) center/cover`
-            : `linear-gradient(135deg, hsl(var(--studio-primary)), hsl(var(--studio-accent)))`,
+            ? `linear-gradient(
+                hsl(var(--studio-ink) / ${
+                  content.overlayOpacity ?? 0.45
+                }),
+                hsl(var(--studio-ink) / ${
+                  content.overlayOpacity ?? 0.45
+                })
+              ), url(${content.backgroundImage}) center/cover`
+            : `linear-gradient(
+                135deg,
+                hsl(var(--studio-primary)),
+                hsl(var(--studio-accent))
+              )`,
       }}
     >
       {fullPage && content.backgroundImage && (
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `linear-gradient(hsl(var(--studio-ink) / ${content.overlayOpacity ?? 0.45}), hsl(var(--studio-ink) / ${content.overlayOpacity ?? 0.45}))`,
-          }}
-        />
+        <>
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `url(${content.backgroundImage}) center/cover`,
+            }}
+          />
+
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `hsl(var(--studio-ink) / ${
+                content.overlayOpacity ?? 0.45
+              })`,
+            }}
+          />
+        </>
       )}
 
       <div
         className={`relative z-10 max-w-3xl px-6 flex flex-col text-white ${align}`}
       >
+        {content.eyebrow && (
+          <p className="text-xs uppercase tracking-[0.25em] opacity-70 mb-5">
+            {content.eyebrow}
+          </p>
+        )}
+
         <h1
           className="text-4xl md:text-6xl lg:text-7xl leading-tight mb-6"
           style={{
@@ -845,17 +975,19 @@ function HeroCinemaScene({
           {content.title}
         </h1>
 
-        <p className="text-lg md:text-xl opacity-90 mb-8">
-          {content.subtitle}
-        </p>
+        {content.subtitle && (
+          <p className="text-lg md:text-xl opacity-90 mb-8">
+            {content.subtitle}
+          </p>
+        )}
 
         {content.ctaLabel && (
           <a
             href="#shop"
             className="inline-block rounded-full px-8 py-3 text-sm font-medium tracking-wide"
             style={{
-              background: `hsl(var(--studio-accent))`,
-              color: `hsl(var(--studio-ink))`,
+              background: "hsl(var(--studio-accent))",
+              color: "hsl(var(--studio-ink))",
             }}
           >
             {content.ctaLabel}
@@ -880,6 +1012,107 @@ function StoryScrollyScene({
       body: string;
       image?: string | null;
     }>;
+
+  const variant = content.variant || "alternating";
+
+  if (variant === "centered") {
+    return (
+      <section className="py-20 md:py-28">
+        <div className="max-w-3xl mx-auto px-6 space-y-20">
+          {chapters.map((c, i) => (
+            <article key={i} className="text-center">
+              {c.image && (
+                <div
+                  className="aspect-[16/9] rounded-xl overflow-hidden mb-8 bg-cover bg-center"
+                  style={{
+                    backgroundImage: `url(${c.image})`,
+                  }}
+                />
+              )}
+
+              {c.eyebrow && (
+                <span className="text-xs uppercase tracking-[0.2em] opacity-60">
+                  {c.eyebrow}
+                </span>
+              )}
+
+              <h2
+                className="text-3xl md:text-5xl mt-3 mb-4"
+                style={{
+                  fontFamily: `${displayFont}, serif`,
+                }}
+              >
+                {c.title}
+              </h2>
+
+              <p className="opacity-80 leading-relaxed max-w-2xl mx-auto">
+                {c.body}
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (variant === "side-pinned") {
+    return (
+      <section className="py-20 md:py-28">
+        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-[0.8fr_1.2fr] gap-12">
+          <div className="md:sticky md:top-24 md:self-start">
+            {content.eyebrow && (
+              <span className="text-xs uppercase tracking-[0.2em] opacity-60">
+                {content.eyebrow}
+              </span>
+            )}
+
+            <h2
+              className="text-4xl md:text-6xl mt-3"
+              style={{
+                fontFamily: `${displayFont}, serif`,
+              }}
+            >
+              {content.title || "Notre histoire"}
+            </h2>
+          </div>
+
+          <div className="space-y-20">
+            {chapters.map((c, i) => (
+              <article key={i}>
+                {c.image && (
+                  <div
+                    className="aspect-[16/10] rounded-xl overflow-hidden mb-6 bg-cover bg-center"
+                    style={{
+                      backgroundImage: `url(${c.image})`,
+                    }}
+                  />
+                )}
+
+                {c.eyebrow && (
+                  <span className="text-xs uppercase tracking-[0.2em] opacity-60">
+                    {c.eyebrow}
+                  </span>
+                )}
+
+                <h3
+                  className="text-2xl md:text-4xl mt-2 mb-3"
+                  style={{
+                    fontFamily: `${displayFont}, serif`,
+                  }}
+                >
+                  {c.title}
+                </h3>
+
+                <p className="opacity-80 leading-relaxed">
+                  {c.body}
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-20 md:py-32">
@@ -915,11 +1148,18 @@ function StoryScrollyScene({
             </div>
 
             <div
-              className="aspect-[4/5] rounded-lg"
+              className="aspect-[4/5] rounded-lg bg-cover bg-center"
               style={{
+                backgroundImage: c.image
+                  ? `url(${c.image})`
+                  : undefined,
                 background: c.image
-                  ? `url(${c.image}) center/cover`
-                  : `linear-gradient(135deg, hsl(var(--studio-primary) / 0.15), hsl(var(--studio-accent) / 0.25))`,
+                  ? undefined
+                  : `linear-gradient(
+                      135deg,
+                      hsl(var(--studio-primary) / 0.15),
+                      hsl(var(--studio-accent) / 0.25)
+                    )`,
               }}
             />
           </div>
@@ -928,7 +1168,6 @@ function StoryScrollyScene({
     </section>
   );
 }
-
 function LookbookScene({
   content,
   displayFont,
@@ -945,32 +1184,117 @@ function LookbookScene({
   ) as string[];
 
   const items = pool.slice(0, 6);
+  const variant = content.variant || "asymmetric";
+
+  const heading = (
+    <div className="text-center mb-12">
+      <h2
+        className="text-3xl md:text-5xl"
+        style={{
+          fontFamily: `${displayFont}, serif`,
+        }}
+      >
+        {content.title}
+      </h2>
+
+      {content.subtitle && (
+        <p className="opacity-70 mt-3">
+          {content.subtitle}
+        </p>
+      )}
+    </div>
+  );
+
+  if (variant === "tiled") {
+    return (
+      <section
+        className="py-20"
+        style={{
+          background: "hsl(var(--studio-ink))",
+          color: "white",
+        }}
+      >
+        <div className="max-w-6xl mx-auto px-6">
+          {heading}
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {items.map((src, i) => (
+              <div
+                key={i}
+                className="aspect-square rounded overflow-hidden bg-cover bg-center"
+                style={{
+                  backgroundImage: src
+                    ? `url(${src})`
+                    : undefined,
+                  background: src
+                    ? undefined
+                    : "hsl(var(--studio-primary))",
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (variant === "zigzag") {
+    return (
+      <section
+        className="py-20"
+        style={{
+          background: "hsl(var(--studio-ink))",
+          color: "white",
+        }}
+      >
+        <div className="max-w-6xl mx-auto px-6">
+          {heading}
+
+          <div className="space-y-8">
+            {items.map((src, i) => (
+              <div
+                key={i}
+                className={`grid md:grid-cols-2 gap-6 items-center ${
+                  i % 2
+                    ? "md:[&>*:first-child]:order-2"
+                    : ""
+                }`}
+              >
+                <div
+                  className="aspect-[4/3] rounded overflow-hidden bg-cover bg-center"
+                  style={{
+                    backgroundImage: src
+                      ? `url(${src})`
+                      : undefined,
+                    background: src
+                      ? undefined
+                      : "hsl(var(--studio-primary))",
+                  }}
+                />
+
+                <div className="px-2 md:px-8">
+                  <span className="text-xs uppercase tracking-[0.2em] opacity-50">
+                    Look {String(i + 1).padStart(2, "0")}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
       className="py-20"
       style={{
-        background: `hsl(var(--studio-ink))`,
+        background: "hsl(var(--studio-ink))",
         color: "white",
       }}
     >
       <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-12">
-          <h2
-            className="text-3xl md:text-5xl"
-            style={{
-              fontFamily: `${displayFont}, serif`,
-            }}
-          >
-            {content.title}
-          </h2>
-
-          {content.subtitle && (
-            <p className="opacity-70 mt-3">
-              {content.subtitle}
-            </p>
-          )}
-        </div>
+        {heading}
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-5">
           {items.map((src, i) => (
@@ -984,7 +1308,7 @@ function LookbookScene({
               style={{
                 background: src
                   ? `url(${src}) center/cover`
-                  : `hsl(var(--studio-primary))`,
+                  : "hsl(var(--studio-primary))",
               }}
             />
           ))}
@@ -1005,17 +1329,10 @@ function ShowcaseScene({
   displayFont: string;
   boutiqueSlug?: string;
 }) {
-  const layout = content.layout || "3-up";
-
-  const cols =
-    layout === "4-up"
-      ? "md:grid-cols-4"
-      : "md:grid-cols-3";
-
-  const visible = products.slice(
-    0,
-    layout === "4-up" ? 4 : 3,
-  );
+  const variant =
+    content.variant ||
+    content.layout ||
+    "3-up";
 
   const shapeMap: Record<string, string> = {
     square: "rounded-none",
@@ -1028,15 +1345,125 @@ function ShowcaseScene({
   const shapeClass =
     shapeMap[content.cardShape] ?? "rounded-md";
 
-  const isCircle = content.cardShape === "circle";
-  const cardStyle = content.cardStyle || "minimal";
+  const isCircle =
+    content.cardShape === "circle";
+
+  const cardStyle =
+    content.cardStyle || "minimal";
+
+  const cardClass = `
+    group block
+    ${
+      cardStyle === "card"
+        ? "p-3 bg-white shadow-sm rounded-lg"
+        : ""
+    }
+    ${
+      cardStyle === "bordered"
+        ? "p-3 border border-border rounded-lg"
+        : ""
+    }
+  `;
+
+  const renderCard = (p: Product) => (
+    <ProductLink
+      slug={boutiqueSlug}
+      productId={p.id}
+      key={p.id}
+      className={cardClass}
+    >
+      <div
+        className={`${
+          isCircle ? "" : "aspect-[4/5]"
+        } ${shapeClass} mb-3 overflow-hidden`}
+        style={{
+          background: p.image_url
+            ? `url(${p.image_url}) center/cover`
+            : `linear-gradient(
+                135deg,
+                hsl(var(--studio-primary) / 0.2),
+                hsl(var(--studio-accent) / 0.2)
+              )`,
+        }}
+      />
+
+      <span className="text-[11px] uppercase tracking-[0.18em] opacity-50">
+        Signature
+      </span>
+
+      <h3 className="text-base mt-1">
+        {p.name}
+      </h3>
+
+      <p className="text-sm opacity-70">
+        {p.price.toFixed(2)} €
+      </p>
+    </ProductLink>
+  );
+
+  if (variant === "carousel") {
+    return (
+      <section
+        id="shop"
+        className="py-20"
+        style={{
+          background:
+            "hsl(var(--studio-surface))",
+        }}
+      >
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="mb-10 text-center">
+            <h2
+              className="text-3xl md:text-4xl"
+              style={{
+                fontFamily:
+                  `${displayFont}, serif`,
+              }}
+            >
+              {content.title}
+            </h2>
+
+            {content.subtitle && (
+              <p className="opacity-70 mt-2">
+                {content.subtitle}
+              </p>
+            )}
+          </div>
+
+          <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4">
+            {products
+              .slice(0, 8)
+              .map((p) => (
+                <div
+                  key={p.id}
+                  className="min-w-[78%] sm:min-w-[46%] lg:min-w-[30%] snap-start"
+                >
+                  {renderCard(p)}
+                </div>
+              ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const columns =
+    variant === "4-up"
+      ? "md:grid-cols-4"
+      : "md:grid-cols-3";
+
+  const visible =
+    variant === "4-up"
+      ? products.slice(0, 4)
+      : products.slice(0, 3);
 
   return (
     <section
       id="shop"
       className="py-20"
       style={{
-        background: `hsl(var(--studio-surface))`,
+        background:
+          "hsl(var(--studio-surface))",
       }}
     >
       <div className="max-w-6xl mx-auto px-6">
@@ -1044,7 +1471,8 @@ function ShowcaseScene({
           <h2
             className="text-3xl md:text-4xl"
             style={{
-              fontFamily: `${displayFont}, serif`,
+              fontFamily:
+                `${displayFont}, serif`,
             }}
           >
             {content.title}
@@ -1057,46 +1485,10 @@ function ShowcaseScene({
           )}
         </div>
 
-        <div className={`grid grid-cols-2 ${cols} gap-6`}>
-          {visible.map((p) => (
-            <ProductLink
-              slug={boutiqueSlug}
-              productId={p.id}
-              key={p.id}
-              className={`group block ${
-                cardStyle === "card"
-                  ? "p-3 bg-white shadow-sm rounded-lg"
-                  : ""
-              } ${
-                cardStyle === "bordered"
-                  ? "p-3 border border-border rounded-lg"
-                  : ""
-              }`}
-            >
-              <div
-                className={`${
-                  isCircle ? "" : "aspect-[4/5]"
-                } ${shapeClass} mb-3 overflow-hidden`}
-                style={{
-                  background: p.image_url
-                    ? `url(${p.image_url}) center/cover`
-                    : `linear-gradient(135deg, hsl(var(--studio-primary) / 0.2), hsl(var(--studio-accent) / 0.2))`,
-                }}
-              />
-
-              <span className="text-[11px] uppercase tracking-[0.18em] opacity-50">
-                Signature
-              </span>
-
-              <h3 className="text-base mt-1">
-                {p.name}
-              </h3>
-
-              <p className="text-sm opacity-70">
-                {p.price.toFixed(2)} €
-              </p>
-            </ProductLink>
-          ))}
+        <div
+          className={`grid grid-cols-2 ${columns} gap-6`}
+        >
+          {visible.map(renderCard)}
         </div>
       </div>
     </section>
