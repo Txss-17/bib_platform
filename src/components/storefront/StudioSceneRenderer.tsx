@@ -804,8 +804,14 @@ function HeroCinemaScene({
   content: any;
   displayFont: string;
 }) {
-  const variant = content.variant || "fullscreen";
-  const fullPage = !!content.fullPageBackground;
+  const variant =
+    content.variant || "fullscreen";
+
+  const fullPage =
+    !!content.fullPageBackground;
+
+  const overlayOpacity =
+    content.overlayOpacity ?? 0.45;
 
   const align =
     content.textAlign === "left"
@@ -819,8 +825,10 @@ function HeroCinemaScene({
       href={content.ctaUrl || "#shop"}
       className="inline-block rounded-full px-8 py-3 text-sm font-medium tracking-wide"
       style={{
-        background: "hsl(var(--studio-accent))",
-        color: "hsl(var(--studio-ink))",
+        background:
+          "hsl(var(--studio-accent))",
+        color:
+          "hsl(var(--studio-ink))",
       }}
     >
       {content.ctaLabel}
@@ -828,7 +836,9 @@ function HeroCinemaScene({
   ) : null;
 
   const textContent = (
-    <div className={`max-w-3xl flex flex-col ${align}`}>
+    <div
+      className={`max-w-3xl flex flex-col ${align}`}
+    >
       {content.eyebrow && (
         <p className="text-xs uppercase tracking-[0.25em] opacity-70 mb-5">
           {content.eyebrow}
@@ -838,7 +848,8 @@ function HeroCinemaScene({
       <h1
         className="text-4xl md:text-6xl lg:text-7xl leading-[1.02] mb-6"
         style={{
-          fontFamily: `${displayFont}, serif`,
+          fontFamily:
+            `${displayFont}, serif`,
         }}
       >
         {content.title}
@@ -854,6 +865,53 @@ function HeroCinemaScene({
     </div>
   );
 
+  const media = (
+    <>
+      {content.videoUrl ? (
+        <video
+          src={content.videoUrl}
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster={
+            content.backgroundImage ||
+            undefined
+          }
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      ) : content.backgroundImage ? (
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage:
+              `url(${content.backgroundImage})`,
+          }}
+        />
+      ) : (
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              `linear-gradient(
+                135deg,
+                hsl(var(--studio-primary)),
+                hsl(var(--studio-accent))
+              )`,
+          }}
+        />
+      )}
+
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            `hsl(var(--studio-ink) / ${overlayOpacity})`,
+        }}
+      />
+    </>
+  );
+
   if (variant === "type-only") {
     return (
       <section className="min-h-[70vh] flex items-center justify-center py-20">
@@ -867,7 +925,8 @@ function HeroCinemaScene({
           <h1
             className="text-5xl md:text-7xl lg:text-[7rem] leading-[0.9]"
             style={{
-              fontFamily: `${displayFont}, serif`,
+              fontFamily:
+                `${displayFont}, serif`,
             }}
           >
             {content.title}
@@ -888,18 +947,9 @@ function HeroCinemaScene({
   if (variant === "split") {
     return (
       <section className="grid md:grid-cols-2 min-h-[78vh] overflow-hidden">
-        <div
-          className="min-h-[45vh] md:min-h-full bg-cover bg-center"
-          style={{
-            background: content.backgroundImage
-              ? `url(${content.backgroundImage}) center/cover`
-              : `linear-gradient(
-                  135deg,
-                  hsl(var(--studio-primary)),
-                  hsl(var(--studio-accent))
-                )`,
-          }}
-        />
+        <div className="relative min-h-[45vh] md:min-h-full overflow-hidden">
+          {media}
+        </div>
 
         <div className="flex items-center px-8 md:px-12 lg:px-16 py-16">
           {textContent}
@@ -910,47 +960,13 @@ function HeroCinemaScene({
 
   return (
     <section
-      className="relative min-h-[88vh] flex items-center justify-center overflow-hidden"
-      style={{
-        background: fullPage
-          ? "transparent"
-          : content.backgroundImage
-            ? `linear-gradient(
-                hsl(var(--studio-ink) / ${
-                  content.overlayOpacity ?? 0.45
-                }),
-                hsl(var(--studio-ink) / ${
-                  content.overlayOpacity ?? 0.45
-                })
-              ), url(${content.backgroundImage}) center/cover`
-            : `linear-gradient(
-                135deg,
-                hsl(var(--studio-primary)),
-                hsl(var(--studio-accent))
-              )`,
-      }}
+      className={
+        fullPage
+          ? "relative min-h-screen flex items-center justify-center overflow-hidden"
+          : "relative min-h-[88vh] flex items-center justify-center overflow-hidden"
+      }
     >
-      {fullPage && content.backgroundImage && (
-        <>
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage:
-                `url(${content.backgroundImage})`,
-            }}
-          />
-
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                `hsl(var(--studio-ink) / ${
-                  content.overlayOpacity ?? 0.45
-                })`,
-            }}
-          />
-        </>
-      )}
+      {media}
 
       <div className="relative z-10 px-6 text-white">
         {textContent}
@@ -1346,11 +1362,37 @@ function ShowcaseScene({
     content.layout ||
     "3-up";
 
-  const shapeMap: Record<string, string> = {
+  const selectedProductIds =
+    Array.isArray(content.productIds)
+      ? (content.productIds as string[])
+      : [];
+
+  const selectedProducts =
+    selectedProductIds.length > 0
+      ? selectedProductIds
+          .map((id) =>
+            products.find(
+              (product) =>
+                product.id === id,
+            ),
+          )
+          .filter(
+            (
+              product,
+            ): product is Product =>
+              Boolean(product),
+          )
+      : products;
+
+  const shapeMap: Record<
+    string,
+    string
+  > = {
     square: "rounded-none",
     rounded: "rounded-md",
     "rounded-xl": "rounded-2xl",
-    circle: "rounded-full aspect-square",
+    circle:
+      "rounded-full aspect-square",
     arch: "rounded-t-full",
   };
 
@@ -1376,7 +1418,9 @@ function ShowcaseScene({
     .filter(Boolean)
     .join(" ");
 
-  const renderCard = (product: Product) => (
+  const renderCard = (
+    product: Product,
+  ) => (
     <ProductLink
       slug={boutiqueSlug}
       productId={product.id}
@@ -1394,13 +1438,14 @@ function ShowcaseScene({
           .filter(Boolean)
           .join(" ")}
         style={{
-          background: product.image_url
-            ? `url(${product.image_url}) center/cover`
-            : `linear-gradient(
-                135deg,
-                hsl(var(--studio-primary) / 0.2),
-                hsl(var(--studio-accent) / 0.2)
-              )`,
+          background:
+            product.image_url
+              ? `url(${product.image_url}) center/cover`
+              : `linear-gradient(
+                  135deg,
+                  hsl(var(--studio-primary) / 0.2),
+                  hsl(var(--studio-accent) / 0.2)
+                )`,
         }}
       />
 
@@ -1452,14 +1497,16 @@ function ShowcaseScene({
           {heading}
 
           <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-5">
-            {products.slice(0, 8).map((product) => (
-              <div
-                key={product.id}
-                className="min-w-[78%] sm:min-w-[46%] lg:min-w-[30%] snap-start"
-              >
-                {renderCard(product)}
-              </div>
-            ))}
+            {selectedProducts
+              .slice(0, 8)
+              .map((product) => (
+                <div
+                  key={product.id}
+                  className="min-w-[78%] sm:min-w-[46%] lg:min-w-[30%] snap-start"
+                >
+                  {renderCard(product)}
+                </div>
+              ))}
           </div>
         </div>
       </section>
@@ -1480,7 +1527,7 @@ function ShowcaseScene({
           {heading}
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {products
+            {selectedProducts
               .slice(0, 4)
               .map(renderCard)}
           </div>
@@ -1502,7 +1549,7 @@ function ShowcaseScene({
         {heading}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {products
+          {selectedProducts
             .slice(0, 3)
             .map(renderCard)}
         </div>
@@ -1510,6 +1557,7 @@ function ShowcaseScene({
     </section>
   );
 }
+
 function TrustWallScene({
   content,
   displayFont,
@@ -1531,6 +1579,7 @@ function TrustWallScene({
 
   const press =
     (content.press ??
+      content.pressLogos ??
       content.logos ??
       []) as Array<
       | string
@@ -1584,29 +1633,31 @@ function TrustWallScene({
 
   const renderReviews = () => (
     <div className="grid md:grid-cols-2 gap-5">
-      {reviews.map((review, i) => (
-        <blockquote
-          key={i}
-          className="rounded-xl p-6 md:p-8 border border-border/30"
-          style={{
-            background: "white",
-          }}
-        >
-          <p
-            className="text-lg md:text-xl leading-relaxed"
+      {reviews.map(
+        (review, i) => (
+          <blockquote
+            key={i}
+            className="rounded-xl p-6 md:p-8 border border-border/30"
             style={{
-              fontFamily:
-                `${displayFont}, serif`,
+              background: "white",
             }}
           >
-            “{review.quote}”
-          </p>
+            <p
+              className="text-lg md:text-xl leading-relaxed"
+              style={{
+                fontFamily:
+                  `${displayFont}, serif`,
+              }}
+            >
+              “{review.quote}”
+            </p>
 
-          <footer className="text-sm opacity-60 mt-5">
-            — {review.author}
-          </footer>
-        </blockquote>
-      ))}
+            <footer className="text-sm opacity-60 mt-5">
+              — {review.author}
+            </footer>
+          </blockquote>
+        ),
+      )}
     </div>
   );
 
@@ -1723,11 +1774,17 @@ function CtaStickyScene({
   const variant =
     content.variant || "centered";
 
+  const stickyEnabled =
+    content.stickyEnabled !== false;
+
   const buttons = (
     <div className="flex flex-wrap gap-3 justify-center">
       {content.ctaLabel && (
         <a
-          href={content.ctaUrl || "#shop"}
+          href={
+            content.ctaUrl ||
+            "#shop"
+          }
           className="rounded-full px-7 py-3 text-sm font-medium"
           style={{
             background:
@@ -1900,45 +1957,47 @@ function CtaStickyScene({
           </div>
         </section>
 
-        <div
-          className="fixed bottom-0 inset-x-0 z-40 flex items-center justify-between gap-4 px-4 md:px-8 py-3 backdrop-blur"
-          style={{
-            background:
-              "hsl(var(--studio-primary) / 0.96)",
-            color: "white",
-          }}
-        >
-          <div className="min-w-0">
-            <p className="text-sm font-medium truncate">
-              {content.stickyLabel ||
-                content.title}
-            </p>
-
-            {content.stickySubtitle && (
-              <p className="hidden md:block text-xs opacity-60 truncate">
-                {content.stickySubtitle}
+        {stickyEnabled && (
+          <div
+            className="fixed bottom-0 inset-x-0 z-40 flex items-center justify-between gap-4 px-4 md:px-8 py-3 backdrop-blur"
+            style={{
+              background:
+                "hsl(var(--studio-primary) / 0.96)",
+              color: "white",
+            }}
+          >
+            <div className="min-w-0">
+              <p className="text-sm font-medium truncate">
+                {content.stickyLabel ||
+                  content.title}
               </p>
+
+              {content.stickySubtitle && (
+                <p className="hidden md:block text-xs opacity-60 truncate">
+                  {content.stickySubtitle}
+                </p>
+              )}
+            </div>
+
+            {content.ctaLabel && (
+              <a
+                href={
+                  content.ctaUrl ||
+                  "#shop"
+                }
+                className="rounded-full px-5 py-2.5 text-xs font-medium whitespace-nowrap"
+                style={{
+                  background:
+                    "hsl(var(--studio-accent))",
+                  color:
+                    "hsl(var(--studio-ink))",
+                }}
+              >
+                {content.ctaLabel}
+              </a>
             )}
           </div>
-
-          {content.ctaLabel && (
-            <a
-              href={
-                content.ctaUrl ||
-                "#shop"
-              }
-              className="rounded-full px-5 py-2.5 text-xs font-medium whitespace-nowrap"
-              style={{
-                background:
-                  "hsl(var(--studio-accent))",
-                color:
-                  "hsl(var(--studio-ink))",
-              }}
-            >
-              {content.ctaLabel}
-            </a>
-          )}
-        </div>
+        )}
       </>
     );
   }
