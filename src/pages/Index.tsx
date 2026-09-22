@@ -19,10 +19,7 @@ import unboxingImg from "@/assets/landing-unboxing.jpg";
 import partenerImg from "@/assets/landing-partener.jpg";
 
 const Index = () => {
-  useSEO({
-    title:"BIB — L'infrastructure des marques",
-    description:"BIB accompagne les marques avec une boutique, des produits sélectionnés et un réseau de partenaires vérifiés.",
-  });
+  useSEO({title:"BIB — L'infrastructure des marques", description:"BIB accompagne les marques avec une boutique, des produits sélectionnés et un réseau de partenaires vérifiés."});
 }
 
   return (
