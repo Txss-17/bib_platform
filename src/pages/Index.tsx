@@ -20,7 +20,7 @@ import partenerImg from "@/assets/landing-partener.jpg";
 
 const Index = () => {
   useSEO({
-    title:p "BIB — L'infrastructure des marques",
+    title:"BIB — L'infrastructure des marques",
     description:
       "BIB accompagne les marques avec une boutique, des produits sélectionnés et un réseau de partenaires vérifiés.",
   });
