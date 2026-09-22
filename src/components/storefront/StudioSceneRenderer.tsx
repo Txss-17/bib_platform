@@ -1712,6 +1712,7 @@ function TrustWallScene({
     </section>
   );
 }
+
 function CtaStickyScene({
   content,
   displayFont,
@@ -1719,13 +1720,14 @@ function CtaStickyScene({
   content: any;
   displayFont: string;
 }) {
-  const variant = content.variant || "centered";
+  const variant =
+    content.variant || "centered";
 
   const buttons = (
     <div className="flex flex-wrap gap-3 justify-center">
       {content.ctaLabel && (
         <a
-          href="#shop"
+          href={content.ctaUrl || "#shop"}
           className="rounded-full px-7 py-3 text-sm font-medium"
           style={{
             background:
@@ -1740,7 +1742,10 @@ function CtaStickyScene({
 
       {content.ctaSecondaryLabel && (
         <a
-          href="#newsletter"
+          href={
+            content.ctaSecondaryUrl ||
+            "#newsletter"
+          }
           className="rounded-full px-7 py-3 text-sm font-medium border border-white/40"
         >
           {content.ctaSecondaryLabel}
@@ -1760,7 +1765,8 @@ function CtaStickyScene({
       <h2
         className="text-3xl md:text-5xl mb-4"
         style={{
-          fontFamily: `${displayFont}, serif`,
+          fontFamily:
+            `${displayFont}, serif`,
         }}
       >
         {content.title}
@@ -1786,8 +1792,10 @@ function CtaStickyScene({
           color: "white",
         }}
       >
-        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
-          <div>{contentBlock}</div>
+        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            {contentBlock}
+          </div>
 
           <div
             id="newsletter"
@@ -1868,6 +1876,12 @@ function CtaStickyScene({
           }}
         >
           <div className="max-w-3xl mx-auto px-6 text-center">
+            {content.eyebrow && (
+              <p className="text-xs uppercase tracking-[0.25em] opacity-50 mb-4">
+                {content.eyebrow}
+              </p>
+            )}
+
             <h2
               className="text-3xl md:text-5xl mb-4"
               style={{
@@ -1909,7 +1923,10 @@ function CtaStickyScene({
 
           {content.ctaLabel && (
             <a
-              href="#shop"
+              href={
+                content.ctaUrl ||
+                "#shop"
+              }
               className="rounded-full px-5 py-2.5 text-xs font-medium whitespace-nowrap"
               style={{
                 background:
@@ -1941,6 +1958,7 @@ function CtaStickyScene({
     </section>
   );
 }
+
 /* -------------------------- New scenes (Phase 2) -------------------------- */
 
 function FaqScene({
@@ -1956,7 +1974,8 @@ function FaqScene({
       a: string;
     }>;
 
-  const variant = content.variant || "accordion";
+  const variant =
+    content.variant || "accordion";
 
   const renderItem = (
     item: {
@@ -1967,28 +1986,36 @@ function FaqScene({
   ) => (
     <details
       key={i}
-      className="group border-b border-border/40 py-4"
+      className="group border-b border-border/40 py-5"
     >
-      <summary className="flex items-center justify-between cursor-pointer list-none">
-        <span className="font-medium pr-4">
+      <summary className="flex items-center justify-between gap-6 cursor-pointer list-none">
+        <span className="font-medium">
           {item.q}
         </span>
 
-        <span className="text-xl opacity-50 group-open:rotate-45 transition-transform">
+        <span
+          aria-hidden="true"
+          className="text-xl opacity-50 group-open:rotate-45 transition-transform shrink-0"
+        >
           +
         </span>
       </summary>
 
-      <p className="mt-3 opacity-75 leading-relaxed">
+      <p className="mt-4 opacity-75 leading-relaxed pr-10">
         {item.a}
       </p>
     </details>
   );
 
   if (variant === "two-column") {
-    const midpoint = Math.ceil(items.length / 2);
-    const left = items.slice(0, midpoint);
-    const right = items.slice(midpoint);
+    const midpoint =
+      Math.ceil(items.length / 2);
+
+    const left =
+      items.slice(0, midpoint);
+
+    const right =
+      items.slice(midpoint);
 
     return (
       <section
@@ -2001,7 +2028,7 @@ function FaqScene({
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-12">
             <h2
-              className="text-3xl md:text-4xl"
+              className="text-3xl md:text-5xl"
               style={{
                 fontFamily:
                   `${displayFont}, serif`,
@@ -2011,13 +2038,13 @@ function FaqScene({
             </h2>
 
             {content.subtitle && (
-              <p className="opacity-70 mt-2">
+              <p className="opacity-70 mt-3 max-w-2xl mx-auto">
                 {content.subtitle}
               </p>
             )}
           </div>
 
-          <div className="grid md:grid-cols-2 gap-x-10">
+          <div className="grid md:grid-cols-2 gap-x-12">
             <div>
               {left.map((item, i) =>
                 renderItem(item, i),
@@ -2042,7 +2069,7 @@ function FaqScene({
     return (
       <section className="py-20">
         <div className="max-w-4xl mx-auto px-6">
-          <div className="mb-10">
+          <div className="mb-12">
             <h2
               className="text-3xl md:text-5xl"
               style={{
@@ -2060,11 +2087,11 @@ function FaqScene({
             )}
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-8">
             {items.map((item, i) => (
               <article
                 key={i}
-                className="grid md:grid-cols-[80px_1fr] gap-4 border-t border-border/40 pt-6"
+                className="grid md:grid-cols-[80px_1fr] gap-4 border-t border-border/40 pt-7"
               >
                 <span className="text-xs uppercase tracking-[0.2em] opacity-40">
                   {String(i + 1).padStart(
@@ -2075,7 +2102,7 @@ function FaqScene({
 
                 <div>
                   <h3
-                    className="text-xl md:text-2xl mb-2"
+                    className="text-xl md:text-2xl mb-3"
                     style={{
                       fontFamily:
                         `${displayFont}, serif`,
@@ -2105,17 +2132,25 @@ function FaqScene({
       }}
     >
       <div className="max-w-3xl mx-auto px-6">
-        <h2
-          className="text-3xl md:text-4xl mb-10 text-center"
-          style={{
-            fontFamily:
-              `${displayFont}, serif`,
-          }}
-        >
-          {content.title}
-        </h2>
+        <div className="text-center mb-10">
+          <h2
+            className="text-3xl md:text-5xl"
+            style={{
+              fontFamily:
+                `${displayFont}, serif`,
+            }}
+          >
+            {content.title}
+          </h2>
 
-        <div className="divide-y divide-border/40 border-y border-border/40">
+          {content.subtitle && (
+            <p className="opacity-70 mt-3">
+              {content.subtitle}
+            </p>
+          )}
+        </div>
+
+        <div className="border-y border-border/40">
           {items.map((item, i) =>
             renderItem(item, i),
           )}
@@ -2135,19 +2170,28 @@ function NewsletterScene({
   const variant =
     content.variant || "centered";
 
+  const isLight =
+    variant === "minimal";
+
   const form = (
     <form
-      onSubmit={(e) => e.preventDefault()}
+      onSubmit={(e) =>
+        e.preventDefault()
+      }
       className="flex flex-col sm:flex-row gap-2"
     >
       <input
         type="email"
         required
         placeholder={
-          content.placeholder ??
+          content.placeholder ||
           "Votre email"
         }
-        className="flex-1 rounded-full px-5 py-3 text-sm text-foreground bg-white/95 border border-white/10"
+        className={
+          isLight
+            ? "flex-1 rounded-full px-5 py-3 text-sm bg-white border border-border/50"
+            : "flex-1 rounded-full px-5 py-3 text-sm text-foreground bg-white/95 border border-white/10"
+        }
       />
 
       <button
@@ -2160,7 +2204,8 @@ function NewsletterScene({
             "hsl(var(--studio-ink))",
         }}
       >
-        {content.ctaLabel}
+        {content.ctaLabel ||
+          "S'inscrire"}
       </button>
     </form>
   );
@@ -2168,9 +2213,19 @@ function NewsletterScene({
   const benefits =
     (content.benefits ?? []) as string[];
 
-  const benefitsBlock =
+  const renderBenefits = (
+    align:
+      | "center"
+      | "left" = "center",
+  ) =>
     benefits.length > 0 ? (
-      <ul className="flex flex-wrap gap-3 justify-center mt-6 text-xs opacity-70">
+      <ul
+        className={`flex flex-wrap gap-3 mt-6 text-xs opacity-70 ${
+          align === "center"
+            ? "justify-center"
+            : "justify-start"
+        }`}
+      >
         {benefits.map((benefit) => (
           <li key={benefit}>
             · {benefit}
@@ -2193,18 +2248,13 @@ function NewsletterScene({
         <div
           className="min-h-[320px] md:min-h-full bg-cover bg-center"
           style={{
-            backgroundImage:
-              content.image
-                ? `url(${content.image})`
-                : undefined,
-            background:
-              content.image
-                ? undefined
-                : `linear-gradient(
-                    135deg,
-                    hsl(var(--studio-primary)),
-                    hsl(var(--studio-accent))
-                  )`,
+            background: content.image
+              ? `url(${content.image}) center/cover`
+              : `linear-gradient(
+                  135deg,
+                  hsl(var(--studio-primary)),
+                  hsl(var(--studio-accent))
+                )`,
           }}
         />
 
@@ -2234,15 +2284,7 @@ function NewsletterScene({
 
             {form}
 
-            {benefits.length > 0 && (
-              <ul className="flex flex-wrap gap-3 mt-6 text-xs opacity-70">
-                {benefits.map((benefit) => (
-                  <li key={benefit}>
-                    · {benefit}
-                  </li>
-                ))}
-              </ul>
-            )}
+            {renderBenefits("left")}
           </div>
         </div>
       </section>
@@ -2255,8 +2297,8 @@ function NewsletterScene({
         id="newsletter"
         className="py-16 md:py-20 border-y border-border/30"
       >
-        <div className="max-w-3xl mx-auto px-6">
-          <div className="grid md:grid-cols-[1fr_auto] gap-8 items-end">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="grid md:grid-cols-[1fr_360px] gap-10 items-center">
             <div>
               {content.eyebrow && (
                 <span className="text-xs uppercase tracking-[0.2em] opacity-50">
@@ -2281,10 +2323,12 @@ function NewsletterScene({
               )}
             </div>
 
-            <div className="w-full md:min-w-[360px]">
+            <div>
               {form}
             </div>
           </div>
+
+          {renderBenefits("left")}
         </div>
       </section>
     );
@@ -2293,7 +2337,7 @@ function NewsletterScene({
   return (
     <section
       id="newsletter"
-      className="py-20"
+      className="py-20 md:py-24"
       style={{
         background:
           "hsl(var(--studio-ink))",
@@ -2318,14 +2362,14 @@ function NewsletterScene({
         </h2>
 
         {content.subtitle && (
-          <p className="opacity-75 mb-6">
+          <p className="opacity-75 mb-7">
             {content.subtitle}
           </p>
         )}
 
         {form}
 
-        {benefitsBlock}
+        {renderBenefits()}
       </div>
     </section>
   );
@@ -2344,28 +2388,30 @@ function PressStripScene({
       url?: string | null;
     }>;
 
-  const variant = content.variant || "scrolling";
+  const variant =
+    content.variant || "scrolling";
 
   const renderLogo = (
     logo: {
       name: string;
       url?: string | null;
     },
-    index: number,
+    key: string | number,
   ) =>
     logo.url ? (
       <img
-        key={index}
+        key={key}
         src={logo.url}
         alt={logo.name}
         className="h-6 max-w-[140px] object-contain grayscale opacity-70"
       />
     ) : (
       <span
-        key={index}
-        className="text-base tracking-widest whitespace-nowrap"
+        key={key}
+        className="text-base tracking-widest whitespace-nowrap opacity-70"
         style={{
-          fontFamily: `${displayFont}, serif`,
+          fontFamily:
+            `${displayFont}, serif`,
         }}
       >
         {logo.name.toUpperCase()}
@@ -2374,46 +2420,23 @@ function PressStripScene({
 
   if (variant === "static-grid") {
     return (
-      <section
-        className="py-14 border-y border-border/40"
-        style={{
-          background: "white",
-        }}
-      >
+      <section className="py-16 border-y border-border/40">
         <div className="max-w-6xl mx-auto px-6">
           {content.eyebrow && (
-            <p
-              className="text-[11px] uppercase tracking-[0.25em] opacity-50 mb-8 text-center"
-              style={{
-                fontFamily: `${displayFont}, serif`,
-              }}
-            >
+            <p className="text-[11px] uppercase tracking-[0.25em] opacity-50 mb-9 text-center">
               {content.eyebrow}
             </p>
           )}
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 border border-border/30">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 border-l border-t border-border/30">
             {logos.map((logo, i) => (
               <div
                 key={i}
-                className="min-h-24 flex items-center justify-center p-6 border-b border-r border-border/30"
+                className="min-h-28 flex items-center justify-center p-6 border-r border-b border-border/30"
               >
-                {logo.url ? (
-                  <img
-                    src={logo.url}
-                    alt={logo.name}
-                    className="max-h-7 max-w-[150px] object-contain grayscale opacity-70"
-                  />
-                ) : (
-                  <span
-                    className="text-sm tracking-widest text-center"
-                    style={{
-                      fontFamily:
-                        `${displayFont}, serif`,
-                    }}
-                  >
-                    {logo.name.toUpperCase()}
-                  </span>
+                {renderLogo(
+                  logo,
+                  `grid-${i}`,
                 )}
               </div>
             ))}
@@ -2426,7 +2449,7 @@ function PressStripScene({
   if (variant === "centered") {
     return (
       <section
-        className="py-16"
+        className="py-16 md:py-20"
         style={{
           background:
             "hsl(var(--studio-surface))",
@@ -2441,7 +2464,7 @@ function PressStripScene({
 
           {content.title && (
             <h2
-              className="text-2xl md:text-4xl mb-8"
+              className="text-2xl md:text-4xl mb-10"
               style={{
                 fontFamily:
                   `${displayFont}, serif`,
@@ -2451,39 +2474,46 @@ function PressStripScene({
             </h2>
           )}
 
-          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
-            {logos.map(renderLogo)}
+          <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-7">
+            {logos.map((logo, i) =>
+              renderLogo(
+                logo,
+                `center-${i}`,
+              ),
+            )}
           </div>
         </div>
       </section>
     );
   }
 
-  const marqueeItems = [...logos, ...logos];
+  const marqueeItems = [
+    ...logos,
+    ...logos,
+  ];
 
   return (
-    <section
-      className="py-5 overflow-hidden border-y border-border/40"
-      style={{
-        background: "white",
-      }}
-    >
+    <section className="py-6 overflow-hidden border-y border-border/40 bg-white">
       {content.eyebrow && (
-        <p className="text-[10px] uppercase tracking-[0.25em] opacity-40 text-center mb-4">
+        <p className="text-[10px] uppercase tracking-[0.25em] opacity-40 text-center mb-5">
           {content.eyebrow}
         </p>
       )}
 
       <div className="relative overflow-hidden">
         <div
-          className="flex w-max items-center gap-12 whitespace-nowrap"
+          className="flex w-max items-center gap-14 whitespace-nowrap"
           style={{
             animation:
               "bib-press-scroll 28s linear infinite",
           }}
         >
-          {marqueeItems.map((logo, i) =>
-            renderLogo(logo, i),
+          {marqueeItems.map(
+            (logo, i) =>
+              renderLogo(
+                logo,
+                `scroll-${i}`,
+              ),
           )}
         </div>
       </div>
@@ -2493,8 +2523,15 @@ function PressStripScene({
           from {
             transform: translateX(0);
           }
+
           to {
             transform: translateX(-50%);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .bib-press-scroll {
+            animation: none;
           }
         }
       `}</style>
@@ -2516,7 +2553,8 @@ function ComparisonScene({
       them: boolean;
     }>;
 
-  const variant = content.variant || "check-cross";
+  const variant =
+    content.variant || "check-cross";
 
   const renderValue = (
     value: boolean,
@@ -2525,7 +2563,7 @@ function ComparisonScene({
     if (variant === "stars") {
       return value ? (
         <span
-          className="text-lg"
+          className="text-xl"
           style={{
             color:
               type === "us"
@@ -2536,7 +2574,9 @@ function ComparisonScene({
           ★
         </span>
       ) : (
-        <span className="opacity-20">—</span>
+        <span className="opacity-20">
+          ☆
+        </span>
       );
     }
 
@@ -2573,7 +2613,9 @@ function ComparisonScene({
         ✓
       </span>
     ) : (
-      <span className="opacity-30">×</span>
+      <span className="opacity-30">
+        ×
+      </span>
     );
   };
 
@@ -2592,7 +2634,7 @@ function ComparisonScene({
             : "max-w-3xl mx-auto px-6"
         }
       >
-        <div className="text-center mb-10">
+        <div className="text-center mb-12">
           {content.eyebrow && (
             <p className="text-xs uppercase tracking-[0.25em] opacity-50 mb-4">
               {content.eyebrow}
@@ -2600,7 +2642,7 @@ function ComparisonScene({
           )}
 
           <h2
-            className="text-3xl md:text-4xl"
+            className="text-3xl md:text-5xl"
             style={{
               fontFamily:
                 `${displayFont}, serif`,
@@ -2620,21 +2662,13 @@ function ComparisonScene({
           className={
             variant === "minimal"
               ? "border-y border-border/40"
-              : "rounded-lg overflow-hidden border border-border/40"
+              : "rounded-xl overflow-hidden border border-border/40"
           }
           style={{
             background: "white",
           }}
         >
-          <div
-            className="grid grid-cols-3 text-sm font-medium"
-            style={{
-              background:
-                variant === "minimal"
-                  ? "transparent"
-                  : undefined,
-            }}
-          >
+          <div className="grid grid-cols-3 text-sm font-medium">
             <div className="p-4" />
 
             <div
@@ -2674,7 +2708,10 @@ function ComparisonScene({
                       : "hsl(var(--studio-primary) / 0.04)",
                 }}
               >
-                {renderValue(row.us, "us")}
+                {renderValue(
+                  row.us,
+                  "us",
+                )}
               </div>
 
               <div className="p-4 text-center opacity-60">
@@ -2698,34 +2735,24 @@ function FounderScene({
   content: any;
   displayFont: string;
 }) {
-  const variant = content.variant || "letter";
+  const variant =
+    content.variant || "letter";
 
-  const portrait = content.portraitUrl ? (
+  const portrait = (
     <div
       className={
         variant === "letter"
-          ? "w-24 h-24 rounded-full mx-auto mb-6 bg-cover bg-center"
-          : "w-full aspect-[4/5] rounded-xl bg-cover bg-center"
+          ? "w-24 h-24 rounded-full mx-auto mb-7 bg-cover bg-center"
+          : "w-full aspect-[4/5] rounded-2xl bg-cover bg-center"
       }
       style={{
-        backgroundImage:
-          `url(${content.portraitUrl})`,
-      }}
-    />
-  ) : (
-    <div
-      className={
-        variant === "letter"
-          ? "w-24 h-24 rounded-full mx-auto mb-6"
-          : "w-full aspect-[4/5] rounded-xl"
-      }
-      style={{
-        background:
-          `linear-gradient(
-            135deg,
-            hsl(var(--studio-primary) / 0.18),
-            hsl(var(--studio-accent) / 0.28)
-          )`,
+        background: content.portraitUrl
+          ? `url(${content.portraitUrl}) center/cover`
+          : `linear-gradient(
+              135deg,
+              hsl(var(--studio-primary) / 0.18),
+              hsl(var(--studio-accent) / 0.28)
+            )`,
       }}
     />
   );
@@ -2739,7 +2766,7 @@ function FounderScene({
       )}
 
       <h2
-        className="text-3xl md:text-4xl mt-3 mb-6"
+        className="text-3xl md:text-5xl mt-3 mb-6"
         style={{
           fontFamily:
             `${displayFont}, serif`,
@@ -2748,26 +2775,28 @@ function FounderScene({
         {content.title}
       </h2>
 
-      <p className="text-lg opacity-80 leading-relaxed italic">
-        « {content.body} »
+      <p className="text-lg md:text-xl opacity-80 leading-relaxed italic whitespace-pre-line">
+        “{content.body}”
       </p>
 
-      <p
-        className="mt-6 text-sm opacity-60"
-        style={{
-          fontFamily:
-            `${displayFont}, serif`,
-        }}
-      >
-        {content.signature}
-      </p>
+      {content.signature && (
+        <p
+          className="mt-7 text-sm opacity-60"
+          style={{
+            fontFamily:
+              `${displayFont}, serif`,
+          }}
+        >
+          {content.signature}
+        </p>
+      )}
     </div>
   );
 
   if (variant === "portrait-left") {
     return (
       <section
-        className="py-20"
+        className="py-20 md:py-24"
         style={{
           background:
             "hsl(var(--studio-surface))",
@@ -2775,7 +2804,7 @@ function FounderScene({
       >
         <div className="max-w-5xl mx-auto px-6 grid md:grid-cols-[0.8fr_1.2fr] gap-12 md:gap-16 items-center">
           {portrait}
-          <div>{textBlock}</div>
+          {textBlock}
         </div>
       </section>
     );
@@ -2784,14 +2813,14 @@ function FounderScene({
   if (variant === "portrait-right") {
     return (
       <section
-        className="py-20"
+        className="py-20 md:py-24"
         style={{
           background:
             "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-5xl mx-auto px-6 grid md:grid-cols-[1.2fr_0.8fr] gap-12 md:gap-16 items-center">
-          <div>{textBlock}</div>
+          {textBlock}
           {portrait}
         </div>
       </section>
@@ -2800,15 +2829,14 @@ function FounderScene({
 
   return (
     <section
-      className="py-20"
+      className="py-20 md:py-28"
       style={{
         background:
           "hsl(var(--studio-surface))",
       }}
     >
       <div className="max-w-3xl mx-auto px-6 text-center">
-        {content.portraitUrl && portrait}
-
+        {portrait}
         {textBlock}
       </div>
     </section>
@@ -2825,7 +2853,8 @@ function ManifestoScene({
   const lines =
     (content.lines ?? []) as string[];
 
-  const variant = content.variant || "xl";
+  const variant =
+    content.variant || "xl";
 
   if (variant === "stacked") {
     return (
@@ -2844,7 +2873,7 @@ function ManifestoScene({
             </p>
           )}
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             {lines.map((line, i) => (
               <h2
                 key={i}
@@ -2874,11 +2903,6 @@ function ManifestoScene({
   }
 
   if (variant === "marquee") {
-    const marqueeLines = [
-      ...lines,
-      ...lines,
-    ];
-
     return (
       <section
         className="py-16 md:py-24 overflow-hidden"
@@ -2889,49 +2913,84 @@ function ManifestoScene({
         }}
       >
         {content.eyebrow && (
-          <p className="text-xs uppercase tracking-[0.3em] opacity-60 text-center mb-8">
+          <p className="text-xs uppercase tracking-[0.3em] opacity-60 text-center mb-10">
             {content.eyebrow}
           </p>
         )}
 
-        <div className="space-y-2">
-          {marqueeLines.map((line, i) => (
+        <div className="space-y-4">
+          {lines.map((line, i) => (
             <div
               key={i}
-              className="whitespace-nowrap"
-              style={{
-                transform:
-                  i % 2 === 0
-                    ? "translateX(-8%)"
-                    : "translateX(-28%)",
-              }}
+              className="overflow-hidden"
             >
-              <span
-                className="text-5xl md:text-7xl lg:text-8xl leading-none inline-block"
+              <div
+                className="flex w-max whitespace-nowrap"
                 style={{
-                  fontFamily:
-                    `${displayFont}, serif`,
-                  WebkitTextStroke:
-                    i % 2
-                      ? "1px currentColor"
-                      : undefined,
-                  color:
-                    i % 2
-                      ? "transparent"
-                      : "currentColor",
+                  animation:
+                    `bib-manifesto-${
+                      i % 2
+                        ? "right"
+                        : "left"
+                    } ${
+                      22 + i * 3
+                    }s linear infinite`,
                 }}
               >
-                {line}
-              </span>
+                {[0, 1, 2, 3].map(
+                  (copy) => (
+                    <span
+                      key={copy}
+                      className="text-5xl md:text-7xl lg:text-8xl leading-none pr-12"
+                      style={{
+                        fontFamily:
+                          `${displayFont}, serif`,
+                        WebkitTextStroke:
+                          i % 2
+                            ? "1px currentColor"
+                            : undefined,
+                        color:
+                          i % 2
+                            ? "transparent"
+                            : "currentColor",
+                      }}
+                    >
+                      {line}
+                    </span>
+                  ),
+                )}
+              </div>
             </div>
           ))}
         </div>
 
         {content.footnote && (
-          <p className="text-xs uppercase tracking-[0.3em] opacity-60 text-center mt-10">
+          <p className="text-xs uppercase tracking-[0.3em] opacity-60 text-center mt-12">
             {content.footnote}
           </p>
         )}
+
+        <style>{`
+          @keyframes bib-manifesto-left {
+            from {
+              transform: translateX(0);
+            }
+
+            to {
+              transform: translateX(-25%);
+            }
+          }
+
+          @keyframes bib-manifesto-right {
+            from {
+              transform: translateX(-25%);
+            }
+
+            to {
+              transform: translateX(0);
+            }
+          }
+        `}</style>
       </section>
     );
   }
@@ -2959,7 +3018,11 @@ function ManifestoScene({
             style={{
               fontFamily:
                 `${displayFont}, serif`,
-              opacity: 0.6 + i * 0.15,
+              opacity:
+                Math.min(
+                  1,
+                  0.6 + i * 0.15,
+                ),
             }}
           >
             {line}
@@ -2975,7 +3038,6 @@ function ManifestoScene({
     </section>
   );
 }
-
 /* -------------------------- New scenes -------------------------- */
 
 function MarqueeScene({
@@ -3116,7 +3178,40 @@ function GalleryMosaicScene({
   const images =
     (content.images ?? []) as string[];
 
-  const variant = content.variant || "mosaic";
+  const variant =
+    content.variant || "mosaic";
+
+  const heading = content.title ? (
+    <div
+      className={
+        variant === "masonry"
+          ? "mb-10"
+          : "text-center mb-10"
+      }
+    >
+      <h2
+        className="text-3xl md:text-5xl"
+        style={{
+          fontFamily:
+            `${displayFont}, serif`,
+        }}
+      >
+        {content.title}
+      </h2>
+
+      {content.subtitle && (
+        <p
+          className={
+            variant === "masonry"
+              ? "opacity-70 mt-3 max-w-2xl"
+              : "opacity-70 mt-3 max-w-2xl mx-auto"
+          }
+        >
+          {content.subtitle}
+        </p>
+      )}
+    </div>
+  ) : null;
 
   if (variant === "uniform") {
     return (
@@ -3128,37 +3223,21 @@ function GalleryMosaicScene({
         }}
       >
         <div className="max-w-6xl mx-auto px-6">
-          {content.title && (
-            <div className="text-center mb-10">
-              <h2
-                className="text-3xl md:text-4xl"
-                style={{
-                  fontFamily:
-                    `${displayFont}, serif`,
-                }}
-              >
-                {content.title}
-              </h2>
-
-              {content.subtitle && (
-                <p className="opacity-70 mt-2">
-                  {content.subtitle}
-                </p>
-              )}
-            </div>
-          )}
+          {heading}
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {images.slice(0, 12).map((src, i) => (
-              <div
-                key={i}
-                className="aspect-square rounded-md overflow-hidden"
-                style={{
-                  background:
-                    `url(${src}) center/cover`,
-                }}
-              />
-            ))}
+            {images
+              .slice(0, 12)
+              .map((src, i) => (
+                <div
+                  key={i}
+                  className="aspect-square rounded-lg overflow-hidden bg-cover bg-center"
+                  style={{
+                    backgroundImage:
+                      `url(${src})`,
+                  }}
+                />
+              ))}
           </div>
         </div>
       </section>
@@ -3175,45 +3254,29 @@ function GalleryMosaicScene({
         }}
       >
         <div className="max-w-6xl mx-auto px-6">
-          {content.title && (
-            <div className="mb-10">
-              <h2
-                className="text-3xl md:text-4xl"
-                style={{
-                  fontFamily:
-                    `${displayFont}, serif`,
-                }}
-              >
-                {content.title}
-              </h2>
-
-              {content.subtitle && (
-                <p className="opacity-70 mt-2 max-w-2xl">
-                  {content.subtitle}
-                </p>
-              )}
-            </div>
-          )}
+          {heading}
 
           <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
-            {images.slice(0, 12).map((src, i) => (
-              <div
-                key={i}
-                className="break-inside-avoid mb-4 overflow-hidden rounded-md"
-                style={{
-                  aspectRatio:
-                    i % 4 === 0
-                      ? "3 / 4"
-                      : i % 4 === 1
-                        ? "4 / 5"
-                        : i % 4 === 2
-                          ? "1 / 1"
-                          : "4 / 5",
-                  background:
-                    `url(${src}) center/cover`,
-                }}
-              />
-            ))}
+            {images
+              .slice(0, 12)
+              .map((src, i) => (
+                <div
+                  key={i}
+                  className="break-inside-avoid mb-4 overflow-hidden rounded-lg bg-cover bg-center"
+                  style={{
+                    aspectRatio:
+                      i % 4 === 0
+                        ? "3 / 4"
+                        : i % 4 === 1
+                          ? "4 / 5"
+                          : i % 4 === 2
+                            ? "1 / 1"
+                            : "4 / 5",
+                    backgroundImage:
+                      `url(${src})`,
+                  }}
+                />
+              ))}
           </div>
         </div>
       </section>
@@ -3229,41 +3292,25 @@ function GalleryMosaicScene({
       }}
     >
       <div className="max-w-6xl mx-auto px-6">
-        {content.title && (
-          <div className="text-center mb-10">
-            <h2
-              className="text-3xl md:text-4xl"
-              style={{
-                fontFamily:
-                  `${displayFont}, serif`,
-              }}
-            >
-              {content.title}
-            </h2>
+        {heading}
 
-            {content.subtitle && (
-              <p className="opacity-70 mt-2">
-                {content.subtitle}
-              </p>
-            )}
-          </div>
-        )}
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {images.slice(0, 12).map((src, i) => (
-            <div
-              key={i}
-              className={`overflow-hidden rounded-md ${
-                i % 5 === 0
-                  ? "row-span-2 aspect-[3/5]"
-                  : "aspect-square"
-              }`}
-              style={{
-                background:
-                  `url(${src}) center/cover`,
-              }}
-            />
-          ))}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          {images
+            .slice(0, 12)
+            .map((src, i) => (
+              <div
+                key={i}
+                className={
+                  i % 5 === 0
+                    ? "overflow-hidden rounded-lg row-span-2 aspect-[3/5] bg-cover bg-center"
+                    : "overflow-hidden rounded-lg aspect-square bg-cover bg-center"
+                }
+                style={{
+                  backgroundImage:
+                    `url(${src})`,
+                }}
+              />
+            ))}
         </div>
       </div>
     </section>
