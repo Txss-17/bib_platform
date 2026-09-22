@@ -1502,63 +1502,166 @@ function TrustWallScene({
   content: any;
   displayFont: string;
 }) {
+  const variant = content.variant || "press-first";
+
+  const reviews =
+    (content.reviews ?? []) as Array<{
+      quote: string;
+      author: string;
+    }>;
+
+  const badges =
+    (content.badges ?? []) as string[];
+
+  const press =
+    (content.press ?? content.logos ?? []) as Array<
+      | string
+      | {
+          name: string;
+          url?: string | null;
+        }
+    >;
+
+  const renderPress = () => (
+    <div>
+      <p className="text-[11px] uppercase tracking-[0.25em] opacity-50 mb-6">
+        {content.pressLabel || "Vu dans"}
+      </p>
+
+      <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-5">
+        {press.map((item, i) => {
+          const name =
+            typeof item === "string"
+              ? item
+              : item.name;
+
+          const url =
+            typeof item === "string"
+              ? null
+              : item.url;
+
+          return url ? (
+            <img
+              key={i}
+              src={url}
+              alt={name}
+              className="h-6 max-w-[140px] object-contain grayscale opacity-70"
+            />
+          ) : (
+            <span
+              key={i}
+              className="text-sm tracking-[0.12em] opacity-70"
+              style={{
+                fontFamily: `${displayFont}, serif`,
+              }}
+            >
+              {name.toUpperCase()}
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const renderReviews = () => (
+    <div className="grid md:grid-cols-2 gap-5">
+      {reviews.map((r, i) => (
+        <blockquote
+          key={i}
+          className="rounded-lg p-6 text-left"
+          style={{
+            background: "white",
+            boxShadow:
+              "0 1px 2px rgba(0,0,0,0.04)",
+          }}
+        >
+          <p className="italic leading-relaxed">
+            « {r.quote} »
+          </p>
+
+          <footer className="text-sm opacity-60 mt-4">
+            — {r.author}
+          </footer>
+        </blockquote>
+      ))}
+    </div>
+  );
+
+  const renderBadges = () => (
+    <div className="flex flex-wrap gap-3 justify-center">
+      {badges.map((badge) => (
+        <span
+          key={badge}
+          className="px-4 py-2 rounded-full text-xs font-medium"
+          style={{
+            background:
+              "hsl(var(--studio-primary) / 0.08)",
+            color:
+              "hsl(var(--studio-primary))",
+          }}
+        >
+          {badge}
+        </span>
+      ))}
+    </div>
+  );
+
   return (
     <section
       className="py-20"
       style={{
-        background: `hsl(var(--studio-surface))`,
+        background:
+          "hsl(var(--studio-surface))",
       }}
     >
-      <div className="max-w-5xl mx-auto px-6 text-center">
-        <h2
-          className="text-3xl md:text-4xl mb-10"
-          style={{
-            fontFamily: `${displayFont}, serif`,
-          }}
-        >
-          {content.title}
-        </h2>
+      <div className="max-w-5xl mx-auto px-6">
+        <div className="text-center mb-12">
+          {content.eyebrow && (
+            <p className="text-xs uppercase tracking-[0.25em] opacity-50 mb-4">
+              {content.eyebrow}
+            </p>
+          )}
 
-        <div className="grid md:grid-cols-2 gap-6 mb-10">
-          {(content.reviews ?? []).map(
-            (r: any, i: number) => (
-              <blockquote
-                key={i}
-                className="rounded-lg p-6 text-left"
-                style={{
-                  background: "white",
-                  boxShadow:
-                    "0 1px 2px rgba(0,0,0,0.04)",
-                }}
-              >
-                <p className="italic">
-                  « {r.quote} »
-                </p>
+          <h2
+            className="text-3xl md:text-5xl"
+            style={{
+              fontFamily: `${displayFont}, serif`,
+            }}
+          >
+            {content.title}
+          </h2>
 
-                <footer className="text-sm opacity-60 mt-3">
-                  — {r.author}
-                </footer>
-              </blockquote>
-            ),
+          {content.subtitle && (
+            <p className="max-w-2xl mx-auto mt-3 opacity-70">
+              {content.subtitle}
+            </p>
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2 justify-center">
-          {(content.badges ?? []).map((b: string) => (
-            <span
-              key={b}
-              className="text-xs px-3 py-1 rounded-full"
-              style={{
-                background:
-                  "hsl(var(--studio-primary) / 0.08)",
-                color:
-                  "hsl(var(--studio-primary))",
-              }}
-            >
-              {b}
-            </span>
-          ))}
-        </div>
+        {variant === "reviews-first" && (
+          <div className="space-y-12">
+            {renderReviews()}
+            {badges.length > 0 && renderBadges()}
+            {press.length > 0 && renderPress()}
+          </div>
+        )}
+
+        {variant === "badges-row" && (
+          <div className="space-y-12">
+            {badges.length > 0 && renderBadges()}
+            {press.length > 0 && renderPress()}
+            {reviews.length > 0 && renderReviews()}
+          </div>
+        )}
+
+        {variant !== "reviews-first" &&
+          variant !== "badges-row" && (
+            <div className="space-y-12">
+              {press.length > 0 && renderPress()}
+              {reviews.length > 0 && renderReviews()}
+              {badges.length > 0 && renderBadges()}
+            </div>
+          )}
       </div>
     </section>
   );
@@ -1571,86 +1674,228 @@ function CtaStickyScene({
   content: any;
   displayFont: string;
 }) {
-  return (
-    <>
-      <section
-        className="py-16 md:py-24 text-center"
+  const variant = content.variant || "centered";
+
+  const buttons = (
+    <div className="flex flex-wrap gap-3 justify-center">
+      {content.ctaLabel && (
+        <a
+          href="#shop"
+          className="rounded-full px-7 py-3 text-sm font-medium"
+          style={{
+            background:
+              "hsl(var(--studio-accent))",
+            color:
+              "hsl(var(--studio-ink))",
+          }}
+        >
+          {content.ctaLabel}
+        </a>
+      )}
+
+      {content.ctaSecondaryLabel && (
+        <a
+          href="#newsletter"
+          className="rounded-full px-7 py-3 text-sm font-medium border border-white/40"
+        >
+          {content.ctaSecondaryLabel}
+        </a>
+      )}
+    </div>
+  );
+
+  const contentBlock = (
+    <div>
+      {content.eyebrow && (
+        <p className="text-xs uppercase tracking-[0.25em] opacity-60 mb-4">
+          {content.eyebrow}
+        </p>
+      )}
+
+      <h2
+        className="text-3xl md:text-5xl mb-4"
         style={{
-          background: `hsl(var(--studio-primary))`,
+          fontFamily: `${displayFont}, serif`,
+        }}
+      >
+        {content.title}
+      </h2>
+
+      {content.subtitle && (
+        <p className="opacity-80 mb-8">
+          {content.subtitle}
+        </p>
+      )}
+
+      {buttons}
+    </div>
+  );
+
+  if (variant === "split-newsletter") {
+    return (
+      <section
+        className="py-16 md:py-24"
+        style={{
+          background:
+            "hsl(var(--studio-primary))",
           color: "white",
         }}
       >
-        <div className="max-w-2xl mx-auto px-6">
-          <h2
-            className="text-3xl md:text-5xl mb-4"
+        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+          <div>{contentBlock}</div>
+
+          <div
+            id="newsletter"
+            className="rounded-2xl p-7 md:p-9"
             style={{
-              fontFamily: `${displayFont}, serif`,
+              background:
+                "hsl(var(--studio-surface))",
+              color:
+                "hsl(var(--studio-ink))",
             }}
           >
-            {content.title}
-          </h2>
+            {content.newsletterEyebrow && (
+              <p className="text-xs uppercase tracking-[0.2em] opacity-50 mb-3">
+                {content.newsletterEyebrow}
+              </p>
+            )}
 
-          <p className="opacity-80 mb-8">
-            {content.subtitle}
-          </p>
+            <h3
+              className="text-2xl md:text-3xl mb-3"
+              style={{
+                fontFamily:
+                  `${displayFont}, serif`,
+              }}
+            >
+              {content.newsletterTitle ||
+                "Restez informé"}
+            </h3>
 
-          <div className="flex flex-wrap gap-3 justify-center">
+            <p className="opacity-70 mb-6">
+              {content.newsletterSubtitle ||
+                "Recevez nos nouveautés directement dans votre boîte mail."}
+            </p>
+
+            <form
+              onSubmit={(e) =>
+                e.preventDefault()
+              }
+              className="flex flex-col sm:flex-row gap-2"
+            >
+              <input
+                type="email"
+                required
+                placeholder={
+                  content.newsletterPlaceholder ||
+                  "Votre email"
+                }
+                className="flex-1 rounded-full px-5 py-3 text-sm bg-white border border-border/40"
+              />
+
+              <button
+                type="submit"
+                className="rounded-full px-6 py-3 text-sm font-medium whitespace-nowrap"
+                style={{
+                  background:
+                    "hsl(var(--studio-accent))",
+                  color:
+                    "hsl(var(--studio-ink))",
+                }}
+              >
+                {content.newsletterCtaLabel ||
+                  "S'inscrire"}
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (variant === "sticky-only") {
+    return (
+      <>
+        <section
+          className="py-16 md:py-24"
+          style={{
+            background:
+              "hsl(var(--studio-surface))",
+          }}
+        >
+          <div className="max-w-3xl mx-auto px-6 text-center">
+            <h2
+              className="text-3xl md:text-5xl mb-4"
+              style={{
+                fontFamily:
+                  `${displayFont}, serif`,
+              }}
+            >
+              {content.title}
+            </h2>
+
+            {content.subtitle && (
+              <p className="opacity-70 max-w-xl mx-auto">
+                {content.subtitle}
+              </p>
+            )}
+          </div>
+        </section>
+
+        <div
+          className="fixed bottom-0 inset-x-0 z-40 flex items-center justify-between gap-4 px-4 md:px-8 py-3 backdrop-blur"
+          style={{
+            background:
+              "hsl(var(--studio-primary) / 0.96)",
+            color: "white",
+          }}
+        >
+          <div className="min-w-0">
+            <p className="text-sm font-medium truncate">
+              {content.stickyLabel ||
+                content.title}
+            </p>
+
+            {content.stickySubtitle && (
+              <p className="hidden md:block text-xs opacity-60 truncate">
+                {content.stickySubtitle}
+              </p>
+            )}
+          </div>
+
+          {content.ctaLabel && (
             <a
               href="#shop"
-              className="rounded-full px-7 py-3 text-sm font-medium"
+              className="rounded-full px-5 py-2.5 text-xs font-medium whitespace-nowrap"
               style={{
                 background:
-                  `hsl(var(--studio-accent))`,
+                  "hsl(var(--studio-accent))",
                 color:
-                  `hsl(var(--studio-ink))`,
+                  "hsl(var(--studio-ink))",
               }}
             >
               {content.ctaLabel}
             </a>
-
-            {content.ctaSecondaryLabel && (
-              <a
-                href="#newsletter"
-                className="rounded-full px-7 py-3 text-sm font-medium border border-white/40"
-              >
-                {content.ctaSecondaryLabel}
-              </a>
-            )}
-          </div>
+          )}
         </div>
-      </section>
+      </>
+    );
+  }
 
-      {content.stickyEnabled && (
-        <div
-          className="fixed bottom-0 inset-x-0 z-40 md:hidden flex items-center justify-between gap-3 px-4 py-3 backdrop-blur"
-          style={{
-            background:
-              `hsl(var(--studio-primary) / 0.94)`,
-            color: "white",
-          }}
-        >
-          <span className="text-sm font-medium truncate">
-            {content.title}
-          </span>
-
-          <a
-            href="#shop"
-            className="rounded-full px-4 py-2 text-xs font-medium whitespace-nowrap"
-            style={{
-              background:
-                `hsl(var(--studio-accent))`,
-              color:
-                `hsl(var(--studio-ink))`,
-            }}
-          >
-            {content.ctaLabel}
-          </a>
-        </div>
-      )}
-    </>
+  return (
+    <section
+      className="py-16 md:py-24 text-center"
+      style={{
+        background:
+          "hsl(var(--studio-primary))",
+        color: "white",
+      }}
+    >
+      <div className="max-w-2xl mx-auto px-6">
+        {contentBlock}
+      </div>
+    </section>
   );
 }
-
 /* -------------------------- New scenes (Phase 2) -------------------------- */
 
 function FaqScene({
@@ -1666,44 +1911,169 @@ function FaqScene({
       a: string;
     }>;
 
+  const variant = content.variant || "accordion";
+
+  const renderItem = (
+    item: {
+      q: string;
+      a: string;
+    },
+    i: number,
+  ) => (
+    <details
+      key={i}
+      className="group border-b border-border/40 py-4"
+    >
+      <summary className="flex items-center justify-between cursor-pointer list-none">
+        <span className="font-medium pr-4">
+          {item.q}
+        </span>
+
+        <span className="text-xl opacity-50 group-open:rotate-45 transition-transform">
+          +
+        </span>
+      </summary>
+
+      <p className="mt-3 opacity-75 leading-relaxed">
+        {item.a}
+      </p>
+    </details>
+  );
+
+  if (variant === "two-column") {
+    const midpoint = Math.ceil(items.length / 2);
+    const left = items.slice(0, midpoint);
+    const right = items.slice(midpoint);
+
+    return (
+      <section
+        className="py-20"
+        style={{
+          background:
+            "hsl(var(--studio-surface))",
+        }}
+      >
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2
+              className="text-3xl md:text-4xl"
+              style={{
+                fontFamily:
+                  `${displayFont}, serif`,
+              }}
+            >
+              {content.title}
+            </h2>
+
+            {content.subtitle && (
+              <p className="opacity-70 mt-2">
+                {content.subtitle}
+              </p>
+            )}
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-x-10">
+            <div>
+              {left.map((item, i) =>
+                renderItem(item, i),
+              )}
+            </div>
+
+            <div>
+              {right.map((item, i) =>
+                renderItem(
+                  item,
+                  i + midpoint,
+                ),
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (variant === "list") {
+    return (
+      <section className="py-20">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="mb-10">
+            <h2
+              className="text-3xl md:text-5xl"
+              style={{
+                fontFamily:
+                  `${displayFont}, serif`,
+              }}
+            >
+              {content.title}
+            </h2>
+
+            {content.subtitle && (
+              <p className="opacity-70 mt-3 max-w-2xl">
+                {content.subtitle}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-6">
+            {items.map((item, i) => (
+              <article
+                key={i}
+                className="grid md:grid-cols-[80px_1fr] gap-4 border-t border-border/40 pt-6"
+              >
+                <span className="text-xs uppercase tracking-[0.2em] opacity-40">
+                  {String(i + 1).padStart(
+                    2,
+                    "0",
+                  )}
+                </span>
+
+                <div>
+                  <h3
+                    className="text-xl md:text-2xl mb-2"
+                    style={{
+                      fontFamily:
+                        `${displayFont}, serif`,
+                    }}
+                  >
+                    {item.q}
+                  </h3>
+
+                  <p className="opacity-75 leading-relaxed">
+                    {item.a}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section
       className="py-20"
       style={{
-        background: `hsl(var(--studio-surface))`,
+        background:
+          "hsl(var(--studio-surface))",
       }}
     >
       <div className="max-w-3xl mx-auto px-6">
         <h2
           className="text-3xl md:text-4xl mb-10 text-center"
           style={{
-            fontFamily: `${displayFont}, serif`,
+            fontFamily:
+              `${displayFont}, serif`,
           }}
         >
           {content.title}
         </h2>
 
         <div className="divide-y divide-border/40 border-y border-border/40">
-          {items.map((it, i) => (
-            <details
-              key={i}
-              className="group py-4"
-            >
-              <summary className="flex items-center justify-between cursor-pointer list-none">
-                <span className="font-medium pr-4">
-                  {it.q}
-                </span>
-
-                <span className="text-xl opacity-50 group-open:rotate-45 transition-transform">
-                  +
-                </span>
-              </summary>
-
-              <p className="mt-3 opacity-75 leading-relaxed">
-                {it.a}
-              </p>
-            </details>
-          ))}
+          {items.map((item, i) =>
+            renderItem(item, i),
+          )}
         </div>
       </div>
     </section>
@@ -1717,12 +2087,171 @@ function NewsletterScene({
   content: any;
   displayFont: string;
 }) {
+  const variant =
+    content.variant || "centered";
+
+  const form = (
+    <form
+      onSubmit={(e) => e.preventDefault()}
+      className="flex flex-col sm:flex-row gap-2"
+    >
+      <input
+        type="email"
+        required
+        placeholder={
+          content.placeholder ??
+          "Votre email"
+        }
+        className="flex-1 rounded-full px-5 py-3 text-sm text-foreground bg-white/95 border border-white/10"
+      />
+
+      <button
+        type="submit"
+        className="rounded-full px-6 py-3 text-sm font-medium whitespace-nowrap"
+        style={{
+          background:
+            "hsl(var(--studio-accent))",
+          color:
+            "hsl(var(--studio-ink))",
+        }}
+      >
+        {content.ctaLabel}
+      </button>
+    </form>
+  );
+
+  const benefits =
+    (content.benefits ?? []) as string[];
+
+  const benefitsBlock =
+    benefits.length > 0 ? (
+      <ul className="flex flex-wrap gap-3 justify-center mt-6 text-xs opacity-70">
+        {benefits.map((benefit) => (
+          <li key={benefit}>
+            · {benefit}
+          </li>
+        ))}
+      </ul>
+    ) : null;
+
+  if (variant === "split-image") {
+    return (
+      <section
+        id="newsletter"
+        className="grid md:grid-cols-2 min-h-[500px]"
+        style={{
+          background:
+            "hsl(var(--studio-ink))",
+          color: "white",
+        }}
+      >
+        <div
+          className="min-h-[320px] md:min-h-full bg-cover bg-center"
+          style={{
+            backgroundImage:
+              content.image
+                ? `url(${content.image})`
+                : undefined,
+            background:
+              content.image
+                ? undefined
+                : `linear-gradient(
+                    135deg,
+                    hsl(var(--studio-primary)),
+                    hsl(var(--studio-accent))
+                  )`,
+          }}
+        />
+
+        <div className="flex items-center px-8 md:px-12 lg:px-16 py-16">
+          <div className="max-w-xl w-full">
+            {content.eyebrow && (
+              <span className="text-xs uppercase tracking-[0.2em] opacity-60">
+                {content.eyebrow}
+              </span>
+            )}
+
+            <h2
+              className="text-3xl md:text-5xl mt-3 mb-3"
+              style={{
+                fontFamily:
+                  `${displayFont}, serif`,
+              }}
+            >
+              {content.title}
+            </h2>
+
+            {content.subtitle && (
+              <p className="opacity-75 mb-6">
+                {content.subtitle}
+              </p>
+            )}
+
+            {form}
+
+            {benefits.length > 0 && (
+              <ul className="flex flex-wrap gap-3 mt-6 text-xs opacity-70">
+                {benefits.map((benefit) => (
+                  <li key={benefit}>
+                    · {benefit}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (variant === "minimal") {
+    return (
+      <section
+        id="newsletter"
+        className="py-16 md:py-20 border-y border-border/30"
+      >
+        <div className="max-w-3xl mx-auto px-6">
+          <div className="grid md:grid-cols-[1fr_auto] gap-8 items-end">
+            <div>
+              {content.eyebrow && (
+                <span className="text-xs uppercase tracking-[0.2em] opacity-50">
+                  {content.eyebrow}
+                </span>
+              )}
+
+              <h2
+                className="text-2xl md:text-4xl mt-2"
+                style={{
+                  fontFamily:
+                    `${displayFont}, serif`,
+                }}
+              >
+                {content.title}
+              </h2>
+
+              {content.subtitle && (
+                <p className="opacity-65 mt-2 max-w-xl">
+                  {content.subtitle}
+                </p>
+              )}
+            </div>
+
+            <div className="w-full md:min-w-[360px]">
+              {form}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section
       id="newsletter"
       className="py-20"
       style={{
-        background: `hsl(var(--studio-ink))`,
+        background:
+          "hsl(var(--studio-ink))",
         color: "white",
       }}
     >
@@ -1736,50 +2265,22 @@ function NewsletterScene({
         <h2
           className="text-3xl md:text-5xl mt-3 mb-3"
           style={{
-            fontFamily: `${displayFont}, serif`,
+            fontFamily:
+              `${displayFont}, serif`,
           }}
         >
           {content.title}
         </h2>
 
-        <p className="opacity-75 mb-6">
-          {content.subtitle}
-        </p>
-
-        <form
-          onSubmit={(e) => e.preventDefault()}
-          className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto"
-        >
-          <input
-            type="email"
-            required
-            placeholder={
-              content.placeholder ?? "Votre email"
-            }
-            className="flex-1 rounded-full px-5 py-3 text-sm text-foreground bg-white/95"
-          />
-
-          <button
-            type="submit"
-            className="rounded-full px-6 py-3 text-sm font-medium"
-            style={{
-              background:
-                `hsl(var(--studio-accent))`,
-              color:
-                `hsl(var(--studio-ink))`,
-            }}
-          >
-            {content.ctaLabel}
-          </button>
-        </form>
-
-        {(content.benefits ?? []).length > 0 && (
-          <ul className="flex flex-wrap gap-3 justify-center mt-6 text-xs opacity-70">
-            {content.benefits.map((b: string) => (
-              <li key={b}>· {b}</li>
-            ))}
-          </ul>
+        {content.subtitle && (
+          <p className="opacity-75 mb-6">
+            {content.subtitle}
+          </p>
         )}
+
+        {form}
+
+        {benefitsBlock}
       </div>
     </section>
   );
@@ -1798,49 +2299,160 @@ function PressStripScene({
       url?: string | null;
     }>;
 
+  const variant = content.variant || "scrolling";
+
+  const renderLogo = (
+    logo: {
+      name: string;
+      url?: string | null;
+    },
+    index: number,
+  ) =>
+    logo.url ? (
+      <img
+        key={index}
+        src={logo.url}
+        alt={logo.name}
+        className="h-6 max-w-[140px] object-contain grayscale opacity-70"
+      />
+    ) : (
+      <span
+        key={index}
+        className="text-base tracking-widest whitespace-nowrap"
+        style={{
+          fontFamily: `${displayFont}, serif`,
+        }}
+      >
+        {logo.name.toUpperCase()}
+      </span>
+    );
+
+  if (variant === "static-grid") {
+    return (
+      <section
+        className="py-14 border-y border-border/40"
+        style={{
+          background: "white",
+        }}
+      >
+        <div className="max-w-6xl mx-auto px-6">
+          {content.eyebrow && (
+            <p
+              className="text-[11px] uppercase tracking-[0.25em] opacity-50 mb-8 text-center"
+              style={{
+                fontFamily: `${displayFont}, serif`,
+              }}
+            >
+              {content.eyebrow}
+            </p>
+          )}
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 border border-border/30">
+            {logos.map((logo, i) => (
+              <div
+                key={i}
+                className="min-h-24 flex items-center justify-center p-6 border-b border-r border-border/30"
+              >
+                {logo.url ? (
+                  <img
+                    src={logo.url}
+                    alt={logo.name}
+                    className="max-h-7 max-w-[150px] object-contain grayscale opacity-70"
+                  />
+                ) : (
+                  <span
+                    className="text-sm tracking-widest text-center"
+                    style={{
+                      fontFamily:
+                        `${displayFont}, serif`,
+                    }}
+                  >
+                    {logo.name.toUpperCase()}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (variant === "centered") {
+    return (
+      <section
+        className="py-16"
+        style={{
+          background:
+            "hsl(var(--studio-surface))",
+        }}
+      >
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          {content.eyebrow && (
+            <p className="text-[11px] uppercase tracking-[0.25em] opacity-50 mb-4">
+              {content.eyebrow}
+            </p>
+          )}
+
+          {content.title && (
+            <h2
+              className="text-2xl md:text-4xl mb-8"
+              style={{
+                fontFamily:
+                  `${displayFont}, serif`,
+              }}
+            >
+              {content.title}
+            </h2>
+          )}
+
+          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
+            {logos.map(renderLogo)}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const marqueeItems = [...logos, ...logos];
+
   return (
     <section
-      className="py-12 border-y border-border/40"
+      className="py-5 overflow-hidden border-y border-border/40"
       style={{
         background: "white",
       }}
     >
-      <div className="max-w-6xl mx-auto px-6 text-center">
-        {content.eyebrow && (
-          <p
-            className="text-[11px] uppercase tracking-[0.25em] opacity-50 mb-5"
-            style={{
-              fontFamily: `${displayFont}, serif`,
-            }}
-          >
-            {content.eyebrow}
-          </p>
-        )}
+      {content.eyebrow && (
+        <p className="text-[10px] uppercase tracking-[0.25em] opacity-40 text-center mb-4">
+          {content.eyebrow}
+        </p>
+      )}
 
-        <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 opacity-70">
-          {logos.map((l, i) =>
-            l.url ? (
-              <img
-                key={i}
-                src={l.url}
-                alt={l.name}
-                className="h-6 grayscale"
-              />
-            ) : (
-              <span
-                key={i}
-                className="text-base tracking-widest"
-                style={{
-                  fontFamily:
-                    `${displayFont}, serif`,
-                }}
-              >
-                {l.name.toUpperCase()}
-              </span>
-            ),
+      <div className="relative overflow-hidden">
+        <div
+          className="flex w-max items-center gap-12 whitespace-nowrap"
+          style={{
+            animation:
+              "bib-press-scroll 28s linear infinite",
+          }}
+        >
+          {marqueeItems.map((logo, i) =>
+            renderLogo(logo, i),
           )}
         </div>
       </div>
+
+      <style>{`
+        @keyframes bib-press-scroll {
+          from {
+            transform: translateX(0);
+          }
+          to {
+            transform: translateX(-50%);
+          }
+        }
+      `}</style>
     </section>
   );
 }
@@ -1859,37 +2471,136 @@ function ComparisonScene({
       them: boolean;
     }>;
 
+  const variant = content.variant || "check-cross";
+
+  const renderValue = (
+    value: boolean,
+    type: "us" | "them",
+  ) => {
+    if (variant === "stars") {
+      return value ? (
+        <span
+          className="text-lg"
+          style={{
+            color:
+              type === "us"
+                ? "hsl(var(--studio-accent))"
+                : "currentColor",
+          }}
+        >
+          ★
+        </span>
+      ) : (
+        <span className="opacity-20">—</span>
+      );
+    }
+
+    if (variant === "minimal") {
+      return value ? (
+        <span
+          className="text-sm font-medium"
+          style={{
+            color:
+              type === "us"
+                ? "hsl(var(--studio-primary))"
+                : "currentColor",
+          }}
+        >
+          Oui
+        </span>
+      ) : (
+        <span className="text-sm opacity-40">
+          —
+        </span>
+      );
+    }
+
+    return value ? (
+      <span
+        className="text-lg font-medium"
+        style={{
+          color:
+            type === "us"
+              ? "hsl(var(--studio-primary))"
+              : "currentColor",
+        }}
+      >
+        ✓
+      </span>
+    ) : (
+      <span className="opacity-30">×</span>
+    );
+  };
+
   return (
     <section
       className="py-20"
       style={{
-        background: `hsl(var(--studio-surface))`,
+        background:
+          "hsl(var(--studio-surface))",
       }}
     >
-      <div className="max-w-3xl mx-auto px-6">
-        <h2
-          className="text-3xl md:text-4xl mb-10 text-center"
-          style={{
-            fontFamily: `${displayFont}, serif`,
-          }}
-        >
-          {content.title}
-        </h2>
+      <div
+        className={
+          variant === "minimal"
+            ? "max-w-4xl mx-auto px-6"
+            : "max-w-3xl mx-auto px-6"
+        }
+      >
+        <div className="text-center mb-10">
+          {content.eyebrow && (
+            <p className="text-xs uppercase tracking-[0.25em] opacity-50 mb-4">
+              {content.eyebrow}
+            </p>
+          )}
+
+          <h2
+            className="text-3xl md:text-4xl"
+            style={{
+              fontFamily:
+                `${displayFont}, serif`,
+            }}
+          >
+            {content.title}
+          </h2>
+
+          {content.subtitle && (
+            <p className="mt-3 opacity-70 max-w-2xl mx-auto">
+              {content.subtitle}
+            </p>
+          )}
+        </div>
 
         <div
-          className="rounded-lg overflow-hidden border border-border/40"
+          className={
+            variant === "minimal"
+              ? "border-y border-border/40"
+              : "rounded-lg overflow-hidden border border-border/40"
+          }
           style={{
             background: "white",
           }}
         >
-          <div className="grid grid-cols-3 text-sm font-medium">
+          <div
+            className="grid grid-cols-3 text-sm font-medium"
+            style={{
+              background:
+                variant === "minimal"
+                  ? "transparent"
+                  : undefined,
+            }}
+          >
             <div className="p-4" />
 
             <div
               className="p-4 text-center"
               style={{
                 background:
-                  `hsl(var(--studio-primary) / 0.08)`,
+                  variant === "minimal"
+                    ? undefined
+                    : "hsl(var(--studio-primary) / 0.08)",
+                color:
+                  "hsl(var(--studio-primary))",
               }}
             >
               {content.brand_name}
@@ -1900,27 +2611,32 @@ function ComparisonScene({
             </div>
           </div>
 
-          {rows.map((r, i) => (
+          {rows.map((row, i) => (
             <div
               key={i}
               className="grid grid-cols-3 text-sm border-t border-border/30"
             >
               <div className="p-4">
-                {r.label}
+                {row.label}
               </div>
 
               <div
                 className="p-4 text-center"
                 style={{
                   background:
-                    `hsl(var(--studio-primary) / 0.04)`,
+                    variant === "minimal"
+                      ? undefined
+                      : "hsl(var(--studio-primary) / 0.04)",
                 }}
               >
-                {r.us ? "✓" : "—"}
+                {renderValue(row.us, "us")}
               </div>
 
               <div className="p-4 text-center opacity-60">
-                {r.them ? "✓" : "—"}
+                {renderValue(
+                  row.them,
+                  "them",
+                )}
               </div>
             </div>
           ))}
@@ -1937,51 +2653,118 @@ function FounderScene({
   content: any;
   displayFont: string;
 }) {
+  const variant = content.variant || "letter";
+
+  const portrait = content.portraitUrl ? (
+    <div
+      className={
+        variant === "letter"
+          ? "w-24 h-24 rounded-full mx-auto mb-6 bg-cover bg-center"
+          : "w-full aspect-[4/5] rounded-xl bg-cover bg-center"
+      }
+      style={{
+        backgroundImage:
+          `url(${content.portraitUrl})`,
+      }}
+    />
+  ) : (
+    <div
+      className={
+        variant === "letter"
+          ? "w-24 h-24 rounded-full mx-auto mb-6"
+          : "w-full aspect-[4/5] rounded-xl"
+      }
+      style={{
+        background:
+          `linear-gradient(
+            135deg,
+            hsl(var(--studio-primary) / 0.18),
+            hsl(var(--studio-accent) / 0.28)
+          )`,
+      }}
+    />
+  );
+
+  const textBlock = (
+    <div>
+      {content.eyebrow && (
+        <span className="text-xs uppercase tracking-[0.2em] opacity-60">
+          {content.eyebrow}
+        </span>
+      )}
+
+      <h2
+        className="text-3xl md:text-4xl mt-3 mb-6"
+        style={{
+          fontFamily:
+            `${displayFont}, serif`,
+        }}
+      >
+        {content.title}
+      </h2>
+
+      <p className="text-lg opacity-80 leading-relaxed italic">
+        « {content.body} »
+      </p>
+
+      <p
+        className="mt-6 text-sm opacity-60"
+        style={{
+          fontFamily:
+            `${displayFont}, serif`,
+        }}
+      >
+        {content.signature}
+      </p>
+    </div>
+  );
+
+  if (variant === "portrait-left") {
+    return (
+      <section
+        className="py-20"
+        style={{
+          background:
+            "hsl(var(--studio-surface))",
+        }}
+      >
+        <div className="max-w-5xl mx-auto px-6 grid md:grid-cols-[0.8fr_1.2fr] gap-12 md:gap-16 items-center">
+          {portrait}
+          <div>{textBlock}</div>
+        </div>
+      </section>
+    );
+  }
+
+  if (variant === "portrait-right") {
+    return (
+      <section
+        className="py-20"
+        style={{
+          background:
+            "hsl(var(--studio-surface))",
+        }}
+      >
+        <div className="max-w-5xl mx-auto px-6 grid md:grid-cols-[1.2fr_0.8fr] gap-12 md:gap-16 items-center">
+          <div>{textBlock}</div>
+          {portrait}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section
       className="py-20"
       style={{
-        background: `hsl(var(--studio-surface))`,
+        background:
+          "hsl(var(--studio-surface))",
       }}
     >
       <div className="max-w-3xl mx-auto px-6 text-center">
-        {content.portraitUrl && (
-          <div
-            className="w-24 h-24 rounded-full mx-auto mb-6 bg-cover bg-center"
-            style={{
-              backgroundImage:
-                `url(${content.portraitUrl})`,
-            }}
-          />
-        )}
+        {content.portraitUrl && portrait}
 
-        {content.eyebrow && (
-          <span className="text-xs uppercase tracking-[0.2em] opacity-60">
-            {content.eyebrow}
-          </span>
-        )}
-
-        <h2
-          className="text-3xl md:text-4xl mt-3 mb-6"
-          style={{
-            fontFamily: `${displayFont}, serif`,
-          }}
-        >
-          {content.title}
-        </h2>
-
-        <p className="text-lg opacity-80 leading-relaxed italic">
-          « {content.body} »
-        </p>
-
-        <p
-          className="mt-6 text-sm opacity-60"
-          style={{
-            fontFamily: `${displayFont}, serif`,
-          }}
-        >
-          {content.signature}
-        </p>
+        {textBlock}
       </div>
     </section>
   );
@@ -1997,17 +2780,134 @@ function ManifestoScene({
   const lines =
     (content.lines ?? []) as string[];
 
+  const variant = content.variant || "xl";
+
+  if (variant === "stacked") {
+    return (
+      <section
+        className="py-24 md:py-32"
+        style={{
+          background:
+            "hsl(var(--studio-primary))",
+          color: "white",
+        }}
+      >
+        <div className="max-w-6xl mx-auto px-6">
+          {content.eyebrow && (
+            <p className="text-xs uppercase tracking-[0.3em] opacity-60 mb-10">
+              {content.eyebrow}
+            </p>
+          )}
+
+          <div className="space-y-2">
+            {lines.map((line, i) => (
+              <h2
+                key={i}
+                className="text-4xl md:text-6xl lg:text-7xl leading-[0.95]"
+                style={{
+                  fontFamily:
+                    `${displayFont}, serif`,
+                  marginLeft:
+                    i % 2 === 0
+                      ? "0"
+                      : "clamp(2rem, 10vw, 10rem)",
+                }}
+              >
+                {line}
+              </h2>
+            ))}
+          </div>
+
+          {content.footnote && (
+            <p className="text-xs uppercase tracking-[0.3em] opacity-60 mt-12 max-w-md">
+              {content.footnote}
+            </p>
+          )}
+        </div>
+      </section>
+    );
+  }
+
+  if (variant === "marquee") {
+    const marqueeLines = [
+      ...lines,
+      ...lines,
+    ];
+
+    return (
+      <section
+        className="py-16 md:py-24 overflow-hidden"
+        style={{
+          background:
+            "hsl(var(--studio-primary))",
+          color: "white",
+        }}
+      >
+        {content.eyebrow && (
+          <p className="text-xs uppercase tracking-[0.3em] opacity-60 text-center mb-8">
+            {content.eyebrow}
+          </p>
+        )}
+
+        <div className="space-y-2">
+          {marqueeLines.map((line, i) => (
+            <div
+              key={i}
+              className="whitespace-nowrap"
+              style={{
+                transform:
+                  i % 2 === 0
+                    ? "translateX(-8%)"
+                    : "translateX(-28%)",
+              }}
+            >
+              <span
+                className="text-5xl md:text-7xl lg:text-8xl leading-none inline-block"
+                style={{
+                  fontFamily:
+                    `${displayFont}, serif`,
+                  WebkitTextStroke:
+                    i % 2
+                      ? "1px currentColor"
+                      : undefined,
+                  color:
+                    i % 2
+                      ? "transparent"
+                      : "currentColor",
+                }}
+              >
+                {line}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {content.footnote && (
+          <p className="text-xs uppercase tracking-[0.3em] opacity-60 text-center mt-10">
+            {content.footnote}
+          </p>
+        )}
+      </section>
+    );
+  }
+
   return (
     <section
       className="py-24 md:py-36"
       style={{
         background:
-          `hsl(var(--studio-primary))`,
+          "hsl(var(--studio-primary))",
         color: "white",
       }}
     >
       <div className="max-w-5xl mx-auto px-6 text-center">
-        {lines.map((l, i) => (
+        {content.eyebrow && (
+          <p className="text-xs uppercase tracking-[0.3em] opacity-60 mb-8">
+            {content.eyebrow}
+          </p>
+        )}
+
+        {lines.map((line, i) => (
           <h2
             key={i}
             className="text-5xl md:text-7xl lg:text-8xl leading-[1.05]"
@@ -2017,7 +2917,7 @@ function ManifestoScene({
               opacity: 0.6 + i * 0.15,
             }}
           >
-            {l}
+            {line}
           </h2>
         ))}
 
