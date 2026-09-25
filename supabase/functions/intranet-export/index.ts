@@ -116,6 +116,95 @@ Deno.serve(async (req) => {
     };
   });
 
+  // --- Listes financières ---
+  const commissionByTier: Record<string, number> = {};
+  (planRows.data ?? []).forEach((p) => { commissionByTier[p.tier] = Number(p.commission_percent); });
+
+  const boutiqueById: Record<string, { user_id: string }> = {};
+  (b.data ?? []).forEach((x) => { boutiqueById[x.id] = { user_id: x.user_id }; });
+
+  const subscriptionsList = (subsRows.data ?? []).map((s) => ({
+    id: s.id,
+    amount: null as number | null, // montant non stocké localement : voir Stripe via price_id
+    currency: "EUR",
+    date: s.current_period_start ?? s.updated_at,
+    boutique_id: null as string | null,
+    description: `Abonnement ${s.kind} (${s.status})`,
+    stripe_id: s.stripe_subscription_id,
+    payment_intent: null as string | null,
+    order_number: null as string | null,
+    plan: s.price_id ?? null,
+  }));
+
+  // Commissions BIB par commande payée : montant × taux du plan du marchand.
+  const commissions = (o.data ?? [])
+    .filter((ord) => ord.payment_status === "paid")
+    .map((ord) => {
+      const owner = boutiqueById[ord.boutique_id]?.user_id;
+      const tier = owner ? plans[owner] : null;
+      const pct = tier ? commissionByTier[tier] ?? 0 : 0;
+      const amount = Math.round(Number(ord.amount) * pct) / 100;
+      return {
+        id: `com_${ord.id}`,
+        amount,
+        currency: "EUR",
+        date: ord.created_at,
+        boutique_id: ord.boutique_id,
+        description: `Commission ${pct}% sur commande ${ord.order_number}`,
+        stripe_id: null as string | null,
+        payment_intent: null as string | null,
+        order_number: ord.order_number,
+        plan: tier ?? null,
+      };
+    });
+
+  const paymentsList = (payRows.data ?? []).map((p) => ({
+    id: p.id,
+    amount: Number(p.amount),
+    currency: "EUR",
+    date: p.created_at,
+    boutique_id: p.boutique_id,
+    description: `Versement ${p.period_start} → ${p.period_end} (${p.status})`,
+    stripe_id: null as string | null,
+    payment_intent: null as string | null,
+    order_number: null as string | null,
+    plan: null as string | null,
+  }));
+
+  // Encaissements clients : commandes payées (la session Stripe sert d'identifiant).
+  const fees = (o.data ?? [])
+    .filter((ord) => ord.payment_status === "paid")
+    .map((ord) => ({
+      id: `fee_${ord.id}`,
+      amount: Number(ord.amount),
+      currency: "EUR",
+      date: ord.created_at,
+      boutique_id: ord.boutique_id,
+      description: `Encaissement commande ${ord.order_number}`,
+      stripe_id: ord.stripe_session_id ?? null,
+      payment_intent: null as string | null,
+      order_number: ord.order_number,
+      plan: null as string | null,
+    }));
+
+  // Pas de table de remboursements dédiée : liste vide pour l'instant.
+  const refunds: unknown[] = [];
+
+  const payouts = (payRows.data ?? [])
+    .filter((p) => p.payout_date)
+    .map((p) => ({
+      id: p.id,
+      amount: Number(p.amount),
+      currency: "EUR",
+      date: p.payout_date,
+      boutique_id: p.boutique_id,
+      description: `Payout ${p.period_start} → ${p.period_end}`,
+      stripe_id: null as string | null,
+      payment_intent: null as string | null,
+      order_number: null as string | null,
+      plan: null as string | null,
+    }));
+
   return json({
     boutiques: (b.data ?? []).map(({ user_id, ...rest }) => ({ ...rest, subscription_plan: plans[user_id] ?? null })),
     orders: o.data ?? [],
@@ -123,5 +212,11 @@ Deno.serve(async (req) => {
     tickets: (t.data ?? []).map(({ created_at: _c, ...rest }) => ({ ...rest, priority: null })),
     supplier_applications,
     merchants,
+    subscriptions: subscriptionsList,
+    commissions,
+    payments: paymentsList,
+    fees,
+    refunds,
+    payouts,
   });
 });
