@@ -201,8 +201,47 @@ async function createCheckoutSession(
 
   /*
    * Flux existant des abonnements
-   * marchands.
+   * marchands (plan + assurance).
+   * Identité vérifiée via JWT ; un seul abonnement actif
+   * par catégorie — les changements passent par manage-subscription.
    */
+  const merchantCategory =
+    /^plan_(starter|growth|pro)_(monthly|yearly)$/.test(options.priceId)
+      ? "plan"
+      : /^insurance_(starter|growth|pro)_(monthly|yearly)$/.test(options.priceId)
+        ? "insurance"
+        : null;
+
+  if (merchantCategory) {
+    const user = await getAuthenticatedUser(req);
+    if (!user) {
+      throw new Error("Authentication required");
+    }
+    effectiveUserId = user.id;
+    effectiveCustomerEmail = user.email ?? undefined;
+
+    const admin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+    const { data: activeSubs } = await admin
+      .from("subscriptions")
+      .select("price_id, kind")
+      .eq("user_id", user.id)
+      .eq("environment", options.environment)
+      .in("status", ["active", "trialing", "past_due"]);
+
+    const hasSameCategory = (activeSubs ?? []).some((s) => {
+      if (s.kind === BIB_SUBSCRIBER_KIND) return false;
+      const isInsurance = s.price_id?.startsWith("insurance_");
+      return merchantCategory === "insurance"
+        ? isInsurance
+        : !isInsurance && /(starter|growth|pro)_(monthly|yearly)$/.test(s.price_id ?? "");
+    });
+    if (hasSameCategory) {
+      throw new Error("ALREADY_SUBSCRIBED");
+    }
+  }
   const prices =
     await stripe.prices.list({
       lookup_keys: [
