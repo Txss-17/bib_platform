@@ -981,6 +981,65 @@ export type Database = {
           },
         ]
       }
+      partner_onboarding_submissions: {
+        Row: {
+          access_token: string | null
+          approved_at: string | null
+          company: string | null
+          contact_email: string
+          contact_name: string | null
+          created_at: string
+          id: string
+          kyc_attachments: Json
+          payload: Json
+          portal: string
+          status: string
+          submitted_at: string
+          support_ticket_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_token?: string | null
+          approved_at?: string | null
+          company?: string | null
+          contact_email: string
+          contact_name?: string | null
+          created_at?: string
+          id?: string
+          kyc_attachments?: Json
+          payload?: Json
+          portal: string
+          status?: string
+          submitted_at?: string
+          support_ticket_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string | null
+          approved_at?: string | null
+          company?: string | null
+          contact_email?: string
+          contact_name?: string | null
+          created_at?: string
+          id?: string
+          kyc_attachments?: Json
+          payload?: Json
+          portal?: string
+          status?: string
+          submitted_at?: string
+          support_ticket_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_onboarding_submissions_support_ticket_id_fkey"
+            columns: ["support_ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
