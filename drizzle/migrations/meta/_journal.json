@@ -36,6 +36,13 @@
       "when": 1790360100504,
       "tag": "0004_supplier_products_intranet_id",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790361443526,
+      "tag": "0005_create_partner_onboarding_submissions",
+      "breakpoints": true
     }
   ]
 }
