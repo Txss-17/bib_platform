@@ -66,7 +66,7 @@ throw new Error(
 
 if (code) {
 throw new Error(
-Erreur IA : ${code},
+`Erreur IA : ${code}`,
 );
 }
 
@@ -1304,8 +1304,7 @@ h1: string;
 keywords: string[];
 jsonld: Array<
 Record<string, unknown>
-
-;
+>;
 }
 
 export function useGenerateSeo() {
