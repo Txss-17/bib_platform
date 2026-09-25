@@ -530,15 +530,12 @@ async function handleCheckoutCompleted(
       orderUpdateError,
   } = await getSupabase()
     .from("orders")
+    // Le passage à "paid" déclenche côté base l'envoi automatique
+    // dans les "Ordres reçus" du portail logistique.
     .update({
       payment_status:
-        "paid",
-
-      logistics_status:
-        "preparation",
-
-      updated_at:
-        new Date().toISOString(),
+        session.payment_status === "unpaid" ? "pending" : "paid",
+      stripe_session_id: session.id,
     })
     .in(
       "id",
@@ -752,6 +749,21 @@ async function handleWebhook(
         event.data.object,
       );
       break;
+
+    case "checkout.session.async_payment_succeeded":
+      await handleCheckoutCompleted({
+        ...event.data.object,
+        payment_status: "paid",
+      });
+      break;
+
+    case "checkout.session.async_payment_failed": {
+      const ids = String(event.data.object?.metadata?.orderIds ?? "").split(",").filter(Boolean);
+      if (ids.length) {
+        await getSupabase().from("orders").update({ payment_status: "failed" }).in("id", ids);
+      }
+      break;
+    }
 
     default:
       console.log(

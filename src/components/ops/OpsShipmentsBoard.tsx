@@ -76,7 +76,8 @@ export function OpsShipmentsBoard({ orders, callAction }: { orders: ShipOrder[];
   }
 
   const s = (o: ShipOrder) => shipments[o.id];
-  const active = orders.filter((o) => ["pending", "processing", "shipped"].includes(o.logistics_status));
+  // Seules les commandes payées (dossier d'expédition créé automatiquement au paiement) arrivent ici.
+  const active = orders.filter((o) => ["pending", "processing", "shipped"].includes(o.logistics_status) && !!s(o));
   const received = active.filter((o) => !s(o)?.received_at);
   const cartons = active.filter((o) => s(o)?.received_at && !s(o)?.carton_printed_at);
   const labels = active.filter((o) => s(o)?.carton_printed_at && !s(o)?.label_printed_at);
