@@ -176,7 +176,7 @@ export default function Produits() {
     const newStatus = currentStatus === "active" ? "paused" : "active";
     try {
       await updateProduct.mutateAsync({
-        productId,
+        id: productId,
         updates: { status: newStatus },
       });
       toast.success(`Produit ${newStatus === "active" ? "activé" : "mis en pause"}`);
