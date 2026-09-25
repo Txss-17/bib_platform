@@ -1,22 +1,22 @@
-import { useMutation, useQuery, useQueryClient } from â€œ@tanstack/react-queryâ€;
+import { useMutation, useQuery, useQueryClient } from """@tanstack/react-query""";
 import {
 defaultStudioBundle,
 SceneRecord,
 findSceneDefinition,
 pickStudioBundle,
-} from â€œ@/lib/studioScenesâ€;
-import { supabase } from â€œ@/integrations/supabase/clientâ€;
+} from """@/lib/studioScenes""";
+import { supabase } from """@/integrations/supabase/client""";
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
 * Boutique AI
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“â€“ */
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“""“ */
 
 async function invokeBoutiqueAi<T = any>(
 body: Record<string, unknown>,
 ): Promise {
 const { data, error } = await supabase.functions.invoke(
-â€œboutique-aiâ€,
+"""boutique-ai""",
 {
 body,
 },
@@ -24,43 +24,43 @@ body,
 
 const code = (data as any)?.error as string | undefined;
 
-if (code === â€œunauthorizedâ€) {
+if (code === """unauthorized""") {
 throw new Error(
-â€œSession expirÃ©e. Reconnecte-toi pour gÃ©nÃ©rer ton identitÃ©.â€,
+"""Session expirÃ©e. Reconnecte-toi pour gÃ©nÃ©rer ton identitÃ©.""",
 );
 }
 
-if (code === â€œforbiddenâ€) {
+if (code === """forbidden""") {
 throw new Error(
-â€œTu nâ€™es pas propriÃ©taire de cette boutique.â€,
+"""Tu n""™es pas propriÃ©taire de cette boutique.""",
 );
 }
 
-if (code === â€œrate_limitedâ€) {
+if (code === """rate_limited""") {
 throw new Error(
-â€œTrop de requÃªtes IA, rÃ©essaie dans 1 min.â€,
+"""Trop de requÃªtes IA, rÃ©essaie dans 1 min.""",
 );
 }
 
-if (code === â€œcredits_exhaustedâ€) {
+if (code === """credits_exhausted""") {
 throw new Error(
-â€œCrÃ©dits IA Ã©puisÃ©s. Recharge dans ParamÃ¨tres â†’ Facturation.â€,
+"""CrÃ©dits IA Ã©puisÃ©s. Recharge dans ParamÃ¨tres "†’ Facturation.""",
 );
 }
 
-if (code === â€œmissing_paramsâ€) {
+if (code === """missing_params""") {
 throw new Error(
-â€œParamÃ¨tres manquants pour la gÃ©nÃ©ration.â€,
+"""ParamÃ¨tres manquants pour la gÃ©nÃ©ration.""",
 );
 }
 
 if (
-code === â€œno_tool_callâ€ ||
-code === â€œinvalid_jsonâ€ ||
-code === â€œai_errorâ€
+code === """no_tool_call""" ||
+code === """invalid_json""" ||
+code === """ai_error"""
 ) {
 throw new Error(
-â€œLâ€™IA nâ€™a pas pu produire une rÃ©ponse valide. RÃ©essaie.â€,
+"""L""™IA n""™a pas pu produire une rÃ©ponse valide. RÃ©essaie.""",
 );
 }
 
@@ -73,17 +73,17 @@ Erreur IA : ${code},
 if (error) {
 throw new Error(
 error.message ||
-â€œLe service IA est indisponible. RÃ©essaie dans un instant.â€,
+"""Le service IA est indisponible. RÃ©essaie dans un instant.""",
 );
 }
 
 return data as T;
 }
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
 * Brand DNA
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“â€“ */
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“""“ */
 
 export interface BrandPalette {
 primary?: string;
@@ -120,9 +120,9 @@ generated_copy: BrandCopy;
 studio_answers: Record<string, unknown>;
 }
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
-* Brand Studio â€” nouveau questionnaire
+* Brand Studio ""” nouveau questionnaire
 * Les cinq Ã©tapes ne sont plus cinq adjectifs indÃ©pendants.
 * Elles construisent progressivement un brief de marque exploitable :
 * 1.	Fondations
@@ -130,13 +130,13 @@ studio_answers: Record<string, unknown>;
 * 3.	Territoire visuel
 * 4.	PersonnalitÃ© & voix
 * 5.	Direction & validation
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“â€“ */
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“""“ */
 
 export interface StudioAnswers {
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
-* Ã‰tape 1 â€” Fondations
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“ */
+* Ã‰tape 1 ""” Fondations
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“ */
 
 brandName: string;
 
@@ -148,10 +148,10 @@ differentiation: string;
 
 story?: string;
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
-* Ã‰tape 2 â€” Client & promesse
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“ */
+* Ã‰tape 2 ""” Client & promesse
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“ */
 
 idealCustomer: string;
 
@@ -160,18 +160,18 @@ customerNeed: string;
 customerResult: string;
 
 marketPositioning:
-| â€œaccessibleâ€
-| â€œmilieu_de_gammeâ€
-| â€œpremiumâ€
-| â€œluxeâ€
-| â€œexpertâ€
-| â€œnicheâ€
-| â€œa_definirâ€;
+| """accessible"""
+| """milieu_de_gamme"""
+| """premium"""
+| """luxe"""
+| """expert"""
+| """niche"""
+| """a_definir""";
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
-* Ã‰tape 3 â€” Territoire visuel
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“ */
+* Ã‰tape 3 ""” Territoire visuel
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“ */
 
 visualTerritory: string;
 
@@ -183,10 +183,10 @@ forbiddenColors: string;
 
 visualReferences: string;
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
-* Ã‰tape 4 â€” PersonnalitÃ© & voix
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“ */
+* Ã‰tape 4 ""” PersonnalitÃ© & voix
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“ */
 
 personality: string[];
 
@@ -196,36 +196,36 @@ voice: string;
 
 wordsToAvoid: string;
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
-* Ã‰tape 5 â€” Direction
+* Ã‰tape 5 ""” Direction
 * Cette Ã©tape est une validation du brief, pas une nouvelle question.
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“ */
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“ */
 
 directionNote?: string;
 
 confirmed: boolean;
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
 * CompatibilitÃ© / contexte technique
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“ */
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“ */
 
 category?: string;
 
 productType?: string;
 }
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
 * Brand DNA query
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“â€“ */
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“""“ */
 
 export function useBrandDNA(
 boutiqueId: string | undefined,
 ) {
 return useQuery({
-queryKey: [â€œbrand-dnaâ€, boutiqueId],
+queryKey: ["""brand-dna""", boutiqueId],
 enabled: !!boutiqueId,
 
 queryFn: async () => {
@@ -246,10 +246,10 @@ queryFn: async () => {
 });
 }
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
 * Brand DNA update
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“â€“ */
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“""“ */
 
 export function useUpdateBrandDNA() {
 const qc = useQueryClient();
@@ -358,10 +358,10 @@ onSettled: (
 });
 }
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
 * Brand DNA generation
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“â€“ */
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“""“ */
 
 export function useGenerateBrandDNA() {
 const qc = useQueryClient();
@@ -373,7 +373,7 @@ answers: StudioAnswers;
 }) => {
 if (!params.answers.confirmed) {
 throw new Error(
-â€œValide la direction de marque avant de lancer la gÃ©nÃ©ration.â€,
+"""Valide la direction de marque avant de lancer la gÃ©nÃ©ration.""",
 );
 }
 
@@ -549,10 +549,10 @@ onSuccess: (
 });
 }
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
 * Boutique scenes
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“â€“ */
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“""“ */
 
 export function useBoutiqueScenes(
 boutiqueId: string | undefined,
@@ -560,7 +560,7 @@ pageId: string | null = null,
 ) {
 return useQuery({
 queryKey: [
-â€œboutique-scenesâ€,
+"""boutique-scenes""",
 boutiqueId,
 pageId,
 ],
@@ -605,10 +605,10 @@ queryFn: async () => {
 });
 }
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
 * Structure reshuffle
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“â€“ */
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“""“ */
 
 export function useReshuffleStructure() {
 const qc = useQueryClient();
@@ -621,7 +621,7 @@ bundleKey?: string;
 const {
 STUDIO_BUNDLES,
 } = await import(
-â€œ@/lib/studioScenesâ€
+"""@/lib/studioScenes"""
 );
 
   const bundle =
@@ -742,10 +742,10 @@ onSuccess: (
 });
 }
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
 * Scene image generation
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“â€“ */
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“""“ */
 
 export function useGenerateSceneImage() {
 return useMutation({
@@ -753,17 +753,17 @@ mutationFn: async (params: {
 boutiqueId: string;
 prompt: string;
 aspect?:
-| â€œ1:1â€
-| â€œ3:4â€
-| â€œ4:3â€
-| â€œ16:9â€
-| â€œ9:16â€;
+| """1:1"""
+| """3:4"""
+| """4:3"""
+| """16:9"""
+| """9:16""";
 }): Promise => {
 const {
 data,
 error,
 } = await supabase.functions.invoke(
-â€œstudio-image-genâ€,
+"""studio-image-gen""",
 {
 body: {
 boutique_id:
@@ -801,10 +801,10 @@ params.boutiqueId,
 });
 }
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
 * Scene asset upload
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“â€“ */
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“""“ */
 
 export function useUploadSceneAsset() {
 return useMutation({
@@ -814,10 +814,10 @@ file: File;
 }) => {
 const extension =
 params.file.name
-.split(â€.â€)
+.split(""".""")
 .pop()
 ?.toLowerCase() ||
-â€œjpgâ€;
+"""jpg""";
 
   const {
     data: userData,
@@ -863,10 +863,10 @@ params.file.name
 });
 }
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
 * Scene mutations
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“â€“ */
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“""“ */
 
 export function useUpdateScene() {
 const qc = useQueryClient();
@@ -998,7 +998,7 @@ index++
 ) {
 await supabase
 .from(
-â€œboutique_scenesâ€,
+"""boutique_scenes""",
 )
 .update({
 position:
@@ -1006,7 +1006,7 @@ position:
 index,
 } as never)
 .eq(
-â€œidâ€,
+"""id""",
 params.orderedIds[
 index
 ],
@@ -1207,11 +1207,11 @@ const {
 error,
 } = await supabase
 .from(
-â€œboutique_scenesâ€,
+"""boutique_scenes""",
 )
 .delete()
 .eq(
-â€œidâ€,
+"""id""",
 params.sceneId,
 );
 
@@ -1292,10 +1292,10 @@ onSettled: (
 });
 }
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
 * SEO Copilot
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“â€“ */
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“""“ */
 
 export interface SeoCopilotResult {
 title: string;
@@ -1322,7 +1322,7 @@ persist?: boolean;
 }): Promise => {
 const data =
 await invokeBoutiqueAi({
-action: â€œgenerate_seoâ€,
+action: """generate_seo""",
 boutique_id:
 params.boutiqueId,
 payload:
@@ -1395,7 +1395,7 @@ Record<string, unknown>
 const {
 error,
 } = await supabase
-.from(â€œboutiquesâ€)
+.from("""boutiques""")
 .update({
 seo_title:
 params.title,
@@ -1442,10 +1442,10 @@ onSuccess: (
 });
 }
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
 * Remix IA
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“â€“ */
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“""“ */
 
 export function useRemixScene() {
 const qc = useQueryClient();
@@ -1464,7 +1464,7 @@ brand?: Partial | null;
 }) => {
 const data =
 await invokeBoutiqueAi({
-action: â€œremix_sceneâ€,
+action: """remix_scene""",
 boutique_id:
 params.boutiqueId,
 
@@ -1563,10 +1563,10 @@ onSuccess: (
 });
 }
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
 * SEO content tools
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“â€“ */
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“""“ */
 
 export interface ContentBrief {
 target_query: string;
@@ -1603,7 +1603,7 @@ unknown
 }): Promise => {
 return await invokeBoutiqueAi(
 {
-action: â€œseo_briefâ€,
+action: """seo_brief""",
 boutique_id:
 params.boutiqueId,
 payload:
@@ -1630,7 +1630,7 @@ await invokeBoutiqueAi<{
 clusters?: KeywordCluster[];
 }>({
 action:
-â€œkeyword_clustersâ€,
+"""keyword_clusters""",
 
       boutique_id:
         params.boutiqueId,
@@ -1646,10 +1646,10 @@ action:
 });
 }
 
-/* â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“â€“
+/* ""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“""“
 
 * SEO score
-* â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€”â€“â€“ */
+* ""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""”""“""“ */
 
 export function computeSeoScore(input: {
 title: string;
@@ -1668,7 +1668,7 @@ weight: number;
 const checks = [
 {
 label:
-â€œTitre 30-60 caractÃ¨resâ€,
+"""Titre 30-60 caractÃ¨res""",
 
   ok:
     input.title.length >=
@@ -1689,7 +1689,7 @@ label:
 },
 {
   label:
-    "H1 dÃ©fini (â‰¥ 10 car.)",
+    "H1 dÃ©fini ("‰¥ 10 car.)",
   ok:
     !!input.h1 &&
     input.h1.trim()
@@ -1698,7 +1698,7 @@ label:
 },
 {
   label:
-    "â‰¥ 3 mots-clÃ©s",
+    ""‰¥ 3 mots-clÃ©s",
   ok:
     input.keywords.filter(
       (keyword) =>
@@ -1734,7 +1734,7 @@ label:
 },
 {
   label:
-    "â‰¥ 2 blocs JSON-LD",
+    ""‰¥ 2 blocs JSON-LD",
   ok:
     input.jsonldBlocks >= 2,
   weight: 12,
