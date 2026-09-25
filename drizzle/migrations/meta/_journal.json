@@ -22,6 +22,13 @@
       "when": 1790359437367,
       "tag": "0002_order_shipments_driver_tracking",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790359796419,
+      "tag": "0003_auto_dispatch_paid_orders_to_logistics",
+      "breakpoints": true
     }
   ]
 }
