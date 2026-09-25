@@ -5,7 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { usePlans, useCurrentPlan, type PlanTier } from "@/hooks/usePlans";
-import { useUserSubscriptions, useOpenBillingPortal } from "@/hooks/useSubscriptions";
+import { useUserSubscriptions, useOpenBillingPortal, useManageSubscription, subscriptionCategory } from "@/hooks/useSubscriptions";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { StripeEmbeddedCheckout } from "@/components/payments/StripeEmbeddedCheckout";
 import { cn } from "@/lib/utils";
@@ -41,22 +46,53 @@ const sortedPlans = [...plans].sort(
   (a, b) => a.sort_order - b.sort_order,
 );
 
-const insuranceSubscription = subscriptions.find(
-  (subscription) =>
-    subscription.price_id.startsWith("insurance_") &&
-    ["active", "trialing"].includes(subscription.status),
+const activeSubs = subscriptions.filter((s) =>
+  ["active", "trialing", "past_due"].includes(s.status),
 );
+const planSubscription = activeSubs.find((s) => subscriptionCategory(s) === "plan");
+const insuranceSubscription = activeSubs.find((s) => subscriptionCategory(s) === "insurance");
 
-function subscribe(tier: PlanTier) {
+const manage = useManageSubscription();
+const [pendingChange, setPendingChange] = useState<{ priceId: string; label: string } | null>(null);
+const [pendingCancel, setPendingCancel] = useState<"plan" | "insurance" | null>(null);
+
+function subscribe(planTier: PlanTier, planName: string) {
   const cycle = annual ? "yearly" : "monthly";
-
-  setCheckoutPriceId(`${tier}_${cycle}`);
+  const priceId = `plan_${planTier}_${cycle}`;
+  if (planSubscription) {
+    setPendingChange({ priceId, label: `${planName} (${annual ? "annuel" : "mensuel"})` });
+  } else {
+    setCheckoutPriceId(priceId);
+  }
 }
 
 function subscribeInsurance() {
   const cycle = annual ? "yearly" : "monthly";
-
   setCheckoutPriceId(`insurance_${tier}_${cycle}`);
+}
+
+function confirmChange() {
+  if (!pendingChange) return;
+  manage.mutate(
+    { action: "change", priceId: pendingChange.priceId },
+    {
+      onSuccess: () => toast.success("Plan modifié. La différence est facturée au prorata."),
+      onError: (e) => toast.error(e.message),
+      onSettled: () => setPendingChange(null),
+    },
+  );
+}
+
+function confirmCancel() {
+  if (!pendingCancel) return;
+  manage.mutate(
+    { action: "cancel", category: pendingCancel },
+    {
+      onSuccess: () => toast.success("Abonnement résilié."),
+      onError: (e) => toast.error(e.message),
+      onSettled: () => setPendingCancel(null),
+    },
+  );
 }
 
 return (
@@ -122,6 +158,17 @@ return (
             Gérer ma facturation
           </span>
         </Button>
+        {planSubscription && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:text-destructive"
+            onClick={() => setPendingCancel("plan")}
+            disabled={manage.isPending}
+          >
+            Résilier
+          </Button>
+        )}
       </div>
     </div>
 
@@ -163,7 +210,8 @@ return (
     {/* Subscription plans */}
     <div className="grid gap-4 md:grid-cols-3">
       {sortedPlans.map((plan) => {
-        const isCurrent = plan.tier === tier;
+        const currentCycle = billingCycle === "annual";
+        const isCurrent = plan.tier === tier && (!planSubscription || currentCycle === annual);
 
         const price = annual
           ? plan.annual_monthly_price_eur
@@ -221,7 +269,7 @@ return (
               size="sm"
               variant={isCurrent ? "outline" : "coral"}
               disabled={isCurrent}
-              onClick={() => subscribe(plan.tier)}
+              onClick={() => subscribe(plan.tier, plan.name)}
               className="w-full"
             >
               {isCurrent
@@ -284,10 +332,10 @@ return (
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => billingPortal.mutate()}
-                  disabled={billingPortal.isPending}
+                  onClick={() => setPendingCancel("insurance")}
+                  disabled={manage.isPending || !insuranceSubscription}
                 >
-                  Gérer / annuler
+                  Résilier l'assurance
                 </Button>
               ) : (
                 <Button
@@ -315,6 +363,51 @@ return (
         </div>
       </div>
     )}
+
+    <AlertDialog open={!!pendingChange} onOpenChange={(o) => !o && !manage.isPending && setPendingChange(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Passer à {pendingChange?.label} ?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Le changement s'applique immédiatement. La différence de prix est calculée au prorata
+            et facturée (ou créditée) tout de suite. Si vous passez à un plan plus petit et dépassez
+            ses limites, rien n'est supprimé mais vous ne pourrez plus ajouter de boutiques ou produits.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={manage.isPending}>Annuler</AlertDialogCancel>
+          <AlertDialogAction onClick={(e) => { e.preventDefault(); confirmChange(); }} disabled={manage.isPending}>
+            {manage.isPending && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
+            Confirmer
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <AlertDialog open={!!pendingCancel} onOpenChange={(o) => !o && !manage.isPending && setPendingCancel(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {pendingCancel === "insurance" ? "Résilier l'assurance ?" : "Résilier votre plan ?"}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            La résiliation est immédiate : l'accès s'arrête dès maintenant, sans remboursement de la période en cours.
+            {pendingCancel === "plan" && " Votre compte repasse aux limites du plan Starter."}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={manage.isPending}>Garder</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            onClick={(e) => { e.preventDefault(); confirmCancel(); }}
+            disabled={manage.isPending}
+          >
+            {manage.isPending && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
+            Résilier maintenant
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
 
     {/* Subscription checkout */}
     <Dialog

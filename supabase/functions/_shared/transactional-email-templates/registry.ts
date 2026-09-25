@@ -17,6 +17,7 @@ import { template as supportTicketStatus } from './support-ticket-status.tsx'
 import { template as partnerOtp } from './partner-otp.tsx'
 import { template as partnerOnboardingSubmitted } from './partner-onboarding-submitted.tsx'
 import { template as onboardingStuckReminder } from './onboarding-stuck-reminder.tsx'
+import { template as subscriptionConfirmed } from './subscription-confirmed.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'seller-welcome': sellerWelcome,

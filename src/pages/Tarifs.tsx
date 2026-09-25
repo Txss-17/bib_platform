@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { usePlans, type PlanTier } from "@/hooks/usePlans";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserSubscriptions, subscriptionCategory } from "@/hooks/useSubscriptions";
 import { StripeEmbeddedCheckout } from "@/components/payments/StripeEmbeddedCheckout";
 import { PaymentTestModeBanner } from "@/components/payments/PaymentTestModeBanner";
 import { useSEO } from "@/hooks/useSEO";
@@ -43,6 +44,10 @@ export default function Tarifs() {
   const navigate = useNavigate();
   const [annual, setAnnual] = useState(false);
   const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
+  const { data: userSubs = [] } = useUserSubscriptions();
+  const hasPlanSubscription = userSubs.some(
+    (s) => ["active", "trialing", "past_due"].includes(s.status) && subscriptionCategory(s) === "plan",
+  );
   useSEO({
     title: "Tarifs BIB — Plans transparents pour vendre en ligne",
     description:
@@ -60,6 +65,11 @@ export default function Tarifs() {
           annual ? "annual" : "monthly"
         }`,
       );
+      return;
+    }
+    if (hasPlanSubscription) {
+      // Déjà abonné : le changement de plan (prorata) se fait depuis les paramètres.
+      navigate("/dashboard/parametres");
       return;
     }
     setCheckoutPriceId(priceId);
