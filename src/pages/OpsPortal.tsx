@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPortal, type PortalEvent } from "@/hooks/usePartnerPortal";
 import { fetchLabelData, fetchLabelsData, printLabels } from "@/lib/shippingLabel";
 import { PlatformTour, PlatformTourLauncher } from "@/components/tour/PlatformTour";
+import { OpsShipmentsBoard } from "@/components/ops/OpsShipmentsBoard";
 import {
   ArrowLeft,
   Boxes,
@@ -414,14 +415,19 @@ export default function OpsPortal() {
           <StatCard icon={<PackageX className="w-4 h-4" />} label="Retours en cours" value={stockSummary.returns} />
         </div>
 
-        <Tabs defaultValue="orders">
+        <Tabs defaultValue="flow">
           <TabsList className="w-full justify-start overflow-x-auto">
+            <TabsTrigger value="flow">Flux d'expédition</TabsTrigger>
             <TabsTrigger value="orders">Commandes</TabsTrigger>
             <TabsTrigger value="operations">Opérations</TabsTrigger>
             <TabsTrigger value="delivery">Mise à jour livraison</TabsTrigger>
             <TabsTrigger value="packaging">Packaging</TabsTrigger>
             <TabsTrigger value="returns">Retours</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="flow" className="mt-4">
+            <OpsShipmentsBoard orders={orders} callAction={callAction} />
+          </TabsContent>
 
           {/* ORDERS */}
           <TabsContent value="orders" className="space-y-4 mt-4">

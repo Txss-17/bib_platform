@@ -11,6 +11,8 @@ interface Body {
     | 'create_event'        // catalog_draft, moq_request, issue_report, delivery_update, packaging_alert, return_logged
     | 'update_event_status' // mark resolved/in_progress
     | 'add_document'        // ad-hoc doc upload (already in storage)
+    | 'list_shipments'      // ops: read shipment tracking rows
+    | 'shipment_update'     // ops: driver/carton/label/status tracking
   // create_event
   kind?: string
   title?: string
@@ -102,6 +104,54 @@ Deno.serve(async (req) => {
         .single()
       if (error) return json({ error: error.message }, 500)
       return json({ ok: true, id: data.id })
+    }
+
+    if (sub.portal === 'ops' && body.action === 'list_shipments') {
+      const { data, error } = await supabase
+        .from('order_shipments')
+        .select('order_id, driver_name, driver_phone, carrier, tracking_number, carton_size, received_at, carton_printed_at, label_printed_at, eta, last_location')
+        .order('updated_at', { ascending: false })
+        .limit(200)
+      if (error) return json({ error: error.message }, 500)
+      return json({ ok: true, shipments: data })
+    }
+
+    if (sub.portal === 'ops' && body.action === 'shipment_update') {
+      const b = body as Record<string, unknown>
+      const orderNumber = String(b.order_number ?? '').trim().toUpperCase()
+      if (!/^[A-Z0-9-]{4,30}$/.test(orderNumber)) return json({ error: 'invalid_order_number' }, 400)
+      const { data: order } = await supabase.from('orders').select('id').eq('order_number', orderNumber).maybeSingle()
+      if (!order) return json({ error: 'order_not_found' }, 404)
+
+      const str = (k: string, max = 120) => {
+        const v = b[k]; if (v === undefined) return undefined
+        const s = String(v ?? '').trim().slice(0, max); return s || null
+      }
+      const patch: Record<string, unknown> = { order_id: order.id, submission_id: sub.id }
+      for (const k of ['driver_name','driver_phone','carrier','tracking_number','carton_size','last_location']) {
+        const v = str(k); if (v !== undefined) patch[k] = v
+      }
+      const eta = str('eta', 10); if (eta !== undefined) patch.eta = eta
+      const now = new Date().toISOString()
+      if (b.mark === 'received') patch.received_at = now
+      if (b.mark === 'carton_printed') patch.carton_printed_at = now
+      if (b.mark === 'label_printed') patch.label_printed_at = now
+
+      const { error: upErr } = await supabase.from('order_shipments').upsert(patch, { onConflict: 'order_id' })
+      if (upErr) return json({ error: upErr.message }, 500)
+
+      const status = str('status', 20)
+      if (status && ['processing','shipped','delivered','returned'].includes(status)) {
+        await supabase.from('orders').update({ logistics_status: status }).eq('id', order.id)
+      }
+      const label = str('event_label', 200)
+      if (label) {
+        await supabase.from('shipment_events').insert({
+          order_id: order.id, status: status ?? (b.mark as string) ?? 'update', label,
+          location: (patch.last_location as string) ?? null, driver_name: (patch.driver_name as string) ?? null,
+        })
+      }
+      return json({ ok: true })
     }
 
     return json({ error: 'unknown_action' }, 400)

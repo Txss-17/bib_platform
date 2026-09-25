@@ -126,6 +126,7 @@ function formatOrderDate(date: string) {
   }).format(new Date(date));
 }
 
+import { ShipmentTimeline } from "@/components/tracking/ShipmentTimeline";
 export default function OrderTracking() {
   const { slug } = useParams<{ slug?: string }>();
   const [searchParams] = useSearchParams();
@@ -389,6 +390,7 @@ export default function OrderTracking() {
           {/* Order result */}
           {order && status && (
             <div className="mt-6 space-y-4">
+              <ShipmentTimeline orderNumber={order.order_number} email={normalizeEmail(email)} />
               {/* Main order card */}
               <div className="space-y-5 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                 {/* Status header */}

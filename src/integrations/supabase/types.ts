@@ -840,6 +840,68 @@ export type Database = {
           },
         ]
       }
+      order_shipments: {
+        Row: {
+          carrier: string | null
+          carton_printed_at: string | null
+          carton_size: string | null
+          created_at: string
+          driver_name: string | null
+          driver_phone: string | null
+          eta: string | null
+          id: string
+          label_printed_at: string | null
+          last_location: string | null
+          order_id: string
+          received_at: string | null
+          submission_id: string | null
+          tracking_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          carrier?: string | null
+          carton_printed_at?: string | null
+          carton_size?: string | null
+          created_at?: string
+          driver_name?: string | null
+          driver_phone?: string | null
+          eta?: string | null
+          id?: string
+          label_printed_at?: string | null
+          last_location?: string | null
+          order_id: string
+          received_at?: string | null
+          submission_id?: string | null
+          tracking_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          carrier?: string | null
+          carton_printed_at?: string | null
+          carton_size?: string | null
+          created_at?: string
+          driver_name?: string | null
+          driver_phone?: string | null
+          eta?: string | null
+          id?: string
+          label_printed_at?: string | null
+          last_location?: string | null
+          order_id?: string
+          received_at?: string | null
+          submission_id?: string | null
+          tracking_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_shipments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           amount: number
@@ -1356,6 +1418,44 @@ export type Database = {
         }
         Relationships: []
       }
+      shipment_events: {
+        Row: {
+          created_at: string
+          driver_name: string | null
+          id: string
+          label: string
+          location: string | null
+          order_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          driver_name?: string | null
+          id?: string
+          label: string
+          location?: string | null
+          order_id: string
+          status: string
+        }
+        Update: {
+          created_at?: string
+          driver_name?: string | null
+          id?: string
+          label?: string
+          location?: string | null
+          order_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipment_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storefront_events: {
         Row: {
           boutique_id: string
@@ -1697,6 +1797,10 @@ export type Database = {
           order_number: string
           product_name: string
         }[]
+      }
+      track_shipment: {
+        Args: { _customer_email: string; _order_number: string }
+        Returns: Json
       }
       validate_private_sale: {
         Args: { _access_code: string; _boutique_slug: string }
