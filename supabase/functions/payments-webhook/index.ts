@@ -122,6 +122,39 @@ function isBibSubscriber(
    SUBSCRIPTION CREATED
    ========================================================= */
 
+const PRODUCT_LABELS: Record<string, string> = {
+  starter: "BIB Starter", growth: "BIB Growth", pro: "BIB Pro",
+};
+
+function labelForPrice(priceId: string | null | undefined): string {
+  const m = /^(plan_|insurance_)?(starter|growth|pro)_/.exec(priceId ?? "");
+  if (!m) return "votre abonnement";
+  const base = PRODUCT_LABELS[m[2]];
+  return m[1] === "insurance_" ? `Assurance litiges ${base.replace("BIB ", "")}` : base;
+}
+
+async function sendSubscriptionConfirmedEmail(userId: string, priceId: string | null, subscriptionId: string) {
+  try {
+    const { data } = await getSupabase().auth.admin.getUserById(userId);
+    const email = data?.user?.email;
+    if (!email) return;
+    const name = (data.user.user_metadata as any)?.full_name ?? undefined;
+    const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-transactional-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}`, apikey: key },
+      body: JSON.stringify({
+        templateName: "subscription-confirmed",
+        recipientEmail: email,
+        idempotencyKey: `subscription-confirmed-${subscriptionId}`,
+        templateData: { name, productName: labelForPrice(priceId) },
+      }),
+    });
+  } catch (e) {
+    console.error("subscription confirmation email failed", e);
+  }
+}
+
 async function handleSubscriptionCreated(
   subscription: any,
   env: StripeEnv,
@@ -215,6 +248,10 @@ async function handleSubscriptionCreated(
     throw new Error(
       `Unable to persist subscription creation: ${error.message}`,
     );
+  }
+
+  if (kind !== BIB_SUBSCRIBER_KIND && isActiveStatus(subscription.status)) {
+    await sendSubscriptionConfirmedEmail(userId, priceId, subscription.id);
   }
 
   console.log(
