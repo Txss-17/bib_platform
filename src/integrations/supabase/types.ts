@@ -1545,6 +1545,7 @@ export type Database = {
           description: string | null
           id: string
           image_url: string | null
+          intranet_id: string | null
           is_active: boolean
           market: string
           max_margin_percent: number
@@ -1560,6 +1561,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          intranet_id?: string | null
           is_active?: boolean
           market?: string
           max_margin_percent?: number
@@ -1575,6 +1577,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          intranet_id?: string | null
           is_active?: boolean
           market?: string
           max_margin_percent?: number

@@ -29,6 +29,13 @@
       "when": 1790359796419,
       "tag": "0003_auto_dispatch_paid_orders_to_logistics",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790360100504,
+      "tag": "0004_supplier_products_intranet_id",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,2 @@
+ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS intranet_id text;
+CREATE UNIQUE INDEX IF NOT EXISTS supplier_products_intranet_id_key ON public.supplier_products (intranet_id) WHERE intranet_id IS NOT NULL;
