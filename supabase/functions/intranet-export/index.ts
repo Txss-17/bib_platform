@@ -33,8 +33,16 @@ Deno.serve(async (req) => {
       .select("id, portal, contact_email, contact_name, company, status, payload, updated_at")
       .eq("portal", "suppliers")
       .gte("updated_at", since),
+    sb.from("subscriptions")
+      .select("id, user_id, stripe_subscription_id, stripe_customer_id, price_id, status, kind, environment, current_period_start, current_period_end, cancel_at_period_end, updated_at")
+      .gte("updated_at", since),
+    sb.from("payments")
+      .select("id, user_id, boutique_id, amount, status, payout_date, period_start, period_end, created_at")
+      .gte("created_at", since),
+    sb.from("plans")
+      .select("tier, commission_percent"),
   ]);
-  const err = b.error || o.error || t.error || apps.error;
+  const err = b.error || o.error || t.error || apps.error || subsRows.error || payRows.error || planRows.error;
   if (err) return json({ error: err.message }, 500);
 
   const ownerIds = [...new Set((b.data ?? []).map((x) => x.user_id))];
