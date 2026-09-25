@@ -159,9 +159,7 @@ export type ManageSubscriptionInput =
  */
 export function useManageSubscription() {
   const queryClient = useQueryClient();
-  const { refreshProfile } = useAuth() as ReturnType<typeof useAuth> & {
-    refreshProfile?: () => Promise<void>;
-  };
+  const { refreshProfile } = useAuth();
 
   return useMutation({
     mutationFn: async (input: ManageSubscriptionInput) => {
@@ -178,7 +176,7 @@ export function useManageSubscription() {
       // Laisse le temps aux événements serveur d'arriver, puis rafraîchit.
       await new Promise((r) => setTimeout(r, 2500));
       await queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
-      await refreshProfile?.();
+      await refreshProfile();
     },
   });
 }
