@@ -6,6 +6,7 @@ import {
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getStripeEnvironment } from "@/lib/stripe";
 
 export interface Subscription {
   id: string;
@@ -136,4 +137,48 @@ export function useInvalidateSubscriptions() {
     queryClient.invalidateQueries({
       queryKey: ["subscriptions"],
     });
+}
+
+/** Catégorie d'un abonnement marchand : plan ou assurance. */
+export function subscriptionCategory(
+  subscription: Subscription,
+): "plan" | "insurance" | null {
+  if (subscription.kind === "bib_subscriber") return null;
+  if (subscription.price_id.startsWith("insurance_")) return "insurance";
+  if (/(starter|growth|pro)_(monthly|yearly)$/.test(subscription.price_id)) return "plan";
+  return null;
+}
+
+export type ManageSubscriptionInput =
+  | { action: "change"; priceId: string }
+  | { action: "cancel"; category: "plan" | "insurance" };
+
+/**
+ * Changement de plan immédiat au prorata, ou résiliation immédiate.
+ * Le statut final est confirmé par les événements de paiement côté serveur.
+ */
+export function useManageSubscription() {
+  const queryClient = useQueryClient();
+  const { refreshProfile } = useAuth() as ReturnType<typeof useAuth> & {
+    refreshProfile?: () => Promise<void>;
+  };
+
+  return useMutation({
+    mutationFn: async (input: ManageSubscriptionInput) => {
+      const { data, error } = await supabase.functions.invoke(
+        "manage-subscription",
+        { body: { ...input, environment: getStripeEnvironment() } },
+      );
+      if (error || data?.error) {
+        throw new Error(data?.error || error?.message || "Opération impossible");
+      }
+      return data;
+    },
+    onSuccess: async () => {
+      // Laisse le temps aux événements serveur d'arriver, puis rafraîchit.
+      await new Promise((r) => setTimeout(r, 2500));
+      await queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+      await refreshProfile?.();
+    },
+  });
 }
