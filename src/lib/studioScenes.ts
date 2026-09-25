@@ -376,6 +376,7 @@ export const STUDIO_SCENES: SceneDefinition[] = [
       },
     ],
   },
+  },
     
   {
     id: "video-fullscreen",
