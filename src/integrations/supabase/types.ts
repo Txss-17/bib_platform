@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
@@ -1115,10 +1115,6 @@ export type Database = {
           id: string
           low_stock_threshold: number
           public_price: number
-          sale_price: number | null
-          promotion_ends_at: string | null
-          promotion_label: string | null
-          promotion_starts_at: string | null
           status: Database["public"]["Enums"]["product_status"]
           stock_quantity: number
           supplier_product_id: string
@@ -1132,10 +1128,6 @@ export type Database = {
           id?: string
           low_stock_threshold?: number
           public_price: number
-          sale_price?: number | null
-          promotion_ends_at?: string | null
-          promotion_label?: string | null
-          promotion_starts_at?: string | null
           status?: Database["public"]["Enums"]["product_status"]
           stock_quantity?: number
           supplier_product_id: string
@@ -1149,10 +1141,6 @@ export type Database = {
           id?: string
           low_stock_threshold?: number
           public_price?: number
-          sale_price?: number | null
-          promotion_ends_at?: string | null
-          promotion_label?: string | null
-          promotion_starts_at?: string | null
           status?: Database["public"]["Enums"]["product_status"]
           stock_quantity?: number
           supplier_product_id?: string
