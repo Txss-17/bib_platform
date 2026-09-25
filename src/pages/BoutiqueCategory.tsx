@@ -327,7 +327,7 @@ function CategoryContent() {
         throw error;
       }
 
-      return data as BoutiqueRecord;
+      return data as unknown as BoutiqueRecord;
     },
 
     enabled: Boolean(slug),

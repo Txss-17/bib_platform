@@ -1870,6 +1870,7 @@ export function StudioEditor({
               value.trim(),
           )
           .filter(Boolean),
+      jsonldBlocks: 0,
     });
 
   const publicUrl =

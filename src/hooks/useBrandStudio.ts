@@ -1,11 +1,11 @@
-import { useMutation, useQuery, useQueryClient } from “@tanstack/react-query”;
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 defaultStudioBundle,
 SceneRecord,
 findSceneDefinition,
 pickStudioBundle,
-} from “@/lib/studioScenes”;
-import { supabase } from “@/integrations/supabase/client”;
+} from "@/lib/studioScenes";
+import { supabase } from "@/integrations/supabase/client";
 
 /* ––––––––––––––––––––––––––––––––––––––
 
@@ -14,9 +14,9 @@ import { supabase } from “@/integrations/supabase/client”;
 
 async function invokeBoutiqueAi<T = any>(
 body: Record<string, unknown>,
-): Promise {
+): Promise<T> {
 const { data, error } = await supabase.functions.invoke(
-“boutique-ai”,
+"boutique-ai",
 {
 body,
 },
@@ -24,56 +24,56 @@ body,
 
 const code = (data as any)?.error as string | undefined;
 
-if (code === “unauthorized”) {
+if (code === "unauthorized") {
 throw new Error(
-“Session expirée. Reconnecte-toi pour générer ton identité.”,
+"Session expirée. Reconnecte-toi pour générer ton identité.",
 );
 }
 
-if (code === “forbidden”) {
+if (code === "forbidden") {
 throw new Error(
-“Tu n’es pas propriétaire de cette boutique.”,
+"Tu n’es pas propriétaire de cette boutique.",
 );
 }
 
-if (code === “rate_limited”) {
+if (code === "rate_limited") {
 throw new Error(
-“Trop de requêtes IA, réessaie dans 1 min.”,
+"Trop de requêtes IA, réessaie dans 1 min.",
 );
 }
 
-if (code === “credits_exhausted”) {
+if (code === "credits_exhausted") {
 throw new Error(
-“Crédits IA épuisés. Recharge dans Paramètres → Facturation.”,
+"Crédits IA épuisés. Recharge dans Paramètres → Facturation.",
 );
 }
 
-if (code === “missing_params”) {
+if (code === "missing_params") {
 throw new Error(
-“Paramètres manquants pour la génération.”,
+"Paramètres manquants pour la génération.",
 );
 }
 
 if (
-code === “no_tool_call” ||
-code === “invalid_json” ||
-code === “ai_error”
+code === "no_tool_call" ||
+code === "invalid_json" ||
+code === "ai_error"
 ) {
 throw new Error(
-“L’IA n’a pas pu produire une réponse valide. Réessaie.”,
+"L’IA n’a pas pu produire une réponse valide. Réessaie.",
 );
 }
 
 if (code) {
 throw new Error(
-Erreur IA : ${code},
+`Erreur IA : ${code}`,
 );
 }
 
 if (error) {
 throw new Error(
 error.message ||
-“Le service IA est indisponible. Réessaie dans un instant.”,
+"Le service IA est indisponible. Réessaie dans un instant.",
 );
 }
 
@@ -160,13 +160,13 @@ customerNeed: string;
 customerResult: string;
 
 marketPositioning:
-| “accessible”
-| “milieu_de_gamme”
-| “premium”
-| “luxe”
-| “expert”
-| “niche”
-| “a_definir”;
+| "accessible"
+| "milieu_de_gamme"
+| "premium"
+| "luxe"
+| "expert"
+| "niche"
+| "a_definir";
 
 /* –––––––––––––––––––––––––––––––––––––
 
@@ -225,7 +225,7 @@ export function useBrandDNA(
 boutiqueId: string | undefined,
 ) {
 return useQuery({
-queryKey: [“brand-dna”, boutiqueId],
+queryKey: ["brand-dna", boutiqueId],
 enabled: !!boutiqueId,
 
 queryFn: async () => {
@@ -373,7 +373,7 @@ answers: StudioAnswers;
 }) => {
 if (!params.answers.confirmed) {
 throw new Error(
-“Valide la direction de marque avant de lancer la génération.”,
+"Valide la direction de marque avant de lancer la génération.",
 );
 }
 
@@ -560,7 +560,7 @@ pageId: string | null = null,
 ) {
 return useQuery({
 queryKey: [
-“boutique-scenes”,
+"boutique-scenes",
 boutiqueId,
 pageId,
 ],
@@ -621,7 +621,7 @@ bundleKey?: string;
 const {
 STUDIO_BUNDLES,
 } = await import(
-“@/lib/studioScenes”
+"@/lib/studioScenes"
 );
 
   const bundle =
@@ -753,17 +753,17 @@ mutationFn: async (params: {
 boutiqueId: string;
 prompt: string;
 aspect?:
-| “1:1”
-| “3:4”
-| “4:3”
-| “16:9”
-| “9:16”;
-}): Promise => {
+| "1:1"
+| "3:4"
+| "4:3"
+| "16:9"
+| "9:16";
+}): Promise<any> => {
 const {
 data,
 error,
 } = await supabase.functions.invoke(
-“studio-image-gen”,
+"studio-image-gen",
 {
 body: {
 boutique_id:
@@ -814,10 +814,10 @@ file: File;
 }) => {
 const extension =
 params.file.name
-.split(”.”)
+.split(".")
 .pop()
 ?.toLowerCase() ||
-“jpg”;
+"jpg";
 
   const {
     data: userData,
@@ -998,7 +998,7 @@ index++
 ) {
 await supabase
 .from(
-“boutique_scenes”,
+"boutique_scenes",
 )
 .update({
 position:
@@ -1006,7 +1006,7 @@ position:
 index,
 } as never)
 .eq(
-“id”,
+"id",
 params.orderedIds[
 index
 ],
@@ -1207,11 +1207,11 @@ const {
 error,
 } = await supabase
 .from(
-“boutique_scenes”,
+"boutique_scenes",
 )
 .delete()
 .eq(
-“id”,
+"id",
 params.sceneId,
 );
 
@@ -1304,8 +1304,7 @@ h1: string;
 keywords: string[];
 jsonld: Array<
 Record<string, unknown>
-
-;
+>;
 }
 
 export function useGenerateSeo() {
@@ -1319,10 +1318,10 @@ string,
 unknown
 >;
 persist?: boolean;
-}): Promise => {
+}): Promise<any> => {
 const data =
 await invokeBoutiqueAi({
-action: “generate_seo”,
+action: "generate_seo",
 boutique_id:
 params.boutiqueId,
 payload:
@@ -1395,7 +1394,7 @@ Record<string, unknown>
 const {
 error,
 } = await supabase
-.from(“boutiques”)
+.from("boutiques")
 .update({
 seo_title:
 params.title,
@@ -1460,11 +1459,11 @@ content: Record<
 string,
 unknown
 >;
-brand?: Partial | null;
+brand?: any;
 }) => {
 const data =
 await invokeBoutiqueAi({
-action: “remix_scene”,
+action: "remix_scene",
 boutique_id:
 params.boutiqueId,
 
@@ -1600,10 +1599,10 @@ context: Record<
 string,
 unknown
 >;
-}): Promise => {
+}): Promise<any> => {
 return await invokeBoutiqueAi(
 {
-action: “seo_brief”,
+action: "seo_brief",
 boutique_id:
 params.boutiqueId,
 payload:
@@ -1630,7 +1629,7 @@ await invokeBoutiqueAi<{
 clusters?: KeywordCluster[];
 }>({
 action:
-“keyword_clusters”,
+"keyword_clusters",
 
       boutique_id:
         params.boutiqueId,
@@ -1668,7 +1667,7 @@ weight: number;
 const checks = [
 {
 label:
-“Titre 30-60 caractères”,
+"Titre 30-60 caractères",
 
   ok:
     input.title.length >=
@@ -1761,3 +1760,5 @@ score,
 checks,
 };
 }
+
+export type { SceneRecord };

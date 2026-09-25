@@ -204,11 +204,11 @@ export default function PartnerOnboardingPortal({
           { data: submissionData, error: submissionError },
           { data: historyData, error: historyError },
         ] = await Promise.all([
-          supabase.rpc("partner_load_submission", {
+          (supabase.rpc as any)("partner_load_submission", {
             _access_token: token,
           }),
 
-          supabase.rpc("partner_load_history", {
+          (supabase.rpc as any)("partner_load_history", {
             _access_token: token,
           }),
         ]);
@@ -227,7 +227,7 @@ export default function PartnerOnboardingPortal({
           );
         }
 
-        setSubmission(submissionData as Submission);
+        setSubmission(submissionData as unknown as Submission);
         setHistory(
           Array.isArray(historyData)
             ? (historyData as HistoryEntry[])

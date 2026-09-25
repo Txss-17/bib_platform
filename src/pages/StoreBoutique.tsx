@@ -319,7 +319,7 @@ export default function StoreBoutique() {
 
       return (
         data ?? []
-      ) as ProductMediaRow[];
+      ) as unknown as ProductMediaRow[];
     },
   });
 

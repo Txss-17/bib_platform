@@ -524,7 +524,7 @@ function ProductGridCard({ product, isFavorite, onToggleFavorite }: { product: S
         </CardContent>
         {showCalc && <InlineMarginCalc product={product} />}
       </Card>
-      <ProductDetailDialog product={product} open={showDetail} onOpenChange={setShowDetail} onAdd={() => { setShowDetail(false); setShowAddDialog(true); }} isFavorite={isFavorite} onToggleFavorite={onToggleFavorite} />
+      <ProductDetailDialog product={product} open={showDetail} onOpenChange={setShowDetail} onAdd={() => { setShowDetail(false); setShowAddDialog(true); }} isFavorite={() => isFavorite} onToggleFavorite={onToggleFavorite} />
       <AddToBoutiqueDialog product={product} open={showAddDialog} onOpenChange={setShowAddDialog} />
     </>
   );
@@ -578,7 +578,7 @@ function ProductListCard({ product, isFavorite, onToggleFavorite }: { product: S
           </div>
         </CardContent>
       </Card>
-      <ProductDetailDialog product={product} open={showDetail} onOpenChange={setShowDetail} onAdd={() => { setShowDetail(false); setShowAddDialog(true); }} isFavorite={isFavorite} onToggleFavorite={onToggleFavorite} />
+      <ProductDetailDialog product={product} open={showDetail} onOpenChange={setShowDetail} onAdd={() => { setShowDetail(false); setShowAddDialog(true); }} isFavorite={() => isFavorite} onToggleFavorite={onToggleFavorite} />
       <AddToBoutiqueDialog product={product} open={showAddDialog} onOpenChange={setShowAddDialog} />
     </>
   );
