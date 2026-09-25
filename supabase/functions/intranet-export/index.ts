@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
   } catch { /* empty body */ }
 
   const sb = adminClient();
-  const [b, o, t, apps] = await Promise.all([
+  const [b, o, t, apps, subsRows, payRows, planRows] = await Promise.all([
     sb.from("boutiques")
       .select("id, name, slug, status, category, legal_business_name, legal_email, legal_phone, user_id")
       .gte("updated_at", since),
