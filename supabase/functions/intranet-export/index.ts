@@ -42,7 +42,10 @@ Deno.serve(async (req) => {
     sb.from("plans")
       .select("tier, commission_percent"),
   ]);
-  const err = b.error || o.error || t.error || apps.error || subsRows.error || payRows.error || planRows.error;
+  // partner_onboarding_submissions peut ne pas exister : on tolère l'erreur
+  // et on renvoie une liste vide plutôt que de faire échouer tout l'export.
+  const appsData = apps.error ? [] : (apps.data ?? []);
+  const err = b.error || o.error || t.error || subsRows.error || payRows.error || planRows.error;
   if (err) return json({ error: err.message }, 500);
 
   const ownerIds = [...new Set((b.data ?? []).map((x) => x.user_id))];
