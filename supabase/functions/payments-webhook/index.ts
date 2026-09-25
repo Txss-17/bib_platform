@@ -250,7 +250,7 @@ async function handleSubscriptionCreated(
     );
   }
 
-  if (kind !== BIB_SUBSCRIBER_KIND && isActiveStatus(subscription.status)) {
+  if (kind !== BIB_SUBSCRIBER_KIND && isActiveSubscriptionStatus(subscription.status)) {
     await sendSubscriptionConfirmedEmail(userId, priceId, subscription.id);
   }
 
