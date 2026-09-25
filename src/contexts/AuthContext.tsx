@@ -163,6 +163,11 @@ export function AuthProvider({
       return "store";
     }
 
+    /* Anciens comptes créés avant account_type : comptes plateforme. */
+    if (value === undefined || value === null) {
+      return "platform";
+    }
+
     return null;
   };
 
