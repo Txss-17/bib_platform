@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
       .select("id, name, slug, status, category, legal_business_name, legal_email, legal_phone, user_id")
       .gte("updated_at", since),
     sb.from("orders")
-      .select("id, order_number, boutique_id, amount, payment_status, logistics_status, market, created_at")
+      .select("id, order_number, boutique_id, amount, payment_status, logistics_status, market, stripe_session_id, created_at")
       .gte("created_at", since),
     sb.from("support_tickets")
       .select("id, subject, message, status, created_at")
