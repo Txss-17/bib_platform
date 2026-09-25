@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 async function invokeBoutiqueAi<T = any>(
 body: Record<string, unknown>,
-): Promise {
+): Promise<T> {
 const { data, error } = await supabase.functions.invoke(
 "boutique-ai",
 {
@@ -758,7 +758,7 @@ aspect?:
 | "4:3"
 | "16:9"
 | "9:16";
-}): Promise => {
+}): Promise<any> => {
 const {
 data,
 error,
@@ -1318,7 +1318,7 @@ string,
 unknown
 >;
 persist?: boolean;
-}): Promise => {
+}): Promise<any> => {
 const data =
 await invokeBoutiqueAi({
 action: "generate_seo",
@@ -1459,7 +1459,7 @@ content: Record<
 string,
 unknown
 >;
-brand?: Partial | null;
+brand?: Partial<Record<string, unknown>> | null;
 }) => {
 const data =
 await invokeBoutiqueAi({
@@ -1599,7 +1599,7 @@ context: Record<
 string,
 unknown
 >;
-}): Promise => {
+}): Promise<any> => {
 return await invokeBoutiqueAi(
 {
 action: "seo_brief",
@@ -1760,3 +1760,5 @@ score,
 checks,
 };
 }
+
+export type { SceneRecord };
