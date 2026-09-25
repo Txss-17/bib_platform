@@ -8,6 +8,13 @@
       "when": 1790357291138,
       "tag": "0000_fix_boutique_delete_guard_and_bib_order_numbers",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790358489344,
+      "tag": "0001_plan_sync_and_limits",
+      "breakpoints": true
     }
   ]
 }
