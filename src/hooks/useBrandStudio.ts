@@ -1459,7 +1459,7 @@ content: Record<
 string,
 unknown
 >;
-brand?: Partial<Record<string, unknown>> | null;
+brand?: any;
 }) => {
 const data =
 await invokeBoutiqueAi({
