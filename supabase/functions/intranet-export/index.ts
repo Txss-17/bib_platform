@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
     };
   });
 
-  const supplier_applications = (apps.data ?? []).map((a) => {
+  const supplier_applications = appsData.map((a) => {
     const identity = (a.payload?.identity ?? {}) as Record<string, string>;
     return {
       id: a.id,
