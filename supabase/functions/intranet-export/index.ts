@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
     orders: o.data ?? [],
     // Pas de colonne priorité côté plateforme : null, l'intranet peut la définir.
     tickets: (t.data ?? []).map(({ created_at: _c, ...rest }) => ({ ...rest, priority: null })),
-    supplier_applications: supplier_applications.map(({ status: _s, ...rest }) => ({ ...rest, status: undefined, ...(({ status }) => ({ status }))({ status: _s }) as object })),
+    supplier_applications,
     merchants,
   });
 });
