@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useSEO } from "@/hooks/useSEO";
+import bibTalentVideo from "@/assets/bib-talent.mp4.asset.json";
 
 export default function BibTalent() {
   useSEO({
@@ -104,7 +105,7 @@ export default function BibTalent() {
                   preload="metadata"
                 >
                   <source
-                    src="/assets/bib-talent.mp4"
+                    src={bibTalentVideo.url}
                     type="video/mp4"
                   />
                   Votre navigateur ne prend pas en charge la lecture vidéo.
