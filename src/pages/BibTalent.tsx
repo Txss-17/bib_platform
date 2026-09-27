@@ -105,7 +105,7 @@ export default function BibTalent() {
                   preload="metadata"
                 >
                   <source
-                    src={bibTalentVideo.url}
+                    src={`https://id-preview--1aa1b209-5f17-4dd2-aaca-54cdffc202fc.lovable.app${bibTalentVideo.url}`}
                     type="video/mp4"
                   />
                   Votre navigateur ne prend pas en charge la lecture vidéo.
