@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useSEO } from "@/hooks/useSEO";
 import bibTalentVideo from "@/assets/bib-talent.mp4.asset.json";
+import bibTalentPoster from "@/assets/bib-talent-poster.jpg.asset.json";
 
 export default function BibTalent() {
   useSEO({
@@ -105,10 +106,11 @@ export default function BibTalent() {
                   loop
                   playsInline
                   preload="metadata"
+                  poster={bibTalentPoster.url}
                   aria-label="Présentation de BIB Talent"
                 >
                   <source
-                    src={`https://id-preview--1aa1b209-5f17-4dd2-aaca-54cdffc202fc.lovable.app${bibTalentVideo.url}`}
+                    src={bibTalentVideo.url}
                     type="video/mp4"
                   />
                   Votre navigateur ne prend pas en charge la lecture vidéo.
