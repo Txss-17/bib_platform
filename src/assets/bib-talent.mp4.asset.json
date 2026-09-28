@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "asset_id": "5ca652c2-cf25-425f-91a2-4717c01f2ca7",
+  "asset_id": "fc0f348a-99d5-4ead-b503-43d2b61a3c03",
   "project_id": "1aa1b209-5f17-4dd2-aaca-54cdffc202fc",
-  "url": "/__l5e/assets-v1/5ca652c2-cf25-425f-91a2-4717c01f2ca7/bib-talent.mp4",
-  "r2_key": "a/v1/1aa1b209-5f17-4dd2-aaca-54cdffc202fc/5ca652c2-cf25-425f-91a2-4717c01f2ca7/bib-talent.mp4",
-  "original_filename": "bib-talent.mp4",
-  "size": 8526582,
+  "url": "/__l5e/assets-v1/fc0f348a-99d5-4ead-b503-43d2b61a3c03/bib-talent-film.mp4",
+  "r2_key": "a/v1/1aa1b209-5f17-4dd2-aaca-54cdffc202fc/fc0f348a-99d5-4ead-b503-43d2b61a3c03/bib-talent-film.mp4",
+  "original_filename": "bib-talent-film.mp4",
+  "size": 2785159,
   "content_type": "video/mp4",
-  "created_at": "2026-09-27T09:16:02Z"
+  "created_at": "2026-09-28T05:47:40Z"
 }

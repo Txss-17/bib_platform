@@ -8,6 +8,12 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    proxy: {
+      "/__l5e/assets-v1": {
+        target: "https://id-preview--1aa1b209-5f17-4dd2-aaca-54cdffc202fc.lovable.app",
+        changeOrigin: true,
+      },
+    },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
