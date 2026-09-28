@@ -100,9 +100,12 @@ export default function BibTalent() {
               <div className="overflow-hidden rounded-2xl bg-bib-marine shadow-xl">
                 <video
                   className="block h-auto w-full"
-                  controls
+                  autoPlay
+                  muted
+                  loop
                   playsInline
                   preload="metadata"
+                  aria-label="Présentation de BIB Talent"
                 >
                   <source
                     src={`https://id-preview--1aa1b209-5f17-4dd2-aaca-54cdffc202fc.lovable.app${bibTalentVideo.url}`}
