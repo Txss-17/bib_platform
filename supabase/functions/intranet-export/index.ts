@@ -67,6 +67,100 @@ Deno.serve(async (req) => {
     (data ?? []).forEach((p) => { plans[p.user_id] = p.plan_tier; });
   }
 
+  const favoriteProductIds = [
+    ...new Set(
+      (productFavorites.data ?? []).map(
+        (favorite) => favorite.product_id,
+      ),
+    ),
+  ];
+  
+  const favoriteBoutiqueIds = [
+    ...new Set(
+      (boutiqueFavorites.data ?? []).map(
+        (favorite) => favorite.boutique_id,
+      ),
+    ),
+  ];
+  
+  const favoriteProductsById: Record<
+    string,
+    {
+      boutique_id: string | null;
+      name: string | null;
+      sku: string | null;
+    }
+  > = {};
+  
+  if (favoriteProductIds.length) {
+    const {
+      data: favoriteProducts,
+      error: favoriteProductsError,
+    } = await sb
+      .from("products")
+      .select(
+        `
+          id,
+          boutique_id,
+          supplier_product_id,
+          supplier_products (
+            name
+          )
+        `,
+      )
+      .in("id", favoriteProductIds);
+  
+    if (favoriteProductsError) {
+      return json(
+        { error: favoriteProductsError.message },
+        500,
+      );
+    }
+  
+    for (const product of favoriteProducts ?? []) {
+      const supplierProduct =
+        Array.isArray(product.supplier_products)
+          ? product.supplier_products[0]
+          : product.supplier_products;
+  
+      favoriteProductsById[product.id] = {
+        boutique_id: product.boutique_id ?? null,
+        name: supplierProduct?.name ?? null,
+        sku: null,
+      };
+    }
+  }
+  
+  const boutiqueReferencesById: Record<
+    string,
+    {
+      name: string | null;
+    }
+  > = {};
+  
+  if (favoriteBoutiqueIds.length) {
+    const {
+      data: favoriteBoutiques,
+      error: favoriteBoutiquesError,
+    } = await sb
+      .from("boutiques")
+      .select("id, name")
+      .in("id", favoriteBoutiqueIds);
+  
+    if (favoriteBoutiquesError) {
+      return json(
+        { error: favoriteBoutiquesError.message },
+        500,
+      );
+    }
+  
+    for (const boutique of favoriteBoutiques ?? []) {
+      boutiqueReferencesById[boutique.id] = {
+        name: boutique.name ?? null,
+      };
+    }
+  }
+    
     // ============================================================
   // FAVORIS CLIENTS — références Platform
   // ============================================================
