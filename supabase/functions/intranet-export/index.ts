@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
   } catch { /* empty body */ }
 
   const sb = adminClient();
-  const [b, o, t, apps, subsRows, payRows, planRows] = await Promise.all([
+  const [b, o, t, apps, subsRows, payRows, planRows, productFavorites, boutiqueFavorites] = await Promise.all([
     sb.from("boutiques")
       .select("id, name, slug, status, category, legal_business_name, legal_email, legal_phone, user_id")
       .gte("updated_at", since),
@@ -41,11 +41,23 @@ Deno.serve(async (req) => {
       .gte("created_at", since),
     sb.from("plans")
       .select("tier, commission_percent"),
+    sb.from("customer_product_favorites")
+      .select("user_id, product_id, created_at"),
+    sb.from("customer_boutique_favorites")
+      .select("user_id, boutique_id, created_at"),
   ]);
   // partner_onboarding_submissions peut ne pas exister : on tolère l'erreur
   // et on renvoie une liste vide plutôt que de faire échouer tout l'export.
   const appsData = apps.error ? [] : (apps.data ?? []);
-  const err = b.error || o.error || t.error || subsRows.error || payRows.error || planRows.error;
+  const err =
+  b.error ||
+  o.error ||
+  t.error ||
+  subsRows.error ||
+  payRows.error ||
+  planRows.error ||
+  productFavorites.error ||
+  boutiqueFavorites.error;
   if (err) return json({ error: err.message }, 500);
 
   const ownerIds = [...new Set((b.data ?? []).map((x) => x.user_id))];
@@ -208,6 +220,22 @@ Deno.serve(async (req) => {
       plan: null as string | null,
     }));
 
+    const customer_favorites = [
+    ...(productFavorites.data ?? []).map((favorite) => ({
+      user_id: favorite.user_id,
+      favorite_type: "product",
+      target_id: favorite.product_id,
+      created_at: favorite.created_at,
+    })),
+
+    ...(boutiqueFavorites.data ?? []).map((favorite) => ({
+      user_id: favorite.user_id,
+      favorite_type: "boutique",
+      target_id: favorite.boutique_id,
+      created_at: favorite.created_at,
+    })),
+  ];
+
   return json({
     boutiques: (b.data ?? []).map(({ user_id, ...rest }) => ({ ...rest, subscription_plan: plans[user_id] ?? null })),
     orders: o.data ?? [],
@@ -221,5 +249,6 @@ Deno.serve(async (req) => {
     fees,
     refunds,
     payouts,
+    customer_favorites,
   });
 });
