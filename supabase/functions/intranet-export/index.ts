@@ -67,6 +67,146 @@ Deno.serve(async (req) => {
     (data ?? []).forEach((p) => { plans[p.user_id] = p.plan_tier; });
   }
 
+    // ============================================================
+  // FAVORIS CLIENTS — références Platform
+  // ============================================================
+  //
+  // Les favoris utilisent auth.users.id comme propriétaire.
+  //
+  // Pour les favoris produit, on résout ici :
+  //   products.id
+  //   products.boutique_id
+  //   products.supplier_product_id
+  //   supplier_products.name
+  //
+  // On ne crée jamais de référence vers le référentiel
+  // opérationnel de l'Intranet.
+  // ============================================================
+
+  const favoriteProductIds = [
+    ...new Set(
+      (productFavorites.data ?? []).map(
+        (favorite) => favorite.product_id,
+      ),
+    ),
+  ];
+
+  const favoriteBoutiqueIds = [
+    ...new Set(
+      (boutiqueFavorites.data ?? []).map(
+        (favorite) => favorite.boutique_id,
+      ),
+    ),
+  ];
+
+  const favoriteProductsById: Record<
+    string,
+    {
+      boutique_id: string | null;
+      name: string | null;
+      sku: string | null;
+    }
+  > = {};
+
+  if (favoriteProductIds.length) {
+    const {
+      data: favoriteProducts,
+      error: favoriteProductsError,
+    } = await sb
+      .from("products")
+      .select(
+        `
+          id,
+          boutique_id,
+          supplier_product_id,
+          supplier_products (
+            name
+          )
+        `,
+      )
+      .in("id", favoriteProductIds);
+
+    if (favoriteProductsError) {
+      return json(
+        {
+          error:
+            favoriteProductsError.message,
+        },
+        500,
+      );
+    }
+
+    for (
+      const product of favoriteProducts ?? []
+    ) {
+      const supplierProduct =
+        Array.isArray(
+          product.supplier_products,
+        )
+          ? product.supplier_products[0]
+          : product.supplier_products;
+
+      favoriteProductsById[
+        product.id
+      ] = {
+        boutique_id:
+          product.boutique_id ?? null,
+
+        name:
+          supplierProduct?.name ??
+          null,
+
+        // La structure Platform actuelle
+        // ne possède pas de SKU produit public
+        // indépendant du supplier_product.
+        sku: null,
+      };
+    }
+  }
+
+  const boutiqueReferencesById: Record<
+    string,
+    {
+      name: string | null;
+    }
+  > = {};
+
+  if (favoriteBoutiqueIds.length) {
+    const {
+      data: favoriteBoutiques,
+      error: favoriteBoutiquesError,
+    } = await sb
+      .from("boutiques")
+      .select(
+        "id, name",
+      )
+      .in(
+        "id",
+        favoriteBoutiqueIds,
+      );
+
+    if (favoriteBoutiquesError) {
+      return json(
+        {
+          error:
+            favoriteBoutiquesError.message,
+        },
+        500,
+      );
+    }
+
+    for (
+      const boutique of favoriteBoutiques ?? []
+    ) {
+      boutiqueReferencesById[
+        boutique.id
+      ] = {
+        name:
+          boutique.name ?? null,
+      };
+    }
+  }
+  
   // Merchants : profils + email via l'API admin (auth.users n'est pas exposé en PostgREST).
   const { data: profs, error: profErr } = await sb
     .from("profiles")
@@ -220,20 +360,74 @@ Deno.serve(async (req) => {
       plan: null as string | null,
     }));
 
-    const customer_favorites = [
-    ...(productFavorites.data ?? []).map((favorite) => ({
-      user_id: favorite.user_id,
-      favorite_type: "product",
-      target_id: favorite.product_id,
-      created_at: favorite.created_at,
-    })),
+      const customer_favorites = [
+    ...(productFavorites.data ?? []).map(
+      (favorite) => {
+        const product =
+          favoriteProductsById[
+            favorite.product_id
+          ];
 
-    ...(boutiqueFavorites.data ?? []).map((favorite) => ({
-      user_id: favorite.user_id,
-      favorite_type: "boutique",
-      target_id: favorite.boutique_id,
-      created_at: favorite.created_at,
-    })),
+        return {
+          user_id:
+            favorite.user_id,
+
+          favorite_type:
+            "product",
+
+          target_id:
+            favorite.product_id,
+
+          platform_boutique_id:
+            product?.boutique_id ??
+            null,
+
+          target_name:
+            product?.name ??
+            null,
+
+          target_sku:
+            product?.sku ??
+            null,
+
+          created_at:
+            favorite.created_at,
+        };
+      },
+    ),
+
+    ...(boutiqueFavorites.data ?? []).map(
+      (favorite) => {
+        const boutique =
+          boutiqueReferencesById[
+            favorite.boutique_id
+          ];
+
+        return {
+          user_id:
+            favorite.user_id,
+
+          favorite_type:
+            "boutique",
+
+          target_id:
+            favorite.boutique_id,
+
+          platform_boutique_id:
+            favorite.boutique_id,
+
+          target_name:
+            boutique?.name ??
+            null,
+
+          target_sku:
+            null,
+
+          created_at:
+            favorite.created_at,
+        };
+      },
+    ),
   ];
 
   return json({
