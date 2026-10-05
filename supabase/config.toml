@@ -31,3 +31,6 @@ verify_jwt = false
 
 [functions.support-ai]
 verify_jwt = false
+
+[gateway-inbound-email]
+verify_jwt = false
