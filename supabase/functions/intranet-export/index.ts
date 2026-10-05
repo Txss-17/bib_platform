@@ -455,41 +455,63 @@ Deno.serve(async (req) => {
     }));
 
       const customer_favorites = [
-    ...(productFavorites.data ?? []).map(
-      (favorite) => {
-        const product =
-          favoriteProductsById[
-            favorite.product_id
-          ];
+  ...(productFavorites.data ?? []).map(
+    (favorite) => {
+      const product =
+        favoriteProductsById[favorite.product_id];
 
-        return {
-          user_id:
-            favorite.user_id,
+      return {
+        user_id: favorite.user_id,
 
-          favorite_type:
-            "product",
+        favorite_type: "product",
 
-          target_id:
-            favorite.product_id,
+        target_id:
+          favorite.product_id,
 
-          platform_boutique_id:
-            product?.boutique_id ??
-            null,
+        platform_boutique_id:
+          product?.boutique_id ?? null,
 
-          target_name:
-            product?.name ??
-            null,
+        target_name:
+          product?.name ?? null,
 
-          target_sku:
-            product?.sku ??
-            null,
+        target_sku:
+          product?.sku ?? null,
 
-          created_at:
-            favorite.created_at,
-        };
-      },
-    ),
+        created_at:
+          favorite.created_at,
+      };
+    },
+  ),
 
+  ...(boutiqueFavorites.data ?? []).map(
+    (favorite) => {
+      const boutique =
+        boutiqueReferencesById[
+          favorite.boutique_id
+        ];
+
+      return {
+        user_id: favorite.user_id,
+
+        favorite_type: "boutique",
+
+        target_id:
+          favorite.boutique_id,
+
+        platform_boutique_id:
+          favorite.boutique_id,
+
+        target_name:
+          boutique?.name ?? null,
+
+        target_sku: null,
+
+        created_at:
+          favorite.created_at,
+      };
+    },
+  ),
+];
     ...(boutiqueFavorites.data ?? []).map(
       (favorite) => {
         const boutique =
