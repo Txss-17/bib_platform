@@ -81,6 +81,7 @@ Deno.serve(async (req) => {
     planRows,
     productFavorites,
     boutiqueFavorites,
+    products,
   ] = await Promise.all([
     sb
       .from("boutiques")
@@ -169,6 +170,36 @@ Deno.serve(async (req) => {
       .select(
         "user_id, boutique_id, created_at",
       ),
+
+    sb
+      .from("products")
+      .select(
+        `
+          id,
+          boutique_id,
+          supplier_product_id,
+          public_price,
+          applied_margin,
+          status,
+          cumulative_sales,
+          created_at,
+          updated_at,
+          supplier_products (
+            name,
+            description,
+            image_url,
+            moq,
+            category,
+            base_price,
+            max_margin_percent,
+            market
+          )
+        `,
+      )
+      .gte(
+        "updated_at",
+        since,
+      ),
   ]);
 
   // partner_onboarding_submissions peut ne pas exister :
@@ -186,7 +217,8 @@ Deno.serve(async (req) => {
     payRows.error ||
     planRows.error ||
     productFavorites.error ||
-    boutiqueFavorites.error;
+    boutiqueFavorites.error ||
+    products.error;
 
   if (err) {
     return json(
@@ -1040,6 +1072,106 @@ Deno.serve(async (req) => {
   ];
 
   // ============================================================
+  // PRODUITS — EXPORT POUR LIAISON BOUTIQUE / INTRANET
+  // ============================================================
+  //
+  // BIB Platform est la source de vérité pour :
+  //   products.boutique_id
+  //
+  // L'Intranet ne crée pas automatiquement de produit à partir
+  // de cet export. Il utilise l'id du produit Platform pour
+  // retrouver le produit Intranet déjà existant via
+  // products.platform_id, puis lui associer la boutique.
+  //
+  // IMPORTANT :
+  // products.id (Platform) est l'identifiant du produit.
+  // boutiques.id (Platform) est l'identifiant de la boutique.
+  // Ils ne doivent jamais être comparés entre eux.
+  // ============================================================
+
+  const marketplaceProducts =
+    (
+      products.data ?? []
+    ).map(
+      (product) => {
+        const supplierProduct =
+          Array.isArray(
+            product.supplier_products,
+          )
+            ? product
+                .supplier_products[0]
+            : product.supplier_products;
+
+        return {
+          id:
+            product.id,
+
+          boutique_id:
+            product.boutique_id ??
+            null,
+
+          supplier_product_id:
+            product.supplier_product_id ??
+            null,
+
+          name:
+            supplierProduct?.name ??
+            null,
+
+          description:
+            supplierProduct?.description ??
+            null,
+
+          image_url:
+            supplierProduct?.image_url ??
+            null,
+
+          category:
+            supplierProduct?.category ??
+            null,
+
+          moq:
+            supplierProduct?.moq ??
+            null,
+
+          base_price:
+            supplierProduct?.base_price ??
+            null,
+
+          max_margin_percent:
+            supplierProduct?.max_margin_percent ??
+            null,
+
+          market:
+            supplierProduct?.market ??
+            null,
+
+          public_price:
+            product.public_price ??
+            null,
+
+          applied_margin:
+            product.applied_margin ??
+            null,
+
+          status:
+            product.status ??
+            null,
+
+          cumulative_sales:
+            product.cumulative_sales ??
+            0,
+
+          created_at:
+            product.created_at,
+
+          updated_at:
+            product.updated_at,
+        };
+      },
+    );
+
+  // ============================================================
   // EXPORT
   // ============================================================
 
@@ -1099,5 +1231,8 @@ Deno.serve(async (req) => {
     payouts,
 
     customer_favorites,
+
+    products:
+      marketplaceProducts,
   });
 });
