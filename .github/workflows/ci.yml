@@ -1,4 +1,4 @@
-name: BIB Intranet - CI
+name: BIB Platform - CI
 
 on:
   push:
