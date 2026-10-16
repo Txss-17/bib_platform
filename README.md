@@ -16,6 +16,7 @@ marketing.
 Prérequis : Node.js 20+ et un projet Supabase configuré.
 
 ```bash
+npm install
 npm ci
 npm run dev
 ```
@@ -35,9 +36,10 @@ Les secrets Stripe, IA et email sont réservés aux secrets des Edge Functions.
 ## Validation
 
 ```bash
-npm run build
+npm ci
 npm run lint
 npm test
+npm run build
 ```
 
 Les tests E2E sont configurés dans `playwright.config.ts`, mais Playwright
