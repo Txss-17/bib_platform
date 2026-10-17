@@ -156,6 +156,9 @@ interface Props {
   initialSeo?: {
     title?: string | null;
     description?: string | null;
+    activeLocales?: string[] | null;
+    defaultLocale?: string | null;
+    publicOrigin?: string | null;
     jsonld?: {
       blocks?: Array<Record<string, unknown>>;
       keywords?: string[];
@@ -163,6 +166,14 @@ interface Props {
     } | null;
   };
 }
+
+const SUPPORTED_SEO_LOCALES = [
+  { code: "fr", label: "Français" },
+  { code: "en", label: "Anglais" },
+  { code: "es", label: "Espagnol" },
+  { code: "de", label: "Allemand" },
+  { code: "it", label: "Italien" },
+] as const;
 
 interface PageLike {
   id: string;
@@ -1065,6 +1076,56 @@ export function StudioEditor({
   );
 
   const [
+    seoActiveLocales,
+    setSeoActiveLocales,
+  ] = useState<string[]>(() => {
+    const activeLocales =
+      initialSeo?.activeLocales?.filter(
+        (locale) =>
+          SUPPORTED_SEO_LOCALES.some(
+            (supportedLocale) =>
+              supportedLocale.code === locale,
+          ),
+      );
+
+    return activeLocales?.length
+      ? activeLocales
+      : ["fr", "en"];
+  });
+
+  const [
+    seoDefaultLocale,
+    setSeoDefaultLocale,
+  ] = useState(() => {
+    const initialActiveLocales =
+      initialSeo?.activeLocales?.filter(
+        (locale) =>
+          SUPPORTED_SEO_LOCALES.some(
+            (supportedLocale) =>
+              supportedLocale.code === locale,
+          ),
+      );
+    const activeLocales =
+      initialActiveLocales?.length
+        ? initialActiveLocales
+        : ["fr", "en"];
+
+    return initialSeo?.defaultLocale &&
+      activeLocales.includes(
+        initialSeo.defaultLocale,
+      )
+      ? initialSeo.defaultLocale
+      : activeLocales[0];
+  });
+
+  const [
+    seoPublicOrigin,
+    setSeoPublicOrigin,
+  ] = useState(
+    initialSeo?.publicOrigin ?? "",
+  );
+
+  const [
     seoDirty,
     setSeoDirty,
   ] = useState(false);
@@ -1154,6 +1215,31 @@ export function StudioEditor({
     setSeoJsonld(
       initialSeo?.jsonld
         ?.blocks ?? [],
+    );
+    const configuredLocales =
+      initialSeo?.activeLocales?.filter(
+        (locale) =>
+          SUPPORTED_SEO_LOCALES.some(
+            (supportedLocale) =>
+              supportedLocale.code === locale,
+          ),
+      );
+    const activeLocales =
+      configuredLocales?.length
+        ? configuredLocales
+        : ["fr", "en"];
+
+    setSeoActiveLocales(activeLocales);
+    setSeoDefaultLocale(
+      initialSeo?.defaultLocale &&
+        activeLocales.includes(
+          initialSeo.defaultLocale,
+        )
+        ? initialSeo.defaultLocale
+        : activeLocales[0],
+    );
+    setSeoPublicOrigin(
+      initialSeo?.publicOrigin ?? "",
     );
     setSeoDirty(false);
   }, [
@@ -1330,6 +1416,10 @@ export function StudioEditor({
               )
               .filter(Boolean),
           jsonld: seoJsonld,
+          activeLocales: seoActiveLocales,
+          defaultLocale: seoDefaultLocale,
+          publicOrigin:
+            seoPublicOrigin.trim() || null,
         });
       }
 
@@ -2388,6 +2478,130 @@ export function StudioEditor({
               className="mt-0 flex-1 overflow-y-auto px-4 pb-5"
             >
               <div className="space-y-4">
+                <Card className="space-y-4 p-4">
+                  <div>
+                    <h3 className="text-sm font-semibold">
+                      Référencement international
+                    </h3>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Configure les langues déclarées pour cette boutique et son origine publique.
+                      Les traductions du contenu doivent être gérées séparément.
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label>Langues actives</Label>
+                    <div className="mt-2 grid grid-cols-2 gap-3">
+                      {SUPPORTED_SEO_LOCALES.map((locale) => {
+                        const checked = seoActiveLocales.includes(
+                          locale.code,
+                        );
+
+                        return (
+                          <label
+                            key={locale.code}
+                            className="flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(event) => {
+                                const next = event.target.checked
+                                  ? [
+                                      ...new Set([
+                                        ...seoActiveLocales,
+                                        locale.code,
+                                      ]),
+                                    ]
+                                  : seoActiveLocales.filter(
+                                      (code) =>
+                                        code !== locale.code,
+                                    );
+
+                                if (next.length === 0) {
+                                  toast.error(
+                                    "Sélectionne au moins une langue.",
+                                  );
+                                  return;
+                                }
+
+                                const nextDefault = next.includes(
+                                  seoDefaultLocale,
+                                )
+                                  ? seoDefaultLocale
+                                  : next[0];
+
+                                setSeoActiveLocales(next);
+                                setSeoDefaultLocale(nextDefault);
+                                setSeoDirty(true);
+                              }}
+                              className="h-4 w-4 accent-primary"
+                            />
+                            <span>{locale.label}</span>
+                            <span className="ml-auto font-mono text-xs text-muted-foreground">
+                              {locale.code.toUpperCase()}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Langue par défaut</Label>
+                    <Select
+                      value={seoDefaultLocale}
+                      onValueChange={(value) => {
+                        if (!seoActiveLocales.includes(value)) {
+                          setSeoActiveLocales((current) => [
+                            ...current,
+                            value,
+                          ]);
+                        }
+
+                        setSeoDefaultLocale(value);
+                        setSeoDirty(true);
+                      }}
+                    >
+                      <SelectTrigger className="mt-2">
+                        <SelectValue placeholder="Choisir une langue" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SUPPORTED_SEO_LOCALES.filter((locale) =>
+                          seoActiveLocales.includes(locale.code),
+                        ).map((locale) => (
+                          <SelectItem
+                            key={locale.code}
+                            value={locale.code}
+                          >
+                            {locale.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label>
+                      Origine publique personnalisée (facultatif)
+                    </Label>
+                    <Input
+                      className="mt-2"
+                      value={seoPublicOrigin}
+                      placeholder="https://boutique.exemple.com"
+                      type="url"
+                      onChange={(event) => {
+                        setSeoPublicOrigin(event.target.value);
+                        setSeoDirty(true);
+                      }}
+                    />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Indique uniquement le domaine et le protocole, sans chemin, paramètres
+                      ni fragment. Laisse vide pour utiliser le domaine public de BIB.
+                    </p>
+                  </div>
+                </Card>
+
                 <Card className="p-4">
                   <div className="mb-2 flex items-center justify-between">
                     <h3 className="text-sm font-semibold">
@@ -2571,6 +2785,13 @@ export function StudioEditor({
                                 ),
                             jsonld:
                               seoJsonld,
+                            activeLocales:
+                              seoActiveLocales,
+                            defaultLocale:
+                              seoDefaultLocale,
+                            publicOrigin:
+                              seoPublicOrigin.trim() ||
+                              null,
                           },
                           {
                             onSuccess:

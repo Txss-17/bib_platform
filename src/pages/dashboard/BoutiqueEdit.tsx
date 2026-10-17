@@ -408,6 +408,12 @@ export default function BoutiqueEdit() {
           jsonld:
             (boutique.seo_jsonld as never) ??
             null,
+          activeLocales:
+            boutique.seo_active_locales,
+          defaultLocale:
+            boutique.seo_default_locale,
+          publicOrigin:
+            boutique.seo_public_origin,
         }}
       />
     </DashboardLayout>

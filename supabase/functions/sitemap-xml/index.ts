@@ -1,6 +1,12 @@
 // Public sitemap.xml — lists published boutiques and active products with hreflang
-// alternates for FR/EN. Deployed without JWT verification (public crawler endpoint).
+// alternates for FR/EN. Deployed without JWT ver
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+const SUPPORTED_LOCALES = ["fr", "en", "es", "de", "it"] as const;
+type Locale = (typeof SUPPORTED_LOCALES)[number];
+
+const DEFAULT_LOCALES: Locale[] = ["fr", "en"];
+const STATIC_LOCALES: Locale[] = ["fr", "en"];
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,16 +14,116 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const LOCALES = ["fr", "en"] as const;
-const DEFAULT_LOCALE = "fr";
+type SeoBoutique = {
+  slug: string | null;
+  seo_active_locales?: string[] | null;
+  seo_default_locale?: string | null;
+  seo_public_origin?: string | null;
+};
 
-function xmlEscape(s: string) {
-  return s
+function xmlEscape(value: string): string {
+  return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
+}
+
+function normalizeLocales(
+  configuredLocales: string[] | null | undefined,
+  configuredDefault: string | null | undefined,
+): { locales: Locale[]; defaultLocale: Locale } {
+  const locales = [
+    ...new Set(
+      (configuredLocales ?? []).filter(
+        (locale): locale is Locale =>
+          SUPPORTED_LOCALES.includes(locale as Locale),
+      ),
+    ),
+  ];
+
+  const activeLocales =
+    locales.length > 0 ? locales : [...DEFAULT_LOCALES];
+
+  const defaultLocale = activeLocales.includes(
+    configuredDefault as Locale,
+  )
+    ? (configuredDefault as Locale)
+    : activeLocales[0];
+
+  return {
+    locales: activeLocales,
+    defaultLocale,
+  };
+}
+
+/**
+ * Accepte uniquement une origine HTTP(S) sans chemin applicatif,
+ * paramètres ni fragment.
+ */
+function normalizeOrigin(value: string | null | undefined): string | null {
+  if (!value) return null;
+
+  try {
+    const parsed = new URL(value);
+
+    if (
+      !["https:", "http:"].includes(parsed.protocol) ||
+      parsed.username ||
+      parsed.password ||
+      parsed.pathname !== "/" ||
+      parsed.search ||
+      parsed.hash
+    ) {
+      return null;
+    }
+
+    return parsed.origin;
+  } catch {
+    return null;
+  }
+}
+
+function resolveRequestOrigin(req: Request, url: URL): string {
+  const forwardedHost = req.headers.get("x-forwarded-host");
+  const forwardedProto = req.headers.get("x-forwarded-proto");
+
+  if (forwardedHost) {
+    const host = forwardedHost.split(",")[0].trim();
+    const proto = forwardedProto?.split(",")[0].trim() || "https";
+
+    if (host && ["http", "https"].includes(proto)) {
+      const forwardedOrigin = normalizeOrigin(`${proto}://${host}`);
+      if (forwardedOrigin) return forwardedOrigin;
+    }
+  }
+
+  return url.origin;
+}
+
+function getBoutiqueOrigin(
+  boutique: SeoBoutique,
+  siteOrigin: string,
+): string {
+  return normalizeOrigin(boutique.seo_public_origin) ?? siteOrigin;
+}
+
+function buildAlternates(
+  baseUrl: string,
+  locales: Locale[],
+): { hreflang: string; href: string }[] {
+  const alternates = locales.map((locale) => ({
+    hreflang: locale,
+    href: `${baseUrl}?lang=${locale}`,
+  }));
+
+  alternates.push({
+    hreflang: "x-default",
+    href: baseUrl,
+  });
+
+  return alternates;
 }
 
 function urlEntry(
@@ -26,19 +132,27 @@ function urlEntry(
   alternates: { hreflang: string; href: string }[],
   changefreq: "daily" | "weekly" | "monthly",
   priority: string,
-) {
-  const alts = alternates
+): string {
+  const alternateXml = alternates
     .map(
-      (a) =>
-        `    <xhtml:link rel="alternate" hreflang="${a.hreflang}" href="${xmlEscape(a.href)}"/>`,
+      ({ hreflang, href }) =>
+        `    <xhtml:link rel="alternate" hreflang="${xmlEscape(hreflang)}" href="${xmlEscape(href)}"/>`,
     )
     .join("\n");
+
   return `  <url>
-    <loc>${xmlEscape(loc)}</loc>${lastmod ? `\n    <lastmod>${lastmod}</lastmod>` : ""}
+    <loc>${xmlEscape(loc)}</loc>${lastmod ? `\n    <lastmod>${xmlEscape(lastmod)}</lastmod>` : ""}
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
-${alts}
+${alternateXml}
   </url>`;
+}
+
+function getDate(value: string | null | undefined): string | null {
+  if (!value) return null;
+
+  const date = value.split("T")[0];
+  return /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : null;
 }
 
 Deno.serve(async (req) => {
@@ -46,121 +160,167 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  if (req.method !== "GET") {
+    return new Response("Method not allowed", {
+      status: 405,
+      headers: corsHeaders,
+    });
+  }
+
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, serviceKey);
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    // Public origin: prefer ?origin= override, else infer from request
-    const url = new URL(req.url);
-    const overrideOrigin = url.searchParams.get("origin");
-    const reqOrigin = `${url.protocol}//${url.host}`;
-    const origin = overrideOrigin || req.headers.get("x-forwarded-host")
-      ? `https://${req.headers.get("x-forwarded-host")}`
-      : reqOrigin;
-    const siteOrigin = (overrideOrigin || origin).replace(/\/$/, "");
+    if (!supabaseUrl || !serviceKey) {
+      throw new Error("Missing Supabase environment configuration.");
+    }
 
-    const { data: boutiques, error: bErr } = await supabase
+    const supabase = createClient(supabaseUrl, serviceKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+
+    const requestUrl = new URL(req.url);
+    const requestedOrigin = normalizeOrigin(
+      requestUrl.searchParams.get("origin"),
+    );
+
+    const siteOrigin =
+      requestedOrigin ?? resolveRequestOrigin(req, requestUrl);
+
+    const { data: boutiques, error: boutiquesError } = await supabase
       .from("boutiques")
-      .select("id, slug, updated_at")
-      .eq("status", "published");
-    if (bErr) throw bErr;
+      .select(
+        "id, slug, updated_at, seo_active_locales, seo_default_locale, seo_public_origin",
+      )
+      .eq("status", "published")
+      .not("slug", "is", null);
 
-    const boutiqueIds = (boutiques ?? []).map((b) => b.id);
-    const { data: products, error: pErr } = boutiqueIds.length
+    if (boutiquesError) throw boutiquesError;
+
+    const publishedBoutiques = boutiques ?? [];
+    const boutiqueIds = publishedBoutiques.map((boutique) => boutique.id);
+
+    const { data: products, error: productsError } = boutiqueIds.length
       ? await supabase
           .from("products")
-          .select("id, boutique_id, updated_at, boutiques!inner(slug, status)")
+          .select(
+            "id, boutique_id, updated_at, boutiques!inner(slug, status, seo_active_locales, seo_default_locale, seo_public_origin)",
+          )
           .in("boutique_id", boutiqueIds)
           .eq("status", "active")
+          .eq("boutiques.status", "published")
       : { data: [], error: null };
-    if (pErr) throw pErr;
+
+    if (productsError) throw productsError;
+
+    const { data: pages, error: pagesError } = boutiqueIds.length
+      ? await supabase
+          .from("boutique_pages")
+          .select(
+            "slug, updated_at, boutique_id, boutiques!inner(slug, status, seo_active_locales, seo_default_locale, seo_public_origin)",
+          )
+          .in("boutique_id", boutiqueIds)
+          .eq("is_visible", true)
+          .eq("boutiques.status", "published")
+      : { data: [], error: null };
+
+    if (pagesError) throw pagesError;
 
     const today = new Date().toISOString().split("T")[0];
     const entries: string[] = [];
 
-    // Static pages
-    const staticPaths = ["/", "/marketplace", "/vendre", "/order-tracking"];
-    for (const path of staticPaths) {
-      const alternates = LOCALES.map((l) => ({
-        hreflang: l,
-        href: `${siteOrigin}${path}?lang=${l}`,
-      }));
-      alternates.push({ hreflang: "x-default", href: `${siteOrigin}${path}` });
+    // Pages publiques générales de BIB.
+    for (const path of ["/", "/marketplace", "/vendre", "/order-tracking"]) {
+      const baseUrl = `${siteOrigin}${path}`;
+
       entries.push(
-        urlEntry(`${siteOrigin}${path}`, today, alternates, "weekly", "0.7"),
+        urlEntry(
+          baseUrl,
+          today,
+          buildAlternates(baseUrl, STATIC_LOCALES),
+          "weekly",
+          "0.7",
+        ),
       );
     }
 
-    // Boutiques
-    for (const b of boutiques ?? []) {
-      const base = `${siteOrigin}/boutique/${b.slug}`;
-      const alternates = LOCALES.map((l) => ({
-        hreflang: l,
-        href: `${base}?lang=${l}`,
-      }));
-      alternates.push({ hreflang: "x-default", href: base });
+    // Pages principales des boutiques.
+    for (const boutique of publishedBoutiques) {
+      if (!boutique.slug) continue;
+
+      const { locales } = normalizeLocales(
+        boutique.seo_active_locales,
+        boutique.seo_default_locale,
+      );
+
+      const origin = getBoutiqueOrigin(boutique, siteOrigin);
+      const baseUrl = `${origin}/boutique/${encodeURIComponent(boutique.slug)}`;
+
       entries.push(
         urlEntry(
-          base,
-          (b.updated_at ?? "").split("T")[0] || null,
-          alternates,
+          baseUrl,
+          getDate(boutique.updated_at),
+          buildAlternates(baseUrl, locales),
           "daily",
           "0.9",
         ),
       );
     }
 
-    // Products
-    for (const p of products ?? []) {
-      // @ts-ignore - join shape
-      const slug = p.boutiques?.slug;
-      if (!slug) continue;
-      const base = `${siteOrigin}/boutique/${slug}/product/${p.id}`;
-      const alternates = LOCALES.map((l) => ({
-        hreflang: l,
-        href: `${base}?lang=${l}`,
-      }));
-      alternates.push({ hreflang: "x-default", href: base });
+    // Fiches produits : héritent des paramètres SEO de leur boutique.
+    for (const product of products ?? []) {
+      const boutique = product.boutiques as unknown as SeoBoutique | null;
+
+      if (!boutique?.slug) continue;
+
+      const { locales } = normalizeLocales(
+        boutique.seo_active_locales,
+        boutique.seo_default_locale,
+      );
+
+      const origin = getBoutiqueOrigin(boutique, siteOrigin);
+      const baseUrl =
+        `${origin}/boutique/${encodeURIComponent(boutique.slug)}` +
+        `/product/${encodeURIComponent(String(product.id))}`;
+
       entries.push(
         urlEntry(
-          base,
-          (p.updated_at ?? "").split("T")[0] || null,
-          alternates,
+          baseUrl,
+          getDate(product.updated_at),
+          buildAlternates(baseUrl, locales),
           "weekly",
           "0.8",
         ),
       );
     }
 
-    // Boutique custom pages (visible only, mapped to boutique slug)
-    const { data: pages, error: pgErr } = boutiqueIds.length
-      ? await supabase
-          .from("boutique_pages")
-          .select("slug, updated_at, boutique_id, boutiques!inner(slug, status)")
-          .in("boutique_id", boutiqueIds)
-          .eq("is_visible", true)
-      : { data: [], error: null };
-    if (pgErr) throw pgErr;
+    // Pages personnalisées visibles des boutiques.
+    for (const page of pages ?? []) {
+      const boutique = page.boutiques as unknown as SeoBoutique | null;
+      const pageSlug = page.slug as string | null;
 
-    for (const pg of pages ?? []) {
-      // @ts-ignore - join shape
-      const bSlug = pg.boutiques?.slug;
-      const pSlug = (pg as any).slug as string | undefined;
-      if (!bSlug || !pSlug) continue;
-      // Skip reserved/internal templates (e.g. "__product__")
-      if (pSlug.startsWith("__")) continue;
-      const base = `${siteOrigin}/boutique/${bSlug}/p/${pSlug}`;
-      const alternates = LOCALES.map((l) => ({
-        hreflang: l,
-        href: `${base}?lang=${l}`,
-      }));
-      alternates.push({ hreflang: "x-default", href: base });
+      if (!boutique?.slug || !pageSlug || pageSlug.startsWith("__")) {
+        continue;
+      }
+
+      const { locales } = normalizeLocales(
+        boutique.seo_active_locales,
+        boutique.seo_default_locale,
+      );
+
+      const origin = getBoutiqueOrigin(boutique, siteOrigin);
+      const baseUrl =
+        `${origin}/boutique/${encodeURIComponent(boutique.slug)}` +
+        `/p/${encodeURIComponent(pageSlug)}`;
+
       entries.push(
         urlEntry(
-          base,
-          ((pg as any).updated_at ?? "").split("T")[0] || null,
-          alternates,
+          baseUrl,
+          getDate(page.updated_at),
+          buildAlternates(baseUrl, locales),
           "weekly",
           "0.7",
         ),
@@ -174,19 +334,26 @@ ${entries.join("\n")}
 </urlset>`;
 
     return new Response(xml, {
+      status: 200,
       headers: {
         ...corsHeaders,
         "Content-Type": "application/xml; charset=utf-8",
         "Cache-Control": "public, max-age=900, s-maxage=900",
       },
     });
-  } catch (err) {
-    console.error("[sitemap-xml] error", err);
+  } catch (error) {
+    console.error("[sitemap-xml] error", error);
+
     return new Response(
-      `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`,
+      `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`,
       {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/xml" },
+        status: 500,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/xml; charset=utf-8",
+          "Cache-Control": "no-store",
+        },
       },
     );
   }
