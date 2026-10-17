@@ -1,22 +1,34 @@
+
 import { useEffect, useMemo, useState } from "react";
-import { Check, AlertTriangle, X, Eye, EyeOff, Search, Copy } from "lucide-react";
+import {
+  Check,
+  AlertTriangle,
+  X,
+  Eye,
+  EyeOff,
+  Search,
+  Copy,
+} from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useSeoSettings } from "@/lib/seoSettings";
 import { toast } from "sonner";
 
 interface PageSeoInspectorProps {
-  /** Visible only when true (typically: viewer is the boutique owner). */
+  /** Visible uniquement pour le propriétaire de la boutique. */
   visible: boolean;
-  /** Title used by useSEO (without site suffix). */
+  /** Titre SEO sans le suffixe du site. */
   title: string;
-  /** Meta description used by useSEO. */
+  /** Description SEO. */
   description?: string | null;
-  /** Open Graph image used by useSEO. */
+  /** Image Open Graph. */
   ogImage?: string | null;
-  /** Optional explicit canonical override (else uses location). */
+  /** URL canonique calculée par la page publique. */
   canonical?: string;
-  /** Page kind, only used for the dock label. */
+  /** Configuration internationale propre à la boutique. */
+  activeLocales?: string[] | null;
+  defaultLocale?: string | null;
+  /** Type de page pour le libellé du panneau. */
   kind: "boutique" | "product";
 }
 
@@ -30,6 +42,8 @@ interface Field {
   copyKey?: string;
   copyValue?: string;
 }
+
+const SUPPORTED_LOCALES = ["fr", "en", "es", "de", "it"];
 
 const STATUS_STYLES: Record<Status, string> = {
   ok: "text-emerald-600 bg-emerald-500/10 border-emerald-500/30",
@@ -49,18 +63,30 @@ const STATUS_LABEL: Record<Status, string> = {
   error: "À corriger",
 };
 
-function classifyTitle(t: string): Status {
-  if (!t || t.trim().length === 0) return "error";
-  if (t.length < 20 || t.length > 65) return "warn";
+function classifyTitle(value: string): Status {
+  if (!value.trim()) return "error";
+  if (value.length < 20 || value.length > 65) return "warn";
   return "ok";
 }
-function classifyDesc(d?: string | null): Status {
-  if (!d || d.trim().length === 0) return "error";
-  if (d.length < 50 || d.length > 165) return "warn";
+
+function classifyDescription(value?: string | null): Status {
+  if (!value?.trim()) return "error";
+  if (value.length < 50 || value.length > 165) return "warn";
   return "ok";
 }
-function classifyImage(url?: string | null): Status {
-  return url && url.length > 0 ? "ok" : "error";
+
+function classifyImage(value?: string | null): Status {
+  return value?.trim() ? "ok" : "error";
+}
+
+function normalizeLocales(locales?: string[] | null): string[] {
+  if (!Array.isArray(locales)) return ["fr", "en"];
+
+  const valid = [...new Set(locales)].filter((locale) =>
+    SUPPORTED_LOCALES.includes(locale),
+  );
+
+  return valid.length > 0 ? valid : ["fr"];
 }
 
 export function PageSeoInspector({
@@ -69,15 +95,28 @@ export function PageSeoInspector({
   description,
   ogImage,
   canonical,
+  activeLocales,
+  defaultLocale,
   kind,
 }: PageSeoInspectorProps) {
-  const { settings } = useSeoSettings();
   const [open, setOpen] = useState(false);
   const [pathname, setPathname] = useState("");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
+  const locales = useMemo(
+    () => normalizeLocales(activeLocales),
+    [activeLocales],
+  );
+
+  const effectiveDefaultLocale =
+    defaultLocale && locales.includes(defaultLocale)
+      ? defaultLocale
+      : locales[0];
+
   useEffect(() => {
-    if (typeof window !== "undefined") setPathname(window.location.pathname);
+    if (typeof window !== "undefined") {
+      setPathname(window.location.pathname);
+    }
   }, []);
 
   const finalCanonical = useMemo(() => {
@@ -86,25 +125,27 @@ export function PageSeoInspector({
     return `${window.location.origin}${pathname}`;
   }, [canonical, pathname]);
 
-  const fields: Field[] = useMemo(() => {
-    return [
+  const fields: Field[] = useMemo(
+    () => [
       {
         label: "Title",
         value: title || "(vide)",
         status: classifyTitle(title),
-        hint: `${title?.length ?? 0}/65 caractères`,
+        hint: `${title.length}/65 caractères`,
       },
       {
         label: "Meta description",
         value: description || "(vide)",
-        status: classifyDesc(description),
+        status: classifyDescription(description),
         hint: `${description?.length ?? 0}/160 caractères`,
       },
       {
         label: "Image Open Graph",
         value: ogImage || "(absente)",
         status: classifyImage(ogImage),
-        hint: ogImage ? "Aperçu social actif" : "Sans image, pas d'aperçu social",
+        hint: ogImage
+          ? "Aperçu social configuré"
+          : "Sans image, pas d'aperçu social personnalisé",
         copyKey: ogImage ? "og-image" : undefined,
         copyValue: ogImage || undefined,
       },
@@ -116,35 +157,80 @@ export function PageSeoInspector({
         copyValue: finalCanonical || undefined,
       },
       {
-        label: "Hreflang",
-        value: `${settings.activeLocales.join(", ")} · x-default → ${settings.defaultLocale}`,
-        status: settings.activeLocales.length >= 2 ? "ok" : "warn",
+        label: "Langues SEO",
+        value: locales.join(", "),
+        status: locales.length >= 2 ? "ok" : "warn",
         hint:
-          settings.activeLocales.length >= 2
-            ? `${settings.activeLocales.length} locales actives`
-            : "Activez ≥ 2 locales pour cibler l'international",
+          locales.length >= 2
+            ? `${locales.length} langues configurées pour cette boutique`
+            : "Une seule langue est configurée",
       },
-    ];
-  }, [title, description, ogImage, finalCanonical, settings]);
+      {
+        label: "Langue par défaut",
+        value: effectiveDefaultLocale,
+        status: locales.includes(effectiveDefaultLocale) ? "ok" : "error",
+        hint: "Utilisée comme valeur x-default",
+      },
+    ],
+    [
+      title,
+      description,
+      ogImage,
+      finalCanonical,
+      locales,
+      effectiveDefaultLocale,
+    ],
+  );
 
-  const handleCopy = (value: string, key: string) => {
-    if (!navigator?.clipboard) return;
-    navigator.clipboard.writeText(value).then(() => {
+  const handleCopy = async (value: string, key: string) => {
+    if (
+      typeof navigator === "undefined" ||
+      !navigator.clipboard
+    ) {
+      toast.error("Copie indisponible dans ce navigateur.");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(value);
       setCopiedKey(key);
-      toast.success("Copié dans le presse-papiers", { description: value.slice(0, 60) });
-      setTimeout(() => setCopiedKey((k) => (k === key ? null : k)), 1500);
-    });
+      toast.success("Copié dans le presse-papiers", {
+        description: value.slice(0, 60),
+      });
+    } catch {
+      toast.error("Impossible de copier cette valeur.");
+    }
   };
 
-  const errorCount = fields.filter((f) => f.status === "error").length;
-  const warnCount = fields.filter((f) => f.status === "warn").length;
+  useEffect(() => {
+    if (!copiedKey) return;
+
+    const timeout = window.setTimeout(() => {
+      setCopiedKey(null);
+    }, 1500);
+
+    return () => window.clearTimeout(timeout);
+  }, [copiedKey]);
+
+  const errorCount = fields.filter(
+    (field) => field.status === "error",
+  ).length;
+
+  const warningCount = fields.filter(
+    (field) => field.status === "warn",
+  ).length;
+
   const overall: Status =
-    errorCount > 0 ? "error" : warnCount > 0 ? "warn" : "ok";
+    errorCount > 0
+      ? "error"
+      : warningCount > 0
+        ? "warn"
+        : "ok";
 
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 max-w-sm w-[calc(100vw-2rem)] sm:w-[360px]">
+    <div className="fixed bottom-4 right-4 z-50 w-[calc(100vw-2rem)] max-w-sm sm:w-[360px]">
       {!open ? (
         <Button
           onClick={() => setOpen(true)}
@@ -152,96 +238,109 @@ export function PageSeoInspector({
           size="sm"
         >
           <span className="flex items-center gap-2">
-            <Search className="w-4 h-4" />
+            <Search className="h-4 w-4" />
             SEO de cette page
           </span>
+
           <Badge
             variant="outline"
             className={`text-[10px] ${
               overall === "ok"
-                ? "border-emerald-400 text-emerald-50 bg-emerald-500/30"
+                ? "border-emerald-400 bg-emerald-500/30 text-emerald-50"
                 : overall === "warn"
-                ? "border-amber-300 text-amber-50 bg-amber-500/30"
-                : "border-red-300 text-red-50 bg-red-500/30"
+                  ? "border-amber-300 bg-amber-500/30 text-amber-50"
+                  : "border-red-300 bg-red-500/30 text-red-50"
             }`}
           >
             {overall === "ok"
               ? "OK"
-              : `${errorCount + warnCount} à corriger`}
+              : `${errorCount + warningCount} à améliorer`}
           </Badge>
         </Button>
       ) : (
-        <div className="rounded-2xl border border-border bg-card shadow-2xl overflow-hidden">
-          <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-border bg-muted/40">
-            <div className="flex items-center gap-2 min-w-0">
-              <Search className="w-4 h-4 text-secondary shrink-0" />
-              <p className="text-sm font-display font-semibold text-foreground truncate">
+        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
+          <div className="flex items-center justify-between border-b border-border bg-muted/40 px-3.5 py-2.5">
+            <div className="flex min-w-0 items-center gap-2">
+              <Search className="h-4 w-4 shrink-0 text-secondary" />
+
+              <p className="truncate text-sm font-display font-semibold text-foreground">
                 SEO · {kind === "boutique" ? "Boutique" : "Produit"}
               </p>
+
               <Badge
                 variant="outline"
                 className={`text-[10px] ${
                   overall === "ok"
-                    ? "text-emerald-600 border-emerald-500/40"
+                    ? "border-emerald-500/40 text-emerald-600"
                     : overall === "warn"
-                    ? "text-amber-600 border-amber-500/40"
-                    : "text-red-600 border-red-500/40"
+                      ? "border-amber-500/40 text-amber-600"
+                      : "border-red-500/40 text-red-600"
                 }`}
               >
                 {STATUS_LABEL[overall]}
               </Badge>
             </div>
+
             <Button
               variant="ghost"
               size="icon"
               className="h-7 w-7"
               onClick={() => setOpen(false)}
-              aria-label="Réduire"
+              aria-label="Réduire le panneau SEO"
             >
-              <EyeOff className="w-4 h-4" />
+              <EyeOff className="h-4 w-4" />
             </Button>
           </div>
 
-          <div className="p-3 space-y-2 max-h-[60vh] overflow-y-auto">
-            {fields.map((f) => {
-              const Icon = STATUS_ICON[f.status];
+          <div className="max-h-[60vh] space-y-2 overflow-y-auto p-3">
+            {fields.map((field) => {
+              const Icon = STATUS_ICON[field.status];
+
               return (
                 <div
-                  key={f.label}
-                  className={`rounded-lg border px-2.5 py-2 ${STATUS_STYLES[f.status]}`}
+                  key={field.label}
+                  className={`rounded-lg border px-2.5 py-2 ${STATUS_STYLES[field.status]}`}
                 >
-                  <div className="flex items-center justify-between gap-2 mb-0.5">
+                  <div className="mb-0.5 flex items-center justify-between gap-2">
                     <span className="text-[11px] font-semibold uppercase tracking-wide">
-                      {f.label}
+                      {field.label}
                     </span>
+
                     <span className="flex items-center gap-1.5 text-[10px] font-medium">
-                      {f.copyKey && f.copyValue && (
+                      {field.copyKey && field.copyValue && (
                         <button
                           type="button"
-                          onClick={() => handleCopy(f.copyValue!, f.copyKey!)}
-                          className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded border border-current/30 hover:bg-background/40 transition"
-                          aria-label={`Copier ${f.label}`}
+                          onClick={() =>
+                            handleCopy(field.copyValue!, field.copyKey!)
+                          }
+                          className="inline-flex items-center gap-0.5 rounded border border-current/30 px-1 py-0.5 transition hover:bg-background/40"
+                          aria-label={`Copier ${field.label}`}
                         >
-                          {copiedKey === f.copyKey ? (
-                            <Check className="w-2.5 h-2.5" />
+                          {copiedKey === field.copyKey ? (
+                            <Check className="h-2.5 w-2.5" />
                           ) : (
-                            <Copy className="w-2.5 h-2.5" />
+                            <Copy className="h-2.5 w-2.5" />
                           )}
-                          <span>Copier</span>
+                          <span>
+                            {copiedKey === field.copyKey ? "Copié" : "Copier"}
+                          </span>
                         </button>
                       )}
+
                       <span className="flex items-center gap-1">
-                        <Icon className="w-3 h-3" />
-                        {STATUS_LABEL[f.status]}
+                        <Icon className="h-3 w-3" />
+                        {STATUS_LABEL[field.status]}
                       </span>
                     </span>
                   </div>
-                  <p className="text-xs text-foreground/90 break-all line-clamp-2">
-                    {f.value}
+
+                  <p className="line-clamp-2 break-all text-xs text-foreground/90">
+                    {field.value}
                   </p>
-                  {f.hint && (
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
-                      {f.hint}
+
+                  {field.hint && (
+                    <p className="mt-0.5 text-[10px] text-muted-foreground">
+                      {field.hint}
                     </p>
                   )}
                 </div>
@@ -249,13 +348,15 @@ export function PageSeoInspector({
             })}
           </div>
 
-          <div className="px-3 py-2 border-t border-border bg-muted/30 flex items-center justify-between text-[10px] text-muted-foreground">
+          <div className="flex items-center justify-between border-t border-border bg-muted/30 px-3 py-2 text-[10px] text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Eye className="w-3 h-3" /> Visible uniquement par vous
+              <Eye className="h-3 w-3" />
+              Visible uniquement par vous
             </span>
+
             <a
               href="/dashboard/seo-analytics"
-              className="text-secondary hover:underline font-medium"
+              className="font-medium text-secondary hover:underline"
             >
               Ouvrir Analytics →
             </a>

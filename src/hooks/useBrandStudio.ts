@@ -1377,68 +1377,103 @@ onSuccess: (
 });
 }
 
+
 export function useSaveSeo() {
-const qc = useQueryClient();
+  const qc = useQueryClient();
 
-return useMutation({
-mutationFn: async (params: {
-boutiqueId: string;
-title: string;
-description: string;
-h1?: string;
-keywords?: string[];
-jsonld?: Array<
-Record<string, unknown>
->;
-}) => {
-const {
-error,
-} = await supabase
-.from("boutiques")
-.update({
-seo_title:
-params.title,
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      title: string;
+      description: string;
+      h1?: string;
+      keywords?: string[];
+      jsonld?: Array<Record<string, unknown>>;
+      activeLocales?: string[];
+      defaultLocale?: string;
+      publicOrigin?: string | null;
+    }) => {
+      const supportedLocales = ["fr", "en", "es", "de", "it"];
 
-      seo_description:
-        params.description,
-      seo_jsonld: {
-        blocks:
-          params.jsonld ??
-          [],
-        keywords:
-          params.keywords ??
-          [],
-        h1:
-          params.h1 ??
-          null,
-      },
-    } as never)
-    .eq(
-      "id",
-      params.boutiqueId,
-    );
-  if (error) {
-    throw error;
-  }
-},
-onSuccess: (
-  _data,
-  vars,
-) => {
-  qc.invalidateQueries({
-    queryKey: [
-      "boutique-edit",
-      vars.boutiqueId,
-    ],
+      const activeLocales = [
+        ...new Set(
+          (params.activeLocales ?? ["fr"])
+            .filter((locale) => supportedLocales.includes(locale)),
+        ),
+      ];
+
+      const defaultLocale = supportedLocales.includes(
+        params.defaultLocale ?? "",
+      )
+        ? params.defaultLocale!
+        : "fr";
+
+      if (!activeLocales.includes(defaultLocale)) {
+        activeLocales.push(defaultLocale);
+      }
+
+      const publicOrigin = params.publicOrigin?.trim()
+        ? (() => {
+            let parsed: URL;
+
+            try {
+              parsed = new URL(params.publicOrigin.trim());
+            } catch {
+              throw new Error(
+                "L’origine publique doit être une URL valide.",
+              );
+            }
+
+            if (
+              parsed.protocol !== "https:" ||
+              parsed.username ||
+              parsed.password ||
+              parsed.pathname !== "/" ||
+              parsed.search ||
+              parsed.hash
+            ) {
+              throw new Error(
+                "Utilisez une origine HTTPS, par exemple https://boutique.example.com.",
+              );
+            }
+
+            return parsed.origin;
+          })()
+        : null;
+
+      const { error } = await supabase
+        .from("boutiques")
+        .update({
+          seo_title: params.title,
+          seo_description: params.description,
+          seo_jsonld: {
+            blocks: params.jsonld ?? [],
+            keywords: params.keywords ?? [],
+            h1: params.h1 ?? null,
+          },
+          seo_active_locales: activeLocales,
+          seo_default_locale: defaultLocale,
+          seo_public_origin: publicOrigin,
+        } as never)
+        .eq("id", params.boutiqueId);
+
+      if (error) {
+        throw error;
+      }
+    },
+
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({
+        queryKey: ["boutique-edit", vars.boutiqueId],
+      });
+      qc.invalidateQueries({
+        queryKey: ["public-boutique"],
+      });
+      qc.invalidateQueries({
+        queryKey: ["boutique", vars.boutiqueId],
+      });
+    },
   });
-  qc.invalidateQueries({
-    queryKey: [
-      "public-boutique",
-    ],
-  });
-},
-
-});
 }
 
 /* ––––––––––––––––––––––––––––––––––––––

@@ -622,10 +622,10 @@ export default function ProductPublic() {
             !!user &&
             !!boutique &&
             user.id === boutique.user_id
-            canonical={seoCanonical}
-activeLocales={boutique?.seo_active_locales}
-defaultLocale={boutique?.seo_default_locale}
           }
+          canonical={seoCanonical}
+          activeLocales={boutique?.seo_active_locales}
+          defaultLocale={boutique?.seo_default_locale}
           kind="product"
           title={
             boutique
