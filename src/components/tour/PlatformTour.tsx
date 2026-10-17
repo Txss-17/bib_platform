@@ -219,7 +219,7 @@ export function PlatformTour({
       : autoSelectedPersona;
     setPersona(savedPersona ?? null);
     setStepIdx(savedPersona ? Math.max(0, progress.stepIdx) : 0);
-  }, [loaded]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loaded, progress.persona, progress.stepIdx, personasList, autoSelectedPersona]);
 
   // Auto-open for first-time users (no persona completed yet, never dismissed)
   useEffect(() => {

@@ -141,7 +141,6 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
   // Re-clamp whenever zoom changes (zooming out can leave offset out of bounds)
   useEffect(() => {
     setOffset((prev) => clampOffset(prev));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zoom, img]);
 
   // Draw on each change

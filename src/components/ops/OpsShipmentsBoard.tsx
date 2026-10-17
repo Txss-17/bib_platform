@@ -90,7 +90,6 @@ export function OpsShipmentsBoard({ orders, callAction }: { orders: ShipOrder[];
       (g[k] ??= []).push(o);
     });
     return g;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inDelivery.map((o) => o.id).join(), shipments]);
 
   function printCartons(list: ShipOrder[]) {

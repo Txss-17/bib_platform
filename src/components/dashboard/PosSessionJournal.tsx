@@ -74,7 +74,6 @@ export function PosSessionJournal({ boutiqueId, startsAt, endsAt }: Props) {
       .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `boutique_id=eq.${boutiqueId}` }, () => fetchOrders())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, boutiqueId, startsAt, endsAt]);
 
   const q = search.trim().toLowerCase();

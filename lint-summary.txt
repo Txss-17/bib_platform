@@ -1,0 +1,725 @@
+C:\Users\ZO\bib_platform\src\components\BoxWithProductsHero3D.tsx
+  prefer-const:94:9:'angle' is never reassigned. Use 'const' instead.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\BoutiqueAlertsCard.tsx
+  @typescript-eslint/no-explicit-any:35:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:50:36:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\BoutiqueAlertsSettings.tsx
+  @typescript-eslint/no-explicit-any:41:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:50:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:62:34:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\BusinessDocuments.tsx
+  @typescript-eslint/no-explicit-any:44:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:52:29:Unexpected any. Specify a different type.
+  react-hooks/exhaustive-deps:59:6:React Hook useEffect has a missing dependency: 'fetchDocuments'. Either include it or remove the dependency array.
+  @typescript-eslint/no-explicit-any:97:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:103:14:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:119:37:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\DashboardSidebar.tsx
+  @typescript-eslint/no-explicit-any:116:40:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\EmailMarketingSettings.tsx
+  @typescript-eslint/no-explicit-any:81:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:83:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:104:34:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\KPIConfigSection.tsx
+  @typescript-eslint/no-explicit-any:188:20:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\OrderDetailDialog.tsx
+  @typescript-eslint/no-explicit-any:37:41:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\OrdersChart.tsx
+  @typescript-eslint/no-explicit-any:60:17:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\ReminderLog.tsx
+  @typescript-eslint/no-explicit-any:55:43:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:79:21:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:85:47:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\StockAlerts.tsx
+  @typescript-eslint/no-explicit-any:54:28:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\boutique\ActionButton.tsx
+  react-refresh/only-export-components:88:17:Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\boutique\BoutiqueSettingsTab.tsx
+  @typescript-eslint/no-explicit-any:161:33:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:339:18:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:444:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:548:18:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:571:18:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:613:18:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:628:18:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:829:42:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:1123:81:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:1149:32:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\boutique\GallerySectionEditor.tsx
+  @typescript-eslint/no-explicit-any:20:35:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:35:42:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:52:19:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:82:17:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\boutique\OgImageCropperDialog.tsx
+  react-hooks/exhaustive-deps:116:6:React Hook useCallback has a missing dependency: 'PREVIEW_H'. Either include it or remove the dependency array.
+  react-hooks/exhaustive-deps:138:5:React Hook useCallback has a missing dependency: 'PREVIEW_H'. Either include it or remove the dependency array.
+  react-hooks/exhaustive-deps:167:6:React Hook useEffect has a missing dependency: 'PREVIEW_H'. Either include it or remove the dependency array.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\boutique\PagesManager.tsx
+  @typescript-eslint/no-explicit-any:64:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:74:23:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:85:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:151:63:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:182:40:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:221:77:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\boutique\SceneInspectorPro.tsx
+  @typescript-eslint/no-explicit-any:219:46:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:272:45:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:925:62:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:999:63:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:1076:28:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:1290:62:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:1337:61:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:1452:44:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:1619:61:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:1901:65:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:1979:64:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2012:62:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2085:63:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2355:61:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2357:65:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2358:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2361:61:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2363:46:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2364:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2367:58:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2369:65:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2370:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2373:62:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2375:65:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2376:17:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\boutique\StoriesManager.tsx
+  @typescript-eslint/no-explicit-any:457:22:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:478:36:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:500:22:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:700:21:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:841:21:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\boutique\StudioEditor.tsx
+  @typescript-eslint/no-explicit-any:3038:42:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\dashboard\products\ReviewSampleDialog.tsx
+  @typescript-eslint/no-explicit-any:24:73:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:37:64:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:37:89:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:38:75:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\marketing\BlockComposer.tsx
+  @typescript-eslint/no-explicit-any:27:29:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:340:80:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:379:27:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\standalone\PartnerContactForm.tsx
+  @typescript-eslint/no-explicit-any:65:10:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\standalone\PartnerQualificationForm.tsx
+  @typescript-eslint/no-explicit-any:137:10:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\storefront\StorefrontHeader.tsx
+  @typescript-eslint/no-explicit-any:77:40:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\storefront\StudioSceneRenderer.tsx
+  @typescript-eslint/no-explicit-any:72:21:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:73:21:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:77:35:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:149:15:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:153:15:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:157:15:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:161:15:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:222:15:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:226:15:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:230:15:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:234:15:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:238:15:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:242:15:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:255:15:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:288:15:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:292:15:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:301:15:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:305:15:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:804:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:982:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:1175:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:1355:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:1565:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:1771:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2027:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2226:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2441:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2605:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2794:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:2909:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:3106:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:3234:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:3383:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:3560:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:3720:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:3842:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:4067:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:4137:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:4216:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:4316:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:4455:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:4601:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:4848:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:4965:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:5141:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:5321:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:5360:31:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:5533:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:5638:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:5798:12:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\storefront\__tests__\StorefrontProducts.navigation.test.tsx
+  @typescript-eslint/no-explicit-any:15:28:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:16:29:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\support\FloatingSupportButton.tsx
+  @typescript-eslint/no-explicit-any:95:17:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\components\tour\PlatformTour.tsx
+  react-hooks/exhaustive-deps:188:9:The 'personasList' conditional could make the dependencies of useEffect Hook (at line 231) change on every render. To fix this, wrap the initialization of 'personasList' in its own useMemo() Hook.
+
+C:\Users\ZO\bib_platform\src\components\ui\badge.tsx
+  react-refresh/only-export-components:29:17:Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+
+C:\Users\ZO\bib_platform\src\components\ui\button.tsx
+  react-refresh/only-export-components:59:18:Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+
+C:\Users\ZO\bib_platform\src\components\ui\command.tsx
+  @typescript-eslint/no-empty-object-type:24:11:An interface declaring no members is equivalent to its supertype.
+
+C:\Users\ZO\bib_platform\src\components\ui\form.tsx
+  react-refresh/only-export-components:129:10:Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+
+C:\Users\ZO\bib_platform\src\components\ui\navigation-menu.tsx
+  react-refresh/only-export-components:111:3:Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+
+C:\Users\ZO\bib_platform\src\components\ui\sidebar.tsx
+  react-refresh/only-export-components:636:3:Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+
+C:\Users\ZO\bib_platform\src\components\ui\sonner.tsx
+  react-refresh/only-export-components:27:19:Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+
+C:\Users\ZO\bib_platform\src\components\ui\textarea.tsx
+  @typescript-eslint/no-empty-object-type:5:18:An interface declaring no members is equivalent to its supertype.
+
+C:\Users\ZO\bib_platform\src\components\ui\toggle.tsx
+  react-refresh/only-export-components:37:18:Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+
+C:\Users\ZO\bib_platform\src\contexts\AuthContext.tsx
+  react-refresh/only-export-components:407:17:Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+
+C:\Users\ZO\bib_platform\src\contexts\CartContext.tsx
+  react-refresh/only-export-components:64:17:Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+
+C:\Users\ZO\bib_platform\src\contexts\LanguageContext.tsx
+  react-refresh/only-export-components:446:17:Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+
+C:\Users\ZO\bib_platform\src\contexts\StoreCartContext.tsx
+  react-refresh/only-export-components:457:17:Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+
+C:\Users\ZO\bib_platform\src\contexts\StorefrontContext.tsx
+  react-refresh/only-export-components:32:17:Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+  react-refresh/only-export-components:37:17:Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+
+C:\Users\ZO\bib_platform\src\hooks\useBoutiqueAlerts.ts
+  @typescript-eslint/no-explicit-any:52:44:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:56:23:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:66:44:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:67:22:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:81:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:86:23:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:96:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:97:62:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\useBoutiqueHealth.ts
+  @typescript-eslint/no-explicit-any:89:41:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:94:34:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\useBoutiqueMembers.ts
+  @typescript-eslint/no-explicit-any:55:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:79:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:84:47:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:94:31:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:114:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:139:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:157:37:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\useBoutiquePages.ts
+  @typescript-eslint/no-explicit-any:12:11:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:29:35:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:46:35:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:52:23:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:63:35:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:100:35:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:103:42:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:112:38:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:115:35:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:143:35:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:161:36:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:167:35:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:193:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:199:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:243:29:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:253:35:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\useBoutiqueSearch.ts
+  @typescript-eslint/no-explicit-any:65:36:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:79:36:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\useBrandStudio.ts
+  @typescript-eslint/no-explicit-any:15:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:25:23:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:381:28:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:472:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:477:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:482:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:570:14:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:761:13:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:787:14:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:793:16:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:920:10:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:1235:10:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:1321:13:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:1462:9:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:1602:13:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\useCampaigns.ts
+  @typescript-eslint/no-explicit-any:29:40:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:113:42:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:114:26:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:122:40:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:123:24:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:139:42:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:143:22:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:152:74:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:154:42:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:155:28:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\useCustomers.ts
+  @typescript-eslint/no-explicit-any:28:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:45:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:46:26:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:61:69:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:76:65:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:83:8:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\useFavorites.ts
+  @typescript-eslint/no-explicit-any:27:33:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\useLiveDashboard.ts
+  @typescript-eslint/no-explicit-any:50:24:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\useOnboardingReminders.ts
+  @typescript-eslint/no-explicit-any:45:43:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:63:42:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\useOrderIssues.ts
+  @typescript-eslint/no-explicit-any:62:33:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:108:33:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:135:33:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:164:36:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:193:36:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:204:33:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\useOrderPulse.ts
+  @typescript-eslint/no-explicit-any:88:40:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:106:40:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:107:40:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:169:63:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\useOrders.ts
+  @typescript-eslint/no-explicit-any:70:35:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:78:25:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:105:49:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\usePageAnalytics.ts
+  @typescript-eslint/no-explicit-any:75:27:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:76:29:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\usePaymentsRealtime.ts
+  @typescript-eslint/no-explicit-any:69:38:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:103:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:104:39:Unexpected any. Specify a different type.
+  react-hooks/exhaustive-deps:186:6:React Hook useEffect has a missing dependency: 'boutiqueIds'. Either include it or remove the dependency array.
+  react-hooks/exhaustive-deps:186:13:React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.
+
+C:\Users\ZO\bib_platform\src\hooks\useProductMedia.ts
+  @typescript-eslint/no-explicit-any:23:34:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:42:34:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:49:23:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:81:22:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:81:38:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:91:30:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:107:34:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:129:34:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:146:34:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:169:36:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:199:34:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:205:36:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\useSEO.ts
+  react-hooks/exhaustive-deps:165:6:React Hook useEffect has missing dependencies: 'alternates', 'jsonLd', and 'keywords'. Either include them or remove the dependency array.
+  react-hooks/exhaustive-deps:171:5:React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.
+  react-hooks/exhaustive-deps:175:5:React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.
+  react-hooks/exhaustive-deps:176:5:React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.
+
+C:\Users\ZO\bib_platform\src\hooks\useSalesKpis.ts
+  @typescript-eslint/no-explicit-any:149:77:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\useSampleValidation.ts
+  @typescript-eslint/no-explicit-any:32:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:39:23:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:52:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:58:34:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:80:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:86:14:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:104:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:105:43:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:125:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:131:14:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:174:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:182:16:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\useScrollReveal.ts
+  react-hooks/exhaustive-deps:29:6:React Hook useEffect has a missing dependency: 'options'. Either include it or remove the dependency array.
+
+C:\Users\ZO\bib_platform\src\hooks\useStorefrontPulse.ts
+  @typescript-eslint/no-explicit-any:148:69:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\useSupportTickets.ts
+  @typescript-eslint/no-explicit-any:135:18:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:154:18:Unexpected any. Specify a different type.
+  no-useless-escape:167:44:Unnecessary escape character: \-.
+
+C:\Users\ZO\bib_platform\src\hooks\useTeamPermissions.ts
+  @typescript-eslint/no-explicit-any:34:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:42:35:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\hooks\useTourProgress.ts
+  no-empty:36:72:Empty block statement.
+  @typescript-eslint/no-explicit-any:57:50:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:86:24:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\integrations\supabase\previewAuthStorage.ts
+  prefer-const:38:11:'timer' is never reassigned. Use 'const' instead.
+
+C:\Users\ZO\bib_platform\src\lib\boutiqueAlertChecker.ts
+  @typescript-eslint/no-explicit-any:25:35:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:29:43:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:31:19:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:42:24:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:43:26:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:62:30:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:80:19:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:81:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:82:15:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:158:49:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:158:73:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:162:40:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:163:55:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\lib\boutiqueTemplates.ts
+  @typescript-eslint/no-explicit-any:54:25:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\lib\exportUtils.ts
+  @typescript-eslint/no-explicit-any:5:19:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:13:35:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:27:35:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\lib\notificationSound.ts
+  @typescript-eslint/no-explicit-any:4:56:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\BoutiquePublic.tsx
+  @typescript-eslint/no-explicit-any:180:36:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:201:23:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\OpsOnboarding.tsx
+  react-refresh/only-export-components:11:14:Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+
+C:\Users\ZO\bib_platform\src\pages\OpsPortal.tsx
+  @typescript-eslint/no-explicit-any:159:55:Unexpected any. Specify a different type.
+  react-hooks/rules-of-hooks:244:41:React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?
+  react-hooks/rules-of-hooks:285:35:React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?
+  react-hooks/rules-of-hooks:286:39:React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?
+  react-hooks/rules-of-hooks:287:37:React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?
+  react-hooks/rules-of-hooks:306:33:React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?
+  react-hooks/rules-of-hooks:307:33:React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?
+  react-hooks/rules-of-hooks:308:35:React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?
+  react-hooks/rules-of-hooks:332:41:React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?
+  react-hooks/rules-of-hooks:333:39:React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?
+  react-hooks/rules-of-hooks:357:35:React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?
+  react-hooks/rules-of-hooks:358:37:React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?
+  react-hooks/rules-of-hooks:359:35:React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?
+
+C:\Users\ZO\bib_platform\src\pages\PartnerOnboardingPortal.tsx
+  @typescript-eslint/no-explicit-any:207:28:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:211:28:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:367:46:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\ProductPublic.tsx
+  @typescript-eslint/no-explicit-any:179:35:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:186:18:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\StoreBoutique.tsx
+  react-hooks/exhaustive-deps:188:6:React Hook useMemo has an unnecessary dependency: 'boutiqueFavorites'. Either exclude it or remove the dependency array.
+  @typescript-eslint/no-explicit-any:292:34:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\SuppliersOnboarding.tsx
+  react-refresh/only-export-components:11:14:Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+
+C:\Users\ZO\bib_platform\src\pages\customer\Recycler.tsx
+  @typescript-eslint/no-explicit-any:78:35:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:92:19:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\dashboard\AdminDocuments.tsx
+  @typescript-eslint/no-explicit-any:55:66:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:93:34:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:95:49:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\dashboard\BoutiqueAnalytics.tsx
+  @typescript-eslint/no-explicit-any:69:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:96:47:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:98:55:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:127:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:128:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:129:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:130:42:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:131:45:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:141:40:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:142:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:143:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:144:43:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:145:46:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:146:44:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:147:40:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:148:44:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:149:43:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:150:42:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:160:16:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:171:42:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:172:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:173:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:174:41:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:175:41:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:176:40:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:326:45:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:392:32:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\dashboard\BoutiqueCustomPage.tsx
+  @typescript-eslint/no-explicit-any:190:37:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\dashboard\Clients.tsx
+  @typescript-eslint/no-explicit-any:94:38:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:178:112:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:201:56:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\dashboard\Commandes.tsx
+  @typescript-eslint/no-explicit-any:90:42:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:91:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:92:36:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:93:38:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:94:38:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:95:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:96:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:97:35:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:133:47:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:145:45:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:146:45:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:147:47:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:273:35:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:278:25:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\dashboard\Marketing.tsx
+  @typescript-eslint/no-explicit-any:75:36:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:76:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:76:71:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:77:40:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:95:40:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:116:33:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:116:70:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:119:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:141:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:158:28:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:160:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:185:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:206:36:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:286:54:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:389:57:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:389:84:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:390:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:393:56:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:394:57:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:465:71:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:541:52:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:555:107:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\dashboard\MesTickets.tsx
+  @typescript-eslint/no-explicit-any:128:17:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\dashboard\Paiements.tsx
+  @typescript-eslint/no-explicit-any:59:62:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:81:41:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:82:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:83:45:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:84:46:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:89:65:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:223:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:261:35:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:320:48:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\dashboard\Parametres.tsx
+  @typescript-eslint/no-explicit-any:122:58:Unexpected any. Specify a different type.
+  prefer-const:131:9:'next' is never reassigned. Use 'const' instead.
+
+C:\Users\ZO\bib_platform\src\pages\dashboard\Produits.tsx
+  react-hooks/exhaustive-deps:148:6:React Hook useMemo has a missing dependency: 'getSampleStatus'. Either include it or remove the dependency array.
+  @typescript-eslint/no-explicit-any:654:29:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\dashboard\ProduitsFournisseurs.tsx
+  react-hooks/exhaustive-deps:134:9:The 'products' logical expression could make the dependencies of useMemo Hook (at line 169) change on every render. To fix this, wrap the initialization of 'products' in its own useMemo() Hook.
+
+C:\Users\ZO\bib_platform\src\pages\dashboard\RelancesOnboarding.tsx
+  react-hooks/exhaustive-deps:38:42:React Hook useMemo has a missing dependency: 'settings'. Either include it or remove the dependency array.
+  @typescript-eslint/no-explicit-any:42:72:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:51:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:82:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:266:43:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\dashboard\SEOAnalytics.tsx
+  react-hooks/exhaustive-deps:134:9:The 'seoPages' array makes the dependencies of useMemo Hook (at line 258) change on every render. To fix this, wrap the initialization of 'seoPages' in its own useMemo() Hook.
+  @typescript-eslint/no-explicit-any:139:41:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:183:11:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:195:20:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:201:11:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:212:20:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:223:36:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:421:35:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\dashboard\Ventes.tsx
+  @typescript-eslint/no-explicit-any:94:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:95:45:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\dashboard\VentesPrivees.tsx
+  @typescript-eslint/no-explicit-any:85:17:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\src\pages\dashboard\VentesPriveesPOS.tsx
+  @typescript-eslint/no-explicit-any:24:36:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:47:25:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:49:23:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:57:52:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:83:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:93:97:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:102:27:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:112:60:Unexpected any. Specify a different type.
+  no-empty:117:15:Empty block statement.
+  @typescript-eslint/no-explicit-any:152:41:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\supabase\functions\_shared\stripe.ts
+  @typescript-eslint/no-explicit-any:43:44:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\supabase\functions\_shared\transactional-email-templates\customer-order-confirmation.tsx
+  react-refresh/only-export-components:15:7:Fast refresh only works when a file only exports components. Move your component(s) to a separate file.
+  @typescript-eslint/no-explicit-any:53:31:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\supabase\functions\_shared\transactional-email-templates\kyc-submitted.tsx
+  react-refresh/only-export-components:8:7:Fast refresh only works when a file only exports components. Move your component(s) to a separate file.
+
+C:\Users\ZO\bib_platform\supabase\functions\_shared\transactional-email-templates\new-order-notification.tsx
+  react-refresh/only-export-components:15:7:Fast refresh only works when a file only exports components. Move your component(s) to a separate file.
+  @typescript-eslint/no-explicit-any:50:31:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\supabase\functions\_shared\transactional-email-templates\onboarding-stuck-reminder.tsx
+  react-refresh/only-export-components:20:7:Fast refresh only works when a file only exports components. Move your component(s) to a separate file.
+  @typescript-eslint/no-explicit-any:75:34:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\supabase\functions\_shared\transactional-email-templates\partner-onboarding-submitted.tsx
+  react-refresh/only-export-components:14:7:Fast refresh only works when a file only exports components. Move your component(s) to a separate file.
+
+C:\Users\ZO\bib_platform\supabase\functions\_shared\transactional-email-templates\partner-otp.tsx
+  react-refresh/only-export-components:9:7:Fast refresh only works when a file only exports components. Move your component(s) to a separate file.
+
+C:\Users\ZO\bib_platform\supabase\functions\_shared\transactional-email-templates\registry.ts
+  @typescript-eslint/no-explicit-any:5:34:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:6:44:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:9:32:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\supabase\functions\_shared\transactional-email-templates\seller-welcome.tsx
+  react-refresh/only-export-components:8:7:Fast refresh only works when a file only exports components. Move your component(s) to a separate file.
+
+C:\Users\ZO\bib_platform\supabase\functions\_shared\transactional-email-templates\subscription-confirmed.tsx
+  react-refresh/only-export-components:8:7:Fast refresh only works when a file only exports components. Move your component(s) to a separate file.
+  @typescript-eslint/no-explicit-any:39:31:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\supabase\functions\_shared\transactional-email-templates\support-ticket-status.tsx
+  react-refresh/only-export-components:28:7:Fast refresh only works when a file only exports components. Move your component(s) to a separate file.
+  @typescript-eslint/no-explicit-any:69:34:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\supabase\functions\admin-documents\index.ts
+  @typescript-eslint/no-explicit-any:71:56:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:72:21:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\supabase\functions\create-pos-checkout\index.ts
+  @typescript-eslint/no-explicit-any:54:43:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:88:38:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:93:38:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:94:42:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\supabase\functions\create-storefront-checkout\index.ts
+  @typescript-eslint/no-explicit-any:79:43:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:123:38:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:144:42:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\supabase\functions\onboarding-reminders\index.ts
+  @typescript-eslint/no-explicit-any:20:31:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:44:32:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:109:59:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:112:43:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:223:41:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\supabase\functions\payments-webhook\index.ts
+  @typescript-eslint/no-explicit-any:37:44:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:47:35:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:57:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:63:39:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:73:37:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:113:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:141:46:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:159:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:281:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:413:17:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:503:12:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:587:23:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:627:23:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:632:23:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:640:19:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:647:19:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\supabase\functions\send-transactional-email\index.ts
+  @typescript-eslint/no-explicit-any:62:36:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\supabase\functions\sitemap-xml\index.ts
+  @typescript-eslint/ban-ts-comment:116:7:Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free.
+  @typescript-eslint/ban-ts-comment:147:7:Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free.
+  @typescript-eslint/no-explicit-any:149:28:Unexpected any. Specify a different type.
+  @typescript-eslint/no-explicit-any:162:19:Unexpected any. Specify a different type.
+
+C:\Users\ZO\bib_platform\tailwind.config.ts
+  @typescript-eslint/no-require-imports:151:13:A `require()` style import is forbidden.
