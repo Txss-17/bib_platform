@@ -79,14 +79,27 @@ function classifyImage(value?: string | null): Status {
   return value?.trim() ? "ok" : "error";
 }
 
-function normalizeLocales(locales?: string[] | null): string[] {
-  if (!Array.isArray(locales)) return ["fr", "en"];
+function normalizeLocales(
+  locales?: string[] | null,
+  defaultLocale?: string | null,
+): string[] {
+  const valid = Array.isArray(locales)
+    ? [...new Set(locales)].filter((locale) =>
+        SUPPORTED_LOCALES.includes(locale),
+      )
+    : [];
 
-  const valid = [...new Set(locales)].filter((locale) =>
-    SUPPORTED_LOCALES.includes(locale),
-  );
+  const active = valid.length > 0 ? valid : ["fr", "en"];
 
-  return valid.length > 0 ? valid : ["fr"];
+  const safeDefault =
+    defaultLocale && active.includes(defaultLocale)
+      ? defaultLocale
+      : active[0];
+
+  return [
+    safeDefault,
+    ...active.filter((locale) => locale !== safeDefault),
+  ];
 }
 
 export function PageSeoInspector({
@@ -104,14 +117,11 @@ export function PageSeoInspector({
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const locales = useMemo(
-    () => normalizeLocales(activeLocales),
-    [activeLocales],
+    () => normalizeLocales(activeLocales, defaultLocale),
+    [activeLocales, defaultLocale],
   );
 
-  const effectiveDefaultLocale =
-    defaultLocale && locales.includes(defaultLocale)
-      ? defaultLocale
-      : locales[0];
+  const effectiveDefaultLocale = locales[0];
 
   useEffect(() => {
     if (typeof window !== "undefined") {

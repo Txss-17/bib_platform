@@ -73,26 +73,27 @@ function normalizeLocales(
   locales?: string[] | null,
   defaultLocale?: string | null,
 ): SeoLocale[] {
-  const valid = Array.isArray(locales)
+  const validLocales = Array.isArray(locales)
     ? [...new Set(locales)].filter(
         (locale): locale is SeoLocale =>
           SUPPORTED_LOCALES.includes(locale as SeoLocale),
       )
     : [];
 
-  const preferredDefault = SUPPORTED_LOCALES.includes(
-    defaultLocale as SeoLocale,
-  )
+  const activeLocales: SeoLocale[] =
+    validLocales.length > 0 ? validLocales : ["fr"];
+
+  const safeDefault: SeoLocale =
+    defaultLocale &&
+    SUPPORTED_LOCALES.includes(defaultLocale as SeoLocale) &&
+    activeLocales.includes(defaultLocale as SeoLocale)
     ? (defaultLocale as SeoLocale)
-    : "fr";
+    : activeLocales[0];
 
-  if (valid.length === 0) return [preferredDefault];
-
-  if (!valid.includes(preferredDefault)) {
-    return [preferredDefault, ...valid];
-  }
-
-  return valid;
+  return [
+    safeDefault,
+    ...activeLocales.filter((locale) => locale !== safeDefault),
+  ];
 }
 
 function setMeta(property: string, content: string, isOG = false) {
@@ -262,28 +263,33 @@ export function buildLocaleAlternates(
     defaultLocale ?? globalSettings.defaultLocale,
   );
 
-  const finalDefault = (
-    SUPPORTED_LOCALES.includes(defaultLocale as SeoLocale)
-      ? defaultLocale
-      : globalSettings.defaultLocale
-  ) as SeoLocale;
+  const requestedDefault =
+    defaultLocale ?? globalSettings.defaultLocale;
 
-  const safeDefault = finalLocales.includes(finalDefault)
-    ? finalDefault
-    : finalLocales[0];
+  const safeDefault: SeoLocale =
+    SUPPORTED_LOCALES.includes(requestedDefault as SeoLocale) &&
+    finalLocales.includes(requestedDefault as SeoLocale)
+      ? (requestedDefault as SeoLocale)
+      : finalLocales[0];
 
   const path = pathname ?? window.location.pathname;
-  const origin = normalizeOrigin(publicOrigin ?? globalSettings.publicOrigin);
-  const base = `${origin}${path}`;
+  const origin = normalizeOrigin(
+    publicOrigin ?? globalSettings.publicOrigin,
+  );
+  if (!origin) return [];
 
-  const alternates: HreflangAlternate[] = finalLocales.map((language) => ({
-    hreflang: language,
-    href: `${base}?lang=${language}`,
-  }));
+  const baseUrl = `${origin}${path}`;
+
+  const alternates: HreflangAlternate[] = finalLocales.map(
+    (language) => ({
+      hreflang: language,
+      href: `${baseUrl}?lang=${language}`,
+    }),
+  );
 
   alternates.push({
     hreflang: "x-default",
-    href: `${base}?lang=${safeDefault}`,
+    href: `${baseUrl}?lang=${safeDefault}`,
   });
 
   return alternates;

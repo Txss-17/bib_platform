@@ -1,5 +1,5 @@
 // Public sitemap.xml — lists published boutiques and active products with hreflang
-// alternates for FR/EN. Deployed without JWT ver
+// alternates for configured locales. Deployed without JWT verification.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const SUPPORTED_LOCALES = ["fr", "en", "es", "de", "it"] as const;
@@ -112,15 +112,20 @@ function getBoutiqueOrigin(
 function buildAlternates(
   baseUrl: string,
   locales: Locale[],
+  defaultLocale: Locale,
 ): { hreflang: string; href: string }[] {
-  const alternates = locales.map((locale) => ({
+  const activeLocales = locales.includes(defaultLocale)
+    ? locales
+    : [defaultLocale, ...locales];
+
+  const alternates = activeLocales.map((locale) => ({
     hreflang: locale,
     href: `${baseUrl}?lang=${locale}`,
   }));
 
   alternates.push({
     hreflang: "x-default",
-    href: baseUrl,
+    href: `${baseUrl}?lang=${defaultLocale}`,
   });
 
   return alternates;
@@ -183,12 +188,7 @@ Deno.serve(async (req) => {
     });
 
     const requestUrl = new URL(req.url);
-    const requestedOrigin = normalizeOrigin(
-      requestUrl.searchParams.get("origin"),
-    );
-
-    const siteOrigin =
-      requestedOrigin ?? resolveRequestOrigin(req, requestUrl);
+    const siteOrigin = resolveRequestOrigin(req, requestUrl);
 
     const { data: boutiques, error: boutiquesError } = await supabase
       .from("boutiques")
@@ -240,7 +240,7 @@ Deno.serve(async (req) => {
         urlEntry(
           baseUrl,
           today,
-          buildAlternates(baseUrl, STATIC_LOCALES),
+          buildAlternates(baseUrl, STATIC_LOCALES, "fr"),
           "weekly",
           "0.7",
         ),
@@ -251,7 +251,7 @@ Deno.serve(async (req) => {
     for (const boutique of publishedBoutiques) {
       if (!boutique.slug) continue;
 
-      const { locales } = normalizeLocales(
+      const { locales, defaultLocale } = normalizeLocales(
         boutique.seo_active_locales,
         boutique.seo_default_locale,
       );
@@ -263,7 +263,7 @@ Deno.serve(async (req) => {
         urlEntry(
           baseUrl,
           getDate(boutique.updated_at),
-          buildAlternates(baseUrl, locales),
+          buildAlternates(baseUrl, locales, defaultLocale),
           "daily",
           "0.9",
         ),
@@ -276,7 +276,7 @@ Deno.serve(async (req) => {
 
       if (!boutique?.slug) continue;
 
-      const { locales } = normalizeLocales(
+      const { locales, defaultLocale } = normalizeLocales(
         boutique.seo_active_locales,
         boutique.seo_default_locale,
       );
@@ -290,7 +290,7 @@ Deno.serve(async (req) => {
         urlEntry(
           baseUrl,
           getDate(product.updated_at),
-          buildAlternates(baseUrl, locales),
+          buildAlternates(baseUrl, locales, defaultLocale),
           "weekly",
           "0.8",
         ),
@@ -306,7 +306,7 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const { locales } = normalizeLocales(
+      const { locales, defaultLocale } = normalizeLocales(
         boutique.seo_active_locales,
         boutique.seo_default_locale,
       );
@@ -320,7 +320,7 @@ Deno.serve(async (req) => {
         urlEntry(
           baseUrl,
           getDate(page.updated_at),
-          buildAlternates(baseUrl, locales),
+          buildAlternates(baseUrl, locales, defaultLocale),
           "weekly",
           "0.7",
         ),

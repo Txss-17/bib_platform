@@ -666,6 +666,9 @@ export default function BoutiquePublic() {
           user.id ===
             boutique.user_id
         }
+        canonical={seoCanonical}
+        activeLocales={boutique?.seo_active_locales}
+        defaultLocale={boutique?.seo_default_locale}
         kind="boutique"
         title={
           boutique.name
