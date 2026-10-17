@@ -366,6 +366,9 @@ export type Database = {
           theme_settings: Json | null
           updated_at: string
           user_id: string
+          seo_active_locales: string[]
+          seo_default_locale: string
+          seo_public_origin: string | null
         }
         Insert: {
           category: string
@@ -395,6 +398,9 @@ export type Database = {
           theme_settings?: Json | null
           updated_at?: string
           user_id: string
+          seo_active_locales?: string[]
+          seo_default_locale?: string
+          seo_public_origin?: string | null
         }
         Update: {
           category?: string
@@ -424,6 +430,9 @@ export type Database = {
           theme_settings?: Json | null
           updated_at?: string
           user_id?: string
+          seo_active_locales?: string[]
+          seo_default_locale?: string
+          seo_public_origin?: string | null
         }
         Relationships: []
       }
