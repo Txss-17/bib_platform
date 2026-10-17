@@ -17,7 +17,11 @@ import { StorefrontProvider } from "@/contexts/StorefrontContext";
 import { useAuth } from "@/contexts/AuthContext";
 
 import { useBoutiqueScenes, useBrandDNA } from "@/hooks/useBrandStudio";
-import { buildLocaleAlternates, useSEO } from "@/hooks/useSEO";
+import {
+  buildLocaleAlternates,
+  resolvePublicOrigin,
+  useSEO,
+} from "@/hooks/useSEO";
 
 import { trackStorefrontEvent } from "@/lib/storefrontTracking";
 import type { ThemeSettings } from "@/lib/boutiqueTemplates";
@@ -269,30 +273,47 @@ export default function BoutiquePublic() {
     ),
   });
 
+
   /*
    * --------------------------------------------------------------------------
-   * SEO
+   * SEO — configuration internationale propre à chaque boutique
    * --------------------------------------------------------------------------
    */
 
+  const seoOrigin = resolvePublicOrigin(
+    boutique?.seo_public_origin,
+  );
+
+  const seoPath =
+    typeof window !== "undefined"
+      ? window.location.pathname
+      : `/boutique/${boutique?.slug ?? ""}`;
+
+  const seoCanonical =
+    seoOrigin && seoPath
+      ? `${seoOrigin}${seoPath}`
+      : undefined;
+
   useSEO({
-    title:
-      boutique?.name ||
-      "Boutique",
+    title: boutique?.seo_title || boutique?.name || "Boutique",
 
     description:
+      boutique?.seo_description ||
       boutique?.description ||
       `Découvrez ${
-        boutique?.name ||
-        "cette boutique"
+        boutique?.name || "cette boutique"
       } sur Brand-In-A-Box.`,
 
     image:
+      boutique?.seo_og_image_url ||
       boutique?.cover_image_url ||
       boutique?.logo_url ||
       undefined,
 
     type: "store",
+
+    canonical: seoCanonical,
+    url: seoCanonical,
 
     keywords: [
       boutique?.name,
@@ -300,164 +321,77 @@ export default function BoutiquePublic() {
       "boutique en ligne",
       "Brand-In-A-Box",
       "BIB",
-    ].filter(
-      Boolean,
-    ) as string[],
+    ].filter(Boolean) as string[],
 
-    alternates:
-      buildLocaleAlternates(),
+    alternates: buildLocaleAlternates(
+      seoPath,
+      boutique?.seo_active_locales,
+      boutique?.seo_default_locale,
+      boutique?.seo_public_origin,
+    ),
 
     jsonLd: boutique
       ? [
           {
-            "@context":
-              "https://schema.org",
-
-            "@type":
-              "Store",
-
-            name:
-              boutique.name,
-
+            "@context": "https://schema.org",
+            "@type": "Store",
+            name: boutique.name,
             description:
+              boutique.seo_description ||
               boutique.description ||
               undefined,
-
             image:
+              boutique.seo_og_image_url ||
               boutique.cover_image_url ||
               boutique.logo_url ||
               undefined,
-
-            logo:
-              boutique.logo_url ||
-              undefined,
-
-            slogan:
-              boutique.tagline ||
-              undefined,
-
-            url:
-              typeof window !==
-              "undefined"
-                ? window.location.href
-                : undefined,
-
-            makesOffer:
-              products
-                .slice(0, 12)
-                .map(
-                  (
-                    product,
-                  ) => ({
-                    "@type":
-                      "Offer",
-
-                    name:
-                      product.name,
-
-                    price:
-                      product.price,
-
-                    priceCurrency:
-                      "EUR",
-
-                    image:
-                      product.image_url ||
-                      undefined,
-                  }),
-                ),
+            logo: boutique.logo_url || undefined,
+            slogan: boutique.tagline || undefined,
+            url: seoCanonical,
+            makesOffer: products.slice(0, 12).map((product) => ({
+              "@type": "Offer",
+              name: product.name,
+              price: product.price,
+              priceCurrency: "EUR",
+              image: product.image_url || undefined,
+            })),
           },
-
           {
-            "@context":
-              "https://schema.org",
-
-            "@type":
-              "Organization",
-
-            name:
-              boutique.name,
-
-            url:
-              typeof window !==
-              "undefined"
-                ? window.location.href
-                : undefined,
-
-            logo:
-              boutique.logo_url ||
-              undefined,
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: boutique.name,
+            url: seoCanonical,
+            logo: boutique.logo_url || undefined,
           },
-
           {
-            "@context":
-              "https://schema.org",
-
-            "@type":
-              "WebSite",
-
-            name:
-              boutique.name,
-
-            url:
-              typeof window !==
-              "undefined"
-                ? window.location.href
-                : undefined,
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: boutique.name,
+            url: seoCanonical,
           },
-
           {
-            "@context":
-              "https://schema.org",
-
-            "@type":
-              "BreadcrumbList",
-
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
             itemListElement: [
               {
-                "@type":
-                  "ListItem",
-
+                "@type": "ListItem",
                 position: 1,
-
                 name: "BIB",
-
-                item:
-                  typeof window !==
-                  "undefined"
-                    ? window.location.origin
-                    : undefined,
+                item: seoOrigin || undefined,
               },
-
               {
-                "@type":
-                  "ListItem",
-
+                "@type": "ListItem",
                 position: 2,
-
-                name: "Store",
-
-                item:
-                  typeof window !==
-                  "undefined"
-                    ? `${window.location.origin}/store`
-                    : undefined,
+                name: "Boutique",
+                item: seoOrigin
+                  ? `${seoOrigin}/boutique/${boutique.slug}`
+                  : undefined,
               },
-
               {
-                "@type":
-                  "ListItem",
-
+                "@type": "ListItem",
                 position: 3,
-
-                name:
-                  boutique.name,
-
-                item:
-                  typeof window !==
-                  "undefined"
-                    ? window.location.href
-                    : undefined,
+                name: boutique.name,
+                item: seoCanonical,
               },
             ],
           },
