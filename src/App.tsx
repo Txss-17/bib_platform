@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,56 +21,56 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { CartProvider } from "@/contexts/CartContext";
 import { StoreCartProvider } from "@/contexts/StoreCartContext";
+import SuppliersOnboarding from "@/pages/SuppliersOnboarding";
+import OpsOnboarding from "@/pages/OpsOnboarding";
 
 /* =====================================================
    PUBLIC / AUTHENTICATION
 ===================================================== */
 
-import Index from "@/pages/Index";
-import Vendre from "@/pages/Vendre";
-import Login from "@/pages/Login";
-import Signup from "@/pages/Signup";
-import StoreLogin from "@/pages/StoreLogin";
-import StoreSignup from "@/pages/StoreSignup";
-import ForgotPassword from "@/pages/ForgotPassword";
-import ResetPassword from "@/pages/ResetPassword";
+const Index = lazy(() => import("@/pages/Index"));
+const Vendre = lazy(() => import("@/pages/Vendre"));
+const Login = lazy(() => import("@/pages/Login"));
+const Signup = lazy(() => import("@/pages/Signup"));
+const StoreLogin = lazy(() => import("@/pages/StoreLogin"));
+const StoreSignup = lazy(() => import("@/pages/StoreSignup"));
+const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 
 /* =====================================================
    GENERAL / BIB STORE
 ===================================================== */
 
-import Dashboard from "@/pages/Dashboard";
-import Tarifs from "@/pages/Tarifs";
-import CheckoutReturn from "@/pages/CheckoutReturn";
-import NotFound from "@/pages/NotFound";
-import BrandPreview from "@/pages/BrandPreview";
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const Tarifs = lazy(() => import("@/pages/Tarifs"));
+const CheckoutReturn = lazy(() => import("@/pages/CheckoutReturn"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
+const BrandPreview = lazy(() => import("@/pages/BrandPreview"));
 
-import Store from "@/pages/Store";
-import StoreBoutique from "@/pages/StoreBoutique";
-import StoreCatalog from "@/pages/StoreCatalog";
-import StoreCart from "@/pages/StoreCart";
-import StoreSubscriberAccount from "@/pages/StoreSubscriberAccount";
-import StoreSubscriberFavorites from "@/pages/StoreSubscriberFavorites";
-import StoreSubscriberOrders from "@/pages/StoreSubscriberOrders";
-import StoreSubscriberSubscribe from "@/pages/StoreSubscriberSubscribe";
+const Store = lazy(() => import("@/pages/Store"));
+const StoreBoutique = lazy(() => import("@/pages/StoreBoutique"));
+const StoreCatalog = lazy(() => import("@/pages/StoreCatalog"));
+const StoreCart = lazy(() => import("@/pages/StoreCart"));
+const StoreSubscriberAccount = lazy(() => import("@/pages/StoreSubscriberAccount"));
+const StoreSubscriberFavorites = lazy(() => import("@/pages/StoreSubscriberFavorites"));
+const StoreSubscriberOrders = lazy(() => import("@/pages/StoreSubscriberOrders"));
+const StoreSubscriberSubscribe = lazy(() => import("@/pages/StoreSubscriberSubscribe"));
 
-import Recycler from "@/pages/customer/Recycler";
-import Unsubscribe from "@/pages/Unsubscribe";
-import StoreProduct from "@/pages/StoreProduct";
+const Recycler = lazy(() => import("@/pages/customer/Recycler"));
+const Unsubscribe = lazy(() => import("@/pages/Unsubscribe"));
+const StoreProduct = lazy(() => import("@/pages/StoreProduct"));
 import StoreSubscriberLayout from "@/components/StoreSubscriberLayout";
 
 /* =====================================================
    SUPPLIERS / OPERATIONS
 ===================================================== */
 
-import Suppliers from "@/pages/Suppliers";
-import SuppliersApply from "@/pages/SuppliersApply";
-import Ops from "@/pages/Ops";
-import OpsApply from "@/pages/OpsApply";
-import SuppliersOnboarding from "@/pages/SuppliersOnboarding";
-import OpsOnboarding from "@/pages/OpsOnboarding";
-import PartnerOnboardingResume from "@/pages/PartnerOnboardingResume";
-import PartnerOnboardingPortal from "@/pages/PartnerOnboardingPortal";
+const Suppliers = lazy(() => import("@/pages/Suppliers"));
+const SuppliersApply = lazy(() => import("@/pages/SuppliersApply"));
+const Ops = lazy(() => import("@/pages/Ops"));
+const OpsApply = lazy(() => import("@/pages/OpsApply"));
+const PartnerOnboardingResume = lazy(() => import("@/pages/PartnerOnboardingResume"));
+const PartnerOnboardingPortal = lazy(() => import("@/pages/PartnerOnboardingPortal"));
 
 import {
   suppliersOnboardingConfig,
@@ -79,78 +80,92 @@ import {
   opsOnboardingConfig,
 } from "@/pages/OpsOnboarding";
 
-import SuppliersPortal from "@/pages/SuppliersPortal";
-import OpsPortal from "@/pages/OpsPortal";
+const SuppliersPortal = lazy(() => import("@/pages/SuppliersPortal"));
+const OpsPortal = lazy(() => import("@/pages/OpsPortal"));
 
 /* =====================================================
    BIB TALENT
 ===================================================== */
 
-import BibTalent from "@/pages/BibTalent";
+const BibTalent = lazy(() => import("@/pages/BibTalent"));
 
 /* =====================================================
    DASHBOARD
 ===================================================== */
 
-import Ventes from "@/pages/dashboard/Ventes";
-import Commandes from "@/pages/dashboard/Commandes";
-import Produits from "@/pages/dashboard/Produits";
-import ProduitsFournisseurs from "@/pages/dashboard/ProduitsFournisseurs";
-import Paiements from "@/pages/dashboard/Paiements";
-import SEOAnalytics from "@/pages/dashboard/SEOAnalytics";
-import Boutiques from "@/pages/dashboard/Boutiques";
-import BoutiqueCreate from "@/pages/dashboard/BoutiqueCreate";
-import BoutiqueEdit from "@/pages/dashboard/BoutiqueEdit";
-import BoutiqueAnalytics from "@/pages/dashboard/BoutiqueAnalytics";
-import Parametres from "@/pages/dashboard/Parametres";
-import Aide from "@/pages/dashboard/Aide";
-import RelancesOnboarding from "@/pages/dashboard/RelancesOnboarding";
-import MesTickets from "@/pages/dashboard/MesTickets";
-import AdminDocuments from "@/pages/dashboard/AdminDocuments";
-import Equipe from "@/pages/dashboard/Equipe";
-import Clients from "@/pages/dashboard/Clients";
-import Marketing from "@/pages/dashboard/Marketing";
-import VentesPrivees from "@/pages/dashboard/VentesPrivees";
-import VentesPriveesPOS from "@/pages/dashboard/VentesPriveesPOS";
-import BoutiqueCustomPage from "@/pages/dashboard/BoutiqueCustomPage";
-import MonProfil from "@/pages/dashboard/MonProfil";
+const Ventes = lazy(() => import("@/pages/dashboard/Ventes"));
+const Commandes = lazy(() => import("@/pages/dashboard/Commandes"));
+const Produits = lazy(() => import("@/pages/dashboard/Produits"));
+const ProduitsFournisseurs = lazy(() => import("@/pages/dashboard/ProduitsFournisseurs"));
+const Paiements = lazy(() => import("@/pages/dashboard/Paiements"));
+const SEOAnalytics = lazy(() => import("@/pages/dashboard/SEOAnalytics"));
+const Boutiques = lazy(() => import("@/pages/dashboard/Boutiques"));
+const BoutiqueCreate = lazy(() => import("@/pages/dashboard/BoutiqueCreate"));
+const BoutiqueEdit = lazy(() => import("@/pages/dashboard/BoutiqueEdit"));
+const BoutiqueAnalytics = lazy(() => import("@/pages/dashboard/BoutiqueAnalytics"));
+const Parametres = lazy(() => import("@/pages/dashboard/Parametres"));
+const Aide = lazy(() => import("@/pages/dashboard/Aide"));
+const RelancesOnboarding = lazy(() => import("@/pages/dashboard/RelancesOnboarding"));
+const MesTickets = lazy(() => import("@/pages/dashboard/MesTickets"));
+const AdminDocuments = lazy(() => import("@/pages/dashboard/AdminDocuments"));
+const Equipe = lazy(() => import("@/pages/dashboard/Equipe"));
+const Clients = lazy(() => import("@/pages/dashboard/Clients"));
+const Marketing = lazy(() => import("@/pages/dashboard/Marketing"));
+const VentesPrivees = lazy(() => import("@/pages/dashboard/VentesPrivees"));
+const VentesPriveesPOS = lazy(() => import("@/pages/dashboard/VentesPriveesPOS"));
+const BoutiqueCustomPage = lazy(() => import("@/pages/dashboard/BoutiqueCustomPage"));
+const MonProfil = lazy(() => import("@/pages/dashboard/MonProfil"));
 
 /* =====================================================
    PUBLIC BOUTIQUE — REAL COMMERCE
 ===================================================== */
 
-import BoutiquePublic from "@/pages/BoutiquePublic";
-import BoutiqueAllProducts from "@/pages/BoutiqueAllProducts";
-import BoutiqueCategory from "@/pages/BoutiqueCategory";
-import ProductPublic from "@/pages/ProductPublic";
-import OrderTracking from "@/pages/OrderTracking";
-import BoutiqueFAQPage from "@/pages/BoutiqueFAQPage";
-import BoutiqueCGVPage from "@/pages/BoutiqueCGVPage";
-import BoutiqueCGUPage from "@/pages/BoutiqueCGUPage";
-import BoutiqueAboutPage from "@/pages/BoutiqueAboutPage";
+const BoutiquePublic = lazy(() => import("@/pages/BoutiquePublic"));
+const BoutiqueAllProducts = lazy(() => import("@/pages/BoutiqueAllProducts"));
+const BoutiqueCategory = lazy(() => import("@/pages/BoutiqueCategory"));
+const ProductPublic = lazy(() => import("@/pages/ProductPublic"));
+const OrderTracking = lazy(() => import("@/pages/OrderTracking"));
+const BoutiqueFAQPage = lazy(() => import("@/pages/BoutiqueFAQPage"));
+const BoutiqueCGVPage = lazy(() => import("@/pages/BoutiqueCGVPage"));
+const BoutiqueCGUPage = lazy(() => import("@/pages/BoutiqueCGUPage"));
+const BoutiqueAboutPage = lazy(() => import("@/pages/BoutiqueAboutPage"));
 
 /* =====================================================
    INSTITUTIONAL / MARKETING
 ===================================================== */
 
-import Carrieres from "@/pages/Carrieres";
-import CarrieresPostes from "@/pages/CarrieresPostes";
-import APropos from "@/pages/APropos";
-import CentreAide from "@/pages/CentreAide";
-import CentreAideFaq from "@/pages/CentreAideFaq";
-import CentreAideGuide from "@/pages/CentreAideGuide";
-import PackLegal from "@/pages/PackLegal";
+const Carrieres = lazy(() => import("@/pages/Carrieres"));
+const CarrieresPostes = lazy(() => import("@/pages/CarrieresPostes"));
+const APropos = lazy(() => import("@/pages/APropos"));
+const CentreAide = lazy(() => import("@/pages/CentreAide"));
+const CentreAideFaq = lazy(() => import("@/pages/CentreAideFaq"));
+const CentreAideGuide = lazy(() => import("@/pages/CentreAideGuide"));
+const PackLegal = lazy(() => import("@/pages/PackLegal"));
 
 /* =====================================================
    LEGAL
 ===================================================== */
 
-import {
-  MentionsLegales,
-  CGU,
-  Confidentialite,
-  Cookies,
-} from "@/pages/LegalPages";
+const MentionsLegales = lazy(() =>
+  import("@/pages/LegalPages").then((module) => ({
+    default: module.MentionsLegales,
+  })),
+);
+const CGU = lazy(() =>
+  import("@/pages/LegalPages").then((module) => ({
+    default: module.CGU,
+  })),
+);
+const Confidentialite = lazy(() =>
+  import("@/pages/LegalPages").then((module) => ({
+    default: module.Confidentialite,
+  })),
+);
+const Cookies = lazy(() =>
+  import("@/pages/LegalPages").then((module) => ({
+    default: module.Cookies,
+  })),
+);
 
 /* =====================================================
    QUERY CLIENT
@@ -233,7 +248,15 @@ export default function App() {
           <LanguageProvider>
             <AuthProvider>
               <StoreCartProvider>
-                <Routes>
+                <Suspense
+                  fallback={
+                    <div
+                      className="min-h-screen bg-background"
+                      aria-busy="true"
+                    />
+                  }
+                >
+                  <Routes>
                   {/* =================================================
                       ROOT / PUBLIC
                   ================================================= */}
@@ -1061,7 +1084,8 @@ export default function App() {
                     path="*"
                     element={<NotFound />}
                   />
-                </Routes>
+                  </Routes>
+                </Suspense>
               </StoreCartProvider>
             </AuthProvider>
           </LanguageProvider>

@@ -16,6 +16,31 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          const moduleId = id.replace(/\\/g, "/");
+
+          if (/\/node_modules\/(react|react-dom|scheduler)\//.test(moduleId)) {
+            return "react-vendor";
+          }
+
+          if (/\/node_modules\/@supabase\//.test(moduleId)) {
+            return "supabase-vendor";
+          }
+
+          if (/\/node_modules\/@tanstack\//.test(moduleId)) {
+            return "query-vendor";
+          }
+
+          if (/\/node_modules\/@radix-ui\//.test(moduleId)) {
+            return "radix-vendor";
+          }
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

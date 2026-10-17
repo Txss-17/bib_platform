@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  STUDIO_BUNDLES,
   defaultStudioBundle,
   findSceneDefinition,
   pickStudioBundle
@@ -281,9 +282,6 @@ function useReshuffleStructure() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (params) => {
-      const {
-        STUDIO_BUNDLES
-      } = await import("@/lib/studioScenes");
       const bundle = STUDIO_BUNDLES.find(
         (item) => item.key === params.bundleKey
       ) ?? pickStudioBundle(
