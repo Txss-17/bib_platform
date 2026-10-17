@@ -25,7 +25,11 @@ import { StorefrontAmbientAudio } from "@/components/storefront/StorefrontAmbien
 import { StudioSceneRenderer } from "@/components/storefront/StudioSceneRenderer";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { useSEO, buildLocaleAlternates } from "@/hooks/useSEO";
+import {
+  useSEO,
+  buildLocaleAlternates,
+  resolvePublicOrigin,
+} from "@/hooks/useSEO";
 import { useBrandDNA } from "@/hooks/useBrandStudio";
 import { usePublicProductMedia } from "@/hooks/useProductMedia";
 
@@ -207,77 +211,123 @@ export default function ProductPublic() {
     },
   });
 
+
   // ==========================================================
-  // SEO
+  // SEO — produit + configuration internationale de la boutique
   // ==========================================================
+
+  const seoOrigin = resolvePublicOrigin(
+    boutique?.seo_public_origin,
+  );
+
+  const seoPath =
+    typeof window !== "undefined"
+      ? window.location.pathname
+      : `/boutique/${slug ?? ""}/product/${productId ?? ""}`;
+
+  const seoCanonical =
+    seoOrigin && seoPath
+      ? `${seoOrigin}${seoPath}`
+      : undefined;
+
+  const seoTitle = boutique
+    ? `${productName} — ${boutique.name}`
+    : productName;
+
+  const seoDescription =
+    productDescription ||
+    `Découvrez ${productName} sur ${
+      boutique?.name || "Brand-In-A-Box"
+    }.`;
 
   useSEO({
-    title: boutique
-      ? `${productName} — ${boutique.name}`
-      : productName,
-
-    description:
-      productDescription ||
-      `Découvrez ${productName} sur ${
-        boutique?.name || "Brand-In-A-Box"
-      }.`,
-
-    image:
-      productImage || undefined,
-
+    title: seoTitle,
+    description: seoDescription,
+    image: productImage || undefined,
     type: "product",
+    canonical: seoCanonical,
+    url: seoCanonical,
 
     keywords: [
       productName,
       boutique?.name,
       boutique?.category,
       "achat en ligne",
+      "Brand-In-A-Box",
     ].filter(Boolean) as string[],
 
-    alternates: buildLocaleAlternates(),
+    alternates: buildLocaleAlternates(
+      seoPath,
+      boutique?.seo_active_locales,
+      boutique?.seo_default_locale,
+      boutique?.seo_public_origin,
+    ),
 
     jsonLd: product
-      ? {
-          "@context": "https://schema.org",
-          "@type": "Product",
+      ? [
+          {
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: productName,
+            description: productDescription || undefined,
+            image: productImage || undefined,
+            sku: product.id,
 
-          name: productName,
-
-          description:
-            productDescription || undefined,
-
-          image:
-            productImage || undefined,
-
-          sku: product.id,
-
-          brand: boutique
-            ? {
-                "@type": "Brand",
-                name: boutique.name,
-              }
-            : undefined,
-
-          offers: {
-            "@type": "Offer",
-            price: productPrice,
-            priceCurrency: "EUR",
-            availability:
-              "https://schema.org/InStock",
-
-            url:
-              typeof window !== "undefined"
-                ? `${window.location.origin}${window.location.pathname}`
-                : undefined,
-
-            seller: boutique
+            brand: boutique
               ? {
-                  "@type": "Organization",
+                  "@type": "Brand",
                   name: boutique.name,
                 }
               : undefined,
+
+            offers: {
+              "@type": "Offer",
+              price: productPrice,
+              priceCurrency: "EUR",
+              availability: "https://schema.org/InStock",
+              url: seoCanonical,
+
+              seller: boutique
+                ? {
+                    "@type": "Organization",
+                    name: boutique.name,
+                    url: seoOrigin || undefined,
+                  }
+                : undefined,
+            },
           },
-        }
+
+          ...(boutique
+            ? [
+                {
+                  "@context": "https://schema.org",
+                  "@type": "BreadcrumbList",
+                  itemListElement: [
+                    {
+                      "@type": "ListItem",
+                      position: 1,
+                      name: "BIB",
+                      item: seoOrigin || undefined,
+                    },
+                    {
+                      "@type": "ListItem",
+                      position: 2,
+                      name: boutique.name,
+                      item: seoOrigin
+                        ? `${seoOrigin}/boutique/${boutique.slug}`
+                        : undefined,
+                    },
+                    {
+                      "@type": "ListItem",
+                      position: 3,
+                      name: productName,
+                      item: seoCanonical,
+                    },
+                  ],
+                },
+              ]
+            : []),
+        ]
       : undefined,
   });
 
@@ -572,6 +622,9 @@ export default function ProductPublic() {
             !!user &&
             !!boutique &&
             user.id === boutique.user_id
+            canonical={seoCanonical}
+activeLocales={boutique?.seo_active_locales}
+defaultLocale={boutique?.seo_default_locale}
           }
           kind="product"
           title={
