@@ -113,6 +113,7 @@ import Marketing from "@/pages/dashboard/Marketing";
 import VentesPrivees from "@/pages/dashboard/VentesPrivees";
 import VentesPriveesPOS from "@/pages/dashboard/VentesPriveesPOS";
 import BoutiqueCustomPage from "@/pages/dashboard/BoutiqueCustomPage";
+import MonProfil from "@/pages/dashboard/MonProfil";
 
 /* =====================================================
    PUBLIC BOUTIQUE — REAL COMMERCE
@@ -840,6 +841,15 @@ export default function App() {
                   <Route
                     path="/boutique/:slug/page/:pageSlug"
                     element={<BoutiqueCustomPage />}
+                  />
+
+                  <Route
+                    path="/dashboard/profil"
+                    element={
+                      <ProtectedRoute>
+                        <MonProfil />
+                      </ProtectedRoute>
+                    }
                   />
 
                   {/* =================================================
