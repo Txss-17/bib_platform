@@ -1,5 +1,6 @@
 // Public sitemap.xml — lists published boutiques and active products with hreflang
 // alternates for configured locales. Deployed without JWT verification.
+// @ts-ignore Deno resolves this URL import at runtime; TypeScript editors may not.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const SUPPORTED_LOCALES = ["fr", "en", "es", "de", "it"] as const;
@@ -118,10 +119,12 @@ function buildAlternates(
     ? locales
     : [defaultLocale, ...locales];
 
-  const alternates = activeLocales.map((locale) => ({
-    hreflang: locale,
-    href: `${baseUrl}?lang=${locale}`,
-  }));
+  const alternates: { hreflang: string; href: string }[] = activeLocales.map(
+    (locale) => ({
+      hreflang: locale,
+      href: `${baseUrl}?lang=${locale}`,
+    }),
+  );
 
   alternates.push({
     hreflang: "x-default",
@@ -160,7 +163,7 @@ function getDate(value: string | null | undefined): string | null {
   return /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : null;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -201,7 +204,7 @@ Deno.serve(async (req) => {
     if (boutiquesError) throw boutiquesError;
 
     const publishedBoutiques = boutiques ?? [];
-    const boutiqueIds = publishedBoutiques.map((boutique) => boutique.id);
+    const boutiqueIds = publishedBoutiques.map((boutique: { id: any; }) => boutique.id);
 
     const { data: products, error: productsError } = boutiqueIds.length
       ? await supabase
