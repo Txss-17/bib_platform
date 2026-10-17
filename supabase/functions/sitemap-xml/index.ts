@@ -314,7 +314,7 @@ Deno.serve(async (req) => {
       const origin = getBoutiqueOrigin(boutique, siteOrigin);
       const baseUrl =
         `${origin}/boutique/${encodeURIComponent(boutique.slug)}` +
-        `/p/${encodeURIComponent(pageSlug)}`;
+        `/page/${encodeURIComponent(pageSlug)}`;
 
       entries.push(
         urlEntry(
