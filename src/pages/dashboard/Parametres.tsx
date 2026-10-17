@@ -166,11 +166,6 @@ export default function Parametres() {
               Paiement
             </TabsTrigger>
 
-            <TabsTrigger value="seo" className="gap-1.5 px-2 py-2 text-xs">
-              <Search className="h-3.5 w-3.5" />
-              SEO
-            </TabsTrigger>
-
             <TabsTrigger value="email" className="gap-1.5 px-2 py-2 text-xs">
               <Mail className="h-3.5 w-3.5" />
               E-mail
