@@ -148,7 +148,6 @@ interface BrandDnaRecord {
   generated_palette: unknown;
   generated_typography: unknown;
   generated_copy: unknown;
-  studio_answers?: unknown;
 }
 
 interface ImageGenerationRequest {
@@ -161,8 +160,9 @@ interface ImageGenerationRequest {
 function buildBrandContext(
   boutique: BoutiqueRecord,
   dna: BrandDnaRecord | null,
+  studioAnswers: unknown,
 ): string {
-  const answers = asRecord(dna?.studio_answers);
+  const answers = asRecord(studioAnswers);
 
   const palette = asRecord(dna?.generated_palette);
   const typography = asRecord(
@@ -724,16 +724,11 @@ Deno.serve(async (req) => {
 
     /*
      * ---------------------------------------------------------------
-     * Brand DNA
+     * Brand DNA public + questionnaire privé
      * ---------------------------------------------------------------
      *
-     * We deliberately use both:
-     *
-     * - generated Brand DNA: final interpreted direction;
-     * - studio_answers: original founder constraints.
-     *
-     * This prevents the image model from losing information from
-     * one of the five Studio steps.
+     * Boutique ownership has already been verified. Read the original
+     * answers separately so they are not exposed through public Brand DNA.
      */
     const {
       data: dna,
@@ -792,13 +787,8 @@ Deno.serve(async (req) => {
     const brandContext =
       buildBrandContext(
         boutique as BoutiqueRecord,
-        {
-          ...(dna as Omit<
-            BrandDnaRecord,
-            "studio_answers"
-          > | null),
-          studio_answers: privateAnswers?.answers ?? {},
-        } as BrandDnaRecord | null,
+        dna as BrandDnaRecord | null,
+        privateAnswers?.answers ?? {},
       );
 
     const urls: string[] = [];

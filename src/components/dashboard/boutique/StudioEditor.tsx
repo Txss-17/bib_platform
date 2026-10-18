@@ -3270,7 +3270,14 @@ function BrandPanel({
             const answers =
               studioAnswers as any;
 
-            if (!answers?.audience) {
+            if (!answers) {
+              toast.error(
+                "Les réponses du questionnaire de marque sont introuvables. Vérifie que le Brand Studio a bien été enregistré.",
+              );
+              return;
+            }
+
+            if (!answers.idealCustomer) {
               toast.error(
                 "Les réponses du Brand Studio sont introuvables.",
               );
