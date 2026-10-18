@@ -329,3 +329,68 @@
 .delay-300 { animation-delay: 300ms; }
 .delay-400 { animation-delay: 400ms; }
 .delay-500 { animation-delay: 500ms; }
+
+
+/* =========================================================
+   BIB PLATFORM — FINITIONS DU THÈME DU DASHBOARD
+   Limité à l'espace marchand, sans modifier les vitrines.
+========================================================= */
+
+.dashboard-theme {
+  min-height: 100vh;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.dashboard-theme :is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select
+) {
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--card));
+  border-color: hsl(var(--input));
+}
+
+.dashboard-theme :is(
+  input,
+  textarea,
+  select
+)::placeholder {
+  color: hsl(var(--muted-foreground));
+  opacity: 1;
+}
+
+.dashboard-theme :is(
+  input,
+  textarea,
+  select,
+  button,
+  a
+):focus-visible {
+  outline-color: hsl(var(--ring));
+}
+
+.dashboard-theme.dark {
+  color-scheme: dark;
+}
+
+.dashboard-theme.dark :is(
+  table th,
+  table td
+) {
+  border-color: hsl(var(--border));
+}
+
+.dashboard-theme.dark hr {
+  border-color: hsl(var(--border));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-theme {
+    transition: none;
+  }
+}
