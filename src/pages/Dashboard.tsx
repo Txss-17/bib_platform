@@ -305,9 +305,9 @@ export default function Dashboard() {
               </div>
 
               <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
-                {boutiqueStatsLoading
+                {boutiqueDataLoading
                   ? "Chargement de votre espace marchand…"
-                  : boutiqueStatsError
+                  : boutiqueDataError
                     ? "Votre activité est temporairement indisponible."
                     : !hasBoutiques
                       ? "Construisez votre première boutique BIB."
@@ -323,9 +323,9 @@ export default function Dashboard() {
               </h2>
 
               <p className="mt-2 max-w-xl text-sm leading-6 text-blue-100/80">
-                {boutiqueStatsLoading
+                {boutiqueDataLoading
                   ? "Nous récupérons les informations de vos boutiques."
-                  : boutiqueStatsError
+                  : boutiqueDataError
                     ? "Impossible de déterminer le nombre de boutiques associées à votre compte."
                     : !hasBoutiques
                       ? "Commencez par créer votre vitrine. Vous pourrez ensuite structurer votre identité de marque et sélectionner des produits du catalogue BIB."
@@ -342,7 +342,7 @@ export default function Dashboard() {
             </div>
 
             <div className="flex flex-wrap gap-2 lg:justify-end">
-              {boutiqueStatsLoading || boutiqueStatsError ? (
+              {boutiqueDataLoading || boutiqueDataError ? (
                 <Link to="/dashboard/boutiques">
                   <Button className="gap-2 bg-white text-blue-900 hover:bg-blue-50">
                     Consulter mes boutiques

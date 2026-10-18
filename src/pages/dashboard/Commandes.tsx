@@ -980,8 +980,8 @@ export default function Commandes() {
                 <Select
                   value={selectedBoutique}
                   onValueChange={setSelectedBoutique}
-                disabled={boutiquesLoading || Boolean(boutiquesError)}
-              >
+                  disabled={boutiquesLoading || Boolean(boutiquesError)}
+                >
                   <SelectTrigger className="h-9 w-full bg-white sm:w-[260px]">
                     <SelectValue placeholder="Toutes les boutiques" />
                   </SelectTrigger>
