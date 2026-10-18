@@ -1,13 +1,15 @@
+
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   AlertTriangle,
+  ArrowRight,
   CheckCircle2,
   ExternalLink,
   Globe,
   Package,
   Plus,
-  Settings,
+  Settings2,
   Store,
   Trash2,
   Truck,
@@ -40,62 +42,82 @@ import { cn } from "@/lib/utils";
 
 type Boutique = Tables<"boutiques">;
 
-const HEALTH_LEVEL_LABEL: Record<
-  PerBoutiqueHealth["level"],
-  string
-> = {
+const HEALTH_LABELS: Record<PerBoutiqueHealth["level"], string> = {
   excellent: "Excellente",
   good: "Bonne",
   fair: "À surveiller",
   poor: "Action requise",
 };
 
-const HEALTH_LEVEL_CLASS: Record<
-  PerBoutiqueHealth["level"],
-  string
-> = {
-  excellent: "text-success",
-  good: "text-success",
-  fair: "text-secondary",
-  poor: "text-destructive",
+const HEALTH_STYLES: Record<PerBoutiqueHealth["level"], string> = {
+  excellent: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  good: "border-green-200 bg-green-50 text-green-700",
+  fair: "border-amber-200 bg-amber-50 text-amber-800",
+  poor: "border-red-200 bg-red-50 text-red-700",
 };
 
-function StatusDot({
+type SignalStatus = "ok" | "warning" | "critical";
+
+function Signal({
   status,
+  label,
+  icon: Icon,
+  detail,
 }: {
-  status: "ok" | "warning" | "critical";
+  status: SignalStatus;
+  label: string;
+  icon: typeof Globe;
+  detail: string;
 }) {
-  const className =
-    status === "ok"
-      ? "bg-success"
-      : status === "warning"
-        ? "bg-secondary"
-        : "bg-destructive";
+  const styles: Record<SignalStatus, string> = {
+    ok: "bg-emerald-50 text-emerald-700",
+    warning: "bg-amber-50 text-amber-800",
+    critical: "bg-red-50 text-red-700",
+  };
+
+  const dotStyles: Record<SignalStatus, string> = {
+    ok: "bg-emerald-500",
+    warning: "bg-amber-500",
+    critical: "bg-red-500",
+  };
 
   return (
-    <span
-      className={cn(
-        "inline-block h-2 w-2 shrink-0 rounded-full",
-        className,
-      )}
-      aria-hidden="true"
-    />
+    <div className="flex min-w-0 items-start gap-2.5">
+      <span className={cn("mt-0.5 rounded-lg p-2", styles[status])}>
+        <Icon className="h-4 w-4" />
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", dotStyles[status])} />
+          <p className="text-xs font-semibold text-slate-800">{label}</p>
+        </div>
+        <p className="mt-1 text-xs leading-5 text-slate-500">{detail}</p>
+      </div>
+    </div>
   );
 }
 
-function BoutiqueStatus({
-  status,
-}: {
-  status: string | null;
-}) {
-  const isPublished = status === "published";
+function PublicationBadge({ status }: { status: string | null }) {
+  const published = status === "published";
 
   return (
     <Badge
-      variant={isPublished ? "default" : "secondary"}
-      className="shrink-0 text-[10px]"
+      variant="outline"
+      className={cn(
+        "shrink-0 gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium",
+        published
+          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+          : "border-slate-200 bg-slate-50 text-slate-600",
+      )}
     >
-      {isPublished ? "En ligne" : "Brouillon"}
+      <span
+        className={cn(
+          "h-1.5 w-1.5 rounded-full",
+          published ? "bg-emerald-500" : "bg-slate-400",
+        )}
+      />
+      {published ? "En ligne" : "Brouillon"}
     </Badge>
   );
 }
@@ -107,21 +129,20 @@ function BoutiqueHealth({
 }) {
   if (!health) {
     return (
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-3">
         <HealthRing
           score={0}
           level="fair"
-          size={58}
-          strokeWidth={7}
+          size={52}
+          strokeWidth={6}
           loading
         />
-
         <div>
-          <p className="text-xs font-medium text-muted-foreground">
-            Analyse de la boutique
+          <p className="text-xs font-semibold text-slate-800">
+            Santé opérationnelle
           </p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Analyse…
+          <p className="mt-1 text-xs text-slate-500">
+            Analyse en cours…
           </p>
         </div>
       </div>
@@ -129,28 +150,33 @@ function BoutiqueHealth({
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <HealthRing
-        score={health.score}
-        level={health.level}
-        size={58}
-        strokeWidth={7}
-      />
-
-      <div>
-        <p className="text-xs font-medium text-muted-foreground">
-          Santé de la boutique
-        </p>
-
-        <p
-          className={cn(
-            "mt-0.5 text-sm font-semibold",
-            HEALTH_LEVEL_CLASS[health.level],
-          )}
-        >
-          {HEALTH_LEVEL_LABEL[health.level]}
-        </p>
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/80 p-3">
+      <div className="flex min-w-0 items-center gap-3">
+        <HealthRing
+          score={health.score}
+          level={health.level}
+          size={52}
+          strokeWidth={6}
+        />
+        <div className="min-w-0">
+          <p className="text-xs font-semibold text-slate-800">
+            Santé opérationnelle
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            Score global de la boutique
+          </p>
+        </div>
       </div>
+
+      <Badge
+        variant="outline"
+        className={cn(
+          "shrink-0 text-[10px]",
+          HEALTH_STYLES[health.level],
+        )}
+      >
+        {HEALTH_LABELS[health.level]}
+      </Badge>
     </div>
   );
 }
@@ -165,165 +191,198 @@ function BoutiqueCard({
   onDelete: (id: string) => void;
 }) {
   const isPublished = boutique.status === "published";
+  const activeProducts = health?.metrics.activeProducts ?? 0;
+  const pendingOrders = health?.metrics.pendingOrders ?? 0;
+
+  const publicPath = `/boutique/${boutique.slug}`;
+  const editPath = `/dashboard/boutiques/${boutique.id}/edit`;
+  const analyticsPath = `/dashboard/boutiques/${boutique.id}/analytics`;
+
+  const publicationStatus: SignalStatus =
+    isPublished ? "ok" : "warning";
+
+  const productStatus: SignalStatus =
+    activeProducts > 0 ? "ok" : "warning";
+
+  const fulfillmentStatus: SignalStatus =
+    pendingOrders > 0 ? "warning" : "ok";
+
+  const stockStatus: SignalStatus =
+    health?.signals.stock ?? "warning";
 
   return (
-    <SectionCard className="transition-shadow hover:shadow-md">
-      <div className="space-y-5">
-        {/* Header */}
-        <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+    <article className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-950/5">
+      <div className="h-1 bg-gradient-to-r from-[#0A2B65] via-blue-600 to-amber-300" />
+
+      <div className="space-y-5 p-4 sm:p-5">
+        <div className="flex items-start gap-3">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0A2B65] to-blue-600 text-white shadow-sm shadow-blue-950/15">
             <Store className="h-5 w-5" />
           </div>
 
           <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-wrap items-start justify-between gap-2">
               <div className="min-w-0">
-                <h2 className="truncate font-display font-semibold text-foreground">
+                <h2 className="break-words text-base font-semibold tracking-tight text-slate-950">
                   {boutique.name}
                 </h2>
 
                 {boutique.category && (
-                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                  <p className="mt-1 truncate text-xs text-slate-500">
                     {boutique.category}
                   </p>
                 )}
               </div>
 
-              <BoutiqueStatus status={boutique.status} />
+              <PublicationBadge status={boutique.status} />
             </div>
           </div>
         </div>
 
-        {/* Health */}
         <BoutiqueHealth health={health} />
 
-        {/* Signals */}
-        <div className="grid grid-cols-2 gap-x-4 gap-y-3 border-y border-border/60 py-4">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <StatusDot
-              status={health?.signals.publish ?? "warning"}
-            />
-            <Globe className="h-3.5 w-3.5" />
-            <span>Publication</span>
-          </div>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-4">
+          <Signal
+            status={publicationStatus}
+            label="Publication"
+            icon={Globe}
+            detail={isPublished ? "Boutique publiée" : "Publication à préparer"}
+          />
 
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <StatusDot
-              status={health?.signals.products ?? "warning"}
-            />
-            <Package className="h-3.5 w-3.5" />
-            <span>
-              {health?.metrics.activeProducts ?? 0} produit
-              {(health?.metrics.activeProducts ?? 0) > 1
-                ? "s"
-                : ""}{" "}
-              actif
-              {(health?.metrics.activeProducts ?? 0) > 1
-                ? "s"
-                : ""}
-            </span>
-          </div>
+          <Signal
+            status={productStatus}
+            label="Catalogue"
+            icon={Package}
+            detail={`${activeProducts} produit${activeProducts > 1 ? "s" : ""} actif${activeProducts > 1 ? "s" : ""}`}
+          />
 
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <StatusDot
-              status={health?.signals.fulfillment ?? "warning"}
-            />
-            <Truck className="h-3.5 w-3.5" />
-            <span>
-              {health?.metrics.pendingOrders ?? 0} commande
-              {(health?.metrics.pendingOrders ?? 0) > 1
-                ? "s"
-                : ""}{" "}
-              à traiter
-            </span>
-          </div>
+          <Signal
+            status={fulfillmentStatus}
+            label="Commandes"
+            icon={Truck}
+            detail={
+              pendingOrders > 0
+                ? `${pendingOrders} à traiter`
+                : "Aucune commande en attente signalée"
+            }
+          />
 
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <StatusDot
-              status={health?.signals.stock ?? "ok"}
-            />
+          <Signal
+            status={stockStatus}
+            label="Disponibilité"
+            icon={stockStatus === "ok" ? CheckCircle2 : AlertTriangle}
+            detail={
+              stockStatus === "ok"
+                ? "Aucune alerte de stock signalée"
+                : stockStatus === "warning"
+                  ? "Vérification du stock recommandée"
+                  : "Une action sur le stock est requise"
+            }
+          />
+        </div>
 
-            {health?.signals.stock === "ok" ? (
-              <CheckCircle2 className="h-3.5 w-3.5" />
-            ) : (
-              <AlertTriangle className="h-3.5 w-3.5" />
+        <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+              Adresse de la boutique
+            </p>
+            {isPublished && (
+              <span className="flex shrink-0 items-center gap-1 text-[10px] font-medium text-emerald-700">
+                <CheckCircle2 className="h-3 w-3" />
+                Publique
+              </span>
             )}
-
-            <span>Stock</span>
           </div>
-        </div>
 
-        {/* Public URL */}
-        <div className="rounded-xl border border-border/50 bg-muted/30 p-3">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-            Adresse publique
-          </p>
-
-          <p className="mt-1 truncate font-mono text-xs text-primary">
-            /boutique/{boutique.slug}
+          <p className="mt-1.5 truncate font-mono text-xs text-blue-800">
+            {publicPath}
           </p>
         </div>
 
-        {/* Actions */}
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <Button
-            variant="outline"
-            size="sm"
-            className="flex-1 gap-1.5"
             asChild
+            className="bg-blue-700 text-white hover:bg-blue-800"
           >
-            <Link
-              to={`/dashboard/boutiques/edit/${boutique.id}`}
-            >
-              <Settings className="h-3.5 w-3.5" />
-              Modifier
+            <Link to={editPath}>
+              <Settings2 className="mr-2 h-4 w-4" />
+              Gérer
             </Link>
           </Button>
 
           <Button
-            variant="outline"
-            size="sm"
-            className="flex-1 gap-1.5"
             asChild
+            variant="outline"
+            className="border-slate-200 text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800"
           >
-            <Link
-              to={`/dashboard/boutiques/edit/${boutique.id}`}
-            >
-              <Store className="h-3.5 w-3.5" />
-              Studio
+            <Link to={analyticsPath}>
+              Voir les analyses
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
+        </div>
 
-          {isPublished && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              asChild
+        <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+          {isPublished ? (
+            <a
+              href={publicPath}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-700 hover:text-blue-900"
             >
-              <a
-                href={`/boutique/${boutique.slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-                Voir
-              </a>
-            </Button>
+              <ExternalLink className="h-3.5 w-3.5" />
+              Voir la boutique publique
+            </a>
+          ) : (
+            <Link
+              to={editPath}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-blue-800"
+            >
+              <Settings2 className="h-3.5 w-3.5" />
+              Préparer la publication
+            </Link>
           )}
 
           <Button
+            type="button"
             variant="ghost"
             size="icon"
-            className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+            className="h-8 w-8 text-slate-400 hover:bg-red-50 hover:text-red-600"
             onClick={() => onDelete(boutique.id)}
-            aria-label={`Supprimer ${boutique.name}`}
+            aria-label={`Supprimer la boutique ${boutique.name}`}
+            title="Supprimer la boutique"
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       </div>
-    </SectionCard>
+    </article>
+  );
+}
+
+function BoutiqueCardSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div className="h-1 bg-slate-100" />
+      <div className="animate-pulse space-y-5 p-5">
+        <div className="flex gap-3">
+          <div className="h-12 w-12 rounded-xl bg-slate-100" />
+          <div className="flex-1 space-y-2 pt-1">
+            <div className="h-4 w-2/3 rounded bg-slate-100" />
+            <div className="h-3 w-1/3 rounded bg-slate-100" />
+          </div>
+        </div>
+        <div className="h-[76px] rounded-xl bg-slate-100" />
+        <div className="grid grid-cols-2 gap-4">
+          <div className="h-12 rounded-lg bg-slate-100" />
+          <div className="h-12 rounded-lg bg-slate-100" />
+          <div className="h-12 rounded-lg bg-slate-100" />
+          <div className="h-12 rounded-lg bg-slate-100" />
+        </div>
+        <div className="h-10 rounded-lg bg-slate-100" />
+        <div className="h-9 rounded-lg bg-slate-100" />
+      </div>
+    </div>
   );
 }
 
@@ -334,250 +393,314 @@ export default function Boutiques() {
     error,
   } = useBoutiques();
 
-  const { data: healthMap } =
-    usePerBoutiqueHealth();
-
+  const { data: healthMap } = usePerBoutiqueHealth();
   const deleteBoutique = useDeleteBoutique();
 
-  const [deleteId, setDeleteId] = useState<string | null>(
-    null,
-  );
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const portfolio = useMemo(() => {
     const list = boutiques ?? [];
-
-    const total = list.length;
 
     const published = list.filter(
       (boutique) => boutique.status === "published",
     ).length;
 
-    const drafts = list.filter(
-      (boutique) => boutique.status !== "published",
-    ).length;
+    const drafts = list.length - published;
 
     let totalActiveProducts = 0;
     let totalPendingOrders = 0;
     let totalHealthScore = 0;
     let scoredBoutiques = 0;
+    let attentionCount = 0;
 
     for (const boutique of list) {
       const health = healthMap?.get(boutique.id);
 
-      if (!health) {
-        continue;
-      }
+      if (!health) continue;
 
       totalActiveProducts += health.metrics.activeProducts;
       totalPendingOrders += health.metrics.pendingOrders;
       totalHealthScore += health.score;
       scoredBoutiques += 1;
+
+      if (health.level === "fair" || health.level === "poor") {
+        attentionCount += 1;
+      }
     }
 
     return {
-      total,
+      total: list.length,
       published,
       drafts,
       totalActiveProducts,
       totalPendingOrders,
       averageHealth:
         scoredBoutiques > 0
-          ? Math.round(
-              totalHealthScore / scoredBoutiques,
-            )
+          ? Math.round(totalHealthScore / scoredBoutiques)
           : 0,
+      attentionCount,
     };
   }, [boutiques, healthMap]);
 
   const handleDelete = async () => {
-    if (!deleteId) {
-      return;
-    }
+    if (!deleteId) return;
 
     try {
       await deleteBoutique.mutateAsync(deleteId);
-
       toast.success("Boutique supprimée.");
-    } catch (error) {
-      console.error(
-        "Error deleting boutique:",
-        error,
-      );
-
-      toast.error(
-        "Impossible de supprimer cette boutique.",
-      );
+    } catch (err) {
+      console.error("Erreur lors de la suppression de la boutique :", err);
+      toast.error("Impossible de supprimer cette boutique.");
     } finally {
       setDeleteId(null);
     }
   };
 
-  const headerActions = (
-    <Button asChild className="gap-2">
-      <Link to="/dashboard/boutiques/create">
-        <Plus className="h-4 w-4" />
-        Nouvelle boutique
-      </Link>
-    </Button>
+  const selectedBoutique = boutiques?.find(
+    (boutique) => boutique.id === deleteId,
   );
 
   return (
     <DashboardLayout>
-      <PageHeader
-        eyebrow="Commerce"
-        title="Mes boutiques"
-        subtitle="Gérez vos boutiques, leur publication et leur état opérationnel depuis un seul espace."
-        actions={headerActions}
-      />
+      <div className="space-y-6 pb-8">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#071D49] via-[#103B82] to-[#1764C0] p-5 text-white shadow-lg shadow-blue-950/10 sm:p-8">
+          <div className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full border border-white/10" />
+          <div className="pointer-events-none absolute -right-2 -top-12 h-48 w-48 rounded-full border border-amber-300/20" />
 
-      {/* Portfolio KPIs */}
-      <KpiGrid cols={2}>
-        {isLoading ? (
-          <>
-            <KpiTileSkeleton />
-            <KpiTileSkeleton tone="gold" />
-          </>
-        ) : (
-          <>
-            <KpiTile
-              label="Boutiques"
-              value={portfolio.total}
-              hint={`${portfolio.published} en ligne · ${portfolio.drafts} brouillon${portfolio.drafts > 1 ? "s" : ""}`}
-              icon={
-                <Store className="h-4 w-4" />
-              }
-            />
-
-            <KpiTile
-              label="Santé moyenne"
-              value={`${portfolio.averageHealth}/100`}
-              tone="gold"
-              hint={`${portfolio.totalActiveProducts} produit${portfolio.totalActiveProducts > 1 ? "s" : ""} actif${portfolio.totalActiveProducts > 1 ? "s" : ""}`}
-            />
-          </>
-        )}
-      </KpiGrid>
-
-      {/* Pending operations summary */}
-      {!isLoading &&
-        portfolio.totalPendingOrders > 0 && (
-          <SectionCard className="border-secondary/30 bg-secondary/5">
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary/10 text-secondary">
-                <Truck className="h-4 w-4" />
+          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-medium text-blue-50">
+                <Store className="h-3.5 w-3.5 text-amber-300" />
+                Espace marchand · Portefeuille
               </div>
 
-              <div>
-                <p className="font-medium text-foreground">
-                  Commandes à traiter
-                </p>
+              <h1 className="text-2xl font-semibold tracking-tight sm:text-4xl">
+                Vos boutiques, un seul cockpit.
+              </h1>
 
-                <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-3 max-w-xl text-sm leading-6 text-blue-100 sm:text-base">
+                Suivez la publication, la disponibilité des produits et les
+                opérations de chaque boutique depuis un espace centralisé.
+              </p>
+            </div>
+
+            <Button
+              asChild
+              className="w-full shrink-0 bg-amber-300 text-blue-950 hover:bg-amber-200 sm:w-auto"
+            >
+              <Link to="/dashboard/boutiques/create">
+                <Plus className="mr-2 h-4 w-4" />
+                Créer une boutique
+              </Link>
+            </Button>
+          </div>
+
+          <div className="relative mt-7 grid grid-cols-2 gap-4 border-t border-white/15 pt-5 sm:grid-cols-4">
+            <div>
+              <p className="text-xs text-blue-200">Boutiques</p>
+              <p className="mt-1 text-2xl font-semibold">{portfolio.total}</p>
+            </div>
+            <div>
+              <p className="text-xs text-blue-200">En ligne</p>
+              <p className="mt-1 text-2xl font-semibold">{portfolio.published}</p>
+            </div>
+            <div>
+              <p className="text-xs text-blue-200">Produits actifs</p>
+              <p className="mt-1 text-2xl font-semibold">
+                {portfolio.totalActiveProducts}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-blue-200">Commandes à traiter</p>
+              <p className="mt-1 text-2xl font-semibold">
+                {portfolio.totalPendingOrders}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <PageHeader
+          eyebrow="Pilotage opérationnel"
+          title="Mes boutiques"
+          subtitle="Accédez aux paramètres, consultez l’état opérationnel et ouvrez chaque boutique publique."
+          actions={
+            <Button
+              asChild
+              variant="outline"
+              className="border-slate-200 bg-white"
+            >
+              <Link to="/dashboard/boutiques/create">
+                <Plus className="mr-2 h-4 w-4" />
+                Nouvelle boutique
+              </Link>
+            </Button>
+          }
+        />
+
+        <KpiGrid cols={2}>
+          {isLoading ? (
+            <>
+              <KpiTileSkeleton />
+              <KpiTileSkeleton tone="gold" />
+            </>
+          ) : (
+            <>
+              <KpiTile
+                label="État du portefeuille"
+                value={`${portfolio.averageHealth}/100`}
+                hint={
+                  portfolio.total === 0
+                    ? "Aucune boutique à analyser"
+                    : "Score moyen des boutiques analysées"
+                }
+                icon={<CheckCircle2 className="h-4 w-4" />}
+              />
+              <KpiTile
+                label="Actions à surveiller"
+                value={portfolio.attentionCount}
+                tone="gold"
+                hint={`${portfolio.drafts} brouillon${portfolio.drafts > 1 ? "s" : ""} · ${portfolio.totalPendingOrders} commande${portfolio.totalPendingOrders > 1 ? "s" : ""} en attente`}
+                icon={<AlertTriangle className="h-4 w-4" />}
+              />
+            </>
+          )}
+        </KpiGrid>
+
+        {!isLoading && !error && portfolio.totalPendingOrders > 0 && (
+          <SectionCard className="border-amber-200 bg-amber-50/60">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
+                <Truck className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold text-slate-900">
+                  Des commandes nécessitent votre attention
+                </p>
+                <p className="mt-1 text-sm leading-5 text-slate-600">
                   {portfolio.totalPendingOrders} commande
-                  {portfolio.totalPendingOrders > 1
-                    ? "s"
-                    : ""}{" "}
-                  nécessite
-                  {portfolio.totalPendingOrders > 1
-                    ? "nt"
-                    : ""}{" "}
-                  actuellement votre attention.
+                  {portfolio.totalPendingOrders > 1 ? "s sont" : " est"} signalée
+                  {portfolio.totalPendingOrders > 1 ? "s" : ""} comme à traiter
+                  dans votre portefeuille.
+                </p>
+                <Button
+                  asChild
+                  variant="link"
+                  className="mt-1 h-auto p-0 text-amber-900"
+                >
+                  <Link to="/dashboard/commandes">
+                    Consulter les commandes
+                    <ArrowRight className="ml-1.5 h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </SectionCard>
+        )}
+
+        {error && (
+          <SectionCard>
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+              <div>
+                <p className="font-semibold text-slate-900">
+                  Impossible de charger les boutiques
+                </p>
+                <p className="mt-1 text-sm leading-5 text-slate-500">
+                  Une erreur est survenue lors de la récupération des données.
+                  Vérifiez votre connexion puis réessayez.
                 </p>
               </div>
             </div>
           </SectionCard>
         )}
 
-      {/* Error */}
-      {error ? (
-        <SectionCard>
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
-
-            <div>
-              <p className="font-medium text-foreground">
-                Impossible de charger les boutiques
-              </p>
-
-              <p className="mt-1 text-sm text-muted-foreground">
-                Une erreur est survenue pendant la récupération
-                de votre portefeuille.
-              </p>
-            </div>
+        {isLoading && !error && (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <BoutiqueCardSkeleton key={index} />
+            ))}
           </div>
-        </SectionCard>
-      ) : null}
+        )}
 
-      {/* Loading */}
-      {isLoading && !error ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((index) => (
-            <SectionCard key={index}>
-              <div className="space-y-4">
-                <div className="h-12 rounded-xl bg-muted/40 animate-pulse" />
-                <div className="h-16 rounded-xl bg-muted/40 animate-pulse" />
-                <div className="h-20 rounded-xl bg-muted/40 animate-pulse" />
-                <div className="h-9 rounded-xl bg-muted/40 animate-pulse" />
-              </div>
-            </SectionCard>
-          ))}
-        </div>
-      ) : null}
-
-      {/* Empty state */}
-      {!isLoading &&
-      !error &&
-      (boutiques?.length ?? 0) === 0 ? (
-        <SectionCard>
-          <EmptyState
-            icon={
-              <Store className="h-7 w-7" />
-            }
-            title="Créez votre première boutique"
-            description="Commencez par créer votre boutique. Vous pourrez ensuite définir son identité, sélectionner vos produits et préparer sa publication."
-            action={
-              <Button
-                asChild
-                size="lg"
-                className="gap-2"
-              >
-                <Link to="/dashboard/boutiques/create">
-                  <Plus className="h-5 w-5" />
-                  Créer ma boutique
-                </Link>
-              </Button>
-            }
-          />
-        </SectionCard>
-      ) : null}
-
-      {/* Boutique portfolio */}
-      {!isLoading &&
-      !error &&
-      (boutiques?.length ?? 0) > 0 ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {boutiques!.map((boutique) => (
-            <BoutiqueCard
-              key={boutique.id}
-              boutique={boutique}
-              health={healthMap?.get(boutique.id)}
-              onDelete={setDeleteId}
+        {!isLoading && !error && portfolio.total === 0 && (
+          <SectionCard>
+            <EmptyState
+              icon={<Store className="h-7 w-7" />}
+              title="Créez votre première boutique"
+              description="Définissez votre boutique, préparez son identité et sélectionnez les produits autorisés que vous souhaitez proposer."
+              action={
+                <Button asChild size="lg" className="gap-2 bg-blue-700 hover:bg-blue-800">
+                  <Link to="/dashboard/boutiques/create">
+                    <Plus className="h-5 w-5" />
+                    Créer ma boutique
+                  </Link>
+                </Button>
+              }
             />
-          ))}
-        </div>
-      ) : null}
+          </SectionCard>
+        )}
 
-      {/* Delete confirmation */}
+        {!isLoading && !error && portfolio.total > 0 && (
+          <SectionCard
+            title="Portefeuille de boutiques"
+            description={`${portfolio.total} boutique${portfolio.total > 1 ? "s" : ""} · ${portfolio.published} en ligne · ${portfolio.drafts} brouillon${portfolio.drafts > 1 ? "s" : ""}`}
+          >
+            <div className="mb-5 flex flex-col gap-2 rounded-xl border border-blue-100 bg-blue-50/60 p-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-2.5">
+                <Globe className="mt-0.5 h-4 w-4 shrink-0 text-blue-700" />
+                <p className="text-xs leading-5 text-blue-950">
+                  Seules les boutiques publiées sont proposées comme boutiques publiques.
+                  Les brouillons restent accessibles pour leur préparation.
+                </p>
+              </div>
+              <Badge
+                variant="outline"
+                className="w-fit shrink-0 border-blue-200 bg-white text-blue-800"
+              >
+                {portfolio.published} publiée{portfolio.published > 1 ? "s" : ""}
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {boutiques?.map((boutique) => (
+                <BoutiqueCard
+                  key={boutique.id}
+                  boutique={boutique}
+                  health={healthMap?.get(boutique.id)}
+                  onDelete={setDeleteId}
+                />
+              ))}
+            </div>
+          </SectionCard>
+        )}
+
+        <div className="flex items-start gap-3 rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
+          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-blue-700" />
+          <div>
+            <p className="text-sm font-semibold text-blue-950">
+              Un pilotage par boutique
+            </p>
+            <p className="mt-1 text-sm leading-5 text-blue-900/80">
+              Chaque boutique conserve son propre catalogue et ses commandes.
+              Les indicateurs affichés ici servent à surveiller le portefeuille ;
+              ils ne fusionnent pas les commandes entre boutiques.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <ConfirmDeleteDialog
         open={!!deleteId}
         onOpenChange={(open) => {
-          if (!open) {
-            setDeleteId(null);
-          }
+          if (!open) setDeleteId(null);
         }}
         onConfirm={handleDelete}
         title="Supprimer cette boutique ?"
-        description="Cette action est irréversible. Les données associées à cette boutique pourront également être supprimées selon les règles de la base de données."
+        description={
+          selectedBoutique
+            ? `Vous allez demander la suppression de « ${selectedBoutique.name} ». Cette action est irréversible et peut être soumise aux contraintes de la base de données.`
+            : "Cette action est irréversible et peut être soumise aux contraintes de la base de données."
+        }
       />
     </DashboardLayout>
   );

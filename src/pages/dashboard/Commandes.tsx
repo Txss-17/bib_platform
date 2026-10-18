@@ -1346,6 +1346,7 @@ export default function Commandes() {
                   );
                 })}
               </div>
+            </>
             )}
 
             <div className="flex flex-col justify-between gap-2 border-t border-slate-100 bg-slate-50/70 px-5 py-3 sm:flex-row sm:items-center">
@@ -1356,7 +1357,6 @@ export default function Commandes() {
                 Les changements de statut sont soumis aux règles de validation.
               </p>
             </div>
-          )}
         </section>
 
         {/* Operating model reminder */}
