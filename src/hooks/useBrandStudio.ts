@@ -424,50 +424,44 @@ throw new Error(
    * Les réponses originales sont persistées telles quelles dans
    * studio_answers.
    */
+
   const upsertPayload = {
-    boutique_id:
-      params.boutiqueId,
-    seed:
-      data.seed,
-    ambiance:
-      data.ambiance ??
-      null,
-    tone:
-      data.tone ??
-      null,
-    target_audience:
-      params.answers.idealCustomer ||
-      null,
-    keywords:
-      data.keywords ??
-      [],
-    generated_palette:
-      data.palette ??
-      {},
-    generated_typography:
-      data.typography ??
-      {},
-    generated_copy:
-      data.copy ??
-      {},
-    studio_answers:
-      params.answers,
+    boutique_id: params.boutiqueId,
+    seed: data.seed,
+    ambiance: data.ambiance ?? null,
+    tone: data.tone ?? null,
+    target_audience: params.answers.idealCustomer || null,
+    keywords: data.keywords ?? [],
+    generated_palette: data.palette ?? {},
+    generated_typography: data.typography ?? {},
+    generated_copy: data.copy ?? {},
   };
-  const {
-    error: upsertError,
-  } = await supabase
-    .from(
-      "boutique_brand_dna",
-    )
-    .upsert(
-      upsertPayload as never,
-      {
-        onConflict:
-          "boutique_id",
-      },
-    );
+  
+  const { error: upsertError } = await supabase
+    .from("boutique_brand_dna")
+    .upsert(upsertPayload as never, {
+      onConflict: "boutique_id",
+    });
+  
   if (upsertError) {
     throw upsertError;
+  }
+  
+  const { error: answersError } = await supabase
+    .from("boutique_studio_answers")
+    .upsert(
+      {
+        boutique_id: params.boutiqueId,
+        answers: params.answers as unknown as Record<string, unknown>,
+        updated_at: new Date().toISOString(),
+      } as never,
+      {
+        onConflict: "boutique_id",
+      },
+    );
+  
+  if (answersError) {
+    throw answersError;
   }
   /*
    * Création du bundle initial de scènes.
