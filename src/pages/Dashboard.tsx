@@ -148,26 +148,79 @@ function MetricCard({
   );
 }
 
+function DataMessage({
+  children,
+  error = false,
+}: {
+  children: React.ReactNode;
+  error?: boolean;
+}) {
+  return (
+    <div
+      role={error ? "alert" : undefined}
+      className={`mt-5 flex items-center gap-2 rounded-xl px-4 py-3 text-sm ${
+        error
+          ? "border border-red-200 bg-red-50 text-red-800"
+          : "bg-slate-50 text-slate-500"
+      }`}
+    >
+      {error && <CircleAlert className="h-4 w-4 shrink-0" />}
+      <p>{children}</p>
+    </div>
+  );
+}
+
 export default function Dashboard() {
-  const { data: boutiqueStats, isLoading: boutiquesLoading } =
+  const {
+    data: boutiqueStats,
+    isLoading: boutiqueStatsLoading,
+    error: boutiqueStatsError,
+  } =
     useBoutiqueStats();
-  const { data: boutiques } = useBoutiques();
+  const {
+    data: boutiques = [],
+    isLoading: boutiquesLoading,
+    error: boutiquesError,
+  } = useBoutiques();
 
-  const { data: productStats, isLoading: productsLoading } =
+  const {
+    data: productStats,
+    isLoading: productStatsLoading,
+    error: productStatsError,
+  } =
     useProductStats();
-  const { data: products } = useProducts();
+  const {
+    data: products = [],
+    isLoading: productsLoading,
+    error: productsError,
+  } = useProducts();
 
-  const { data: orderStats, isLoading: ordersLoading } =
+  const {
+    data: orderStats,
+    isLoading: orderStatsLoading,
+    error: orderStatsError,
+  } =
     useOrderStats("month");
-  const { data: orders } = useOrders();
+  const {
+    data: orders = [],
+    isLoading: ordersLoading,
+    error: ordersError,
+  } = useOrders();
 
-  const { data: supplierProducts } = useSupplierProducts();
+  const {
+    data: supplierProducts = [],
+    isLoading: supplierProductsLoading,
+    error: supplierProductsError,
+  } = useSupplierProducts();
 
-  const isLoading = boutiquesLoading || productsLoading || ordersLoading;
+  const boutiqueDataLoading =
+    boutiqueStatsLoading || boutiquesLoading;
+  const boutiqueDataError =
+    boutiqueStatsError || boutiquesError;
   const hasBoutiques = (boutiqueStats?.total ?? 0) > 0;
 
-  const recentOrders = orders?.slice(0, 4) ?? [];
-  const recentBoutiques = boutiques?.slice(0, 3) ?? [];
+  const recentOrders = orders.slice(0, 4);
+  const recentBoutiques = boutiques.slice(0, 3);
 
   const recommendedProducts =
     supplierProducts
@@ -252,28 +305,54 @@ export default function Dashboard() {
               </div>
 
               <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
-                {hasBoutiques
-                  ? pending > 0
-                    ? "Vos commandes nécessitent votre attention."
-                    : publishedBoutiques === 0
-                      ? "Préparez votre première boutique à la publication."
-                      : "Gardez le cap sur votre activité." 
-                  : "Construisez votre première boutique BIB."}
+                {boutiqueStatsLoading
+                  ? "Chargement de votre espace marchand…"
+                  : boutiqueStatsError
+                    ? "Votre activité est temporairement indisponible."
+                    : !hasBoutiques
+                      ? "Construisez votre première boutique BIB."
+                      : orderStatsLoading
+                        ? "Vos données d’activité se chargent."
+                        : orderStatsError
+                          ? "Consultez vos boutiques et votre activité."
+                          : pending > 0
+                            ? "Vos commandes nécessitent votre attention."
+                            : publishedBoutiques === 0
+                              ? "Préparez votre première boutique à la publication."
+                              : "Gardez le cap sur votre activité."}
               </h2>
 
               <p className="mt-2 max-w-xl text-sm leading-6 text-blue-100/80">
-                {hasBoutiques
-                  ? pending > 0
-                    ? `${pending} commande${pending > 1 ? "s sont" : " est"} à suivre. Consultez leur état et traitez les prochaines étapes.`
-                    : publishedBoutiques === 0
-                      ? "Complétez votre vitrine, vérifiez votre catalogue et avancez vers la publication."
-                      : "Suivez vos ventes, surveillez les alertes et améliorez progressivement vos performances."
-                  : "Commencez par créer votre vitrine. Vous pourrez ensuite structurer votre identité de marque et sélectionner des produits du catalogue BIB."}
+                {boutiqueStatsLoading
+                  ? "Nous récupérons les informations de vos boutiques."
+                  : boutiqueStatsError
+                    ? "Impossible de déterminer le nombre de boutiques associées à votre compte."
+                    : !hasBoutiques
+                      ? "Commencez par créer votre vitrine. Vous pourrez ensuite structurer votre identité de marque et sélectionner des produits du catalogue BIB."
+                      : orderStatsLoading
+                        ? "Nous récupérons les indicateurs de vos commandes."
+                        : orderStatsError
+                          ? "Les indicateurs de commandes sont indisponibles pour le moment."
+                          : pending > 0
+                            ? `${pending} commande${pending > 1 ? "s sont" : " est"} à suivre. Consultez leur état et traitez les prochaines étapes.`
+                            : publishedBoutiques === 0
+                              ? "Complétez votre vitrine, vérifiez votre catalogue et avancez vers la publication."
+                              : "Suivez vos ventes, surveillez les alertes et améliorez progressivement vos performances."}
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2 lg:justify-end">
-              {pending > 0 ? (
+              {boutiqueStatsLoading || boutiqueStatsError ? (
+                <Link to="/dashboard/boutiques">
+                  <Button className="gap-2 bg-white text-blue-900 hover:bg-blue-50">
+                    Consulter mes boutiques
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              ) : hasBoutiques &&
+                !orderStatsLoading &&
+                !orderStatsError &&
+                pending > 0 ? (
                 <Link to="/dashboard/commandes">
                   <Button className="gap-2 bg-white text-blue-900 hover:bg-blue-50">
                     Traiter les commandes
@@ -328,35 +407,61 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               label="Chiffre d'affaires"
-              value={compactEuro(revenue)}
-              hint={`${totalOrders} commande${totalOrders > 1 ? "s" : ""} sur la période`}
+              value={orderStatsError ? "—" : compactEuro(revenue)}
+              hint={
+                orderStatsError
+                  ? "Indicateur temporairement indisponible"
+                  : `${totalOrders} commande${totalOrders > 1 ? "s" : ""} sur la période`
+              }
               icon={<Wallet className="h-5 w-5" />}
               tone="blue"
-              loading={isLoading}
+              loading={orderStatsLoading}
             />
             <MetricCard
               label="À suivre"
-              value={pending}
-              hint={pending > 0 ? "Des commandes restent à traiter" : "Aucune commande en attente"}
+              value={orderStatsError ? "—" : pending}
+              hint={
+                orderStatsError
+                  ? "Indicateur temporairement indisponible"
+                  : pending > 0
+                    ? "Des commandes restent à traiter"
+                    : "Aucune commande en attente"
+              }
               icon={<ShoppingCart className="h-5 w-5" />}
               tone={pending > 0 ? "gold" : "green"}
-              loading={isLoading}
+              loading={orderStatsLoading}
             />
             <MetricCard
               label="Panier moyen"
-              value={euro(averageBasket)}
-              hint={delivered > 0 ? `${delivered} commande${delivered > 1 ? "s" : ""} livrée${delivered > 1 ? "s" : ""}` : "En attente des premières livraisons"}
+              value={orderStatsError ? "—" : euro(averageBasket)}
+              hint={
+                orderStatsError
+                  ? "Indicateur temporairement indisponible"
+                  : delivered > 0
+                    ? `${delivered} commande${delivered > 1 ? "s" : ""} livrée${delivered > 1 ? "s" : ""}`
+                    : "En attente des premières livraisons"
+              }
               icon={<ShoppingBag className="h-5 w-5" />}
               tone="slate"
-              loading={isLoading}
+              loading={orderStatsLoading}
             />
             <MetricCard
               label="Boutiques publiées"
-              value={`${publishedBoutiques}/${totalBoutiques}`}
-              hint={`${activeProducts} produit${activeProducts > 1 ? "s" : ""} actif${activeProducts > 1 ? "s" : ""}`}
+              value={
+                boutiqueStatsError
+                  ? "—"
+                  : `${publishedBoutiques}/${totalBoutiques}`
+              }
+              hint={
+                boutiqueStatsError
+                  ? "Indicateur temporairement indisponible"
+                  : productStatsError
+                    ? "Produits actifs temporairement indisponibles"
+                    : `${activeProducts} produit${activeProducts > 1 ? "s" : ""} actif${activeProducts > 1 ? "s" : ""}`
+              }
               icon={<Store className="h-5 w-5" />}
               tone="gold"
-              loading={isLoading}
+              loading={boutiqueStatsLoading || productStatsLoading}
             />
           </div>
         </section>
@@ -380,7 +485,15 @@ export default function Dashboard() {
                 }
               />
 
-              {!hasBoutiques ? (
+              {boutiqueDataLoading ? (
+                <DataMessage>
+                  Chargement de vos boutiques…
+                </DataMessage>
+              ) : boutiqueDataError ? (
+                <DataMessage error>
+                  Impossible de charger vos boutiques. Actualisez la page pour réessayer.
+                </DataMessage>
+              ) : !hasBoutiques ? (
                 <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 px-5 py-9 text-center">
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
                     <Store className="h-6 w-6" />
@@ -491,7 +604,15 @@ export default function Dashboard() {
                 }
               />
 
-              {recentOrders.length === 0 ? (
+              {ordersLoading ? (
+                <DataMessage>
+                  Chargement des commandes…
+                </DataMessage>
+              ) : ordersError ? (
+                <DataMessage error>
+                  Impossible de charger les commandes récentes.
+                </DataMessage>
+              ) : recentOrders.length === 0 ? (
                 <div className="mt-5 flex flex-col items-center rounded-xl bg-slate-50 px-4 py-8 text-center">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-slate-500 shadow-sm ring-1 ring-slate-200">
                     <Truck className="h-5 w-5" />
@@ -577,7 +698,15 @@ export default function Dashboard() {
                 }
               />
 
-              {!products?.length ? (
+              {productsLoading ? (
+                <DataMessage>
+                  Chargement de vos produits…
+                </DataMessage>
+              ) : productsError ? (
+                <DataMessage error>
+                  Impossible de charger vos produits.
+                </DataMessage>
+              ) : products.length === 0 ? (
                 <div className="mt-5 flex flex-col items-center rounded-xl bg-slate-50 px-4 py-8 text-center">
                   <Package className="h-7 w-7 text-slate-400" />
                   <p className="mt-3 text-sm font-semibold text-slate-800">
@@ -676,7 +805,15 @@ export default function Dashboard() {
                 }
               />
 
-              {recommendedProducts.length === 0 ? (
+              {supplierProductsLoading ? (
+                <DataMessage>
+                  Chargement des recommandations…
+                </DataMessage>
+              ) : supplierProductsError ? (
+                <DataMessage error>
+                  Impossible de charger les recommandations du catalogue BIB.
+                </DataMessage>
+              ) : recommendedProducts.length === 0 ? (
                 <div className="mt-4 rounded-xl bg-slate-50 p-4">
                   <Sparkles className="h-5 w-5 text-amber-600" />
                   <p className="mt-3 text-sm font-semibold text-slate-800">
@@ -886,4 +1023,3 @@ export default function Dashboard() {
     </DashboardLayout>
   );
 }
-

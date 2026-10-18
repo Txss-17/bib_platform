@@ -256,7 +256,11 @@ function SectionHeading({
 
 export default function Commandes() {
   const { data: orders, isLoading, error } = useOrders();
-  const { data: boutiques = [] } = useBoutiques();
+  const {
+    data: boutiques = [],
+    isLoading: boutiquesLoading,
+    error: boutiquesError,
+  } = useBoutiques();
   const updateStatus = useUpdateOrderStatus();
 
   const [selectedBoutique, setSelectedBoutique] = useState("all");
@@ -517,7 +521,7 @@ export default function Commandes() {
 
   return (
     <DashboardLayout>
-      <main className="mx-auto w-full max-w-[1500px] space-y-7 pb-10">
+      <div className="mx-auto w-full max-w-[1500px] space-y-7 pb-10">
         {/* Hero */}
         <section className="relative isolate overflow-hidden rounded-3xl bg-[#102B55] p-5 text-white shadow-lg shadow-blue-950/10 sm:p-8 lg:p-9">
           <div
@@ -976,7 +980,8 @@ export default function Commandes() {
                 <Select
                   value={selectedBoutique}
                   onValueChange={setSelectedBoutique}
-                >
+                disabled={boutiquesLoading || Boolean(boutiquesError)}
+              >
                   <SelectTrigger className="h-9 w-full bg-white sm:w-[260px]">
                     <SelectValue placeholder="Toutes les boutiques" />
                   </SelectTrigger>
@@ -989,6 +994,11 @@ export default function Commandes() {
                     ))}
                   </SelectContent>
                 </Select>
+                {boutiquesError && (
+                  <p role="alert" className="text-xs text-red-700">
+                    Impossible de charger la liste des boutiques.
+                  </p>
+                )}
                 <Button
                   type="button"
                   variant="ghost"
@@ -1386,7 +1396,7 @@ export default function Commandes() {
           open={detailOpen}
           onOpenChange={setDetailOpen}
         />
-      </main>
+      </div>
     </DashboardLayout>
   );
 }
