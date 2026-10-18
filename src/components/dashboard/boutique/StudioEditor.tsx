@@ -946,12 +946,23 @@ export function StudioEditor({
     null,
   );
 
+  // Scènes de la page actuellement éditée.
   const {
     data: scenes = [],
     isLoading: scenesLoading,
   } = useBoutiqueScenes(
     boutiqueId,
     activePageId,
+  );
+
+  // La publication se valide toujours sur la page d'accueil,
+  // indépendamment de la page sélectionnée dans l'éditeur.
+  const {
+    data: publicationScenes = [],
+    isLoading: publicationScenesLoading,
+  } = useBoutiqueScenes(
+    boutiqueId,
+    null,
   );
 
   const updateScene =
@@ -1255,8 +1266,17 @@ export function StudioEditor({
     const errors: string[] =
       [];
 
+    if (publicationScenesLoading) {
+      return {
+        ok: false,
+        errors: [
+          "Chargement des scènes de la page d’accueil…",
+        ],
+      };
+    }
+
     const visible =
-      scenes.filter(
+      publicationScenes.filter(
         (scene) =>
           scene.is_visible,
       );
@@ -1388,7 +1408,8 @@ export function StudioEditor({
       errors,
     };
   }, [
-    scenes,
+    publicationScenes,
+    publicationScenesLoading,
     products,
     seoTitle,
     seoDescription,
