@@ -93,7 +93,10 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
-  .dark {
+
+  .dashboard-theme.dark {
+    color-scheme: dark;
+
     --background: 215 50% 6%;
     --foreground: 40 25% 95%;
 
@@ -103,43 +106,90 @@
     --popover: 215 45% 10%;
     --popover-foreground: 40 25% 95%;
 
-    --primary: 41 55% 52%;
-    --primary-foreground: 215 50% 6%;
+    /* Le bleu marine reste la base visuelle de BIB. */
+    --primary: 215 55% 24%;
+    --primary-foreground: 40 30% 98%;
 
+    /* L'or reste l'accent premium. */
     --secondary: 215 35% 20%;
     --secondary-foreground: 40 25% 95%;
 
     --muted: 215 35% 14%;
-    --muted-foreground: 215 15% 65%;
+    --muted-foreground: 215 15% 70%;
 
-    --accent: 41 55% 52%;
-    --accent-foreground: 215 50% 6%;
+    --accent: 41 65% 62%;
+    --accent-foreground: 215 55% 12%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 65% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Status tokens — slightly brighter on dark surfaces for contrast */
     --success: 152 55% 50%;
     --success-foreground: 215 50% 6%;
+
     --warning: 38 92% 58%;
-    --warning-foreground: 215 50% 6%;
-    --info: 215 75% 60%;
+    --warning-foreground: 215 55% 12%;
+
+    --info: 215 75% 65%;
     --info-foreground: 215 50% 6%;
 
-    --border: 215 35% 18%;
-    --input: 215 35% 18%;
-    --ring: 41 55% 52%;
+    --border: 215 30% 21%;
+    --input: 215 30% 21%;
+    --ring: 41 65% 62%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --linksy-navy: 215 55% 24%;
+    --linksy-navy-light: 215 45% 32%;
+    --linksy-teal: 41 55% 58%;
+    --linksy-teal-light: 41 65% 68%;
+    --linksy-coral: 14 75% 60%;
+    --linksy-coral-light: 14 75% 70%;
+    --linksy-success: 152 55% 50%;
+    --linksy-warning: 38 92% 58%;
+
+    --bib-gold: 41 65% 62%;
+    --bib-gold-light: 41 65% 72%;
+    --bib-marine: 215 55% 24%;
+    --bib-ivory: 40 25% 95%;
+
+    --gradient-hero: linear-gradient(
+      180deg,
+      hsl(215 50% 6%) 0%,
+      hsl(215 50% 6%) 100%
+    );
+
+    --gradient-card: linear-gradient(
+      180deg,
+      hsl(215 45% 10%) 0%,
+      hsl(215 45% 10%) 100%
+    );
+
+    --gradient-accent: linear-gradient(
+      180deg,
+      hsl(41 65% 62%) 0%,
+      hsl(41 65% 62%) 100%
+    );
+
+    --gradient-trust: var(--gradient-accent);
+    --gradient-premium: var(--gradient-hero);
+    --gradient-gold: var(--gradient-accent);
+
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.2);
+    --shadow-md: 0 4px 8px -2px hsl(0 0% 0% / 0.25);
+    --shadow-lg: 0 10px 20px -5px hsl(0 0% 0% / 0.3);
+    --shadow-xl: 0 20px 30px -8px hsl(0 0% 0% / 0.35);
+    --shadow-glow: 0 0 30px -10px hsl(41 65% 62% / 0.25);
+    --shadow-premium:
+      0 20px 60px -20px hsl(0 0% 0% / 0.5),
+      0 0 0 1px hsl(41 65% 62% / 0.15);
+
+    --sidebar-background: 215 48% 8%;
+    --sidebar-foreground: 40 25% 90%;
+    --sidebar-primary: 41 65% 62%;
+    --sidebar-primary-foreground: 215 55% 12%;
+    --sidebar-accent: 215 35% 15%;
+    --sidebar-accent-foreground: 40 25% 95%;
+    --sidebar-border: 215 30% 19%;
+    --sidebar-ring: 41 65% 62%;
   }
-}
 
 @layer base {
   * {
