@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Bell, Search, Menu, Moon, Sun } from "lucide-react";
 import { useNavigate } from "react-router-dom";
