@@ -120,6 +120,40 @@ generated_copy: BrandCopy;
 studio_answers: Record<string, unknown>;
 }
 
+
+/**
+ * Réponses privées du questionnaire Brand Studio.
+ * L'accès est contrôlé par les politiques RLS Supabase.
+ */
+export function useStudioAnswers(
+  boutiqueId: string | undefined,
+) {
+  return useQuery({
+    queryKey: ["studio-answers", boutiqueId],
+    enabled: Boolean(boutiqueId),
+    queryFn: async () => {
+      if (!boutiqueId) {
+        return null;
+      }
+
+      const { data, error } = await supabase
+        .from("boutique_studio_answers")
+        .select("answers")
+        .eq("boutique_id", boutiqueId)
+        .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      return (
+        (data?.answers as Record<string, unknown> | undefined) ??
+        null
+      );
+    },
+  });
+}
+
 /* ––––––––––––––––––––––––––––––––––––––
 
 * Brand Studio — nouveau questionnaire
