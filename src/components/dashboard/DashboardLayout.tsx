@@ -58,6 +58,17 @@ export function DashboardLayout({
     } catch {
       // Le thème reste utilisable pendant la session.
     }
+  
+    document.body.classList.toggle("dark", theme === "dark");
+    document.body.classList.toggle(
+      "bib-dashboard-dark",
+      theme === "dark",
+    );
+  
+    return () => {
+      document.body.classList.remove("bib-dashboard-dark");
+      document.body.classList.remove("dark");
+    };
   }, [theme]);
 
   const toggleTheme = () => {
