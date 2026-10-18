@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,6 +25,9 @@ import {
   Store,
   Users,
   Settings2,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { BusinessDocuments } from "@/components/dashboard/BusinessDocuments";
@@ -46,7 +50,13 @@ type SettingsTab =
   | "email"
   | "alerts"
   | "securite"
-  | "paiement";
+  | "paiement"
+  | "apparence";
+
+type DashboardThemePreference = "light" | "dark" | "system";
+
+const THEME_STORAGE_KEY = "bib-dashboard-theme";
+const THEME_CHANGE_EVENT = "bib-dashboard-theme-change";
 
 export default function Parametres() {
   const { user } = useAuth();
@@ -56,7 +66,43 @@ export default function Parametres() {
   const [sendingReset, setSendingReset] = useState(false);
   const [signingOutAll, setSigningOutAll] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<SettingsTab>("notifications");
+  const [activeTab, setActiveTab] =
+    useState<SettingsTab>("notifications");
+
+  const [themePreference, setThemePreference] =
+    useState<DashboardThemePreference>(() => {
+      try {
+        const saved = window.localStorage.getItem(
+          THEME_STORAGE_KEY,
+        );
+
+        return saved === "light" ||
+          saved === "dark" ||
+          saved === "system"
+          ? saved
+          : "light";
+      } catch {
+        return "light";
+      }
+    });
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        THEME_STORAGE_KEY,
+        themePreference,
+      );
+    } catch {
+      // La préférence reste utilisable pendant la session.
+    }
+
+    window.dispatchEvent(
+      new CustomEvent<DashboardThemePreference>(
+        THEME_CHANGE_EVENT,
+        { detail: themePreference },
+      ),
+    );
+  }, [themePreference]);
 
   const handleSendPasswordReset = async () => {
     if (!user?.email) {
@@ -81,7 +127,9 @@ export default function Parametres() {
       );
     } catch (error) {
       console.error("Password reset error:", error);
-      toast.error("Impossible d'envoyer l'e-mail de réinitialisation.");
+      toast.error(
+        "Impossible d'envoyer l'e-mail de réinitialisation.",
+      );
     } finally {
       setSendingReset(false);
     }
@@ -100,7 +148,9 @@ export default function Parametres() {
       toast.success("Déconnexion des sessions demandée.");
     } catch (error) {
       console.error("Global sign out error:", error);
-      toast.error("Impossible de déconnecter toutes les sessions.");
+      toast.error(
+        "Impossible de déconnecter toutes les sessions.",
+      );
     } finally {
       setSigningOutAll(false);
     }
@@ -137,48 +187,126 @@ export default function Parametres() {
 
         <Tabs
           value={activeTab}
-          onValueChange={(value) => setActiveTab(value as SettingsTab)}
+          onValueChange={(value) =>
+            setActiveTab(value as SettingsTab)
+          }
           className="w-full"
         >
           <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-muted/50 p-1 sm:grid-cols-4 lg:grid-cols-8">
-            <TabsTrigger value="notifications" className="gap-1.5 px-2 py-2 text-xs">
+            <TabsTrigger
+              value="notifications"
+              className="gap-1.5 px-2 py-2 text-xs"
+            >
               <Bell className="h-3.5 w-3.5" />
               Notifications
             </TabsTrigger>
 
-            <TabsTrigger value="securite" className="gap-1.5 px-2 py-2 text-xs">
+            <TabsTrigger
+              value="securite"
+              className="gap-1.5 px-2 py-2 text-xs"
+            >
               <Shield className="h-3.5 w-3.5" />
               Sécurité
             </TabsTrigger>
 
-            <TabsTrigger value="documents" className="gap-1.5 px-2 py-2 text-xs">
+            <TabsTrigger
+              value="documents"
+              className="gap-1.5 px-2 py-2 text-xs"
+            >
               <FileCheck className="h-3.5 w-3.5" />
               Documents
             </TabsTrigger>
 
-            <TabsTrigger value="abonnement" className="gap-1.5 px-2 py-2 text-xs">
+            <TabsTrigger
+              value="abonnement"
+              className="gap-1.5 px-2 py-2 text-xs"
+            >
               <Crown className="h-3.5 w-3.5" />
               Abonnement
             </TabsTrigger>
 
-            <TabsTrigger value="paiement" className="gap-1.5 px-2 py-2 text-xs">
+            <TabsTrigger
+              value="paiement"
+              className="gap-1.5 px-2 py-2 text-xs"
+            >
               <CreditCard className="h-3.5 w-3.5" />
               Paiement
             </TabsTrigger>
 
-            <TabsTrigger value="email" className="gap-1.5 px-2 py-2 text-xs">
+            <TabsTrigger
+              value="email"
+              className="gap-1.5 px-2 py-2 text-xs"
+            >
               <Mail className="h-3.5 w-3.5" />
               E-mail
             </TabsTrigger>
 
-            <TabsTrigger value="alerts" className="gap-1.5 px-2 py-2 text-xs">
+            <TabsTrigger
+              value="alerts"
+              className="gap-1.5 px-2 py-2 text-xs"
+            >
               <AlertTriangle className="h-3.5 w-3.5" />
               Alertes
             </TabsTrigger>
+
+            <TabsTrigger
+              value="apparence"
+              className="gap-1.5 px-2 py-2 text-xs"
+            >
+              <Monitor className="h-3.5 w-3.5" />
+              Apparence
+            </TabsTrigger>
           </TabsList>
 
+          {/* Apparence */}
+          <TabsContent
+            value="apparence"
+            className="mt-5 space-y-4"
+          >
+            <SectionCard
+              title="Apparence de l’administration"
+              description="Choisissez le thème utilisé dans votre espace d’administration BIB. Ce réglage ne modifie pas l’apparence publique de vos boutiques."
+              icon={<Monitor className="h-4 w-4" />}
+            >
+              <div className="grid gap-3 sm:grid-cols-3">
+                <ThemePreferenceOption
+                  title="Clair"
+                  description="Fond clair, bleu marine et accents or."
+                  selected={themePreference === "light"}
+                  onClick={() => setThemePreference("light")}
+                  icon={<Sun className="h-5 w-5" />}
+                />
+
+                <ThemePreferenceOption
+                  title="Sombre"
+                  description="Surfaces foncées et contraste adapté."
+                  selected={themePreference === "dark"}
+                  onClick={() => setThemePreference("dark")}
+                  icon={<Moon className="h-5 w-5" />}
+                />
+
+                <ThemePreferenceOption
+                  title="Système"
+                  description="Suit le thème de votre appareil."
+                  selected={themePreference === "system"}
+                  onClick={() => setThemePreference("system")}
+                  icon={<Monitor className="h-5 w-5" />}
+                />
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Votre choix est enregistré dans ce navigateur.
+                Le bouton soleil/lune de l’en-tête reste disponible
+                pour basculer rapidement entre clair et sombre.
+              </p>
+            </SectionCard>
+          </TabsContent>
+
           {/* Notifications */}
-          <TabsContent value="notifications" className="mt-5 space-y-4">
+          <TabsContent
+            value="notifications"
+            className="mt-5 space-y-4"
+          >
             <SectionCard
               title="Préférences de notification"
               description="Définissez les types de notifications utiles à votre activité."
@@ -204,7 +332,9 @@ export default function Parametres() {
                     <Store className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Activité des boutiques</p>
+                    <p className="text-sm font-medium">
+                      Activité des boutiques
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       Commandes, changements d'état et activité commerciale.
                     </p>
@@ -216,7 +346,9 @@ export default function Parametres() {
                     <PackageIcon />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Produits et stocks</p>
+                    <p className="text-sm font-medium">
+                      Produits et stocks
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       Alertes liées aux produits et à la disponibilité du catalogue.
                     </p>
@@ -228,7 +360,9 @@ export default function Parametres() {
                     <Mail className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Communications BIB</p>
+                    <p className="text-sm font-medium">
+                      Communications BIB
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       Informations importantes concernant le compte et la plateforme.
                     </p>
@@ -239,7 +373,10 @@ export default function Parametres() {
           </TabsContent>
 
           {/* Sécurité */}
-          <TabsContent value="securite" className="mt-5 space-y-4">
+          <TabsContent
+            value="securite"
+            className="mt-5 space-y-4"
+          >
             <SectionCard
               title="Mot de passe"
               description="Recevez un lien sécurisé pour réinitialiser votre mot de passe."
@@ -300,7 +437,9 @@ export default function Parametres() {
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium">Déconnexion globale</p>
+                  <p className="text-sm font-medium">
+                    Déconnexion globale
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     Vous devrez vous reconnecter sur les appareils concernés.
                   </p>
@@ -335,7 +474,10 @@ export default function Parametres() {
           </TabsContent>
 
           {/* Abonnement */}
-          <TabsContent value="abonnement" className="mt-5 space-y-4">
+          <TabsContent
+            value="abonnement"
+            className="mt-5 space-y-4"
+          >
             <SubscriptionSection />
 
             <AddOnsCompact
@@ -346,7 +488,10 @@ export default function Parametres() {
           </TabsContent>
 
           {/* Paiement */}
-          <TabsContent value="paiement" className="mt-5 space-y-4">
+          <TabsContent
+            value="paiement"
+            className="mt-5 space-y-4"
+          >
             <SectionCard
               title="Facturation et moyens de paiement"
               description="Gérez vos factures et moyens de paiement via le portail de facturation."
@@ -355,7 +500,9 @@ export default function Parametres() {
               <div className="flex items-start gap-3 rounded-lg border border-border/50 bg-muted/30 p-3">
                 <CreditCard className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
                 <div>
-                  <p className="text-sm font-medium">Portail de facturation</p>
+                  <p className="text-sm font-medium">
+                    Portail de facturation
+                  </p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     Les factures et moyens de paiement disponibles dépendent
                     de votre abonnement et de la configuration Stripe.
@@ -367,7 +514,9 @@ export default function Parametres() {
                 size="sm"
                 variant="outline"
                 onClick={() => portal.mutate()}
-                disabled={portal.isPending || subscriptions.length === 0}
+                disabled={
+                  portal.isPending || subscriptions.length === 0
+                }
               >
                 {portal.isPending ? (
                   <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
@@ -386,7 +535,9 @@ export default function Parametres() {
               icon={<CreditCard className="h-4 w-4" />}
             >
               <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
-                <p className="text-sm font-medium">Configuration des versements</p>
+                <p className="text-sm font-medium">
+                  Configuration des versements
+                </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   La configuration du compte de versement marchand doit être
                   effectuée via le parcours Stripe Connect prévu à cet effet.
@@ -410,6 +561,54 @@ export default function Parametres() {
         </Tabs>
       </div>
     </DashboardLayout>
+  );
+}
+
+function ThemePreferenceOption({
+  title,
+  description,
+  selected,
+  onClick,
+  icon,
+}: {
+  title: string;
+  description: string;
+  selected: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+}) {
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      onClick={onClick}
+      aria-pressed={selected}
+      className={`h-auto min-h-28 justify-start whitespace-normal p-4 text-left ${
+        selected
+          ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+          : "border-border/60"
+      }`}
+    >
+      <span className="flex w-full items-start gap-3">
+        <span className="mt-0.5 text-primary">{icon}</span>
+
+        <span className="min-w-0 flex-1">
+          <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            {title}
+
+            {selected && (
+              <Badge variant="secondary" className="text-[10px]">
+                Actif
+              </Badge>
+            )}
+          </span>
+
+          <span className="mt-1 block text-xs font-normal leading-relaxed text-muted-foreground">
+            {description}
+          </span>
+        </span>
+      </span>
+    </Button>
   );
 }
 
@@ -459,7 +658,9 @@ function AddOnsCompact({
 
         <div className="min-w-0">
           <p className="text-sm font-medium">{title}</p>
-          <p className="text-xs text-muted-foreground">{description}</p>
+          <p className="text-xs text-muted-foreground">
+            {description}
+          </p>
         </div>
       </div>
 
