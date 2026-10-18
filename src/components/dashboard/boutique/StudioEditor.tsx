@@ -1486,19 +1486,74 @@ export function StudioEditor({
     onError: (error) => {
       if (
         error instanceof Error &&
-        error.message ===
-          "validation_failed"
+        error.message === "validation_failed"
       ) {
+        const firstIssue = validation.errors[0];
+
         toast.error(
-          "La boutique doit être corrigée avant publication.",
+          firstIssue
+            ? `Publication bloquée : ${firstIssue}`
+            : "La boutique doit être corrigée avant publication.",
         );
+
         return;
       }
 
+      // Ne pas exposer les détails techniques de Supabase
+      // ou de PostgreSQL dans l'interface marchand.
+      const rawMessage =
+        error &&
+        typeof error === "object" &&
+        "message" in error
+          ? String(
+              (error as { message?: unknown }).message ?? "",
+            )
+          : "";
+
+      const publicationMessages: Array<[string, string]> = [
+        [
+          "Brand Studio doit être terminé",
+          "Terminez le Brand Studio avant de publier la boutique.",
+        ],
+        [
+          "titre SEO doit contenir entre 10 et 60",
+          "Le titre SEO doit contenir entre 10 et 60 caractères.",
+        ],
+        [
+          "méta-description doit contenir entre 50 et 160",
+          "La méta-description SEO doit contenir entre 50 et 160 caractères.",
+        ],
+        [
+          "trois scènes visibles",
+          "Ajoutez au moins trois scènes visibles à la boutique.",
+        ],
+        [
+          "Hero, Vitrine produits et CTA",
+          "Les scènes Hero, Vitrine produits et CTA doivent être visibles.",
+        ],
+        [
+          "Hero doit avoir un titre et un CTA",
+          "Complétez le titre et le bouton d’action du Hero.",
+        ],
+        [
+          "aucun produit actif du catalogue BIB",
+          "Ajoutez au moins un produit actif du catalogue BIB avant de publier.",
+        ],
+      ];
+
+      const normalizedMessage =
+        rawMessage.toLocaleLowerCase("fr");
+
+      const matchedMessage = publicationMessages.find(
+        ([needle]) =>
+          normalizedMessage.includes(
+            needle.toLocaleLowerCase("fr"),
+          ),
+      )?.[1];
+
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Publication impossible.",
+        matchedMessage ??
+          "Publication impossible. Vérifiez les éléments requis et réessayez. Si le problème persiste, contactez le support BIB.",
       );
     },
   });
@@ -1989,12 +2044,23 @@ export function StudioEditor({
             variant="ghost"
             size="sm"
             className="gap-2"
-            onClick={() =>
-              navigate(
-                "/dashboard/boutiques",
-              )
-            }
+            onClick={() => navigate("/dashboard/boutiques")}
           >
+            <ActionButton
+              size="sm"
+              state={stateFromMutation(
+                publish,
+              )}
+              loadingLabel="Publication…"
+              successLabel="Publié"
+              errorLabel="Échec"
+              onClick={() =>
+                publish.mutate()
+              }
+            >
+              <CheckCircle2 className="mr-2 h-4 w-4" />
+              Publier
+            </ActionButton>
             <ArrowLeft className="h-4 w-4" />
             Boutiques
           </Button>
@@ -2062,6 +2128,23 @@ export function StudioEditor({
           </ActionButton>
         </div>
       </div>
+
+      {!validation.ok && (
+        <div
+          role="status"
+          className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm"
+        >
+          <p className="font-medium">
+            À corriger avant publication
+          </p>
+
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
+            {validation.errors.map((issue) => (
+              <li key={issue}>{issue}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Pages */}
       <Card className="overflow-hidden">
