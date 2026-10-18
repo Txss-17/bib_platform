@@ -219,7 +219,9 @@ function useGenerateBrandDNA() {
         }
       );
       if (answersError) {
-        throw answersError;
+        throw new Error(
+          `Impossible d'enregistrer les réponses du Brand Studio : ${answersError.message}`
+        );
       }
       const {
         data: existing

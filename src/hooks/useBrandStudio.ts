@@ -6,6 +6,7 @@ findSceneDefinition,
 pickStudioBundle,
 } from "@/lib/studioScenes";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 /* ––––––––––––––––––––––––––––––––––––––
 
@@ -433,7 +434,7 @@ throw new Error(
   /*
    * L'IA ne devient pas la source de vérité des réponses du fondateur.
    * Les réponses originales sont persistées telles quelles dans
-   * studio_answers.
+   * boutique_studio_answers.
    */
 
   const upsertPayload = {
@@ -463,7 +464,7 @@ throw new Error(
     .upsert(
       {
         boutique_id: params.boutiqueId,
-        answers: params.answers as unknown as Record<string, unknown>,
+        answers: params.answers as unknown as Json,
         updated_at: new Date().toISOString(),
       } as never,
       {
@@ -472,7 +473,9 @@ throw new Error(
     );
   
   if (answersError) {
-    throw answersError;
+    throw new Error(
+      `Impossible d'enregistrer les réponses du Brand Studio : ${answersError.message}`,
+    );
   }
 
   /*

@@ -96,8 +96,6 @@ SELECT
   COALESCE(studio_answers, '{}'::jsonb)
 FROM public.boutique_brand_dna
 ON CONFLICT (boutique_id)
-DO UPDATE SET
-  answers = EXCLUDED.answers,
-  updated_at = now();
+DO NOTHING;
 
 COMMIT;

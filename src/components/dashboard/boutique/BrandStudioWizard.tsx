@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import {
   ArrowLeft,
@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   type StudioAnswers,
   useGenerateBrandDNA,
+  useStudioAnswers,
 } from "@/hooks/useBrandStudio";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -231,8 +232,15 @@ export function BrandStudioWizard({
   const [answers, setAnswers] = useState<StudioAnswers>(() =>
     createInitialAnswers(category),
   );
+  const restoredAnswersForBoutique = useRef<string | null>(null);
 
   const generate = useGenerateBrandDNA();
+  const {
+    data: studioAnswers,
+    isLoading: studioAnswersLoading,
+    isError: studioAnswersError,
+    refetch: refetchStudioAnswers,
+  } = useStudioAnswers(boutiqueId);
 
   const { data: boutique } = useQuery({
     queryKey: ["brand-studio-boutique", boutiqueId],
@@ -251,6 +259,41 @@ export function BrandStudioWizard({
     },
     enabled: !!boutiqueId,
   });
+
+  useEffect(() => {
+    if (
+      studioAnswersLoading ||
+      studioAnswersError ||
+      restoredAnswersForBoutique.current === boutiqueId
+    ) {
+      return;
+    }
+
+    restoredAnswersForBoutique.current = boutiqueId;
+    setAnswers({
+      ...createInitialAnswers(category, boutique?.name),
+      ...(studioAnswers as Partial<StudioAnswers> | null ?? {}),
+    });
+  }, [
+    boutique?.name,
+    boutiqueId,
+    category,
+    studioAnswers,
+    studioAnswersError,
+    studioAnswersLoading,
+  ]);
+
+  useEffect(() => {
+    if (!boutique?.name) {
+      return;
+    }
+
+    setAnswers((current) =>
+      current.brandName
+        ? current
+        : { ...current, brandName: boutique.name },
+    );
+  }, [boutique?.name]);
 
   const totalSteps = STEPS.length;
   const progress = ((step + 1) / totalSteps) * 100;
@@ -376,6 +419,32 @@ export function BrandStudioWizard({
     answers.brandName ||
     boutique?.name ||
     "Votre marque";
+
+  if (studioAnswersLoading) {
+    return (
+      <Card className="flex min-h-48 items-center justify-center gap-2 p-8 text-sm text-muted-foreground">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        Chargement des réponses du Brand Studio…
+      </Card>
+    );
+  }
+
+  if (studioAnswersError) {
+    return (
+      <Card className="space-y-4 p-6">
+        <p className="text-sm text-destructive">
+          Impossible de charger les réponses enregistrées du Brand Studio.
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => void refetchStudioAnswers()}
+        >
+          Réessayer
+        </Button>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full overflow-hidden">
