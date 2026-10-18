@@ -1,7 +1,31 @@
-import { useState, useMemo, useEffect } from "react";
+
+import { useEffect, useMemo, useState } from "react";
+import {
+  AlarmClock,
+  AlertCircle,
+  ArrowDownRight,
+  ArrowRight,
+  ArrowUpRight,
+  CheckCircle2,
+  Clock3,
+  Download,
+  FileText,
+  Filter,
+  Package,
+  Radio,
+  RotateCcw,
+  Search,
+  ShieldCheck,
+  ShoppingBag,
+  Sparkles,
+  Truck,
+  X,
+} from "lucide-react";
+
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { Badge } from "@/components/ui/badge";
+import { OrderDetailDialog } from "@/components/dashboard/OrderDetailDialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -9,123 +33,249 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Package,
-  Truck,
-  CheckCircle,
-  Clock,
-  AlertCircle,
-  ShoppingBag,
-  MoreHorizontal,
-  Download,
-  RotateCcw,
-  Search,
-  FileText,
-  AlarmClock,
-  Radio,
-  Sparkles,
-  PlusCircle,
-} from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { exportToCSV, exportToPDF } from "@/lib/exportUtils";
+
 import { useOrders, useUpdateOrderStatus } from "@/hooks/useOrders";
 import { useBoutiques } from "@/hooks/useBoutiques";
-import { playCashRegisterSound } from "@/lib/notificationSound";
-import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "@/hooks/use-toast";
-import { OrderDetailDialog } from "@/components/dashboard/OrderDetailDialog";
+import { useOrderPulse } from "@/hooks/useOrderPulse";
+import { exportToCSV, exportToPDF } from "@/lib/exportUtils";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { playCashRegisterSound } from "@/lib/notificationSound";
 import type { Database } from "@/integrations/supabase/types";
 import type { OrderWithProduct } from "@/hooks/useOrders";
-import { PageHeader, SectionCard, KpiTile, KpiTileSkeleton, EmptyState, RealtimeStatusPill, KpiGrid } from "@/components/dashboard/shared";
-import { useOrderPulse } from "@/hooks/useOrderPulse";
-import { cn } from "@/lib/utils";
 
 type LogisticsStatus = Database["public"]["Enums"]["logistics_status"];
 
+const ESCALATION_HOURS = 48;
+
 const statusConfig: Record<
   LogisticsStatus,
-  { label: string; icon: React.ElementType; tone: string }
+  {
+    label: string;
+    icon: typeof Clock3;
+    className: string;
+    dot: string;
+  }
 > = {
-  pending: { label: "En attente", icon: Clock, tone: "bg-warning/10 text-warning border-warning/30/20" },
-  processing: { label: "En préparation", icon: Package, tone: "bg-info/10 text-info border-info/30/20" },
-  shipped: { label: "Expédié", icon: Truck, tone: "bg-info/10 text-info border-info/30/20" },
-  delivered: { label: "Livré", icon: CheckCircle, tone: "bg-success/10 text-success border-success/30/20" },
-  returned: { label: "Retourné", icon: AlertCircle, tone: "bg-destructive/10 text-destructive border-destructive/20" },
+  pending: {
+    label: "À valider",
+    icon: Clock3,
+    className: "border-amber-300 bg-amber-50 text-amber-800",
+    dot: "bg-amber-500",
+  },
+  processing: {
+    label: "En préparation",
+    icon: Package,
+    className: "border-blue-200 bg-blue-50 text-blue-800",
+    dot: "bg-blue-600",
+  },
+  shipped: {
+    label: "Expédiée",
+    icon: Truck,
+    className: "border-indigo-200 bg-indigo-50 text-indigo-800",
+    dot: "bg-indigo-500",
+  },
+  delivered: {
+    label: "Livrée",
+    icon: CheckCircle2,
+    className: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    dot: "bg-emerald-500",
+  },
+  returned: {
+    label: "Retournée",
+    icon: RotateCcw,
+    className: "border-red-200 bg-red-50 text-red-800",
+    dot: "bg-red-500",
+  },
 };
 
-const statusFlow: LogisticsStatus[] = ["pending", "processing", "shipped", "delivered"];
+const statusFlow: LogisticsStatus[] = [
+  "pending",
+  "processing",
+  "shipped",
+  "delivered",
+];
+
+const exportColumns = [
+  { header: "Commande", accessor: (o: any) => o.order_number },
+  { header: "Client", accessor: (o: any) => o.customer_name },
+  { header: "Email", accessor: (o: any) => o.customer_email },
+  {
+    header: "Produit",
+    accessor: (o: any) => o.products?.supplier_products?.name || "",
+  },
+  {
+    header: "Montant",
+    accessor: (o: any) => `${Number(o.amount).toFixed(2)} €`,
+  },
+  {
+    header: "Statut",
+    accessor: (o: any) =>
+      statusConfig[o.logistics_status as LogisticsStatus]?.label ||
+      o.logistics_status,
+  },
+  { header: "Marché", accessor: (o: any) => o.market },
+  {
+    header: "Date",
+    accessor: (o: any) =>
+      new Date(o.created_at).toLocaleDateString("fr-FR"),
+  },
+];
+
+function formatEUR(value: number) {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function relativeTime(value: string) {
+  const difference = Math.max(0, Date.now() - new Date(value).getTime());
+  const minutes = Math.floor(difference / 60_000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (minutes < 1) return "À l’instant";
+  if (minutes < 60) return `Il y a ${minutes} min`;
+  if (hours < 24) return `Il y a ${hours} h`;
+  return `Il y a ${days} j`;
+}
 
 function StatusBadge({ status }: { status: LogisticsStatus }) {
-  const config = statusConfig[status];
+  const config = statusConfig[status] || statusConfig.pending;
   const Icon = config.icon;
+
   return (
     <span
-      className={cn(
-        "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border",
-        config.tone,
-      )}
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-semibold ${config.className}`}
     >
-      <Icon className="w-3 h-3" />
+      <Icon className="h-3.5 w-3.5" />
       {config.label}
     </span>
   );
 }
 
-const orderExportColumns = [
-  { header: "N° Commande", accessor: (o: any) => o.order_number },
-  { header: "Client", accessor: (o: any) => o.customer_name },
-  { header: "Email", accessor: (o: any) => o.customer_email },
-  { header: "Produit", accessor: (o: any) => o.products?.supplier_products?.name || "" },
-  { header: "Montant", accessor: (o: any) => Number(o.amount).toFixed(2) + " €" },
-  { header: "Statut", accessor: (o: any) => statusConfig[o.logistics_status as LogisticsStatus]?.label || o.logistics_status },
-  { header: "Marché", accessor: (o: any) => o.market },
-  { header: "Date", accessor: (o: any) => new Date(o.created_at).toLocaleDateString("fr-FR") },
-];
+function MetricCard({
+  label,
+  value,
+  detail,
+  icon: Icon,
+  variant = "default",
+}: {
+  label: string;
+  value: string | number;
+  detail: string;
+  icon: typeof ShoppingBag;
+  variant?: "default" | "blue" | "gold" | "alert";
+}) {
+  const variants = {
+    default: {
+      card: "border-slate-200 bg-white",
+      icon: "bg-slate-100 text-slate-700",
+      value: "text-slate-950",
+    },
+    blue: {
+      card: "border-blue-200 bg-blue-50/70",
+      icon: "bg-[#12376A] text-white",
+      value: "text-[#12376A]",
+    },
+    gold: {
+      card: "border-amber-200 bg-amber-50/70",
+      icon: "bg-amber-100 text-amber-800",
+      value: "text-slate-950",
+    },
+    alert: {
+      card: "border-red-200 bg-red-50/70",
+      icon: "bg-red-100 text-red-700",
+      value: "text-red-800",
+    },
+  };
 
-const ESCALATION_HOURS = 48;
+  const style = variants[variant];
 
-function relativeTime(iso: string): string {
-  const d = new Date(iso);
-  const diff = Date.now() - d.getTime();
-  const m = Math.floor(diff / 60_000);
-  if (m < 1) return "à l'instant";
-  if (m < 60) return `il y a ${m} min`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `il y a ${h} h`;
-  const days = Math.floor(h / 24);
-  return `il y a ${days} j`;
+  return (
+    <section
+      className={`min-w-0 rounded-2xl border p-4 transition-shadow hover:shadow-md sm:p-5 ${style.card}`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-sm font-medium leading-5 text-slate-600">
+          {label}
+        </p>
+        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${style.icon}`}>
+          <Icon className="h-5 w-5" />
+        </span>
+      </div>
+      <p className={`mt-4 break-words text-2xl font-bold tracking-tight sm:text-3xl ${style.value}`}>
+        {value}
+      </p>
+      <p className="mt-1 text-xs leading-5 text-slate-500">{detail}</p>
+    </section>
+  );
+}
+
+function SectionHeading({
+  eyebrow,
+  title,
+  description,
+  action,
+}: {
+  eyebrow?: string;
+  title: string;
+  description?: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+      <div className="min-w-0">
+        {eyebrow && (
+          <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.16em] text-blue-700">
+            {eyebrow}
+          </p>
+        )}
+        <h2 className="text-lg font-bold tracking-tight text-slate-950">
+          {title}
+        </h2>
+        {description && (
+          <p className="mt-1 text-sm leading-5 text-slate-500">
+            {description}
+          </p>
+        )}
+      </div>
+      {action}
+    </div>
+  );
 }
 
 export default function Commandes() {
   const { data: orders, isLoading, error } = useOrders();
   const { data: boutiques = [] } = useBoutiques();
   const updateStatus = useUpdateOrderStatus();
-  const [selectedBoutique, setSelectedBoutique] = useState<string>("all");
-  const [activeTab, setActiveTab] = useState<string>("priority");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedOrder, setSelectedOrder] = useState<OrderWithProduct | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
-  const { feed: pulseFeed, status: pulseStatus, windowMinutes } = useOrderPulse(selectedBoutique);
 
-  // Realtime side-effects: cash register sound + toasts
+  const [selectedBoutique, setSelectedBoutique] = useState("all");
+  const [activeTab, setActiveTab] = useState("priority");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedOrder, setSelectedOrder] =
+    useState<OrderWithProduct | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+
+  const {
+    feed: pulseFeed,
+    status: pulseStatus,
+    windowMinutes,
+  } = useOrderPulse(selectedBoutique);
+
   useEffect(() => {
     const channel = supabase
-      .channel("orders-side-effects")
+      .channel("bib-orders-dashboard-events")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "orders" },
@@ -133,8 +283,10 @@ export default function Commandes() {
           const orderNumber = (payload.new as any)?.order_number;
           playCashRegisterSound();
           toast({
-            title: "💰 Nouvelle commande !",
-            description: `Commande ${orderNumber || ""} reçue`,
+            title: "Nouvelle commande reçue",
+            description: orderNumber
+              ? `Commande ${orderNumber}`
+              : "Une nouvelle commande vient d’arriver.",
           });
         },
       )
@@ -145,634 +297,1096 @@ export default function Commandes() {
           const oldStatus = (payload.old as any)?.logistics_status;
           const newStatus = (payload.new as any)?.logistics_status;
           const orderNumber = (payload.new as any)?.order_number;
+
           if (oldStatus !== newStatus && newStatus && orderNumber) {
             toast({
-              title: "📦 Statut mis à jour",
-              description: `Commande ${orderNumber} : ${statusConfig[newStatus as LogisticsStatus]?.label || newStatus}`,
+              title: "Statut actualisé",
+              description: `${orderNumber} : ${
+                statusConfig[newStatus as LogisticsStatus]?.label ||
+                newStatus
+              }`,
             });
           }
         },
       )
       .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      void supabase.removeChannel(channel);
     };
   }, []);
 
-  const openOrderDetail = (order: OrderWithProduct) => {
-    setSelectedOrder(order);
-    setDetailOpen(true);
-  };
-
-  const scoped = useMemo(
+  const scopedOrders = useMemo(
     () =>
       (orders || []).filter(
-        (o) => selectedBoutique === "all" || o.boutique_id === selectedBoutique,
+        (order) =>
+          selectedBoutique === "all" ||
+          order.boutique_id === selectedBoutique,
       ),
     [orders, selectedBoutique],
   );
 
   const stats = useMemo(() => {
     const now = Date.now();
-    const escalationMs = ESCALATION_HOURS * 3600_000;
-    const isOverdue = (o: OrderWithProduct) =>
-      o.logistics_status === "pending" &&
-      now - new Date(o.created_at).getTime() > escalationMs;
-    const isUrgent = (o: OrderWithProduct) =>
-      o.logistics_status === "pending" &&
-      now - new Date(o.created_at).getTime() > (escalationMs * 0.75);
+    const escalationMs = ESCALATION_HOURS * 60 * 60 * 1000;
+
+    const isOverdue = (order: OrderWithProduct) =>
+      order.logistics_status === "pending" &&
+      now - new Date(order.created_at).getTime() > escalationMs;
+
+    const isUrgent = (order: OrderWithProduct) =>
+      order.logistics_status === "pending" &&
+      now - new Date(order.created_at).getTime() > escalationMs * 0.75;
+
+    const pending = scopedOrders.filter(
+      (order) => order.logistics_status === "pending",
+    ).length;
+    const processing = scopedOrders.filter(
+      (order) => order.logistics_status === "processing",
+    ).length;
+    const shipped = scopedOrders.filter(
+      (order) => order.logistics_status === "shipped",
+    ).length;
+    const delivered = scopedOrders.filter(
+      (order) => order.logistics_status === "delivered",
+    ).length;
+    const returned = scopedOrders.filter(
+      (order) => order.logistics_status === "returned",
+    ).length;
+    const overdue = scopedOrders.filter(isOverdue).length;
+    const urgent = scopedOrders.filter(isUrgent).length;
+    const revenue = scopedOrders
+      .filter((order) => order.logistics_status !== "returned")
+      .reduce((total, order) => total + Number(order.amount || 0), 0);
+
     return {
-      total: scoped.length,
-      pending: scoped.filter((o) => o.logistics_status === "pending").length,
-      processing: scoped.filter((o) => o.logistics_status === "processing").length,
-      shipped: scoped.filter((o) => o.logistics_status === "shipped").length,
-      delivered: scoped.filter((o) => o.logistics_status === "delivered").length,
-      returned: scoped.filter((o) => o.logistics_status === "returned").length,
-      overdue: scoped.filter(isOverdue).length,
-      urgent: scoped.filter(isUrgent).length,
-      revenue: scoped
-        .filter((o) => o.logistics_status !== "returned")
-        .reduce((s, o) => s + Number(o.amount), 0),
+      total: scopedOrders.length,
+      pending,
+      processing,
+      shipped,
+      delivered,
+      returned,
+      overdue,
+      urgent,
+      revenue,
       isOverdue,
       isUrgent,
     };
-  }, [scoped]);
+  }, [scopedOrders]);
 
   const tabs = [
-    { value: "priority", label: "À traiter", icon: AlarmClock, count: stats.pending },
-    { value: "all", label: "Toutes", icon: ShoppingBag, count: stats.total },
-    { value: "processing", label: "En préparation", icon: Package, count: stats.processing },
-    { value: "shipped", label: "En livraison", icon: Truck, count: stats.shipped },
-    { value: "delivered", label: "Livrées", icon: CheckCircle, count: stats.delivered },
-    { value: "returned", label: "Retournées", icon: RotateCcw, count: stats.returned },
+    { value: "priority", label: "À traiter", count: stats.pending },
+    { value: "all", label: "Toutes", count: stats.total },
+    { value: "processing", label: "Préparation", count: stats.processing },
+    { value: "shipped", label: "Expédiées", count: stats.shipped },
+    { value: "delivered", label: "Livrées", count: stats.delivered },
+    { value: "returned", label: "Retours", count: stats.returned },
   ];
 
   const filteredOrders = useMemo(() => {
-    const query = searchQuery.toLowerCase().trim();
-    return scoped.filter((order) => {
+    const query = searchQuery.trim().toLocaleLowerCase("fr-FR");
+
+    return scopedOrders.filter((order) => {
       if (activeTab === "priority") {
         if (order.logistics_status !== "pending") return false;
-      } else if (activeTab !== "all" && order.logistics_status !== activeTab) {
+      } else if (
+        activeTab !== "all" &&
+        order.logistics_status !== activeTab
+      ) {
         return false;
       }
-      if (
-        query &&
-        !order.order_number.toLowerCase().includes(query) &&
-        !order.customer_name.toLowerCase().includes(query) &&
-        !order.customer_email.toLowerCase().includes(query)
-      )
-        return false;
-      return true;
-    });
-  }, [scoped, activeTab, searchQuery]);
 
-  // Priority-first sort: overdue, then urgent, then most recent
+      if (!query) return true;
+
+      const searchable = [
+        order.order_number,
+        order.customer_name,
+        order.customer_email,
+        order.products?.supplier_products?.name,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLocaleLowerCase("fr-FR");
+
+      return searchable.includes(query);
+    });
+  }, [scopedOrders, activeTab, searchQuery]);
+
   const sortedOrders = useMemo(() => {
     if (activeTab !== "priority") return filteredOrders;
+
     return [...filteredOrders].sort((a, b) => {
-      const aO = stats.isOverdue(a) ? 2 : stats.isUrgent(a) ? 1 : 0;
-      const bO = stats.isOverdue(b) ? 2 : stats.isUrgent(b) ? 1 : 0;
-      if (aO !== bO) return bO - aO;
-      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      const priorityA = stats.isOverdue(a)
+        ? 2
+        : stats.isUrgent(a)
+          ? 1
+          : 0;
+      const priorityB = stats.isOverdue(b)
+        ? 2
+        : stats.isUrgent(b)
+          ? 1
+          : 0;
+
+      if (priorityA !== priorityB) return priorityB - priorityA;
+
+      return (
+        new Date(a.created_at).getTime() -
+        new Date(b.created_at).getTime()
+      );
     });
   }, [filteredOrders, activeTab, stats]);
 
-  const handleStatusChange = (orderId: string, newStatus: LogisticsStatus) => {
+  const openOrder = (order: OrderWithProduct) => {
+    setSelectedOrder(order);
+    setDetailOpen(true);
+  };
+
+  const handleStatusChange = (
+    orderId: string,
+    status: LogisticsStatus,
+  ) => {
     updateStatus.mutate(
-      { orderId, status: newStatus },
+      { orderId, status },
       {
-        onSuccess: () =>
+        onSuccess: () => {
           toast({
             title: "Statut mis à jour",
-            description: `Commande passée en "${statusConfig[newStatus].label}"`,
-          }),
-        onError: () =>
+            description: `La commande est maintenant : ${statusConfig[status].label}.`,
+          });
+        },
+        onError: (mutationError) => {
           toast({
-            title: "Erreur",
-            description: "Impossible de mettre à jour le statut",
+            title: "Action impossible",
+            description:
+              mutationError instanceof Error
+                ? mutationError.message
+                : "La mise à jour du statut a échoué.",
             variant: "destructive",
-          }),
+          });
+        },
       },
     );
   };
 
-  const fmtEUR = (n: number) =>
-    new Intl.NumberFormat("fr-FR", {
-      style: "currency",
-      currency: "EUR",
-      maximumFractionDigits: 0,
-    }).format(n);
+  const exportOrders = (kind: "csv" | "pdf") => {
+    if (!sortedOrders.length) return;
 
-  const exportNow = (kind: "csv" | "pdf") => {
-    const bName =
-      selectedBoutique !== "all"
-        ? boutiques.find((b) => b.id === selectedBoutique)?.name
-        : undefined;
-    if (!sortedOrders?.length) return;
+    const boutiqueName =
+      selectedBoutique === "all"
+        ? "Brand-In-A-Box"
+        : boutiques.find((boutique) => boutique.id === selectedBoutique)
+            ?.name || "Brand-In-A-Box";
+
     if (kind === "csv") {
-      exportToCSV(sortedOrders as any, orderExportColumns, "commandes", {
-        boutiqueName: bName || "Brand-In-A-Box",
+      exportToCSV(sortedOrders as any, exportColumns, "commandes", {
+        boutiqueName,
       });
-    } else {
-      exportToPDF(
-        sortedOrders as any,
-        orderExportColumns,
-        "Rapport des Commandes",
-        "commandes",
-        { boutiqueName: bName || "Brand-In-A-Box" },
-      );
+      return;
     }
+
+    exportToPDF(
+      sortedOrders as any,
+      exportColumns,
+      "Rapport des commandes",
+      "commandes",
+      { boutiqueName },
+    );
   };
 
   if (error) {
     return (
       <DashboardLayout>
-        <PageHeader
-          eyebrow="Operations"
-          title="Cockpit Commandes"
-          subtitle="Pilotez vos commandes en temps réel."
-        />
-        <SectionCard title="Erreur">
-          <p className="text-destructive">
-            Une erreur est survenue lors du chargement des commandes.
-          </p>
-        </SectionCard>
+        <div className="mx-auto max-w-7xl space-y-5">
+          <div className="rounded-3xl bg-[#102B55] p-6 text-white sm:p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-300">
+              BIB · Opérations
+            </p>
+            <h1 className="mt-3 text-3xl font-bold">Cockpit Commandes</h1>
+            <p className="mt-2 text-sm text-blue-100">
+              Centralisez le suivi et la validation de vos commandes.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800">
+            Impossible de charger les commandes. Actualisez la page et
+            vérifiez votre connexion avant de réessayer.
+          </div>
+        </div>
       </DashboardLayout>
     );
   }
 
   return (
     <DashboardLayout>
-      <PageHeader
-        eyebrow="Operations"
-        title="Cockpit Commandes"
-        subtitle="Vendez. Brand-In-A-Box opère. Vous gardez la relation client. Escalation à 48 h."
-        actions={
-          <>
-            <Select value={selectedBoutique} onValueChange={setSelectedBoutique}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Toutes les boutiques" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Toutes les boutiques</SelectItem>
-                {boutiques.map((b) => (
-                  <SelectItem key={b.id} value={b.id}>
-                    {b.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={() => exportNow("csv")}
-              disabled={!sortedOrders?.length}
-            >
-              <Download className="w-4 h-4" /> CSV
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={() => exportNow("pdf")}
-              disabled={!sortedOrders?.length}
-            >
-              <FileText className="w-4 h-4" /> PDF
-            </Button>
-          </>
-        }
-      />
-
-      {/* KPIs */}
-      <KpiGrid cols={4}>
-        {isLoading ? (
-          <>
-            <KpiTileSkeleton tone="primary" />
-            <KpiTileSkeleton />
-            <KpiTileSkeleton />
-            <KpiTileSkeleton tone="gold" />
-          </>
-        ) : (
-          <>
-            <KpiTile
-              tone="primary"
-              label="À traiter"
-              value={stats.pending}
-              icon={<AlarmClock className="w-5 h-5" />}
-              hint={
-                stats.overdue > 0
-                  ? `${stats.overdue} en escalation`
-                  : "Sous 48 h"
-              }
-            />
-            <KpiTile
-              label="En logistique"
-              value={stats.processing + stats.shipped}
-              icon={<Truck className="w-5 h-5" />}
-              hint={`${stats.shipped} expédiées`}
-            />
-            <KpiTile
-              label="Livrées"
-              value={stats.delivered}
-              icon={<CheckCircle className="w-5 h-5" />}
-              hint={
-                stats.returned > 0
-                  ? `${stats.returned} retours`
-                  : "Aucun retour"
-              }
-            />
-            <KpiTile
-              tone="gold"
-              label="CA encaissé"
-              value={fmtEUR(stats.revenue)}
-              icon={<Sparkles className="w-5 h-5" />}
-              hint="Total période visible"
-            />
-          </>
-        )}
-      </KpiGrid>
-
-      {/* Escalation alert + Realtime feed */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
-        {/* Escalation banner / context */}
-        <SectionCard
-          className="lg:col-span-2"
-          title={
-            stats.overdue > 0
-              ? "Commandes en escalation"
-              : "Aucune escalation en cours"
-          }
-          description={
-            stats.overdue > 0
-              ? `Ces commandes dépassent ${ESCALATION_HOURS} h sans validation : passez-les en préparation au plus vite.`
-              : `Toutes vos commandes sont traitées sous le délai de ${ESCALATION_HOURS} h.`
-          }
-          icon={<AlarmClock className="w-4 h-4" />}
-        >
-          {stats.overdue === 0 ? (
-            <EmptyState
-              icon={<CheckCircle className="w-6 h-6" />}
-              title="Tout est sous contrôle"
-              description={`Aucune commande ne dépasse les ${ESCALATION_HOURS} h sans validation.`}
-            />
-          ) : (
-            <ul className="divide-y divide-border/60">
-              {scoped
-                .filter(stats.isOverdue)
-                .slice(0, 5)
-                .map((o) => (
-                  <li
-                    key={o.id}
-                    className="flex items-center justify-between gap-3 py-3 cursor-pointer hover:bg-muted/30 -mx-2 px-2 rounded-lg transition-colors"
-                    onClick={() => openOrderDetail(o)}
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-mono text-muted-foreground">
-                        {o.order_number}
-                      </p>
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {o.customer_name}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-xs text-destructive font-medium">
-                        {relativeTime(o.created_at)}
-                      </span>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleStatusChange(o.id, "processing");
-                        }}
-                      >
-                        Traiter
-                      </Button>
-                    </div>
-                  </li>
-                ))}
-            </ul>
-          )}
-        </SectionCard>
-
-        <SectionCard
-          title="Flux en direct"
-          description={`Activité commandes sur les ${windowMinutes} dernières minutes`}
-          icon={<Radio className="w-4 h-4" />}
-          actions={<RealtimeStatusPill status={pulseStatus} />}
-        >
-          {pulseFeed.length === 0 ? (
-            <EmptyState
-              icon={<Radio className="w-6 h-6" />}
-              title="Pas d'activité récente"
-              description="Les nouvelles commandes et changements de statut apparaîtront ici en temps réel."
-            />
-          ) : (
-            <ul className="divide-y divide-border/60 -mt-2">
-              {pulseFeed.slice(0, 10).map((e) => (
-                <li
-                  key={e.id}
-                  className="flex items-center justify-between py-2.5 gap-3 animate-fade-in"
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span
-                      className={cn(
-                        "w-1.5 h-1.5 rounded-full shrink-0",
-                        e.kind === "new" ? "bg-secondary" : "bg-info",
-                      )}
-                    />
-                    <div className="min-w-0">
-                      <p className="text-sm text-foreground truncate">
-                        {e.kind === "new" ? (
-                          <>
-                            Nouvelle commande{" "}
-                            <span className="font-mono text-xs">
-                              {e.order_number}
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <span className="font-mono text-xs">
-                              {e.order_number}
-                            </span>{" "}
-                            →{" "}
-                            <span className="font-medium">
-                              {statusConfig[e.logistics_status as LogisticsStatus]?.label ||
-                                e.logistics_status}
-                            </span>
-                          </>
-                        )}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground truncate">
-                        {e.customer_name}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-xs text-muted-foreground shrink-0">
-                    {new Date(e.created_at).toLocaleTimeString("fr-FR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </SectionCard>
-      </div>
-
-      {/* Filter chips + search */}
-      <SectionCard
-        title="Carnet de commandes"
-        description="Filtrez par statut, recherchez par n° de commande, client ou email."
-        icon={<ShoppingBag className="w-4 h-4" />}
-        actions={
-          <div className="relative w-full sm:w-[220px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="N° ou client…"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-9"
-            />
-          </div>
-        }
-      >
-        <div className="flex flex-wrap items-center gap-1.5 mb-4">
-          {tabs.map((t) => {
-            const Icon = t.icon;
-            const active = activeTab === t.value;
-            return (
-              <Button
-                key={t.value}
-                type="button"
-                variant={active ? "secondary" : "outline"}
-                size="sm"
-                className={cn(
-                  "h-8 rounded-full text-xs gap-1.5",
-                  t.value === "priority" && stats.overdue > 0 && !active && "border-destructive/40 text-destructive",
-                )}
-                onClick={() => setActiveTab(t.value)}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                {t.label}
-                <Badge
-                  variant="secondary"
-                  className="ml-0.5 h-5 min-w-[20px] px-1.5 text-[10px]"
-                >
-                  {t.count}
-                </Badge>
-              </Button>
-            );
-          })}
-        </div>
-
-        {isLoading ? (
-          <div className="space-y-2">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-14 rounded-xl" />
-            ))}
-          </div>
-        ) : sortedOrders.length === 0 ? (
-          <EmptyState
-            icon={<ShoppingBag className="w-6 h-6" />}
-            title={searchQuery ? "Aucun résultat" : "Aucune commande"}
-            description={
-              searchQuery
-                ? "Essayez un autre n° de commande, client ou email."
-                : "Vos commandes apparaîtront ici dès que vos clients passeront leurs premières commandes."
-            }
-            action={
-              !searchQuery && stats.total === 0 ? (
-                <Button asChild className="gap-1.5">
-                  <a href="/dashboard/boutiques">
-                    <PlusCircle className="w-4 h-4" />
-                    Configurer ma boutique
-                  </a>
-                </Button>
-              ) : undefined
-            }
+      <main className="mx-auto w-full max-w-[1500px] space-y-7 pb-10">
+        {/* Hero */}
+        <section className="relative isolate overflow-hidden rounded-3xl bg-[#102B55] p-5 text-white shadow-lg shadow-blue-950/10 sm:p-8 lg:p-9">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full border-[36px] border-white/[0.04]"
           />
-        ) : (
-          <>
-            {/* Desktop table */}
-            <div className="hidden md:block">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>N° Commande</TableHead>
-                    <TableHead>Produit</TableHead>
-                    <TableHead>Statut</TableHead>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Marché</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Montant</TableHead>
-                    <TableHead className="w-10"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedOrders.map((order) => {
-                    const overdue = stats.isOverdue(order);
-                    const urgent = !overdue && stats.isUrgent(order);
-                    return (
-                      <TableRow
-                        key={order.id}
-                        className={cn(
-                          "cursor-pointer hover:bg-muted/40 transition-colors",
-                          overdue && "bg-destructive/5",
-                          urgent && !overdue && "bg-warning/5",
-                        )}
-                        onClick={() => openOrderDetail(order)}
-                      >
-                        <TableCell className="font-mono text-sm font-medium">
-                          <div className="flex items-center gap-1.5">
-                            {overdue && (
-                              <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
-                            )}
-                            {order.order_number}
-                          </div>
-                        </TableCell>
-                        <TableCell className="max-w-[200px] truncate">
-                          {order.products?.supplier_products?.name || "Produit inconnu"}
-                        </TableCell>
-                        <TableCell>
-                          <StatusBadge status={order.logistics_status} />
-                        </TableCell>
-                        <TableCell>{order.customer_name}</TableCell>
-                        <TableCell>
-                          <span className="px-2 py-0.5 rounded bg-muted text-xs font-medium">
-                            {order.market}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground text-sm">
-                          {relativeTime(order.created_at)}
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          {Number(order.amount).toFixed(2)} €
-                        </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreHorizontal className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              {statusFlow.map((s) => (
-                                <DropdownMenuItem
-                                  key={s}
-                                  disabled={order.logistics_status === s}
-                                  onClick={() => handleStatusChange(order.id, s)}
-                                >
-                                  {statusConfig[s].label}
-                                </DropdownMenuItem>
-                              ))}
-                              <DropdownMenuItem
-                                className="text-destructive"
-                                disabled={order.logistics_status === "returned"}
-                                onClick={() => handleStatusChange(order.id, "returned")}
-                              >
-                                Marquer retourné
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-32 right-1/4 -z-10 h-64 w-64 rounded-full bg-blue-400/10 blur-3xl"
+          />
+
+          <div className="flex flex-col justify-between gap-7 lg:flex-row lg:items-end">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.08] px-3 py-1.5 text-xs font-semibold text-blue-100">
+                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                Espace marchand · Opérations
+              </div>
+
+              <h1 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">
+                Cockpit Commandes
+              </h1>
+
+              <p className="mt-3 max-w-xl text-sm leading-6 text-blue-100 sm:text-base">
+                Une vue claire de vos commandes, des validations à effectuer
+                et de leur progression logistique.
+              </p>
+
+              <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-blue-100">
+                <span className="inline-flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4 text-amber-300" />
+                  Validation par le marchand
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Truck className="h-4 w-4 text-amber-300" />
+                  Logistique opérée par les partenaires BIB
+                </span>
+              </div>
             </div>
 
-            {/* Mobile card view */}
-            <div className="md:hidden space-y-2">
-              {sortedOrders.map((order) => {
-                const overdue = stats.isOverdue(order);
-                return (
-                  <div
-                    key={order.id}
-                    className={cn(
-                      "rounded-xl border p-3 cursor-pointer transition-colors",
-                      overdue
-                        ? "border-destructive/30 bg-destructive/5"
-                        : "border-border/60 bg-card hover:bg-muted/30",
-                    )}
-                    onClick={() => openOrderDetail(order)}
+            <div className="flex flex-col gap-3 sm:flex-row lg:min-w-[340px] lg:justify-end">
+              <Select
+                value={selectedBoutique}
+                onValueChange={setSelectedBoutique}
+              >
+                <SelectTrigger className="h-11 w-full border-white/20 bg-white/10 text-white sm:w-[220px]">
+                  <SelectValue placeholder="Toutes les boutiques" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes les boutiques</SelectItem>
+                  {boutiques.map((boutique) => (
+                    <SelectItem key={boutique.id} value={boutique.id}>
+                      {boutique.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Button
+                variant="secondary"
+                className="h-11 gap-2 bg-amber-300 font-semibold text-[#102B55] hover:bg-amber-200"
+                onClick={() => {
+                  setActiveTab("priority");
+                  setSearchQuery("");
+                }}
+              >
+                <AlarmClock className="h-4 w-4" />
+                Voir les priorités
+              </Button>
+            </div>
+          </div>
+
+          <div className="mt-8 grid grid-cols-1 gap-3 border-t border-white/15 pt-5 sm:grid-cols-3">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
+                <ShoppingBag className="h-5 w-5 text-blue-100" />
+              </span>
+              <div>
+                <p className="text-xs text-blue-200">Commandes visibles</p>
+                <p className="mt-0.5 text-xl font-bold">
+                  {isLoading ? "—" : stats.total}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-300/15">
+                <Clock3 className="h-5 w-5 text-amber-300" />
+              </span>
+              <div>
+                <p className="text-xs text-blue-200">À valider</p>
+                <p className="mt-0.5 text-xl font-bold">
+                  {isLoading ? "—" : stats.pending}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
+                <Radio className="h-5 w-5 text-emerald-300" />
+              </span>
+              <div>
+                <p className="text-xs text-blue-200">Flux de commandes</p>
+                <p className="mt-0.5 text-sm font-semibold">
+                  {pulseStatus === "connected"
+                    ? "Connecté en temps réel"
+                    : "Connexion en cours"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* KPI grid */}
+        <section>
+          <div className="mb-4 flex items-end justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-blue-700">
+                Vue d’ensemble
+              </p>
+              <h2 className="mt-1 text-xl font-bold tracking-tight text-slate-950">
+                L’essentiel de votre activité
+              </h2>
+            </div>
+            <p className="hidden text-xs text-slate-500 sm:block">
+              Selon la boutique sélectionnée
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="rounded-2xl border border-slate-200 bg-white p-5"
+                >
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="mt-5 h-8 w-24" />
+                  <Skeleton className="mt-3 h-3 w-32" />
+                </div>
+              ))
+            ) : (
+              <>
+                <MetricCard
+                  label="À traiter"
+                  value={stats.pending}
+                  detail={
+                    stats.overdue > 0
+                      ? `${stats.overdue} dépassent 48 heures`
+                      : "Validation marchand requise"
+                  }
+                  icon={AlarmClock}
+                  variant={stats.overdue > 0 ? "alert" : "blue"}
+                />
+                <MetricCard
+                  label="En cours de logistique"
+                  value={stats.processing + stats.shipped}
+                  detail={`${stats.processing} en préparation · ${stats.shipped} expédiées`}
+                  icon={Truck}
+                />
+                <MetricCard
+                  label="Commandes livrées"
+                  value={stats.delivered}
+                  detail={`${stats.returned} commande(s) retournée(s)`}
+                  icon={CheckCircle2}
+                />
+                <MetricCard
+                  label="Montant des commandes"
+                  value={formatEUR(stats.revenue)}
+                  detail="Hors commandes marquées retournées"
+                  icon={Sparkles}
+                  variant="gold"
+                />
+              </>
+            )}
+          </div>
+          <p className="mt-3 text-xs leading-5 text-slate-500">
+            Le montant affiché est calculé sur les commandes visibles. Il ne
+            constitue pas à lui seul un relevé des sommes encaissées ou des
+            versements dus au marchand.
+          </p>
+        </section>
+
+        {/* Priority and realtime */}
+        <section className="grid grid-cols-1 gap-5 xl:grid-cols-[1.35fr_0.85fr]">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex flex-col justify-between gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
+                    <AlarmClock className="h-4 w-4" />
+                  </span>
+                  <h2 className="font-bold text-slate-950">
+                    {stats.overdue > 0
+                      ? "Validations à escalader"
+                      : "Suivi des validations"}
+                  </h2>
+                </div>
+                <p className="mt-2 text-sm leading-5 text-slate-500">
+                  Les commandes en attente doivent faire l’objet d’une
+                  décision du marchand sous 48 heures.
+                </p>
+              </div>
+              {stats.overdue > 0 && (
+                <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700">
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  {stats.overdue} en retard
+                </span>
+              )}
+            </div>
+
+            {isLoading ? (
+              <div className="space-y-3 p-5">
+                {[1, 2, 3].map((item) => (
+                  <Skeleton key={item} className="h-16 w-full rounded-xl" />
+                ))}
+              </div>
+            ) : stats.overdue === 0 ? (
+              <div className="p-6">
+                <div className="flex gap-3 rounded-xl border border-emerald-100 bg-emerald-50/70 p-4">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700" />
+                  <div>
+                    <p className="text-sm font-semibold text-emerald-900">
+                      Aucune commande au-delà du délai
+                    </p>
+                    <p className="mt-1 text-sm leading-5 text-emerald-800">
+                      Continuez à vérifier les commandes en attente afin
+                      qu’elles soient prises en charge dans les temps.
+                    </p>
+                  </div>
+                </div>
+
+                {stats.urgent > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("priority")}
+                    className="mt-3 flex w-full items-center justify-between rounded-xl border border-amber-200 bg-amber-50/60 p-3 text-left transition-colors hover:bg-amber-50"
                   >
-                    <div className="flex items-start justify-between gap-2 mb-2">
+                    <span className="text-sm font-medium text-amber-900">
+                      {stats.urgent} validation(s) approchent du délai de 48 h
+                    </span>
+                    <ArrowRight className="h-4 w-4 text-amber-700" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {scopedOrders
+                  .filter(stats.isOverdue)
+                  .sort(
+                    (a, b) =>
+                      new Date(a.created_at).getTime() -
+                      new Date(b.created_at).getTime(),
+                  )
+                  .slice(0, 5)
+                  .map((order) => (
+                    <button
+                      type="button"
+                      key={order.id}
+                      onClick={() => openOrder(order)}
+                      className="flex w-full items-center justify-between gap-3 p-4 text-left transition-colors hover:bg-red-50/40 sm:px-5"
+                    >
                       <div className="min-w-0">
-                        <p className="text-xs font-mono text-muted-foreground flex items-center gap-1.5">
-                          {overdue && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
-                          )}
+                        <p className="font-mono text-xs font-semibold text-slate-500">
                           {order.order_number}
                         </p>
-                        <p className="text-sm font-medium text-foreground truncate">
-                          {order.products?.supplier_products?.name || "Produit inconnu"}
+                        <p className="mt-1 truncate text-sm font-semibold text-slate-900">
+                          {order.customer_name}
+                        </p>
+                        <p className="mt-1 truncate text-xs text-slate-500">
+                          {order.products?.supplier_products?.name ||
+                            "Produit non renseigné"}
                         </p>
                       </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          asChild
-                          onClick={(e: React.MouseEvent) => e.stopPropagation()}
-                        >
-                          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {statusFlow.map((s) => (
-                            <DropdownMenuItem
-                              key={s}
-                              disabled={order.logistics_status === s}
-                              onClick={() => handleStatusChange(order.id, s)}
-                            >
-                              {statusConfig[s].label}
-                            </DropdownMenuItem>
-                          ))}
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            disabled={order.logistics_status === "returned"}
-                            onClick={() => handleStatusChange(order.id, "returned")}
-                          >
-                            Marquer retourné
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <StatusBadge status={order.logistics_status} />
-                        <span className="text-xs text-muted-foreground truncate max-w-[140px]">
-                          {order.customer_name}
+                      <div className="shrink-0 text-right">
+                        <p className="text-sm font-bold text-red-700">
+                          {relativeTime(order.created_at)}
+                        </p>
+                        <span className="mt-1 inline-block text-xs text-blue-700">
+                          Examiner →
                         </span>
                       </div>
-                      <span className="text-sm font-bold text-foreground">
-                        {Number(order.amount).toFixed(2)} €
-                      </span>
+                    </button>
+                  ))}
+              </div>
+            )}
+
+            <div className="border-t border-slate-100 bg-slate-50/70 px-5 py-3">
+              <p className="text-xs leading-5 text-slate-500">
+                L’escalade signale un délai dépassé ; elle ne modifie pas
+                automatiquement le statut ni la responsabilité de traitement.
+              </p>
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-100 p-5">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-800">
+                    <Radio className="h-4 w-4" />
+                  </span>
+                  <h2 className="font-bold text-slate-950">Activité récente</h2>
+                </div>
+                <p className="mt-2 text-sm text-slate-500">
+                  Événements des {windowMinutes} dernières minutes
+                </p>
+              </div>
+              <span
+                className={`mt-1 inline-flex h-2.5 w-2.5 shrink-0 rounded-full ${
+                  pulseStatus === "connected"
+                    ? "bg-emerald-500"
+                    : "animate-pulse bg-amber-400"
+                }`}
+                title={
+                  pulseStatus === "connected"
+                    ? "Connecté"
+                    : "Connexion en cours"
+                }
+              />
+            </div>
+
+            {pulseFeed.length === 0 ? (
+              <div className="p-6">
+                <div className="flex flex-col items-center py-6 text-center">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+                    <Radio className="h-5 w-5" />
+                  </span>
+                  <p className="mt-3 text-sm font-semibold text-slate-800">
+                    Pas d’activité récente
+                  </p>
+                  <p className="mt-1 max-w-xs text-xs leading-5 text-slate-500">
+                    Les nouveaux événements apparaîtront ici lorsque le flux
+                    recevra des mises à jour.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {pulseFeed.slice(0, 7).map((event) => (
+                  <div
+                    key={event.id}
+                    className="flex items-start gap-3 px-5 py-3.5"
+                  >
+                    <span
+                      className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
+                        event.kind === "new"
+                          ? "bg-amber-500"
+                          : "bg-blue-600"
+                      }`}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm leading-5 text-slate-800">
+                        {event.kind === "new"
+                          ? "Nouvelle commande reçue"
+                          : "Statut de commande actualisé"}
+                      </p>
+                      <p className="mt-0.5 truncate font-mono text-xs text-slate-500">
+                        {event.order_number}
+                      </p>
+                      <p className="mt-1 truncate text-xs text-slate-500">
+                        {event.customer_name}
+                      </p>
                     </div>
-                    <div className="flex items-center justify-between mt-1.5">
-                      <span className="px-2 py-0.5 rounded bg-muted text-[10px] font-medium">
-                        {order.market}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">
-                        {relativeTime(order.created_at)}
-                      </span>
-                    </div>
+                    <span className="shrink-0 text-xs text-slate-400">
+                      {new Date(event.created_at).toLocaleTimeString(
+                        "fr-FR",
+                        { hour: "2-digit", minute: "2-digit" },
+                      )}
+                    </span>
                   </div>
+                ))}
+              </div>
+            )}
+
+            <div className="border-t border-slate-100 px-5 py-3">
+              <p className="text-xs text-slate-500">
+                Les événements dépendent de la connexion au flux temps réel.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Orders list */}
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 p-5 sm:p-6">
+            <SectionHeading
+              eyebrow="Gestion opérationnelle"
+              title="Carnet de commandes"
+              description="Recherchez une commande, examinez son détail ou ouvrez son suivi."
+              action={
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => setShowFilters((current) => !current)}
+                  >
+                    <Filter className="h-4 w-4" />
+                    Filtres
+                  </Button>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        disabled={!sortedOrders.length}
+                      >
+                        <Download className="h-4 w-4" />
+                        Exporter
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => exportOrders("csv")}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Exporter en CSV
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => exportOrders("pdf")}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        Exporter en PDF
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              }
+            />
+
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Rechercher par numéro, client, email ou produit…"
+                className="h-11 border-slate-200 pl-9 pr-10"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  aria-label="Effacer la recherche"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            {showFilters && (
+              <div className="mt-3 flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 sm:flex-row sm:items-center">
+                <span className="text-xs font-semibold text-slate-600">
+                  Boutique sélectionnée
+                </span>
+                <Select
+                  value={selectedBoutique}
+                  onValueChange={setSelectedBoutique}
+                >
+                  <SelectTrigger className="h-9 w-full bg-white sm:w-[260px]">
+                    <SelectValue placeholder="Toutes les boutiques" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les boutiques</SelectItem>
+                    {boutiques.map((boutique) => (
+                      <SelectItem key={boutique.id} value={boutique.id}>
+                        {boutique.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedBoutique("all");
+                    setSearchQuery("");
+                    setActiveTab("priority");
+                  }}
+                >
+                  Réinitialiser
+                </Button>
+              </div>
+            )}
+
+            <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
+              {tabs.map((tab) => {
+                const active = activeTab === tab.value;
+
+                return (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    onClick={() => setActiveTab(tab.value)}
+                    className={`inline-flex shrink-0 items-center gap-2 rounded-xl border px-3.5 py-2.5 text-sm font-semibold transition-colors ${
+                      active
+                        ? "border-[#12376A] bg-[#12376A] text-white shadow-sm"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-blue-50/50"
+                    }`}
+                  >
+                    {tab.label}
+                    <span
+                      className={`rounded-md px-1.5 py-0.5 text-xs ${
+                        active
+                          ? "bg-white/15 text-white"
+                          : "bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      {tab.count}
+                    </span>
+                  </button>
                 );
               })}
             </div>
-          </>
-        )}
-      </SectionCard>
+          </div>
 
-      <OrderDetailDialog
-        order={selectedOrder}
-        open={detailOpen}
-        onOpenChange={setDetailOpen}
-      />
+          {isLoading ? (
+            <div className="space-y-3 p-5">
+              {[1, 2, 3, 4, 5].map((item) => (
+                <Skeleton key={item} className="h-16 w-full rounded-xl" />
+              ))}
+            </div>
+          ) : sortedOrders.length === 0 ? (
+            <div className="px-5 py-14 text-center sm:px-8">
+              <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-800">
+                <ShoppingBag className="h-6 w-6" />
+              </span>
+              <h3 className="mt-4 text-base font-bold text-slate-900">
+                {searchQuery
+                  ? "Aucune commande correspondante"
+                  : activeTab === "priority"
+                    ? "Aucune commande à traiter"
+                    : "Aucune commande dans cette catégorie"}
+              </h3>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+                {searchQuery
+                  ? "Modifiez les termes de recherche ou réinitialisez les filtres."
+                  : "Les commandes correspondant à ce filtre apparaîtront ici dès qu’elles seront disponibles."}
+              </p>
+              {(searchQuery || activeTab !== "priority") && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-4"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setActiveTab("all");
+                  }}
+                >
+                  Afficher toutes les commandes
+                </Button>
+              )}
+            </div>
+          ) : (
+            <>
+              {/* Desktop table */}
+              <div className="hidden overflow-x-auto md:block">
+                <table className="w-full min-w-[900px] text-left">
+                  <thead>
+                    <tr className="border-b border-slate-100 bg-slate-50/80">
+                      <th className="px-5 py-3.5 text-xs font-semibold text-slate-500">
+                        Commande
+                      </th>
+                      <th className="px-4 py-3.5 text-xs font-semibold text-slate-500">
+                        Client / Produit
+                      </th>
+                      <th className="px-4 py-3.5 text-xs font-semibold text-slate-500">
+                        Statut
+                      </th>
+                      <th className="px-4 py-3.5 text-xs font-semibold text-slate-500">
+                        Marché
+                      </th>
+                      <th className="px-4 py-3.5 text-xs font-semibold text-slate-500">
+                        Date
+                      </th>
+                      <th className="px-4 py-3.5 text-right text-xs font-semibold text-slate-500">
+                        Montant
+                      </th>
+                      <th className="px-4 py-3.5" />
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {sortedOrders.map((order) => {
+                      const overdue = stats.isOverdue(order);
+                      const urgent = !overdue && stats.isUrgent(order);
+
+                      return (
+                        <tr
+                          key={order.id}
+                          className={`cursor-pointer transition-colors hover:bg-blue-50/40 ${
+                            overdue
+                              ? "bg-red-50/40"
+                              : urgent
+                                ? "bg-amber-50/30"
+                                : ""
+                          }`}
+                          onClick={() => openOrder(order)}
+                        >
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-2">
+                              {overdue ? (
+                                <span className="h-2 w-2 shrink-0 rounded-full bg-red-500" />
+                              ) : urgent ? (
+                                <span className="h-2 w-2 shrink-0 rounded-full bg-amber-500" />
+                              ) : (
+                                <span className="h-2 w-2 shrink-0 rounded-full bg-slate-200" />
+                              )}
+                              <div>
+                                <p className="font-mono text-sm font-semibold text-slate-900">
+                                  {order.order_number}
+                                </p>
+                                {overdue && (
+                                  <p className="mt-1 text-[10px] font-bold uppercase tracking-wide text-red-700">
+                                    Délai dépassé
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="max-w-[270px] px-4 py-4">
+                            <p className="truncate text-sm font-semibold text-slate-800">
+                              {order.customer_name}
+                            </p>
+                            <p className="mt-1 truncate text-xs text-slate-500">
+                              {order.products?.supplier_products?.name ||
+                                "Produit non renseigné"}
+                            </p>
+                          </td>
+
+                          <td className="px-4 py-4">
+                            <StatusBadge status={order.logistics_status} />
+                          </td>
+
+                          <td className="px-4 py-4">
+                            <span className="inline-flex rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
+                              {order.market || "—"}
+                            </span>
+                          </td>
+
+                          <td className="px-4 py-4">
+                            <p className="text-sm text-slate-700">
+                              {relativeTime(order.created_at)}
+                            </p>
+                            <p className="mt-1 text-xs text-slate-400">
+                              {new Date(order.created_at).toLocaleDateString(
+                                "fr-FR",
+                              )}
+                            </p>
+                          </td>
+
+                          <td className="px-4 py-4 text-right">
+                            <span className="whitespace-nowrap text-sm font-bold text-slate-900">
+                              {formatEUR(Number(order.amount || 0))}
+                            </span>
+                          </td>
+
+                          <td
+                            className="px-4 py-4 text-right"
+                            onClick={(event) => event.stopPropagation()}
+                          >
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  aria-label={`Actions pour ${order.order_number}`}
+                                  className="h-8 w-8"
+                                >
+                                  <span className="text-lg leading-none">···</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => openOrder(order)}>
+                                  Voir le détail
+                                </DropdownMenuItem>
+                                {statusFlow.map((status) => (
+                                  <DropdownMenuItem
+                                    key={status}
+                                    disabled={
+                                      order.logistics_status === status ||
+                                      updateStatus.isPending
+                                    }
+                                    onClick={() =>
+                                      handleStatusChange(order.id, status)
+                                    }
+                                  >
+                                    Passer en « {statusConfig[status].label} »
+                                  </DropdownMenuItem>
+                                ))}
+                                <DropdownMenuItem
+                                  disabled={
+                                    order.logistics_status === "returned" ||
+                                    updateStatus.isPending
+                                  }
+                                  className="text-red-700 focus:text-red-700"
+                                  onClick={() =>
+                                    handleStatusChange(order.id, "returned")
+                                  }
+                                >
+                                  Marquer comme retournée
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile cards */}
+              <div className="space-y-3 p-3 md:hidden sm:p-5">
+                {sortedOrders.map((order) => {
+                  const overdue = stats.isOverdue(order);
+                  const urgent = !overdue && stats.isUrgent(order);
+
+                  return (
+                    <article
+                      key={order.id}
+                      className={`rounded-2xl border p-4 ${
+                        overdue
+                          ? "border-red-200 bg-red-50/40"
+                          : urgent
+                            ? "border-amber-200 bg-amber-50/30"
+                            : "border-slate-200 bg-white"
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        className="w-full text-left"
+                        onClick={() => openOrder(order)}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="font-mono text-xs font-semibold text-slate-500">
+                              {order.order_number}
+                            </p>
+                            <h3 className="mt-1 truncate text-sm font-bold text-slate-900">
+                              {order.customer_name}
+                            </h3>
+                            <p className="mt-1 truncate text-xs text-slate-500">
+                              {order.products?.supplier_products?.name ||
+                                "Produit non renseigné"}
+                            </p>
+                          </div>
+                          <p className="shrink-0 text-sm font-bold text-slate-900">
+                            {formatEUR(Number(order.amount || 0))}
+                          </p>
+                        </div>
+
+                        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                          <StatusBadge status={order.logistics_status} />
+                          <span className="text-xs text-slate-500">
+                            {relativeTime(order.created_at)}
+                          </span>
+                        </div>
+
+                        {(overdue || urgent) && (
+                          <p
+                            className={`mt-3 flex items-center gap-1.5 text-xs font-semibold ${
+                              overdue ? "text-red-700" : "text-amber-800"
+                            }`}
+                          >
+                            <AlarmClock className="h-3.5 w-3.5" />
+                            {overdue
+                              ? "Validation au-delà de 48 h"
+                              : "Le délai de validation approche"}
+                          </p>
+                        )}
+                      </button>
+
+                      <div className="mt-3 flex items-center justify-between border-t border-slate-200/70 pt-3">
+                        <span className="text-xs text-slate-500">
+                          {order.market || "Marché non renseigné"}
+                        </span>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-8 gap-1.5"
+                            >
+                              Actions
+                              <ArrowRight className="h-3.5 w-3.5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openOrder(order)}>
+                              Voir le détail
+                            </DropdownMenuItem>
+                            {statusFlow.map((status) => (
+                              <DropdownMenuItem
+                                key={status}
+                                disabled={
+                                  order.logistics_status === status ||
+                                  updateStatus.isPending
+                                }
+                                onClick={() =>
+                                  handleStatusChange(order.id, status)
+                                }
+                              >
+                                Passer en « {statusConfig[status].label} »
+                              </DropdownMenuItem>
+                            ))}
+                            <DropdownMenuItem
+                              disabled={
+                                order.logistics_status === "returned" ||
+                                updateStatus.isPending
+                              }
+                              className="text-red-700 focus:text-red-700"
+                              onClick={() =>
+                                handleStatusChange(order.id, "returned")
+                              }
+                            >
+                              Marquer comme retournée
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="flex flex-col justify-between gap-2 border-t border-slate-100 bg-slate-50/70 px-5 py-3 sm:flex-row sm:items-center">
+              <p className="text-xs text-slate-500">
+                {sortedOrders.length} commande(s) affichée(s) sur {stats.total}
+              </p>
+              <p className="text-xs text-slate-500">
+                Les changements de statut sont soumis aux règles de validation.
+              </p>
+            </div>
+          )}
+        </section>
+
+        {/* Operating model reminder */}
+        <section className="rounded-2xl border border-blue-100 bg-blue-50/60 p-4 sm:p-5">
+          <div className="flex items-start gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#12376A] text-white">
+              <ShieldCheck className="h-5 w-5" />
+            </span>
+            <div>
+              <h2 className="text-sm font-bold text-[#102B55]">
+                Le cadre opérationnel BIB
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-slate-600">
+                Le marchand reste le vendeur juridique et doit prendre les
+                décisions qui lui incombent, notamment la validation de la
+                commande. L’expédition est opérée dans le cadre logistique
+                organisé par BIB et ses partenaires. Les statuts affichés
+                servent au suivi opérationnel ; ils ne remplacent pas les
+                obligations contractuelles ou légales des parties.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <OrderDetailDialog
+          order={selectedOrder}
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
+        />
+      </main>
     </DashboardLayout>
   );
 }
