@@ -117,7 +117,6 @@ keywords: string[];
 generated_palette: BrandPalette;
 generated_typography: BrandTypography;
 generated_copy: BrandCopy;
-studio_answers: Record<string, unknown>;
 }
 
 
@@ -260,21 +259,34 @@ boutiqueId: string | undefined,
 ) {
 return useQuery({
 queryKey: ["brand-dna", boutiqueId],
-enabled: !!boutiqueId,
+enabled: Boolean(boutiqueId),
 
-queryFn: async () => {
+queryFn: async (): Promise<BrandDNA | null> => {
+  if (!boutiqueId) {
+    return null;
+  }
+
   const { data, error } = await supabase
     .from("boutique_brand_dna")
-    .select("*")
-    .eq("boutique_id", boutiqueId!)
+    .select(`
+      id,
+      boutique_id,
+      seed,
+      ambiance,
+      tone,
+      target_audience,
+      keywords,
+      generated_palette,
+      generated_typography,
+      generated_copy
+    `)
+    .eq("boutique_id", boutiqueId)
     .maybeSingle();
   if (error) {
     throw error;
   }
-  return (
-    (data as BrandDNA | null) ??
-    null
-  );
+
+  return data as BrandDNA | null;
 },
 
 });
@@ -302,7 +314,6 @@ boutiqueId: string;
       | "ambiance"
       | "tone"
       | "target_audience"
-      | "studio_answers"
     >
   >;
 }) => {
@@ -555,6 +566,9 @@ onSuccess: (
   _data,
   vars,
 ) => {
+  qc.invalidateQueries({
+    queryKey: ["studio-answers", vars.boutiqueId],
+  });
   qc.invalidateQueries({
     queryKey: [
       "brand-dna",
@@ -1561,9 +1575,6 @@ params.boutiqueId,
               typography:
                 params.brand
                   .generated_typography,
-              studio_answers:
-                params.brand
-                  .studio_answers,
             }
           : null,
       },

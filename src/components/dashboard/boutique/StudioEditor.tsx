@@ -97,6 +97,7 @@ import {
 import {
   useBoutiqueScenes,
   useBrandDNA,
+  useStudioAnswers,
   useUpdateScene,
   useReorderScenes,
   useAddScene,
@@ -927,6 +928,9 @@ export function StudioEditor({
   } = useBrandDNA(
     boutiqueId,
   );
+
+  const { data: studioAnswers } =
+    useStudioAnswers(boutiqueId);
 
   const {
     data: pages = [],
@@ -2463,6 +2467,9 @@ export function StudioEditor({
                   brandDna={
                     brandDna
                   }
+                  studioAnswers={
+                    studioAnswers
+                  }
                   updateBrandDna={
                     updateBrandDna
                   }
@@ -3209,11 +3216,16 @@ export function StudioEditor({
 function BrandPanel({
   boutiqueId,
   brandDna,
+  studioAnswers,
   updateBrandDna,
   regenerateBrandDna,
 }: {
   boutiqueId: string;
   brandDna: BrandDNA;
+  studioAnswers:
+    | Record<string, unknown>
+    | null
+    | undefined;
   updateBrandDna: ReturnType<
     typeof useUpdateBrandDNA
   >;
@@ -3256,7 +3268,7 @@ function BrandPanel({
           errorLabel="!"
           onClick={() => {
             const answers =
-              brandDna.studio_answers as any;
+              studioAnswers as any;
 
             if (!answers?.audience) {
               toast.error(

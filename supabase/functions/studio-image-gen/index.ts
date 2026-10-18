@@ -148,7 +148,7 @@ interface BrandDnaRecord {
   generated_palette: unknown;
   generated_typography: unknown;
   generated_copy: unknown;
-  studio_answers: unknown;
+  studio_answers?: unknown;
 }
 
 interface ImageGenerationRequest {
@@ -748,8 +748,7 @@ Deno.serve(async (req) => {
           keywords,
           generated_palette,
           generated_typography,
-          generated_copy,
-          studio_answers
+          generated_copy
         `,
       )
       .eq("boutique_id", boutiqueId)
@@ -769,10 +768,37 @@ Deno.serve(async (req) => {
       );
     }
 
+    const {
+      data: privateAnswers,
+      error: answersError,
+    } = await supabase
+      .from("boutique_studio_answers")
+      .select("answers")
+      .eq("boutique_id", boutiqueId)
+      .maybeSingle();
+
+    if (answersError) {
+      console.error(
+        "Private Studio answers lookup failed",
+        answersError,
+      );
+
+      return json(
+        { error: "studio_answers_lookup_failed" },
+        500,
+      );
+    }
+
     const brandContext =
       buildBrandContext(
         boutique as BoutiqueRecord,
-        dna as BrandDnaRecord | null,
+        {
+          ...(dna as Omit<
+            BrandDnaRecord,
+            "studio_answers"
+          > | null),
+          studio_answers: privateAnswers?.answers ?? {},
+        } as BrandDnaRecord | null,
       );
 
     const urls: string[] = [];

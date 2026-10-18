@@ -56,12 +56,42 @@ async function invokeBoutiqueAi(body) {
   }
   return data;
 }
+function useStudioAnswers(boutiqueId) {
+  return useQuery({
+    queryKey: ["studio-answers", boutiqueId],
+    enabled: Boolean(boutiqueId),
+    queryFn: async () => {
+      if (!boutiqueId) {
+        return null;
+      }
+      const { data, error } = await supabase.from("boutique_studio_answers").select("answers").eq("boutique_id", boutiqueId).maybeSingle();
+      if (error) {
+        throw error;
+      }
+      return data?.answers ?? null;
+    }
+  });
+}
 function useBrandDNA(boutiqueId) {
   return useQuery({
     queryKey: ["brand-dna", boutiqueId],
-    enabled: !!boutiqueId,
+    enabled: Boolean(boutiqueId),
     queryFn: async () => {
-      const { data, error } = await supabase.from("boutique_brand_dna").select("*").eq("boutique_id", boutiqueId).maybeSingle();
+      if (!boutiqueId) {
+        return null;
+      }
+      const { data, error } = await supabase.from("boutique_brand_dna").select(`
+          id,
+          boutique_id,
+          seed,
+          ambiance,
+          tone,
+          target_audience,
+          keywords,
+          generated_palette,
+          generated_typography,
+          generated_copy
+        `).eq("boutique_id", boutiqueId).maybeSingle();
       if (error) {
         throw error;
       }
@@ -161,8 +191,7 @@ function useGenerateBrandDNA() {
         keywords: data.keywords ?? [],
         generated_palette: data.palette ?? {},
         generated_typography: data.typography ?? {},
-        generated_copy: data.copy ?? {},
-        studio_answers: params.answers
+        generated_copy: data.copy ?? {}
       };
       const {
         error: upsertError
@@ -176,6 +205,21 @@ function useGenerateBrandDNA() {
       );
       if (upsertError) {
         throw upsertError;
+      }
+      const { error: answersError } = await supabase.from(
+        "boutique_studio_answers"
+      ).upsert(
+        {
+          boutique_id: params.boutiqueId,
+          answers: params.answers,
+          updated_at: (/* @__PURE__ */ new Date()).toISOString()
+        },
+        {
+          onConflict: "boutique_id"
+        }
+      );
+      if (answersError) {
+        throw answersError;
       }
       const {
         data: existing
@@ -221,6 +265,12 @@ function useGenerateBrandDNA() {
       return data;
     },
     onSuccess: (_data, vars) => {
+      qc.invalidateQueries({
+        queryKey: [
+          "studio-answers",
+          vars.boutiqueId
+        ]
+      });
       qc.invalidateQueries({
         queryKey: [
           "brand-dna",
@@ -781,8 +831,7 @@ function useRemixScene() {
             keywords: params.brand.keywords,
             copy: params.brand.generated_copy,
             palette: params.brand.generated_palette,
-            typography: params.brand.generated_typography,
-            studio_answers: params.brand.studio_answers
+            typography: params.brand.generated_typography
           } : null
         }
       });
@@ -914,6 +963,7 @@ export {
   useGenerateSceneImage,
   useGenerateSeo,
   useRemixScene,
+  useStudioAnswers,
   useReorderScenes,
   useReshuffleStructure,
   useSaveSeo,
