@@ -1,12 +1,10 @@
 
 import { useEffect, useState } from "react";
 import { Bell, Search, Menu, Moon, Sun } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { FloatingSupportButton } from "@/components/support/FloatingSupportButton";
 
@@ -20,11 +18,13 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-type DashboardTheme = "light" | "dark";
+type DashboardThemePreference = "light" | "dark" | "system";
+type ResolvedDashboardTheme = "light" | "dark";
 
 const THEME_STORAGE_KEY = "bib-dashboard-theme";
+const THEME_CHANGE_EVENT = "bib-dashboard-theme-change";
 
-function getInitialTheme(): DashboardTheme {
+function getInitialTheme(): DashboardThemePreference {
   if (typeof window === "undefined") {
     return "light";
   }
@@ -32,7 +32,11 @@ function getInitialTheme(): DashboardTheme {
   try {
     const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
 
-    if (savedTheme === "light" || savedTheme === "dark") {
+    if (
+      savedTheme === "light" ||
+      savedTheme === "dark" ||
+      savedTheme === "system"
+    ) {
       return savedTheme;
     }
   } catch {
@@ -42,47 +46,123 @@ function getInitialTheme(): DashboardTheme {
   return "light";
 }
 
+function getSystemPrefersDark(): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
 export function DashboardLayout({
   children,
 }: DashboardLayoutProps) {
-  const { profile } = useAuth();
-  const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [theme, setTheme] = useState<DashboardTheme>(getInitialTheme);
+  const [themePreference, setThemePreference] =
+    useState<DashboardThemePreference>(getInitialTheme);
+  const [systemPrefersDark, setSystemPrefersDark] =
+    useState<boolean>(getSystemPrefersDark);
+
+  const resolvedTheme: ResolvedDashboardTheme =
+    themePreference === "system"
+      ? systemPrefersDark
+        ? "dark"
+        : "light"
+      : themePreference;
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+      window.localStorage.setItem(
+        THEME_STORAGE_KEY,
+        themePreference,
+      );
     } catch {
       // Le thème reste utilisable pendant la session.
     }
-  
-    document.body.classList.toggle("dark", theme === "dark");
+  }, [themePreference]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    );
+
+    const handleSystemThemeChange = (
+      event: MediaQueryListEvent,
+    ) => {
+      setSystemPrefersDark(event.matches);
+    };
+
+    const handleThemePreferenceChange = (event: Event) => {
+      const preference = (
+        event as CustomEvent<DashboardThemePreference>
+      ).detail;
+
+      if (
+        preference === "light" ||
+        preference === "dark" ||
+        preference === "system"
+      ) {
+        setThemePreference(preference);
+      }
+    };
+
+    setSystemPrefersDark(mediaQuery.matches);
+
+    mediaQuery.addEventListener(
+      "change",
+      handleSystemThemeChange,
+    );
+
+    window.addEventListener(
+      THEME_CHANGE_EVENT,
+      handleThemePreferenceChange,
+    );
+
+    return () => {
+      mediaQuery.removeEventListener(
+        "change",
+        handleSystemThemeChange,
+      );
+
+      window.removeEventListener(
+        THEME_CHANGE_EVENT,
+        handleThemePreferenceChange,
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    document.body.classList.toggle(
+      "dark",
+      resolvedTheme === "dark",
+    );
+
     document.body.classList.toggle(
       "bib-dashboard-dark",
-      theme === "dark",
+      resolvedTheme === "dark",
     );
-  
+
     return () => {
       document.body.classList.remove("bib-dashboard-dark");
       document.body.classList.remove("dark");
     };
-  }, [theme]);
+  }, [resolvedTheme]);
 
   const toggleTheme = () => {
-    setTheme((currentTheme) =>
-      currentTheme === "light" ? "dark" : "light",
+    setThemePreference(
+      resolvedTheme === "light" ? "dark" : "light",
     );
   };
 
   return (
     <div
       className={`dashboard-theme min-h-screen bg-background text-foreground ${
-        theme === "dark" ? "dark" : ""
+        resolvedTheme === "dark" ? "dark" : ""
       }`}
-      data-dashboard-theme={theme}
+      data-dashboard-theme={resolvedTheme}
+      data-dashboard-theme-preference={themePreference}
     >
       <DashboardSidebar
         open={sidebarOpen}
@@ -128,17 +208,17 @@ export function DashboardLayout({
               className="h-9 w-9 border-border bg-card"
               onClick={toggleTheme}
               aria-label={
-                theme === "dark"
+                resolvedTheme === "dark"
                   ? "Activer le thème clair"
                   : "Activer le thème sombre"
               }
               title={
-                theme === "dark"
+                resolvedTheme === "dark"
                   ? "Passer au thème clair"
                   : "Passer au thème sombre"
               }
             >
-              {theme === "dark" ? (
+              {resolvedTheme === "dark" ? (
                 <Sun className="h-4 w-4" />
               ) : (
                 <Moon className="h-4 w-4" />
