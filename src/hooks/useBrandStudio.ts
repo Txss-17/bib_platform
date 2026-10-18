@@ -463,6 +463,7 @@ throw new Error(
   if (answersError) {
     throw answersError;
   }
+
   /*
    * Création du bundle initial de scènes.
    *
