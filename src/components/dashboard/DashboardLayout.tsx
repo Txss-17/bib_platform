@@ -1,12 +1,15 @@
+
+import { useEffect, useState } from "react";
+import { Bell, Search, Menu, Moon, Sun } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 import { DashboardSidebar } from "./DashboardSidebar";
-import { Bell, Search, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useState } from "react";
 import { FloatingSupportButton } from "@/components/support/FloatingSupportButton";
+
 import {
   Popover,
   PopoverContent,
@@ -17,20 +20,71 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+type DashboardTheme = "light" | "dark";
+
+const THEME_STORAGE_KEY = "bib-dashboard-theme";
+
+function getInitialTheme(): DashboardTheme {
+  if (typeof window === "undefined") {
+    return "light";
+  }
+
+  try {
+    const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+
+    if (savedTheme === "light" || savedTheme === "dark") {
+      return savedTheme;
+    }
+  } catch {
+    // Le thème clair reste disponible si le stockage est inaccessible.
+  }
+
+  return "light";
+}
+
+export function DashboardLayout({
+  children,
+}: DashboardLayoutProps) {
   const { profile } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [theme, setTheme] = useState<DashboardTheme>(getInitialTheme);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+    } catch {
+      // Le thème reste utilisable pendant la session.
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((currentTheme) =>
+      currentTheme === "light" ? "dark" : "light",
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      <DashboardSidebar open={sidebarOpen} onOpenChange={setSidebarOpen} />
-      
-      <main className={`${isMobile ? "" : "ml-64"} p-3 sm:p-4 md:p-8 min-w-0`}>
-        {/* Top chrome — search, notifications, account. Page titles live in <PageHeader>. */}
-        <header className="flex items-center justify-between mb-4 md:mb-6 gap-2 sm:gap-4">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+    <div
+      className={`dashboard-theme min-h-screen bg-background text-foreground ${
+        theme === "dark" ? "dark" : ""
+      }`}
+      data-dashboard-theme={theme}
+    >
+      <DashboardSidebar
+        open={sidebarOpen}
+        onOpenChange={setSidebarOpen}
+      />
+
+      <main
+        className={`${
+          isMobile ? "" : "ml-64"
+        } min-w-0 p-3 sm:p-4 md:p-8`}
+      >
+        <header className="mb-4 flex items-center justify-between gap-2 sm:mb-6 sm:gap-4">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
             {isMobile && (
               <Button
                 variant="outline"
@@ -39,42 +93,79 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 onClick={() => setSidebarOpen(true)}
                 aria-label="Ouvrir le menu"
               >
-                <Menu className="w-5 h-5" />
+                <Menu className="h-5 w-5" />
               </Button>
             )}
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 shrink-0">
+
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 md:gap-3">
             {!isMobile && (
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Rechercher..."
-                  className="pl-10 w-64 bg-card border-border/50"
+                  aria-label="Rechercher dans BIB Platform"
+                  className="w-64 border-border/50 bg-card pl-10"
                 />
               </div>
             )}
+
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-9 w-9 border-border bg-card"
+              onClick={toggleTheme}
+              aria-label={
+                theme === "dark"
+                  ? "Activer le thème clair"
+                  : "Activer le thème sombre"
+              }
+              title={
+                theme === "dark"
+                  ? "Passer au thème clair"
+                  : "Passer au thème sombre"
+              }
+            >
+              {theme === "dark" ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </Button>
+
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   size="icon"
-                  className="relative h-8 w-8 sm:h-9 sm:w-9"
+                  className="relative h-9 w-9"
                   aria-label="Notifications"
                 >
-                  <Bell className="w-4 h-4" />
+                  <Bell className="h-4 w-4" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent align="end" className="w-80 p-0">
-                <div className="px-4 py-3 border-b border-border/50">
-                  <p className="text-sm font-semibold">Notifications</p>
+
+              <PopoverContent
+                align="end"
+                className="w-80 p-0"
+              >
+                <div className="border-b border-border/50 px-4 py-3">
+                  <p className="text-sm font-semibold">
+                    Notifications
+                  </p>
                 </div>
+
                 <div className="px-4 py-8 text-center">
-                  <Bell className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
+                  <Bell className="mx-auto mb-2 h-6 w-6 text-muted-foreground" />
+
                   <p className="text-sm text-muted-foreground">
                     Aucune nouvelle notification.
                   </p>
-                  <p className="text-xs text-muted-foreground/70 mt-1">
-                    Vous serez alerté ici à chaque nouvelle commande ou ticket.
+
+                  <p className="mt-1 text-xs text-muted-foreground/70">
+                    Vous serez alerté ici à chaque nouvelle commande
+                    ou ticket.
                   </p>
                 </div>
               </PopoverContent>
@@ -84,6 +175,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {children}
       </main>
+
       <FloatingSupportButton source="dashboard_ai" />
     </div>
   );
