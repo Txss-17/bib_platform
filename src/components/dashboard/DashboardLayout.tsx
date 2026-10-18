@@ -51,7 +51,28 @@ function getSystemPrefersDark(): boolean {
     return false;
   }
 
-  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  try {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  } catch {
+    return false;
+  }
+}
+
+function saveThemePreference(
+  preference: DashboardThemePreference,
+) {
+  try {
+    window.localStorage.setItem(THEME_STORAGE_KEY, preference);
+  } catch {
+    // La préférence reste utilisable pendant la session.
+  }
+
+  window.dispatchEvent(
+    new CustomEvent<DashboardThemePreference>(
+      THEME_CHANGE_EVENT,
+      { detail: preference },
+    ),
+  );
 }
 
 export function DashboardLayout({
@@ -73,14 +94,7 @@ export function DashboardLayout({
       : themePreference;
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem(
-        THEME_STORAGE_KEY,
-        themePreference,
-      );
-    } catch {
-      // Le thème reste utilisable pendant la session.
-    }
+    saveThemePreference(themePreference);
   }, [themePreference]);
 
   useEffect(() => {
@@ -104,7 +118,9 @@ export function DashboardLayout({
         preference === "dark" ||
         preference === "system"
       ) {
-        setThemePreference(preference);
+        setThemePreference((current) =>
+          current === preference ? current : preference,
+        );
       }
     };
 
@@ -239,7 +255,9 @@ export function DashboardLayout({
 
               <PopoverContent
                 align="end"
-                className="w-80 p-0"
+                className={`dashboard-theme w-80 p-0 ${
+                  resolvedTheme === "dark" ? "dark" : ""
+                }`}
               >
                 <div className="border-b border-border/50 px-4 py-3">
                   <p className="text-sm font-semibold">
