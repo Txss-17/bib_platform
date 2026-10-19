@@ -499,204 +499,159 @@ async function handleSubscriptionDeleted(
  * BIB Abonné est une subscription Stripe et son état
  * de référence est customer.subscription.*.
  */
-async function handleCheckoutCompleted(
-  session: any,
-) {
-  const kind =
-    session.metadata?.kind;
 
-  if (kind !== "storefront") {
-    return;
-  }
+async function handleCheckoutCompleted(session: any) {
+  if (session.metadata?.kind !== "storefront") return;
 
-  const orderIds =
-    (
-      session.metadata?.orderIds ??
-      ""
-    )
-      .split(",")
-      .filter(Boolean);
+  const orderIds = String(session.metadata?.orderIds ?? "")
+    .split(",")
+    .filter(Boolean);
 
   if (!orderIds.length) {
-    console.warn(
-      "Storefront checkout completed without orderIds",
-    );
-
+    console.error("Checkout sans orderIds", session.id);
     return;
   }
 
-  const {
-    error:
-      orderUpdateError,
-  } = await getSupabase()
+  const supabase = getSupabase();
+
+  // Enregistrer la session Stripe et lire l'état précédent.
+  const { data: ordersBefore, error: readError } = await supabase
     .from("orders")
-    // Le passage à "paid" déclenche côté base l'envoi automatique
-    // dans les "Ordres reçus" du portail logistique.
-    .update({
-      payment_status:
-        session.payment_status === "unpaid" ? "pending" : "paid",
-      stripe_session_id: session.id,
-    })
-    .in(
-      "id",
-      orderIds,
-    );
+    .select("id, payment_status")
+    .in("id", orderIds);
 
-  if (orderUpdateError) {
-    throw new Error(
-      `Unable to update storefront orders: ${orderUpdateError.message}`,
-    );
+  if (readError) {
+    throw new Error(`Lecture des commandes impossible : ${readError.message}`);
   }
 
-  try {
-    const supabase =
-      getSupabase();
+  if (!ordersBefore?.length) {
+    console.error("Aucune commande trouvée pour la session", session.id);
+    return;
+  }
 
-    const {
-      data: orders,
-      error:
-        ordersError,
-    } = await supabase
-      .from("orders")
-      .select(
-        "id, order_number, customer_email, customer_name, amount, boutique_id, product_id, products(name)",
-      )
-      .in(
-        "id",
-        orderIds,
-      );
+  const { error: sessionError } = await supabase
+    .from("orders")
+    .update({ stripe_session_id: session.id })
+    .in("id", orderIds);
 
-    if (ordersError) {
-      console.error(
-        "Unable to load orders after checkout",
-        ordersError,
-      );
+  if (sessionError) {
+    throw new Error(`Enregistrement de la session impossible : ${sessionError.message}`);
+  }
 
-      return;
-    }
+  // Un checkout "completed" peut encore être impayé avec certains
+  // moyens de paiement différés. Ne jamais confirmer le stock ici.
+  if (session.payment_status !== "paid") {
+    console.log("Paiement encore en attente ; réservations conservées", {
+      sessionId: session.id,
+      paymentStatus: session.payment_status,
+    });
+    return;
+  }
 
-    if (!orders?.length) {
-      return;
-    }
+  // RPC transactionnelle et idempotente : le stock ne doit être
+  // décrémenté qu'une seule fois pour cette session Stripe.
+  const { error: confirmError } = await supabase.rpc(
+    "confirm_product_stock_checkout",
+    { p_stripe_session_id: session.id },
+  );
 
-    const boutiqueIds =
-      [
-        ...new Set(
-          orders
-            .map(
-              (order: any) =>
-                order.boutique_id,
-            )
-            .filter(Boolean),
-        ),
-      ];
+  if (confirmError) {
+    throw new Error(`Confirmation du stock impossible : ${confirmError.message}`);
+  }
 
-    if (!boutiqueIds.length) {
-      return;
-    }
+  // Évite les renvois habituels lors d'une simple répétition webhook.
+  // Une garantie absolue contre deux traitements concurrents nécessite
+  // une clé d'idempotence persistée pour l'envoi d'e-mails.
+  const hadPendingOrders = ordersBefore.some(
+    (order: any) => order.payment_status === "pending",
+  );
 
-    const {
-      data: settings,
-      error:
-        settingsError,
-    } = await supabase
-      .from(
-        "boutique_email_settings",
-      )
-      .select(
-        "boutique_id, gmail_connected, auto_send_order_confirmation",
-      )
-      .in(
-        "boutique_id",
-        boutiqueIds,
-      );
+  if (!hadPendingOrders) {
+    console.log("Commandes déjà traitées ; aucun nouvel e-mail", {
+      sessionId: session.id,
+    });
+    return;
+  }
 
-    if (settingsError) {
-      console.error(
-        "Unable to load boutique email settings",
-        settingsError,
-      );
+  const { data: orders, error: ordersError } = await supabase
+    .from("orders")
+    .select(
+      "id, order_number, customer_email, customer_name, amount, boutique_id, product_id, products(name)",
+    )
+    .in("id", orderIds);
 
-      return;
-    }
+  if (ordersError) {
+    // Le paiement et le stock sont déjà traités. Ne pas annuler la
+    // commande à cause d'un problème secondaire de notification.
+    console.error("Chargement des commandes pour e-mail impossible", ordersError);
+    return;
+  }
 
-    const enabled =
-      new Set(
-        (settings ?? [])
-          .filter(
-            (setting: any) =>
-              setting.gmail_connected &&
-              setting.auto_send_order_confirmation,
-          )
-          .map(
-            (setting: any) =>
-              setting.boutique_id,
-          ),
-      );
+  if (!orders?.length) return;
 
-    await Promise.all(
+  const boutiqueIds = [
+    ...new Set(
       orders
-        .filter(
-          (order: any) =>
-            order.customer_email &&
-            enabled.has(
-              order.boutique_id,
-            ),
-        )
-        .map(
-          (order: any) =>
-            supabase.functions
-              .invoke(
-                "send-boutique-email",
-                {
-                  body: {
-                    boutique_id:
-                      order.boutique_id,
+        .map((order: any) => order.boutique_id)
+        .filter(Boolean),
+    ),
+  ];
 
-                    type:
-                      "order_confirmation",
+  if (!boutiqueIds.length) return;
 
-                    recipient_email:
-                      order.customer_email,
+  const { data: settings, error: settingsError } = await supabase
+    .from("boutique_email_settings")
+    .select("boutique_id, gmail_connected, auto_send_order_confirmation")
+    .in("boutique_id", boutiqueIds);
 
-                    variables: {
-                      customer_name:
-                        order.customer_name ??
-                        "",
-
-                      order_number:
-                        order.order_number ??
-                        "",
-
-                      product_name:
-                        order.products?.name ??
-                        "",
-
-                      amount:
-                        String(
-                          order.amount ??
-                            "",
-                        ),
-                    },
-                  },
-                },
-              )
-              .catch(
-                (error) =>
-                  console.error(
-                    "send-boutique-email failed",
-                    error,
-                  ),
-              ),
-        ),
-    );
-  } catch (error) {
-    console.error(
-      "Auto email after checkout failed",
-      error,
-    );
+  if (settingsError) {
+    console.error("Chargement des préférences e-mail impossible", settingsError);
+    return;
   }
+
+  const enabled = new Set(
+    (settings ?? [])
+      .filter(
+        (setting: any) =>
+          setting.gmail_connected && setting.auto_send_order_confirmation,
+      )
+      .map((setting: any) => setting.boutique_id),
+  );
+
+  await Promise.all(
+    orders
+      .filter(
+        (order: any) =>
+          order.customer_email && enabled.has(order.boutique_id),
+      )
+      .map(async (order: any) => {
+        const { error } = await supabase.functions.invoke(
+          "send-boutique-email",
+          {
+            body: {
+              boutique_id: order.boutique_id,
+              type: "order_confirmation",
+              recipient_email: order.customer_email,
+              variables: {
+                customer_name: order.customer_name ?? "",
+                order_number: order.order_number ?? "",
+                product_name: order.products?.name ?? "",
+                amount: String(order.amount ?? ""),
+              },
+            },
+          },
+        );
+
+        if (error) {
+          console.error("Échec de l'e-mail de confirmation", {
+            orderId: order.id,
+            error,
+          });
+        }
+      }),
+  );
 }
+
 
 /* =========================================================
    WEBHOOK DISPATCH
@@ -745,26 +700,53 @@ async function handleWebhook(
       break;
 
     case "checkout.session.completed":
-      await handleCheckoutCompleted(
-        event.data.object,
-      );
-      break;
-
     case "checkout.session.async_payment_succeeded":
-      await handleCheckoutCompleted({
-        ...event.data.object,
-        payment_status: "paid",
-      });
+      await handleCheckoutCompleted(event.data.object);
       break;
 
     case "checkout.session.async_payment_failed": {
-      const ids = String(event.data.object?.metadata?.orderIds ?? "").split(",").filter(Boolean);
-      if (ids.length) {
-        await getSupabase().from("orders").update({ payment_status: "failed" }).in("id", ids);
+      const session = event.data.object;
+      const orderIds = String(session.metadata?.orderIds ?? "")
+        .split(",")
+        .filter(Boolean);
+
+      if (session.metadata?.kind === "storefront" && orderIds.length) {
+        const { error } = await getSupabase().rpc(
+          "release_product_stock_checkout",
+          {
+            p_stripe_session_id: session.id,
+            p_failure_status: "failed",
+          },
+        );
+
+        if (error) {
+          throw new Error(`Libération du stock après échec impossible : ${error.message}`);
+        }
       }
       break;
     }
 
+    case "checkout.session.expired": {
+      const session = event.data.object;
+      const orderIds = String(session.metadata?.orderIds ?? "")
+        .split(",")
+        .filter(Boolean);
+
+      if (session.metadata?.kind === "storefront" && orderIds.length) {
+        const { error } = await getSupabase().rpc(
+          "release_product_stock_checkout",
+          {
+            p_stripe_session_id: session.id,
+            p_failure_status: "canceled",
+          },
+        );
+
+        if (error) {
+          throw new Error(`Libération du stock après expiration impossible : ${error.message}`);
+        }
+      }
+      break;
+    }
     default:
       console.log(
         "Unhandled Stripe event:",
