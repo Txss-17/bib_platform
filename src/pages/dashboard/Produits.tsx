@@ -315,10 +315,40 @@ export default function Produits() {
     setSortOrder("recent");
   };
 
+
   const toggleStatus = async (productId: string, currentStatus: string) => {
-    // La validation de l'échantillon reste obligatoire avant l'activation.
-    if (currentStatus !== "active" && getSampleStatus(productId) !== "validated") {
-      toast.error("La validation de l’échantillon est requise avant l’activation.");
+    const product = allProducts.find((item) => item.id === productId);
+
+    if (!product) {
+      toast.error("Produit introuvable.");
+      return;
+    }
+
+    const sampleStatus = getSampleStatus(productId);
+    const hasPhysicalStock = Number(product.stock_quantity ?? 0) > 0;
+
+    // Un rejet ou une validation complémentaire en attente ne peut pas
+    // être contourné par la présence d'un stock existant.
+    if (
+      currentStatus !== "active" &&
+      (sampleStatus === "rejected" || sampleStatus === "to_validate")
+    ) {
+      toast.error(
+        "Ce produit nécessite une décision de validation avant activation.",
+      );
+      return;
+    }
+
+    // Un produit déjà en stock n'a pas à repasser par la validation
+    // initiale. Un produit sans stock doit avoir son échantillon validé.
+    if (
+      currentStatus !== "active" &&
+      !hasPhysicalStock &&
+      sampleStatus !== "validated"
+    ) {
+      toast.error(
+        "La validation de l'échantillon est requise avant l'activation d'un nouveau produit.",
+      );
       return;
     }
 
@@ -329,8 +359,11 @@ export default function Produits() {
         id: productId,
         updates: { status: nextStatus },
       });
+
       toast.success(
-        nextStatus === "active" ? "Produit activé." : "Produit mis en pause.",
+        nextStatus === "active"
+          ? "Produit activé."
+          : "Produit mis en pause.",
       );
     } catch (err) {
       console.error(err);

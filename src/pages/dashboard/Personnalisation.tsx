@@ -1,6 +1,7 @@
 
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
   ArrowRight,
@@ -62,6 +63,8 @@ const customizationFilters: {
 
 export default function Personnalisation() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const selectedProductId = searchParams.get("productId");
   const { data: supplierProducts = [], isLoading, isError } =
     useSupplierProducts();
   const { data: myProducts = [] } = useProducts();

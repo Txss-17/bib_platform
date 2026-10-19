@@ -23,6 +23,7 @@ import {
   EmptyState,
   RealtimeStatusPill,
 } from "@/components/dashboard/shared";
+import { useNavigate } from "react-router-dom";
 
 type SupplierProduct = Tables<"supplier_products">;
 type RotationIndicator = "green" | "yellow" | "orange" | "red";
@@ -465,6 +466,12 @@ function ProductGridCard({ product, isFavorite, onToggleFavorite }: { product: S
   const [showDetail, setShowDetail] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
 
+  const navigate = useNavigate();
+
+  const handleCustomize = () => {
+    navigate(`/dashboard/personnalisation?productId=${product.id}`);
+  };
+
   return (
     <>
       <Card className="bg-card border-border/50 overflow-hidden group hover:shadow-md transition-shadow">
@@ -519,6 +526,20 @@ function ProductGridCard({ product, isFavorite, onToggleFavorite }: { product: S
                 <Plus className="w-3 h-3" />
                 <span className="hidden sm:inline">Ajouter</span>
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 w-7 p-0 shrink-0"
+                title="Personnaliser ce produit"
+                aria-label={`Personnaliser ${product.name}`}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleCustomize();
+                }}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+              </Button>
             </div>
           </div>
         </CardContent>
@@ -534,6 +555,8 @@ function ProductListCard({ product, isFavorite, onToggleFavorite }: { product: S
   const rotation = rotationConfig[product.rotation_indicator as RotationIndicator];
   const [showDetail, setShowDetail] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const navigate = useNavigate();
+
   return (
     <>
       <Card className="bg-card border-border/50 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setShowDetail(true)}>
@@ -571,6 +594,19 @@ function ProductListCard({ product, isFavorite, onToggleFavorite }: { product: S
                   <MarginSimulator product={product} />
                   <Button size="sm" className="h-7 text-[10px] sm:text-xs gap-0.5 px-2" onClick={() => setShowAddDialog(true)}>
                     <Plus className="w-3 h-3" /> Ajouter
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 gap-1 px-2 text-[10px] sm:text-xs"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      navigate(`/dashboard/personnalisation?productId=${product.id}`);
+                    }}
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Personnaliser
                   </Button>
                 </div>
               </div>
