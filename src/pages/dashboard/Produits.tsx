@@ -1,6 +1,8 @@
-
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Link,
+  useSearchParams,
+} from "react-router-dom";
 import {
   AlertTriangle,
   ArrowDownRight,
@@ -188,6 +190,7 @@ function ProductEmptyState({
 }
 
 export default function Produits() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data: products, isLoading, error } = useProducts();
   const { data: boutiques } = useBoutiques();
   const { data: sampleValidations } = useSampleValidations();
@@ -209,6 +212,34 @@ export default function Produits() {
   useSupplierProductsRealtime();
 
   const allProducts = products ?? [];
+  
+  useEffect(() => {
+    const requestedProductId = searchParams.get("productId");
+
+    if (!requestedProductId || isLoading) {
+      return;
+    }
+
+    const productExists = allProducts.some(
+      (product) => product.id === requestedProductId,
+    );
+
+    if (!productExists) {
+      return;
+    }
+
+    setEditProductId(requestedProductId);
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("productId");
+
+    setSearchParams(nextParams, { replace: true });
+  }, [
+    allProducts,
+    isLoading,
+    searchParams,
+    setSearchParams,
+  ]);
 
   const getSampleStatus = (productId: string): SampleStatus =>
     sampleValidations?.[productId]?.status || "none";

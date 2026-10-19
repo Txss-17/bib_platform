@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -45,7 +46,7 @@ export function AddToBoutiqueDialog({
   onOpenChange,
 }: AddToBoutiqueDialogProps) {
   const { toast } = useToast();
-
+  const navigate = useNavigate();
   const {
     data: boutiques = [],
     isLoading: boutiquesLoading,
@@ -111,26 +112,19 @@ export function AddToBoutiqueDialog({
   /* ---------------------------------------------------------------------- */
   /* Existing product detection                                            */
   /* ---------------------------------------------------------------------- */
-
   const existingProduct = useMemo(() => {
-    if (!selectedBoutiqueId) {
-      return null;
-    }
-
-    return (
-      existingProducts.find(
-        (existing) =>
-          existing.boutique_id ===
-            selectedBoutiqueId &&
-          existing.supplier_product_id ===
-            product.id,
-      ) ?? null
-    );
+    return existingProducts.find(
+      (existing) =>
+        existing.supplier_product_id === product.id &&
+        existing.boutique_id === selectedBoutiqueId,
+    ) ?? null;
   }, [
     existingProducts,
     product.id,
     selectedBoutiqueId,
-  ]);
+  ]);    
+
+  const isProductAlreadyAdded = Boolean(existingProduct);
 
   /* ---------------------------------------------------------------------- */
   /* Commercial calculations                                                */
@@ -181,12 +175,19 @@ export function AddToBoutiqueDialog({
     }
 
     if (existingProduct) {
+      const existingProductId = existingProduct.id;
+
+      onOpenChange(false);
+
       toast({
-        title: "Produit déjà ajouté",
+        title: "Produit déjà présent",
         description:
-          "Ce produit existe déjà dans cette boutique.",
-        variant: "destructive",
+          "Ouverture de sa fiche pour gérer le produit existant, sans créer de doublon.",
       });
+
+      navigate(
+        `/dashboard/produits?productId=${encodeURIComponent(existingProductId)}`,
+      );
 
       return;
     }
@@ -299,20 +300,38 @@ export function AddToBoutiqueDialog({
               </p>
             </div>
 
-            <Alert className="text-left">
-              <Package className="h-4 w-4" />
-
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                Un échantillon doit être validé avant
-                que le produit puisse être vendu.
+                {existingProduct ? (
+                  <>
+                    Ce produit existe déjà dans cette boutique.
+                    Aucun doublon ne sera créé. Accédez à sa fiche
+                    pour gérer le produit existant.
+                  </>
+                ) : (
+                  <>
+                    Le nouveau produit sera ajouté en pause.
+                    La validation initiale de l’échantillon reste
+                    requise lorsqu’elle n’a pas encore été acquise.
+                  </>
+                )}
               </AlertDescription>
             </Alert>
-
             <Button
               type="button"
-              onClick={() => onOpenChange(false)}
+              onClick={handleAdd}
+              disabled={
+                isSubmitting ||
+                !selectedBoutiqueId ||
+                eligibleBoutiques.length === 0
+              }
             >
-              Fermer
+              {isSubmitting
+                ? "Ajout..."
+                : existingProduct
+                  ? "Gérer le produit existant"
+                  : "Ajouter à ma boutique"}
             </Button>
           </div>
         </DialogContent>
