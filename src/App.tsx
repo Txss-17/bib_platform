@@ -115,6 +115,7 @@ const VentesPrivees = lazy(() => import("@/pages/dashboard/VentesPrivees"));
 const VentesPriveesPOS = lazy(() => import("@/pages/dashboard/VentesPriveesPOS"));
 const BoutiqueCustomPage = lazy(() => import("@/pages/dashboard/BoutiqueCustomPage"));
 const MonProfil = lazy(() => import("@/pages/dashboard/MonProfil"));
+const Personnalisation = lazy(() => import("@/pages/dashboard/Personnalisation"));
 
 /* =====================================================
    PUBLIC BOUTIQUE — REAL COMMERCE
@@ -871,6 +872,15 @@ export default function App() {
                     element={
                       <ProtectedRoute>
                         <MonProfil />
+                      </ProtectedRoute>
+                    }
+                  />
+
+                  <Route
+                    path="/dashboard/personnalisation"
+                    element={
+                      <ProtectedRoute>
+                        <Personnalisation />
                       </ProtectedRoute>
                     }
                   />
