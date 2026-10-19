@@ -1,5 +1,9 @@
 # Roadmap
 
+- [ ] Inspecter le schéma réel et les règles de publication des boutiques.
+- [ ] Sécuriser les contrôles du Studio sur l’accueil, le SEO et les produits persistés.
+- [ ] Tester les règles et documenter les limites sans déployer ni dépublier.
+
 - [x] Supprimer toutes les commandes fictives et de test.
 - [x] Conserver uniquement le compte principal `gliyetat@gmail.com`.
 - [x] Conserver uniquement la boutique « Porte moi ».
