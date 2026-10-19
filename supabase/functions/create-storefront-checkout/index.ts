@@ -407,7 +407,6 @@ async function createStorefrontCheckout(
         customer_name: body.customerName.trim(),
         customer_email: customerEmail,
         amount: (line.unitAmount * line.quantity) / 100,
-        order_number: "PENDING",
         payment_status: "pending",
       })),
     )

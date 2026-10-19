@@ -144,6 +144,11 @@ ON public.products
 FOR EACH ROW
 EXECUTE FUNCTION public.guard_product_stock_write();
 
+-- Supprimer les anciennes signatures incompatibles de la migration précédente.
+DROP FUNCTION IF EXISTS public.reserve_product_stock_checkout(UUID, UUID[]);
+DROP FUNCTION IF EXISTS public.attach_product_stock_stripe_session(UUID, TEXT);
+DROP FUNCTION IF EXISTS public.confirm_product_stock_checkout(TEXT);
+
 -- =========================================================
 -- 6. Réserver atomiquement le stock
 -- Les commandes doivent déjà exister et contenir quantity.
