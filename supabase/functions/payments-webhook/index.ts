@@ -576,7 +576,7 @@ async function handleCheckoutCompleted(session: any) {
   const { data: orders, error: ordersError } = await supabase
     .from("orders")
     .select(
-      "id, order_number, customer_email, customer_name, amount, boutique_id, product_id, products(name)",
+      "id, order_number, customer_email, customer_name, amount, boutique_id, product_id",
     )
     .in("id", orderIds);
 
@@ -588,6 +588,66 @@ async function handleCheckoutCompleted(session: any) {
   }
 
   if (!orders?.length) return;
+
+  const productIds = [
+    ...new Set(
+      orders
+        .map((order: any) => order.product_id)
+        .filter(Boolean),
+    ),
+  ];
+
+  const { data: products, error: productsError } = productIds.length
+    ? await supabase
+      .from("products")
+      .select("id, supplier_product_id")
+      .in("id", productIds)
+    : { data: [], error: null };
+
+  if (productsError) {
+    console.error("Chargement des références produit impossible", productsError);
+    return;
+  }
+
+  const supplierIds = [
+    ...new Set(
+      (products ?? [])
+        .map((product: any) => product.supplier_product_id)
+        .filter(Boolean),
+    ),
+  ];
+
+  const { data: supplierProducts, error: supplierError } = supplierIds.length
+    ? await supabase
+      .from("supplier_products")
+      .select("id, name")
+      .in("id", supplierIds)
+    : { data: [], error: null };
+
+  if (supplierError) {
+    console.error("Chargement des noms produit impossible", supplierError);
+    return;
+  }
+
+  const supplierById = new Map(
+    (supplierProducts ?? []).map(
+      (product: any) => [product.id, product.name] as const,
+    ),
+  );
+
+  const supplierIdByProductId = new Map(
+    (products ?? []).map((product: any) => [
+      product.id,
+      product.supplier_product_id,
+    ] as const),
+  );
+
+  const productNameById = new Map(
+    [...supplierIdByProductId].map(([productId, supplierProductId]) => [
+      productId,
+      supplierById.get(supplierProductId) ?? "",
+    ] as const),
+  );
 
   const boutiqueIds = [
     ...new Set(
@@ -625,7 +685,26 @@ async function handleCheckoutCompleted(session: any) {
           order.customer_email && enabled.has(order.boutique_id),
       )
       .map(async (order: any) => {
-        const { error } = await supabase.functions.invoke(
+        const { data: claim, error: claimError } = await supabase
+          .from("order_confirmation_email_dispatches")
+          .insert({
+            order_id: order.id,
+            status: "sending",
+          })
+          .select("order_id")
+          .maybeSingle();
+
+        if (claimError?.code === "23505") return;
+
+        if (claimError || !claim) {
+          console.error("Impossible de réserver l'envoi de confirmation", {
+            orderId: order.id,
+            error: claimError,
+          });
+          return;
+        }
+
+        const { error: emailError } = await supabase.functions.invoke(
           "send-boutique-email",
           {
             body: {
@@ -635,17 +714,41 @@ async function handleCheckoutCompleted(session: any) {
               variables: {
                 customer_name: order.customer_name ?? "",
                 order_number: order.order_number ?? "",
-                product_name: order.products?.name ?? "",
+                product_name: productNameById.get(order.product_id) ?? "",
                 amount: String(order.amount ?? ""),
               },
             },
           },
         );
 
-        if (error) {
+        if (emailError) {
+          const { error: deleteError } = await supabase
+            .from("order_confirmation_email_dispatches")
+            .delete()
+            .eq("order_id", order.id)
+            .eq("status", "sending");
+
           console.error("Échec de l'e-mail de confirmation", {
             orderId: order.id,
-            error,
+            emailError,
+            deleteError,
+          });
+          return;
+        }
+
+        const { error: sentError } = await supabase
+          .from("order_confirmation_email_dispatches")
+          .update({
+            status: "sent",
+            sent_at: new Date().toISOString(),
+          })
+          .eq("order_id", order.id)
+          .eq("status", "sending");
+
+        if (sentError) {
+          console.error("Impossible de marquer l'e-mail comme envoyé", {
+            orderId: order.id,
+            error: sentError,
           });
         }
       }),
