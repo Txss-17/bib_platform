@@ -737,7 +737,7 @@ async function handleWebhook(
           "release_product_stock_checkout",
           {
             p_stripe_session_id: session.id,
-            p_failure_status: "canceled",
+            p_failure_status: "expired",
           },
         );
 
