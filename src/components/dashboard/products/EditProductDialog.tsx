@@ -1,4 +1,21 @@
+
 import { useEffect, useMemo, useState } from "react";
+import {
+  AlertCircle,
+  BadgeEuro,
+  CalendarClock,
+  CheckCircle2,
+  Info,
+  Package,
+  Percent,
+  ShoppingBag,
+  ShieldCheck,
+  Sparkles,
+  Tags,
+  Warehouse,
+} from "lucide-react";
+import { toast } from "sonner";
+
 import {
   Dialog,
   DialogContent,
@@ -13,18 +30,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  AlertCircle,
-  BadgeEuro,
-  Package,
-  Percent,
-  ShoppingBag,
-} from "lucide-react";
-import { toast } from "sonner";
-import {
-  getProductCommercialState,
-  useUpdateProduct,
-} from "@/hooks/useProducts";
+import { Badge } from "@/components/ui/badge";
+import { useUpdateProduct } from "@/hooks/useProducts";
 
 interface EditProductDialogProps {
   open: boolean;
@@ -35,12 +42,10 @@ interface EditProductDialogProps {
     applied_margin: number | string;
     stock_quantity: number | null;
     low_stock_threshold: number | null;
-
     sale_price?: number | string | null;
     promotion_starts_at?: string | null;
     promotion_ends_at?: string | null;
     promotion_label?: string | null;
-
     supplier_products?: {
       name?: string | null;
       category?: string | null;
@@ -52,6 +57,85 @@ interface EditProductDialogProps {
   };
 }
 
+const inputClass =
+  "h-10 rounded-lg border-border bg-background focus-visible:ring-[#D0AD62]";
+
+const sectionClass =
+  "space-y-4 rounded-xl border border-border/80 bg-card p-4 sm:p-5";
+
+function SectionHeading({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: React.ElementType;
+  title: string;
+  description?: string;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#D0AD62]/30 bg-[#D0AD62]/10 text-[#A17B32]">
+        <Icon className="h-4 w-4" />
+      </div>
+      <div className="min-w-0">
+        <h3 className="text-sm font-semibold text-foreground">
+          {title}
+        </h3>
+        {description && (
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+            {description}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  id,
+  label,
+  hint,
+  children,
+}: {
+  id: string;
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="min-w-0 space-y-1.5">
+      <Label htmlFor={id} className="text-xs font-medium">
+        {label}
+      </Label>
+      {children}
+      {hint && (
+        <p className="text-[11px] leading-4 text-muted-foreground">
+          {hint}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function ReadonlyMetric({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="min-w-0 rounded-lg border border-border/70 bg-muted/30 p-3">
+      <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-1 break-words text-sm font-semibold text-foreground">
+        {value}
+      </p>
+    </div>
+  );
+}
+
 export function EditProductDialog({
   open,
   onOpenChange,
@@ -59,115 +143,47 @@ export function EditProductDialog({
 }: EditProductDialogProps) {
   const update = useUpdateProduct();
 
-  /* ---------------------------------------------------------------------- */
-  /* Commercial                                                              */
-  /* ---------------------------------------------------------------------- */
-
   const [price, setPrice] = useState("");
   const [margin, setMargin] = useState("");
-
-  /* ---------------------------------------------------------------------- */
-  /* Stock                                                                   */
-  /* ---------------------------------------------------------------------- */
-
   const [stock, setStock] = useState("");
   const [threshold, setThreshold] = useState("");
 
-  /* ---------------------------------------------------------------------- */
-  /* Promotion                                                               */
-  /* ---------------------------------------------------------------------- */
-
-  const [promotionEnabled, setPromotionEnabled] =
-    useState(false);
-
+  const [promotionEnabled, setPromotionEnabled] = useState(false);
   const [salePrice, setSalePrice] = useState("");
-  const [promotionLabel, setPromotionLabel] =
-    useState("");
-
-  const [promotionStartsAt, setPromotionStartsAt] =
-    useState("");
-
-  const [promotionEndsAt, setPromotionEndsAt] =
-    useState("");
-
-  /* ---------------------------------------------------------------------- */
-  /* Initialisation                                                          */
-  /* ---------------------------------------------------------------------- */
+  const [promotionLabel, setPromotionLabel] = useState("");
+  const [promotionStartsAt, setPromotionStartsAt] = useState("");
+  const [promotionEndsAt, setPromotionEndsAt] = useState("");
 
   useEffect(() => {
     if (!open) return;
 
-    setPrice(
-      String(product.public_price ?? ""),
-    );
-
-    setMargin(
-      String(product.applied_margin ?? ""),
-    );
-
-    setStock(
-      String(product.stock_quantity ?? 0),
-    );
-
-    setThreshold(
-      String(product.low_stock_threshold ?? 5),
-    );
+    setPrice(String(product.public_price ?? ""));
+    setMargin(String(product.applied_margin ?? ""));
+    setStock(String(product.stock_quantity ?? 0));
+    setThreshold(String(product.low_stock_threshold ?? 5));
 
     const existingSalePrice =
-      product.sale_price !== null &&
-      product.sale_price !== undefined &&
-      Number(product.sale_price) > 0
+      product.sale_price != null && Number(product.sale_price) > 0
         ? String(product.sale_price)
         : "";
 
     setSalePrice(existingSalePrice);
-
-    setPromotionEnabled(
-      existingSalePrice !== "",
-    );
-
-    setPromotionLabel(
-      product.promotion_label ?? "",
-    );
-
-    setPromotionStartsAt(
-      toDatetimeLocal(
-        product.promotion_starts_at,
-      ),
-    );
-
-    setPromotionEndsAt(
-      toDatetimeLocal(
-        product.promotion_ends_at,
-      ),
-    );
+    setPromotionEnabled(existingSalePrice !== "");
+    setPromotionLabel(product.promotion_label ?? "");
+    setPromotionStartsAt(toDatetimeLocal(product.promotion_starts_at));
+    setPromotionEndsAt(toDatetimeLocal(product.promotion_ends_at));
   }, [open, product]);
 
-  /* ---------------------------------------------------------------------- */
-  /* Supplier information                                                    */
-  /* ---------------------------------------------------------------------- */
+  const supplier = product.supplier_products;
+  const supplierBasePrice = Number(supplier?.base_price ?? 0);
+  const maxMargin = Number(supplier?.max_margin_percent ?? 0);
+  const moq = supplier?.moq ?? null;
 
-  const supplierBasePrice = Number(
-    product.supplier_products?.base_price ?? 0,
-  );
-
-  const maxMargin = Number(
-    product.supplier_products?.max_margin_percent ?? 0,
-  );
-
-  const moq = product.supplier_products?.moq ?? null;
-
-  /* ---------------------------------------------------------------------- */
-  /* Commercial preview                                                      */
-  /* ---------------------------------------------------------------------- */
-
-  const commercialPreview = useMemo(() => {
+  const preview = useMemo(() => {
     const publicPrice = Number(price);
+    const promotionalPrice = Number(salePrice);
 
-    if (
-      !Number.isFinite(publicPrice) ||
-      publicPrice <= 0
-    ) {
+    if (!Number.isFinite(publicPrice) || publicPrice <= 0) {
       return {
         valid: false,
         discountPercent: 0,
@@ -185,672 +201,467 @@ export function EditProductDialog({
       };
     }
 
-    const promotionPrice = Number(salePrice);
-
     if (
-      !Number.isFinite(promotionPrice) ||
-      promotionPrice < 0 ||
-      promotionPrice >= publicPrice
+      salePrice.trim() === "" ||
+      !Number.isFinite(promotionalPrice) ||
+      promotionalPrice < 0 ||
+      promotionalPrice >= publicPrice
     ) {
       return {
         valid: false,
         discountPercent: 0,
         saving: 0,
-        currentPrice: promotionPrice,
+        currentPrice: promotionalPrice,
       };
     }
 
     return {
       valid: true,
       discountPercent: Math.round(
-        ((publicPrice - promotionPrice) /
-          publicPrice) *
-          100,
+        ((publicPrice - promotionalPrice) / publicPrice) * 100,
       ),
-      saving: Number(
-        (publicPrice - promotionPrice).toFixed(2),
-      ),
-      currentPrice: promotionPrice,
+      saving: Number((publicPrice - promotionalPrice).toFixed(2)),
+      currentPrice: promotionalPrice,
     };
-  }, [
-    price,
-    promotionEnabled,
-    salePrice,
-  ]);
-
-  /* ---------------------------------------------------------------------- */
-  /* Submit                                                                  */
-  /* ---------------------------------------------------------------------- */
+  }, [price, promotionEnabled, salePrice]);
 
   const submit = async () => {
-    const p = Number(price);
-    const m = Number(margin);
-    const s = Number(stock);
-    const t = Number(threshold);
+    const publicPrice = Number(price);
+    const appliedMargin = Number(margin);
+    const quantity = Number(stock);
+    const lowStockThreshold = Number(threshold);
 
-    /* -------------------------------------------------------------------- */
-    /* Basic validation                                                      */
-    /* -------------------------------------------------------------------- */
-
-    if (!Number.isFinite(p) || p <= 0) {
-      toast.error("Prix public invalide");
+    if (price.trim() === "" || !Number.isFinite(publicPrice) || publicPrice <= 0) {
+      toast.error("Saisissez un prix public valide.");
       return;
     }
 
-    if (!Number.isFinite(m) || m < 0) {
-      toast.error("Marge invalide");
+    if (margin.trim() === "" || !Number.isFinite(appliedMargin) || appliedMargin < 0) {
+      toast.error("Saisissez une marge valide.");
+      return;
+    }
+
+    if (maxMargin > 0 && appliedMargin > maxMargin) {
+      toast.error(`La marge ne peut pas dépasser ${maxMargin} %.`);
       return;
     }
 
     if (
-      maxMargin > 0 &&
-      m > maxMargin
+      stock.trim() === "" ||
+      !Number.isFinite(quantity) ||
+      quantity < 0 ||
+      !Number.isInteger(quantity)
     ) {
-      toast.error(
-        `La marge ne peut pas dépasser ${maxMargin} %.`,
-      );
+      toast.error("Le stock doit être un entier positif ou nul.");
       return;
     }
 
-    if (!Number.isFinite(s) || s < 0) {
-      toast.error("Stock invalide");
+    if (
+      threshold.trim() === "" ||
+      !Number.isFinite(lowStockThreshold) ||
+      lowStockThreshold < 0 ||
+      !Number.isInteger(lowStockThreshold)
+    ) {
+      toast.error("Le seuil de stock doit être un entier positif ou nul.");
       return;
     }
 
-    if (!Number.isFinite(t) || t < 0) {
-      toast.error("Seuil de stock invalide");
-      return;
-    }
-
-    /* -------------------------------------------------------------------- */
-    /* Promotion validation                                                  */
-    /* -------------------------------------------------------------------- */
-
-    let promotionSalePrice:
-      | number
-      | null = null;
-
-    let promotionStart:
-      | string
-      | null = null;
-
-    let promotionEnd:
-      | string
-      | null = null;
-
-    let promotionName:
-      | string
-      | null = null;
+    let finalSalePrice: number | null = null;
+    let finalPromotionStart: string | null = null;
+    let finalPromotionEnd: string | null = null;
+    let finalPromotionLabel: string | null = null;
 
     if (promotionEnabled) {
-      const sp = Number(salePrice);
-
-      if (!Number.isFinite(sp)) {
-        toast.error(
-          "Prix promotionnel invalide",
-        );
-        return;
-      }
-
-      if (sp < 0) {
-        toast.error(
-          "Le prix promotionnel ne peut pas être négatif.",
-        );
-        return;
-      }
-
-      if (sp >= p) {
-        toast.error(
-          "Le prix promotionnel doit être inférieur au prix public.",
-        );
-        return;
-      }
-
       if (
-        promotionStartsAt &&
-        promotionEndsAt
+        salePrice.trim() === "" ||
+        !Number.isFinite(Number(salePrice)) ||
+        Number(salePrice) < 0 ||
+        Number(salePrice) >= publicPrice
       ) {
-        const start = new Date(
-          promotionStartsAt,
+        toast.error(
+          "Le prix promotionnel doit être valide et inférieur au prix public.",
         );
+        return;
+      }
 
-        const end = new Date(
-          promotionEndsAt,
-        );
-
-        if (
-          Number.isNaN(start.getTime()) ||
-          Number.isNaN(end.getTime())
-        ) {
-          toast.error(
-            "Dates de promotion invalides.",
-          );
+      if (promotionStartsAt) {
+        const start = new Date(promotionStartsAt);
+        if (Number.isNaN(start.getTime())) {
+          toast.error("La date de début de promotion est invalide.");
           return;
         }
+        finalPromotionStart = start.toISOString();
+      }
 
-        if (end < start) {
+      if (promotionEndsAt) {
+        const end = new Date(promotionEndsAt);
+        if (Number.isNaN(end.getTime())) {
+          toast.error("La date de fin de promotion est invalide.");
+          return;
+        }
+        finalPromotionEnd = end.toISOString();
+      }
+
+      if (promotionStartsAt && promotionEndsAt) {
+        if (new Date(promotionEndsAt) < new Date(promotionStartsAt)) {
           toast.error(
-            "La fin de promotion doit être postérieure au début.",
+            "La fin de promotion doit être postérieure à son début.",
           );
           return;
         }
       }
 
-      promotionSalePrice = Number(
-        sp.toFixed(2),
-      );
-
-      promotionStart =
-        promotionStartsAt
-          ? new Date(
-              promotionStartsAt,
-            ).toISOString()
-          : null;
-
-      promotionEnd =
-        promotionEndsAt
-          ? new Date(
-              promotionEndsAt,
-            ).toISOString()
-          : null;
-
-      promotionName =
-        promotionLabel.trim() || null;
+      finalSalePrice = Number(Number(salePrice).toFixed(2));
+      finalPromotionLabel = promotionLabel.trim() || null;
     }
-
-    /* -------------------------------------------------------------------- */
-    /* Update                                                                 */
-    /* -------------------------------------------------------------------- */
 
     try {
       await update.mutateAsync({
         id: product.id,
-
         updates: {
-          public_price: Number(
-            p.toFixed(2),
-          ),
-
-          applied_margin: Number(
-            m.toFixed(2),
-          ),
-
-          stock_quantity: Math.round(s),
-
-          low_stock_threshold:
-            Math.round(t),
-
-          sale_price:
-            promotionSalePrice,
-
-          promotion_starts_at:
-            promotionStart,
-
-          promotion_ends_at:
-            promotionEnd,
-
-          promotion_label:
-            promotionName,
+          public_price: Number(publicPrice.toFixed(2)),
+          applied_margin: Number(appliedMargin.toFixed(2)),
+          stock_quantity: quantity,
+          low_stock_threshold: lowStockThreshold,
+          sale_price: finalSalePrice,
+          promotion_starts_at: finalPromotionStart,
+          promotion_ends_at: finalPromotionEnd,
+          promotion_label: finalPromotionLabel,
         },
       });
 
-      toast.success(
-        "Produit mis à jour",
-      );
-
+      toast.success("Produit mis à jour.");
       onOpenChange(false);
     } catch (error) {
-      console.error(
-        "Erreur lors de la mise à jour du produit :",
-        error,
-      );
-
-      toast.error(
-        "Mise à jour impossible",
-      );
+      console.error("Erreur lors de la mise à jour du produit :", error);
+      toast.error("La mise à jour du produit a échoué.");
     }
   };
 
-  /* ---------------------------------------------------------------------- */
-  /* Render                                                                  */
-  /* ---------------------------------------------------------------------- */
-
   return (
-    <Dialog
-      open={open}
-      onOpenChange={onOpenChange}
-    >
-      <DialogContent className="max-h-[90vh] max-w-[95vw] overflow-y-auto sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-base sm:text-lg">
-            Modifier —{" "}
-            {product.supplier_products?.name ||
-              "Produit"}
-          </DialogTitle>
-
-          <DialogDescription>
-            Gérez les paramètres commerciaux et
-            opérationnels de ce produit.
-          </DialogDescription>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="flex max-h-[92dvh] w-[calc(100%-1rem)] max-w-3xl flex-col gap-0 overflow-hidden rounded-2xl p-0">
+        <DialogHeader className="border-b border-border bg-muted/20 px-5 py-5 sm:px-7">
+          <div className="flex items-start gap-3 pr-6">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#172B4D] text-white">
+              <Package className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <DialogTitle className="text-lg font-semibold tracking-tight">
+                  Modifier le produit
+                </DialogTitle>
+                <Badge variant="outline" className="border-[#D0AD62]/50 bg-[#D0AD62]/10 text-[#8B692B]">
+                  Catalogue BIB
+                </Badge>
+              </div>
+              <DialogDescription className="mt-1 line-clamp-2">
+                {supplier?.name || "Produit sans nom"} — gérez le prix,
+                les promotions et le stock.
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* ============================================================ */}
-          {/* Informations fournisseur                                    */}
-          {/* ============================================================ */}
+        <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5 sm:px-7">
+          <section className={sectionClass}>
+            <SectionHeading
+              icon={Package}
+              title="Référence fournisseur"
+              description="Informations de référence communiquées par le fournisseur. Ces données ne sont pas modifiables ici."
+            />
 
-          <section className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Package className="h-4 w-4" />
+            {supplier?.description && (
+              <p className="text-sm leading-6 text-muted-foreground">
+                {supplier.description}
+              </p>
+            )}
 
-              <h3 className="text-sm font-semibold">
-                Référence produit
-              </h3>
-            </div>
-
-            <div className="rounded-lg border bg-muted/30 p-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <Info
-                  label="Catégorie"
-                  value={
-                    product.supplier_products
-                      ?.category || "—"
-                  }
-                />
-
-                <Info
-                  label="Prix fournisseur"
-                  value={`${supplierBasePrice.toFixed(
-                    2,
-                  )} €`}
-                />
-
-                <Info
-                  label="MOQ"
-                  value={
-                    moq !== null
-                      ? String(moq)
-                      : "—"
-                  }
-                />
-
-                <Info
-                  label="Marge maximale"
-                  value={
-                    maxMargin > 0
-                      ? `${maxMargin} %`
-                      : "—"
-                  }
-                />
-              </div>
-            </div>
-          </section>
-
-          <Separator />
-
-          {/* ============================================================ */}
-          {/* Prix                                                          */}
-          {/* ============================================================ */}
-
-          <section className="space-y-3">
-            <div className="flex items-center gap-2">
-              <BadgeEuro className="h-4 w-4" />
-
-              <h3 className="text-sm font-semibold">
-                Commercial
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label
-                  htmlFor="public-price"
-                  className="text-xs"
-                >
-                  Prix public (€)
-                </Label>
-
-                <Input
-                  id="public-price"
-                  value={price}
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  onChange={(event) =>
-                    setPrice(
-                      event.target.value,
-                    )
-                  }
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label
-                  htmlFor="margin"
-                  className="text-xs"
-                >
-                  Marge (%)
-                </Label>
-
-                <Input
-                  id="margin"
-                  value={margin}
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max={
-                    maxMargin > 0
-                      ? maxMargin
-                      : undefined
-                  }
-                  onChange={(event) =>
-                    setMargin(
-                      event.target.value,
-                    )
-                  }
-                />
-              </div>
-            </div>
-          </section>
-
-          <Separator />
-
-          {/* ============================================================ */}
-          {/* Promotion                                                     */}
-          {/* ============================================================ */}
-
-          <section className="space-y-4">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <Percent className="h-4 w-4" />
-
-                <div>
-                  <h3 className="text-sm font-semibold">
-                    Promotion
-                  </h3>
-
-                  <p className="text-xs text-muted-foreground">
-                    Configurez une réduction temporaire
-                    visible sur la boutique et le Store BIB.
-                  </p>
-                </div>
-              </div>
-
-              <Switch
-                checked={promotionEnabled}
-                onCheckedChange={
-                  setPromotionEnabled
-                }
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <ReadonlyMetric
+                label="Catégorie"
+                value={supplier?.category || "Non renseignée"}
+              />
+              <ReadonlyMetric
+                label="Prix fournisseur"
+                value={`${supplierBasePrice.toFixed(2)} €`}
+              />
+              <ReadonlyMetric
+                label="MOQ fournisseur"
+                value={moq !== null ? String(moq) : "Non renseigné"}
+              />
+              <ReadonlyMetric
+                label="Marge maximale"
+                value={maxMargin > 0 ? `${maxMargin} %` : "Non renseignée"}
               />
             </div>
 
-            {promotionEnabled && (
-              <div className="space-y-4 rounded-lg border p-4">
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div className="space-y-1.5">
-                    <Label
-                      htmlFor="sale-price"
-                      className="text-xs"
-                    >
-                      Prix promotionnel (€)
-                    </Label>
-
-                    <Input
-                      id="sale-price"
-                      value={salePrice}
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      max={Number(price) || undefined}
-                      onChange={(event) =>
-                        setSalePrice(
-                          event.target.value,
-                        )
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label
-                      htmlFor="promotion-label"
-                      className="text-xs"
-                    >
-                      Libellé
-                    </Label>
-
-                    <Input
-                      id="promotion-label"
-                      value={promotionLabel}
-                      placeholder="Ex. Offre spéciale"
-                      maxLength={80}
-                      onChange={(event) =>
-                        setPromotionLabel(
-                          event.target.value,
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div className="space-y-1.5">
-                    <Label
-                      htmlFor="promotion-start"
-                      className="text-xs"
-                    >
-                      Début
-                    </Label>
-
-                    <Input
-                      id="promotion-start"
-                      type="datetime-local"
-                      value={promotionStartsAt}
-                      onChange={(event) =>
-                        setPromotionStartsAt(
-                          event.target.value,
-                        )
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label
-                      htmlFor="promotion-end"
-                      className="text-xs"
-                    >
-                      Fin
-                    </Label>
-
-                    <Input
-                      id="promotion-end"
-                      type="datetime-local"
-                      value={promotionEndsAt}
-                      onChange={(event) =>
-                        setPromotionEndsAt(
-                          event.target.value,
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-
-                {commercialPreview.valid &&
-                  commercialPreview.discountPercent >
-                    0 && (
-                    <Alert>
-                      <Percent className="h-4 w-4" />
-
-                      <AlertDescription>
-                        Réduction calculée :{" "}
-                        <strong>
-                          -
-                          {
-                            commercialPreview.discountPercent
-                          }
-                          %
-                        </strong>{" "}
-                        — économie de{" "}
-                        <strong>
-                          {commercialPreview.saving.toFixed(
-                            2,
-                          )}{" "}
-                          €
-                        </strong>
-                      </AlertDescription>
-                    </Alert>
-                  )}
-
-                {promotionEnabled &&
-                  !commercialPreview.valid && (
-                    <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
-
-                      <AlertDescription>
-                        Le prix promotionnel doit être
-                        inférieur au prix public.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-              </div>
-            )}
-          </section>
-
-          <Separator />
-
-          {/* ============================================================ */}
-          {/* Stock                                                         */}
-          {/* ============================================================ */}
-
-          <section className="space-y-3">
-            <div className="flex items-center gap-2">
-              <ShoppingBag className="h-4 w-4" />
-
-              <h3 className="text-sm font-semibold">
-                Stock
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label
-                  htmlFor="stock"
-                  className="text-xs"
-                >
-                  Stock disponible
-                </Label>
-
-                <Input
-                  id="stock"
-                  value={stock}
-                  type="number"
-                  step="1"
-                  min="0"
-                  onChange={(event) =>
-                    setStock(
-                      event.target.value,
-                    )
-                  }
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label
-                  htmlFor="stock-threshold"
-                  className="text-xs"
-                >
-                  Seuil de stock bas
-                </Label>
-
-                <Input
-                  id="stock-threshold"
-                  value={threshold}
-                  type="number"
-                  step="1"
-                  min="0"
-                  onChange={(event) =>
-                    setThreshold(
-                      event.target.value,
-                    )
-                  }
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* ============================================================ */}
-          {/* Personnalisation                                             */}
-          {/* ============================================================ */}
-
-          <Separator />
-
-          <section className="space-y-3">
-            <div>
-              <h3 className="text-sm font-semibold">
-                Personnalisation
-              </h3>
-
-              <p className="mt-1 text-xs text-muted-foreground">
-                Les possibilités de personnalisation
-                dépendent des capacités validées pour ce
-                produit et son fournisseur.
-              </p>
-            </div>
-
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-
-              <AlertDescription>
-                La configuration détaillée de la
-                personnalisation — design, logo, couleur,
-                texte, étiquette, matière, forme,
-                finition ou packaging — sera disponible
-                uniquement lorsque ces capacités sont
-                enregistrées et validées pour le produit.
+            <Alert className="border-[#D0AD62]/30 bg-[#D0AD62]/5">
+              <Info className="h-4 w-4 text-[#A17B32]" />
+              <AlertDescription className="text-xs leading-5">
+                Le MOQ est fixé par le fournisseur. Il ne peut pas être
+                abaissé ou modifié depuis l’espace marchand.
               </AlertDescription>
             </Alert>
           </section>
 
-          {/* ============================================================ */}
-          {/* Contrôle BIB                                                  */}
-          {/* ============================================================ */}
+          <section className={sectionClass}>
+            <SectionHeading
+              icon={BadgeEuro}
+              title="Prix de vente et marge"
+              description="Définissez votre prix public dans le respect des contraintes commerciales applicables."
+            />
 
-          <section className="rounded-lg border border-dashed p-4">
-            <h3 className="text-sm font-semibold">
-              Contrôles BIB
-            </h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field id="public-price" label="Prix public (€)">
+                <Input
+                  id="public-price"
+                  className={inputClass}
+                  type="number"
+                  inputMode="decimal"
+                  step="0.01"
+                  min="0.01"
+                  value={price}
+                  onChange={(event) => setPrice(event.target.value)}
+                />
+              </Field>
 
-            <p className="mt-1 text-xs text-muted-foreground">
-              Les règles de conformité, de zone autorisée,
-              de disponibilité au catalogue et de
-              validation fournisseur restent contrôlées
-              par BIB. Elles ne sont pas modifiables
-              librement depuis cette fenêtre.
-            </p>
+              <Field
+                id="margin"
+                label="Marge appliquée (%)"
+                hint={
+                  maxMargin > 0
+                    ? `Plafond fournisseur : ${maxMargin} %.`
+                    : "Respectez les conditions commerciales du fournisseur."
+                }
+              >
+                <Input
+                  id="margin"
+                  className={inputClass}
+                  type="number"
+                  inputMode="decimal"
+                  step="0.01"
+                  min="0"
+                  max={maxMargin > 0 ? maxMargin : undefined}
+                  value={margin}
+                  onChange={(event) => setMargin(event.target.value)}
+                />
+              </Field>
+            </div>
+          </section>
+
+          <section className={sectionClass}>
+            <div className="flex items-start justify-between gap-4">
+              <SectionHeading
+                icon={Tags}
+                title="Promotion commerciale"
+                description="Configurez une réduction temporaire pour la boutique."
+              />
+              <Switch
+                checked={promotionEnabled}
+                onCheckedChange={setPromotionEnabled}
+                aria-label="Activer la promotion"
+              />
+            </div>
+
+            {promotionEnabled ? (
+              <div className="space-y-4 rounded-lg border border-border bg-muted/20 p-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field id="sale-price" label="Prix promotionnel (€)">
+                    <Input
+                      id="sale-price"
+                      className={inputClass}
+                      type="number"
+                      inputMode="decimal"
+                      step="0.01"
+                      min="0"
+                      max={Number(price) || undefined}
+                      value={salePrice}
+                      onChange={(event) => setSalePrice(event.target.value)}
+                    />
+                  </Field>
+
+                  <Field id="promotion-label" label="Libellé promotionnel">
+                    <Input
+                      id="promotion-label"
+                      className={inputClass}
+                      value={promotionLabel}
+                      maxLength={80}
+                      placeholder="Ex. Offre de lancement"
+                      onChange={(event) => setPromotionLabel(event.target.value)}
+                    />
+                  </Field>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field id="promotion-start" label="Début de la promotion">
+                    <Input
+                      id="promotion-start"
+                      className={inputClass}
+                      type="datetime-local"
+                      value={promotionStartsAt}
+                      onChange={(event) => setPromotionStartsAt(event.target.value)}
+                    />
+                  </Field>
+
+                  <Field id="promotion-end" label="Fin de la promotion">
+                    <Input
+                      id="promotion-end"
+                      className={inputClass}
+                      type="datetime-local"
+                      value={promotionEndsAt}
+                      onChange={(event) => setPromotionEndsAt(event.target.value)}
+                    />
+                  </Field>
+                </div>
+
+                {preview.valid && preview.discountPercent > 0 && (
+                  <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-emerald-900">
+                    <CheckCircle2 className="h-5 w-5 shrink-0" />
+                    <div className="text-sm">
+                      <p className="font-semibold">
+                        Réduction de {preview.discountPercent} %
+                      </p>
+                      <p className="mt-0.5 text-xs">
+                        Économie de {preview.saving.toFixed(2)} € par unité.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {!preview.valid && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription className="text-xs">
+                      Le prix promotionnel doit être renseigné et inférieur
+                      au prix public.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                <p className="text-xs leading-5 text-muted-foreground">
+                  Les dates sont facultatives individuellement. Si elles
+                  sont toutes les deux renseignées, la fin doit être
+                  postérieure au début.
+                </p>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 rounded-lg border border-dashed border-border p-3 text-sm text-muted-foreground">
+                <CalendarClock className="h-4 w-4 shrink-0" />
+                Aucune promotion active dans cette configuration.
+              </div>
+            )}
+          </section>
+
+          <section className={sectionClass}>
+            <SectionHeading
+              icon={Warehouse}
+              title="Gestion du stock"
+              description="Définissez la quantité suivie par la boutique et le seuil d’alerte."
+            />
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field
+                id="stock"
+                label="Stock disponible"
+                hint="Nombre entier, zéro compris."
+              >
+                <Input
+                  id="stock"
+                  className={inputClass}
+                  type="number"
+                  inputMode="numeric"
+                  step="1"
+                  min="0"
+                  value={stock}
+                  onChange={(event) => setStock(event.target.value)}
+                />
+              </Field>
+
+              <Field
+                id="stock-threshold"
+                label="Seuil d’alerte de stock"
+                hint="Une alerte est déclenchée lorsque le stock atteint ce seuil."
+              >
+                <Input
+                  id="stock-threshold"
+                  className={inputClass}
+                  type="number"
+                  inputMode="numeric"
+                  step="1"
+                  min="0"
+                  value={threshold}
+                  onChange={(event) => setThreshold(event.target.value)}
+                />
+              </Field>
+            </div>
+          </section>
+
+          <section className={sectionClass}>
+            <SectionHeading
+              icon={Sparkles}
+              title="Personnalisation du produit"
+              description="La configuration avancée sera pilotée depuis le module Personnalisation."
+            />
+
+            <div className="flex items-start gap-3 rounded-lg border border-dashed border-border p-4">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              <div className="space-y-1">
+                <p className="text-sm font-medium">
+                  Options autorisées par le fournisseur
+                </p>
+                <p className="text-xs leading-5 text-muted-foreground">
+                  Logo, couleurs, textes, matières, formes, finitions,
+                  étiquettes et packaging ne seront configurables que si
+                  les capacités correspondantes sont renseignées et validées
+                  pour cette référence. Aucune option n’est activée
+                  arbitrairement dans cette fenêtre.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-[#172B4D]/15 bg-[#172B4D]/[0.035] p-4">
+            <div className="flex items-start gap-3">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#172B4D]" />
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">
+                  Contrôles et validation BIB
+                </h3>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Les conditions fournisseur, les exigences de conformité
+                  et la validation de l’échantillon restent régies par les
+                  contrôles BIB. Enregistrer ces paramètres ne contourne
+                  pas les règles d’activation du produit.
+                </p>
+              </div>
+            </div>
           </section>
         </div>
 
-        <DialogFooter>
+        <Separator />
+
+        <DialogFooter className="gap-2 border-t border-border bg-background px-5 py-4 sm:px-7">
           <Button
+            type="button"
             variant="outline"
-            onClick={() =>
-              onOpenChange(false)
-            }
+            className="rounded-lg"
+            onClick={() => onOpenChange(false)}
             disabled={update.isPending}
           >
             Annuler
           </Button>
 
           <Button
+            type="button"
+            className="rounded-lg bg-[#172B4D] text-white hover:bg-[#223D66]"
             onClick={submit}
             disabled={
               update.isPending ||
-              (promotionEnabled &&
-                !commercialPreview.valid)
+              (promotionEnabled && !preview.valid)
             }
           >
-            {update.isPending
-              ? "Enregistrement..."
-              : "Enregistrer"}
+            {update.isPending ? "Enregistrement…" : "Enregistrer les modifications"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -858,51 +669,14 @@ export function EditProductDialog({
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/* Helpers                                                                    */
-/* -------------------------------------------------------------------------- */
-
-function toDatetimeLocal(
-  value: string | null | undefined,
-): string {
-  if (!value) {
-    return "";
-  }
+function toDatetimeLocal(value: string | null | undefined): string {
+  if (!value) return "";
 
   const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
 
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  const offset =
-    date.getTimezoneOffset();
-
-  const localDate = new Date(
-    date.getTime() - offset * 60_000,
-  );
-
-  return localDate
+  const offset = date.getTimezoneOffset();
+  return new Date(date.getTime() - offset * 60_000)
     .toISOString()
     .slice(0, 16);
-}
-
-function Info({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div>
-      <p className="text-xs text-muted-foreground">
-        {label}
-      </p>
-
-      <p className="mt-0.5 font-medium">
-        {value}
-      </p>
-    </div>
-  );
 }
