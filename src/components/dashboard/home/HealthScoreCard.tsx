@@ -1,4 +1,11 @@
-import { CheckCircle2, AlertTriangle, AlertCircle, Heart } from "lucide-react";
+
+import {
+  CheckCircle2,
+  AlertTriangle,
+  AlertCircle,
+  Heart,
+} from "lucide-react";
+
 import { SectionCard } from "@/components/dashboard/shared";
 import { useBoutiqueHealth } from "@/hooks/useBoutiqueHealth";
 import { cn } from "@/lib/utils";
@@ -17,100 +24,155 @@ const STATUS_ICON = {
 } as const;
 
 const STATUS_TONE = {
-  ok: "text-success bg-success/10",
-  warning: "text-secondary bg-secondary/15",
-  critical: "text-destructive bg-destructive/10",
+  ok: "border-success/20 bg-success/10 text-success",
+  warning: "border-bib-gold/30 bg-bib-gold/10 text-bib-gold",
+  critical: "border-destructive/20 bg-destructive/10 text-destructive",
 } as const;
 
-/**
- * Premium "Boutique health" card — replaces the legacy KPI grid header.
- * Shows a 0-100 score, a qualitative level and a list of actionable signals.
- */
 export function HealthScoreCard() {
   const { score, level, signals, loading } = useBoutiqueHealth();
 
-  // Circular progress geometry
-  const radius = 38;
+  const safeScore = Math.min(100, Math.max(0, Number(score) || 0));
+  const radius = 39;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (score / 100) * circumference;
+  const offset = circumference - (safeScore / 100) * circumference;
 
   const ringColor =
-    level === "excellent" || level === "good"
-      ? "hsl(var(--secondary))"
+    level === "poor"
+      ? "hsl(var(--destructive))"
       : level === "fair"
-        ? "hsl(var(--secondary))"
-        : "hsl(var(--destructive))";
+        ? "hsl(var(--bib-gold))"
+        : "hsl(var(--primary))";
 
   return (
     <SectionCard
-      icon={<Heart className="w-4 h-4" />}
+      icon={<Heart className="h-4 w-4" />}
       title="Santé de la boutique"
-      description="Vue d'ensemble en temps réel de votre activité"
+      description="Les signaux essentiels pour garder votre activité sur la bonne voie."
     >
-      <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-6 items-center pt-2">
-        {/* Score ring */}
-        <div className="flex flex-col items-center justify-center">
-          <div className="relative w-[120px] h-[120px]">
-            <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+      <div className="grid grid-cols-1 items-center gap-6 pt-3 md:grid-cols-[160px_minmax(0,1fr)]">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-border/70 bg-muted/20 px-4 py-5">
+          <div className="relative h-32 w-32">
+            <svg
+              className="h-full w-full -rotate-90"
+              viewBox="0 0 100 100"
+              role="img"
+              aria-label={
+                loading
+                  ? "Chargement du score de santé"
+                  : `Score de santé : ${safeScore} sur 100`
+              }
+            >
               <circle
                 cx="50"
                 cy="50"
                 r={radius}
                 stroke="hsl(var(--muted))"
-                strokeWidth="8"
-                fill="transparent"
+                strokeWidth="7"
+                fill="none"
               />
               <circle
                 cx="50"
                 cy="50"
                 r={radius}
                 stroke={ringColor}
-                strokeWidth="8"
-                fill="transparent"
+                strokeWidth="7"
+                fill="none"
                 strokeDasharray={circumference}
                 strokeDashoffset={loading ? circumference : offset}
                 strokeLinecap="round"
                 className="transition-all duration-700 ease-out"
               />
             </svg>
+
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="font-display text-3xl font-bold text-foreground leading-none">
-                {loading ? "—" : score}
+              <span className="text-4xl font-semibold tracking-tight text-foreground">
+                {loading ? "—" : safeScore}
               </span>
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">
-                /100
+              <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                sur 100
               </span>
             </div>
           </div>
-          <p className="mt-3 text-sm font-semibold text-foreground">
-            {loading ? "Analyse…" : LEVEL_LABEL[level]}
-          </p>
+
+          <span className="mt-4 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground">
+            <span
+              className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                loading
+                  ? "bg-muted-foreground"
+                  : level === "poor"
+                    ? "bg-destructive"
+                    : level === "fair"
+                      ? "bg-bib-gold"
+                      : "bg-primary",
+              )}
+            />
+            {loading ? "Analyse en cours" : LEVEL_LABEL[level] ?? "État à confirmer"}
+          </span>
         </div>
 
-        {/* Signals */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {signals.map((s) => {
-            const Icon = STATUS_ICON[s.status];
-            return (
-              <div
-                key={s.key}
-                className="flex items-start gap-3 p-3 rounded-xl bg-muted/30 border border-border/40"
-              >
+        <div className="min-w-0">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h3 className="text-sm font-semibold text-foreground">
+              Points de vigilance
+            </h3>
+            <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              {loading ? "Actualisation" : `${signals.length} signal${signals.length > 1 ? "s" : ""}`}
+            </span>
+          </div>
+
+          {loading ? (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {[0, 1, 2, 3].map((item) => (
                 <div
-                  className={cn(
-                    "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
-                    STATUS_TONE[s.status],
-                  )}
-                >
-                  <Icon className="w-4 h-4" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-foreground">{s.label}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{s.hint}</p>
-                </div>
+                  key={item}
+                  className="h-[76px] animate-pulse rounded-xl border border-border/60 bg-muted/40"
+                />
+              ))}
+            </div>
+          ) : signals.length === 0 ? (
+            <div className="rounded-xl border border-success/20 bg-success/5 p-4">
+              <div className="flex items-center gap-2 text-success">
+                <CheckCircle2 className="h-4 w-4" />
+                <p className="text-sm font-semibold">Aucun signal à afficher</p>
               </div>
-            );
-          })}
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Les prochains indicateurs apparaîtront ici lorsque des données seront disponibles.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {signals.map((signal) => {
+                const Icon = STATUS_ICON[signal.status];
+
+                return (
+                  <div
+                    key={signal.key}
+                    className="flex min-w-0 items-start gap-3 rounded-xl border border-border/70 bg-card p-3.5 transition-colors hover:bg-muted/30"
+                  >
+                    <div
+                      className={cn(
+                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border",
+                        STATUS_TONE[signal.status],
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold leading-5 text-foreground">
+                        {signal.label}
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                        {signal.hint}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </SectionCard>
