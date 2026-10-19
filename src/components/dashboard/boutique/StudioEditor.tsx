@@ -43,7 +43,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useIsMutating, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -141,6 +141,8 @@ import { StudioSceneRenderer } from "@/components/storefront/StudioSceneRenderer
 import { supabase } from "@/integrations/supabase/client";
 import { validateMarkdownLinks } from "@/lib/safeMarkdown";
 import { ImageField } from "./SceneInspectorPro";
+import { fetchBoutiquePublicationData, useBoutiquePublication } from "@/hooks/useBoutiquePublication";
+import { validateBoutiquePublication, type PublicationScene } from "@/lib/boutiquePublication";
 
 interface Props {
   boutiqueId: string;
@@ -959,11 +961,16 @@ export function StudioEditor({
   // indépendamment de la page sélectionnée dans l'éditeur.
   const {
     data: publicationScenes = [],
-    isLoading: publicationScenesLoading,
+    isFetching: publicationScenesLoading,
+    isError: publicationScenesError,
+    refetch: refetchPublicationScenes,
   } = useBoutiqueScenes(
     boutiqueId,
     null,
   );
+
+  const publicationData = useBoutiquePublication(boutiqueId);
+  const pendingMutations = useIsMutating();
 
   const updateScene =
     useUpdateScene();
@@ -1262,158 +1269,18 @@ export function StudioEditor({
     initialSeo,
   ]);
 
-  const validation = useMemo(() => {
-    const errors: string[] =
-      [];
-
-    if (publicationScenesLoading) {
-      return {
-        ok: false,
-        errors: [
-          "Chargement des scènes de la page d’accueil…",
-        ],
-      };
-    }
-
-    const visible =
-      publicationScenes.filter(
-        (scene) =>
-          scene.is_visible,
-      );
-
-    if (visible.length < 3) {
-      errors.push(
-        "Au moins 3 scènes visibles sont nécessaires.",
-      );
-    }
-
-    const requiredRoles: SceneRole[] =
-      [
-        "hero",
-        "showcase",
-        "cta",
-      ];
-
-    for (const role of requiredRoles) {
-      if (
-        !visible.some(
-          (scene) =>
-            scene.role === role,
-        )
-      ) {
-        errors.push(
-          `Scène requise manquante : ${role}.`,
-        );
-      }
-    }
-
-    const hero =
-      visible.find(
-        (scene) =>
-          scene.role ===
-          "hero",
-      );
-
-    if (hero) {
-      const content =
-        hero.content as Record<
-          string,
-          unknown
-        >;
-
-      if (
-        typeof content.title !==
-          "string" ||
-        content.title.trim()
-          .length < 5
-      ) {
-        errors.push(
-          "Le titre du Hero doit comporter au moins 5 caractères.",
-        );
-      }
-
-      if (
-        hero.variant ===
-          "fullscreen" &&
-        !content.backgroundImage &&
-        !content.videoUrl
-      ) {
-        errors.push(
-          "Le Hero plein écran doit avoir une image ou une vidéo.",
-        );
-      }
-
-      if (
-        typeof content.ctaLabel !==
-          "string" ||
-        content.ctaLabel.trim()
-          .length < 2
-      ) {
-        errors.push(
-          "Le CTA principal du Hero est requis.",
-        );
-      }
-    }
-
-    if (
-      visible.some(
-        (scene) =>
-          scene.role ===
-          "showcase",
-      ) &&
-      products.length === 0
-    ) {
-      errors.push(
-        "La Vitrine produits est active mais aucun produit actif n'est disponible.",
-      );
-    }
-
-    if (
-      !seoTitle.trim() ||
-      seoTitle.trim().length < 10
-    ) {
-      errors.push(
-        "Le titre SEO doit comporter au moins 10 caractères.",
-      );
-    }
-
-    if (
-      seoTitle.length > 60
-    ) {
-      errors.push(
-        "Le titre SEO ne doit pas dépasser 60 caractères.",
-      );
-    }
-
-    if (
-      !seoDescription.trim() ||
-      seoDescription.trim()
-        .length < 50
-    ) {
-      errors.push(
-        "La meta description doit comporter au moins 50 caractères.",
-      );
-    }
-
-    if (
-      seoDescription.length > 160
-    ) {
-      errors.push(
-        "La meta description ne doit pas dépasser 160 caractères.",
-      );
-    }
-
-    return {
-      ok: errors.length === 0,
-      errors,
-    };
-  }, [
-    publicationScenes,
-    publicationScenesLoading,
-    products,
-    seoTitle,
-    seoDescription,
-  ]);
+  const validation = useMemo(() => validateBoutiquePublication({
+    studioCompletedAt: publicationData.data?.boutique.studio_completed_at ?? null,
+    scenes: publicationScenes,
+    eligibleProductCount: publicationData.data?.eligibleProductCount ?? 0,
+    seoTitle: seoDirty ? seoTitle : publicationData.data?.boutique.seo_title ?? "",
+    seoDescription: seoDirty ? seoDescription : publicationData.data?.boutique.seo_description ?? "",
+    loading: publicationScenesLoading || publicationData.isFetching || !publicationData.data,
+    failed: publicationScenesError || publicationData.isError,
+    saving: pendingMutations > 0,
+  }), [publicationData.data, publicationData.isFetching, publicationData.isError,
+    publicationScenes, publicationScenesLoading, publicationScenesError,
+    seoDirty, seoTitle, seoDescription, pendingMutations]);
 
   const publish = useMutation({
     mutationFn: async () => {
@@ -1446,6 +1313,36 @@ export function StudioEditor({
           publicOrigin:
             seoPublicOrigin.trim() || null,
         });
+      }
+
+      // Read persisted data immediately before the status write. Optimistic
+      // scene cache and the eight-item preview are not publication authorities.
+      let freshData;
+      let freshScenes;
+      try {
+        [freshData, freshScenes] = await Promise.all([
+          fetchBoutiquePublicationData(boutiqueId),
+          supabase.from("boutique_scenes")
+            .select("page_id, position, is_visible, role, variant, content")
+            .eq("boutique_id", boutiqueId).is("page_id", null)
+            .order("position", { ascending: true }),
+        ]);
+      } catch {
+        throw new Error("publication_read_failed");
+      }
+      if (freshScenes.error || !freshScenes.data) {
+        throw new Error("publication_read_failed");
+      }
+      const freshValidation = validateBoutiquePublication({
+        studioCompletedAt: freshData.boutique.studio_completed_at,
+        scenes: freshScenes.data as PublicationScene[],
+        eligibleProductCount: freshData.eligibleProductCount,
+        seoTitle: freshData.boutique.seo_title ?? "",
+        seoDescription: freshData.boutique.seo_description ?? "",
+      });
+      if (!freshValidation.ok) {
+        await Promise.all([publicationData.refetch(), refetchPublicationScenes()]);
+        throw new Error(`publication_blocked:${freshValidation.errors.join(" ")}`);
       }
 
       const {
@@ -1530,6 +1427,15 @@ export function StudioEditor({
               (error as { message?: unknown }).message ?? "",
             )
           : "";
+
+      if (rawMessage.startsWith("publication_blocked:")) {
+        toast.error(`Publication bloquée : ${rawMessage.slice("publication_blocked:".length)}`);
+        return;
+      }
+      if (rawMessage === "publication_read_failed") {
+        toast.error("Publication bloquée : impossible de vérifier les données enregistrées. Réessayez le chargement avant de publier.");
+        return;
+      }
 
       const publicationMessages: Array<[string, string]> = [
         [
@@ -2067,21 +1973,6 @@ export function StudioEditor({
             className="gap-2"
             onClick={() => navigate("/dashboard/boutiques")}
           >
-            <ActionButton
-              size="sm"
-              state={stateFromMutation(
-                publish,
-              )}
-              loadingLabel="Publication…"
-              successLabel="Publié"
-              errorLabel="Échec"
-              onClick={() =>
-                publish.mutate()
-              }
-            >
-              <CheckCircle2 className="mr-2 h-4 w-4" />
-              Publier
-            </ActionButton>
             <ArrowLeft className="h-4 w-4" />
             Boutiques
           </Button>
@@ -2134,6 +2025,8 @@ export function StudioEditor({
 
           <ActionButton
             size="sm"
+            disabled={!validation.ok}
+            aria-describedby={!validation.ok ? "publication-validation" : undefined}
             state={stateFromMutation(
               publish,
             )}
@@ -2152,18 +2045,31 @@ export function StudioEditor({
 
       {!validation.ok && (
         <div
+          id="publication-validation"
           role="status"
-          className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm"
+          aria-live="polite"
+          className="mt-3 rounded-lg border border-warning/30 bg-warning/5 p-3 text-sm"
         >
           <p className="font-medium">
-            À corriger avant publication
+            {isPublished ? "Boutique publiée : points à corriger" : "À corriger avant publication"}
           </p>
 
+          {isPublished && (
+            <p className="mt-1 text-muted-foreground">La boutique reste publiée. Corrigez ces points pour préserver son accueil et son catalogue.</p>
+          )}
           <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
             {validation.errors.map((issue) => (
               <li key={issue}>{issue}</li>
             ))}
           </ul>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" onClick={() => setActivePageId(null)}>Accueil</Button>
+            <Button size="sm" variant="outline" onClick={() => navigate("/dashboard/produits")}>Gérer les produits</Button>
+            <Button size="sm" variant="outline" disabled={publicationScenesLoading || publicationData.isFetching} onClick={() => {
+              void publicationData.refetch();
+              void refetchPublicationScenes();
+            }}>Réessayer la vérification</Button>
+          </div>
         </div>
       )}
 
