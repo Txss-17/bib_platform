@@ -557,26 +557,14 @@ export function EditProductDialog({
             <SectionHeading
               icon={Warehouse}
               title="Gestion du stock"
-              description="Définissez la quantité suivie par la boutique et le seuil d’alerte."
+              description="Le stock réel est actualisé à partir des réceptions confirmées et des mouvements de stock enregistrés."
             />
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field
-                id="stock"
+              <ReadonlyMetric
                 label="Stock disponible"
-                hint="Nombre entier, zéro compris."
-              >
-                <Input
-                  id="stock"
-                  className={inputClass}
-                  type="number"
-                  inputMode="numeric"
-                  step="1"
-                  min="0"
-                  value={stock}
-                  onChange={(event) => setStock(event.target.value)}
-                />
-              </Field>
+                value={String(product.stock_quantity ?? 0)}
+              />
 
               <Field
                 id="stock-threshold"
@@ -595,6 +583,16 @@ export function EditProductDialog({
                 />
               </Field>
             </div>
+
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription className="text-xs leading-5">
+                Le stock ne peut pas être augmenté ou diminué manuellement
+                depuis cette fenêtre. Toute entrée doit correspondre à une
+                réception confirmée ; toute sortie doit correspondre à un
+                mouvement de stock enregistré.
+              </AlertDescription>
+            </Alert>
           </section>
 
           <section className={sectionClass}>
