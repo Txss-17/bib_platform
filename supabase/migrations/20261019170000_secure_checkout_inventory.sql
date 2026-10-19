@@ -423,9 +423,13 @@ BEGIN
 
   UPDATE public.orders
   SET payment_status = 'paid',
-      payment_completed_at = now()
+      payment_completed_at = COALESCE(payment_completed_at, now()),
+      logistics_status = CASE
+      WHEN logistics_status = 'pending' THEN 'preparation'
+      ELSE logistics_status
+      END
   WHERE stripe_session_id = p_stripe_session_id
-    AND payment_status <> 'paid';
+  AND payment_status <> 'paid';
 
   RETURN v_count;
 END;
