@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
@@ -25,6 +25,7 @@ export type Database = {
           id: string
           keywords: string[]
           seed: string
+          studio_answers: Json
           target_audience: string | null
           tone: string | null
           updated_at: string
@@ -39,6 +40,7 @@ export type Database = {
           id?: string
           keywords?: string[]
           seed: string
+          studio_answers?: Json
           target_audience?: string | null
           tone?: string | null
           updated_at?: string
@@ -53,6 +55,7 @@ export type Database = {
           id?: string
           keywords?: string[]
           seed?: string
+          studio_answers?: Json
           target_audience?: string | null
           tone?: string | null
           updated_at?: string
@@ -334,38 +337,6 @@ export type Database = {
         }
         Relationships: []
       }
-      boutique_studio_answers: {
-        Row: {
-          answers: Json
-          boutique_id: string
-          created_at: string
-          id: string
-          updated_at: string
-        }
-        Insert: {
-          answers?: Json
-          boutique_id: string
-          created_at?: string
-          id?: string
-          updated_at?: string
-        }
-        Update: {
-          answers?: Json
-          boutique_id?: string
-          created_at?: string
-          id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "boutique_studio_answers_boutique_id_fkey"
-            columns: ["boutique_id"]
-            isOneToOne: true
-            referencedRelation: "boutiques"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       boutiques: {
         Row: {
           category: string
@@ -395,9 +366,6 @@ export type Database = {
           theme_settings: Json | null
           updated_at: string
           user_id: string
-          seo_active_locales: string[]
-          seo_default_locale: string
-          seo_public_origin: string | null
         }
         Insert: {
           category: string
@@ -427,9 +395,6 @@ export type Database = {
           theme_settings?: Json | null
           updated_at?: string
           user_id: string
-          seo_active_locales?: string[]
-          seo_default_locale?: string
-          seo_public_origin?: string | null
         }
         Update: {
           category?: string
@@ -459,9 +424,6 @@ export type Database = {
           theme_settings?: Json | null
           updated_at?: string
           user_id?: string
-          seo_active_locales?: string[]
-          seo_default_locale?: string
-          seo_public_origin?: string | null
         }
         Relationships: []
       }
