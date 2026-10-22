@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
 import { Card } from "@/components/ui/card";
@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { useSEO } from "@/hooks/useSEO";
-import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPortal, type PortalEvent } from "@/hooks/usePartnerPortal";
 import { fetchLabelData, fetchLabelsData, printLabels } from "@/lib/shippingLabel";
 import { PlatformTour, PlatformTourLauncher } from "@/components/tour/PlatformTour";
@@ -80,21 +79,21 @@ export default function OpsPortal() {
     description: "Espace opérationnel logistique : stock, commandes, livraisons, retours.",
   });
 
-  // Pull recent orders awaiting logistics (read-only view of the network)
-  useEffect(() => {
-    if (!data) return;
+  const refreshOrders = useCallback(async () => {
     setOrdersLoading(true);
-    supabase
-      .from("orders")
-      .select("id, order_number, customer_name, amount, logistics_status, created_at")
-      .in("logistics_status", ["pending", "processing", "shipped"])
-      .order("created_at", { ascending: false })
-      .limit(50)
-      .then(({ data: rows }) => {
-        setOrders((rows ?? []) as BasicOrder[]);
-        setOrdersLoading(false);
-      });
-  }, [data]);
+    try {
+      const result = (await callAction({ action: "list_orders" })) as { orders?: BasicOrder[] };
+      setOrders(result.orders ?? []);
+    } catch (e) {
+      toast({ title: "Impossible de charger les commandes", description: (e as Error).message, variant: "destructive" });
+    } finally {
+      setOrdersLoading(false);
+    }
+  }, [callAction]);
+
+  useEffect(() => {
+    if (data?.submission.id) void refreshOrders();
+  }, [data?.submission.id, refreshOrders]);
 
   const events = data?.events ?? [];
   const deliveryUpdates = events.filter((e) => e.kind === "delivery_update");
@@ -293,17 +292,14 @@ export default function OpsPortal() {
     const value = (code ?? scanCode).trim().toUpperCase();
     if (!value) return;
     setScanError(null);
-    const { data: rows, error: err } = await supabase
-      .from("orders")
-      .select("id, order_number, customer_name, amount, logistics_status, created_at")
-      .eq("order_number", value)
-      .limit(1);
-    if (err || !rows || rows.length === 0) {
+    try {
+      const result = (await callAction({ action: "get_order", order_number: value })) as { order?: BasicOrder };
+      if (!result.order) throw new Error("Aucune commande payée trouvée pour ce code.");
+      setScanResult(result.order);
+    } catch {
       setScanResult(null);
-      setScanError("Aucune commande trouvée pour ce code.");
-      return;
+      setScanError("Aucune commande payée trouvée pour ce code.");
     }
-    setScanResult(rows[0] as BasicOrder);
   }
 
   // Réception marchandises
@@ -444,17 +440,7 @@ export default function OpsPortal() {
                   <Button size="sm" variant="outline" onClick={printAllShippingLabels} disabled={orders.length === 0}>
                     <Printer className="w-3.5 h-3.5 mr-1.5" /> Imprimer étiquettes
                   </Button>
-                  <Button size="sm" variant="ghost" disabled={ordersLoading} onClick={() => {
-                  setOrdersLoading(true);
-                  supabase.from("orders")
-                    .select("id, order_number, customer_name, amount, logistics_status, created_at")
-                    .in("logistics_status", ["pending", "processing", "shipped"])
-                    .order("created_at", { ascending: false }).limit(50)
-                    .then(({ data: rows }) => {
-                      setOrders((rows ?? []) as BasicOrder[]);
-                      setOrdersLoading(false);
-                    });
-                }}>
+                  <Button size="sm" variant="ghost" disabled={ordersLoading} onClick={() => void refreshOrders()}>
                   <RefreshCcw className={`w-3.5 h-3.5 mr-1.5 ${ordersLoading ? "animate-spin" : ""}`} /> Rafraîchir
                   </Button>
                 </div>

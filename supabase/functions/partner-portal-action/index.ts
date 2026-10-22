@@ -11,6 +11,8 @@ interface Body {
     | 'create_event'        // catalog_draft, moq_request, issue_report, delivery_update, packaging_alert, return_logged
     | 'update_event_status' // mark resolved/in_progress
     | 'add_document'        // ad-hoc doc upload (already in storage)
+    | 'list_orders'         // ops: list paid orders awaiting logistics
+    | 'get_order'           // ops: scan one paid order
     | 'list_shipments'      // ops: read shipment tracking rows
     | 'shipment_update'     // ops: driver/carton/label/status tracking
   // create_event
@@ -106,6 +108,31 @@ Deno.serve(async (req) => {
       return json({ ok: true, id: data.id })
     }
 
+    if (sub.portal === 'ops' && body.action === 'list_orders') {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('id, order_number, customer_name, amount, logistics_status, created_at')
+        .eq('payment_status', 'paid')
+        .in('logistics_status', ['pending','processing','shipped'])
+        .order('created_at', { ascending: false })
+        .limit(50)
+      if (error) return json({ error: error.message }, 500)
+      return json({ ok: true, orders: data })
+    }
+
+    if (sub.portal === 'ops' && body.action === 'get_order') {
+      const orderNumber = String(body.order_number ?? '').trim().toUpperCase()
+      if (!/^[A-Z0-9-]{4,30}$/.test(orderNumber)) return json({ error: 'invalid_order_number' }, 400)
+      const { data, error } = await supabase
+        .from('orders')
+        .select('id, order_number, customer_name, amount, logistics_status, created_at')
+        .eq('order_number', orderNumber)
+        .eq('payment_status', 'paid')
+        .maybeSingle()
+      if (error) return json({ error: error.message }, 500)
+      if (!data) return json({ error: 'order_not_found' }, 404)
+      return json({ ok: true, order: data })
+    }
     if (sub.portal === 'ops' && body.action === 'list_shipments') {
       const { data, error } = await supabase
         .from('order_shipments')
