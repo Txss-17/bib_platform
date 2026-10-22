@@ -362,6 +362,7 @@ async function createPosCheckout(
         amount: line.lineAmount,
         order_number: "PENDING",
         payment_status: "pending",
+        sales_channel: "pos",
       })),
     )
     .select("id, order_number");

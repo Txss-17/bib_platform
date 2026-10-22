@@ -921,6 +921,7 @@ export type Database = {
           product_id: string
           quantity: number
           stripe_session_id: string | null
+          sales_channel: string
         }
         Insert: {
           amount: number
@@ -940,6 +941,7 @@ export type Database = {
           product_id: string
           quantity?: number
           stripe_session_id?: string | null
+          sales_channel?: string
         }
         Update: {
           amount?: number
@@ -959,6 +961,7 @@ export type Database = {
           product_id?: string
           quantity?: number
           stripe_session_id?: string | null
+          sales_channel?: string
         }
         Relationships: [
           {
