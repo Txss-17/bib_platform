@@ -117,6 +117,25 @@ export function useAllBoutiqueIssues() {
   });
 }
 
+export function useRefundOrderIssue() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: { issueId: string; amountCents: number }) => {
+      const { data, error } = await supabase.functions.invoke("refund-order-issue", {
+        body: { issueId: input.issueId, amountCents: input.amountCents },
+      });
+      if (error) throw error;
+      return data as { status: "pending" | "succeeded" | "failed"; amountCents: number };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["order-issues"] });
+      queryClient.invalidateQueries({ queryKey: ["issue-responses"] });
+      queryClient.invalidateQueries({ queryKey: ["all-boutique-issues"] });
+    },
+  });
+}
+
 export function useCreateOrderIssue() {
   const queryClient = useQueryClient();
 

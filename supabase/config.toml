@@ -31,3 +31,6 @@ verify_jwt = false
 
 [functions.support-ai]
 verify_jwt = false
+
+[functions.refund-order-issue]
+verify_jwt = true

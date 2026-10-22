@@ -94,6 +94,8 @@ interface OrderResult {
   logistics_status: string;
   created_at: string;
   product_name: string | null;
+  refund_status?: string | null;
+  refunded_amount_cents?: number;
 }
 
 function normalizeEmail(value: string) {
@@ -227,7 +229,15 @@ export default function OrderTracking() {
        * depuis le navigateur afin de ne pas contourner la logique
        * d'autorisation du RPC.
        */
-      setOrder({
+'      const { data: refundData, error: refundStatusError } = await supabase.rpc("track_order_refund_status", {
+        _order_number: normalizedOrderNumber,
+        _customer_email: normalizedEmail,
+      });
+      const refundSummary = refundStatusError ? null : refundData?.[0];
+
+'      setOrder({
+        refund_status: refundSummary?.refund_status ?? null,
+        refunded_amount_cents: refundSummary?.refunded_amount_cents ?? 0,
         order_number: row.order_number,
         customer_name: row.customer_name,
         amount: Number(row.amount ?? 0),
@@ -412,7 +422,24 @@ export default function OrderTracking() {
                   </Badge>
                 </div>
 
-                {/* Status message */}
+'                {order.refund_status && order.refund_status !== "none" && (
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-4" role="status" aria-live="polite">
+                    <p className="text-sm font-medium text-amber-900">
+                      {order.refund_status === "pending"
+                        ? "Remboursement en cours"
+                        : order.refund_status === "refunded"
+                        ? "Commande remboursée"
+                        : "Remboursement partiel effectué"}
+                    </p>
+                    {(order.refunded_amount_cents ?? 0) > 0 && (
+                      <p className="mt-1 text-sm text-amber-800">
+                        Montant confirmé : {formatAmount((order.refunded_amount_cents ?? 0) / 100)}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Status message */}'
                 <div className="rounded-lg bg-gray-50 p-4">
                   <p className="text-sm leading-relaxed text-gray-700">
                     {status.message}

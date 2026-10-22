@@ -14,6 +14,7 @@ import {
   useOrderIssues,
   useIssueResponses,
   useRespondToIssue,
+  useRefundOrderIssue,
   ISSUE_TYPE_LABELS,
   ISSUE_STATUS_LABELS,
   ISSUE_ACTION_LABELS,
@@ -22,6 +23,7 @@ import {
   type IssueStatus,
 } from "@/hooks/useOrderIssues";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -85,13 +87,37 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
   const [showResponse, setShowResponse] = useState(false);
   const [action, setAction] = useState<IssueAction>("accept");
   const [message, setMessage] = useState("");
+  const [refundAmount, setRefundAmount] = useState("");
 
   const { data: responses = [] } = useIssueResponses(issue.id);
   const respondMutation = useRespondToIssue();
+  const refundMutation = useRefundOrderIssue();
 
   const StatusIcon = statusIcons[issue.status] || Clock;
 
   const handleRespond = () => {
+    if (action === "partial_refund") {
+      const amountCents = Math.round(Number(refundAmount) * 100);
+      if (!Number.isSafeInteger(amountCents) || amountCents < 1) {
+        toast({ title: "Montant invalide", description: "Saisissez un montant positif en euros.", variant: "destructive" });
+        return;
+      }
+      refundMutation.mutate({ issueId: issue.id, amountCents }, {
+        onSuccess: (result) => {
+          toast({
+            title: result.status === "succeeded" ? "Remboursement effectué" : "Remboursement en attente",
+            description: result.status === "succeeded"
+              ? "Stripe a confirmé le remboursement. Le stock attend une réception contrôlée."
+              : "Le résultat Stripe est en attente de confirmation.",
+          });
+          setShowResponse(false);
+          setRefundAmount("");
+          setMessage("");
+        },
+        onError: (error) => toast({ title: "Remboursement impossible", description: error.message, variant: "destructive" }),
+      });
+      return;
+    }
     const newStatus: IssueStatus =
       action === "accept"
         ? "accepted"
@@ -110,7 +136,7 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
         onSuccess: () => {
           toast({
             title: "Réponse envoyée",
-            description: "Le client sera notifié.",
+            description: "Réponse enregistrée dans le dossier de commande.",
           });
 
           setShowResponse(false);
@@ -196,7 +222,7 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
           </div>
         )}
 
-        {issue.status === "pending" && !showResponse && (
+        {(issue.status === "pending" || issue.status === "accepted") && !showResponse && (
           <Button
             size="sm"
             variant="outline"
@@ -220,9 +246,9 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
               </SelectTrigger>
 
               <SelectContent>
-                {(Object.keys(
-                  ISSUE_ACTION_LABELS,
-                ) as IssueAction[]).map((actionKey) => (
+                {(Object.keys(ISSUE_ACTION_LABELS) as IssueAction[])
+                  .filter((actionKey) => actionKey !== "resend")
+                  .map((actionKey) => (
                   <SelectItem
                     key={actionKey}
                     value={actionKey}
@@ -233,6 +259,23 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
               </SelectContent>
             </Select>
 
+            {action === "partial_refund" && (
+              <div className="space-y-1">
+                <label className="text-xs font-medium" htmlFor={`refund-amount-${issue.id}`}>Montant du remboursement (EUR)</label>
+                <Input
+                  id={`refund-amount-${issue.id}`}
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  inputMode="decimal"
+                  placeholder="0,00"
+                  value={refundAmount}
+                  onChange={(event) => setRefundAmount(event.target.value)}
+                  className="h-8 text-xs"
+                />
+                <p className="text-[10px] text-muted-foreground">Le montant est plafonné au solde de la ligne. Le stock ne sera réintégré qu’après réception contrôlée.</p>
+              </div>
+            )}
             <Textarea
               placeholder="Message au client (optionnel)..."
               value={message}
@@ -247,7 +290,7 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
                 size="sm"
                 className="flex-1 text-xs"
                 onClick={handleRespond}
-                disabled={respondMutation.isPending}
+                disabled={respondMutation.isPending || refundMutation.isPending || (action === "partial_refund" && !refundAmount)}
               >
                 Envoyer
               </Button>

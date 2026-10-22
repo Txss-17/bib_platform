@@ -500,7 +500,7 @@ async function handleSubscriptionDeleted(
  * de référence est customer.subscription.*.
  */
 
-async function handleCheckoutCompleted(session: any) {
+async function handleCheckoutCompleted(session: any, env: StripeEnv) {
   if (session.metadata?.kind !== "storefront") return;
 
   const orderIds = String(session.metadata?.orderIds ?? "")
@@ -531,7 +531,7 @@ async function handleCheckoutCompleted(session: any) {
 
   const { error: sessionError } = await supabase
     .from("orders")
-    .update({ stripe_session_id: session.id })
+    .update({ stripe_session_id: session.id, stripe_environment: env })
     .in("id", orderIds);
 
   if (sessionError) {
@@ -850,7 +850,13 @@ async function handleWebhook(
 
     case "checkout.session.completed":
     case "checkout.session.async_payment_succeeded":
-      await handleCheckoutCompleted(event.data.object);
+      await handleCheckoutCompleted(event.data.object, env);
+      break;
+
+    case "refund.created":
+    case "refund.updated":
+    case "refund.failed":
+      await handleRefundWebhook(event.data.object, event.type);
       break;
 
     case "checkout.session.async_payment_failed": {
@@ -908,6 +914,27 @@ async function handleWebhook(
    HTTP HANDLER
    ========================================================= */
 
+async function handleRefundWebhook(refund: any, eventType: string) {
+  const refundId = String(refund.metadata?.order_refund_id ?? "");
+  if (!refundId) return;
+
+  const status = eventType === "refund.failed" || refund.status === "failed" || refund.status === "canceled"
+    ? "failed"
+    : refund.status === "succeeded"
+    ? "succeeded"
+    : "pending";
+  const paymentIntentId = typeof refund.payment_intent === "string"
+    ? refund.payment_intent
+    : refund.payment_intent?.id ?? null;
+  const { error } = await getSupabase().rpc("finalize_order_issue_refund", {
+    p_refund_id: refundId,
+    p_status: status,
+    p_stripe_refund_id: refund.id,
+    p_payment_intent_id: paymentIntentId,
+    p_failure_reason: status === "failed" ? "Stripe a refusé le remboursement." : null,
+  });
+  if (error) throw new Error(`Synchronisation du remboursement impossible : ${error.message}`);
+}
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return new Response(
