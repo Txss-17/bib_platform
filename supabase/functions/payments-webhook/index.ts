@@ -548,6 +548,37 @@ async function handleCheckoutCompleted(session: any) {
     return;
   }
 
+  // Persist the final Stripe shipping address only after payment succeeds.
+  const shippingDetails = session.shipping_details;
+  const shippingAddress = shippingDetails?.address;
+  const addressLine = [shippingAddress?.line1, shippingAddress?.line2]
+    .filter((value: unknown) => typeof value === "string" && value.trim())
+    .join(", ") || String(session.metadata?.shippingAddress ?? "").trim();
+  const city = String(shippingAddress?.city ?? session.metadata?.shippingCity ?? "").trim();
+  const postalCode = String(shippingAddress?.postal_code ?? session.metadata?.shippingPostalCode ?? "").trim();
+  const country = String(shippingAddress?.country ?? session.metadata?.shippingCountry ?? "").trim().toUpperCase();
+  const recipientName = String(shippingDetails?.name ?? session.customer_details?.name ?? session.metadata?.customerName ?? "").trim();
+
+  if (!addressLine || !city || !postalCode || !/^[A-Z]{2}$/.test(country) || !recipientName) {
+    throw new Error(`Adresse de livraison manquante pour la session ${session.id}`);
+  }
+
+  const shippingRows = orderIds.map((orderId: string) => ({
+    order_id: orderId,
+    recipient_name: recipientName,
+    recipient_phone: session.customer_details?.phone ?? session.metadata?.customerPhone ?? null,
+    address_line: addressLine,
+    city,
+    region: shippingAddress?.state ?? null,
+    postal_code: postalCode,
+    country,
+  }));
+  const { error: shippingError } = await supabase
+    .from("order_shipping_addresses")
+    .upsert(shippingRows, { onConflict: "order_id" });
+  if (shippingError) {
+    throw new Error(`Enregistrement de l'adresse de livraison impossible : ${shippingError.message}`);
+  }
   // RPC transactionnelle et idempotente : le stock ne doit être
   // décrémenté qu'une seule fois pour cette session Stripe.
   const { error: confirmError } = await supabase.rpc(

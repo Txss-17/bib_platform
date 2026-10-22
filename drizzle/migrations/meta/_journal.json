@@ -47,7 +47,7 @@
     {
       "idx": 6,
       "version": "7",
-      "when": 1792649244958,
+      "when": 1792649244952,
       "tag": "0006_platform_atomic_inventory_and_receipts",
       "breakpoints": true
     },
@@ -63,6 +63,13 @@
       "version": "7",
       "when": 1792664833000,
       "tag": "0008_secure_order_issue_creation",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792665600000,
+      "tag": "0009_order_shipping_addresses",
       "breakpoints": true
     }
   ]

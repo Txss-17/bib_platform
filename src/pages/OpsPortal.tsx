@@ -247,13 +247,14 @@ export default function OpsPortal() {
   const [labelFormat, setLabelFormat] = useState<"a6" | "a4-sheet">("a6");
 
   async function printShippingLabel(order: BasicOrder) {
-    const data = await fetchLabelData(order.id);
-    if (!data) {
-      toast({ title: "Impossible de charger les données d'étiquette", variant: "destructive" });
-      return;
+    try {
+      const data = await fetchLabelData(order.id, callAction);
+      if (!data) throw new Error("Données d'étiquette indisponibles.");
+      const res = await printLabels([data], labelFormat);
+      if (!res.ok) throw new Error(res.error ?? "Erreur d'impression.");
+    } catch (e) {
+      toast({ title: "Étiquette indisponible", description: (e as Error).message, variant: "destructive" });
     }
-    const res = await printLabels([data], labelFormat);
-    if (!res.ok) toast({ title: res.error ?? "Erreur d'impression", variant: "destructive" });
   }
 
   async function printAllShippingLabels() {
@@ -261,9 +262,13 @@ export default function OpsPortal() {
       toast({ title: "Aucune commande à imprimer" });
       return;
     }
-    const items = await fetchLabelsData(orders.map((o) => o.id));
-    const res = await printLabels(items, labelFormat);
-    if (!res.ok) toast({ title: res.error ?? "Erreur d'impression", variant: "destructive" });
+    try {
+      const items = await fetchLabelsData(orders.map((o) => o.id), callAction);
+      const res = await printLabels(items, labelFormat);
+      if (!res.ok) throw new Error(res.error ?? "Erreur d'impression.");
+    } catch (e) {
+      toast({ title: "Étiquettes indisponibles", description: (e as Error).message, variant: "destructive" });
+    }
   }
 
   function printStatusUpdates() {

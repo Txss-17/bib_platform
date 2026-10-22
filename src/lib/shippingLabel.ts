@@ -1,6 +1,5 @@
 import JsBarcode from "jsbarcode";
 import QRCode from "qrcode";
-import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Brand-In-A-Box shipping label generator.
@@ -75,67 +74,25 @@ async function generateQrSVG(value: string): Promise<string> {
   }
 }
 
-/** Fetch all data needed to print a label from an order id. */
-export async function fetchLabelData(orderId: string): Promise<LabelData | null> {
-  const { data: order, error } = await supabase
-    .from("orders")
-    .select("id, order_number, customer_name, customer_email, market, boutique_id, product_id, created_at")
-    .eq("id", orderId)
-    .maybeSingle();
-  if (error || !order) return null;
+/** Fetch shipping labels through the token-protected Ops service. */
+type LabelAction = (body: Record<string, unknown>) => Promise<unknown>;
 
-  const [{ data: boutique }, { data: product }] = await Promise.all([
-    supabase
-      .from("boutiques")
-      .select("name, legal_business_name, legal_address")
-      .eq("id", order.boutique_id)
-      .maybeSingle(),
-    order.product_id
-      ? supabase
-          .from("products")
-          .select("id, supplier_product_id, supplier_products(name)")
-          .eq("id", order.product_id)
-          .maybeSingle()
-      : Promise.resolve({ data: null } as { data: null }),
-  ]);
+export async function fetchLabelData(orderId: string, callAction: LabelAction): Promise<LabelData | null> {
+  const labels = await fetchLabelsData([orderId], callAction);
+  return labels[0] ?? null;
+}
 
-  const senderName = boutique?.legal_business_name ?? boutique?.name ?? "Brand-In-A-Box";
-  const senderAddress = (boutique?.legal_address ?? "Brand-In-A-Box\nParis, France")
-    .split(/\r?\n|,/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-
-  const recipientLines: string[] = [];
-  if (order.customer_email) recipientLines.push(order.customer_email);
-  recipientLines.push("Adresse à compléter via l'API transporteur");
-
-  const productName = (product as { supplier_products?: { name?: string } } | null)
-    ?.supplier_products?.name ?? "—";
-
-  return {
-    orderNumber: order.order_number,
-    sender: { name: senderName, addressLines: senderAddress.slice(0, 3) },
-    recipient: {
-      name: order.customer_name ?? "—",
-      addressLines: recipientLines,
-      country: (order.market ?? "EU").toUpperCase(),
-    },
-    product: {
-      sku: order.product_id?.slice(0, 8).toUpperCase() ?? "—",
-      reference: productName,
-      quantity: 1,
-    },
-    shipDate: new Date().toLocaleDateString("fr-FR"),
-    trackingUrl: `${TRACKING_BASE_URL}?order=${encodeURIComponent(order.order_number)}`,
+export async function fetchLabelsData(orderIds: string[], callAction: LabelAction): Promise<LabelData[]> {
+  if (!orderIds.length) return [];
+  const response = (await callAction({ action: "get_shipping_labels", order_ids: orderIds })) as {
+    labels?: { orderId: string; data: LabelData }[];
   };
+  const labels = response.labels ?? [];
+  if (labels.length !== orderIds.length) {
+    throw new Error("Toutes les adresses de livraison n’ont pas pu être chargées.");
+  }
+  return labels.map((label) => label.data);
 }
-
-/** Convenience: fetch label data for multiple orders. */
-export async function fetchLabelsData(orderIds: string[]): Promise<LabelData[]> {
-  const results = await Promise.all(orderIds.map((id) => fetchLabelData(id)));
-  return results.filter((x): x is LabelData => x !== null);
-}
-
 /** Render a single A6 BIB label as HTML string. */
 export async function renderLabelHTML(data: LabelData): Promise<string> {
   const barcodeValue = data.orderNumber.replace(/-/g, "");

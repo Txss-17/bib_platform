@@ -13,6 +13,7 @@ interface Body {
     | 'add_document'        // ad-hoc doc upload (already in storage)
     | 'list_orders'         // ops: list paid orders awaiting logistics
     | 'get_order'           // ops: scan one paid order
+    | 'get_shipping_labels' // ops: build labels from paid order addresses
     | 'list_shipments'      // ops: read shipment tracking rows
     | 'shipment_update'     // ops: driver/carton/label/status tracking
   // create_event
@@ -28,6 +29,7 @@ interface Body {
   storage_path?: string
   mime_type?: string
   byte_size?: number
+  order_ids?: string[]
 }
 
 const ALLOWED_KINDS = new Set([
@@ -132,6 +134,67 @@ Deno.serve(async (req) => {
       if (error) return json({ error: error.message }, 500)
       if (!data) return json({ error: 'order_not_found' }, 404)
       return json({ ok: true, order: data })
+    }
+    if (sub.portal === 'ops' && body.action === 'get_shipping_labels') {
+      const orderIds = body.order_ids
+      if (!Array.isArray(orderIds) || orderIds.length < 1 || orderIds.length > 50 || orderIds.some((id) => !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id))) {
+        return json({ error: 'invalid_order_ids' }, 400)
+      }
+
+      const { data: orders, error: ordersError } = await supabase
+        .from('orders')
+        .select('id, order_number, customer_name, boutique_id, product_id, quantity, created_at')
+        .eq('payment_status', 'paid')
+        .in('id', orderIds)
+      if (ordersError) return json({ error: ordersError.message }, 500)
+      if (!orders || orders.length !== orderIds.length) return json({ error: 'paid_order_not_found' }, 404)
+
+      const [{ data: addresses, error: addressError }, { data: boutiques, error: boutiqueError }, { data: products, error: productError }] = await Promise.all([
+        supabase.from('order_shipping_addresses').select('order_id, recipient_name, recipient_phone, address_line, city, region, postal_code, country').in('order_id', orderIds),
+        supabase.from('boutiques').select('id, name, legal_business_name, legal_address').in('id', [...new Set(orders.map((order) => order.boutique_id))]),
+        supabase.from('products').select('id, supplier_product_id').in('id', [...new Set(orders.map((order) => order.product_id).filter(Boolean))]),
+      ])
+      if (addressError || boutiqueError || productError) return json({ error: 'label_data_unavailable' }, 500)
+      if (!addresses || addresses.length !== orderIds.length) return json({ error: 'shipping_address_missing' }, 409)
+
+      const supplierIds = [...new Set((products ?? []).map((product) => product.supplier_product_id).filter(Boolean))]
+      const { data: suppliers, error: supplierError } = supplierIds.length
+        ? await supabase.from('supplier_products').select('id, name').in('id', supplierIds)
+        : { data: [], error: null }
+      if (supplierError) return json({ error: 'label_data_unavailable' }, 500)
+
+      const addressByOrder = new Map((addresses ?? []).map((address) => [address.order_id, address]))
+      const boutiqueById = new Map((boutiques ?? []).map((boutique) => [boutique.id, boutique]))
+      const supplierById = new Map((suppliers ?? []).map((supplier) => [supplier.id, supplier.name]))
+      const supplierIdByProduct = new Map((products ?? []).map((product) => [product.id, product.supplier_product_id]))
+      const labels = []
+
+      for (const order of orders) {
+        const address = addressByOrder.get(order.id)
+        const boutique = boutiqueById.get(order.boutique_id)
+        if (!address || !boutique) return json({ error: 'label_data_unavailable' }, 500)
+        const senderAddressLines = String(boutique.legal_address ?? '').split(/\r?\n|,/).map((line) => line.trim()).filter(Boolean)
+        if (!senderAddressLines.length) return json({ error: 'sender_address_missing' }, 409)
+        const productSupplierId = supplierIdByProduct.get(order.product_id)
+        const recipientAddressLines = [
+          address.address_line,
+          [address.postal_code, address.city].filter(Boolean).join(' '),
+          address.region,
+          address.recipient_phone ? `Tél. ${address.recipient_phone}` : null,
+        ].filter(Boolean)
+        labels.push({
+          orderId: order.id,
+          data: {
+            orderNumber: order.order_number,
+            sender: { name: boutique.legal_business_name ?? boutique.name ?? 'Boutique BIB', addressLines: senderAddressLines.slice(0, 4) },
+            recipient: { name: address.recipient_name, addressLines: recipientAddressLines, country: address.country },
+            product: { sku: String(order.product_id ?? '').slice(0, 8).toUpperCase() || '—', reference: supplierById.get(productSupplierId) ?? '—', quantity: order.quantity ?? 1 },
+            shipDate: new Date().toLocaleDateString('fr-FR'),
+            trackingUrl: `https://shop.brand-in-a-box.space/tracking?order=${encodeURIComponent(order.order_number)}`,
+          },
+        })
+      }
+      return json({ ok: true, labels })
     }
     if (sub.portal === 'ops' && body.action === 'list_shipments') {
       const { data, error } = await supabase

@@ -8,7 +8,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { fetchLabelsData, printLabels } from "@/lib/shippingLabel";
+import { fetchLabelsData, printLabels, type LabelData } from "@/lib/shippingLabel";
 import { Inbox, Package2, Printer, Truck, Loader2, User, MapPin, CheckCircle2 } from "lucide-react";
 
 export interface ShipOrder {
@@ -127,7 +127,13 @@ export function OpsShipmentsBoard({ orders, callAction }: { orders: ShipOrder[];
 
   async function handlePrintLabels(list: ShipOrder[]) {
     if (!list.length) return;
-    const data = await fetchLabelsData(list.map((o) => o.id));
+    let data: LabelData[];
+    try {
+      data = await fetchLabelsData(list.map((o) => o.id), callAction);
+    } catch (e) {
+      toast({ title: "Étiquettes indisponibles", description: (e as Error).message, variant: "destructive" });
+      return;
+    }
     const res = await printLabels(data, format);
     if (!res.ok) { toast({ title: "Impression impossible", description: res.error, variant: "destructive" }); return; }
     for (const o of list) {

@@ -485,10 +485,6 @@ async function createStorefrontCheckout(
         checkoutKey,
         customerName: body.customerName.trim().slice(0, 200),
         customerPhone: (body.customerPhone ?? "").slice(0, 100),
-        shippingAddress: body.shipping.address.trim().slice(0, 300),
-        shippingCity: body.shipping.city.trim().slice(0, 100),
-        shippingPostalCode: body.shipping.postalCode.trim().slice(0, 30),
-        shippingCountry: country,
         notes: (body.notes ?? "").slice(0, 400),
       },
     });
