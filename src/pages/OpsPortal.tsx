@@ -152,22 +152,26 @@ export default function OpsPortal() {
     }
     setBusy(true);
     try {
-      // Update logistics_status directly on the order (Ops portal partners are trusted)
-      const { error: upErr } = await supabase
-        .from("orders")
-        // deno-lint-ignore no-explicit-any
-        .update({ logistics_status: deliveryStatus as any })
-        .eq("order_number", deliveryOrder.trim().toUpperCase());
-      if (upErr) throw upErr;
+      const orderNumber = deliveryOrder.trim().toUpperCase();
+      const statusLabel = DELIVERY_STATUSES.find((status) => status.value === deliveryStatus)?.label;
+      if (!statusLabel) throw new Error("Statut de livraison invalide.");
 
+      await callAction({
+        action: "shipment_update",
+        order_number: orderNumber,
+        status: deliveryStatus,
+        event_label: deliveryNote.trim()
+          ? `${statusLabel} — ${deliveryNote.trim().slice(0, 160)}`
+          : statusLabel,
+      });
       await callAction({
         action: "create_event",
         kind: "delivery_update",
-        title: `${deliveryOrder.trim().toUpperCase()} → ${DELIVERY_STATUSES.find(s => s.value === deliveryStatus)?.label}`,
-        payload: { order_number: deliveryOrder.trim().toUpperCase(), status: deliveryStatus, note: deliveryNote },
+        title: `${orderNumber} → ${statusLabel}`,
+        payload: { order_number: orderNumber, status: deliveryStatus, note: deliveryNote.trim() },
       });
       setDeliveryOrder(""); setDeliveryNote("");
-      toast({ title: "Statut de livraison mis à jour", description: "Le client final et la boutique sont notifiés." });
+      toast({ title: "Statut de livraison mis à jour", description: "Le statut et son événement apparaissent dans le suivi de commande." });
     } catch (e) {
       toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" });
     } finally {

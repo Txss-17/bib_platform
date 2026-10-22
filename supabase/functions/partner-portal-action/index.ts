@@ -142,14 +142,19 @@ Deno.serve(async (req) => {
 
       const status = str('status', 20)
       if (status && ['processing','shipped','delivered','returned'].includes(status)) {
-        await supabase.from('orders').update({ logistics_status: status }).eq('id', order.id)
+        const { error: statusErr } = await supabase
+          .from('orders')
+          .update({ logistics_status: status })
+          .eq('id', order.id)
+        if (statusErr) return json({ error: statusErr.message }, 500)
       }
       const label = str('event_label', 200)
       if (label) {
-        await supabase.from('shipment_events').insert({
+        const { error: eventErr } = await supabase.from('shipment_events').insert({
           order_id: order.id, status: status ?? (b.mark as string) ?? 'update', label,
           location: (patch.last_location as string) ?? null, driver_name: (patch.driver_name as string) ?? null,
         })
+        if (eventErr) return json({ error: eventErr.message }, 500)
       }
       return json({ ok: true })
     }
