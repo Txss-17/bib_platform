@@ -14,12 +14,12 @@ const issueOptions: { value: IssueType; label: string; icon: React.ElementType; 
 ];
 
 interface OrderIssueFormProps {
-  orderId: string;
+  orderNumber: string;
   customerEmail: string;
   onSuccess?: () => void;
 }
 
-export function OrderIssueForm({ orderId, customerEmail, onSuccess }: OrderIssueFormProps) {
+export function OrderIssueForm({ orderNumber, customerEmail, onSuccess }: OrderIssueFormProps) {
   const [type, setType] = useState<IssueType | "">("");
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -31,7 +31,7 @@ export function OrderIssueForm({ orderId, customerEmail, onSuccess }: OrderIssue
 
     createIssue.mutate(
       {
-        order_id: orderId,
+        order_number: orderNumber,
         type: type as IssueType,
         message: message || undefined,
         customer_email: customerEmail,

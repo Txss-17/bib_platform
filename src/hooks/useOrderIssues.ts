@@ -122,28 +122,26 @@ export function useCreateOrderIssue() {
 
   return useMutation({
     mutationFn: async (issue: {
-      order_id: string;
+      order_number: string;
       type: IssueType;
       message?: string;
       image_url?: string;
       customer_email: string;
     }) => {
-      const deadlineAt = new Date();
-      deadlineAt.setHours(deadlineAt.getHours() + 48);
+      const client = supabase as unknown as {
+        rpc: (
+          fn: string,
+          params: Record<string, unknown>,
+        ) => Promise<{ data: unknown; error: Error | null }>;
+      };
+      const { data, error } = await client.rpc("create_order_issue", {
+        _order_number: issue.order_number,
+        _customer_email: issue.customer_email,
+        _type: issue.type,
+        _message: issue.message || null,
+        _image_url: issue.image_url || null,
 
-      const { data, error } = await supabase
-        .from("order_issues" as any)
-        .insert({
-          order_id: issue.order_id,
-          type: issue.type,
-          message: issue.message || null,
-          image_url: issue.image_url || null,
-          customer_email: issue.customer_email,
-          status: "pending",
-          deadline_at: deadlineAt.toISOString(),
-        })
-        .select()
-        .single();
+      });
 
       if (error) throw error;
       return data;

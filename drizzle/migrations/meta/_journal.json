@@ -57,6 +57,13 @@
       "when": 1792653654691,
       "tag": "0007_merchant_legal_acceptances",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792664833000,
+      "tag": "0008_secure_order_issue_creation",
+      "breakpoints": true
     }
   ]
 }

@@ -22,6 +22,7 @@ import {
 
 import { useSEO } from "@/hooks/useSEO.ts";
 import { Logo } from "@/components/Logo";
+import { OrderIssueForm } from "@/components/storefront/OrderIssueForm";
 
 type OrderStatus =
   | "pending"
@@ -483,6 +484,16 @@ export default function OrderTracking() {
                     />
                   </div>
                 </div>
+              </div>
+
+              <div className="rounded-xl border border-gray-200 bg-white p-5">
+                <h2 className="mb-4 text-sm font-semibold text-gray-900">
+                  Signaler un problème avec cette commande
+                </h2>
+                <OrderIssueForm
+                  orderNumber={order.order_number}
+                  customerEmail={normalizeEmail(email)}
+                />
               </div>
 
               {/* Customer service */}
