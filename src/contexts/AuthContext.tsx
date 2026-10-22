@@ -15,6 +15,7 @@ import type {
   AuthError,
 } from "@supabase/supabase-js";
 import type { Tables } from "@/integrations/supabase/types";
+import type { MerchantLegalAcceptances } from "@/lib/legalDocumentVersions";
 
 /* =========================================================
    ACCOUNT TYPES
@@ -48,6 +49,7 @@ interface AuthContextType {
     password: string,
     fullName?: string,
     accountType?: AccountType,
+    legalAcceptances?: MerchantLegalAcceptances,
   ) => Promise<{
     data: {
       user: User | null;
@@ -333,6 +335,7 @@ export function AuthProvider({
     password: string,
     fullName = "",
     type: AccountType = "platform",
+    legalAcceptances?: MerchantLegalAcceptances,
   ) => {
     const {
       data,
@@ -348,6 +351,16 @@ export function AuthProvider({
 
             account_type:
               type,
+
+            ...(type === "platform" && legalAcceptances
+              ? {
+                  legal_acceptances: {
+                    cgu: legalAcceptances.cgu,
+                    cgv: legalAcceptances.cgv,
+                    privacy: legalAcceptances.privacy,
+                  },
+                }
+              : {}),
           },
         },
       });

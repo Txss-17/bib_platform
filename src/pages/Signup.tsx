@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
+import { MERCHANT_LEGAL_DOCUMENT_VERSIONS } from "@/lib/legalDocumentVersions";
 import {
   Eye,
   EyeOff,
@@ -41,7 +42,9 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptCgu, setAcceptCgu] = useState(false);
+  const [acceptCgv, setAcceptCgv] = useState(false);
+  const [acknowledgePrivacy, setAcknowledgePrivacy] = useState(false);
   const [ageConfirm, setAgeConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -76,8 +79,8 @@ export default function Signup() {
       setError(t("signup.passwordshort"));
       return;
     }
-    if (!acceptTerms) {
-      setError(t("signup.acceptterms"));
+    if (!acceptCgu || !acceptCgv || !acknowledgePrivacy) {
+      setError(t("signup.acceptlegal"));
       return;
     }
     if (!ageConfirm) {
@@ -86,10 +89,11 @@ export default function Signup() {
     }
     setLoading(true);
     const { error } = await signUp(
-    email.trim(),
-    password,
-    fullName.trim(),
-    "platform"
+      email.trim(),
+      password,
+      fullName.trim(),
+      "platform",
+      MERCHANT_LEGAL_DOCUMENT_VERSIONS,
     );
     if (error) {
       setError(error.message);
@@ -357,32 +361,76 @@ export default function Signup() {
                   </div>
                   <div className="flex items-start gap-2">
                     <Checkbox
-                      id="acceptTerms"
-                      checked={acceptTerms}
+                      id="acceptCgu"
+                      checked={acceptCgu}
                       onCheckedChange={(checked) =>
-                        setAcceptTerms(checked === true)
+                        setAcceptCgu(checked === true)
                       }
                     />
                     <Label
-                      htmlFor="acceptTerms"
+                      htmlFor="acceptCgu"
                       className="text-sm text-muted-foreground leading-tight"
                     >
-                      {t("signup.terms1")}{" "}
+                      {t("signup.acceptCgu")}{" "}
                       <Link
-                        to="/terms"
+                        to="/cgu"
                         className="text-primary hover:underline"
                       >
-                        {t("signup.termslink")}
+                        {t("signup.cguLink")}
                       </Link>{" "}
-                      {t("signup.and")}{" "}
+                    </Label>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Checkbox
+                      id="acceptCgv"
+                      checked={acceptCgv}
+                      onCheckedChange={(checked) =>
+                        setAcceptCgv(checked === true)
+                      }
+                    />
+                    <Label
+                      htmlFor="acceptCgv"
+                      className="text-sm text-muted-foreground leading-tight"
+                    >
+                      {t("signup.acceptCgv")}{" "}
                       <Link
-                        to="/privacy"
+                        to="/cgv"
                         className="text-primary hover:underline"
                       >
-                        {t("signup.privacylink")}
+                        {t("signup.cgvLink")}
                       </Link>
                     </Label>
                   </div>
+                  <div className="flex items-start gap-2">
+                    <Checkbox
+                      id="acknowledgePrivacy"
+                      checked={acknowledgePrivacy}
+                      onCheckedChange={(checked) =>
+                        setAcknowledgePrivacy(checked === true)
+                      }
+                    />
+                    <Label
+                      htmlFor="acknowledgePrivacy"
+                      className="text-sm text-muted-foreground leading-tight"
+                    >
+                      {t("signup.acknowledgePrivacy")}{" "}
+                      <Link
+                        to="/confidentialite"
+                        className="text-primary hover:underline"
+                      >
+                        {t("signup.privacyLink")}
+                      </Link>
+                    </Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {t("signup.cookiesNotice")}{" "}
+                    <Link
+                      to="/cookies"
+                      className="text-primary hover:underline"
+                    >
+                      {t("signup.cookiesLink")}
+                    </Link>
+                  </p>
                 </div>
                 {/* Submit */}
                 <Button
