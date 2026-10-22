@@ -124,7 +124,7 @@ export default function SuppliersPortal() {
 
   async function submitCatalog() {
     if (!catName.trim() || !catPrice) {
-      toast({ title: "Champs manquants", description: "Nom et prix de base requis." });
+      toast({ title: tx("Champs manquants", "Missing fields"), description: tx("Nom et prix de base requis.", "Product name and base price are required.") });
       return;
     }
     setBusy(true);
@@ -141,9 +141,9 @@ export default function SuppliersPortal() {
         },
       });
       setCatName(""); setCatCategory(""); setCatPrice(""); setCatMoq(""); setCatDesc("");
-      toast({ title: "Produit envoyé en validation", description: "L'équipe revient vers vous sous 48h." });
+      toast({ title: tx("Produit envoyé en validation", "Product submitted for review"), description: tx("L'équipe revient vers vous sous 48h.", "Our team will get back to you within 48 hours.") });
     } catch (e) {
-      toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" });
+      toast({ title: tx("Erreur", "Error"), description: (e as Error).message, variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -151,7 +151,7 @@ export default function SuppliersPortal() {
 
   async function submitIssue() {
     if (!issueTitle.trim() || !issueDesc.trim()) {
-      toast({ title: "Champs manquants", description: "Titre et description requis." });
+      toast({ title: tx("Champs manquants", "Missing fields"), description: tx("Titre et description requis.", "A title and description are required.") });
       return;
     }
     setBusy(true);
@@ -163,9 +163,9 @@ export default function SuppliersPortal() {
         payload: { description: issueDesc.trim() },
       });
       setIssueTitle(""); setIssueDesc("");
-      toast({ title: "Signalement envoyé", description: "Notre équipe Ops vous répond sous 24h." });
+      toast({ title: tx("Signalement envoyé", "Report submitted"), description: tx("Notre équipe Ops vous répond sous 24h.", "Our operations team will reply within 24 hours.") });
     } catch (e) {
-      toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" });
+      toast({ title: tx("Erreur", "Error"), description: (e as Error).message, variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -187,9 +187,9 @@ export default function SuppliersPortal() {
         mime_type: file.type,
         byte_size: file.size,
       });
-      toast({ title: "Document transmis", description: file.name });
+      toast({ title: tx("Document transmis", "Document uploaded"), description: file.name });
     } catch (e) {
-      toast({ title: "Erreur upload", description: (e as Error).message, variant: "destructive" });
+      toast({ title: tx("Erreur upload", "Upload error"), description: (e as Error).message, variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -208,7 +208,7 @@ export default function SuppliersPortal() {
         <div>
           <Button asChild variant="ghost" size="sm" className="-ml-2 mb-2">
             <Link to={`/portal/onboarding/${token}`}>
-              <ArrowLeft className="w-4 h-4 mr-1.5" /> Suivi onboarding
+              <ArrowLeft className="w-4 h-4 mr-1.5" /> {tx("Suivi onboarding", "Onboarding status")}
             </Link>
           </Button>
           <Badge variant="secondary" className="mb-2">{tx("Portail opérationnel · Suppliers", "Operations portal · Suppliers")}</Badge>
@@ -244,7 +244,7 @@ export default function SuppliersPortal() {
           <TabsContent value="catalog" className="space-y-4 mt-4">
             <Card className="p-5">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <PackagePlus className="w-4 h-4 text-primary" /> Déposer un produit
+                <PackagePlus className="w-4 h-4 text-primary" /> {tx("Déposer un produit", "Submit a product")}
               </h3>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div><Label>{tx("Nom du produit *", "Product name *")}</Label><Input value={catName} onChange={(e) => setCatName(e.target.value)} /></div>
@@ -269,7 +269,7 @@ export default function SuppliersPortal() {
           <TabsContent value="moq" className="space-y-4 mt-4">
             <Card className="p-5">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Truck className="w-4 h-4 text-primary" /> Demandes MOQ à livrer au partenaire logistique
+                <Truck className="w-4 h-4 text-primary" /> {tx("Demandes MOQ à livrer au partenaire logistique", "MOQ requests to deliver to the logistics partner")}
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
                 Lorsqu'une boutique atteint le MOQ, vous recevez ici la demande à expédier au partenaire logistique
@@ -281,7 +281,7 @@ export default function SuppliersPortal() {
                 allowStatusUpdate
                 onStatusChange={(id, status) =>
                   callAction({ action: "update_event_status", event_id: id, status }).catch((e) =>
-                    toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" }),
+                    toast({ title: tx("Erreur", "Error"), description: (e as Error).message, variant: "destructive" }),
                   )
                 }
               />
@@ -293,7 +293,7 @@ export default function SuppliersPortal() {
             {/* Confirmer production */}
             <Card className="p-5">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Factory className="w-4 h-4 text-primary" /> Confirmer une production
+                <Factory className="w-4 h-4 text-primary" /> {tx("Confirmer une production", "Confirm production")}
               </h3>
               <p className="text-sm text-muted-foreground mb-3">
                 Indiquez qu'un lot est produit et prêt à être expédié au partenaire logistique.
@@ -304,9 +304,9 @@ export default function SuppliersPortal() {
                   setBusy(true);
                   try {
                     await callAction({ action: "create_event", kind: "delivery_update", title, payload });
-                    toast({ title: "Production confirmée", description: title });
+                    toast({ title: tx("Production confirmée", "Production confirmed"), description: title });
                   } catch (e) {
-                    toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" });
+                    toast({ title: tx("Erreur", "Error"), description: (e as Error).message, variant: "destructive" });
                   } finally {
                     setBusy(false);
                   }
@@ -323,12 +323,12 @@ export default function SuppliersPortal() {
             {/* Imprimer étiquettes */}
             <Card className="p-5">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Printer className="w-4 h-4 text-primary" /> Imprimer des étiquettes
+                <Printer className="w-4 h-4 text-primary" /> {tx("Imprimer des étiquettes", "Print labels")}
               </h3>
               <p className="text-sm text-muted-foreground mb-3">
-                Génère une planche d'étiquettes d'expédition pour les MOQ à livrer.
+                {tx("Génère une planche d'étiquettes d'expédition pour les MOQ à livrer.", "Generates a sheet of shipping labels for pending MOQ deliveries.")}
                 {moqRequests.filter((e) => e.status !== "resolved").length === 0
-                  ? " Aucune demande MOQ en attente pour le moment."
+                  ? ` ${tx("Aucune demande MOQ en attente pour le moment.", "No pending MOQ requests at this time.")}`
                   : ""}
               </p>
               <div className="flex flex-wrap gap-2">
@@ -338,17 +338,18 @@ export default function SuppliersPortal() {
                     printShippingLabels(
                       moqRequests.filter((e) => e.status !== "resolved"),
                       submission.company ?? submission.contact_email,
+                      lang,
                     )
                   }
                   disabled={moqRequests.filter((e) => e.status !== "resolved").length === 0}
                 >
-                  <Printer className="w-4 h-4 mr-2" /> Étiquettes MOQ en attente
+                  <Printer className="w-4 h-4 mr-2" /> {tx("Étiquettes MOQ en attente", "Pending MOQ labels")}
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={() => printGenericLabel(submission.company ?? submission.contact_email)}
+                  onClick={() => printGenericLabel(submission.company ?? submission.contact_email, lang)}
                 >
-                  Étiquette vierge
+                  {tx("Étiquette vierge", "Blank label")}
                 </Button>
               </div>
             </Card>
@@ -356,11 +357,11 @@ export default function SuppliersPortal() {
             {/* Suivre audit */}
             <Card className="p-5">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-primary" /> Suivi des audits
+                <ShieldCheck className="w-4 h-4 text-primary" /> {tx("Suivi des audits", "Audit tracking")}
               </h3>
               <div className="grid grid-cols-3 gap-3 mb-4">
-                <MiniStat label="Ouverts" value={openAudits} />
-                <MiniStat label="Résolus" value={auditEvents.filter((e) => e.status === "resolved").length} />
+                <MiniStat label={tx("Ouverts", "Open")} value={openAudits} />
+                <MiniStat label={tx("Résolus", "Resolved")} value={auditEvents.filter((e) => e.status === "resolved").length} />
                 <MiniStat label="Total" value={auditEvents.length} />
               </div>
               <EventList
@@ -369,7 +370,7 @@ export default function SuppliersPortal() {
                 allowStatusUpdate
                 onStatusChange={(id, status) =>
                   callAction({ action: "update_event_status", event_id: id, status }).catch((e) =>
-                    toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" }),
+                    toast({ title: tx("Erreur", "Error"), description: (e as Error).message, variant: "destructive" }),
                   )
                 }
               />
@@ -378,7 +379,7 @@ export default function SuppliersPortal() {
             {/* Consulter factures */}
             <Card className="p-5">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-primary" /> Mes factures
+                <FileText className="w-4 h-4 text-primary" /> {tx("Mes factures", "My invoices")}
               </h3>
               {invoiceDocs.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
@@ -401,7 +402,7 @@ export default function SuppliersPortal() {
                             .from("support-attachments")
                             .createSignedUrl(d.storage_path, 60);
                           if (signed?.signedUrl) window.open(signed.signedUrl, "_blank");
-                          else toast({ title: "Lien indisponible", variant: "destructive" });
+                          else toast({ title: tx("Lien indisponible", "Link unavailable"), variant: "destructive" });
                         }}
                       >
                         Ouvrir
@@ -415,14 +416,14 @@ export default function SuppliersPortal() {
             {/* Consulter performances */}
             <Card className="p-5">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-primary" /> Performances
+                <BarChart3 className="w-4 h-4 text-primary" /> {tx("Performances", "Performance")}
               </h3>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                <MiniStat label="Produits validés" value={catalogDrafts.filter((e) => e.status === "resolved").length} />
-                <MiniStat label="MOQ livrées" value={totalMoqDelivered} />
-                <MiniStat label="Productions" value={totalProductionConfirmed} />
+                <MiniStat label={tx("Produits validés", "Approved products")} value={catalogDrafts.filter((e) => e.status === "resolved").length} />
+                <MiniStat label={tx("MOQ livrées", "MOQ delivered")} value={totalMoqDelivered} />
+                <MiniStat label={tx("Productions", "Production runs")} value={totalProductionConfirmed} />
                 <MiniStat
-                  label="Taux résolution"
+                  label={tx("Taux résolution", "Resolution rate")}
                   value={`${events.length > 0
                     ? Math.round((events.filter((e) => e.status === "resolved").length / events.length) * 100)
                     : 0}%`}
@@ -438,12 +439,12 @@ export default function SuppliersPortal() {
           <TabsContent value="documents" className="space-y-4 mt-4">
             <Card className="p-5">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <FileUp className="w-4 h-4 text-primary" /> Uploader un document
+                <FileUp className="w-4 h-4 text-primary" /> {tx("Uploader un document", "Upload a document")}
               </h3>
               <div className="grid sm:grid-cols-2 gap-3 items-end">
                 <div>
                   <Label>{tx("Catégorie", "Category")}</Label>
-                  <Input value={docCategory} onChange={(e) => setDocCategory(e.target.value)} placeholder="ex: ISO 9001, fiche technique" />
+                  <Input value={docCategory} onChange={(e) => setDocCategory(e.target.value)} placeholder={tx("ex: ISO 9001, fiche technique", "e.g. ISO 9001, technical sheet")} />
                 </div>
                 <div>
                   <Label>{tx("Fichier", "File")}</Label>
@@ -487,10 +488,10 @@ export default function SuppliersPortal() {
           <TabsContent value="signal" className="space-y-4 mt-4">
             <Card className="p-5">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-warning" /> Signaler un problème
+                <AlertTriangle className="w-4 h-4 text-warning" /> {tx("Signaler un problème", "Report an issue")}
               </h3>
               <div className="space-y-3">
-                <div><Label>{tx("Titre *", "Title *")}</Label><Input value={issueTitle} onChange={(e) => setIssueTitle(e.target.value)} placeholder="ex: Rupture de stock imminente" /></div>
+                <div><Label>{tx("Titre *", "Title *")}</Label><Input value={issueTitle} onChange={(e) => setIssueTitle(e.target.value)} placeholder={tx("ex: Rupture de stock imminente", "e.g. Imminent stockout")} /></div>
                 <div><Label>{tx("Description *", "Description *")}</Label><Textarea rows={4} value={issueDesc} onChange={(e) => setIssueDesc(e.target.value)} /></div>
                 <Button onClick={submitIssue} disabled={busy}>
                   {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
@@ -587,7 +588,7 @@ function ProductionConfirmForm({
 
   async function submit() {
     if (!product.trim() || !quantity) {
-      toast({ title: "Champs manquants", description: "Produit et quantité requis." });
+      toast({ title: tx("Champs manquants", "Missing fields"), description: "Produit et quantité requis." });
       return;
     }
     const title = `Production confirmée : ${product.trim()} × ${quantity}`;
@@ -614,7 +615,8 @@ function ProductionConfirmForm({
   );
 }
 
-function printShippingLabels(events: PortalEvent[], supplier: string) {
+function printShippingLabels(events: PortalEvent[], supplier: string, lang: "fr" | "en") {
+  const english = lang === "en";
   const win = window.open("", "_blank", "width=800,height=900");
   if (!win) return;
   const labels = events
@@ -622,18 +624,18 @@ function printShippingLabels(events: PortalEvent[], supplier: string) {
       const p = e.payload as Record<string, unknown>;
       return `
         <div class="label">
-          <div class="hd">BRAND-IN-A-BOX · LOGISTIQUE</div>
+          <div class="hd">BRAND-IN-A-BOX · ${english ? "LOGISTICS" : "LOGISTIQUE"}</div>
           <h2>${escapeHtml(e.title)}</h2>
-          <p><b>Fournisseur :</b> ${escapeHtml(supplier)}</p>
-          <p><b>Référence :</b> ${escapeHtml(e.id.slice(0, 8).toUpperCase())}</p>
-          <p><b>Qté :</b> ${escapeHtml(String(p?.quantity ?? "—"))}</p>
-          <p><b>Date :</b> ${new Date(e.created_at).toLocaleDateString("fr-FR")}</p>
-          <p class="addr">À expédier au partenaire logistique désigné par Brand-In-A-Box.</p>
+          <p><b>${english ? "Supplier:" : "Fournisseur :"}</b> ${escapeHtml(supplier)}</p>
+          <p><b>${english ? "Reference:" : "Référence :"}</b> ${escapeHtml(e.id.slice(0, 8).toUpperCase())}</p>
+          <p><b>${english ? "Qty:" : "Qté :"}</b> ${escapeHtml(String(p?.quantity ?? "—"))}</p>
+          <p><b>Date :</b> ${new Date(e.created_at).toLocaleDateString(english ? "en-GB" : "fr-FR")}</p>
+          <p class="addr">${english ? "Ship to the logistics partner designated by Brand-In-A-Box." : "À expédier au partenaire logistique désigné par Brand-In-A-Box."}</p>
         </div>`;
     })
     .join("");
   win.document.write(`
-    <html><head><title>Étiquettes</title><style>
+    <html lang="${lang}"><head><title>${english ? "Labels" : "Étiquettes"}</title><style>
       body{font-family:Inter,system-ui,sans-serif;margin:0;padding:16px;background:#fff;color:#000;}
       .label{border:2px dashed #000;padding:18px;margin-bottom:18px;page-break-after:always;}
       .hd{font-size:11px;letter-spacing:.12em;font-weight:600;margin-bottom:6px;}
@@ -646,23 +648,24 @@ function printShippingLabels(events: PortalEvent[], supplier: string) {
   win.document.close();
 }
 
-function printGenericLabel(supplier: string) {
+function printGenericLabel(supplier: string, lang: "fr" | "en") {
+  const english = lang === "en";
   const win = window.open("", "_blank", "width=800,height=900");
   if (!win) return;
   win.document.write(`
-    <html><head><title>Étiquette vierge</title><style>
+    <html lang="${lang}"><head><title>${english ? "Blank label" : "Étiquette vierge"}</title><style>
       body{font-family:Inter,system-ui,sans-serif;margin:0;padding:32px;}
       .label{border:2px dashed #000;padding:24px;}
       h2{margin:0 0 12px;} p{margin:6px 0;}
     </style></head><body>
       <div class="label">
         <div style="font-size:11px;letter-spacing:.12em;font-weight:600;">BRAND-IN-A-BOX · LOGISTIQUE</div>
-        <h2>Étiquette d'expédition</h2>
-        <p><b>Fournisseur :</b> ${escapeHtml(supplier)}</p>
-        <p><b>Date :</b> ${new Date().toLocaleDateString("fr-FR")}</p>
-        <p>Produit : ____________________</p>
-        <p>Quantité : ____________________</p>
-        <p>N° lot : ____________________</p>
+        <h2>${english ? "Shipping label" : "Étiquette d'expédition"}</h2>
+        <p><b>${english ? "Supplier:" : "Fournisseur :"}</b> ${escapeHtml(supplier)}</p>
+        <p><b>Date :</b> ${new Date().toLocaleDateString(english ? "en-GB" : "fr-FR")}</p>
+        <p>${english ? "Product:" : "Produit :"} ____________________</p>
+        <p>${english ? "Quantity:" : "Quantité :"} ____________________</p>
+        <p>${english ? "Batch no.:" : "N° lot :"} ____________________</p>
       </div>
       <script>window.print()</script>
     </body></html>

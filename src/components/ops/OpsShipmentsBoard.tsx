@@ -50,7 +50,7 @@ export function OpsShipmentsBoard({ orders, callAction }: { orders: ShipOrder[];
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [cartonFor, setCartonFor] = useState<Record<string, string>>({});
-  const [driverDraft, setDriverDraft] = useState<Record<string, { name: string; phone: string; location: string; eta: string }>>({});
+  const [driverDraft, setDriverDraft] = useState<Record<string, { name: string; phone: string; carrier: string; trackingNumber: string; location: string; eta: string }>>({});
   const [format, setFormat] = useState<"a6" | "a4-sheet">("a6");
 
   const load = useCallback(async () => {
@@ -138,7 +138,7 @@ export function OpsShipmentsBoard({ orders, callAction }: { orders: ShipOrder[];
       toast({ title: tx("Étiquettes indisponibles", "Labels unavailable"), description: (e as Error).message, variant: "destructive" });
       return;
     }
-    const res = await printLabels(data, format);
+    const res = await printLabels(data, format, lang);
     if (!res.ok) { toast({ title: tx("Impression impossible", "Printing failed"), description: res.error, variant: "destructive" }); return; }
     for (const o of list) {
       await callAction({ action: "shipment_update", order_number: o.order_number, mark: "label_printed", event_label: "Étiquette BIB éditée" });
@@ -230,7 +230,7 @@ export function OpsShipmentsBoard({ orders, callAction }: { orders: ShipOrder[];
                 <div className="space-y-3">
                   {list.map((o) => {
                     const sh = s(o);
-                    const d = driverDraft[o.id] ?? { name: sh?.driver_name ?? "", phone: sh?.driver_phone ?? "", carrier: sh?.carrier ?? "", trackingNumber: sh?.tracking_number ?? "", location: sh?.last_location ?? "", eta: sh?.eta ?? "" };
+                    const d: { name: string; phone: string; carrier: string; trackingNumber: string; location: string; eta: string } = driverDraft[o.id] ?? { name: sh?.driver_name ?? "", phone: sh?.driver_phone ?? "", carrier: sh?.carrier ?? "", trackingNumber: sh?.tracking_number ?? "", location: sh?.last_location ?? "", eta: sh?.eta ?? "" };
                     const set = (k: keyof typeof d, v: string) => setDriverDraft((p) => ({ ...p, [o.id]: { ...d, [k]: v } }));
                     return (
                       <div key={o.id} className="rounded-md border border-border/60 p-3">

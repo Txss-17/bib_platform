@@ -94,7 +94,8 @@ export async function fetchLabelsData(orderIds: string[], callAction: LabelActio
   return labels.map((label) => label.data);
 }
 /** Render a single A6 BIB label as HTML string. */
-export async function renderLabelHTML(data: LabelData): Promise<string> {
+export async function renderLabelHTML(data: LabelData, lang: "fr" | "en" = "fr"): Promise<string> {
+  const english = lang === "en";
   const barcodeValue = data.orderNumber.replace(/-/g, "");
   const barcode = generateBarcodeSVG(barcodeValue);
   const qr = await generateQrSVG(data.trackingUrl);
@@ -107,47 +108,47 @@ export async function renderLabelHTML(data: LabelData): Promise<string> {
           <span class="bib-label__brand-text">BRAND-IN-A-BOX</span>
         </div>
         <div class="bib-label__verified">
-          <span aria-hidden="true">✓</span> VERIFIED BY
+          <span aria-hidden="true">✓</span> ${english ? "VERIFIED BY" : "VÉRIFIÉ PAR"}
         </div>
       </header>
 
       <section class="bib-label__addresses">
         <div class="bib-label__block">
-          <h3>EXPÉDITEUR</h3>
+          <h3>${english ? "SENDER" : "EXPÉDITEUR"}</h3>
           <p class="bib-label__strong">${escapeHtml(data.sender.name)}</p>
           ${data.sender.addressLines.map((l) => `<p>${escapeHtml(l)}</p>`).join("")}
         </div>
         <div class="bib-label__block">
-          <h3>DESTINATAIRE</h3>
+          <h3>${english ? "RECIPIENT" : "DESTINATAIRE"}</h3>
           <p class="bib-label__strong">${escapeHtml(data.recipient.name)}</p>
           ${data.recipient.addressLines.map((l) => `<p>${escapeHtml(l)}</p>`).join("")}
         </div>
         <div class="bib-label__row">
           <div>
-            <h3>PAYS DE LIVRAISON</h3>
+            <h3>${english ? "DESTINATION COUNTRY" : "PAYS DE LIVRAISON"}</h3>
             <p class="bib-label__strong">${escapeHtml(data.recipient.country)}</p>
           </div>
           <div>
-            <h3>DATE D'EXPÉDITION</h3>
+            <h3>${english ? "SHIP DATE" : "DATE D'EXPÉDITION"}</h3>
             <p>${escapeHtml(data.shipDate)}</p>
           </div>
         </div>
       </section>
 
       <section class="bib-label__product">
-        <h3>INFORMATIONS PRODUIT</h3>
+        <h3>${english ? "PRODUCT INFORMATION" : "INFORMATIONS PRODUIT"}</h3>
         <table>
-          <tr><th>SKU (BOUTIQUE)</th><td colspan="2">${escapeHtml(data.product.sku)}</td></tr>
+          <tr><th>${english ? "STORE SKU" : "SKU (BOUTIQUE)"}</th><td colspan="2">${escapeHtml(data.product.sku)}</td></tr>
           <tr>
-            <th>RÉFÉRENCE PRODUIT</th>
+            <th>${english ? "PRODUCT REFERENCE" : "RÉFÉRENCE PRODUIT"}</th>
             <td>${escapeHtml(data.product.reference)}</td>
-            <td class="bib-label__qty">QTÉ<br/><strong>${data.product.quantity}</strong></td>
+            <td class="bib-label__qty">${english ? "QTY" : "QTÉ"}<br/><strong>${data.product.quantity}</strong></td>
           </tr>
         </table>
       </section>
 
       <section class="bib-label__order">
-        <h3>N° DE COMMANDE</h3>
+        <h3>${english ? "ORDER NUMBER" : "N° DE COMMANDE"}</h3>
         <p class="bib-label__order-num">${escapeHtml(data.orderNumber)}</p>
         <div class="bib-label__barcode">${barcode}</div>
       </section>
@@ -155,8 +156,8 @@ export async function renderLabelHTML(data: LabelData): Promise<string> {
       <footer class="bib-label__foot">
         <div class="bib-label__qr">${qr}</div>
         <div class="bib-label__tracking">
-          <p class="bib-label__strong">Suivez votre colis</p>
-          <p>via le système BIB</p>
+          <p class="bib-label__strong">${english ? "Track your parcel" : "Suivez votre colis"}</p>
+          <p>${english ? "with the BIB system" : "via le système BIB"}</p>
         </div>
       </footer>
     </article>
@@ -228,16 +229,17 @@ const LABEL_STYLES = `
 export async function printLabels(
   items: LabelData[],
   format: "a6" | "a4-sheet" = "a6",
+  lang: "fr" | "en" = "fr",
 ): Promise<{ ok: boolean; error?: string }> {
   if (items.length === 0) {
-    return { ok: false, error: "Aucune étiquette à imprimer" };
+    return { ok: false, error: lang === "en" ? "No labels to print" : "Aucune étiquette à imprimer" };
   }
   const win = window.open("", "_blank", "width=900,height=1000");
   if (!win) {
-    return { ok: false, error: "Pop-up bloqué — autorisez les pop-ups pour imprimer." };
+    return { ok: false, error: lang === "en" ? "Pop-up blocked — allow pop-ups to print." : "Pop-up bloqué — autorisez les pop-ups pour imprimer." };
   }
 
-  const labelsHtml = await Promise.all(items.map((d) => renderLabelHTML(d)));
+  const labelsHtml = await Promise.all(items.map((d) => renderLabelHTML(d, lang)));
 
   let body = "";
   if (format === "a4-sheet") {
@@ -254,10 +256,10 @@ export async function printLabels(
   const sizeRule = format === "a4-sheet" ? "@page{size:A4 portrait;margin:0}" : "@page{size:100mm 150mm;margin:0}";
 
   win.document.write(`<!doctype html>
-<html lang="fr">
+<html lang="${lang}">
 <head>
   <meta charset="utf-8" />
-  <title>Étiquettes BIB · ${items.length}</title>
+  <title>${lang === "en" ? "BIB labels" : "Étiquettes BIB"} · ${items.length}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&family=JetBrains+Mono:wght@700&display=swap" />
@@ -265,8 +267,8 @@ export async function printLabels(
 </head>
 <body>
   <div class="bib-toolbar">
-    <button onclick="window.print()">Imprimer (${items.length} étiquette${items.length > 1 ? "s" : ""})</button>
-    <button class="ghost" onclick="window.close()">Fermer</button>
+    <button onclick="window.print()">${lang === "en" ? "Print" : "Imprimer"} (${items.length} ${lang === "en" ? "label" : "étiquette"}${items.length > 1 ? (lang === "en" ? "s" : "s") : ""})</button>
+    <button class="ghost" onclick="window.close()">${lang === "en" ? "Close" : "Fermer"}</button>
   </div>
   <div class="bib-stage">${body}</div>
 </body>

@@ -37,10 +37,10 @@ import {
 } from "lucide-react";
 
 const DELIVERY_STATUSES = [
-  { value: "processing", label: "Préparation" },
-  { value: "shipped", label: "Expédié" },
-  { value: "delivered", label: "Livré" },
-  { value: "returned", label: "Retour" },
+  { value: "processing", label: "Préparation", labelEn: "Preparing" },
+  { value: "shipped", label: "Expédié", labelEn: "Shipped" },
+  { value: "delivered", label: "Livré", labelEn: "Delivered" },
+  { value: "returned", label: "Retour", labelEn: "Returned" },
 ];
 
 interface BasicOrder {
@@ -89,7 +89,7 @@ export default function OpsPortal() {
       const result = (await callAction({ action: "list_orders" })) as { orders?: BasicOrder[] };
       setOrders(result.orders ?? []);
     } catch (e) {
-      toast({ title: "Impossible de charger les commandes", description: (e as Error).message, variant: "destructive" });
+      toast({ title: tx("Impossible de charger les commandes", "Unable to load orders"), description: (e as Error).message, variant: "destructive" });
     } finally {
       setOrdersLoading(false);
     }
@@ -150,13 +150,13 @@ export default function OpsPortal() {
 
   async function submitDeliveryUpdate() {
     if (!deliveryOrder.trim()) {
-      toast({ title: "N° commande requis" });
+      toast({ title: tx("N° commande requis", "Order number required") });
       return;
     }
     setBusy(true);
     try {
       const orderNumber = deliveryOrder.trim().toUpperCase();
-      const statusLabel = DELIVERY_STATUSES.find((status) => status.value === deliveryStatus)?.label;
+      const statusLabel = DELIVERY_STATUSES.find((status) => status.value === deliveryStatus)?.[english ? "labelEn" : "label"];
       if (!statusLabel) throw new Error("Statut de livraison invalide.");
 
       await callAction({
@@ -174,9 +174,9 @@ export default function OpsPortal() {
         payload: { order_number: orderNumber, status: deliveryStatus, note: deliveryNote.trim() },
       });
       setDeliveryOrder(""); setDeliveryNote("");
-      toast({ title: "Statut de livraison mis à jour", description: "Le statut et son événement apparaissent dans le suivi de commande." });
+      toast({ title: tx("Statut de livraison mis à jour", "Delivery status updated"), description: tx("Le statut et son événement apparaissent dans le suivi de commande.", "The status update and event now appear in order tracking.") });
     } catch (e) {
-      toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" });
+      toast({ title: tx("Erreur", "Error"), description: (e as Error).message, variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -193,9 +193,9 @@ export default function OpsPortal() {
         payload: { item: pkgItem, remaining: pkgStock ? Number(pkgStock) : null },
       });
       setPkgStock("");
-      toast({ title: "Alerte packaging envoyée" });
+      toast({ title: tx("Alerte packaging envoyée", "Packaging alert sent") });
     } catch (e) {
-      toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" });
+      toast({ title: tx("Erreur", "Error"), description: (e as Error).message, variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -203,7 +203,7 @@ export default function OpsPortal() {
 
   async function submitReturn() {
     if (!returnOrder.trim() || !returnReason.trim()) {
-      toast({ title: "N° commande et motif requis" });
+      toast({ title: tx("N° commande et motif requis", "Order number and reason required") });
       return;
     }
     setBusy(true);
@@ -215,9 +215,9 @@ export default function OpsPortal() {
         payload: { order_number: returnOrder.trim().toUpperCase(), reason: returnReason },
       });
       setReturnOrder(""); setReturnReason("");
-      toast({ title: "Retour enregistré" });
+      toast({ title: tx("Retour enregistré", "Return logged") });
     } catch (e) {
-      toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" });
+      toast({ title: tx("Erreur", "Error"), description: (e as Error).message, variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -230,7 +230,7 @@ export default function OpsPortal() {
   function openPrintWindow(title: string, body: string) {
     const w = window.open("", "_blank", "width=820,height=900");
     if (!w) {
-      toast({ title: "Pop-up bloqué", description: "Autorisez les pop-ups pour imprimer.", variant: "destructive" });
+      toast({ title: tx("Pop-up bloqué", "Pop-up blocked"), description: tx("Autorisez les pop-ups pour imprimer.", "Allow pop-ups to print."), variant: "destructive" });
       return;
     }
     w.document.write(`<!doctype html><html><head><meta charset="utf-8"/><title>${escapeHtml(title)}</title>
@@ -254,46 +254,46 @@ export default function OpsPortal() {
     try {
       const data = await fetchLabelData(order.id, callAction);
       if (!data) throw new Error("Données d'étiquette indisponibles.");
-      const res = await printLabels([data], labelFormat);
+      const res = await printLabels([data], labelFormat, lang);
       if (!res.ok) throw new Error(res.error ?? "Erreur d'impression.");
     } catch (e) {
-      toast({ title: "Étiquette indisponible", description: (e as Error).message, variant: "destructive" });
+      toast({ title: tx("Étiquette indisponible", "Label unavailable"), description: (e as Error).message, variant: "destructive" });
     }
   }
 
   async function printAllShippingLabels() {
     if (orders.length === 0) {
-      toast({ title: "Aucune commande à imprimer" });
+      toast({ title: tx("Aucune commande à imprimer", "No orders to print") });
       return;
     }
     try {
       const items = await fetchLabelsData(orders.map((o) => o.id), callAction);
-      const res = await printLabels(items, labelFormat);
+      const res = await printLabels(items, labelFormat, lang);
       if (!res.ok) throw new Error(res.error ?? "Erreur d'impression.");
     } catch (e) {
-      toast({ title: "Étiquettes indisponibles", description: (e as Error).message, variant: "destructive" });
+      toast({ title: tx("Étiquettes indisponibles", "Labels unavailable"), description: (e as Error).message, variant: "destructive" });
     }
   }
 
   function printStatusUpdates() {
     if (deliveryUpdates.length === 0) {
-      toast({ title: "Aucun changement de statut à imprimer" });
+      toast({ title: tx("Aucun changement de statut à imprimer", "No status updates to print") });
       return;
     }
     const body = deliveryUpdates.map((e) => {
       const p = (e.payload ?? {}) as Record<string, unknown>;
       return `<div class="label">
         <h2>${escapeHtml(e.title)}</h2>
-        <p><b>Commande :</b> ${escapeHtml(String(p.order_number ?? "—"))}</p>
-        <p><b>Statut :</b> ${escapeHtml(String(p.status ?? "—"))}</p>
-        <p><b>Note :</b> ${escapeHtml(String(p.note ?? "—"))}</p>
-        <p class="meta">${new Date(e.created_at).toLocaleString("fr-FR")}</p>
+        <p><b>${english ? "Order:" : "Commande :"}</b> ${escapeHtml(String(p.order_number ?? "—"))}</p>
+        <p><b>${english ? "Status:" : "Statut :"}</b> ${escapeHtml(String(p.status ?? "—"))}</p>
+        <p><b>${english ? "Note:" : "Note :"}</b> ${escapeHtml(String(p.note ?? "—"))}</p>
+        <p class="meta">${new Date(e.created_at).toLocaleString(english ? "en-GB" : "fr-FR")}</p>
       </div>`;
     }).join("");
-    openPrintWindow("Changements de statut", body);
+    openPrintWindow(english ? "Status changes" : "Changements de statut", body);
   }
 
-  // Scan colis
+  // {tx("Scan colis", "Scan parcel")}
   const [scanCode, setScanCode] = useState("");
   const [scanResult, setScanResult] = useState<BasicOrder | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
@@ -311,13 +311,13 @@ export default function OpsPortal() {
     }
   }
 
-  // Réception marchandises
+  // {tx("Réception marchandises", "Goods receipt")}
   const [recvRef, setRecvRef] = useState("");
   const [recvQty, setRecvQty] = useState("");
   const [recvNote, setRecvNote] = useState("");
   async function submitReception() {
     if (!recvRef.trim()) {
-      toast({ title: "Référence requise" });
+      toast({ title: tx("Référence requise", "Reference required") });
       return;
     }
     setBusy(true);
@@ -329,9 +329,9 @@ export default function OpsPortal() {
         payload: { reception: true, reference: recvRef.trim(), quantity: recvQty ? Number(recvQty) : null, note: recvNote },
       });
       setRecvRef(""); setRecvQty(""); setRecvNote("");
-      toast({ title: "Réception enregistrée" });
+      toast({ title: tx("Réception enregistrée", "Receipt recorded") });
     } catch (e) {
-      toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" });
+      toast({ title: tx("Erreur", "Error"), description: (e as Error).message, variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -342,7 +342,7 @@ export default function OpsPortal() {
   const [restockQty, setRestockQty] = useState("");
   async function submitRestock() {
     if (!restockItem.trim() || !restockQty.trim()) {
-      toast({ title: "Article et quantité requis" });
+      toast({ title: tx("Article et quantité requis", "Item and quantity required") });
       return;
     }
     setBusy(true);
@@ -354,9 +354,9 @@ export default function OpsPortal() {
         payload: { restock: true, item: restockItem, quantity: Number(restockQty) },
       });
       setRestockQty("");
-      toast({ title: "Restock enregistré" });
+      toast({ title: tx("Restock enregistré", "Restock recorded") });
     } catch (e) {
-      toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" });
+      toast({ title: tx("Erreur", "Error"), description: (e as Error).message, variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -368,7 +368,7 @@ export default function OpsPortal() {
   const [incOrder, setIncOrder] = useState("");
   async function submitIncident() {
     if (!incTitle.trim()) {
-      toast({ title: "Titre requis" });
+      toast({ title: tx("Titre requis", "Title required") });
       return;
     }
     setBusy(true);
@@ -380,9 +380,9 @@ export default function OpsPortal() {
         payload: { incident: true, order_number: incOrder.trim().toUpperCase() || null, detail: incDetail },
       });
       setIncTitle(""); setIncDetail(""); setIncOrder("");
-      toast({ title: "Incident signalé", description: "L'équipe Ops BIB est notifiée." });
+      toast({ title: tx("Incident signalé", "Incident reported"), description: tx("L'équipe Ops BIB est notifiée.", "The BIB operations team has been notified.") });
     } catch (e) {
-      toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" });
+      toast({ title: tx("Erreur", "Error"), description: (e as Error).message, variant: "destructive" });
     } finally {
       setBusy(false);
     }
@@ -401,10 +401,10 @@ export default function OpsPortal() {
         <div>
           <Button asChild variant="ghost" size="sm" className="-ml-2 mb-2">
             <Link to={`/portal/onboarding/${token}`}>
-              <ArrowLeft className="w-4 h-4 mr-1.5" /> Suivi onboarding
+              <ArrowLeft className="w-4 h-4 mr-1.5" /> {tx("Suivi onboarding", "Onboarding status")}
             </Link>
           </Button>
-          <Badge variant="secondary" className="mb-2">Portail opérationnel · Logistics</Badge>
+          <Badge variant="secondary" className="mb-2">{tx("Portail opérationnel · Logistics", "Operations portal · Logistics")}</Badge>
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
               {submission.company ?? submission.contact_email}
@@ -412,7 +412,7 @@ export default function OpsPortal() {
             <PlatformTourLauncher label={tx("Guide partenaire", "Partner guide")} availablePersonas={["ops", "supplier"]} />
           </div>
           <p className="text-sm text-muted-foreground mt-2">
-            Dashboard stock, commandes des boutiques, livraisons, packaging, retours.
+            {tx("Dashboard stock, commandes des boutiques, livraisons, packaging, retours.", "Stock dashboard, store orders, deliveries, packaging and returns.")}
           </p>
           <PlatformTour autoOpen availablePersonas={["ops", "supplier"]} />
         </div>
@@ -430,7 +430,7 @@ export default function OpsPortal() {
             <TabsTrigger value="orders">{tx("Commandes", "Orders")}</TabsTrigger>
             <TabsTrigger value="operations">{tx("Opérations", "Operations")}</TabsTrigger>
             <TabsTrigger value="delivery">{tx("Mise à jour livraison", "Delivery update")}</TabsTrigger>
-            <TabsTrigger value="packaging">Packaging</TabsTrigger>
+            <TabsTrigger value="packaging">{tx("Packaging", "Packaging")}</TabsTrigger>
             <TabsTrigger value="returns">{tx("Retours", "Returns")}</TabsTrigger>
           </TabsList>
 
@@ -443,14 +443,14 @@ export default function OpsPortal() {
             <Card className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold flex items-center gap-2">
-                  <Boxes className="w-4 h-4 text-accent" /> Commandes des boutiques à expédier
+                  <Boxes className="w-4 h-4 text-accent" /> {tx("Commandes des boutiques à expédier", "Store orders to ship")}
                 </h3>
                 <div className="flex items-center gap-2">
                   <Button size="sm" variant="outline" onClick={printAllShippingLabels} disabled={orders.length === 0}>
-                    <Printer className="w-3.5 h-3.5 mr-1.5" /> Imprimer étiquettes
+                    <Printer className="w-3.5 h-3.5 mr-1.5" /> {tx("Imprimer étiquettes", "Print labels")}
                   </Button>
                   <Button size="sm" variant="ghost" disabled={ordersLoading} onClick={() => void refreshOrders()}>
-                  <RefreshCcw className={`w-3.5 h-3.5 mr-1.5 ${ordersLoading ? "animate-spin" : ""}`} /> Rafraîchir
+                  <RefreshCcw className={`w-3.5 h-3.5 mr-1.5 ${ordersLoading ? "animate-spin" : ""}`} /> {tx("Rafraîchir", "Refresh")}
                   </Button>
                 </div>
               </div>
@@ -487,22 +487,22 @@ export default function OpsPortal() {
           {/* OPÉRATIONS */}
           <TabsContent value="operations" className="space-y-4 mt-4">
             <div className="grid lg:grid-cols-2 gap-4">
-              {/* Commandes à traiter */}
+              {/* {tx("Commandes à traiter", "Orders to process")} */}
               <Card className="p-5">
                 <h3 className="font-semibold flex items-center gap-2 mb-2">
-                  <ClipboardList className="w-4 h-4 text-accent" /> Commandes à traiter
+                  <ClipboardList className="w-4 h-4 text-accent" /> {tx("Commandes à traiter", "Orders to process")}
                 </h3>
                 <p className="text-xs text-muted-foreground mb-3">{stockSummary.pending + stockSummary.preparing} commande(s) en attente · {stockSummary.inTransit} en transit.</p>
                 <Button size="sm" variant="outline" onClick={() => {
                   const tab = document.querySelector<HTMLButtonElement>('[role="tab"][value="orders"]');
                   tab?.click();
-                }}>Ouvrir la liste</Button>
+                }}>{tx("Ouvrir la liste", "Open list")}</Button>
               </Card>
 
-              {/* Scan colis */}
+              {/* {tx("Scan colis", "Scan parcel")} */}
               <Card className="p-5">
                 <h3 className="font-semibold flex items-center gap-2 mb-3">
-                  <ScanLine className="w-4 h-4 text-accent" /> Scan colis
+                  <ScanLine className="w-4 h-4 text-accent" /> {tx("Scan colis", "Scan parcel")}
                 </h3>
                 <div className="flex gap-2">
                   <Input
@@ -534,27 +534,27 @@ export default function OpsPortal() {
                 )}
               </Card>
 
-              {/* Réception marchandises */}
+              {/* {tx("Réception marchandises", "Goods receipt")} */}
               <Card className="p-5">
                 <h3 className="font-semibold flex items-center gap-2 mb-3">
-                  <Inbox className="w-4 h-4 text-accent" /> Réception marchandises
+                  <Inbox className="w-4 h-4 text-accent" /> {tx("Réception marchandises", "Goods receipt")}
                 </h3>
                 <div className="grid sm:grid-cols-2 gap-2 mb-2">
                   <div><Label>{tx("Référence / SKU *", "Reference / SKU *")}</Label><Input value={recvRef} onChange={(e) => setRecvRef(e.target.value)} placeholder="REF-MC-DEC-1250" /></div>
                   <div><Label>{tx("Quantité", "Quantity")}</Label><Input type="number" value={recvQty} onChange={(e) => setRecvQty(e.target.value)} /></div>
                 </div>
                 <Label>{tx("Note", "Note")}</Label>
-                <Textarea rows={2} value={recvNote} onChange={(e) => setRecvNote(e.target.value)} placeholder="État, écart, fournisseur…" />
+                <Textarea rows={2} value={recvNote} onChange={(e) => setRecvNote(e.target.value)} placeholder={tx("État, écart, fournisseur…", "Condition, discrepancy, supplier…")} />
                 <Button onClick={submitReception} disabled={busy} className="mt-3" size="sm">
                   {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Inbox className="w-4 h-4 mr-2" />}
                   Enregistrer la réception
                 </Button>
               </Card>
 
-              {/* Gestion expédition / impressions */}
+              {/* {tx("Gestion expédition", "Shipping management")} / impressions */}
               <Card className="p-5">
                 <h3 className="font-semibold flex items-center gap-2 mb-3">
-                  <Truck className="w-4 h-4 text-accent" /> Gestion expédition
+                  <Truck className="w-4 h-4 text-accent" /> {tx("Gestion expédition", "Shipping management")}
                 </h3>
                 <p className="text-xs text-muted-foreground mb-3">
                   Imprimer les étiquettes des commandes à expédier et l'historique des changements de statut.
@@ -580,10 +580,10 @@ export default function OpsPortal() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button size="sm" variant="outline" onClick={printAllShippingLabels}>
-                    <Printer className="w-3.5 h-3.5 mr-1.5" /> Étiquettes ({orders.length})
+                    <Printer className="w-3.5 h-3.5 mr-1.5" /> {tx("Étiquettes", "Labels")} ({orders.length})
                   </Button>
                   <Button size="sm" variant="outline" onClick={printStatusUpdates}>
-                    <Printer className="w-3.5 h-3.5 mr-1.5" /> Changements de statut
+                    <Printer className="w-3.5 h-3.5 mr-1.5" /> {tx("Changements de statut", "Status changes")}
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => {
                     const tab = document.querySelector<HTMLButtonElement>('[role="tab"][value="delivery"]');
@@ -595,7 +595,7 @@ export default function OpsPortal() {
               {/* Gestion retours + restock */}
               <Card className="p-5">
                 <h3 className="font-semibold flex items-center gap-2 mb-3">
-                  <PackageX className="w-4 h-4 text-accent" /> Gestion retours & restock cartons
+                  <PackageX className="w-4 h-4 text-accent" /> {tx("Gestion retours & restock cartons", "Returns and carton restocking")}
                 </h3>
                 <p className="text-xs text-muted-foreground mb-3">{returns.length} retour(s) en cours.</p>
                 <div className="grid sm:grid-cols-2 gap-2 mb-2">
@@ -615,33 +615,33 @@ export default function OpsPortal() {
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
                   <Button size="sm" onClick={submitRestock} disabled={busy} variant="outline">
-                    <Package2 className="w-3.5 h-3.5 mr-1.5" /> Enregistrer restock
+                    <Package2 className="w-3.5 h-3.5 mr-1.5" /> {tx("Enregistrer restock", "Save restock")}
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => {
                     const tab = document.querySelector<HTMLButtonElement>('[role="tab"][value="returns"]');
                     tab?.click();
-                  }}>Ouvrir les retours →</Button>
+                  }}>{tx("Ouvrir les retours", "Open returns")} →</Button>
                 </div>
               </Card>
 
               {/* Incidents */}
               <Card className="p-5">
                 <h3 className="font-semibold flex items-center gap-2 mb-3">
-                  <AlertTriangle className="w-4 h-4 text-warning" /> Gestion incidents
+                  <AlertTriangle className="w-4 h-4 text-warning" /> {tx("Gestion incidents", "Incident management")}
                 </h3>
                 <div className="grid sm:grid-cols-2 gap-2 mb-2">
-                  <div><Label>{tx("Titre *", "Title *")}</Label><Input value={incTitle} onChange={(e) => setIncTitle(e.target.value)} placeholder="ex: colis endommagé" /></div>
+                  <div><Label>{tx("Titre *", "Title *")}</Label><Input value={incTitle} onChange={(e) => setIncTitle(e.target.value)} placeholder={tx("ex: colis endommagé", "e.g. damaged parcel")} /></div>
                   <div><Label>{tx("N° commande", "Order number")}</Label><Input value={incOrder} onChange={(e) => setIncOrder(e.target.value)} placeholder="BIB26-XXXXXX" className="font-mono" /></div>
                 </div>
                 <Label>{tx("Détail", "Details")}</Label>
-                <Textarea rows={2} value={incDetail} onChange={(e) => setIncDetail(e.target.value)} placeholder="Description, zone, photos transmises séparément…" />
+                <Textarea rows={2} value={incDetail} onChange={(e) => setIncDetail(e.target.value)} placeholder={tx("Description, zone, photos transmises séparément…", "Description, location, photos sent separately…")} />
                 <Button onClick={submitIncident} disabled={busy} className="mt-3" size="sm" variant="outline">
                   {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Wrench className="w-4 h-4 mr-2" />}
                   Signaler l'incident
                 </Button>
                 {incidents.length > 0 && (
                   <div className="mt-4 pt-3 border-t border-border/50">
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Incidents récents</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">{tx("Incidents récents", "Recent incidents")}</p>
                     <EventList events={incidents.slice(0, 5)} emptyLabel="Aucun incident." />
                   </div>
                 )}
@@ -653,10 +653,10 @@ export default function OpsPortal() {
           <TabsContent value="delivery" className="space-y-4 mt-4">
             <Card className="p-5">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <PackageCheck className="w-4 h-4 text-accent" /> Mettre à jour le statut de livraison
+                <PackageCheck className="w-4 h-4 text-accent" /> {tx("Mettre à jour le statut de livraison", "Update delivery status")}
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Le client final ET la boutique seront notifiés sur leur compte respectif.
+                {tx("Le client final ET la boutique seront notifiés sur leur compte respectif.", "The customer and store will each be notified in their account.")}
               </p>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div><Label>{tx("N° de commande *", "Order number *")}</Label><Input value={deliveryOrder} onChange={(e) => setDeliveryOrder(e.target.value)} placeholder="BIB26-XXXXXX" className="font-mono" /></div>
@@ -666,7 +666,7 @@ export default function OpsPortal() {
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {DELIVERY_STATUSES.map((s) => (
-                        <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                        <SelectItem key={s.value} value={s.value}>{english ? s.labelEn : s.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -689,7 +689,7 @@ export default function OpsPortal() {
           <TabsContent value="packaging" className="space-y-4 mt-4">
             <Card className="p-5">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Package2 className="w-4 h-4 text-accent" /> Signaler le stock packaging
+                <Package2 className="w-4 h-4 text-accent" /> {tx("Signaler le stock packaging", "Report packaging stock")}
               </h3>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div><Label>{tx("Article", "Item")}</Label><Input value={pkgItem} onChange={(e) => setPkgItem(e.target.value)} /></div>
@@ -711,11 +711,11 @@ export default function OpsPortal() {
           <TabsContent value="returns" className="space-y-4 mt-4">
             <Card className="p-5">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <PackageX className="w-4 h-4 text-accent" /> Enregistrer un retour
+                <PackageX className="w-4 h-4 text-accent" /> {tx("Enregistrer un retour", "Log a return")}
               </h3>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div><Label>N° commande *</Label><Input value={returnOrder} onChange={(e) => setReturnOrder(e.target.value)} placeholder="BIB26-XXXXXX" className="font-mono" /></div>
-                <div><Label>{tx("Motif *", "Reason *")}</Label><Input value={returnReason} onChange={(e) => setReturnReason(e.target.value)} placeholder="ex: produit endommagé" /></div>
+                <div><Label>{tx("Motif *", "Reason *")}</Label><Input value={returnReason} onChange={(e) => setReturnReason(e.target.value)} placeholder={tx("ex: produit endommagé", "e.g. damaged product")} /></div>
               </div>
               <Button onClick={submitReturn} disabled={busy} className="mt-4">
                 {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
@@ -751,7 +751,7 @@ function EventList({ events, emptyLabel }: { events: PortalEvent[]; emptyLabel: 
         <li key={e.id} className="flex items-start justify-between gap-3 border-b border-border/50 pb-2 last:border-0">
           <div className="min-w-0">
             <p className="font-medium">{e.title}</p>
-            <p className="text-[11px] text-muted-foreground">{new Date(e.created_at).toLocaleString("fr-FR")}</p>
+            <p className="text-[11px] text-muted-foreground">{new Date(e.created_at).toLocaleString(english ? "en-GB" : "fr-FR")}</p>
           </div>
           <Badge variant={e.status === "resolved" ? "default" : e.status === "rejected" ? "destructive" : "secondary"}>
             {e.status === "resolved" ? "Résolu" : e.status === "rejected" ? "Refusé" : e.status === "in_progress" ? "En cours" : "Ouvert"}

@@ -50,6 +50,8 @@ interface DashboardSidebarProps {
   onOpenChange?: (open: boolean) => void;
 }
 
+const englishLabels: Record<string, string> = { "Mon profil": "My profile", "Catalogue BIB": "BIB catalog", "Paramètres": "Settings", "Mes tickets": "My tickets", "Aide et support": "Help and support", "Mes boutiques": "My stores", "Produits de mes boutiques": "My store products", "Commandes": "Orders", "Clients": "Customers", "Ventes": "Sales", "Paiements": "Payments", "Statistiques": "Analytics", "Marketing": "Marketing", "Ventes privées": "Private sales", "Équipe": "Team" };
+
 const personalNavItems = [
   {
     title: "Mon profil",
@@ -154,7 +156,6 @@ function SidebarLink({
 }) {
   const { lang } = useLanguage();
   const Icon = item.icon;
-  const englishLabels: Record<string, string> = { "Mon profil": "My profile", "Catalogue BIB": "BIB catalog", "Paramètres": "Settings", "Mes tickets": "My tickets", "Aide et support": "Help and support", "Mes boutiques": "My stores", "Produits de mes boutiques": "My store products", "Commandes": "Orders", "Clients": "Customers", "Ventes": "Sales", "Paiements": "Payments", "Statistiques": "Analytics", "Marketing": "Marketing", "Ventes privées": "Private sales", "Équipe": "Team" };
 
   return (
     <NavLink
