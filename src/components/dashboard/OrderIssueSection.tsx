@@ -91,19 +91,6 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
 
   const StatusIcon = statusIcons[issue.status] || Clock;
 
-  const deadline = new Date(issue.deadline_at);
-
-  const isOverdue =
-    issue.status === "pending" &&
-    deadline < new Date();
-
-  const hoursLeft = Math.max(
-    0,
-    Math.floor(
-      (deadline.getTime() - Date.now()) / 3600000,
-    ),
-  );
-
   const handleRespond = () => {
     const newStatus: IssueStatus =
       action === "accept"
@@ -175,22 +162,6 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
             alt="Preuve"
             className="w-20 h-20 rounded object-cover"
           />
-        )}
-
-        {issue.status === "pending" && (
-          <div className="flex items-center justify-between text-xs">
-            <span
-              className={
-                isOverdue
-                  ? "text-destructive font-medium"
-                  : "text-muted-foreground"
-              }
-            >
-              {isOverdue
-                ? "⚠️ Délai dépassé — escalade automatique"
-                : `⏳ ${hoursLeft}h restantes pour répondre`}
-            </span>
-          </div>
         )}
 
         {responses.length > 0 && (

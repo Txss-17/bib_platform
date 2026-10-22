@@ -39,7 +39,7 @@ export function OrderIssueForm({ orderId, customerEmail, onSuccess }: OrderIssue
       {
         onSuccess: () => {
           setSubmitted(true);
-          toast({ title: "Signalement envoyé", description: "Le vendeur sera notifié sous 48h." });
+          toast({ title: "Signalement enregistré" });
           onSuccess?.();
         },
         onError: () => {
@@ -57,7 +57,7 @@ export function OrderIssueForm({ orderId, customerEmail, onSuccess }: OrderIssue
         </div>
         <h3 className="font-semibold text-foreground">Signalement envoyé</h3>
         <p className="text-sm text-muted-foreground">
-          Le vendeur dispose de 48h pour vous répondre. Vous recevrez une notification par email.
+          Votre signalement a été enregistré.
         </p>
       </div>
     );
@@ -68,7 +68,7 @@ export function OrderIssueForm({ orderId, customerEmail, onSuccess }: OrderIssue
       <div className="flex items-center gap-2 p-3 rounded-lg bg-orange-50 border border-orange-200">
         <AlertTriangle className="w-4 h-4 text-orange-600 shrink-0" />
         <p className="text-xs text-orange-800">
-          Le vendeur dispose de 48h pour traiter votre demande. Sans réponse, la plateforme prendra le relais.
+          Votre signalement sera transmis à la boutique.
         </p>
       </div>
 
