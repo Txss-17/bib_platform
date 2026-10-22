@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Heart,
   Package,
@@ -8,27 +9,29 @@ import {
 const navigation = [
   {
     to: "/store/favorites",
-    label: "Favoris",
+    label: "Favorites",
     icon: Heart,
   },
   {
     to: "/store/orders",
-    label: "Commandes",
+    label: "Orders",
     icon: Package,
   },
   {
     to: "/store/account",
-    label: "Compte",
+    label: "Account",
     icon: Settings,
   },
 ];
 
 export default function StoreSubscriberLayout() {
+  const { lang } = useLanguage();
+  const english = lang === "en";
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6 lg:px-8">
         <nav
-          aria-label="Espace BIB Abonné"
+          aria-label={english ? "BIB subscriber area" : "Espace BIB Abonné"}
           className="overflow-x-auto rounded-2xl border bg-card"
         >
           <div className="flex min-w-max items-center gap-1 p-1.5">
@@ -49,7 +52,7 @@ export default function StoreSubscriberLayout() {
                   }
                 >
                   <Icon className="h-4 w-4" />
-                  {item.label}
+                  {english ? item.label : ({ Favorites: "Favoris", Orders: "Commandes", Account: "Compte" }[item.label] ?? item.label)}
                 </NavLink>
               );
             })}

@@ -43,6 +43,7 @@ import {
   ROLE_LABELS,
 } from "@/hooks/useBoutiqueMembers";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DashboardSidebarProps {
   open?: boolean;
@@ -151,7 +152,9 @@ function SidebarLink({
   };
   onNavigate?: () => void;
 }) {
+  const { lang } = useLanguage();
   const Icon = item.icon;
+  const englishLabels: Record<string, string> = { "Mon profil": "My profile", "Catalogue BIB": "BIB catalog", "Paramètres": "Settings", "Mes tickets": "My tickets", "Aide et support": "Help and support", "Mes boutiques": "My stores", "Produits de mes boutiques": "My store products", "Commandes": "Orders", "Clients": "Customers", "Ventes": "Sales", "Paiements": "Payments", "Statistiques": "Analytics", "Marketing": "Marketing", "Ventes privées": "Private sales", "Équipe": "Team" };
 
   return (
     <NavLink
@@ -161,7 +164,7 @@ function SidebarLink({
       onClick={onNavigate}
     >
       <Icon className="w-4 h-4 shrink-0" />
-      <span className="font-medium">{item.title}</span>
+      <span className="font-medium">{lang === "en" ? (englishLabels[item.title] ?? item.title) : item.title}</span>
     </NavLink>
   );
 }
@@ -172,6 +175,8 @@ function SidebarContent({
   onNavigate?: () => void;
 }) {
   const { profile, signOut } = useAuth();
+  const { lang } = useLanguage();
+  const english = lang === "en";
   const navigate = useNavigate();
   const location = useLocation();
   const { isAdmin } = useAdminRole();
@@ -248,7 +253,7 @@ function SidebarContent({
             <p className="text-sm font-semibold text-foreground truncate">
               {profile?.full_name ||
                 profile?.business_name ||
-                "Utilisateur"}
+                (english ? "User" : "Utilisateur")}
             </p>
 
             {isMemberOnly && primaryRole ? (
@@ -262,7 +267,7 @@ function SidebarContent({
               </Badge>
             ) : (
               <p className="text-xs text-muted-foreground truncate">
-                {profile?.business_type || "Compte BIB"}
+                {profile?.business_type || (english ? "BIB account" : "Compte BIB")}
               </p>
             )}
           </div>
@@ -270,7 +275,7 @@ function SidebarContent({
 
         {isMemberOnly && memberBoutiques.length > 0 && (
           <p className="text-[10px] text-muted-foreground mt-2 truncate">
-            Membre de :{" "}
+            {english ? "Member of:" : "Membre de :"}{" "}
             <span className="font-medium text-foreground">
               {memberBoutiques
                 .map((boutique) => boutique.name)
@@ -285,7 +290,7 @@ function SidebarContent({
         {/* Dashboard */}
         <div className="space-y-0.5">
           <p className="px-3 pb-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-            Vue générale
+            {english ? "Overview" : "Vue générale"}
           </p>
 
           <NavLink
@@ -296,7 +301,7 @@ function SidebarContent({
             onClick={onNavigate}
           >
             <LayoutDashboard className="w-4 h-4 shrink-0" />
-            <span className="font-medium">Tableau de bord</span>
+            <span className="font-medium">{english ? "Dashboard" : "Tableau de bord"}</span>
           </NavLink>
         </div>
 
@@ -330,7 +335,7 @@ function SidebarContent({
             <span className="flex items-center gap-3 min-w-0">
               <Store className="w-4 h-4 shrink-0" />
               <span className="font-semibold truncate">
-                Gestion des boutiques
+                {english ? "Store management" : "Gestion des boutiques"}
               </span>
             </span>
 
@@ -352,7 +357,7 @@ function SidebarContent({
                   onClick={onNavigate}
                 >
                   <item.icon className="w-4 h-4 shrink-0" />
-                  <span className="font-medium">{item.title}</span>
+                  <span className="font-medium">{lang === "en" ? (englishLabels[item.title] ?? item.title) : item.title}</span>
                 </NavLink>
               ))}
             </div>
@@ -374,7 +379,7 @@ function SidebarContent({
             onClick={onNavigate}
           >
             <ShieldCheck className="w-4 h-4 shrink-0" />
-            <span className="font-medium">Vérification des documents</span>
+            <span className="font-medium">{english ? "Document verification" : "Vérification des documents"}</span>
           </NavLink>
         </div>
       )}
@@ -387,7 +392,7 @@ function SidebarContent({
           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors text-[13px]"
         >
           <LogOut className="w-4 h-4 shrink-0" />
-          <span className="font-medium">Déconnexion</span>
+          <span className="font-medium">{english ? "Sign out" : "Déconnexion"}</span>
         </button>
       </div>
     </>

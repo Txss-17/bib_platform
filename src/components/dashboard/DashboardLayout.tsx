@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { FloatingSupportButton } from "@/components/support/FloatingSupportButton";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import {
   Popover,
@@ -79,6 +81,8 @@ export function DashboardLayout({
   children,
 }: DashboardLayoutProps) {
   const isMobile = useIsMobile();
+  const { lang } = useLanguage();
+  const english = lang === "en";
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [themePreference, setThemePreference] =
@@ -198,7 +202,7 @@ export function DashboardLayout({
                 size="icon"
                 className="shrink-0"
                 onClick={() => setSidebarOpen(true)}
-                aria-label="Ouvrir le menu"
+                aria-label={english ? "Open menu" : "Ouvrir le menu"}
               >
                 <Menu className="h-5 w-5" />
               </Button>
@@ -210,12 +214,14 @@ export function DashboardLayout({
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher..."
-                  aria-label="Rechercher dans BIB Platform"
+                  placeholder={english ? "Search..." : "Rechercher..."}
+                  aria-label={english ? "Search BIB Platform" : "Rechercher dans BIB Platform"}
                   className="w-64 border-border/50 bg-card pl-10"
                 />
               </div>
             )}
+
+            <LanguageSwitcher />
 
             <Button
               type="button"
@@ -225,13 +231,13 @@ export function DashboardLayout({
               onClick={toggleTheme}
               aria-label={
                 resolvedTheme === "dark"
-                  ? "Activer le thème clair"
-                  : "Activer le thème sombre"
+                  ? (english ? "Enable light theme" : "Activer le thème clair")
+                  : (english ? "Enable dark theme" : "Activer le thème sombre")
               }
               title={
                 resolvedTheme === "dark"
-                  ? "Passer au thème clair"
-                  : "Passer au thème sombre"
+                  ? (english ? "Switch to light theme" : "Passer au thème clair")
+                  : (english ? "Switch to dark theme" : "Passer au thème sombre")
               }
             >
               {resolvedTheme === "dark" ? (
@@ -247,7 +253,7 @@ export function DashboardLayout({
                   variant="outline"
                   size="icon"
                   className="relative h-9 w-9"
-                  aria-label="Notifications"
+                  aria-label={english ? "Notifications" : "Notifications"}
                 >
                   <Bell className="h-4 w-4" />
                 </Button>
@@ -261,7 +267,7 @@ export function DashboardLayout({
               >
                 <div className="border-b border-border/50 px-4 py-3">
                   <p className="text-sm font-semibold">
-                    Notifications
+                    {english ? "Notifications" : "Notifications"}
                   </p>
                 </div>
 
@@ -269,12 +275,11 @@ export function DashboardLayout({
                   <Bell className="mx-auto mb-2 h-6 w-6 text-muted-foreground" />
 
                   <p className="text-sm text-muted-foreground">
-                    Aucune nouvelle notification.
+                    {english ? "No new notifications." : "Aucune nouvelle notification."}
                   </p>
 
                   <p className="mt-1 text-xs text-muted-foreground/70">
-                    Vous serez alerté ici à chaque nouvelle commande
-                    ou ticket.
+                    {english ? "You will be notified here about each new order or ticket." : "Vous serez alerté ici à chaque nouvelle commande ou ticket."}
                   </p>
                 </div>
               </PopoverContent>

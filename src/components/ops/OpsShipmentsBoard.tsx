@@ -8,6 +8,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { fetchLabelsData, printLabels, type LabelData } from "@/lib/shippingLabel";
 import { Inbox, Package2, Printer, Truck, Loader2, User, MapPin, CheckCircle2 } from "lucide-react";
 
@@ -42,6 +43,9 @@ function escapeHtml(s: string) {
 }
 
 export function OpsShipmentsBoard({ orders, callAction }: { orders: ShipOrder[]; callAction: CallAction }) {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
   const [shipments, setShipments] = useState<Record<string, Shipment>>({});
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -69,7 +73,7 @@ export function OpsShipmentsBoard({ orders, callAction }: { orders: ShipOrder[];
       toast({ title: okMsg, description: o.order_number });
       await load();
     } catch (e) {
-      toast({ title: "Erreur", description: (e as Error).message, variant: "destructive" });
+      toast({ title: tx("Erreur", "Error"), description: (e as Error).message, variant: "destructive" });
     } finally {
       setBusyId(null);
     }
@@ -94,7 +98,7 @@ export function OpsShipmentsBoard({ orders, callAction }: { orders: ShipOrder[];
 
   function printCartons(list: ShipOrder[]) {
     const win = window.open("", "_blank", "width=800,height=900");
-    if (!win) { toast({ title: "Pop-up bloqué", variant: "destructive" }); return false; }
+    if (!win) { toast({ title: tx("Pop-up bloqué", "Pop-up blocked"), variant: "destructive" }); return false; }
     const body = list.map((o) => {
       const size = cartonFor[o.id] ?? s(o)?.carton_size ?? CARTONS[1];
       return `<div class="slip"><h2>BRAND-IN-A-BOX · Fiche carton</h2>
@@ -131,11 +135,11 @@ export function OpsShipmentsBoard({ orders, callAction }: { orders: ShipOrder[];
     try {
       data = await fetchLabelsData(list.map((o) => o.id), callAction);
     } catch (e) {
-      toast({ title: "Étiquettes indisponibles", description: (e as Error).message, variant: "destructive" });
+      toast({ title: tx("Étiquettes indisponibles", "Labels unavailable"), description: (e as Error).message, variant: "destructive" });
       return;
     }
     const res = await printLabels(data, format);
-    if (!res.ok) { toast({ title: "Impression impossible", description: res.error, variant: "destructive" }); return; }
+    if (!res.ok) { toast({ title: tx("Impression impossible", "Printing failed"), description: res.error, variant: "destructive" }); return; }
     for (const o of list) {
       await callAction({ action: "shipment_update", order_number: o.order_number, mark: "label_printed", event_label: "Étiquette BIB éditée" });
     }
@@ -160,22 +164,22 @@ export function OpsShipmentsBoard({ orders, callAction }: { orders: ShipOrder[];
     <div className="space-y-4">
       {loading && <p className="text-xs text-muted-foreground flex items-center gap-2"><Loader2 className="w-3 h-3 animate-spin" /> Synchronisation…</p>}
       <div className="grid lg:grid-cols-2 gap-4">
-        {/* 1. Ordres reçus */}
+        {/* 1. {tx("Ordres reçus", "Incoming orders")} */}
         <Card className="p-5">
-          <h3 className="font-semibold mb-3 flex items-center gap-2"><Inbox className="w-4 h-4 text-accent" /> Ordres reçus <Badge variant="secondary">{received.length}</Badge></h3>
+          <h3 className="font-semibold mb-3 flex items-center gap-2"><Inbox className="w-4 h-4 text-accent" /> {tx("Ordres reçus", "Incoming orders")} <Badge variant="secondary">{received.length}</Badge></h3>
           {received.length === 0 ? empty("Aucun nouvel ordre.") : received.map((o) => (
             <Row key={o.id} o={o}>
-              <Button size="sm" disabled={busy(o)} onClick={() => update(o, { mark: "received", event_label: "Commande prise en charge par l'entrepôt" }, "Ordre accepté")}>
+              <Button size="sm" disabled={busy(o)} onClick={() => update(o, { mark: "received", event_label: "Commande prise en charge par l'entrepôt" }, tx("Ordre accepté", "Order accepted"))}>
                 Accepter
               </Button>
             </Row>
           ))}
         </Card>
 
-        {/* 2. Cartons à imprimer */}
+        {/* 2. {tx("Cartons à imprimer", "Cartons to print")} */}
         <Card className="p-5">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold flex items-center gap-2"><Package2 className="w-4 h-4 text-accent" /> Cartons à imprimer <Badge variant="secondary">{cartons.length}</Badge></h3>
+            <h3 className="font-semibold flex items-center gap-2"><Package2 className="w-4 h-4 text-accent" /> {tx("Cartons à imprimer", "Cartons to print")} <Badge variant="secondary">{cartons.length}</Badge></h3>
             <Button size="sm" variant="outline" disabled={!cartons.length} onClick={() => handlePrintCartons(cartons)}>
               <Printer className="w-3.5 h-3.5 mr-1.5" /> Tout imprimer
             </Button>
@@ -194,16 +198,16 @@ export function OpsShipmentsBoard({ orders, callAction }: { orders: ShipOrder[];
         {/* 3. Étiquettes A6 */}
         <Card className="p-5 lg:col-span-2">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <h3 className="font-semibold flex items-center gap-2"><Printer className="w-4 h-4 text-accent" /> Étiquettes A6 BIB <Badge variant="secondary">{labels.length}</Badge></h3>
+            <h3 className="font-semibold flex items-center gap-2"><Printer className="w-4 h-4 text-accent" /> {tx("Étiquettes A6 BIB", "BIB A6 labels")} <Badge variant="secondary">{labels.length}</Badge></h3>
             <div className="flex items-center gap-2">
               <Select value={format} onValueChange={(v) => setFormat(v as "a6" | "a4-sheet")}>
                 <SelectTrigger className="h-8 w-40 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="a6">A6 thermique</SelectItem>
-                  <SelectItem value="a4-sheet">Feuille A4 (×4)</SelectItem>
+                  <SelectItem value="a6">{tx("A6 thermique", "A6 thermal")}</SelectItem>
+                  <SelectItem value="a4-sheet">{tx("Feuille A4 (×4)", "A4 sheet (×4)")}</SelectItem>
                 </SelectContent>
               </Select>
-              <Button size="sm" variant="outline" disabled={!labels.length} onClick={() => handlePrintLabels(labels)}>Tout éditer</Button>
+              <Button size="sm" variant="outline" disabled={!labels.length} onClick={() => handlePrintLabels(labels)}>{tx("Tout éditer", "Print all")}</Button>
             </div>
           </div>
           {labels.length === 0 ? empty("Aucune étiquette à éditer.") : labels.map((o) => (
@@ -217,12 +221,12 @@ export function OpsShipmentsBoard({ orders, callAction }: { orders: ShipOrder[];
 
       {/* 4. Suivi par livreur */}
       <Card className="p-5">
-        <h3 className="font-semibold mb-3 flex items-center gap-2"><Truck className="w-4 h-4 text-accent" /> Suivi par livreur</h3>
+        <h3 className="font-semibold mb-3 flex items-center gap-2"><Truck className="w-4 h-4 text-accent" /> {tx("Suivi par livreur", "Driver tracking")}</h3>
         {inDelivery.length === 0 ? empty("Aucun colis en livraison.") : (
           <div className="space-y-5">
             {Object.entries(byDriver).map(([driver, list]) => (
               <div key={driver}>
-                <p className="text-sm font-medium flex items-center gap-2 mb-2"><User className="w-3.5 h-3.5" /> {driver} <Badge variant="outline">{list.length} colis</Badge></p>
+                <p className="text-sm font-medium flex items-center gap-2 mb-2"><User className="w-3.5 h-3.5" /> {driver} <Badge variant="outline">{list.length} {tx("colis", "parcels")}</Badge></p>
                 <div className="space-y-3">
                   {list.map((o) => {
                     const sh = s(o);
@@ -235,21 +239,21 @@ export function OpsShipmentsBoard({ orders, callAction }: { orders: ShipOrder[];
                           <Badge variant={o.logistics_status === "shipped" ? "default" : "secondary"}>{o.logistics_status === "shipped" ? "En route" : "Prêt"}</Badge>
                         </div>
                         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                          <div><Label className="text-xs">Livreur</Label><Input className="h-8" value={d.name} onChange={(e) => set("name", e.target.value)} /></div>
-                          <div><Label className="text-xs">Téléphone</Label><Input className="h-8" value={d.phone} onChange={(e) => set("phone", e.target.value)} /></div>
-                          <div><Label className="text-xs">Transporteur</Label><Input className="h-8" value={d.carrier} onChange={(e) => set("carrier", e.target.value)} placeholder="Nom du transporteur" /></div>
-                          <div><Label className="text-xs">N° de suivi</Label><Input className="h-8" value={d.trackingNumber} onChange={(e) => set("trackingNumber", e.target.value)} /></div>
-                          <div><Label className="text-xs">Position</Label><Input className="h-8" value={d.location} onChange={(e) => set("location", e.target.value)} placeholder="ex: Lyon hub" /></div>
-                          <div><Label className="text-xs">Livraison prévue</Label><Input className="h-8" type="date" value={d.eta} onChange={(e) => set("eta", e.target.value)} /></div>
+                          <div><Label className="text-xs">{tx("Livreur", "Driver")}</Label><Input className="h-8" value={d.name} onChange={(e) => set("name", e.target.value)} /></div>
+                          <div><Label className="text-xs">{tx("Téléphone", "Phone")}</Label><Input className="h-8" value={d.phone} onChange={(e) => set("phone", e.target.value)} /></div>
+                          <div><Label className="text-xs">{tx("Transporteur", "Carrier")}</Label><Input className="h-8" value={d.carrier} onChange={(e) => set("carrier", e.target.value)} placeholder={tx("Nom du transporteur", "Carrier name")} /></div>
+                          <div><Label className="text-xs">{tx("N° de suivi", "Tracking number")}</Label><Input className="h-8" value={d.trackingNumber} onChange={(e) => set("trackingNumber", e.target.value)} /></div>
+                          <div><Label className="text-xs">{tx("Position", "Location")}</Label><Input className="h-8" value={d.location} onChange={(e) => set("location", e.target.value)} placeholder="ex: Lyon hub" /></div>
+                          <div><Label className="text-xs">{tx("Livraison prévue", "Estimated delivery")}</Label><Input className="h-8" type="date" value={d.eta} onChange={(e) => set("eta", e.target.value)} /></div>
                         </div>
                         <div className="flex flex-wrap gap-2 mt-2">
-                          <Button size="sm" variant="outline" disabled={busy(o)} onClick={() => update(o, { driver_name: d.name, driver_phone: d.phone, carrier: d.carrier, tracking_number: d.trackingNumber, last_location: d.location, eta: d.eta, event_label: d.name ? `Confié au livreur ${d.name}` : "Informations de livraison mises à jour" }, "Livreur mis à jour")}>
+                          <Button size="sm" variant="outline" disabled={busy(o)} onClick={() => update(o, { driver_name: d.name, driver_phone: d.phone, carrier: d.carrier, tracking_number: d.trackingNumber, last_location: d.location, eta: d.eta, event_label: d.name ? `Confié au livreur ${d.name}` : "Informations de livraison mises à jour" }, tx("Livreur mis à jour", "Driver updated"))}>
                             <User className="w-3.5 h-3.5 mr-1.5" /> Enregistrer
                           </Button>
-                          <Button size="sm" variant="outline" disabled={busy(o)} onClick={() => update(o, { driver_name: d.name, driver_phone: d.phone, carrier: d.carrier, tracking_number: d.trackingNumber, last_location: d.location, eta: d.eta, status: "shipped", event_label: d.location ? `En cours de livraison — ${d.location}` : "En cours de livraison" }, "Colis en route")}>
+                          <Button size="sm" variant="outline" disabled={busy(o)} onClick={() => update(o, { driver_name: d.name, driver_phone: d.phone, carrier: d.carrier, tracking_number: d.trackingNumber, last_location: d.location, eta: d.eta, status: "shipped", event_label: d.location ? `En cours de livraison — ${d.location}` : "En cours de livraison" }, tx("Colis en route", "Parcel en route"))}>
                             <MapPin className="w-3.5 h-3.5 mr-1.5" /> En route
                           </Button>
-                          <Button size="sm" disabled={busy(o)} onClick={() => update(o, { status: "delivered", event_label: "Colis livré" }, "Livraison confirmée")}>
+                          <Button size="sm" disabled={busy(o)} onClick={() => update(o, { status: "delivered", event_label: "Colis livré" }, tx("Livraison confirmée", "Delivery confirmed"))}>
                             <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Livré
                           </Button>
                         </div>

@@ -14,6 +14,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { useSEO } from "@/hooks/useSEO";
 import { usePartnerPortal, type PortalEvent } from "@/hooks/usePartnerPortal";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { fetchLabelData, fetchLabelsData, printLabels } from "@/lib/shippingLabel";
 import { PlatformTour, PlatformTourLauncher } from "@/components/tour/PlatformTour";
 import { OpsShipmentsBoard } from "@/components/ops/OpsShipmentsBoard";
@@ -52,6 +53,9 @@ interface BasicOrder {
 }
 
 export default function OpsPortal() {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
   const { token = "" } = useParams<{ token: string }>();
   const { data, loading, error, callAction } = usePartnerPortal(token);
   const [busy, setBusy] = useState(false);
@@ -115,7 +119,7 @@ export default function OpsPortal() {
       <StandaloneLayout portal="Logistics" accent="accent">
         <section className="container mx-auto px-4 py-20 max-w-xl text-center">
           <Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
-          <p className="text-sm text-muted-foreground mt-3">Chargement du portail…</p>
+          <p className="text-sm text-muted-foreground mt-3">{tx("Chargement du portail…", "Loading portal…")}</p>
         </section>
       </StandaloneLayout>
     );
@@ -129,7 +133,7 @@ export default function OpsPortal() {
             <div className="flex items-start gap-3">
               <XCircle className="w-5 h-5 text-destructive mt-0.5" />
               <div>
-                <h2 className="font-semibold">Accès impossible</h2>
+                <h2 className="font-semibold">{tx("Accès impossible", "Access unavailable")}</h2>
                 <p className="text-sm text-muted-foreground mt-1">{error ?? "Dossier introuvable."}</p>
                 <Button asChild size="sm" variant="outline" className="mt-4">
                   <Link to="/ops/onboarding/resume?portal=ops">Récupérer l'accès à mon dossier</Link>
@@ -405,7 +409,7 @@ export default function OpsPortal() {
             <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
               {submission.company ?? submission.contact_email}
             </h1>
-            <PlatformTourLauncher label="Guide partenaire" availablePersonas={["ops", "supplier"]} />
+            <PlatformTourLauncher label={tx("Guide partenaire", "Partner guide")} availablePersonas={["ops", "supplier"]} />
           </div>
           <p className="text-sm text-muted-foreground mt-2">
             Dashboard stock, commandes des boutiques, livraisons, packaging, retours.
@@ -414,20 +418,20 @@ export default function OpsPortal() {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <StatCard icon={<Boxes className="w-4 h-4" />} label="Commandes à préparer" value={stockSummary.pending + stockSummary.preparing} />
-          <StatCard icon={<Truck className="w-4 h-4" />} label="En transit" value={stockSummary.inTransit} />
-          <StatCard icon={<Package2 className="w-4 h-4" />} label="Alertes packaging" value={packagingAlerts.filter(e => e.status === "open").length} />
-          <StatCard icon={<PackageX className="w-4 h-4" />} label="Retours en cours" value={stockSummary.returns} />
+          <StatCard icon={<Boxes className="w-4 h-4" />} label={tx("Commandes à préparer", "Orders to prepare")} value={stockSummary.pending + stockSummary.preparing} />
+          <StatCard icon={<Truck className="w-4 h-4" />} label={tx("En transit", "In transit")} value={stockSummary.inTransit} />
+          <StatCard icon={<Package2 className="w-4 h-4" />} label={tx("Alertes packaging", "Packaging alerts")} value={packagingAlerts.filter(e => e.status === "open").length} />
+          <StatCard icon={<PackageX className="w-4 h-4" />} label={tx("Retours en cours", "Returns in progress")} value={stockSummary.returns} />
         </div>
 
         <Tabs defaultValue="flow">
           <TabsList className="w-full justify-start overflow-x-auto">
-            <TabsTrigger value="flow">Flux d'expédition</TabsTrigger>
-            <TabsTrigger value="orders">Commandes</TabsTrigger>
-            <TabsTrigger value="operations">Opérations</TabsTrigger>
-            <TabsTrigger value="delivery">Mise à jour livraison</TabsTrigger>
+            <TabsTrigger value="flow">{tx("Flux expédition", "Shipping flow")}</TabsTrigger>
+            <TabsTrigger value="orders">{tx("Commandes", "Orders")}</TabsTrigger>
+            <TabsTrigger value="operations">{tx("Opérations", "Operations")}</TabsTrigger>
+            <TabsTrigger value="delivery">{tx("Mise à jour livraison", "Delivery update")}</TabsTrigger>
             <TabsTrigger value="packaging">Packaging</TabsTrigger>
-            <TabsTrigger value="returns">Retours</TabsTrigger>
+            <TabsTrigger value="returns">{tx("Retours", "Returns")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="flow" className="mt-4">
@@ -451,9 +455,9 @@ export default function OpsPortal() {
                 </div>
               </div>
               {ordersLoading ? (
-                <p className="text-sm text-muted-foreground">Chargement…</p>
+                <p className="text-sm text-muted-foreground">{tx("Chargement…", "Loading…")}</p>
               ) : orders.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Aucune commande en attente.</p>
+                <p className="text-sm text-muted-foreground">{tx("Aucune commande en attente.", "No pending orders.")}</p>
               ) : (
                 <div className="divide-y divide-border/50 text-sm">
                   {orders.map((o) => (
@@ -464,14 +468,14 @@ export default function OpsPortal() {
                       </div>
                       <Badge variant="outline">{o.logistics_status}</Badge>
                       <div className="flex items-center gap-1">
-                        <Button size="sm" variant="ghost" onClick={() => printShippingLabel(o)} title="Imprimer étiquette">
+                        <Button size="sm" variant="ghost" onClick={() => printShippingLabel(o)} title={tx("Imprimer étiquette", "Print label")}>
                           <Printer className="w-3.5 h-3.5" />
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => {
                           setDeliveryOrder(o.order_number);
                           const tab = document.querySelector<HTMLButtonElement>('[data-state][value="delivery"], [role="tab"][value="delivery"]');
                           tab?.click();
-                        }}>Statut</Button>
+                        }}>{tx("Statut", "Status")}</Button>
                       </div>
                     </div>
                   ))}
@@ -508,7 +512,7 @@ export default function OpsPortal() {
                     placeholder="BIB26-XXXXXX ou code-barres"
                     className="font-mono"
                   />
-                  <Button size="sm" onClick={() => handleScan()}>Scanner</Button>
+                  <Button size="sm" onClick={() => handleScan()}>{tx("Scanner", "Scan")}</Button>
                 </div>
                 {scanError && <p className="text-xs text-destructive mt-2">{scanError}</p>}
                 {scanResult && (
@@ -536,10 +540,10 @@ export default function OpsPortal() {
                   <Inbox className="w-4 h-4 text-accent" /> Réception marchandises
                 </h3>
                 <div className="grid sm:grid-cols-2 gap-2 mb-2">
-                  <div><Label>Référence / SKU *</Label><Input value={recvRef} onChange={(e) => setRecvRef(e.target.value)} placeholder="REF-MC-DEC-1250" /></div>
-                  <div><Label>Quantité</Label><Input type="number" value={recvQty} onChange={(e) => setRecvQty(e.target.value)} /></div>
+                  <div><Label>{tx("Référence / SKU *", "Reference / SKU *")}</Label><Input value={recvRef} onChange={(e) => setRecvRef(e.target.value)} placeholder="REF-MC-DEC-1250" /></div>
+                  <div><Label>{tx("Quantité", "Quantity")}</Label><Input type="number" value={recvQty} onChange={(e) => setRecvQty(e.target.value)} /></div>
                 </div>
-                <Label>Note</Label>
+                <Label>{tx("Note", "Note")}</Label>
                 <Textarea rows={2} value={recvNote} onChange={(e) => setRecvNote(e.target.value)} placeholder="État, écart, fournisseur…" />
                 <Button onClick={submitReception} disabled={busy} className="mt-3" size="sm">
                   {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Inbox className="w-4 h-4 mr-2" />}
@@ -596,7 +600,7 @@ export default function OpsPortal() {
                 <p className="text-xs text-muted-foreground mb-3">{returns.length} retour(s) en cours.</p>
                 <div className="grid sm:grid-cols-2 gap-2 mb-2">
                   <div>
-                    <Label>Type de carton</Label>
+                    <Label>{tx("Type de carton", "Carton type")}</Label>
                     <Select value={restockItem} onValueChange={setRestockItem}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -607,7 +611,7 @@ export default function OpsPortal() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div><Label>Quantité reçue *</Label><Input type="number" value={restockQty} onChange={(e) => setRestockQty(e.target.value)} /></div>
+                  <div><Label>{tx("Quantité reçue *", "Quantity received *")}</Label><Input type="number" value={restockQty} onChange={(e) => setRestockQty(e.target.value)} /></div>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
                   <Button size="sm" onClick={submitRestock} disabled={busy} variant="outline">
@@ -626,10 +630,10 @@ export default function OpsPortal() {
                   <AlertTriangle className="w-4 h-4 text-warning" /> Gestion incidents
                 </h3>
                 <div className="grid sm:grid-cols-2 gap-2 mb-2">
-                  <div><Label>Titre *</Label><Input value={incTitle} onChange={(e) => setIncTitle(e.target.value)} placeholder="ex: colis endommagé" /></div>
-                  <div><Label>N° commande</Label><Input value={incOrder} onChange={(e) => setIncOrder(e.target.value)} placeholder="BIB26-XXXXXX" className="font-mono" /></div>
+                  <div><Label>{tx("Titre *", "Title *")}</Label><Input value={incTitle} onChange={(e) => setIncTitle(e.target.value)} placeholder="ex: colis endommagé" /></div>
+                  <div><Label>{tx("N° commande", "Order number")}</Label><Input value={incOrder} onChange={(e) => setIncOrder(e.target.value)} placeholder="BIB26-XXXXXX" className="font-mono" /></div>
                 </div>
-                <Label>Détail</Label>
+                <Label>{tx("Détail", "Details")}</Label>
                 <Textarea rows={2} value={incDetail} onChange={(e) => setIncDetail(e.target.value)} placeholder="Description, zone, photos transmises séparément…" />
                 <Button onClick={submitIncident} disabled={busy} className="mt-3" size="sm" variant="outline">
                   {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Wrench className="w-4 h-4 mr-2" />}
@@ -655,9 +659,9 @@ export default function OpsPortal() {
                 Le client final ET la boutique seront notifiés sur leur compte respectif.
               </p>
               <div className="grid sm:grid-cols-2 gap-3">
-                <div><Label>N° de commande *</Label><Input value={deliveryOrder} onChange={(e) => setDeliveryOrder(e.target.value)} placeholder="BIB26-XXXXXX" className="font-mono" /></div>
+                <div><Label>{tx("N° de commande *", "Order number *")}</Label><Input value={deliveryOrder} onChange={(e) => setDeliveryOrder(e.target.value)} placeholder="BIB26-XXXXXX" className="font-mono" /></div>
                 <div>
-                  <Label>Nouveau statut</Label>
+                  <Label>{tx("Nouveau statut", "New status")}</Label>
                   <Select value={deliveryStatus} onValueChange={setDeliveryStatus}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -667,7 +671,7 @@ export default function OpsPortal() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="sm:col-span-2"><Label>Note interne (optionnel)</Label><Textarea rows={2} value={deliveryNote} onChange={(e) => setDeliveryNote(e.target.value)} /></div>
+                <div className="sm:col-span-2"><Label>{tx("Note interne (optionnel)", "Internal note (optional)")}</Label><Textarea rows={2} value={deliveryNote} onChange={(e) => setDeliveryNote(e.target.value)} /></div>
               </div>
               <Button onClick={submitDeliveryUpdate} disabled={busy} className="mt-4">
                 {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
@@ -676,7 +680,7 @@ export default function OpsPortal() {
             </Card>
 
             <Card className="p-5">
-              <h3 className="font-semibold mb-3">Historique des mises à jour</h3>
+              <h3 className="font-semibold mb-3">{tx("Historique des mises à jour", "Update history")}</h3>
               <EventList events={deliveryUpdates} emptyLabel="Aucune mise à jour récente." />
             </Card>
           </TabsContent>
@@ -688,8 +692,8 @@ export default function OpsPortal() {
                 <Package2 className="w-4 h-4 text-accent" /> Signaler le stock packaging
               </h3>
               <div className="grid sm:grid-cols-2 gap-3">
-                <div><Label>Article</Label><Input value={pkgItem} onChange={(e) => setPkgItem(e.target.value)} /></div>
-                <div><Label>Stock restant (unités)</Label><Input type="number" value={pkgStock} onChange={(e) => setPkgStock(e.target.value)} /></div>
+                <div><Label>{tx("Article", "Item")}</Label><Input value={pkgItem} onChange={(e) => setPkgItem(e.target.value)} /></div>
+                <div><Label>{tx("Stock restant (unités)", "Remaining stock (units)")}</Label><Input type="number" value={pkgStock} onChange={(e) => setPkgStock(e.target.value)} /></div>
               </div>
               <Button onClick={submitPackagingAlert} disabled={busy} className="mt-4">
                 {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
@@ -698,7 +702,7 @@ export default function OpsPortal() {
             </Card>
 
             <Card className="p-5">
-              <h3 className="font-semibold mb-3">Alertes packaging</h3>
+              <h3 className="font-semibold mb-3">{tx("Alertes packaging", "Packaging alerts")}</h3>
               <EventList events={packagingAlerts} emptyLabel="Aucune alerte." />
             </Card>
           </TabsContent>
@@ -711,7 +715,7 @@ export default function OpsPortal() {
               </h3>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div><Label>N° commande *</Label><Input value={returnOrder} onChange={(e) => setReturnOrder(e.target.value)} placeholder="BIB26-XXXXXX" className="font-mono" /></div>
-                <div><Label>Motif *</Label><Input value={returnReason} onChange={(e) => setReturnReason(e.target.value)} placeholder="ex: produit endommagé" /></div>
+                <div><Label>{tx("Motif *", "Reason *")}</Label><Input value={returnReason} onChange={(e) => setReturnReason(e.target.value)} placeholder="ex: produit endommagé" /></div>
               </div>
               <Button onClick={submitReturn} disabled={busy} className="mt-4">
                 {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
@@ -720,7 +724,7 @@ export default function OpsPortal() {
             </Card>
 
             <Card className="p-5">
-              <h3 className="font-semibold mb-3">Retours en cours</h3>
+              <h3 className="font-semibold mb-3">{tx("Retours en cours", "Returns in progress")}</h3>
               <EventList events={returns} emptyLabel="Aucun retour enregistré." />
             </Card>
           </TabsContent>

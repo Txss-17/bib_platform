@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPortal, type PortalEvent } from "@/hooks/usePartnerPortal";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { PlatformTour, PlatformTourLauncher } from "@/components/tour/PlatformTour";
 import {
   AlertTriangle,
@@ -46,6 +47,9 @@ const STATUS_VARIANT: Record<PortalEvent["status"], "secondary" | "outline" | "d
 };
 
 export default function SuppliersPortal() {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
   const { token = "" } = useParams<{ token: string }>();
   const { data, loading, error, callAction } = usePartnerPortal(token);
   const [busy, setBusy] = useState(false);
@@ -76,7 +80,7 @@ export default function SuppliersPortal() {
       <StandaloneLayout portal="Suppliers" accent="primary">
         <section className="container mx-auto px-4 py-20 max-w-xl text-center">
           <Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
-          <p className="text-sm text-muted-foreground mt-3">Chargement du portail…</p>
+          <p className="text-sm text-muted-foreground mt-3">{tx("Chargement du portail…", "Loading portal…")}</p>
         </section>
       </StandaloneLayout>
     );
@@ -90,7 +94,7 @@ export default function SuppliersPortal() {
             <div className="flex items-start gap-3">
               <XCircle className="w-5 h-5 text-destructive mt-0.5" />
               <div>
-                <h2 className="font-semibold">Accès impossible</h2>
+                <h2 className="font-semibold">{tx("Accès impossible", "Access unavailable")}</h2>
                 <p className="text-sm text-muted-foreground mt-1">{error ?? "Dossier introuvable."}</p>
                 <Button asChild size="sm" variant="outline" className="mt-4">
                   <Link to="/suppliers/onboarding/resume?portal=suppliers">
@@ -207,33 +211,33 @@ export default function SuppliersPortal() {
               <ArrowLeft className="w-4 h-4 mr-1.5" /> Suivi onboarding
             </Link>
           </Button>
-          <Badge variant="secondary" className="mb-2">Portail opérationnel · Suppliers</Badge>
+          <Badge variant="secondary" className="mb-2">{tx("Portail opérationnel · Suppliers", "Operations portal · Suppliers")}</Badge>
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
               {submission.company ?? submission.contact_email}
             </h1>
-            <PlatformTourLauncher label="Guide partenaire" availablePersonas={["ops", "supplier"]} />
+            <PlatformTourLauncher label={tx("Guide partenaire", "Partner guide")} availablePersonas={["ops", "supplier"]} />
           </div>
           <p className="text-sm text-muted-foreground mt-2">
-            Catalogue, demandes MOQ, documents, signalements.
+            {tx("Catalogue, demandes MOQ, documents, signalements.", "Catalog, MOQ requests, documents and reports.")}
           </p>
           <PlatformTour autoOpen availablePersonas={["ops", "supplier"]} />
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <StatCard icon={<Package className="w-4 h-4" />} label="Produits en validation" value={catalogDrafts.filter(e => e.status === "open").length} />
-          <StatCard icon={<Truck className="w-4 h-4" />} label="MOQ à livrer" value={moqRequests.filter(e => e.status !== "resolved").length} />
-          <StatCard icon={<TriangleAlert className="w-4 h-4" />} label="Signalements ouverts" value={issues.filter(e => e.status === "open").length} />
+          <StatCard icon={<Package className="w-4 h-4" />} label={tx("Produits en validation", "Products under review")} value={catalogDrafts.filter(e => e.status === "open").length} />
+          <StatCard icon={<Truck className="w-4 h-4" />} label={tx("MOQ à livrer", "MOQ to deliver")} value={moqRequests.filter(e => e.status !== "resolved").length} />
+          <StatCard icon={<TriangleAlert className="w-4 h-4" />} label={tx("Signalements ouverts", "Open reports")} value={issues.filter(e => e.status === "open").length} />
           <StatCard icon={<FileUp className="w-4 h-4" />} label="Documents" value={documents.length} />
         </div>
 
         <Tabs defaultValue="catalog">
           <TabsList className="w-full justify-start overflow-x-auto">
-            <TabsTrigger value="catalog">Catalogue</TabsTrigger>
-            <TabsTrigger value="moq">Demandes MOQ</TabsTrigger>
-            <TabsTrigger value="operations">Opérations</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
-            <TabsTrigger value="signal">Signaler</TabsTrigger>
+            <TabsTrigger value="catalog">{tx("Catalogue", "Catalog")}</TabsTrigger>
+            <TabsTrigger value="moq">{tx("Demandes MOQ", "MOQ requests")}</TabsTrigger>
+            <TabsTrigger value="operations">{tx("Opérations", "Operations")}</TabsTrigger>
+            <TabsTrigger value="documents">{tx("Documents", "Documents")}</TabsTrigger>
+            <TabsTrigger value="signal">{tx("Signaler", "Report an issue")}</TabsTrigger>
           </TabsList>
 
           {/* CATALOG */}
@@ -243,11 +247,11 @@ export default function SuppliersPortal() {
                 <PackagePlus className="w-4 h-4 text-primary" /> Déposer un produit
               </h3>
               <div className="grid sm:grid-cols-2 gap-3">
-                <div><Label>Nom du produit *</Label><Input value={catName} onChange={(e) => setCatName(e.target.value)} /></div>
-                <div><Label>Catégorie</Label><Input value={catCategory} onChange={(e) => setCatCategory(e.target.value)} placeholder="ex: textile, beauté" /></div>
-                <div><Label>Prix de base (€) *</Label><Input type="number" step="0.01" value={catPrice} onChange={(e) => setCatPrice(e.target.value)} /></div>
-                <div><Label>MOQ minimum</Label><Input type="number" value={catMoq} onChange={(e) => setCatMoq(e.target.value)} /></div>
-                <div className="sm:col-span-2"><Label>Description / spécifications</Label><Textarea rows={3} value={catDesc} onChange={(e) => setCatDesc(e.target.value)} /></div>
+                <div><Label>{tx("Nom du produit *", "Product name *")}</Label><Input value={catName} onChange={(e) => setCatName(e.target.value)} /></div>
+                <div><Label>{tx("Catégorie", "Category")}</Label><Input value={catCategory} onChange={(e) => setCatCategory(e.target.value)} placeholder={tx("ex: textile, beauté", "e.g. textiles, beauty")} /></div>
+                <div><Label>{tx("Prix de base (€) *", "Base price (€) *")}</Label><Input type="number" step="0.01" value={catPrice} onChange={(e) => setCatPrice(e.target.value)} /></div>
+                <div><Label>{tx("MOQ minimum", "Minimum MOQ")}</Label><Input type="number" value={catMoq} onChange={(e) => setCatMoq(e.target.value)} /></div>
+                <div className="sm:col-span-2"><Label>{tx("Description / spécifications", "Description / specifications")}</Label><Textarea rows={3} value={catDesc} onChange={(e) => setCatDesc(e.target.value)} /></div>
               </div>
               <Button onClick={submitCatalog} disabled={busy} className="mt-4">
                 {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
@@ -256,7 +260,7 @@ export default function SuppliersPortal() {
             </Card>
 
             <Card className="p-5">
-              <h3 className="font-semibold mb-3">Statut de mes produits</h3>
+              <h3 className="font-semibold mb-3">{tx("Statut de mes produits", "My product status")}</h3>
               <EventList events={catalogDrafts} emptyLabel="Aucun produit déposé pour le moment." />
             </Card>
           </TabsContent>
@@ -438,11 +442,11 @@ export default function SuppliersPortal() {
               </h3>
               <div className="grid sm:grid-cols-2 gap-3 items-end">
                 <div>
-                  <Label>Catégorie</Label>
+                  <Label>{tx("Catégorie", "Category")}</Label>
                   <Input value={docCategory} onChange={(e) => setDocCategory(e.target.value)} placeholder="ex: ISO 9001, fiche technique" />
                 </div>
                 <div>
-                  <Label>Fichier</Label>
+                  <Label>{tx("Fichier", "File")}</Label>
                   <Input
                     type="file"
                     disabled={busy}
@@ -457,9 +461,9 @@ export default function SuppliersPortal() {
             </Card>
 
             <Card className="p-5">
-              <h3 className="font-semibold mb-3">Documents transmis</h3>
+              <h3 className="font-semibold mb-3">{tx("Documents transmis", "Submitted documents")}</h3>
               {documents.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Aucun document complémentaire.</p>
+                <p className="text-sm text-muted-foreground">{tx("Aucun document complémentaire.", "No additional documents.")}</p>
               ) : (
                 <ul className="space-y-2 text-sm">
                   {documents.map((d) => (
@@ -486,8 +490,8 @@ export default function SuppliersPortal() {
                 <AlertTriangle className="w-4 h-4 text-warning" /> Signaler un problème
               </h3>
               <div className="space-y-3">
-                <div><Label>Titre *</Label><Input value={issueTitle} onChange={(e) => setIssueTitle(e.target.value)} placeholder="ex: Rupture de stock imminente" /></div>
-                <div><Label>Description *</Label><Textarea rows={4} value={issueDesc} onChange={(e) => setIssueDesc(e.target.value)} /></div>
+                <div><Label>{tx("Titre *", "Title *")}</Label><Input value={issueTitle} onChange={(e) => setIssueTitle(e.target.value)} placeholder="ex: Rupture de stock imminente" /></div>
+                <div><Label>{tx("Description *", "Description *")}</Label><Textarea rows={4} value={issueDesc} onChange={(e) => setIssueDesc(e.target.value)} /></div>
                 <Button onClick={submitIssue} disabled={busy}>
                   {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                   Envoyer le signalement
@@ -496,7 +500,7 @@ export default function SuppliersPortal() {
             </Card>
 
             <Card className="p-5">
-              <h3 className="font-semibold mb-3">Mes signalements</h3>
+              <h3 className="font-semibold mb-3">{tx("Mes signalements", "My reports")}</h3>
               <EventList events={issues} emptyLabel="Aucun signalement." />
             </Card>
           </TabsContent>
@@ -526,6 +530,9 @@ function EventList({
   allowStatusUpdate?: boolean;
   onStatusChange?: (id: string, status: "in_progress" | "resolved" | "rejected") => void;
 }) {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
   if (events.length === 0) return <p className="text-sm text-muted-foreground">{emptyLabel}</p>;
   return (
     <ul className="space-y-3">
@@ -534,17 +541,17 @@ function EventList({
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="font-medium text-sm">{e.title}</p>
-              <p className="text-[11px] text-muted-foreground">{new Date(e.created_at).toLocaleString("fr-FR")}</p>
+              <p className="text-[11px] text-muted-foreground">{new Date(e.created_at).toLocaleString(english ? "en-GB" : "fr-FR")}</p>
             </div>
-            <Badge variant={STATUS_VARIANT[e.status]}>{STATUS_LABEL[e.status]}</Badge>
+            <Badge variant={STATUS_VARIANT[e.status]}>{english ? ({ open: "Open", in_progress: "In progress", resolved: "Resolved", rejected: "Rejected" }[e.status]) : STATUS_LABEL[e.status]}</Badge>
           </div>
           {allowStatusUpdate && e.status !== "resolved" && (
             <div className="flex gap-2 mt-2">
               <Button size="sm" variant="outline" onClick={() => onStatusChange?.(e.id, "in_progress")}>
-                Préparation
+                {tx("Préparation", "In progress")}
               </Button>
               <Button size="sm" onClick={() => onStatusChange?.(e.id, "resolved")}>
-                Marquer expédié
+                {tx("Marquer expédié", "Mark as shipped")}
               </Button>
             </div>
           )}
@@ -570,6 +577,9 @@ function ProductionConfirmForm({
   busy: boolean;
   onSubmit: (payload: Record<string, unknown>, title: string) => Promise<void>;
 }) {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
   const [product, setProduct] = useState("");
   const [quantity, setQuantity] = useState("");
   const [batch, setBatch] = useState("");
@@ -590,14 +600,14 @@ function ProductionConfirmForm({
 
   return (
     <div className="grid sm:grid-cols-2 gap-3">
-      <div><Label>Produit *</Label><Input value={product} onChange={(e) => setProduct(e.target.value)} /></div>
-      <div><Label>Quantité produite *</Label><Input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} /></div>
-      <div><Label>N° de lot</Label><Input value={batch} onChange={(e) => setBatch(e.target.value)} placeholder="optionnel" /></div>
-      <div><Label>Note logistique</Label><Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="optionnel" /></div>
+      <div><Label>{tx("Produit *", "Product *")}</Label><Input value={product} onChange={(e) => setProduct(e.target.value)} /></div>
+      <div><Label>{tx("Quantité produite *", "Quantity produced *")}</Label><Input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} /></div>
+      <div><Label>{tx("N° de lot", "Batch number")}</Label><Input value={batch} onChange={(e) => setBatch(e.target.value)} placeholder={tx("optionnel", "optional")} /></div>
+      <div><Label>{tx("Note logistique", "Logistics note")}</Label><Input value={note} onChange={(e) => setNote(e.target.value)} placeholder={tx("optionnel", "optional")} /></div>
       <div className="sm:col-span-2">
         <Button onClick={submit} disabled={busy}>
           {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-          Confirmer la production
+          {tx("Confirmer la production", "Confirm production")}
         </Button>
       </div>
     </div>
