@@ -230,6 +230,15 @@ const Footer = () => {
 
                 <li>
                   <Link
+                    to="/cgv"
+                    className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
+                  >
+                    CGV
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
                     to="/cgu"
                     className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
                   >

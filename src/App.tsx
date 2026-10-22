@@ -157,6 +157,11 @@ const CGU = lazy(() =>
     default: module.CGU,
   })),
 );
+const CGV = lazy(() =>
+  import("@/pages/LegalPages").then((module) => ({
+    default: module.CGV,
+  })),
+);
 const Confidentialite = lazy(() =>
   import("@/pages/LegalPages").then((module) => ({
     default: module.Confidentialite,
@@ -1040,6 +1045,11 @@ export default function App() {
                   <Route
                     path="/cgu"
                     element={<CGU />}
+                  />
+
+                  <Route
+                    path="/cgv"
+                    element={<CGV />}
                   />
 
                   <Route
