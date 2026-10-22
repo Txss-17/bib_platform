@@ -5,15 +5,25 @@ import { ReactNode } from "react";
 
 function LegalShell({ title, eyebrow, updated, children }: { title: string; eyebrow: string; updated: string; children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-bib-ivory">
+    <div className="legal-page min-h-screen bg-bib-ivory">
       <Header />
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 max-w-3xl">
-        <span className="inline-block px-3 py-1 rounded-full bg-bib-marine/5 text-bib-marine text-[11px] font-semibold uppercase tracking-[0.18em] mb-5">
-          {eyebrow}
-        </span>
-        <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-bib-marine leading-tight">{title}</h1>
-        <p className="mt-3 text-sm text-muted-foreground">Dernière mise à jour : {updated}</p>
-        <article className="mt-10 prose prose-slate max-w-none prose-headings:font-display prose-headings:text-bib-marine prose-a:text-bib-gold prose-strong:text-bib-marine">
+      <main className="container mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+        <header className="legal-page-header relative overflow-hidden rounded-3xl border border-bib-marine/10 bg-white px-6 py-8 shadow-sm sm:px-10 sm:py-10 lg:px-12">
+          <div className="legal-header-accent" aria-hidden="true" />
+          <div className="relative">
+            <span className="inline-flex items-center rounded-full border border-bib-gold/30 bg-bib-gold/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-bib-marine">
+              {eyebrow}
+            </span>
+            <h1 className="mt-5 max-w-4xl font-display text-3xl font-bold leading-tight text-bib-marine sm:text-4xl lg:text-5xl">
+              {title}
+            </h1>
+            <p className="mt-5 inline-flex items-center gap-2 rounded-lg bg-bib-ivory px-3 py-2 text-xs font-medium text-muted-foreground sm:text-sm">
+              <span className="h-1.5 w-1.5 rounded-full bg-bib-gold" aria-hidden="true" />
+              Dernière mise à jour : {updated}
+            </p>
+          </div>
+        </header>
+        <article className="legal-content prose prose-slate mt-6 max-w-none rounded-3xl border border-bib-marine/10 bg-white px-6 py-8 shadow-sm sm:px-10 sm:py-10 lg:px-12 lg:py-12 prose-headings:font-display prose-headings:text-bib-marine prose-a:text-bib-gold prose-strong:text-bib-marine">
           {children}
         </article>
       </main>
