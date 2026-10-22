@@ -220,7 +220,7 @@ export function OpsShipmentsBoard({ orders, callAction }: { orders: ShipOrder[];
                 <div className="space-y-3">
                   {list.map((o) => {
                     const sh = s(o);
-                    const d = driverDraft[o.id] ?? { name: sh?.driver_name ?? "", phone: sh?.driver_phone ?? "", location: sh?.last_location ?? "", eta: sh?.eta ?? "" };
+                    const d = driverDraft[o.id] ?? { name: sh?.driver_name ?? "", phone: sh?.driver_phone ?? "", carrier: sh?.carrier ?? "", trackingNumber: sh?.tracking_number ?? "", location: sh?.last_location ?? "", eta: sh?.eta ?? "" };
                     const set = (k: keyof typeof d, v: string) => setDriverDraft((p) => ({ ...p, [o.id]: { ...d, [k]: v } }));
                     return (
                       <div key={o.id} className="rounded-md border border-border/60 p-3">
@@ -228,17 +228,19 @@ export function OpsShipmentsBoard({ orders, callAction }: { orders: ShipOrder[];
                           <p className="font-mono text-xs">{o.order_number} · <span className="text-muted-foreground">{o.customer_name}</span></p>
                           <Badge variant={o.logistics_status === "shipped" ? "default" : "secondary"}>{o.logistics_status === "shipped" ? "En route" : "Prêt"}</Badge>
                         </div>
-                        <div className="grid sm:grid-cols-4 gap-2">
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
                           <div><Label className="text-xs">Livreur</Label><Input className="h-8" value={d.name} onChange={(e) => set("name", e.target.value)} /></div>
                           <div><Label className="text-xs">Téléphone</Label><Input className="h-8" value={d.phone} onChange={(e) => set("phone", e.target.value)} /></div>
+                          <div><Label className="text-xs">Transporteur</Label><Input className="h-8" value={d.carrier} onChange={(e) => set("carrier", e.target.value)} placeholder="Nom du transporteur" /></div>
+                          <div><Label className="text-xs">N° de suivi</Label><Input className="h-8" value={d.trackingNumber} onChange={(e) => set("trackingNumber", e.target.value)} /></div>
                           <div><Label className="text-xs">Position</Label><Input className="h-8" value={d.location} onChange={(e) => set("location", e.target.value)} placeholder="ex: Lyon hub" /></div>
                           <div><Label className="text-xs">Livraison prévue</Label><Input className="h-8" type="date" value={d.eta} onChange={(e) => set("eta", e.target.value)} /></div>
                         </div>
                         <div className="flex flex-wrap gap-2 mt-2">
-                          <Button size="sm" variant="outline" disabled={busy(o)} onClick={() => update(o, { driver_name: d.name, driver_phone: d.phone, last_location: d.location, eta: d.eta, event_label: d.name ? `Confié au livreur ${d.name}` : "Informations de livraison mises à jour" }, "Livreur mis à jour")}>
+                          <Button size="sm" variant="outline" disabled={busy(o)} onClick={() => update(o, { driver_name: d.name, driver_phone: d.phone, carrier: d.carrier, tracking_number: d.trackingNumber, last_location: d.location, eta: d.eta, event_label: d.name ? `Confié au livreur ${d.name}` : "Informations de livraison mises à jour" }, "Livreur mis à jour")}>
                             <User className="w-3.5 h-3.5 mr-1.5" /> Enregistrer
                           </Button>
-                          <Button size="sm" variant="outline" disabled={busy(o)} onClick={() => update(o, { driver_name: d.name, last_location: d.location, eta: d.eta, status: "shipped", event_label: d.location ? `En cours de livraison — ${d.location}` : "En cours de livraison" }, "Colis en route")}>
+                          <Button size="sm" variant="outline" disabled={busy(o)} onClick={() => update(o, { driver_name: d.name, driver_phone: d.phone, carrier: d.carrier, tracking_number: d.trackingNumber, last_location: d.location, eta: d.eta, status: "shipped", event_label: d.location ? `En cours de livraison — ${d.location}` : "En cours de livraison" }, "Colis en route")}>
                             <MapPin className="w-3.5 h-3.5 mr-1.5" /> En route
                           </Button>
                           <Button size="sm" disabled={busy(o)} onClick={() => update(o, { status: "delivered", event_label: "Colis livré" }, "Livraison confirmée")}>

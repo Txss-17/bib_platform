@@ -23,7 +23,7 @@ export function ShipmentTimeline({ orderNumber, email }: { orderNumber: string; 
   }, [orderNumber, email]);
 
   if (!info) return null;
-  const hasDetails = info.driver_name || info.eta || info.last_location;
+  const hasDetails = info.driver_name || info.carrier || info.tracking_number || info.eta || info.last_location;
 
   return (
     <div className="space-y-4 rounded-xl border border-border bg-card p-6 shadow-sm">
@@ -31,7 +31,9 @@ export function ShipmentTimeline({ orderNumber, email }: { orderNumber: string; 
         <Truck className="h-4 w-4 text-accent" /> Suivi de livraison
       </h3>
       {hasDetails && (
-        <div className="grid gap-2 text-sm sm:grid-cols-3">
+        <div className="grid gap-2 text-sm sm:grid-cols-2">
+          {info.carrier && <p><span className="text-muted-foreground">Transporteur : </span>{info.carrier}</p>}
+          {info.tracking_number && <p><span className="text-muted-foreground">N° de suivi : </span>{info.tracking_number}</p>}
           {info.driver_name && <p><span className="text-muted-foreground">Livreur : </span>{info.driver_name}</p>}
           {info.last_location && <p className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5 text-muted-foreground" />{info.last_location}</p>}
           {info.eta && <p className="flex items-center gap-1"><CalendarClock className="h-3.5 w-3.5 text-muted-foreground" />Prévue le {new Date(info.eta).toLocaleDateString("fr-FR")}</p>}
