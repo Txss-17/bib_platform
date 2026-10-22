@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
 import {
   PartnerQualificationForm,
@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSEO } from "@/hooks/useSEO";
 import { ArrowLeft } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { localizePartnerQualificationCopy } from "@/components/standalone/PartnerQualificationForm";
 
 const fields: QualSelectField[] = [
   {
@@ -180,6 +182,9 @@ const blockers: QualBlocker[] = [
 ];
 
 export default function SuppliersApply() {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
   useSEO({
     title: "Candidature fournisseur — BIB",
     description:
@@ -196,7 +201,7 @@ export default function SuppliersApply() {
         <Button asChild variant="ghost" size="sm" className="mb-4 -ml-2">
           <Link to="/suppliers">
             <ArrowLeft className="mr-1.5 h-4 w-4" />
-            Présentation fournisseurs
+            {tx("Présentation fournisseurs", "Supplier overview")}
           </Link>
         </Button>
 
@@ -205,11 +210,11 @@ export default function SuppliersApply() {
         {/* ------------------------------------------------------------------ */}
 
         <Badge variant="secondary" className="mb-3">
-          Candidature fournisseur · Qualification
+          {tx("Candidature fournisseur · Qualification", "Supplier application · Qualification")}
         </Badge>
 
         <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-          Rejoindre le réseau fournisseurs BIB
+          {tx("Rejoindre le réseau fournisseurs BIB", "Join the BIB supplier network")}
         </h1>
 
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
@@ -235,7 +240,7 @@ export default function SuppliersApply() {
             </div>
 
             <div>
-              <p className="font-medium">Qualification initiale</p>
+              <p className="font-medium">{tx("Qualification initiale", "Initial qualification")}</p>
 
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 BIB étudie les informations transmises et peut demander des
@@ -257,7 +262,7 @@ export default function SuppliersApply() {
 
             <div>
               <p className="font-medium">
-                Vérification et référencement
+                {tx("Vérification et référencement", "Verification and listing")}
               </p>
 
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
@@ -280,7 +285,7 @@ export default function SuppliersApply() {
 
             <div>
               <p className="font-medium">
-                Intégration opérationnelle
+                {tx("Intégration opérationnelle", "Operational onboarding")}
               </p>
 
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
@@ -311,14 +316,14 @@ export default function SuppliersApply() {
         <section className="mt-12" aria-labelledby="qualification-title">
           <div className="mb-5">
             <Badge variant="outline" className="mb-2">
-              Avant de candidater
+              {tx("Avant de candidater", "Before applying")}
             </Badge>
 
             <h2
               id="qualification-title"
               className="font-display text-2xl font-semibold tracking-tight"
             >
-              Conditions de qualification
+              {tx("Conditions de qualification", "Qualification requirements")}
             </h2>
 
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
@@ -342,11 +347,11 @@ export default function SuppliersApply() {
 
                   <div>
                     <h3 className="font-medium">
-                      {blocker.title}
+                      {localizePartnerQualificationCopy(blocker.title, english)}
                     </h3>
 
                     <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                      {blocker.text}
+                      {localizePartnerQualificationCopy(blocker.text, english)}
                     </p>
                   </div>
                 </div>
@@ -361,7 +366,7 @@ export default function SuppliersApply() {
 
         <section className="mt-10 rounded-xl border bg-muted/20 p-5 sm:p-6">
           <h2 className="font-display text-lg font-semibold">
-            Comment BIB utilise ces informations
+            {tx("Comment BIB utilise ces informations", "How BIB uses this information")}
           </h2>
 
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">

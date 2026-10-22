@@ -1,10 +1,11 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
 import { PartnerQualificationForm, QualBlocker, QualSelectField } from "@/components/standalone/PartnerQualificationForm";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSEO } from "@/hooks/useSEO";
 import { ArrowLeft } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const fields: QualSelectField[] = [
   {
@@ -120,6 +121,9 @@ const blockers: QualBlocker[] = [
 ];
 
 export default function OpsApply() {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
   useSEO({
     title: "Candidature Partenaire Logistique — Brand-In-A-Box",
     description:
@@ -131,21 +135,21 @@ export default function OpsApply() {
       portal="Ops"
       accent="accent"
       menuItems={[
-        { label: "Présentation", href: "/ops", icon: "truck" },
-        { label: "Critères bloquants", href: "#blockers", icon: "shield" },
+        { label: tx("Présentation", "Overview"), href: "/ops", icon: "truck" },
+        { label: tx("Critères bloquants", "Mandatory criteria"), href: "#blockers", icon: "shield" },
       ]}
     >
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14 max-w-3xl">
         <Button asChild variant="ghost" size="sm" className="mb-4 -ml-2">
-          <Link to="/ops"><ArrowLeft className="w-4 h-4 mr-1.5" /> Présentation</Link>
+          <Link to="/ops"><ArrowLeft className="w-4 h-4 mr-1.5" /> {tx("Présentation", "Overview")}</Link>
         </Button>
-        <Badge variant="secondary" className="mb-3">Candidature · Étape 1 / 2</Badge>
+        <Badge variant="secondary" className="mb-3">{tx("Candidature · Étape 1 / 2", "Application · Step 1 / 2")}</Badge>
         <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
-          Candidature Partenaire Logistique
+          {tx("Candidature Partenaire Logistique", "Logistics Partner Application")}
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground mt-3 mb-8 max-w-2xl">
-          Processus en 2 étapes. L'étape 1 évalue votre couverture, vos délais et votre fiabilité en moins de 6 minutes.
-          L'étape 2 est débloquée sur présélection uniquement.
+          {tx("Processus en 2 étapes. L'étape 1 évalue votre couverture, vos délais et votre fiabilité en moins de 6 minutes.", "Two-step process. Step 1 assesses your coverage, delivery times and reliability in under 6 minutes.")}
+          {tx("L'étape 2 est débloquée sur présélection uniquement.", "Step 2 is available to preselected applicants only.")}
         </p>
         <PartnerQualificationForm
           portal="ops"
