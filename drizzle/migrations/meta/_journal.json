@@ -71,6 +71,13 @@
       "when": 1792665600000,
       "tag": "0009_order_shipping_addresses",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792666500000,
+      "tag": "0010_secure_boutique_publication",
+      "breakpoints": true
     }
   ]
 }
