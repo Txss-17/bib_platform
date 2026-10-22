@@ -1,10 +1,13 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Check, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import founderImg from "@/assets/landing-founder0.jpg";
 
 const HeroSection = () => {
+  const { lang } = useLanguage();
+  const text = (fr: string, en: string) => lang === "fr" ? fr : en;
   return (
     <section className="relative overflow-hidden bg-bib-ivory pt-24 sm:pt-28 lg:pt-[7.5rem]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -13,23 +16,21 @@ const HeroSection = () => {
           <div className="relative z-10 max-w-xl">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-bib-marine/10 bg-white/70 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-bib-marine backdrop-blur-sm">
               <ShieldCheck className="h-3.5 w-3.5 text-bib-gold" />
-              Réseau vérifié BIB
+              {text("Réseau vérifié BIB", "Verified BIB network")}
             </div>
 
             <h1 className="font-display text-[3.5rem] font-bold leading-[0.94] tracking-[-0.045em] text-bib-marine sm:text-6xl lg:text-[5.25rem]">
-              Votre marque.
+              {text("Votre marque.", "Your brand.")}
               <br />
               <span className="text-bib-gold">
-                Prête à prendre
+                {text("Prête à prendre", "Ready to claim")}
               </span>
               <br />
-              sa place.
+              {text("sa place.", "its place.")}
             </h1>
 
             <p className="mt-7 max-w-lg text-base leading-7 text-bib-marine/65 sm:text-lg sm:leading-8">
-              BIB réunit boutique, produits sélectionnés et réseau vérifié
-              pour permettre aux marques de se développer dans un
-              environnement structuré.
+              {text("BIB réunit boutique, produits sélectionnés et réseau vérifié pour permettre aux marques de se développer dans un environnement structuré.", "BIB brings together a storefront, selected products, and a verified network to help brands grow in a structured environment.")}
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -40,7 +41,7 @@ const HeroSection = () => {
                 className="group h-12 rounded-full px-6 shadow-sm"
               >
                 <Link to="/signup">
-                  Créer ma boutique
+                  {text("Créer ma boutique", "Create my store")}
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                 </Link>
               </Button>
@@ -52,15 +53,15 @@ const HeroSection = () => {
                 className="h-12 rounded-full border-bib-marine/15 bg-white/60 px-6 text-bib-marine hover:bg-bib-marine hover:text-white"
               >
                 <Link to="/store">
-                  Découvrir les boutiques
+                  {text("Découvrir les boutiques", "Explore stores")}
                 </Link>
               </Button>
             </div>
 
             <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3">
-              <TrustPoint text="Réseau vérifié" />
-              <TrustPoint text="Produits sélectionnés" />
-              <TrustPoint text="Infrastructure intégrée" />
+              <TrustPoint text={text("Réseau vérifié", "Verified network")} />
+              <TrustPoint text={text("Produits sélectionnés", "Selected products")} />
+              <TrustPoint text={text("Infrastructure intégrée", "Integrated infrastructure")} />
             </div>
           </div>
 
@@ -75,7 +76,7 @@ const HeroSection = () => {
               <div className="aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5]">
                 <img
                   src={founderImg}
-                  alt="Fondatrice présentant sa marque"
+                  alt={text("Fondatrice présentant sa marque", "Founder presenting her brand")}
                   className="h-full w-full object-cover"
                 />
               </div>
@@ -88,13 +89,13 @@ const HeroSection = () => {
                     </p>
 
                     <p className="mt-1.5 max-w-sm font-display text-xl font-semibold leading-tight text-white sm:text-2xl">
-                      Une infrastructure pensée pour les marques.
+                      {text("Une infrastructure pensée pour les marques.", "Infrastructure built for brands.")}
                     </p>
                   </div>
 
                   <div className="hidden shrink-0 items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-[10px] font-semibold text-white backdrop-blur-md sm:flex">
                     <ShieldCheck className="h-3.5 w-3.5 text-bib-gold" />
-                    Vérifié par BIB
+                    {text("Vérifié par BIB", "Verified by BIB")}
                   </div>
                 </div>
               </div>
@@ -112,7 +113,7 @@ const HeroSection = () => {
                 </p>
 
                 <p className="mt-0.5 text-xs font-medium text-bib-marine">
-                  Réseau de confiance
+                  {text("Réseau de confiance", "A trusted network")}
                 </p>
               </div>
             </div>

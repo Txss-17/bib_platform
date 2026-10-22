@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import DiscoverBoutiquesSection from "@/components/landing/DiscoverBoutiquesSection";
 import { Button } from "@/components/ui/button";
 import { useSEO } from "@/hooks/useSEO";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import {
   ArrowRight,
@@ -19,6 +20,8 @@ import unboxingImg from "@/assets/landing-unboxing.jpg";
 import partenerImg from "@/assets/landing-partener.jpg";
 
 const Index = () => {
+  const { lang } = useLanguage();
+  const text = (fr: string, en: string) => lang === "fr" ? fr : en;
   useSEO({ title:"BIB — L'infrastructure des marques", description:"BIB accompagne les marques avec une boutique, des produits sélectionnés et un réseau de partenaires vérifiés." });
 
   return (
@@ -67,7 +70,7 @@ const Index = () => {
                       </p>
 
                       <p className="mt-0.5 text-sm font-semibold text-bib-marine">
-                        Un réseau vérifié
+                        {text("Un réseau vérifié", "A verified network")}
                       </p>
                     </div>
                   </div>
@@ -78,14 +81,14 @@ const Index = () => {
               <div className="max-w-xl">
                 <div className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-bib-marine/55">
                   <span className="h-px w-8 bg-bib-gold" />
-                  Pour les marques
+                  {text("Pour les marques", "For brands")}
                 </div>
 
                 <h2 className="font-display text-4xl font-bold leading-[1.02] tracking-[-0.035em] text-bib-marine sm:text-5xl lg:text-6xl">
-                  Développez votre marque
+                  {text("Développez votre marque", "Grow your brand")}
                   <br />
                   <span className="text-bib-gold">
-                    dans un cadre structuré.
+                    {text("dans un cadre structuré.", "within a structured framework.")}
                   </span>
                 </h2>
 
@@ -97,18 +100,18 @@ const Index = () => {
 
                 <div className="mt-9 space-y-6">
                   <Benefit
-                    title="Une boutique prête à présenter votre marque"
-                    description="Votre espace de vente s’intègre directement à l’écosystème BIB."
+                    title={text("Une boutique prête à présenter votre marque", "A storefront ready to showcase your brand")}
+                    description={text("Votre espace de vente s’intègre directement à l’écosystème BIB.", "Your storefront fits directly into the BIB ecosystem.")}
                   />
 
                   <Benefit
-                    title="Des produits sélectionnés"
-                    description="BIB structure l’accès au catalogue et aux produits proposés sur son réseau."
+                    title={text("Des produits sélectionnés", "Selected products")}
+                    description={text("BIB structure l’accès au catalogue et aux produits proposés sur son réseau.", "BIB organizes access to its catalog and the products offered across its network.")}
                   />
 
                   <Benefit
-                    title="Un environnement de confiance"
-                    description="Les acteurs intégrés au réseau sont sélectionnés et vérifiés selon les exigences BIB."
+                    title={text("Un environnement de confiance", "A trusted environment")}
+                    description={text("Les acteurs intégrés au réseau sont sélectionnés et vérifiés selon les exigences BIB.", "Network members are selected and verified against BIB requirements.")}
                   />
                 </div>
 
@@ -120,7 +123,7 @@ const Index = () => {
                     className="group h-12 rounded-full px-6"
                   >
                     <Link to="/signup">
-                      Créer ma boutique
+                      {text("Créer ma boutique", "Create my store")}
                       <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                     </Link>
                   </Button>
@@ -140,14 +143,14 @@ const Index = () => {
               <div className="order-2 lg:order-1">
                 <div className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-bib-marine/55">
                   <span className="h-px w-8 bg-bib-gold" />
-                  L’infrastructure BIB
+                  {text("L’infrastructure BIB", "BIB infrastructure")}
                 </div>
 
                 <h2 className="font-display text-4xl font-bold leading-[1.02] tracking-[-0.035em] text-bib-marine sm:text-5xl lg:text-6xl">
-                  Une marque ne se développe
+                  {text("Une marque ne se développe", "A brand does not grow")}
                   <br />
                   <span className="text-bib-gold">
-                    pas seule.
+                    {text("pas seule.", "alone.")}
                   </span>
                 </h2>
 
@@ -161,25 +164,25 @@ const Index = () => {
                   <InfoCard
                     icon={PackageCheck}
                     title="Produits sélectionnés"
-                    text="Un catalogue structuré selon les critères BIB."
+                    text={text("Un catalogue structuré selon les critères BIB.", "A catalog organized around BIB criteria.")}
                   />
 
                   <InfoCard
                     icon={ShieldCheck}
-                    title="Contrôles"
-                    text="Des acteurs et produits vérifiés avant intégration."
+                    title={text("Contrôles", "Checks")}
+                    text={text("Des acteurs et produits vérifiés avant intégration.", "Members and products verified before joining.")}
                   />
 
                   <InfoCard
                     icon={Truck}
                     title="Logistique"
-                    text="Un réseau logistique pensé pour accompagner les ventes."
+                    text={text("Un réseau logistique pensé pour accompagner les ventes.", "A logistics network designed to support sales.")}
                   />
 
                   <InfoCard
                     icon={Users}
-                    title="Réseau"
-                    text="Des partenaires intégrés dans un même environnement."
+                    title={text("Réseau", "Network")}
+                    text={text("Des partenaires intégrés dans un même environnement.", "Partners connected in one shared environment.")}
                   />
                 </div>
               </div>
@@ -228,11 +231,11 @@ const Index = () => {
                 <div>
                   <div className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/50">
                     <span className="h-px w-8 bg-bib-gold" />
-                    Offre actuelle
+                    {text("Offre actuelle", "Current offer")}
                   </div>
 
                   <h2 className="font-display text-4xl font-bold leading-[1.02] tracking-[-0.035em] text-white sm:text-5xl lg:text-6xl">
-                    Commencez avec
+                    {text("Commencez avec", "Get started with")}
                     <br />
                     <span className="text-bib-gold">
                       BIB Boutique.
@@ -246,10 +249,10 @@ const Index = () => {
                   </p>
 
                   <div className="mt-8 space-y-3">
-                    <PriceFeature text="Votre boutique BIB" />
-                    <PriceFeature text="Accès à l’écosystème BIB" />
-                    <PriceFeature text="Intégration au réseau vérifié" />
-                    <PriceFeature text="Accompagnement du parcours de lancement" />
+                    <PriceFeature text={text("Votre boutique BIB", "Your BIB storefront")} />
+                    <PriceFeature text={text("Accès à l’écosystème BIB", "Access to the BIB ecosystem")} />
+                    <PriceFeature text={text("Intégration au réseau vérifié", "Join the verified network")} />
+                    <PriceFeature text={text("Accompagnement du parcours de lancement", "Guidance through your launch")} />
                   </div>
 
                   <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -260,7 +263,7 @@ const Index = () => {
                       className="group h-12 rounded-full px-6"
                     >
                       <Link to="/signup">
-                        Créer ma boutique
+                        {text("Créer ma boutique", "Create my store")}
                         <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                       </Link>
                     </Button>
@@ -272,7 +275,7 @@ const Index = () => {
                       className="h-12 rounded-full border-white/20 bg-transparent px-6 text-white hover:bg-white hover:text-bib-marine"
                     >
                       <Link to="/tarifs">
-                        Voir les tarifs
+                        {text("Voir les tarifs", "View pricing")}
                       </Link>
                     </Button>
                   </div>
@@ -305,7 +308,7 @@ const Index = () => {
                     to="/tarifs"
                     className="mt-7 inline-flex items-center text-sm font-semibold text-white transition-colors hover:text-bib-gold"
                   >
-                    Détails de l’offre
+                    {text("Détails de l’offre", "Offer details")}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </div>
@@ -327,10 +330,10 @@ const Index = () => {
               </div>
 
               <h2 className="font-display text-4xl font-bold leading-[1.02] tracking-[-0.035em] text-bib-marine sm:text-5xl lg:text-6xl">
-                Une infrastructure construite
+                {text("Une infrastructure construite", "Infrastructure built")}
                 <br />
                 <span className="text-bib-gold">
-                  autour de partenaires vérifiés.
+                  {text("autour de partenaires vérifiés.", "around verified partners.")}
                 </span>
               </h2>
 
@@ -344,15 +347,15 @@ const Index = () => {
             <div className="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2">
               <NetworkLink
                 icon={PackageCheck}
-                eyebrow="Approvisionnement"
-                title="Fournisseurs"
-                text="Découvrez le fonctionnement du réseau fournisseur BIB."
+                eyebrow={text("Approvisionnement", "Supply")}
+                title={text("Fournisseurs", "Suppliers")}
+                text={text("Découvrez le fonctionnement du réseau fournisseur BIB.", "Learn how the BIB supplier network works.")}
                 href="/suppliers"
               />
 
               <NetworkLink
                 icon={Truck}
-                eyebrow="Opérations"
+                eyebrow={text("Opérations", "Operations")}
                 title="Logistique"
                 text="Découvrez l'organisation logistique du réseau BIB."
                 href="/ops"
@@ -376,10 +379,10 @@ const Index = () => {
                 </div>
 
                 <h2 className="font-display text-4xl font-bold leading-[1.02] tracking-[-0.035em] text-white sm:text-5xl lg:text-6xl">
-                  Construire BIB,
+                  {text("Construire BIB,", "Build BIB,")}
                   <br />
                   <span className="text-bib-gold">
-                    dès maintenant.
+                    {text("dès maintenant.", "from the ground up.")}
                   </span>
                 </h2>
 
@@ -397,7 +400,7 @@ const Index = () => {
                     className="group h-12 rounded-full px-6"
                   >
                     <Link to="/bib-talent">
-                      Découvrir BIB Talent
+                      {text("Découvrir BIB Talent", "Discover BIB Talent")}
                       <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Link>
                   </Button>
@@ -418,10 +421,10 @@ const Index = () => {
               </p>
 
               <h2 className="mt-4 font-display text-4xl font-bold leading-[1.02] tracking-[-0.035em] text-bib-marine sm:text-5xl lg:text-6xl">
-                Votre prochaine étape
+                {text("Votre prochaine étape", "Your next step")}
                 <br />
                 <span className="text-bib-gold">
-                  commence ici.
+                  {text("commence ici.", "starts here.")}
                 </span>
               </h2>
 
@@ -438,7 +441,7 @@ const Index = () => {
                   className="group h-12 rounded-full px-6"
                 >
                   <Link to="/signup">
-                    Créer ma boutique
+                    {text("Créer ma boutique", "Create my store")}
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Link>
                 </Button>
@@ -450,7 +453,7 @@ const Index = () => {
                   className="h-12 rounded-full border-bib-marine/15 bg-white px-6 text-bib-marine hover:bg-bib-marine hover:text-white"
                 >
                   <Link to="/store">
-                    Découvrir les boutiques
+                    {text("Découvrir les boutiques", "Explore stores")}
                   </Link>
                 </Button>
               </div>

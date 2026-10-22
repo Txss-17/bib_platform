@@ -27,19 +27,22 @@ import {
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const nav = lang === "fr"
+    ? { stores: "Boutiques", about: "À propos", network: "Réseau BIB", infrastructure: "Infrastructure BIB", suppliers: "Fournisseurs", supplierDesc: "Rejoindre le catalogue BIB", logistics: "Logistique", logisticsDesc: "Opérer pour le réseau BIB", create: "Créer ma boutique", search: "Rechercher une boutique ou un produit…", open: "Ouvrir le menu", close: "Fermer le menu" }
+    : { stores: "Stores", about: "About", network: "BIB Network", infrastructure: "BIB Infrastructure", suppliers: "Suppliers", supplierDesc: "Join the BIB catalog", logistics: "Logistics", logisticsDesc: "Operate for the BIB network", create: "Create my store", search: "Search for a store or product…", open: "Open menu", close: "Close menu" };
 
   const networkItems = [
     {
       to: "/suppliers",
-      label: "Fournisseurs",
-      desc: "Rejoindre le catalogue BIB",
+      label: nav.suppliers,
+      desc: nav.supplierDesc,
       icon: Package,
     },
     {
       to: "/ops",
-      label: "Logistique",
-      desc: "Opérer pour le réseau BIB",
+      label: nav.logistics,
+      desc: nav.logisticsDesc,
       icon: Truck,
     },
   ];
@@ -62,7 +65,7 @@ const Header = () => {
           <Link
             to="/"
             className="flex shrink-0 items-center"
-            aria-label="BIB — Accueil"
+            aria-label={lang === "fr" ? "BIB — Accueil" : "BIB — Home"}
           >
             <span className="lg:hidden">
               <Logo iconSize={36} />
@@ -79,21 +82,21 @@ const Header = () => {
               to="/store"
               className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
             >
-              Boutiques
+              {nav.stores}
             </Link>
 
             <Link
               to="/tarifs"
               className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
             >
-              Tarifs
+              {t("nav.pricing")}
             </Link>
 
             <Link
               to="/a-propos"
               className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
             >
-              À propos
+              {nav.about}
             </Link>
 
             <Link
@@ -106,7 +109,7 @@ const Header = () => {
             {/* Réseau BIB */}
             <DropdownMenu>
               <DropdownMenuTrigger className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground/80 transition-colors hover:text-foreground focus:outline-none">
-                Réseau BIB
+                {nav.network}
                 <ChevronDown className="h-3.5 w-3.5" />
               </DropdownMenuTrigger>
 
@@ -115,7 +118,7 @@ const Header = () => {
                 className="w-[320px] rounded-2xl border-border/60 bg-background/95 p-2 shadow-xl backdrop-blur-xl"
               >
                 <DropdownMenuLabel className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Infrastructure BIB
+                  {nav.infrastructure}
                 </DropdownMenuLabel>
 
                 <DropdownMenuSeparator />
@@ -157,7 +160,7 @@ const Header = () => {
             <BoutiqueSearchBar
               compact
               className="w-56 xl:w-64"
-              placeholder="Boutique ou produit…"
+              placeholder={nav.search}
             />
 
             <LanguageSwitcher />
@@ -177,7 +180,7 @@ const Header = () => {
               className="px-5 shadow-sm"
               asChild
             >
-              <Link to="/signup">Créer ma boutique</Link>
+              <Link to="/signup">{nav.create}</Link>
             </Button>
           </div>
 
@@ -186,9 +189,7 @@ const Header = () => {
             type="button"
             className="lg:hidden -mr-2 inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-foreground transition-colors hover:bg-muted/60"
             onClick={() => setMobileMenuOpen((open) => !open)}
-            aria-label={
-              mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"
-            }
+            aria-label={mobileMenuOpen ? nav.close : nav.open}
             aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? (
@@ -206,7 +207,7 @@ const Header = () => {
               <div className="pb-4">
                 <BoutiqueSearchBar
                   compact
-                  placeholder="Rechercher une boutique ou un produit…"
+                  placeholder={nav.search}
                 />
               </div>
 
@@ -217,7 +218,7 @@ const Header = () => {
                   className="flex items-center gap-3 border-b border-border/40 py-3.5 text-[15px] font-medium text-foreground"
                 >
                   <Store className="h-4 w-4 text-bib-marine" />
-                  Boutiques
+              {nav.stores}
                 </Link>
 
                 <Link
@@ -225,7 +226,7 @@ const Header = () => {
                   onClick={closeMobileMenu}
                   className="flex items-center border-b border-border/40 py-3.5 text-[15px] font-medium text-foreground"
                 >
-                  Tarifs
+              {t("nav.pricing")}
                 </Link>
 
                 <Link
@@ -234,7 +235,7 @@ const Header = () => {
                   className="flex items-center gap-3 border-b border-border/40 py-3.5 text-[15px] font-medium text-foreground"
                 >
                   <Info className="h-4 w-4 text-bib-marine" />
-                  À propos
+              {nav.about}
                 </Link>
 
                 <Link
@@ -249,7 +250,7 @@ const Header = () => {
                 {/* Réseau BIB */}
                 <div className="border-b border-border/40">
                   <div className="flex items-center gap-3 py-3.5 text-[15px] font-medium text-foreground">
-                    <span>Réseau BIB</span>
+                    <span>{nav.network}</span>
                   </div>
 
                   <div className="pb-3 pl-3">
@@ -311,7 +312,7 @@ const Header = () => {
                   asChild
                 >
                   <Link to="/signup" onClick={closeMobileMenu}>
-                    Créer ma boutique
+                    {nav.create}
                   </Link>
                 </Button>
               </div>

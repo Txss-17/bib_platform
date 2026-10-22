@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
 type Lang = "fr" | "en";
 
@@ -104,10 +104,10 @@ const translations: Record<Lang, Record<string, string>> = {
     "cta.desc": "Rejoignez des milliers d'entrepreneurs qui font confiance à Brand-In-A-Box pour lancer, développer et protéger leur activité. Sans carte bancaire.",
     "cta.button": "Créer un compte gratuit",
     "cta.sales": "Contacter les ventes",
-    "cta.free": "✓ Gratuit pour commencer",
-    "cta.nofees": "✓ Aucun frais caché",
-    "cta.cancel": "✓ Annulation à tout moment",
-    "cta.age": "✓ 18+ uniquement",
+    "cta.free": "âœ“ Gratuit pour commencer",
+    "cta.nofees": "âœ“ Aucun frais caché",
+    "cta.cancel": "âœ“ Annulation à tout moment",
+    "cta.age": "âœ“ 18+ uniquement",
 
     // Footer
     "footer.desc": "La plateforme de commerce intelligente qui permet aux entrepreneurs de créer, développer et sécuriser leur activité en ligne.",
@@ -318,10 +318,10 @@ const translations: Record<Lang, Record<string, string>> = {
     "cta.desc": "Join thousands of entrepreneurs who trust Brand-In-A-Box to launch, scale, and protect their online business. No credit card required.",
     "cta.button": "Create Free Account",
     "cta.sales": "Talk to Sales",
-    "cta.free": "✓ Free to start",
-    "cta.nofees": "✓ No hidden fees",
-    "cta.cancel": "✓ Cancel anytime",
-    "cta.age": "✓ 18+ only",
+    "cta.free": "âœ“ Free to start",
+    "cta.nofees": "âœ“ No hidden fees",
+    "cta.cancel": "âœ“ Cancel anytime",
+    "cta.age": "âœ“ 18+ only",
 
     // Footer
     "footer.desc": "The intelligent commerce platform that empowers entrepreneurs to build, scale, and secure their online business.",
@@ -443,14 +443,25 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang>(() => {
-    const saved = localStorage.getItem("linksy-lang");
-    return (saved === "en" ? "en" : "fr") as Lang;
+    try {
+      return localStorage.getItem("linksy-lang") === "en" ? "en" : "fr";
+    } catch {
+      return "fr";
+    }
   });
 
   const changeLang = (newLang: Lang) => {
     setLang(newLang);
-    localStorage.setItem("linksy-lang", newLang);
+    try {
+      localStorage.setItem("linksy-lang", newLang);
+    } catch {
+      // Language switching still works when browser storage is unavailable.
+    }
   };
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   const t = (key: string) => translations[lang][key] || key;
 
