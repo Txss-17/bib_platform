@@ -218,15 +218,11 @@ export default function SuppliersApply() {
         </h1>
 
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-          Cette première étape permet à BIB d'évaluer votre entreprise, vos
-          capacités de production, vos minimums de commande, vos délais et
-          votre aptitude à intégrer le schéma opérationnel du réseau.
+          {tx("Cette première étape permet à BIB d'évaluer votre entreprise, vos capacités de production, vos minimums de commande, vos délais et votre aptitude à intégrer le schéma opérationnel du réseau.", "This first step allows BIB to assess your company, production capacity, minimum order quantities, lead times and ability to join the network’s operating model.")}
         </p>
 
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-          Le dépôt de cette candidature ne constitue pas une validation de
-          référencement. Les fournisseurs présélectionnés poursuivent ensuite
-          un processus de vérification et de contrôle avant toute intégration.
+          {tx("Le dépôt de cette candidature ne constitue pas une validation de référencement. Les fournisseurs présélectionnés poursuivent ensuite un processus de vérification et de contrôle avant toute intégration.", "Submitting this application does not guarantee approval for listing. Preselected suppliers continue through a verification and review process before onboarding.")}
         </p>
 
         {/* ------------------------------------------------------------------ */}
@@ -243,9 +239,7 @@ export default function SuppliersApply() {
               <p className="font-medium">{tx("Qualification initiale", "Initial qualification")}</p>
 
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                BIB étudie les informations transmises et peut demander des
-                éléments complémentaires afin d'évaluer la compatibilité du
-                fournisseur avec le réseau.
+                {tx("BIB étudie les informations transmises et peut demander des éléments complémentaires afin d'évaluer la compatibilité du fournisseur avec le réseau.", "BIB reviews the information provided and may request additional details to assess the supplier’s fit with the network.")}
               </p>
             </div>
           </div>
@@ -266,9 +260,7 @@ export default function SuppliersApply() {
               </p>
 
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                Les profils retenus peuvent faire l'objet de contrôles
-                documentaires, qualité, conformité ou opérationnels avant la
-                validation des références concernées.
+                {tx("Les profils retenus peuvent faire l'objet de contrôles documentaires, qualité, conformité ou opérationnels avant la validation des références concernées.", "Selected applicants may undergo document, quality, compliance or operational checks before the relevant products are approved for listing.")}
               </p>
             </div>
           </div>
@@ -289,8 +281,7 @@ export default function SuppliersApply() {
               </p>
 
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                Après validation, les références retenues sont intégrées selon
-                les procédures BIB et le schéma logistique applicable.
+                {tx("Après validation, les références retenues sont intégrées selon les procédures BIB et le schéma logistique applicable.", "Once approved, selected products are integrated according to BIB procedures and the applicable logistics model.")}
               </p>
             </div>
           </div>
@@ -327,9 +318,7 @@ export default function SuppliersApply() {
             </h2>
 
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              BIB recherche des partenaires capables de s'inscrire dans un
-              réseau sélectionné, traçable et organisé selon les exigences
-              applicables aux produits et aux marchés concernés.
+              {tx("BIB recherche des partenaires capables de s'inscrire dans un réseau sélectionné, traçable et organisé selon les exigences applicables aux produits et aux marchés concernés.", "BIB seeks partners who can operate within a selected, traceable network organized around the requirements for the relevant products and markets.")}
             </p>
           </div>
 
@@ -370,22 +359,15 @@ export default function SuppliersApply() {
           </h2>
 
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Les réponses permettent d'évaluer l'adéquation de votre structure
-            avec les catégories de produits, les volumes, les zones de
-            commercialisation et les flux opérationnels du réseau BIB.
+            {tx("Les réponses permettent d'évaluer l'adéquation de votre structure avec les catégories de produits, les volumes, les zones de commercialisation et les flux opérationnels du réseau BIB.", "Your answers help assess how your organization fits the product categories, volumes, sales regions and operational flows of the BIB network.")}
           </p>
 
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            Une candidature peut être poursuivie, mise en attente, refusée ou
-            orientée vers une qualification complémentaire. Le dépôt d'une
-            candidature ne garantit donc pas l'accès au réseau.
+            {tx("Une candidature peut être poursuivie, mise en attente, refusée ou orientée vers une qualification complémentaire. Le dépôt d'une candidature ne garantit donc pas l'accès au réseau.", "An application may proceed, be put on hold, be declined or be referred for further qualification. Applying does not guarantee access to the network.")}
           </p>
 
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            De même, la validation d'un fournisseur ne signifie pas que
-            l'ensemble de son catalogue sera référencé. Les produits et
-            références sont évalués selon les critères BIB applicables à leur
-            catégorie et à leur marché de destination.
+            {tx("De même, la validation d'un fournisseur ne signifie pas que l'ensemble de son catalogue sera référencé. Les produits et références sont évalués selon les critères BIB applicables à leur catégorie et à leur marché de destination.", "Supplier approval does not mean the entire catalogue will be listed. Products are assessed against BIB criteria for their category and destination market.")}
           </p>
         </section>
 
@@ -395,10 +377,7 @@ export default function SuppliersApply() {
 
         <div className="mt-8 border-t border-border/50 pt-6">
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Les informations communiquées dans ce formulaire servent à la
-            qualification initiale du fournisseur. Des informations ou
-            justificatifs complémentaires peuvent être demandés lors des
-            étapes suivantes du parcours BIB.
+            {tx("Les informations communiquées dans ce formulaire servent à la qualification initiale du fournisseur. Des informations ou justificatifs complémentaires peuvent être demandés lors des étapes suivantes du parcours BIB.", "Information provided in this form is used for the supplier’s initial qualification. Additional information or supporting documents may be requested in later BIB process steps.")}
           </p>
         </div>
       </section>

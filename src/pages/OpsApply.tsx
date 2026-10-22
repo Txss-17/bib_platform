@@ -125,9 +125,9 @@ export default function OpsApply() {
   const english = lang === "en";
   const tx = (fr: string, en: string) => english ? en : fr;
   useSEO({
-    title: "Candidature Partenaire Logistique — Brand-In-A-Box",
+    title: english ? "Logistics Partner Application — Brand-In-A-Box" : "Candidature Partenaire Logistique — Brand-In-A-Box",
     description:
-      "Étape 1 : qualification opérationnelle pour rejoindre le réseau Ops Brand-In-A-Box (couverture UE, SLA, tracking, capacités).",
+      english ? "Step 1: operational qualification to join the Brand-In-A-Box Ops network (EU coverage, SLAs, tracking and capacity)." : "Étape 1 : qualification opérationnelle pour rejoindre le réseau Ops Brand-In-A-Box (couverture UE, SLA, tracking, capacités).",
   });
 
   return (
