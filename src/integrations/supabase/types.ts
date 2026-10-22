@@ -647,7 +647,7 @@ export type Database = {
           created_at?: string
           id?: string
           issue_id: string
-          refund_id: string | null
+          refund_id?: string | null
           message?: string | null
         }
         Update: {

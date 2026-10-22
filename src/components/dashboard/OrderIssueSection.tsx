@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,7 +21,7 @@ import {
   type OrderIssue,
   type IssueAction,
   type IssueStatus,
-} from "@/hooks/useOrderIssues";
+} from "@/hooks/useOrderIssues.ts";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
@@ -105,10 +105,10 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
       refundMutation.mutate({ issueId: issue.id, amountCents }, {
         onSuccess: (result) => {
           toast({
-            title: result.status === "succeeded" ? "Remboursement effectué" : "Remboursement en attente",
+            title: result.status === "succeeded" ? "Remboursement effectuÃ©" : "Remboursement en attente",
             description: result.status === "succeeded"
-              ? "Stripe a confirmé le remboursement. Le stock attend une réception contrôlée."
-              : "Le résultat Stripe est en attente de confirmation.",
+              ? "Stripe a confirmÃ© le remboursement. Le stock attend une rÃ©ception contrÃ´lÃ©e."
+              : "Le rÃ©sultat Stripe est en attente de confirmation.",
           });
           setShowResponse(false);
           setRefundAmount("");
@@ -135,8 +135,8 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
       {
         onSuccess: () => {
           toast({
-            title: "Réponse envoyée",
-            description: "Réponse enregistrée dans le dossier de commande.",
+            title: "RÃ©ponse envoyÃ©e",
+            description: "RÃ©ponse enregistrÃ©e dans le dossier de commande.",
           });
 
           setShowResponse(false);
@@ -207,7 +207,7 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
                   {response.message && (
                     <span className="text-muted-foreground">
                       {" "}
-                      — {response.message}
+                      â€” {response.message}
                     </span>
                   )}
 
@@ -229,7 +229,7 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
             className="w-full text-xs"
             onClick={() => setShowResponse(true)}
           >
-            Répondre au signalement
+            RÃ©pondre au signalement
           </Button>
         )}
 
@@ -273,7 +273,7 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
                   onChange={(event) => setRefundAmount(event.target.value)}
                   className="h-8 text-xs"
                 />
-                <p className="text-[10px] text-muted-foreground">Le montant est plafonné au solde de la ligne. Le stock ne sera réintégré qu’après réception contrôlée.</p>
+                <p className="text-[10px] text-muted-foreground">Le montant est plafonnÃ© au solde de la ligne. Le stock ne sera rÃ©intÃ©grÃ© quâ€™aprÃ¨s rÃ©ception contrÃ´lÃ©e.</p>
               </div>
             )}
             <Textarea
