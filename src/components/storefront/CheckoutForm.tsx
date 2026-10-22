@@ -16,7 +16,16 @@ import { StorefrontEmbeddedCheckout } from "@/components/payments/StorefrontEmbe
 interface CheckoutFormProps {
   boutiqueId: string;
   boutiqueName: string;
+  boutiqueSlug?: string;
   primaryColor: string;
+  checkoutItems?: Array<{
+    id: string;
+    name: string;
+    price: number;
+    image_url: string | null;
+    quantity: number;
+  }>;
+  onComplete?: () => void;
   onBack: () => void;
 }
 
@@ -80,17 +89,22 @@ function saveProfile(
 export function CheckoutForm({
   boutiqueId,
   boutiqueName,
+  boutiqueSlug,
   primaryColor,
+  checkoutItems,
+  onComplete,
   onBack,
 }: CheckoutFormProps) {
   const { slug } = useParams<{
     slug: string;
   }>();
 
-  const {
-    items,
-    totalPrice,
-  } = useCart();
+  const { items: cartItems } = useCart();
+  const items = checkoutItems ?? cartItems;
+  const totalPrice = items.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0,
+  );
 
   const [name, setName] =
     useState("");
@@ -250,12 +264,12 @@ export function CheckoutForm({
    */
 
   if (step === "pay") {
-    const boutiqueSlug =
-      slug?.trim() || "";
+    const currentBoutiqueSlug =
+      boutiqueSlug?.trim() || slug?.trim() || "";
 
     const returnUrl =
       `${window.location.origin}` +
-      `/boutique/${encodeURIComponent(boutiqueSlug)}` +
+      `/boutique/${encodeURIComponent(currentBoutiqueSlug)}` +
       `/order-tracking` +
       `?session_id={CHECKOUT_SESSION_ID}` +
       `&email=${encodeURIComponent(
@@ -307,6 +321,7 @@ export function CheckoutForm({
           }}
           notes={notes.trim()}
           returnUrl={returnUrl}
+          onComplete={onComplete}
         />
       </div>
     );

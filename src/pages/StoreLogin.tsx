@@ -32,13 +32,10 @@ import {
   ArrowRight,
   Eye,
   EyeOff,
-  Gift,
   Lock,
   Mail,
-  Recycle,
   Shield,
   ShoppingBag,
-  Star,
 } from "lucide-react";
 
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -416,7 +413,7 @@ export default function StoreLogin() {
 
             <p className="mt-4 text-muted-foreground">
               Votre compte vous permet de retrouver vos
-              boutiques, commandes et avantages.
+              boutiques, commandes et suivi.
             </p>
 
             <div className="mt-8 space-y-5">
@@ -426,30 +423,6 @@ export default function StoreLogin() {
                 }
               >
                 Boutiques et commandes
-              </Benefit>
-
-              <Benefit
-                icon={
-                  <Recycle className="h-5 w-5" />
-                }
-              >
-                Recyclage BIB
-              </Benefit>
-
-              <Benefit
-                icon={
-                  <Star className="h-5 w-5" />
-                }
-              >
-                Points et avantages
-              </Benefit>
-
-              <Benefit
-                icon={
-                  <Gift className="h-5 w-5" />
-                }
-              >
-                Cartes cadeaux
               </Benefit>
 
               <Benefit

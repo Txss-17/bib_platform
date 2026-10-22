@@ -26,7 +26,6 @@ import {
 import { StorefrontHeader } from "@/components/storefront/StorefrontHeader";
 import { StorefrontFooter } from "@/components/storefront/StorefrontFooter";
 import { CartDrawer } from "@/components/storefront/CartDrawer";
-import { RecyclingBadge } from "@/components/storefront/RecyclingBadge";
 
 import { CartProvider, useCart } from "@/contexts/CartContext";
 import { StorefrontProvider } from "@/contexts/StorefrontContext";
@@ -213,9 +212,6 @@ function ProductCard({
             </div>
           )}
 
-          <div className="absolute bottom-2 left-2">
-            <RecyclingBadge variant="compact" />
-          </div>
         </div>
       </Link>
 
@@ -758,7 +754,6 @@ function AllProductsContent() {
                 : "Back to store"}
             </Link>
 
-            {/* Result count / recycling */}
             <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
               <p className="text-sm text-gray-500">
                 {filteredProducts.length}{" "}
@@ -770,11 +765,6 @@ function AllProductsContent() {
                   : ""}
               </p>
 
-              <RecyclingBadge
-                variant="full"
-                primaryColor={primaryColor}
-                className="max-w-md"
-              />
             </div>
 
             {/* Category shortcuts */}

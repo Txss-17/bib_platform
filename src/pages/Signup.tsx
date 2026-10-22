@@ -57,7 +57,6 @@ export default function Signup() {
    * Never allow /signup to become a gateway to:
    * - /store
    * - /marketplace
-   * - /recycler
    *
    * Those areas use /store/signup.
    */

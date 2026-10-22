@@ -24,6 +24,7 @@ import {
 import {
   useSEO,
 } from "@/hooks/useSEO";
+import { useStoreCart } from "@/contexts/StoreCartContext";
 
 function formatPrice(
   value: number,
@@ -59,6 +60,8 @@ export default function StoreProduct() {
     isLoading:
       favoritesLoading,
   } = useFavorites();
+
+  const { addItem: addStoreCartItem } = useStoreCart();
 
   const favorite = useMemo(
     () =>
@@ -375,13 +378,10 @@ export default function StoreProduct() {
                       </h2>
 
                       <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
-                        BIB présente ce produit
-                        dans son réseau de
-                        boutiques vérifiées.
-                        Les informations
-                        commerciales et l'achat
-                        sont gérés directement
-                        par la boutique.
+                        La boutique reste le vendeur.
+                        BIB coordonne le parcours de
+                        commande et le paiement est
+                        séparé pour chaque boutique.
                       </p>
                     </div>
                   </div>
@@ -392,9 +392,28 @@ export default function StoreProduct() {
                    ================================================= */}
 
                 <div className="mt-7 space-y-3">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      addStoreCartItem({
+                        productId: product.id,
+                        productName: product.name,
+                        productImage: product.image_url ?? "",
+                        price: product.price,
+                        boutiqueId: product.boutique_id,
+                        boutiqueName: product.boutique_name,
+                        boutiqueSlug: product.boutique_slug,
+                      })
+                    }
+                    className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                  >
+                    <ShoppingBag className="h-4 w-4" />
+                    Ajouter au panier BIB
+                  </button>
+
                   <Link
                     to={merchantProductUrl}
-                    className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                    className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border bg-background px-6 text-sm font-medium transition-colors hover:bg-muted"
                   >
                     Voir dans la boutique
 
@@ -412,9 +431,7 @@ export default function StoreProduct() {
                 </div>
 
                 <p className="mt-4 text-center text-xs leading-5 text-muted-foreground">
-                  L'achat et le paiement sont
-                  effectués directement sur la
-                  boutique marchande.
+                  Les commandes de boutiques différentes sont payées séparément.
                 </p>
               </div>
             </div>
@@ -472,17 +489,12 @@ export default function StoreProduct() {
             </div>
 
             <h2 className="mt-5 text-2xl font-semibold tracking-tight">
-              BIB facilite la découverte
+              Découvrez et commandez sur BIB
             </h2>
 
             <p className="mt-3 text-sm leading-7 text-muted-foreground">
-              Le Store BIB permet de découvrir
-              des produits et des boutiques
-              vérifiées. Lorsque vous souhaitez
-              acheter, vous êtes redirigé vers
-              la boutique concernée pour
-              poursuivre votre parcours
-              commercial.
+              Ajoutez des produits de plusieurs boutiques à votre panier.
+              Chaque boutique donne lieu à une commande et un paiement distincts.
             </p>
           </div>
         </section>

@@ -33,10 +33,8 @@ import {
   Check,
   Eye,
   EyeOff,
-  Gift,
   Lock,
   Mail,
-  Recycle,
   Shield,
   Star,
 } from "lucide-react";
@@ -340,14 +338,6 @@ export default function StoreSignup() {
                       <Benefit>
                         Commandes et suivi
                       </Benefit>
-
-                      <Benefit>
-                        Recyclage et points BIB
-                      </Benefit>
-
-                      <Benefit>
-                        Avantages et cartes cadeaux
-                      </Benefit>
                     </div>
 
                     <div className="mt-4 border-t pt-4">
@@ -620,22 +610,6 @@ export default function StoreSignup() {
                 }
               >
                 Boutiques et produits favoris
-              </Benefit>
-
-              <Benefit
-                icon={
-                  <Recycle className="h-5 w-5" />
-                }
-              >
-                Recyclage et points
-              </Benefit>
-
-              <Benefit
-                icon={
-                  <Gift className="h-5 w-5" />
-                }
-              >
-                Avantages et cartes cadeaux
               </Benefit>
 
               <Benefit

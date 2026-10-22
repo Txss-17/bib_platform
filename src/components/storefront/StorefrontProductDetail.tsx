@@ -18,7 +18,6 @@ import { useSEO } from "@/hooks/useSEO";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { RecyclingBadge } from "./RecyclingBadge";
 
 interface Boutique {
   id: string;
@@ -567,10 +566,6 @@ export function StorefrontProductDetail() {
                 </Badge>
               </div>
 
-              {/* Recycling */}
-              <div className="absolute bottom-4 left-4">
-                <RecyclingBadge variant="compact" />
-              </div>
 
               {/* Gallery controls */}
               {gallery.length > 1 && (

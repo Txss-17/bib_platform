@@ -295,18 +295,6 @@ export default function StoreSubscriberSubscribe() {
                   <Feature>
                     Retrouver vos commandes et leur suivi
                   </Feature>
-
-                  <Feature>
-                    Participer au programme de recyclage
-                  </Feature>
-
-                  <Feature>
-                    Cumuler et utiliser vos points
-                  </Feature>
-
-                  <Feature>
-                    Accéder aux avantages et cartes cadeaux BIB
-                  </Feature>
                 </div>
 
                 <div className="mt-6 rounded-xl border bg-muted/30 p-4">

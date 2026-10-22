@@ -84,7 +84,6 @@ const guideGroups = [
     guides: [
       { slug: "fournisseur", title: "Devenir fournisseur", to: "/suppliers/apply", desc: "Rejoindre le catalogue BIB.", long: "Soumettez votre catalogue. Notre \xE9quipe revient sous 5 jours ouvr\xE9s." },
       { slug: "logistique", title: "Devenir logisticien", to: "/ops/apply", desc: "Op\xE9rer en marque blanche.", long: "Candidatez sur le portail Ops. Nous validons capacit\xE9, pays couverts et process retours." },
-      { slug: "recyclage", title: "Recyclage & gift cards", to: "/recycler", desc: "1 point recycl\xE9 = 10 centimes.", long: "Vos clients scannent l'emballage et re\xE7oivent un avoir sur votre boutique. Gagnant-gagnant." }
     ]
   }
 ];
@@ -97,7 +96,6 @@ const faq = [
       { q: "Comment suivre ma commande ?", a: "Munissez-vous de votre num\xE9ro de commande (format LKS26-XXXXXX) et de l'e-mail utilis\xE9 au paiement, puis ouvrez la page de suivi.", to: "/suivi-commande", ctaLabel: "Suivre ma commande" },
       { q: "Quels sont les d\xE9lais de livraison ?", a: "Les d\xE9lais d\xE9pendent du pays et du transporteur s\xE9lectionn\xE9 par la boutique. Une estimation s'affiche \xE0 l'\xE9tape livraison du checkout et un e-mail r\xE9capitule l'exp\xE9dition." },
       { q: "Comment retourner un produit ?", a: "Contactez d'abord la boutique vendeuse via la page produit. Sans r\xE9ponse sous 48 h, la plateforme prend le relais via la proc\xE9dure d'escalade." },
-      { q: "Comment fonctionne le recyclage ?", a: "Scannez l'emballage de votre commande sur la page Recyclage : 1 point recycl\xE9 = 10 centimes cr\xE9dit\xE9s sur votre carte cadeau de la boutique d'origine.", to: "/recycler", ctaLabel: "Recycler un emballage" },
       { q: "O\xF9 trouver mes cartes cadeaux ?", a: "Connectez-vous avec l'e-mail de votre commande : vos soldes par boutique apparaissent dans votre espace client." },
       { q: "Mon paiement a \xE9chou\xE9, que faire ?", a: "V\xE9rifiez votre carte (plafond, 3-D Secure) puis r\xE9essayez. Aucune commande n'est confirm\xE9e tant que le paiement n'est pas valid\xE9 \u2014 vous ne risquez pas de double d\xE9bit." }
     ]

@@ -9,7 +9,6 @@ import { useCart } from "@/contexts/CartContext";
 import { useStorefrontContext } from "@/contexts/StorefrontContext";
 
 import { TiltCard, ShineCard } from "./Storefront3DEffects";
-import { RecyclingBadge } from "./RecyclingBadge";
 import { trackStorefrontEvent } from "@/lib/storefrontTracking";
 
 interface Product {
@@ -127,9 +126,6 @@ export function StorefrontProducts({
           </div>
         )}
 
-        <div className="absolute bottom-2 left-2">
-          <RecyclingBadge variant="compact" />
-        </div>
       </div>
     );
 

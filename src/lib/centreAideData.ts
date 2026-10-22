@@ -10,7 +10,7 @@ export type Persona = {
 };
 
 export const personas: Persona[] = [
-  { id: "client", label: "Je suis client", desc: "Suivre une commande, retours, recyclage, cartes cadeaux", icon: Users },
+  { id: "client", label: "Je suis client", desc: "Commandes, suivi et assistance", icon: Users },
   { id: "vendeur", label: "Je suis vendeur", desc: "Créer ma boutique, produits, paiements, échantillons", icon: Store },
   { id: "fournisseur", label: "Je suis fournisseur", desc: "Candidature, catalogue, performance, paiements", icon: Boxes },
   { id: "logistique", label: "Je suis partenaire logistique", desc: "Portail Ops, étiquettes, litiges, expéditions", icon: Truck },
@@ -96,7 +96,6 @@ export const guideGroups: GuideGroup[] = [
     guides: [
       { slug: "fournisseur", title: "Devenir fournisseur", to: "/suppliers/apply", desc: "Rejoindre le catalogue BIB.", long: "Soumettez votre catalogue. Notre équipe revient sous 5 jours ouvrés." },
       { slug: "logistique", title: "Devenir logisticien", to: "/ops/apply", desc: "Opérer en marque blanche.", long: "Candidatez sur le portail Ops. Nous validons capacité, pays couverts et process retours." },
-      { slug: "recyclage", title: "Recyclage & gift cards", to: "/recycler", desc: "1 point recyclé = 10 centimes.", long: "Vos clients scannent l'emballage et reçoivent un avoir sur votre boutique. Gagnant-gagnant." },
     ],
   },
 ];
@@ -116,7 +115,6 @@ export const faq: FaqCategory[] = [
       { q: "Comment suivre ma commande ?", a: "Munissez-vous de votre numéro de commande (format LKS26-XXXXXX) et de l'e-mail utilisé au paiement, puis ouvrez la page de suivi.", to: "/suivi-commande", ctaLabel: "Suivre ma commande" },
       { q: "Quels sont les délais de livraison ?", a: "Les délais dépendent du pays et du transporteur sélectionné par la boutique. Une estimation s'affiche à l'étape livraison du checkout et un e-mail récapitule l'expédition." },
       { q: "Comment retourner un produit ?", a: "Contactez d'abord la boutique vendeuse via la page produit. Sans réponse sous 48 h, la plateforme prend le relais via la procédure d'escalade." },
-      { q: "Comment fonctionne le recyclage ?", a: "Scannez l'emballage de votre commande sur la page Recyclage : 1 point recyclé = 10 centimes crédités sur votre carte cadeau de la boutique d'origine.", to: "/recycler", ctaLabel: "Recycler un emballage" },
       { q: "Où trouver mes cartes cadeaux ?", a: "Connectez-vous avec l'e-mail de votre commande : vos soldes par boutique apparaissent dans votre espace client." },
       { q: "Mon paiement a échoué, que faire ?", a: "Vérifiez votre carte (plafond, 3-D Secure) puis réessayez. Aucune commande n'est confirmée tant que le paiement n'est pas validé — vous ne risquez pas de double débit." },
     ],

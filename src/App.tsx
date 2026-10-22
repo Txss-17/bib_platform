@@ -56,7 +56,6 @@ const StoreSubscriberFavorites = lazy(() => import("@/pages/StoreSubscriberFavor
 const StoreSubscriberOrders = lazy(() => import("@/pages/StoreSubscriberOrders"));
 const StoreSubscriberSubscribe = lazy(() => import("@/pages/StoreSubscriberSubscribe"));
 
-const Recycler = lazy(() => import("@/pages/customer/Recycler"));
 const Unsubscribe = lazy(() => import("@/pages/Unsubscribe"));
 const StoreProduct = lazy(() => import("@/pages/StoreProduct"));
 import StoreSubscriberLayout from "@/components/StoreSubscriberLayout";
@@ -499,13 +498,17 @@ export default function App() {
 
                   {/* =================================================
                       LEGACY BIB STORE CART
-                      
+
                       Conservé temporairement pendant la migration.
                   ================================================= */}
 
                   <Route
                     path="/store/cart"
-                    element={<StoreCart />}
+                    element={
+                      <CartProvider>
+                        <StoreCart />
+                      </CartProvider>
+                    }
                   />
 
                   {/* =================================================
@@ -537,11 +540,11 @@ export default function App() {
 
                   {/* =================================================
                       BIB ABONNÉ — CUSTOMER AREA
-                      
+
                       Ces routes nécessitent :
                       1. un utilisateur authentifié
                       2. un compte de type store
-                      
+
                       Le statut BIB Abonné reste vérifié
                       au niveau des pages/hooks concernés.
                   ================================================= */}
@@ -636,33 +639,6 @@ export default function App() {
                   {/* =================================================
                       STORE — CUSTOMER FEATURES
                   ================================================= */}
-
-                  <Route
-                    path="/store/recycler"
-                    element={
-                      <ProtectedRoute context="store">
-                        <Recycler />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  <Route
-                    path="/recycler"
-                    element={
-                      <ProtectedRoute context="store">
-                        <Recycler />
-                      </ProtectedRoute>
-                    }
-                  />
-
-                  <Route
-                    path="/store/recycler/:slug"
-                    element={
-                      <ProtectedRoute context="store">
-                        <Recycler />
-                      </ProtectedRoute>
-                    }
-                  />
 
                   {/* =================================================
                       DASHBOARD

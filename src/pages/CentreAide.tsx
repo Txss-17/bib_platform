@@ -22,7 +22,6 @@ import {
   Store,
   Mail,
   FileText,
-  Recycle,
   BookOpen,
   CreditCard,
   Lock,
@@ -35,7 +34,7 @@ export default function CentreAide() {
   useSEO({
     title: "Centre d’aide BIB — Brand-in-a-Box",
     description:
-      "Trouvez rapidement les réponses à vos questions sur BIB, les commandes, les boutiques, les paiements, la livraison, les retours, le recyclage et la vente avec BIB.",
+      "Trouvez rapidement les réponses à vos questions sur BIB, les commandes, les boutiques, les paiements, la livraison, les retours et la vente avec BIB.",
   });
 
   const { user } = useAuth();
@@ -590,14 +589,6 @@ export default function CentreAide() {
                 >
                   <CreditCard className="h-4 w-4" />
                   Tarifs
-                </Link>
-
-                <Link
-                  to="/recycler"
-                  className="flex items-center gap-2 text-sm text-bib-ivory/75 transition hover:text-bib-ivory"
-                >
-                  <Recycle className="h-4 w-4" />
-                  Recyclage
                 </Link>
 
                 <Link

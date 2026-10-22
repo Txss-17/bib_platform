@@ -145,7 +145,7 @@ export const categoryTemplates: Record<string, TemplateConfig> = {
       { icon: "leaf", label: "Production Responsable" },
     ],
     aboutTitle: "À Propos de Nous",
-    aboutDescription: "Nous vous proposons des vêtements essentiels, sans tracas. Logistique et recyclage gérés par Brand-In-A-Box. Simple, responsable, sans surprise.",
+    aboutDescription: "Nous vous proposons des vêtements essentiels, sans tracas. Expédition coordonnée par Brand-In-A-Box.",
     productsSectionTitle: "Sélection Populaire",
     fonts: { heading: "Playfair Display", body: "Lato" },
     sections: [

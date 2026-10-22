@@ -1,4 +1,4 @@
-import { Store, BarChart3, ShieldCheck, Recycle, Globe2, Headphones } from "lucide-react";
+import { Store, BarChart3, ShieldCheck, Globe2, Headphones } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const FeaturesSection = () => {
@@ -9,7 +9,6 @@ const FeaturesSection = () => {
     { icon: Store, titleKey: "features.multiboutique.title", descKey: "features.multiboutique.desc", tone: "marine" as const },
     { icon: BarChart3, titleKey: "features.intelligence.title", descKey: "features.intelligence.desc", tone: "gold" as const },
     { icon: ShieldCheck, titleKey: "features.trust.title", descKey: "features.trust.desc", tone: "marine" as const },
-    { icon: Recycle, titleKey: "features.recycling.title", descKey: "features.recycling.desc", tone: "gold" as const },
     { icon: Globe2, titleKey: "features.multimarket.title", descKey: "features.multimarket.desc", tone: "marine" as const },
     { icon: Headphones, titleKey: "features.support.title", descKey: "features.support.desc", tone: "gold" as const },
   ];

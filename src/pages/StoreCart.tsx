@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -16,6 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { CheckoutForm } from "@/components/storefront/CheckoutForm";
 import {
   useStoreCart,
   type StoreCartBoutiqueGroup,
@@ -155,12 +157,14 @@ function BoutiqueCartGroup({
   onDecrease,
   onRemove,
   onClear,
+  onCheckout,
 }: {
   group: StoreCartBoutiqueGroup;
   onIncrease: (item: StoreCartItem) => void;
   onDecrease: (item: StoreCartItem) => void;
   onRemove: (item: StoreCartItem) => void;
   onClear: () => void;
+  onCheckout: () => void;
 }) {
   const destination = getBoutiqueDestination(group);
   const isExternal = Boolean(group.boutiqueUrl);
@@ -229,7 +233,15 @@ function BoutiqueCartGroup({
           </span>
         </div>
 
-        <div className="mt-4 flex justify-end">
+        <div className="mt-4 flex flex-wrap justify-between gap-3">
+          <Button
+            type="button"
+            onClick={onCheckout}
+            disabled={!group.boutiqueSlug}
+          >
+            Commander cette boutique
+          </Button>
+
           <Button
             type="button"
             variant="ghost"
@@ -301,6 +313,8 @@ function EmptyStoreCart() {
 // ============================================================
 
 export default function StoreCart() {
+  const [checkoutGroup, setCheckoutGroup] =
+    useState<StoreCartBoutiqueGroup | null>(null);
   const {
     boutiqueGroups,
     totalItems,
@@ -314,6 +328,42 @@ export default function StoreCart() {
 
   if (isEmpty) {
     return <EmptyStoreCart />;
+  }
+
+  if (checkoutGroup) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="border-b px-4 py-5">
+          <Button type="button" variant="ghost" onClick={() => setCheckoutGroup(null)}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Retour au panier
+          </Button>
+        </div>
+        <div className="mx-auto max-w-xl px-4 py-8">
+          <h1 className="mb-6 text-2xl font-semibold">
+            Commander chez {checkoutGroup.boutiqueName}
+          </h1>
+          <CheckoutForm
+            boutiqueId={checkoutGroup.boutiqueId}
+            boutiqueName={checkoutGroup.boutiqueName}
+            boutiqueSlug={checkoutGroup.boutiqueSlug}
+            primaryColor="#102036"
+            checkoutItems={checkoutGroup.items.map((item) => ({
+              id: item.productId,
+              name: item.productName,
+              price: item.price,
+              image_url: item.productImage || null,
+              quantity: item.quantity,
+            }))}
+            onBack={() => setCheckoutGroup(null)}
+            onComplete={() => {
+              clearBoutique(checkoutGroup.boutiqueId);
+              setCheckoutGroup(null);
+            }}
+          />
+        </div>
+      </main>
+    );
   }
 
   const handleIncrease = (item: StoreCartItem) => {
@@ -412,6 +462,7 @@ export default function StoreCart() {
                 onClear={() =>
                   clearBoutique(group.boutiqueId)
                 }
+                onCheckout={() => setCheckoutGroup(group)}
               />
             ))}
           </div>
@@ -456,10 +507,9 @@ export default function StoreCart() {
 
                 <div className="mt-6 rounded-xl bg-muted/50 p-4">
                   <p className="text-xs leading-5 text-muted-foreground">
-                    Le panier BIB Store sert à regrouper vos
-                    sélections. BIB ne traite pas le paiement ici.
-                    Chaque achat est finalisé directement auprès de
-                    la boutique concernée.
+                    Les articles sont regroupés par boutique. Chaque
+                    boutique fait l'objet de sa propre commande et de
+                    son propre paiement.
                   </p>
                 </div>
               </CardContent>

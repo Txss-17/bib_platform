@@ -92,15 +92,6 @@ const Footer = () => {
                     Suivre une commande
                   </Link>
                 </li>
-
-                <li>
-                  <Link
-                    to="/recycler"
-                    className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
-                  >
-                    Recyclage
-                  </Link>
-                </li>
               </ul>
             </div>
 

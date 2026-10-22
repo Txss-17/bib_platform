@@ -40,6 +40,7 @@ interface StorefrontCheckoutProps {
   notes?: string;
   returnUrl: string;
   onOrderNumbers?: (numbers: string[]) => void;
+  onComplete?: () => void;
 }
 
 export function StorefrontEmbeddedCheckout({
@@ -53,6 +54,7 @@ export function StorefrontEmbeddedCheckout({
   notes,
   returnUrl,
   onOrderNumbers,
+  onComplete,
 }: StorefrontCheckoutProps) {
   const fetchClientSecret = async (): Promise<string> => {
     if (!boutiqueId) {
@@ -171,7 +173,7 @@ export function StorefrontEmbeddedCheckout({
           fetchClientSecret,
         }}
       >
-        <EmbeddedCheckout />
+        <EmbeddedCheckout onComplete={onComplete} />
       </EmbeddedCheckoutProvider>
     </div>
   );

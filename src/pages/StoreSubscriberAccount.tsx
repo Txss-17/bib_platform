@@ -171,9 +171,6 @@ export default function StoreSubscriberAccount() {
                 <FeatureItem label="Favoris" />
                 <FeatureItem label="Commandes" />
                 <FeatureItem label="Suivi des commandes" />
-                <FeatureItem label="Programme de recyclage" />
-                <FeatureItem label="Points et avantages" />
-                <FeatureItem label="Cartes cadeaux" />
               </div>
             </div>
 
@@ -327,9 +324,6 @@ export default function StoreSubscriberAccount() {
                     <FeatureItem label="Favoris" />
                     <FeatureItem label="Commandes" />
                     <FeatureItem label="Suivi des commandes" />
-                    <FeatureItem label="Programme de recyclage" />
-                    <FeatureItem label="Points et avantages" />
-                    <FeatureItem label="Cartes cadeaux" />
                   </div>
                 </div>
 

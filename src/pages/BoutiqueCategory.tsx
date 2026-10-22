@@ -26,7 +26,6 @@ import {
 import { StorefrontHeader } from "@/components/storefront/StorefrontHeader";
 import { StorefrontFooter } from "@/components/storefront/StorefrontFooter";
 import { CartDrawer } from "@/components/storefront/CartDrawer";
-import { RecyclingBadge } from "@/components/storefront/RecyclingBadge";
 
 import { CartProvider, useCart } from "@/contexts/CartContext";
 import { StorefrontProvider } from "@/contexts/StorefrontContext";
@@ -221,9 +220,6 @@ function ProductCard({
             </div>
           )}
 
-          <div className="absolute bottom-2 left-2">
-            <RecyclingBadge variant="compact" />
-          </div>
         </div>
       </Link>
 
@@ -801,10 +797,6 @@ function CategoryContent() {
                 </p>
               </div>
 
-              <RecyclingBadge
-                variant="full"
-                primaryColor={primaryColor}
-              />
             </div>
 
             {/* Products */}

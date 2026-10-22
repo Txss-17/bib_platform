@@ -23,7 +23,7 @@ export function StorefrontAbout({ title, description, boutiqueName, primaryColor
               Chez {boutiqueName}, {description.toLowerCase().startsWith('nous') ? description : `nous ${description.toLowerCase()}`}
             </p>
             <p className="text-gray-600 mb-2">
-              Logistique et recyclage gérés par Brand-In-A-Box.
+              Livraison coordonnée par Brand-In-A-Box.
             </p>
             <p className="text-gray-600 mb-6">
               Simple, responsable, sans surprise.
@@ -40,13 +40,13 @@ export function StorefrontAbout({ title, description, boutiqueName, primaryColor
           {/* Image */}
           <div className="aspect-[4/3] bg-gray-200 rounded-lg overflow-hidden">
             {aboutImageUrl ? (
-              <img 
-                src={aboutImageUrl} 
-                alt={`Image de ${boutiqueName}`} 
+              <img
+                src={aboutImageUrl}
+                alt={`Image de ${boutiqueName}`}
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div 
+              <div
                 className="w-full h-full flex items-center justify-center"
                 style={{ backgroundColor: `${primaryColor}15` }}
               >
