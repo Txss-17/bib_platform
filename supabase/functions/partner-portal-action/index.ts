@@ -210,8 +210,9 @@ Deno.serve(async (req) => {
       const b = body as Record<string, unknown>
       const orderNumber = String(b.order_number ?? '').trim().toUpperCase()
       if (!/^[A-Z0-9-]{4,30}$/.test(orderNumber)) return json({ error: 'invalid_order_number' }, 400)
-      const { data: order } = await supabase.from('orders').select('id').eq('order_number', orderNumber).maybeSingle()
-      if (!order) return json({ error: 'order_not_found' }, 404)
+      const { data: order, error: orderError } = await supabase.from('orders').select('id').eq('order_number', orderNumber).eq('payment_status', 'paid').maybeSingle()
+      if (orderError) return json({ error: 'order_lookup_failed' }, 500)
+      if (!order) return json({ error: 'paid_order_not_found' }, 404)
 
       const str = (k: string, max = 120) => {
         const v = b[k]; if (v === undefined) return undefined
