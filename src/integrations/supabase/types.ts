@@ -919,6 +919,7 @@ export type Database = {
           payment_status: string | null
           pos_qr_url: string | null
           product_id: string
+          quantity: number
           stripe_session_id: string | null
         }
         Insert: {
@@ -937,6 +938,7 @@ export type Database = {
           payment_status?: string | null
           pos_qr_url?: string | null
           product_id: string
+          quantity?: number
           stripe_session_id?: string | null
         }
         Update: {
@@ -955,6 +957,7 @@ export type Database = {
           payment_status?: string | null
           pos_qr_url?: string | null
           product_id?: string
+          quantity?: number
           stripe_session_id?: string | null
         }
         Relationships: [
@@ -1226,6 +1229,108 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      product_stock_movements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          idempotency_key: string
+          order_id: string | null
+          product_id: string
+          quantity_delta: number
+          reason: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          idempotency_key: string
+          order_id?: string | null
+          product_id: string
+          quantity_delta: number
+          reason: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          idempotency_key?: string
+          order_id?: string | null
+          product_id?: string
+          quantity_delta?: number
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_stock_movements_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_stock_reservations: {
+        Row: {
+          checkout_key: string
+          created_at: string
+          expires_at: string
+          id: string
+          order_id: string
+          product_id: string
+          quantity: number
+          status: string
+          stripe_session_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          checkout_key: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          order_id: string
+          product_id: string
+          quantity: number
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          checkout_key?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          order_id?: string
+          product_id?: string
+          quantity?: number
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_stock_reservations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_stock_reservations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
@@ -1797,8 +1902,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      attach_product_stock_stripe_session: {
+        Args: { p_checkout_key: string; p_stripe_session_id: string }
+        Returns: number
+      }
       claim_guest_orders: {
         Args: { _customer_profile_id: string; _email: string }
+        Returns: number
+      }
+      confirm_product_stock_checkout: {
+        Args: { p_stripe_session_id: string }
         Returns: number
       }
       delete_email: {
@@ -1834,6 +1947,22 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      receive_product_stock: {
+        Args: { p_product_id: string; p_quantity: number; p_receipt_id: string }
+        Returns: number
+      }
+      release_product_stock_checkout: {
+        Args: { p_failure_status?: string; p_stripe_session_id: string }
+        Returns: number
+      }
+      release_product_stock_checkout_by_key: {
+        Args: { p_checkout_key: string }
+        Returns: number
+      }
+      reserve_product_stock_checkout: {
+        Args: { p_checkout_key: string; p_order_ids: string[] }
+        Returns: number
       }
       scene_analytics_summary: {
         Args: { _boutique_id: string; _since?: string }
