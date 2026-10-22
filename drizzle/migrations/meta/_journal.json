@@ -43,6 +43,13 @@
       "when": 1790361443526,
       "tag": "0005_create_partner_onboarding_submissions",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792649244958,
+      "tag": "0006_platform_atomic_inventory_and_receipts",
+      "breakpoints": true
     }
   ]
 }

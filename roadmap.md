@@ -1,6 +1,7 @@
 # Roadmap
 
-- [ ] Vérifier les trois signalements de stock et de migrations contre le code et la base actuelle.
+- [x] Vérifier les trois signalements de stock et de migrations contre le code et la base actuelle.
+- [ ] Publier après les corrections vérifiées, conformément à la demande du 22 octobre 2026.
 - [ ] Corriger les problèmes confirmés sans supprimer les protections de stock.
 - [ ] Valider les corrections et mettre à jour Project monitoring.
 

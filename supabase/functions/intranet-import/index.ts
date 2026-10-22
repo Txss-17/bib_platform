@@ -1,5 +1,6 @@
 import { z } from "npm:zod@3";
 import { adminClient, bridgeCors, checkBridgeKey, json } from "../_shared/bridge.ts";
+import { parseStockReceipt } from "../_shared/stockReceipt.ts";
 
 const ProductData = z.object({
   platform_id: z.string().uuid().optional(),
@@ -17,6 +18,7 @@ const ProductData = z.object({
 }).refine((d) => d.platform_id || d.intranet_id, { message: "platform_id or intranet_id required" });
 
 const Body = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("stock_receipt"), data: z.unknown() }),
   z.object({ type: z.literal("supplier_product"), data: ProductData }),
   z.object({
     type: z.literal("boutique_status"),
@@ -33,6 +35,18 @@ Deno.serve(async (req) => {
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return json({ error: parsed.error.flatten() }, 400);
   const sb = adminClient();
+
+  if (parsed.data.type === "stock_receipt") {
+    const receipt = parseStockReceipt(parsed.data.data);
+    if (!receipt) return json({ error: "invalid_stock_receipt" }, 400);
+    const { data, error } = await sb.rpc("receive_product_stock", {
+      p_product_id: receipt.product_id,
+      p_quantity: receipt.quantity,
+      p_receipt_id: receipt.receipt_id,
+    });
+    if (error) return json({ error: error.message }, 400);
+    return json({ id: receipt.product_id, stock_quantity: data });
+  }
 
   if (parsed.data.type === "boutique_status") {
     const { id, status } = parsed.data.data;

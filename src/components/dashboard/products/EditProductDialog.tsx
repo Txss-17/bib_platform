@@ -145,7 +145,6 @@ export function EditProductDialog({
 
   const [price, setPrice] = useState("");
   const [margin, setMargin] = useState("");
-  const [stock, setStock] = useState("");
   const [threshold, setThreshold] = useState("");
 
   const [promotionEnabled, setPromotionEnabled] = useState(false);
@@ -159,7 +158,6 @@ export function EditProductDialog({
 
     setPrice(String(product.public_price ?? ""));
     setMargin(String(product.applied_margin ?? ""));
-    setStock(String(product.stock_quantity ?? 0));
     setThreshold(String(product.low_stock_threshold ?? 5));
 
     const existingSalePrice =
@@ -228,7 +226,6 @@ export function EditProductDialog({
   const submit = async () => {
     const publicPrice = Number(price);
     const appliedMargin = Number(margin);
-    const quantity = Number(stock);
     const lowStockThreshold = Number(threshold);
 
     if (price.trim() === "" || !Number.isFinite(publicPrice) || publicPrice <= 0) {
@@ -243,16 +240,6 @@ export function EditProductDialog({
 
     if (maxMargin > 0 && appliedMargin > maxMargin) {
       toast.error(`La marge ne peut pas dépasser ${maxMargin} %.`);
-      return;
-    }
-
-    if (
-      stock.trim() === "" ||
-      !Number.isFinite(quantity) ||
-      quantity < 0 ||
-      !Number.isInteger(quantity)
-    ) {
-      toast.error("Le stock doit être un entier positif ou nul.");
       return;
     }
 
@@ -321,7 +308,6 @@ export function EditProductDialog({
         updates: {
           public_price: Number(publicPrice.toFixed(2)),
           applied_margin: Number(appliedMargin.toFixed(2)),
-          stock_quantity: quantity,
           low_stock_threshold: lowStockThreshold,
           sale_price: finalSalePrice,
           promotion_starts_at: finalPromotionStart,
