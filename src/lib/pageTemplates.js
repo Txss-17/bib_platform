@@ -1,71 +1,108 @@
-const PRODUCT_PAGE_SLUG = "__product__";
-const PRODUCT_PAGE_SCENES = [
+ function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } }/**
+ * Page Templates — bundles de scènes prêts à l'emploi pour créer une page en un clic.
+ * Chaque template = un titre par défaut + un slug + une liste de scènes à seeder.
+ */
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/** Slug réservé pour la page modèle d'une fiche produit. */
+export const PRODUCT_PAGE_SLUG = "__product__";
+
+/** Bundle de scènes par défaut pour le modèle de page produit. */
+export const PRODUCT_PAGE_SCENES = [
   { sceneType: "product-hero", variant: "image-left" },
   { sceneType: "product-description", variant: "centered" },
   { sceneType: "product-specs", variant: "table" },
   { sceneType: "trust-wall", variant: "badges-row", contentPatch: { title: "Achetez en confiance" } },
-  { sceneType: "product-related", variant: "3-up" }
+  { sceneType: "product-related", variant: "3-up" },
 ];
-const PAGE_TEMPLATES = [
+
+export const PAGE_TEMPLATES = [
   {
     key: "blank",
     label: "Page vierge",
-    emoji: "\u2728",
-    description: "Une page vide \xE0 composer librement",
+    emoji: "✨",
+    description: "Une page vide à composer librement",
     defaultTitle: "Nouvelle page",
     defaultSlug: "page",
-    scenes: []
+    scenes: [],
   },
   {
     key: "products",
     label: "Nos produits",
-    emoji: "\u{1F6CD}\uFE0F",
-    description: "Hero + grille compl\xE8te des produits + CTA",
+    emoji: "🛍️",
+    description: "Hero + grille complète des produits + CTA",
     defaultTitle: "Nos produits",
     defaultSlug: "produits",
-    seoTitle: "Nos produits \u2014 collection compl\xE8te",
-    seoDescription: "D\xE9couvrez notre collection compl\xE8te. Pi\xE8ces s\xE9lectionn\xE9es avec soin, livraison rapide.",
+    seoTitle: "Nos produits — collection complète",
+    seoDescription:
+      "Découvrez notre collection complète. Pièces sélectionnées avec soin, livraison rapide.",
     scenes: [
       {
         sceneType: "hero-cinema",
         variant: "type-only",
         contentPatch: {
           title: "Toute la collection",
-          subtitle: "Chaque pi\xE8ce, soigneusement s\xE9lectionn\xE9e.",
-          ctaLabel: "Explorer"
-        }
+          subtitle: "Chaque pièce, soigneusement sélectionnée.",
+          ctaLabel: "Explorer",
+        },
       },
       { sceneType: "products-grid", variant: "4-up" },
-      { sceneType: "cta-sticky" }
-    ]
+      { sceneType: "cta-sticky" },
+    ],
   },
   {
     key: "cart",
     label: "Panier",
-    emoji: "\u{1F6D2}",
-    description: "Page panier d\xE9di\xE9e avec r\xE9cap et CTA checkout",
+    emoji: "🛒",
+    description: "Page panier dédiée avec récap et CTA checkout",
     defaultTitle: "Mon panier",
     defaultSlug: "panier",
     seoTitle: "Votre panier",
-    seoDescription: "R\xE9capitulatif de votre commande avant validation.",
+    seoDescription: "Récapitulatif de votre commande avant validation.",
     scenes: [
       { sceneType: "cart-summary", variant: "full" },
       {
         sceneType: "trust-wall",
         variant: "badges-row",
-        contentPatch: { title: "Achat 100 % s\xE9curis\xE9" }
-      }
-    ]
+        contentPatch: { title: "Achat 100 % sécurisé" },
+      },
+    ],
   },
   {
     key: "blog",
     label: "Blog / Journal",
-    emoji: "\u{1F4F0}",
-    description: "Liste d'articles \xE9ditoriale + newsletter",
+    emoji: "📰",
+    description: "Liste d'articles éditoriale + newsletter",
     defaultTitle: "Le journal",
     defaultSlug: "journal",
-    seoTitle: "Le journal \u2014 actualit\xE9s et coulisses",
-    seoDescription: "Nos histoires, conseils et coulisses. Une lecture par mois, jamais plus.",
+    seoTitle: "Le journal — actualités et coulisses",
+    seoDescription:
+      "Nos histoires, conseils et coulisses. Une lecture par mois, jamais plus.",
     scenes: [
       {
         sceneType: "hero-cinema",
@@ -73,56 +110,68 @@ const PAGE_TEMPLATES = [
         contentPatch: {
           title: "Le journal",
           subtitle: "Histoires, conseils et coulisses.",
-          ctaLabel: "Lire le dernier article"
-        }
+          ctaLabel: "Lire le dernier article",
+        },
       },
       { sceneType: "blog-list", variant: "grid" },
-      { sceneType: "newsletter-editorial" }
-    ]
+      { sceneType: "newsletter-editorial" },
+    ],
   },
   {
     key: "about",
-    label: "\xC0 propos",
-    emoji: "\u{1F33F}",
-    description: "Manifeste + histoire + \xE9quipe + chiffres cl\xE9s",
-    defaultTitle: "\xC0 propos",
+    label: "À propos",
+    emoji: "🌿",
+    description: "Manifeste + histoire + équipe + chiffres clés",
+    defaultTitle: "À propos",
     defaultSlug: "a-propos",
-    seoTitle: "\xC0 propos \u2014 notre histoire",
-    seoDescription: "D\xE9couvrez notre histoire, nos valeurs et l'\xE9quipe derri\xE8re la maison.",
+    seoTitle: "À propos — notre histoire",
+    seoDescription:
+      "Découvrez notre histoire, nos valeurs et l'équipe derrière la maison.",
     scenes: [
       { sceneType: "manifesto-typographic" },
       { sceneType: "story-scrolly", variant: "alternating" },
       { sceneType: "founder-letter", variant: "portrait-left" },
       { sceneType: "stats-counter" },
-      { sceneType: "team-grid", variant: "3-up" }
-    ]
+      { sceneType: "team-grid", variant: "3-up" },
+    ],
   },
   {
     key: "contact",
     label: "Contact",
-    emoji: "\u2709\uFE0F",
+    emoji: "✉️",
     description: "Formulaire + carte + FAQ rapide",
     defaultTitle: "Contact",
     defaultSlug: "contact",
     seoTitle: "Contactez-nous",
-    seoDescription: "Une question ? Notre \xE9quipe vous r\xE9pond sous 24 heures.",
+    seoDescription:
+      "Une question ? Notre équipe vous répond sous 24 heures.",
     scenes: [
       { sceneType: "contact-form", variant: "split" },
       { sceneType: "map-location" },
       {
         sceneType: "faq-accordion",
         variant: "accordion",
-        contentPatch: { title: "Questions fr\xE9quentes" }
-      }
-    ]
-  }
+        contentPatch: { title: "Questions fréquentes" },
+      },
+    ],
+  },
 ];
-function findPageTemplate(key) {
+
+export function findPageTemplate(key) {
   return PAGE_TEMPLATES.find((t) => t.key === key);
 }
-function recommendedSceneTypesForPage(title, slug) {
-  const haystack = `${title ?? ""} ${slug ?? ""}`.toLowerCase();
+
+/**
+ * Heuristique simple : devine le type de page d'après son titre/slug
+ * et renvoie une liste ordonnée de scene_types recommandés.
+ */
+export function recommendedSceneTypesForPage(
+  title,
+  slug,
+) {
+  const haystack = `${_nullishCoalesce(title, () => ( ""))} ${_nullishCoalesce(slug, () => ( ""))}`.toLowerCase();
   const has = (...needles) => needles.some((n) => haystack.includes(n));
+
   if (has("produit", "shop", "boutique", "catalog")) {
     return ["products-grid", "product-spotlight", "showcase-magazine", "cta-sticky", "trust-wall"];
   }
@@ -141,12 +190,6 @@ function recommendedSceneTypesForPage(title, slug) {
   if (has("tarif", "prix", "pricing", "abonnement")) {
     return ["pricing-table", "comparison-table", "faq-accordion", "cta-sticky"];
   }
+  // Fallback : grands classiques universels
   return ["hero-cinema", "showcase-magazine", "story-scrolly", "trust-wall", "cta-sticky"];
 }
-export {
-  PAGE_TEMPLATES,
-  PRODUCT_PAGE_SCENES,
-  PRODUCT_PAGE_SLUG,
-  findPageTemplate,
-  recommendedSceneTypesForPage
-};

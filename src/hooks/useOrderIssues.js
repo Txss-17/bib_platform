@@ -1,129 +1,233 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+ function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const ISSUE_TYPE_LABELS = {
-  not_received: "Produit non re\xE7u",
+  not_received: "Produit non reçu",
   return_request: "Demande de retour",
-  defective: "Produit d\xE9fectueux"
+  defective: "Produit défectueux",
 };
+
 const ISSUE_STATUS_LABELS = {
   pending: "En attente",
-  accepted: "Accept\xE9",
-  refused: "Refus\xE9",
-  resolved: "R\xE9solu",
-  escalated: "Escalad\xE9"
+  accepted: "Accepté",
+  refused: "Refusé",
+  resolved: "Résolu",
+  escalated: "Escaladé",
 };
+
 const ISSUE_ACTION_LABELS = {
   accept: "Accepter",
   refuse: "Refuser",
   partial_refund: "Remboursement partiel",
   resend: "Renvoi du produit",
-  other: "Autre solution"
+  other: "Autre solution",
 };
-function useOrderIssues(orderId) {
+
+export { ISSUE_TYPE_LABELS, ISSUE_STATUS_LABELS, ISSUE_ACTION_LABELS };
+
+export function useOrderIssues(orderId) {
   const { user } = useAuth();
+
   return useQuery({
-    queryKey: ["order-issues", orderId || "all", user?.id],
+    queryKey: ["order-issues", orderId || "all", _optionalChain([user, 'optionalAccess', _ => _.id])],
     queryFn: async () => {
       if (!user) return [];
-      let query = supabase.from("order_issues").select("*").order("created_at", { ascending: false });
+
+      let query = supabase
+        .from("order_issues" )
+        .select("*")
+        .order("created_at", { ascending: false });
+
       if (orderId) {
         query = query.eq("order_id", orderId);
       }
+
       const { data, error } = await query;
       if (error) throw error;
-      return data || [];
+      return (data || []) ;
     },
-    enabled: !!user
+    enabled: !!user,
   });
 }
-function useAllBoutiqueIssues() {
+
+export function useAllBoutiqueIssues() {
   const { user } = useAuth();
+
   return useQuery({
-    queryKey: ["all-boutique-issues", user?.id],
+    queryKey: ["all-boutique-issues", _optionalChain([user, 'optionalAccess', _2 => _2.id])],
     queryFn: async () => {
       if (!user) return [];
-      const { data: boutiques } = await supabase.from("boutiques").select("id").eq("user_id", user.id);
-      if (!boutiques?.length) return [];
+
+      // Get user's boutiques
+      const { data: boutiques } = await supabase
+        .from("boutiques")
+        .select("id")
+        .eq("user_id", user.id);
+
+      if (!_optionalChain([boutiques, 'optionalAccess', _3 => _3.length])) return [];
+
       const boutiqueIds = boutiques.map((b) => b.id);
-      const { data: orders } = await supabase.from("orders").select("id").in("boutique_id", boutiqueIds);
-      if (!orders?.length) return [];
+
+      // Get orders for these boutiques
+      const { data: orders } = await supabase
+        .from("orders")
+        .select("id")
+        .in("boutique_id", boutiqueIds);
+
+      if (!_optionalChain([orders, 'optionalAccess', _4 => _4.length])) return [];
+
       const orderIds = orders.map((o) => o.id);
-      const { data, error } = await supabase.from("order_issues").select("*").in("order_id", orderIds).order("created_at", { ascending: false });
+
+      // Get issues for these orders
+      const { data, error } = await supabase
+        .from("order_issues" )
+        .select("*")
+        .in("order_id", orderIds)
+        .order("created_at", { ascending: false });
+
       if (error) throw error;
-      return data || [];
+      return (data || []) ;
     },
-    enabled: !!user
+    enabled: !!user,
   });
 }
-function useCreateOrderIssue() {
+
+export function useRefundOrderIssue() {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async (issue) => {
-      const deadlineAt = /* @__PURE__ */ new Date();
-      deadlineAt.setHours(deadlineAt.getHours() + 48);
-      const { data, error } = await supabase.from("order_issues").insert({
-        order_id: issue.order_id,
-        type: issue.type,
-        message: issue.message || null,
-        image_url: issue.image_url || null,
-        customer_email: issue.customer_email,
-        status: "pending",
-        deadline_at: deadlineAt.toISOString()
-      }).select().single();
+    mutationFn: async (input) => {
+      const { data, error } = await supabase.functions.invoke("refund-order-issue", {
+        body: { issueId: input.issueId, amountCents: input.amountCents },
+      });
+      if (error) throw error;
+      return data ;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["order-issues"] });
+      queryClient.invalidateQueries({ queryKey: ["issue-responses"] });
+      queryClient.invalidateQueries({ queryKey: ["all-boutique-issues"] });
+    },
+  });
+}
+
+export function useCreateOrderIssue() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (issue
+
+
+
+
+
+) => {
+      const client = supabase 
+
+
+
+
+;
+      const { data, error } = await client.rpc("create_order_issue", {
+        _order_number: issue.order_number,
+        _customer_email: issue.customer_email,
+        _type: issue.type,
+        _message: issue.message || null,
+        _image_url: issue.image_url || null,
+
+      });
+
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order-issues"] });
       queryClient.invalidateQueries({ queryKey: ["all-boutique-issues"] });
-    }
+    },
   });
 }
-function useIssueResponses(issueId) {
+
+export function useIssueResponses(issueId) {
   return useQuery({
     queryKey: ["issue-responses", issueId],
     queryFn: async () => {
       if (!issueId) return [];
-      const { data, error } = await supabase.from("issue_responses").select("*").eq("issue_id", issueId).order("created_at", { ascending: true });
+      const { data, error } = await supabase
+        .from("issue_responses" )
+        .select("*")
+        .eq("issue_id", issueId)
+        .order("created_at", { ascending: true });
+
       if (error) throw error;
-      return data || [];
+      return (data || []) ;
     },
-    enabled: !!issueId
+    enabled: !!issueId,
   });
 }
-function useRespondToIssue() {
+
+export function useRespondToIssue() {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async ({
       issueId,
       action,
       message,
-      newStatus
-    }) => {
-      const { error: responseError } = await supabase.from("issue_responses").insert({
-        issue_id: issueId,
-        action,
-        message: message || null
-      });
+      newStatus,
+    }
+
+
+
+
+) => {
+      // Create response
+      const { error: responseError } = await supabase
+        .from("issue_responses" )
+        .insert({
+          issue_id: issueId,
+          action,
+          message: message || null,
+        });
+
       if (responseError) throw responseError;
-      const { error: updateError } = await supabase.from("order_issues").update({ status: newStatus }).eq("id", issueId);
+
+      // Update issue status
+      const { error: updateError } = await supabase
+        .from("order_issues" )
+        .update({ status: newStatus })
+        .eq("id", issueId);
+
       if (updateError) throw updateError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order-issues"] });
       queryClient.invalidateQueries({ queryKey: ["issue-responses"] });
       queryClient.invalidateQueries({ queryKey: ["all-boutique-issues"] });
-    }
+    },
   });
 }
-export {
-  ISSUE_ACTION_LABELS,
-  ISSUE_STATUS_LABELS,
-  ISSUE_TYPE_LABELS,
-  useAllBoutiqueIssues,
-  useCreateOrderIssue,
-  useIssueResponses,
-  useOrderIssues,
-  useRespondToIssue
-};

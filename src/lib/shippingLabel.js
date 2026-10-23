@@ -1,10 +1,46 @@
-import JsBarcode from "jsbarcode";
+ function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } }import JsBarcode from "jsbarcode";
 import QRCode from "qrcode";
-import { supabase } from "@/integrations/supabase/client";
+
+/**
+ * Brand-In-A-Box shipping label generator.
+ * Renders the BIB-branded A6 logistic label (or A4 sheet of 4) matching the
+ * official packaging spec. No carrier API is used yet — carrier/tracking/weight
+ * slots are reserved and will be populated when Sendcloud/Colissimo/DHL is wired.
+ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const TRACKING_BASE_URL = "https://shop.brand-in-a-box.space/tracking";
+
 function escapeHtml(s) {
-  return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  return String(_nullishCoalesce(s, () => ( ""))).replace(/[&<>"']/g, (c) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+  ));
 }
+
 function generateBarcodeSVG(value) {
   try {
     const svgNS = "http://www.w3.org/2000/svg";
@@ -17,112 +53,102 @@ function generateBarcodeSVG(value) {
       fontSize: 11,
       margin: 0,
       background: "#ffffff",
-      lineColor: "#0a0f1e"
+      lineColor: "#0a0f1e",
     });
     return new XMLSerializer().serializeToString(node);
-  } catch {
+  } catch (e) {
     return `<div style="font-family:monospace;font-size:12px">${escapeHtml(value)}</div>`;
   }
 }
+
 async function generateQrSVG(value) {
   try {
     return await QRCode.toString(value, {
       type: "svg",
       margin: 0,
       width: 88,
-      color: { dark: "#0a0f1e", light: "#ffffff" }
+      color: { dark: "#0a0f1e", light: "#ffffff" },
     });
-  } catch {
+  } catch (e2) {
     return "";
   }
 }
-async function fetchLabelData(orderId) {
-  const { data: order, error } = await supabase.from("orders").select("id, order_number, customer_name, customer_email, market, boutique_id, product_id, created_at").eq("id", orderId).maybeSingle();
-  if (error || !order) return null;
-  const [{ data: boutique }, { data: product }] = await Promise.all([
-    supabase.from("boutiques").select("name, legal_business_name, legal_address").eq("id", order.boutique_id).maybeSingle(),
-    order.product_id ? supabase.from("products").select("id, supplier_product_id, supplier_products(name)").eq("id", order.product_id).maybeSingle() : Promise.resolve({ data: null })
-  ]);
-  const senderName = boutique?.legal_business_name ?? boutique?.name ?? "Brand-In-A-Box";
-  const senderAddress = (boutique?.legal_address ?? "Brand-In-A-Box\nParis, France").split(/\r?\n|,/).map((s) => s.trim()).filter(Boolean);
-  const recipientLines = [];
-  if (order.customer_email) recipientLines.push(order.customer_email);
-  recipientLines.push("Adresse \xE0 compl\xE9ter via l'API transporteur");
-  const productName = product?.supplier_products?.name ?? "\u2014";
-  return {
-    orderNumber: order.order_number,
-    sender: { name: senderName, addressLines: senderAddress.slice(0, 3) },
-    recipient: {
-      name: order.customer_name ?? "\u2014",
-      addressLines: recipientLines,
-      country: (order.market ?? "EU").toUpperCase()
-    },
-    product: {
-      sku: order.product_id?.slice(0, 8).toUpperCase() ?? "\u2014",
-      reference: productName,
-      quantity: 1
-    },
-    shipDate: (/* @__PURE__ */ new Date()).toLocaleDateString("fr-FR"),
-    trackingUrl: `${TRACKING_BASE_URL}?order=${encodeURIComponent(order.order_number)}`
-  };
+
+/** Fetch shipping labels through the token-protected Ops service. */
+
+
+export async function fetchLabelData(orderId, callAction) {
+  const labels = await fetchLabelsData([orderId], callAction);
+  return _nullishCoalesce(labels[0], () => ( null));
 }
-async function fetchLabelsData(orderIds) {
-  const results = await Promise.all(orderIds.map((id) => fetchLabelData(id)));
-  return results.filter((x) => x !== null);
+
+export async function fetchLabelsData(orderIds, callAction) {
+  if (!orderIds.length) return [];
+  const response = (await callAction({ action: "get_shipping_labels", order_ids: orderIds })) 
+
+;
+  const labels = _nullishCoalesce(response.labels, () => ( []));
+  if (labels.length !== orderIds.length) {
+    throw new Error("Toutes les adresses de livraison n’ont pas pu être chargées.");
+  }
+  return labels.map((label) => label.data);
 }
-async function renderLabelHTML(data) {
+/** Render a single A6 BIB label as HTML string. */
+export async function renderLabelHTML(data, lang = "fr") {
+  const english = lang === "en";
   const barcodeValue = data.orderNumber.replace(/-/g, "");
   const barcode = generateBarcodeSVG(barcodeValue);
   const qr = await generateQrSVG(data.trackingUrl);
+
   return `
     <article class="bib-label">
       <header class="bib-label__head">
         <div class="bib-label__brand">
-          <span class="bib-label__logo" aria-hidden="true">\u25A3</span>
+          <span class="bib-label__logo" aria-hidden="true">▣</span>
           <span class="bib-label__brand-text">BRAND-IN-A-BOX</span>
         </div>
         <div class="bib-label__verified">
-          <span aria-hidden="true">\u2713</span> VERIFIED BY
+          <span aria-hidden="true">✓</span> ${english ? "VERIFIED BY" : "VÉRIFIÉ PAR"}
         </div>
       </header>
 
       <section class="bib-label__addresses">
         <div class="bib-label__block">
-          <h3>EXP\xC9DITEUR</h3>
+          <h3>${english ? "SENDER" : "EXPÉDITEUR"}</h3>
           <p class="bib-label__strong">${escapeHtml(data.sender.name)}</p>
           ${data.sender.addressLines.map((l) => `<p>${escapeHtml(l)}</p>`).join("")}
         </div>
         <div class="bib-label__block">
-          <h3>DESTINATAIRE</h3>
+          <h3>${english ? "RECIPIENT" : "DESTINATAIRE"}</h3>
           <p class="bib-label__strong">${escapeHtml(data.recipient.name)}</p>
           ${data.recipient.addressLines.map((l) => `<p>${escapeHtml(l)}</p>`).join("")}
         </div>
         <div class="bib-label__row">
           <div>
-            <h3>PAYS DE LIVRAISON</h3>
+            <h3>${english ? "DESTINATION COUNTRY" : "PAYS DE LIVRAISON"}</h3>
             <p class="bib-label__strong">${escapeHtml(data.recipient.country)}</p>
           </div>
           <div>
-            <h3>DATE D'EXP\xC9DITION</h3>
+            <h3>${english ? "SHIP DATE" : "DATE D'EXPÉDITION"}</h3>
             <p>${escapeHtml(data.shipDate)}</p>
           </div>
         </div>
       </section>
 
       <section class="bib-label__product">
-        <h3>INFORMATIONS PRODUIT</h3>
+        <h3>${english ? "PRODUCT INFORMATION" : "INFORMATIONS PRODUIT"}</h3>
         <table>
-          <tr><th>SKU (BOUTIQUE)</th><td colspan="2">${escapeHtml(data.product.sku)}</td></tr>
+          <tr><th>${english ? "STORE SKU" : "SKU (BOUTIQUE)"}</th><td colspan="2">${escapeHtml(data.product.sku)}</td></tr>
           <tr>
-            <th>R\xC9F\xC9RENCE PRODUIT</th>
+            <th>${english ? "PRODUCT REFERENCE" : "RÉFÉRENCE PRODUIT"}</th>
             <td>${escapeHtml(data.product.reference)}</td>
-            <td class="bib-label__qty">QT\xC9<br/><strong>${data.product.quantity}</strong></td>
+            <td class="bib-label__qty">${english ? "QTY" : "QTÉ"}<br/><strong>${data.product.quantity}</strong></td>
           </tr>
         </table>
       </section>
 
       <section class="bib-label__order">
-        <h3>N\xB0 DE COMMANDE</h3>
+        <h3>${english ? "ORDER NUMBER" : "N° DE COMMANDE"}</h3>
         <p class="bib-label__order-num">${escapeHtml(data.orderNumber)}</p>
         <div class="bib-label__barcode">${barcode}</div>
       </section>
@@ -130,13 +156,14 @@ async function renderLabelHTML(data) {
       <footer class="bib-label__foot">
         <div class="bib-label__qr">${qr}</div>
         <div class="bib-label__tracking">
-          <p class="bib-label__strong">Suivez votre colis</p>
-          <p>via le syst\xE8me BIB</p>
+          <p class="bib-label__strong">${english ? "Track your parcel" : "Suivez votre colis"}</p>
+          <p>${english ? "with the BIB system" : "via le système BIB"}</p>
         </div>
       </footer>
     </article>
   `;
 }
+
 const LABEL_STYLES = `
   *{box-sizing:border-box}
   body{margin:0;font-family:'Inter',system-ui,-apple-system,sans-serif;color:#0a0f1e;background:#f1f5f9}
@@ -197,17 +224,26 @@ const LABEL_STYLES = `
   @page.label{size:100mm 150mm}
   @page.sheet{size:A4 portrait}
 `;
-async function printLabels(items, format = "a6") {
+
+/** Open a print window with one or more BIB labels. */
+export async function printLabels(
+  items,
+  format = "a6",
+  lang = "fr",
+) {
   if (items.length === 0) {
-    return { ok: false, error: "Aucune \xE9tiquette \xE0 imprimer" };
+    return { ok: false, error: lang === "en" ? "No labels to print" : "Aucune étiquette à imprimer" };
   }
   const win = window.open("", "_blank", "width=900,height=1000");
   if (!win) {
-    return { ok: false, error: "Pop-up bloqu\xE9 \u2014 autorisez les pop-ups pour imprimer." };
+    return { ok: false, error: lang === "en" ? "Pop-up blocked — allow pop-ups to print." : "Pop-up bloqué — autorisez les pop-ups pour imprimer." };
   }
-  const labelsHtml = await Promise.all(items.map((d) => renderLabelHTML(d)));
+
+  const labelsHtml = await Promise.all(items.map((d) => renderLabelHTML(d, lang)));
+
   let body = "";
   if (format === "a4-sheet") {
+    // 4 labels per sheet
     for (let i = 0; i < labelsHtml.length; i += 4) {
       const slice = labelsHtml.slice(i, i + 4);
       while (slice.length < 4) slice.push('<div class="bib-label" style="border:1px dashed #cbd5e1"></div>');
@@ -216,12 +252,14 @@ async function printLabels(items, format = "a6") {
   } else {
     body = labelsHtml.join("");
   }
+
   const sizeRule = format === "a4-sheet" ? "@page{size:A4 portrait;margin:0}" : "@page{size:100mm 150mm;margin:0}";
+
   win.document.write(`<!doctype html>
-<html lang="fr">
+<html lang="${lang}">
 <head>
   <meta charset="utf-8" />
-  <title>\xC9tiquettes BIB \xB7 ${items.length}</title>
+  <title>${lang === "en" ? "BIB labels" : "Étiquettes BIB"} · ${items.length}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&family=JetBrains+Mono:wght@700&display=swap" />
@@ -229,8 +267,8 @@ async function printLabels(items, format = "a6") {
 </head>
 <body>
   <div class="bib-toolbar">
-    <button onclick="window.print()">Imprimer (${items.length} \xE9tiquette${items.length > 1 ? "s" : ""})</button>
-    <button class="ghost" onclick="window.close()">Fermer</button>
+    <button onclick="window.print()">${lang === "en" ? "Print" : "Imprimer"} (${items.length} ${lang === "en" ? "label" : "étiquette"}${items.length > 1 ? (lang === "en" ? "s" : "s") : ""})</button>
+    <button class="ghost" onclick="window.close()">${lang === "en" ? "Close" : "Fermer"}</button>
   </div>
   <div class="bib-stage">${body}</div>
 </body>
@@ -238,9 +276,3 @@ async function printLabels(items, format = "a6") {
   win.document.close();
   return { ok: true };
 }
-export {
-  fetchLabelData,
-  fetchLabelsData,
-  printLabels,
-  renderLabelHTML
-};

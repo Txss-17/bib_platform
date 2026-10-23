@@ -1,94 +1,163 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+ function _nullishCoalesce(lhs, rhsFn) { if (lhs != null) { return lhs; } else { return rhsFn(); } } function _optionalChain(ops) { let lastAccessLHS = undefined; let value = ops[0]; let i = 1; while (i < ops.length) { const op = ops[i]; const fn = ops[i + 1]; i += 2; if ((op === 'optionalAccess' || op === 'optionalCall') && value == null) { return undefined; } if (op === 'access' || op === 'optionalAccess') { lastAccessLHS = value; value = fn(value); } else if (op === 'call' || op === 'optionalCall') { value = fn((...args) => value.call(lastAccessLHS, ...args)); lastAccessLHS = undefined; } } return value; }import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-function useCampaigns(boutiqueId) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export function useCampaigns(boutiqueId) {
   return useQuery({
     queryKey: ["marketing-campaigns", boutiqueId],
     queryFn: async () => {
-      if (!boutiqueId) return [];
-      const { data, error } = await supabase.from("marketing_campaigns").select("*").eq("boutique_id", boutiqueId).order("created_at", { ascending: false }).limit(100);
+      if (!boutiqueId) return [] ;
+      const { data, error } = await supabase
+        .from("marketing_campaigns" )
+        .select("*")
+        .eq("boutique_id", boutiqueId)
+        .order("created_at", { ascending: false })
+        .limit(100);
       if (error) throw error;
-      return data ?? [];
+      return (_nullishCoalesce(data, () => ( []))) ;
     },
-    enabled: !!boutiqueId
+    enabled: !!boutiqueId,
   });
 }
-function useSendCampaign() {
+
+export function useSendCampaign() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (payload) => {
+    mutationFn: async (payload
+
+
+
+
+
+
+
+
+) => {
       const { data, error } = await supabase.functions.invoke("send-marketing-campaign", {
-        body: payload
+        body: payload,
       });
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["marketing-campaigns"] });
-    }
+    },
   });
 }
-function useTestSendCampaign() {
+
+/** Envoi d'un email de test à une seule adresse — ne crée pas de campagne. */
+export function useTestSendCampaign() {
   return useMutation({
-    mutationFn: async (payload) => {
+    mutationFn: async (payload
+
+
+
+
+
+
+) => {
       const { data, error } = await supabase.functions.invoke("send-marketing-campaign", {
-        body: payload
+        body: payload,
       });
       if (error) throw error;
       return data;
-    }
+    },
   });
 }
-function useSaveCampaignDraft() {
+
+/** Enregistre une campagne en brouillon ou la programme pour plus tard. */
+export function useSaveCampaignDraft() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (payload) => {
+    mutationFn: async (payload
+
+
+
+
+
+
+
+
+
+
+
+) => {
       const { data: u } = await supabase.auth.getUser();
-      const user_id = u.user?.id;
-      if (!user_id) throw new Error("Non authentifi\xE9");
+      const user_id = _optionalChain([u, 'access', _2 => _2.user, 'optionalAccess', _3 => _3.id]);
+      if (!user_id) throw new Error("Non authentifié");
       const row = {
         ...payload,
         user_id,
-        status: payload.status ?? (payload.scheduled_at ? "scheduled" : "draft")
+        status: _nullishCoalesce(payload.status, () => ( (payload.scheduled_at ? "scheduled" : "draft"))),
       };
       if (payload.id) {
-        const { data: data2, error: error2 } = await supabase.from("marketing_campaigns").update(row).eq("id", payload.id).select().single();
-        if (error2) throw error2;
-        return data2;
+        const { data, error } = await supabase
+          .from("marketing_campaigns" )
+          .update(row )
+          .eq("id", payload.id)
+          .select()
+          .single();
+        if (error) throw error;
+        return data;
       }
-      const { data, error } = await supabase.from("marketing_campaigns").insert(row).select().single();
+      const { data, error } = await supabase
+        .from("marketing_campaigns" )
+        .insert(row )
+        .select()
+        .single();
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["marketing-campaigns"] })
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["marketing-campaigns"] }),
   });
 }
-function useAutomations(boutiqueId) {
+
+export function useAutomations(boutiqueId) {
   return useQuery({
     queryKey: ["marketing-automations", boutiqueId],
     queryFn: async () => {
       if (!boutiqueId) return null;
-      const { data } = await supabase.from("marketing_automations").select("*").eq("boutique_id", boutiqueId).maybeSingle();
-      return data;
+      const { data } = await supabase
+        .from("marketing_automations" )
+        .select("*")
+        .eq("boutique_id", boutiqueId)
+        .maybeSingle();
+      return data ;
     },
-    enabled: !!boutiqueId
+    enabled: !!boutiqueId,
   });
 }
-function useUpsertAutomations() {
+
+export function useUpsertAutomations() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (payload) => {
-      const { data, error } = await supabase.from("marketing_automations").upsert(payload, { onConflict: "boutique_id" }).select().single();
+      const { data, error } = await supabase
+        .from("marketing_automations" )
+        .upsert(payload , { onConflict: "boutique_id" })
+        .select()
+        .single();
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ["marketing-automations", v.boutique_id] })
+    onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ["marketing-automations", v.boutique_id] }),
   });
 }
-export {
-  useAutomations,
-  useCampaigns,
-  useSaveCampaignDraft,
-  useSendCampaign,
-  useTestSendCampaign,
-  useUpsertAutomations
-};
