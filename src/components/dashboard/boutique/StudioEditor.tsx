@@ -6,6 +6,7 @@
   type ReactNode,
 } from "react";
 import { useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   AlertTriangle,
@@ -357,30 +358,81 @@ function PreviewFrame({
   device: "desktop" | "tablet" | "mobile";
   children: ReactNode;
 }) {
-  if (device === "desktop") {
-    return <>{children}</>;
-  }
+  return <DevicePreviewFrame device={device}>{children}</DevicePreviewFrame>;
+}
 
-  const width =
-    device === "mobile"
-      ? 375
-      : 768;
+function DevicePreviewFrame({
+  device,
+  children,
+}: {
+  device: "desktop" | "tablet" | "mobile";
+  children: ReactNode;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [previewBody, setPreviewBody] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      setContainerWidth(entry.contentRect.width);
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
+  const viewportWidth = device === "mobile" ? 375 : device === "tablet" ? 768 : 1280;
+  const viewportHeight = device === "mobile" ? 780 : 900;
+  const scale = containerWidth > 0 ? Math.min(1, containerWidth / viewportWidth) : 1;
 
   return (
-    <div className="flex justify-center bg-muted/30 p-2 sm:p-4">
+    <div ref={containerRef} className="w-full overflow-hidden bg-muted/30 p-2 sm:p-4">
       <div
-        className="overflow-hidden rounded-2xl border bg-background shadow-xl"
-        style={{
-          width,
-          maxWidth: "100%",
-        }}
+        className="mx-auto"
+        style={{ width: viewportWidth * scale, height: viewportHeight * scale }}
       >
-        {children}
+        <iframe
+          title={`${device} storefront preview`}
+          srcDoc="<!doctype html><html><head><meta charset='utf-8'></head><body></body></html>"
+          onLoad={(event) => {
+            const frameDocument = event.currentTarget.contentDocument;
+            if (!frameDocument) return;
+
+            const charset = frameDocument.createElement("meta");
+            charset.setAttribute("charset", "utf-8");
+            const viewport = frameDocument.createElement("meta");
+            viewport.name = "viewport";
+            viewport.content = "width=device-width, initial-scale=1";
+            const base = frameDocument.createElement("base");
+            base.href = `${window.location.origin}/`;
+            const appStyles = Array.from(
+              document.head.querySelectorAll('style, link[rel="stylesheet"]'),
+            ).map((node) => node.cloneNode(true));
+
+            frameDocument.head.replaceChildren(charset, viewport, base, ...appStyles);
+            frameDocument.documentElement.className = document.documentElement.className;
+            frameDocument.body.className = document.body.className;
+            frameDocument.documentElement.style.margin = "0";
+            frameDocument.body.style.margin = "0";
+            frameDocument.body.style.width = "100%";
+            frameDocument.body.style.minWidth = "0";
+            setPreviewBody(frameDocument.body);
+          }}
+          className="block origin-top-left border-0 bg-background"
+          style={{
+            width: viewportWidth,
+            height: viewportHeight,
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+          }}
+        />
+        {previewBody && createPortal(children, previewBody)}
       </div>
     </div>
   );
 }
-
 function SortableSceneRow({
   scene,
   active,
@@ -2030,7 +2082,7 @@ export function StudioEditor({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="min-w-0 w-full space-y-5">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
@@ -2282,7 +2334,7 @@ export function StudioEditor({
       </Card>
 
       {/* Main editor */}
-      <div className="grid min-h-[620px] gap-4 xl:grid-cols-[390px_minmax(0,1fr)] xl:gap-5">
+      <div className="grid min-h-[min(620px,75vh)] min-w-0 gap-4 2xl:grid-cols-[390px_minmax(0,1fr)] 2xl:gap-5">
         {/* Left rail */}
         <Card className="min-w-0 overflow-hidden">
           <Tabs
@@ -3164,7 +3216,7 @@ export function StudioEditor({
             </div>
           </div>
 
-          <div className="min-h-[min(640px,70vh)] max-h-[80vh] overflow-auto xl:min-h-[640px] xl:max-h-none">
+          <div className="min-h-[min(640px,70vh)] max-h-[80vh] overflow-auto 2xl:min-h-[640px] 2xl:max-h-none">
             <PreviewFrame
               device={
                 previewDevice
