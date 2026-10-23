@@ -1,4 +1,4 @@
-
+﻿
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
@@ -254,12 +254,12 @@ export default function Personnalisation() {
               <div><label className="text-sm font-medium">Finition</label><Input placeholder="Mat, brillant…" value={customization.finish ?? ""} onChange={(e) => { setCustomization({ ...customization, finish: e.target.value }); setSaved(false); }} className="mt-1" /></div>
               <div><label className="text-sm font-medium">Dimensions</label><Input placeholder="L × l × H" value={customization.dimensions ?? ""} onChange={(e) => { setCustomization({ ...customization, dimensions: e.target.value }); setSaved(false); }} className="mt-1" /></div>
               <div><label className="text-sm font-medium">Texte à imprimer</label><Input placeholder="Texte ou slogan" value={customization.text ?? ""} onChange={(e) => { setCustomization({ ...customization, text: e.target.value }); setSaved(false); }} className="mt-1" /></div>
-              <div><label className="text-sm font-medium">Consignes complémentaires</label><Input placeholder="Précisions pour le fournisseur" value={customization.instructions ?? ""} onChange={(e) => { setCustomization({ ...customization, instructions: e.target.value }); setSaved(false); }} className="mt-1" /></div>              <div className="sm:col-span-2 rounded-xl border p-4" style={{ backgroundColor: customization.color + "12" }}>
+              <div><label className="text-sm font-medium">Consignes complémentaires</label><Input placeholder="Précisions pour le fournisseur" value={customization.instructions ?? ""} onChange={(e) => { setCustomization({ ...customization, instructions: e.target.value }); setSaved(false); }} className="mt-1" /></div>              <div className="sm:col-span-2 min-w-0 overflow-hidden rounded-xl border p-3 sm:p-4" style={{ backgroundColor: customization.color + "12" }}>
                 <p className="mb-3 text-sm font-semibold">Aperçu de la configuration</p>
-                <div className="flex items-center gap-4">
-                  {selectedProduct.supplier_products?.image_url && <img src={selectedProduct.supplier_products.image_url} alt={selectedProduct.supplier_products.name ?? "Produit"} className="h-24 w-24 rounded-lg border bg-white object-cover" />}
+                <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                  {selectedProduct.supplier_products?.image_url && <img src={selectedProduct.supplier_products.image_url} alt={selectedProduct.supplier_products.name ?? "Produit"} className="h-24 w-full max-w-[10rem] shrink-0 rounded-lg border bg-white object-contain sm:w-24" />}
                   <div className="min-w-0">
-                    {customization.logo && <img src={customization.logo} alt="Logo de marque" className="mb-2 h-8 max-w-32 object-contain" />}
+                    {customization.logo && <img src={customization.logo} alt="Logo de marque" className="mb-2 h-8 max-w-full object-contain" />}
                     <p className="font-semibold" style={{ color: customization.color }}>{customization.brand || selectedProduct.supplier_products?.name}</p>
                     {customization.text && <p className="mt-1 text-sm">{customization.text}</p>}
                     <p className="mt-1 text-xs text-muted-foreground">Aperçu indicatif, à confirmer avec le fournisseur.</p>
@@ -695,3 +695,4 @@ function ShieldCheckIcon() {
     </div>
   );
 }
+
