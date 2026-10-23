@@ -639,7 +639,6 @@ export type Database = {
           created_at: string
           id: string
           issue_id: string
-          refund_id: string | null
           message: string | null
         }
         Insert: {
@@ -647,7 +646,6 @@ export type Database = {
           created_at?: string
           id?: string
           issue_id: string
-          refund_id?: string | null
           message?: string | null
         }
         Update: {
@@ -655,7 +653,6 @@ export type Database = {
           created_at?: string
           id?: string
           issue_id?: string
-          refund_id?: string | null
           message?: string | null
         }
         Relationships: [
@@ -924,10 +921,6 @@ export type Database = {
           product_id: string
           quantity: number
           stripe_session_id: string | null
-          sales_channel: string
-          stripe_environment: string | null
-          refund_status: string
-          refunded_amount_cents: number
         }
         Insert: {
           amount: number
@@ -947,10 +940,6 @@ export type Database = {
           product_id: string
           quantity?: number
           stripe_session_id?: string | null
-          sales_channel?: string
-          stripe_environment?: string | null
-          refund_status?: string
-          refunded_amount_cents?: number
         }
         Update: {
           amount?: number
@@ -970,10 +959,6 @@ export type Database = {
           product_id?: string
           quantity?: number
           stripe_session_id?: string | null
-          sales_channel?: string
-          stripe_environment?: string | null
-          refund_status?: string
-          refunded_amount_cents?: number
         }
         Relationships: [
           {
@@ -1992,10 +1977,6 @@ export type Database = {
           scene_id: string
           scene_type: string
         }[]
-      }
-      track_order_refund_status: {
-        Args: { _order_number: string; _customer_email: string }
-        Returns: { refund_status: string; refunded_amount_cents: number }[]
       }
       track_order: {
         Args: { _customer_email: string; _order_number: string }
