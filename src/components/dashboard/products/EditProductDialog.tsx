@@ -143,7 +143,6 @@ export function EditProductDialog({
 }: EditProductDialogProps) {
   const update = useUpdateProduct();
 
-  const [price, setPrice] = useState("");
   const [margin, setMargin] = useState("");
   const [threshold, setThreshold] = useState("");
 
@@ -175,18 +174,18 @@ export function EditProductDialog({
   const supplier = product.supplier_products;
   const supplierBasePrice = Number(supplier?.base_price ?? 0);
   const maxMargin = Number(supplier?.max_margin_percent ?? 0);
-  const moq = supplier?.moq ?? null;
+  const moq = supplier?.moq ?? null;`r`n  const appliedMargin = Number(margin);`r`n  const publicPrice = Number.isFinite(appliedMargin)`r`n    ? Number((supplierBasePrice * (1 + appliedMargin / 100)).toFixed(2))`r`n    : 0;
 
   const preview = useMemo(() => {
-    const publicPrice = Number(price);
+    const calculatedPrice = publicPrice;
     const promotionalPrice = Number(salePrice);
 
-    if (!Number.isFinite(publicPrice) || publicPrice <= 0) {
+    if (!Number.isFinite(calculatedPrice) || calculatedPrice <= 0) {
       return {
         valid: false,
         discountPercent: 0,
         saving: 0,
-        currentPrice: publicPrice,
+        currentPrice: calculatedPrice,
       };
     }
 
@@ -195,7 +194,7 @@ export function EditProductDialog({
         valid: true,
         discountPercent: 0,
         saving: 0,
-        currentPrice: publicPrice,
+        currentPrice: calculatedPrice,
       };
     }
 
@@ -203,7 +202,7 @@ export function EditProductDialog({
       salePrice.trim() === "" ||
       !Number.isFinite(promotionalPrice) ||
       promotionalPrice < 0 ||
-      promotionalPrice >= publicPrice
+      promotionalPrice >= calculatedPrice
     ) {
       return {
         valid: false,
@@ -216,19 +215,19 @@ export function EditProductDialog({
     return {
       valid: true,
       discountPercent: Math.round(
-        ((publicPrice - promotionalPrice) / publicPrice) * 100,
+        ((calculatedPrice - promotionalPrice) / calculatedPrice) * 100,
       ),
-      saving: Number((publicPrice - promotionalPrice).toFixed(2)),
+      saving: Number((calculatedPrice - promotionalPrice).toFixed(2)),
       currentPrice: promotionalPrice,
     };
-  }, [price, promotionEnabled, salePrice]);
+  }, [publicPrice, promotionEnabled, salePrice]);
 
   const submit = async () => {
-    const publicPrice = Number(price);
+    const calculatedPrice = publicPrice;
     const appliedMargin = Number(margin);
     const lowStockThreshold = Number(threshold);
 
-    if (price.trim() === "" || !Number.isFinite(publicPrice) || publicPrice <= 0) {
+    if (price.trim() === "" || !Number.isFinite(calculatedPrice) || calculatedPrice <= 0) {
       toast.error("Saisissez un prix public valide.");
       return;
     }
@@ -263,7 +262,7 @@ export function EditProductDialog({
         salePrice.trim() === "" ||
         !Number.isFinite(Number(salePrice)) ||
         Number(salePrice) < 0 ||
-        Number(salePrice) >= publicPrice
+        Number(salePrice) >= currentPublicPrice
       ) {
         toast.error(
           "Le prix promotionnel doit être valide et inférieur au prix public.",
@@ -306,7 +305,7 @@ export function EditProductDialog({
       await update.mutateAsync({
         id: product.id,
         updates: {
-          public_price: Number(publicPrice.toFixed(2)),
+          public_price: Number(currentPublicPrice.toFixed(2)),
           applied_margin: Number(appliedMargin.toFixed(2)),
           low_stock_threshold: lowStockThreshold,
           sale_price: finalSalePrice,
@@ -461,7 +460,7 @@ export function EditProductDialog({
                       inputMode="decimal"
                       step="0.01"
                       min="0"
-                      max={Number(price) || undefined}
+                      max={publicPrice || undefined}
                       value={salePrice}
                       onChange={(event) => setSalePrice(event.target.value)}
                     />
