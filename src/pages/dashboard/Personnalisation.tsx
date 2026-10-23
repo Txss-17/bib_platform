@@ -77,16 +77,42 @@ export default function Personnalisation() {
   const [previewView, setPreviewView] = useState("2d");
   useEffect(() => {
     if (!selectedProductId) return;
-    try {
-      const stored = localStorage.getItem(`bib-product-customization:${selectedProductId}`);
-      setCustomization(stored ? { ...{ brand: "", color: "#172B4D", logo: "", packaging: "" }, ...JSON.parse(stored) } : { brand: "", color: "#172B4D", logo: "", packaging: "" });
+    let active = true;
+    const loadCustomization = async () => {
       setSaved(false);
-    } catch { setSaved(false); }
+      const { data, error } = await (supabase as any)
+        .from("product_customization_dossiers")
+        .select("merchant_config")
+        .eq("product_id", selectedProductId)
+        .maybeSingle();
+      if (!active) return;
+      if (!error && data?.merchant_config) {
+        setCustomization((current) => ({ ...current, ...data.merchant_config }));
+        return;
+      }
+      try {
+        const stored = localStorage.getItem(`bib-product-customization:${selectedProductId}`);
+        if (stored) setCustomization((current) => ({ ...current, ...JSON.parse(stored) }));
+      } catch { /* Ignore invalid legacy local drafts. */ }
+    };
+    void loadCustomization();
+    return () => { active = false; };
   }, [selectedProductId]);
-  const saveCustomization = () => {
+  const saveCustomization = async () => {
     if (!selectedProductId) return;
-    localStorage.setItem(`bib-product-customization:${selectedProductId}`, JSON.stringify(customization));
+    const { error } = await (supabase as any)
+      .from("product_customization_dossiers")
+      .upsert(
+        { product_id: selectedProductId, merchant_config: customization, updated_at: new Date().toISOString() },
+        { onConflict: "product_id" },
+      );
+    if (error) {
+      toast.error("Impossible d’enregistrer le dossier de personnalisation.");
+      return;
+    }
+    localStorage.removeItem(`bib-product-customization:${selectedProductId}`);
     setSaved(true);
+    toast.success("Brouillon de personnalisation enregistré.");
   };
 
   const [view, setView] = useState<ViewMode>("catalogue");
@@ -268,7 +294,7 @@ export default function Personnalisation() {
                   </div>
                 </div>
               </div>              <p className="text-xs text-muted-foreground sm:col-span-2">Cette page prépare la demande de personnalisation. Les valeurs seront à confirmer par le fournisseur avant commande.</p>
-              <div className="flex items-center gap-3 sm:col-span-2"><Button onClick={saveCustomization}>Enregistrer le brouillon</Button>{saved && <span className="text-sm text-emerald-700">Brouillon enregistré sur cet appareil.</span>}</div>
+              <div className="flex items-center gap-3 sm:col-span-2"><Button onClick={saveCustomization}>Enregistrer le brouillon</Button>{saved && <span className="text-sm text-emerald-700">Brouillon enregistré dans votre dossier produit.</span>}</div>
             </CardContent>
           </Card>
         )}

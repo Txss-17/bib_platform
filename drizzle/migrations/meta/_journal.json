@@ -120,6 +120,13 @@
                         "when":  1792791000000,
                         "tag":  "0016_supplier_customization_capabilities",
                         "breakpoints":  true
+                    },
+                    {
+                        "idx":  17,
+                        "version":  "7",
+                        "when":  1792792000000,
+                        "tag":  "0017_stock_restock_requests",
+                        "breakpoints":  true
                     }
                 ]
 }

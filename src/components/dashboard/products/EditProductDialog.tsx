@@ -33,12 +33,15 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { useUpdateProduct } from "@/hooks/useProducts";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EditProductDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   product: {
     id: string;
+    boutique_id: string;
+    supplier_product_id: string;
     public_price: number | string;
     applied_margin: number | string;
     stock_quantity: number | null;
@@ -147,6 +150,9 @@ export function EditProductDialog({
 
   const [margin, setMargin] = useState("");
   const [threshold, setThreshold] = useState("");
+  const [restockQuantity, setRestockQuantity] = useState("");
+  const [restockPending, setRestockPending] = useState(false);
+  const [restockRequests, setRestockRequests] = useState<any[]>([]);
 
   const [promotionEnabled, setPromotionEnabled] = useState(false);
   const [salePrice, setSalePrice] = useState("");
@@ -158,6 +164,7 @@ export function EditProductDialog({
     if (!open) return;
     setMargin(String(product.applied_margin ?? ""));
     setThreshold(String(product.low_stock_threshold ?? 5));
+    void supabase.from("stock_restock_requests" as any).select("id,requested_quantity,status,created_at").eq("product_id", product.id).order("created_at", { ascending: false }).then(({data}: any) => setRestockRequests(data ?? []));
 
     const existingSalePrice =
       product.sale_price != null && Number(product.sale_price) > 0
@@ -180,6 +187,16 @@ export function EditProductDialog({
     ? Number((supplierBasePrice * (1 + appliedMargin / 100)).toFixed(2))
     : 0;
 
+  const requestRestock = async () => {
+    const quantity = Number(restockQuantity);
+    if (!Number.isInteger(quantity) || quantity < Number(moq ?? 1)) { toast.error("La quantité doit respecter le minimum de commande du catalogue BIB."); return; }
+    setRestockPending(true);
+    const { error } = await supabase.from("stock_restock_requests" as any).insert({ product_id: product.id, supplier_product_id: product.supplier_product_id, boutique_id: product.boutique_id, requested_quantity: quantity, catalog_moq: Number(moq ?? 1) });
+    setRestockPending(false);
+    if (error) { toast.error("Impossible d’envoyer la demande de réassort."); return; }
+    setRestockQuantity(""); toast.success("Demande de réassort envoyée à BIB.");
+    const { data: requests } = await supabase.from("stock_restock_requests" as any).select("id,requested_quantity,status,created_at").eq("product_id", product.id).order("created_at", { ascending: false }); setRestockRequests(requests ?? []);
+  };
   const preview = useMemo(() => {
     const calculatedPrice = publicPrice;
     const promotionalPrice = Number(salePrice);
@@ -562,6 +579,13 @@ export function EditProductDialog({
               </Field>
             </div>
 
+            <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+              <Field id="restock-quantity" label="Quantité à réapprovisionner" hint={`Minimum catalogue BIB : ${moq ?? 1} unité(s). La demande ne modifie pas le stock disponible.`}>
+                <Input id="restock-quantity" type="number" min={moq ?? 1} step="1" inputMode="numeric" value={restockQuantity} onChange={(e) => setRestockQuantity(e.target.value)} placeholder={String(moq ?? 1)} />
+              </Field>
+              <Button type="button" onClick={requestRestock} disabled={restockPending || !restockQuantity}>{restockPending ? "Envoi…" : "Demander le réassort"}</Button>
+            </div>
+            {restockRequests.length > 0 && <div className="space-y-2 rounded-lg border p-3"><p className="text-sm font-medium">Suivi des demandes</p>{restockRequests.map((request) => <div key={request.id} className="flex flex-wrap items-center justify-between gap-2 text-xs"><span>{request.requested_quantity} unité(s) · {new Date(request.created_at).toLocaleDateString("fr-FR")}</span><Badge variant="outline">{request.status === "requested" ? "Demandée" : request.status === "approved" ? "Approuvée" : request.status === "ordered" ? "Commandée" : request.status === "received" ? "Reçue" : request.status === "rejected" ? "Refusée" : request.status === "cancelled" ? "Annulée" : request.status}</Badge></div>)}</div>}
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription className="text-xs leading-5">
