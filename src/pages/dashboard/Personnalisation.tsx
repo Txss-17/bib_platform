@@ -25,6 +25,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSupplierProducts } from "@/hooks/useSupplierProducts";
 import { useProducts } from "@/hooks/useProducts";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 type ViewMode = "catalogue" | "mine";
 type CustomizationFilter = "all" | "product" | "packaging" | "branding";
@@ -68,7 +70,8 @@ export default function Personnalisation() {
   const { data: supplierProducts = [], isLoading, isError } =
     useSupplierProducts();
   const { data: myProducts = [] } = useProducts();
-  const selectedProduct = myProducts.find((item) => item.id === selectedProductId);  const [customization, setCustomization] = useState({ brand: "", color: "#172B4D", logo: "", packaging: "" });
+  const selectedProduct = myProducts.find((item) => item.id === selectedProductId);
+  const [customization, setCustomization] = useState({ brand: "", color: "#172B4D", logo: "", packaging: "" });
   const [saved, setSaved] = useState(false);
   useEffect(() => {
     if (!selectedProductId) return;
