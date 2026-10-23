@@ -2220,7 +2220,7 @@ export function StudioEditor({
             defaultValue="scenes"
             className="flex h-full flex-col"
           >
-            <TabsList className="m-3 grid grid-cols-3">
+            <TabsList className="m-3 grid grid-cols-4">
               <TabsTrigger value="scenes">
                 Scènes
               </TabsTrigger>
@@ -2229,6 +2229,9 @@ export function StudioEditor({
               </TabsTrigger>
               <TabsTrigger value="seo">
                 SEO
+              </TabsTrigger>
+              <TabsTrigger value="stories">
+                Stories
               </TabsTrigger>
             </TabsList>
 
@@ -3012,6 +3015,13 @@ export function StudioEditor({
                   )}
                 </Card>
               </div>
+            </TabsContent>
+
+            <TabsContent
+              value="stories"
+              className="mt-0 flex-1 overflow-y-auto px-4 pb-5"
+            >
+              <StoriesManager boutiqueId={boutiqueId} />
             </TabsContent>
           </Tabs>
         </Card>

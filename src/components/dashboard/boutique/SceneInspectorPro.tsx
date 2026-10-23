@@ -227,12 +227,14 @@ function ListEditor<T extends Record<string, any>>({
   factory,
   renderItem,
   addLabel,
+  maxItems,
 }: {
   items: T[];
   onChange: (next: T[]) => void;
   factory: () => T;
   renderItem: (item: T, update: (patch: Partial<T>) => void) => React.ReactNode;
   addLabel: string;
+  maxItems?: number;
 }) {
   return (
     <div className="space-y-2">
@@ -256,7 +258,10 @@ function ListEditor<T extends Record<string, any>>({
         variant="outline"
         size="sm"
         className="w-full h-8 text-xs"
-        onClick={() => onChange([...items, factory()])}
+        disabled={maxItems !== undefined && items.length >= maxItems}
+        onClick={() => {
+          if (maxItems === undefined || items.length < maxItems) onChange([...items, factory()]);
+        }}
       >
         <Plus className="w-3.5 h-3.5 mr-1" /> {addLabel}
       </Button>
@@ -903,6 +908,7 @@ export function SceneInspectorPro({
               items={((c.images ?? []) as string[]).map((url) => ({ url }))}
               factory={() => ({ url: "" })}
               addLabel="Ajouter un visuel"
+              maxItems={12}
               onChange={(next) => setField("images", next.map((x) => x.url).filter(Boolean))}
               renderItem={(item, update) => (
                 <ImageField
