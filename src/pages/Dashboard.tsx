@@ -687,8 +687,8 @@ export default function Dashboard() {
                             </Badge>
                           </td>
                           <td className="py-3.5 text-right text-sm font-semibold tabular-nums text-foreground">
-                            {order.total_amount != null
-                              ? euro(Number(order.total_amount))
+                            {order.amount != null
+                              ? euro(Number(order.amount))
                               : "—"}
                           </td>
                         </tr>
