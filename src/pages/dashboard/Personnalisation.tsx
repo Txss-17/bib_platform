@@ -72,7 +72,11 @@ export default function Personnalisation() {
   const { data: myProducts = [] } = useProducts();
   const selectedProduct = myProducts.find((item) => item.id === selectedProductId);
   const capabilities = (selectedProduct?.supplier_products as any)?.customization_capabilities ?? {};
-  const [customization, setCustomization] = useState({ brand: "", color: "#172B4D", logo: "", packaging: "", marking: "", material: "", finish: "", dimensions: "", text: "", instructions: "" });
+  const capabilityOptions = (key: string): string[] =>
+    Array.isArray(capabilities[key]) ? capabilities[key].filter((value: unknown): value is string => typeof value === "string" && value.trim().length > 0) : [];
+  const [customization, setCustomization] = useState({ brand: "", color: "#172B4D", logo: "", logoOption: "", packaging: "", marking: "", material: "", finish: "", dimensions: "", text: "", instructions: "" });
+  const availableColors = capabilityOptions("colors");
+  const previewColor = availableColors.includes(customization.color) ? customization.color : availableColors[0] ?? "#172B4D";
   const [saved, setSaved] = useState(false);
   const [previewView, setPreviewView] = useState("2d");
   useEffect(() => {
@@ -103,7 +107,7 @@ export default function Personnalisation() {
     const { error } = await (supabase as any)
       .from("product_customization_dossiers")
       .upsert(
-        { product_id: selectedProductId, merchant_config: customization, updated_at: new Date().toISOString() },
+        { product_id: selectedProductId, merchant_config: { ...customization, color: previewColor, logoOption: capabilityOptions("logo").includes(customization.logoOption) ? customization.logoOption : "", logo: capabilityOptions("logo").length > 0 ? customization.logo : "", packaging: capabilityOptions("packaging").includes(customization.packaging) ? customization.packaging : "", marking: capabilityOptions("marking").includes(customization.marking) ? customization.marking : "", material: capabilityOptions("materials").includes(customization.material) ? customization.material : "", finish: capabilityOptions("finishes").includes(customization.finish) ? customization.finish : "", text: capabilities.text === true ? customization.text : "" }, updated_at: new Date().toISOString() },
         { onConflict: "product_id" },
       );
     if (error) {
@@ -264,32 +268,24 @@ export default function Personnalisation() {
                 <label className="text-sm font-medium">Nom de marque souhaité</label>
                 <Input id="custom-brand" placeholder="Votre marque" className="mt-1" value={customization.brand} onChange={(e) => { setCustomization({ ...customization, brand: e.target.value }); setSaved(false); }} />
               </div>
-              <div>
-                <label className="text-sm font-medium">Couleur principale</label>
-                <Input id="custom-color" type="color" value={customization.color} onChange={(e) => { setCustomization({ ...customization, color: e.target.value }); setSaved(false); }} className="mt-1 h-10" />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Lien vers le logo</label>
-                <Input id="custom-logo" type="url" placeholder="https://" value={customization.logo} onChange={(e) => { setCustomization({ ...customization, logo: e.target.value }); setSaved(false); }} className="mt-1" />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Demande de packaging</label>
-                <Input id="custom-packaging" placeholder="À confirmer avec le fournisseur" value={customization.packaging} onChange={(e) => { setCustomization({ ...customization, packaging: e.target.value }); setSaved(false); }} className="mt-1" />
-              </div>
-              <div><label className="text-sm font-medium">Type de marquage</label><Input placeholder="Impression, gravure…" value={customization.marking ?? ""} onChange={(e) => { setCustomization({ ...customization, marking: e.target.value }); setSaved(false); }} className="mt-1" /></div>
-              <div><label className="text-sm font-medium">Matière souhaitée</label><Input placeholder="À confirmer" value={customization.material ?? ""} onChange={(e) => { setCustomization({ ...customization, material: e.target.value }); setSaved(false); }} className="mt-1" /></div>
-              <div><label className="text-sm font-medium">Finition</label><Input placeholder="Mat, brillant…" value={customization.finish ?? ""} onChange={(e) => { setCustomization({ ...customization, finish: e.target.value }); setSaved(false); }} className="mt-1" /></div>
+              {capabilityOptions("colors").length > 0 ? <div><label className="text-sm font-medium">Couleur disponible</label><select id="custom-color" value={previewColor} onChange={(e) => { setCustomization({ ...customization, color: e.target.value }); setSaved(false); }} className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm">{capabilityOptions("colors").map((color) => <option key={color} value={color}>{color}</option>)}</select></div> : <p className="text-sm text-muted-foreground">Couleurs : aucune option confirmée au catalogue BIB.</p>}
+              {capabilityOptions("logo").length > 0 && <div><label className="text-sm font-medium">Personnalisation du logo</label><select value={customization.logoOption} onChange={(e) => { setCustomization({ ...customization, logoOption: e.target.value }); setSaved(false); }} className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="">Choisir une option</option>{capabilityOptions("logo").map((option) => <option key={option} value={option}>{option}</option>)}</select><Input id="custom-logo" type="url" placeholder="Lien vers le fichier de logo (facultatif)" value={customization.logo} onChange={(e) => { setCustomization({ ...customization, logo: e.target.value }); setSaved(false); }} className="mt-2" /></div>}
+              {capabilityOptions("packaging").length > 0 && <div><label className="text-sm font-medium">Packaging disponible</label><select value={customization.packaging} onChange={(e) => { setCustomization({ ...customization, packaging: e.target.value }); setSaved(false); }} className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="">Choisir une option</option>{capabilityOptions("packaging").map((option) => <option key={option} value={option}>{option}</option>)}</select></div>}
+              {capabilityOptions("marking").length > 0 && <div><label className="text-sm font-medium">Type de marquage</label><select value={customization.marking} onChange={(e) => { setCustomization({ ...customization, marking: e.target.value }); setSaved(false); }} className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="">Choisir une option</option>{capabilityOptions("marking").map((option) => <option key={option} value={option}>{option}</option>)}</select></div>}
+              {capabilityOptions("materials").length > 0 && <div><label className="text-sm font-medium">Matière disponible</label><select value={customization.material} onChange={(e) => { setCustomization({ ...customization, material: e.target.value }); setSaved(false); }} className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="">Choisir une option</option>{capabilityOptions("materials").map((option) => <option key={option} value={option}>{option}</option>)}</select></div>}
+              {capabilityOptions("finishes").length > 0 && <div><label className="text-sm font-medium">Finition disponible</label><select value={customization.finish} onChange={(e) => { setCustomization({ ...customization, finish: e.target.value }); setSaved(false); }} className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="">Choisir une option</option>{capabilityOptions("finishes").map((option) => <option key={option} value={option}>{option}</option>)}</select></div>}
+              {capabilityOptions("logo").length === 0 && capabilityOptions("colors").length === 0 && capabilityOptions("packaging").length === 0 && capabilityOptions("marking").length === 0 && capabilityOptions("materials").length === 0 && capabilityOptions("finishes").length === 0 && capabilities.text !== true && <div className="sm:col-span-2 rounded-lg border border-dashed p-3 text-sm text-muted-foreground">Aucune option de personnalisation n’est confirmée pour ce produit dans le catalogue BIB.</div>}
               <div><label className="text-sm font-medium">Dimensions</label><Input placeholder="L × l × H" value={customization.dimensions ?? ""} onChange={(e) => { setCustomization({ ...customization, dimensions: e.target.value }); setSaved(false); }} className="mt-1" /></div>
-              <div><label className="text-sm font-medium">Texte à imprimer</label><Input placeholder="Texte ou slogan" value={customization.text ?? ""} onChange={(e) => { setCustomization({ ...customization, text: e.target.value }); setSaved(false); }} className="mt-1" /></div>
-              <div><label className="text-sm font-medium">Consignes complémentaires</label><Input placeholder="Précisions pour le fournisseur" value={customization.instructions ?? ""} onChange={(e) => { setCustomization({ ...customization, instructions: e.target.value }); setSaved(false); }} className="mt-1" /></div>              <div className="sm:col-span-2 min-w-0 overflow-hidden rounded-xl border p-3 sm:p-4" style={{ backgroundColor: customization.color + "12" }}>
+              {capabilities.text === true && <div><label className="text-sm font-medium">Texte à imprimer</label><Input placeholder="Texte ou slogan" value={customization.text ?? ""} onChange={(e) => { setCustomization({ ...customization, text: e.target.value }); setSaved(false); }} className="mt-1" /></div>}
+              <div><label className="text-sm font-medium">Consignes complémentaires</label><Input placeholder="Précisions pour le fournisseur" value={customization.instructions ?? ""} onChange={(e) => { setCustomization({ ...customization, instructions: e.target.value }); setSaved(false); }} className="mt-1" /></div>              <div className="sm:col-span-2 min-w-0 overflow-hidden rounded-xl border p-3 sm:p-4" style={{ backgroundColor: previewColor + "12" }}>
                 <p className="mb-3 text-sm font-semibold">Aperçu de la configuration</p>
                 <div className="mb-3 flex flex-wrap gap-2">{["2d", "3d", "gauche", "droite", "haut", "bas"].map((view) => <Button key={view} type="button" size="sm" variant={previewView === view ? "default" : "outline"} onClick={() => setPreviewView(view)}>{view.toUpperCase()}</Button>)}</div>
                 <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:gap-6">
                   {selectedProduct.supplier_products?.image_url && <img src={selectedProduct.supplier_products.image_url} alt={selectedProduct.supplier_products.name ?? "Produit"} className="h-64 w-full max-w-full shrink-0 rounded-xl border bg-white object-contain p-3 transition-transform duration-300 sm:h-80 sm:max-w-[28rem]" style={{ transform: previewView === "gauche" ? "perspective(500px) rotateY(-35deg)" : previewView === "droite" ? "perspective(500px) rotateY(35deg)" : previewView === "haut" ? "perspective(500px) rotateX(35deg)" : previewView === "bas" ? "perspective(500px) rotateX(-35deg)" : previewView === "3d" ? "perspective(500px) rotateY(-18deg) rotateX(8deg)" : "none" }} />}
                   <div className="min-w-0">
-                    {customization.logo && <img src={customization.logo} alt="Logo de marque" className="mb-2 h-8 max-w-full object-contain" />}
-                    <p className="font-semibold" style={{ color: customization.color }}>{customization.brand || selectedProduct.supplier_products?.name}</p>
-                    {customization.text && <p className="mt-1 text-sm">{customization.text}</p>}
+                    {capabilityOptions("logo").length > 0 && customization.logo && <img src={customization.logo} alt="Logo de marque" className="mb-2 h-8 max-w-full object-contain" />}
+                    <p className="font-semibold" style={{ color: previewColor }}>{customization.brand || selectedProduct.supplier_products?.name}</p>
+                    {capabilities.text === true && customization.text && <p className="mt-1 text-sm">{customization.text}</p>}
                     <p className="mt-1 text-xs text-muted-foreground">Aperçu indicatif, à confirmer avec le fournisseur.</p>
                   </div>
                 </div>
