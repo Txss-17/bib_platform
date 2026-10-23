@@ -1,4 +1,4 @@
-﻿ALTER TABLE public.orders
+ALTER TABLE public.orders
   ADD COLUMN IF NOT EXISTS sales_channel text NOT NULL DEFAULT 'storefront';
 
 DO $$ BEGIN
