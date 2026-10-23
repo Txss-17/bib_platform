@@ -71,7 +71,7 @@ export default function Personnalisation() {
     useSupplierProducts();
   const { data: myProducts = [] } = useProducts();
   const selectedProduct = myProducts.find((item) => item.id === selectedProductId);
-  const [customization, setCustomization] = useState({ brand: "", color: "#172B4D", logo: "", packaging: "" });
+  const [customization, setCustomization] = useState({ brand: "", color: "#172B4D", logo: "", packaging: "", marking: "", material: "", finish: "", dimensions: "", text: "", instructions: "" });
   const [saved, setSaved] = useState(false);
   useEffect(() => {
     if (!selectedProductId) return;
@@ -248,7 +248,12 @@ export default function Personnalisation() {
                 <label className="text-sm font-medium">Demande de packaging</label>
                 <Input id="custom-packaging" placeholder="À confirmer avec le fournisseur" value={customization.packaging} onChange={(e) => { setCustomization({ ...customization, packaging: e.target.value }); setSaved(false); }} className="mt-1" />
               </div>
-              <p className="text-xs text-muted-foreground sm:col-span-2">Cette page prépare la demande de personnalisation. Les valeurs seront à confirmer par le fournisseur avant commande.</p>
+              <div><label className="text-sm font-medium">Type de marquage</label><Input placeholder="Impression, gravure…" value={customization.marking ?? ""} onChange={(e) => { setCustomization({ ...customization, marking: e.target.value }); setSaved(false); }} className="mt-1" /></div>
+              <div><label className="text-sm font-medium">Matière souhaitée</label><Input placeholder="À confirmer" value={customization.material ?? ""} onChange={(e) => { setCustomization({ ...customization, material: e.target.value }); setSaved(false); }} className="mt-1" /></div>
+              <div><label className="text-sm font-medium">Finition</label><Input placeholder="Mat, brillant…" value={customization.finish ?? ""} onChange={(e) => { setCustomization({ ...customization, finish: e.target.value }); setSaved(false); }} className="mt-1" /></div>
+              <div><label className="text-sm font-medium">Dimensions</label><Input placeholder="L × l × H" value={customization.dimensions ?? ""} onChange={(e) => { setCustomization({ ...customization, dimensions: e.target.value }); setSaved(false); }} className="mt-1" /></div>
+              <div><label className="text-sm font-medium">Texte à imprimer</label><Input placeholder="Texte ou slogan" value={customization.text ?? ""} onChange={(e) => { setCustomization({ ...customization, text: e.target.value }); setSaved(false); }} className="mt-1" /></div>
+              <div><label className="text-sm font-medium">Consignes complémentaires</label><Input placeholder="Précisions pour le fournisseur" value={customization.instructions ?? ""} onChange={(e) => { setCustomization({ ...customization, instructions: e.target.value }); setSaved(false); }} className="mt-1" /></div>              <p className="text-xs text-muted-foreground sm:col-span-2">Cette page prépare la demande de personnalisation. Les valeurs seront à confirmer par le fournisseur avant commande.</p>
               <div className="flex items-center gap-3 sm:col-span-2"><Button onClick={saveCustomization}>Enregistrer le brouillon</Button>{saved && <span className="text-sm text-emerald-700">Brouillon enregistré sur cet appareil.</span>}</div>
             </CardContent>
           </Card>
