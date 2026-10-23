@@ -1,6 +1,7 @@
 ﻿import {
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -14,6 +15,7 @@ import {
   ChevronUp,
   Copy,
   ExternalLink,
+  EyeOff,
   GripVertical,
   Loader2,
   Monitor,
@@ -170,6 +172,9 @@ interface Props {
     } | null;
   };
 }
+
+const normalizeStudioPageTitle = (title: string) =>
+  title.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("fr");
 
 const SUPPORTED_SEO_LOCALES = [
   { code: "fr", label: "Français" },
@@ -1057,6 +1062,10 @@ export function StudioEditor({
     null,
   );
 
+  const pageCreationLocks = useRef(new Set<string>());
+  const sceneMutationLocks = useRef(new Set<string>());
+  const [showUnpublishConfirm, setShowUnpublishConfirm] = useState(false);
+
   const [
     showAddScene,
     setShowAddScene,
@@ -1498,6 +1507,26 @@ export function StudioEditor({
     },
   });
 
+  const unpublish = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase
+        .from("boutiques")
+        .update({ status: "draft" })
+        .eq("id", boutiqueId)
+        .select("id")
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Error("Boutique introuvable ou dépublication refusée.");
+    },
+    onSuccess: () => {
+      setShowUnpublishConfirm(false);
+      toast.success(tx("Boutique mise hors ligne.", "Store unpublished."));
+      void queryClient.invalidateQueries({ queryKey: ["boutiques"] });
+      void queryClient.invalidateQueries({ queryKey: ["boutique-edit", boutiqueId] });
+      void queryClient.invalidateQueries({ queryKey: ["public-boutique"] });
+    },
+    onError: () => toast.error(tx("Dépublication impossible. Réessayez.", "Could not unpublish the store. Try again.")),
+  });
   const handlePatchPage = (
     patch: Partial<PageLike>,
   ) => {
@@ -1516,6 +1545,16 @@ export function StudioEditor({
     async (
       template: PageTemplate,
     ) => {
+      const titleKey = normalizeStudioPageTitle(template.defaultTitle);
+      const lockKey = `page-creation:${boutiqueId}`;
+      if (pageCreationLocks.current.has(lockKey)) return;
+      const existingPage = pages.find((page) => normalizeStudioPageTitle(page.title) === titleKey);
+      if (existingPage) {
+        setActivePageId(existingPage.id);
+        toast.info(tx("Cette page existe déjà ; elle a été ouverte.", "This page already exists and has been opened."));
+        return;
+      }
+      pageCreationLocks.current.add(lockKey);
       try {
         const page =
           await createPage.mutateAsync(
@@ -1598,11 +1637,15 @@ export function StudioEditor({
             ? error.message
             : "Création impossible.",
         );
+      } finally {
+        pageCreationLocks.current.delete(lockKey);
       }
     };
 
   const handleOpenProductTemplate =
     async () => {
+      const lockKey = `page-creation:${boutiqueId}`;
+      if (pageCreationLocks.current.has(lockKey)) return;
       const existing =
         pages.find(
           (page) =>
@@ -1617,6 +1660,7 @@ export function StudioEditor({
         return;
       }
 
+      pageCreationLocks.current.add(lockKey);
       try {
         const page =
           await createPage.mutateAsync(
@@ -1682,6 +1726,8 @@ export function StudioEditor({
             ? error.message
             : "Création impossible.",
         );
+      } finally {
+        pageCreationLocks.current.delete(lockKey);
       }
     };
 
@@ -1695,6 +1741,9 @@ export function StudioEditor({
       if (!definition) {
         return;
       }
+      const lockKey = `${activePageId ?? "home"}:scene-add`;
+      if (sceneMutationLocks.current.has(lockKey)) return;
+      sceneMutationLocks.current.add(lockKey);
 
       addScene.mutate(
         {
@@ -1722,12 +1771,16 @@ export function StudioEditor({
                 ? error.message
                 : "Ajout impossible.",
             ),
+          onSettled: () => sceneMutationLocks.current.delete(lockKey),
         },
       );
     };
 
   const handleDuplicateScene =
     (scene: SceneRecord) => {
+      const lockKey = `${activePageId ?? "home"}:scene-add`;
+      if (sceneMutationLocks.current.has(lockKey)) return;
+      sceneMutationLocks.current.add(lockKey);
       addScene.mutate(
         {
           boutiqueId,
@@ -1751,6 +1804,7 @@ export function StudioEditor({
             toast.error(
               "Duplication impossible.",
             ),
+          onSettled: () => sceneMutationLocks.current.delete(lockKey),
         },
       );
     };
@@ -2022,6 +2076,19 @@ export function StudioEditor({
             <Button
               variant="outline"
               size="sm"
+              className="gap-2 text-destructive"
+              disabled={unpublish.isPending}
+              onClick={() => setShowUnpublishConfirm(true)}
+            >
+              <EyeOff className="h-4 w-4" />
+              {tx("Dépublier", "Unpublish")}
+            </Button>
+          )}
+
+          {isPublished && (
+            <Button
+              variant="outline"
+              size="sm"
               className="gap-2"
               asChild
             >
@@ -2038,7 +2105,7 @@ export function StudioEditor({
 
           <ActionButton
             size="sm"
-            disabled={!validation.ok}
+            disabled={!validation.ok || unpublish.isPending}
             aria-describedby={!validation.ok ? "publication-validation" : undefined}
             state={stateFromMutation(
               publish,
@@ -2104,8 +2171,8 @@ export function StudioEditor({
                 (template) =>
                   !pages.some(
                     (page) =>
-                      page.title ===
-                      template.defaultTitle,
+                      normalizeStudioPageTitle(page.title) ===
+                      normalizeStudioPageTitle(template.defaultTitle),
                   ),
               )
               .map(
@@ -2114,6 +2181,7 @@ export function StudioEditor({
                     key={template.key}
                     size="sm"
                     variant="outline"
+                    disabled={createPage.isPending}
                     onClick={() =>
                       handleCreatePage(
                         template,
@@ -2129,6 +2197,7 @@ export function StudioEditor({
             <Button
               size="sm"
               variant="outline"
+              disabled={createPage.isPending}
               onClick={
                 handleOpenProductTemplate
               }
@@ -3120,6 +3189,23 @@ export function StudioEditor({
           </div>
         </Card>
       </div>
+
+      <AlertDialog open={showUnpublishConfirm} onOpenChange={setShowUnpublishConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{tx("Mettre la boutique hors ligne ?", "Take the store offline?")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {tx("La boutique ne sera plus accessible publiquement. Ses pages, scènes et produits seront conservés ; vous pourrez la republier depuis le Studio.", "The store will no longer be publicly accessible. Its pages, scenes, and products will be kept; you can publish it again from Studio.")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={unpublish.isPending}>{tx("Annuler", "Cancel")}</AlertDialogCancel>
+            <AlertDialogAction disabled={unpublish.isPending} onClick={(event) => { event.preventDefault(); unpublish.mutate(); }}>
+              {unpublish.isPending ? tx("Dépublication…", "Unpublishing…") : tx("Confirmer la dépublication", "Confirm unpublishing")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete scene */}
       <AlertDialog
