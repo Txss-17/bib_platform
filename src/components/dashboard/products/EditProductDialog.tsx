@@ -1,5 +1,5 @@
 ﻿
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";`r`nimport { useNavigate } from "react-router-dom";
 import {
   AlertCircle,
   BadgeEuro,
@@ -141,7 +141,7 @@ export function EditProductDialog({
   onOpenChange,
   product,
 }: EditProductDialogProps) {
-  const update = useUpdateProduct();
+  const update = useUpdateProduct();`r`n  const navigate = useNavigate();
 
   const [margin, setMargin] = useState("");
   const [threshold, setThreshold] = useState("");
@@ -654,5 +654,6 @@ function toDatetimeLocal(value: string | null | undefined): string {
     .toISOString()
     .slice(0, 16);
 }
+
 
 
