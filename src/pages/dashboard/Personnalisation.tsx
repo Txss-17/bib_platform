@@ -71,6 +71,7 @@ export default function Personnalisation() {
     useSupplierProducts();
   const { data: myProducts = [] } = useProducts();
   const selectedProduct = myProducts.find((item) => item.id === selectedProductId);
+  const capabilities = (selectedProduct?.supplier_products as any)?.customization_capabilities ?? {};
   const [customization, setCustomization] = useState({ brand: "", color: "#172B4D", logo: "", packaging: "", marking: "", material: "", finish: "", dimensions: "", text: "", instructions: "" });
   const [saved, setSaved] = useState(false);
   useEffect(() => {
@@ -253,7 +254,18 @@ export default function Personnalisation() {
               <div><label className="text-sm font-medium">Finition</label><Input placeholder="Mat, brillant…" value={customization.finish ?? ""} onChange={(e) => { setCustomization({ ...customization, finish: e.target.value }); setSaved(false); }} className="mt-1" /></div>
               <div><label className="text-sm font-medium">Dimensions</label><Input placeholder="L × l × H" value={customization.dimensions ?? ""} onChange={(e) => { setCustomization({ ...customization, dimensions: e.target.value }); setSaved(false); }} className="mt-1" /></div>
               <div><label className="text-sm font-medium">Texte à imprimer</label><Input placeholder="Texte ou slogan" value={customization.text ?? ""} onChange={(e) => { setCustomization({ ...customization, text: e.target.value }); setSaved(false); }} className="mt-1" /></div>
-              <div><label className="text-sm font-medium">Consignes complémentaires</label><Input placeholder="Précisions pour le fournisseur" value={customization.instructions ?? ""} onChange={(e) => { setCustomization({ ...customization, instructions: e.target.value }); setSaved(false); }} className="mt-1" /></div>              <p className="text-xs text-muted-foreground sm:col-span-2">Cette page prépare la demande de personnalisation. Les valeurs seront à confirmer par le fournisseur avant commande.</p>
+              <div><label className="text-sm font-medium">Consignes complémentaires</label><Input placeholder="Précisions pour le fournisseur" value={customization.instructions ?? ""} onChange={(e) => { setCustomization({ ...customization, instructions: e.target.value }); setSaved(false); }} className="mt-1" /></div>              <div className="sm:col-span-2 rounded-xl border p-4" style={{ backgroundColor: customization.color + "12" }}>
+                <p className="mb-3 text-sm font-semibold">Aperçu de la configuration</p>
+                <div className="flex items-center gap-4">
+                  {selectedProduct.supplier_products?.image_url && <img src={selectedProduct.supplier_products.image_url} alt={selectedProduct.supplier_products.name ?? "Produit"} className="h-24 w-24 rounded-lg border bg-white object-cover" />}
+                  <div className="min-w-0">
+                    {customization.logo && <img src={customization.logo} alt="Logo de marque" className="mb-2 h-8 max-w-32 object-contain" />}
+                    <p className="font-semibold" style={{ color: customization.color }}>{customization.brand || selectedProduct.supplier_products?.name}</p>
+                    {customization.text && <p className="mt-1 text-sm">{customization.text}</p>}
+                    <p className="mt-1 text-xs text-muted-foreground">Aperçu indicatif, à confirmer avec le fournisseur.</p>
+                  </div>
+                </div>
+              </div>              <p className="text-xs text-muted-foreground sm:col-span-2">Cette page prépare la demande de personnalisation. Les valeurs seront à confirmer par le fournisseur avant commande.</p>
               <div className="flex items-center gap-3 sm:col-span-2"><Button onClick={saveCustomization}>Enregistrer le brouillon</Button>{saved && <span className="text-sm text-emerald-700">Brouillon enregistré sur cet appareil.</span>}</div>
             </CardContent>
           </Card>
