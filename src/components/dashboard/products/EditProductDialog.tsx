@@ -154,8 +154,6 @@ export function EditProductDialog({
 
   useEffect(() => {
     if (!open) return;
-
-    setPrice(String(product.public_price ?? ""));
     setMargin(String(product.applied_margin ?? ""));
     setThreshold(String(product.low_stock_threshold ?? 5));
 
@@ -231,7 +229,7 @@ export function EditProductDialog({
     const appliedMargin = Number(margin);
     const lowStockThreshold = Number(threshold);
 
-    if (price.trim() === "" || !Number.isFinite(calculatedPrice) || calculatedPrice <= 0) {
+    if (!Number.isFinite(calculatedPrice) || calculatedPrice <= 0) {
       toast.error("Saisissez un prix public valide.");
       return;
     }
@@ -266,7 +264,7 @@ export function EditProductDialog({
         salePrice.trim() === "" ||
         !Number.isFinite(Number(salePrice)) ||
         Number(salePrice) < 0 ||
-        Number(salePrice) >= currentPublicPrice
+        Number(salePrice) >= calculatedPrice
       ) {
         toast.error(
           "Le prix promotionnel doit être valide et inférieur au prix public.",
@@ -309,7 +307,7 @@ export function EditProductDialog({
       await update.mutateAsync({
         id: product.id,
         updates: {
-          public_price: Number(currentPublicPrice.toFixed(2)),
+          public_price: Number(calculatedPrice.toFixed(2)),
           applied_margin: Number(appliedMargin.toFixed(2)),
           low_stock_threshold: lowStockThreshold,
           sale_price: finalSalePrice,
@@ -402,18 +400,7 @@ export function EditProductDialog({
             />
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field id="public-price" label="Prix public (€)">
-                <Input
-                  id="public-price"
-                  className={inputClass}
-                  type="number"
-                  inputMode="decimal"
-                  step="0.01"
-                  min="0.01"
-                  value={price}
-                  onChange={(event) => setPrice(event.target.value)}
-                />
-              </Field>
+              <ReadonlyMetric label="Prix public calculé" value={`${publicPrice.toFixed(2)} €`} />
 
               <Field
                 id="margin"
@@ -667,4 +654,5 @@ function toDatetimeLocal(value: string | null | undefined): string {
     .toISOString()
     .slice(0, 16);
 }
+
 
