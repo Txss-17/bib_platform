@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import {
   AlertCircle,
@@ -27,6 +27,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { localizePartnerOnboardingCopy } from "@/lib/partnerOnboardingI18n";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -119,42 +121,42 @@ interface PartnerOnboardingWizardProps {
 /* Validation                                                                 */
 /* -------------------------------------------------------------------------- */
 
-const identitySchema = z.object({
+const identitySchema = (english: boolean) => z.object({
   access_code: z
     .string()
     .trim()
-    .min(4, "Code d'accès requis")
-    .max(80, "Code d'accès invalide"),
+    .min(4, english ? "Access code is required" : "Code d'accès requis")
+    .max(80, english ? "Invalid access code" : "Code d'accès invalide"),
 
   company: z
     .string()
     .trim()
-    .min(2, "Société requise")
-    .max(120, "Société trop longue"),
+    .min(2, english ? "Company name is required" : "Société requise")
+    .max(120, english ? "Company name is too long" : "Société trop longue"),
 
   legal_rep: z
     .string()
     .trim()
-    .min(2, "Représentant légal requis")
-    .max(120, "Nom trop long"),
+    .min(2, english ? "Legal representative is required" : "Représentant légal requis")
+    .max(120, english ? "Name is too long" : "Nom trop long"),
 
   email: z
     .string()
     .trim()
-    .email("Email invalide")
-    .max(255, "Email trop long"),
+    .email(english ? "Invalid email" : "Email invalide")
+    .max(255, english ? "Email is too long" : "Email trop long"),
 
   phone: z
     .string()
     .trim()
-    .min(6, "Téléphone requis")
-    .max(40, "Téléphone invalide"),
+    .min(6, english ? "Phone number is required" : "Téléphone requis")
+    .max(40, english ? "Invalid phone number" : "Téléphone invalide"),
 
   address: z
     .string()
     .trim()
-    .min(5, "Adresse requise")
-    .max(300, "Adresse trop longue"),
+    .min(5, english ? "Address is required" : "Adresse requise")
+    .max(300, english ? "Address is too long" : "Adresse trop longue"),
 });
 
 /* -------------------------------------------------------------------------- */
@@ -206,13 +208,10 @@ function getFileExtension(file: File) {
   return parts.length > 1 ? parts.at(-1)?.toLowerCase() || "bin" : "bin";
 }
 
-function formatFileSize(size: number) {
-  if (size < 1024) return `${size} o`;
-  if (size < 1024 * 1024) {
-    return `${Math.round(size / 1024)} Ko`;
-  }
-
-  return `${(size / (1024 * 1024)).toFixed(1)} Mo`;
+function formatFileSize(size: number, lang: "fr" | "en") {
+  if (size < 1024) return size + (lang === "en" ? " B" : " o");
+  if (size < 1024 * 1024) return Math.round(size / 1024) + (lang === "en" ? " KB" : " Ko");
+  return (size / (1024 * 1024)).toFixed(1) + (lang === "en" ? " MB" : " Mo");
 }
 
 function safeJson(value: unknown) {
@@ -237,6 +236,9 @@ export default function PartnerOnboardingWizard({
   accessToken,
   onSubmitted,
 }: PartnerOnboardingWizardProps) {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const copy = (text: string) => localizePartnerOnboardingCopy(text, english);
   const storageKey = `bib-onboarding-${config.portal}`;
 
   const [step, setStep] = useState(mode === "edit" ? 7 : 1);
@@ -435,7 +437,7 @@ export default function PartnerOnboardingWizard({
   );
 
   const identityResult = useMemo(
-    () => identitySchema.safeParse(identity),
+    () => identitySchema(english).safeParse(identity),
     [identity],
   );
 
@@ -458,12 +460,12 @@ export default function PartnerOnboardingWizard({
     setError(null);
 
     if (targetStep === 1) {
-      const parsed = identitySchema.safeParse(identity);
+      const parsed = identitySchema(english).safeParse(identity);
 
       if (!parsed.success) {
         setError(
           parsed.error.issues[0]?.message ??
-            "Vérifiez les informations d'identité.",
+            english ? "Check the identity details." : "Vérifiez les informations d'identité.",
         );
 
         return false;
@@ -482,7 +484,7 @@ export default function PartnerOnboardingWizard({
 
     if (targetStep === 3 && missingCommitments.length > 0) {
       setError(
-        "Tous les engagements doivent être explicitement confirmés.",
+        english ? "You must explicitly confirm every commitment." : "Tous les engagements doivent être explicitement confirmés.",
       );
 
       return false;
@@ -500,14 +502,14 @@ export default function PartnerOnboardingWizard({
 
     if (targetStep === 5 && !pilotValid) {
       setError(
-        "Décrivez les conditions envisagées pour le pilote avec au moins 20 caractères.",
+        english ? "Describe the proposed pilot in at least 20 characters." : "Décrivez les conditions envisagées pour le pilote avec au moins 20 caractères.",
       );
 
       return false;
     }
 
     if (targetStep === 6 && !emailVerified) {
-      setError("Votre adresse email doit être vérifiée.");
+      setError(english ? "Your email address must be verified." : "Votre adresse email doit être vérifiée.");
 
       return false;
     }
@@ -589,7 +591,7 @@ export default function PartnerOnboardingWizard({
       console.error(uploadError);
 
       setError(
-        "Le document n'a pas pu être téléversé. Réessayez.",
+        english ? "The document could not be uploaded. Please try again." : "Le document n'a pas pu être téléversé. Réessayez.",
       );
     } finally {
       setUploading(false);
@@ -610,16 +612,16 @@ export default function PartnerOnboardingWizard({
     setError(null);
 
     if (!identity.email.trim()) {
-      setError("Renseignez d'abord une adresse email valide.");
+      setError(english ? "Enter a valid email address first." : "Renseignez d'abord une adresse email valide.");
       return;
     }
 
-    const parsed = identitySchema.safeParse(identity);
+    const parsed = identitySchema(english).safeParse(identity);
 
     if (!parsed.success) {
       setError(
         parsed.error.issues[0]?.message ??
-          "Vérifiez les informations d'identité.",
+          english ? "Check the identity details." : "Vérifiez les informations d'identité.",
       );
       return;
     }
@@ -647,7 +649,7 @@ export default function PartnerOnboardingWizard({
       console.error(otpError);
 
       setError(
-        "Le code de vérification n'a pas pu être envoyé. Réessayez.",
+        english ? "The verification code could not be sent. Please try again." : "Le code de vérification n'a pas pu être envoyé. Réessayez.",
       );
     } finally {
       setOtpLoading(false);
@@ -658,7 +660,7 @@ export default function PartnerOnboardingWizard({
     setError(null);
 
     if (!/^\d{6}$/.test(otp.trim())) {
-      setError("Le code doit contenir 6 chiffres.");
+      setError(english ? "The code must contain 6 digits." : "Le code doit contenir 6 chiffres.");
       return;
     }
 
@@ -689,7 +691,7 @@ export default function PartnerOnboardingWizard({
       console.error(otpError);
 
       setError(
-        "Le code est invalide ou expiré. Demandez un nouveau code.",
+        english ? "The code is invalid or expired. Request a new code." : "Le code est invalide ou expiré. Demandez un nouveau code.",
       );
     } finally {
       setOtpLoading(false);
@@ -705,7 +707,7 @@ export default function PartnerOnboardingWizard({
 
     if (!canSubmit) {
       setError(
-        "Certaines informations obligatoires doivent encore être complétées.",
+        english ? "Some required information is still missing." : english ? "Some required information is still missing." : "Certaines informations obligatoires doivent encore être complétées.",
       );
       return;
     }
@@ -739,7 +741,7 @@ export default function PartnerOnboardingWizard({
         "Informations d'intégration :",
         ...config.integration.map(
           (field) =>
-            `- ${field.label} : ${
+            `- ${copy(field.label)} : ${
               integration[field.id]?.trim() || "Non renseigné"
             }`,
         ),
@@ -781,7 +783,7 @@ export default function PartnerOnboardingWizard({
       console.error(submitError);
 
       setError(
-        "Votre dossier n'a pas pu être transmis. Vérifiez les informations puis réessayez.",
+        english ? "Your file could not be submitted. Check the information and try again." : "Votre dossier n'a pas pu être transmis. Vérifiez les informations puis réessayez.",
       );
     } finally {
       setSubmitting(false);
@@ -802,17 +804,17 @@ export default function PartnerOnboardingWizard({
 
           <div className="mt-6 space-y-3">
             <Badge variant="secondary">
-              Dossier transmis
+              {copy("Dossier transmis")}
             </Badge>
 
             <h2 className="text-2xl font-semibold tracking-tight">
-              Votre dossier a bien été transmis
+              {copy("Votre dossier a bien été transmis")}
             </h2>
 
             <p className="max-w-2xl text-muted-foreground">
-              BIB va maintenant examiner les informations et pièces
-              transmises afin de poursuivre le processus de qualification
-              et d’intégration.
+              {copy("BIB va maintenant examiner les informations et pièces")}
+              {copy("transmises afin de poursuivre le processus de qualification")}
+              {copy("et d’intégration.")}
             </p>
           </div>
 
@@ -822,13 +824,13 @@ export default function PartnerOnboardingWizard({
 
               <div>
                 <p className="font-medium">
-                  Prochaine étape
+                  {copy("Prochaine étape")}
                 </p>
 
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Votre dossier passe en revue opérationnelle. BIB pourra
-                  vous contacter si des informations complémentaires sont
-                  nécessaires.
+                  {copy("Votre dossier passe en revue opérationnelle. BIB pourra")}
+                  {copy("vous contacter si des informations complémentaires sont")}
+                  {copy("nécessaires.")}
                 </p>
               </div>
             </div>
@@ -837,7 +839,7 @@ export default function PartnerOnboardingWizard({
           {submissionId && (
             <div className="mt-6 rounded-xl border px-4 py-3 text-sm">
               <span className="text-muted-foreground">
-                Référence du dossier :
+                {copy("Référence du dossier :")}
               </span>{" "}
               <span className="font-medium">
                 {submissionId}
@@ -849,7 +851,7 @@ export default function PartnerOnboardingWizard({
             <div className="mt-6">
               <Button asChild>
                 <a href={portalUrl}>
-                  Accéder au suivi du dossier
+                  {copy("Accéder au suivi du dossier")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </a>
               </Button>
@@ -869,19 +871,19 @@ export default function PartnerOnboardingWizard({
       <div className="space-y-6">
         <div>
           <h2 className="text-xl font-semibold">
-            Identité du partenaire
+            {copy("Identité du partenaire")}
           </h2>
 
           <p className="mt-1 text-sm text-muted-foreground">
-            Ces informations permettent d’identifier le dossier et
-            l’interlocuteur responsable.
+            {copy("Ces informations permettent d’identifier le dossier et")}
+            {copy("l’interlocuteur responsable.")}
           </p>
         </div>
 
         <div className="grid gap-5 md:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="access_code">
-              Code d'accès
+              {copy("Code d'accès")}
             </Label>
 
             <Input
@@ -893,14 +895,14 @@ export default function PartnerOnboardingWizard({
                   access_code: event.target.value,
                 }))
               }
-              placeholder="Code transmis par BIB"
+              placeholder={copy("Code transmis par BIB")}
               autoComplete="off"
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="company">
-              Société
+              {copy("Société")}
             </Label>
 
             <Input
@@ -912,13 +914,13 @@ export default function PartnerOnboardingWizard({
                   company: event.target.value,
                 }))
               }
-              placeholder="Nom légal de l'entreprise"
+              placeholder={copy("Nom légal de l'entreprise")}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="legal_rep">
-              Représentant légal
+              {copy("Représentant légal")}
             </Label>
 
             <Input
@@ -930,13 +932,13 @@ export default function PartnerOnboardingWizard({
                   legal_rep: event.target.value,
                 }))
               }
-              placeholder="Nom et prénom"
+              placeholder={copy("Nom et prénom")}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="email">
-              Email
+              {copy("Email")}
             </Label>
 
             <Input
@@ -951,13 +953,13 @@ export default function PartnerOnboardingWizard({
                   email: event.target.value,
                 }));
               }}
-              placeholder="contact@entreprise.com"
+              placeholder={english ? "contact@company.com" : "contact@entreprise.com"}
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="phone">
-              Téléphone
+              {copy("Téléphone")}
             </Label>
 
             <Input
@@ -970,13 +972,13 @@ export default function PartnerOnboardingWizard({
                   phone: event.target.value,
                 }))
               }
-              placeholder="+33 ..."
+              placeholder={english ? "+country code" : "+33 ..."}
             />
           </div>
 
           <div className="space-y-2 md:col-span-2">
             <Label htmlFor="address">
-              Adresse
+              {copy("Adresse")}
             </Label>
 
             <Textarea
@@ -988,7 +990,7 @@ export default function PartnerOnboardingWizard({
                   address: event.target.value,
                 }))
               }
-              placeholder="Adresse complète de l'entité"
+              placeholder={copy("Adresse complète de l'entité")}
               rows={3}
             />
           </div>
@@ -1002,12 +1004,12 @@ export default function PartnerOnboardingWizard({
       <div className="space-y-6">
         <div>
           <h2 className="text-xl font-semibold">
-            Documents
+            {copy("Documents")}
           </h2>
 
           <p className="mt-1 text-sm text-muted-foreground">
-            Téléversez les documents nécessaires à la vérification du
-            dossier.
+            {copy("Téléversez les documents nécessaires à la vérification du")}
+            {copy("dossier.")}
           </p>
         </div>
 
@@ -1026,23 +1028,23 @@ export default function PartnerOnboardingWizard({
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <p className="font-medium">
-                        {slot.label}
+                        {copy(slot.label)}
                       </p>
 
                       {slot.required ? (
                         <Badge variant="secondary">
-                          Requis
+                          {copy("Requis")}
                         </Badge>
                       ) : (
                         <Badge variant="outline">
-                          Optionnel
+                          {copy("Optionnel")}
                         </Badge>
                       )}
                     </div>
 
                     {slot.hint && (
                       <p className="text-sm text-muted-foreground">
-                        {slot.hint}
+                        {copy(slot.hint)}
                       </p>
                     )}
                   </div>
@@ -1059,8 +1061,8 @@ export default function PartnerOnboardingWizard({
                     >
                       <Upload className="h-4 w-4" />
                       {uploaded
-                        ? "Remplacer"
-                        : "Ajouter"}
+                        ? copy(copy("Remplacer"))
+                        : copy(copy("Ajouter"))}
                     </label>
 
                     <input
@@ -1089,7 +1091,7 @@ export default function PartnerOnboardingWizard({
                         </p>
 
                         <p className="text-xs text-muted-foreground">
-                          {formatFileSize(uploaded.size)}
+                          {formatFileSize(uploaded.size, lang)}
                         </p>
                       </div>
                     </div>
@@ -1102,7 +1104,7 @@ export default function PartnerOnboardingWizard({
                         removeDocument(slot.id)
                       }
                     >
-                      Retirer
+                      {copy("Retirer")}
                     </Button>
                   </div>
                 )}
@@ -1112,7 +1114,7 @@ export default function PartnerOnboardingWizard({
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Taille maximale : 8 Mo par fichier.
+          {copy("Taille maximale : 8 Mo par fichier.")}
         </p>
       </div>
     );
@@ -1123,11 +1125,11 @@ export default function PartnerOnboardingWizard({
       <div className="space-y-6">
         <div>
           <h2 className="text-xl font-semibold">
-            Engagements opérationnels
+            {copy("Engagements opérationnels")}
           </h2>
 
           <p className="mt-1 text-sm text-muted-foreground">
-            Confirmez chaque principe applicable au fonctionnement avec
+            {copy("Confirmez chaque principe applicable au fonctionnement avec")}
             BIB.
           </p>
         </div>
@@ -1158,11 +1160,11 @@ export default function PartnerOnboardingWizard({
 
                 <div className="space-y-1">
                   <p className="font-medium">
-                    {commitment.title}
+                    {copy(commitment.title)}
                   </p>
 
                   <p className="text-sm leading-6 text-muted-foreground">
-                    {commitment.text}
+                    {copy(commitment.text)}
                   </p>
                 </div>
               </label>
@@ -1178,12 +1180,12 @@ export default function PartnerOnboardingWizard({
       <div className="space-y-6">
         <div>
           <h2 className="text-xl font-semibold">
-            Intégration opérationnelle
+            {copy("Intégration opérationnelle")}
           </h2>
 
           <p className="mt-1 text-sm text-muted-foreground">
-            Ces informations servent à préparer le fonctionnement
-            opérationnel avec BIB.
+            {copy("Ces informations servent à préparer le fonctionnement")}
+            {copy("opérationnel avec BIB.")}
           </p>
         </div>
 
@@ -1198,7 +1200,7 @@ export default function PartnerOnboardingWizard({
               )}
             >
               <Label htmlFor={`integration-${field.id}`}>
-                {field.label}
+                {copy(field.label)}
                 {field.required && (
                   <span className="ml-1 text-destructive">
                     *
@@ -1216,7 +1218,7 @@ export default function PartnerOnboardingWizard({
                       [field.id]: event.target.value,
                     }))
                   }
-                  placeholder={field.placeholder}
+                  placeholder={copy(field.placeholder)}
                   rows={4}
                 />
               ) : field.type === "select" ? (
@@ -1232,7 +1234,7 @@ export default function PartnerOnboardingWizard({
                   className="flex h-10 w-full rounded-md border bg-background px-3 text-sm"
                 >
                   <option value="">
-                    Sélectionner
+                    {copy("Sélectionner")}
                   </option>
 
                   {field.options?.map((option) => (
@@ -1240,7 +1242,7 @@ export default function PartnerOnboardingWizard({
                       key={option.value}
                       value={option.value}
                     >
-                      {option.label}
+                      {copy(option.label)}
                     </option>
                   ))}
                 </select>
@@ -1255,13 +1257,13 @@ export default function PartnerOnboardingWizard({
                       [field.id]: event.target.value,
                     }))
                   }
-                  placeholder={field.placeholder}
+                  placeholder={copy(field.placeholder)}
                 />
               )}
 
               {field.hint && (
                 <p className="text-xs text-muted-foreground">
-                  {field.hint}
+                  {copy(field.hint)}
                 </p>
               )}
             </div>
@@ -1276,17 +1278,17 @@ export default function PartnerOnboardingWizard({
       <div className="space-y-6">
         <div>
           <h2 className="text-xl font-semibold">
-            {config.pilot.title}
+            {copy(config.pilot.title)}
           </h2>
 
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            {config.pilot.description}
+            {copy(config.pilot.description)}
           </p>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="pilot-notes">
-            Informations pour le pilote
+            {copy("Informations pour le pilote")}
           </Label>
 
           <Textarea
@@ -1295,12 +1297,12 @@ export default function PartnerOnboardingWizard({
             onChange={(event) =>
               setPilotNotes(event.target.value)
             }
-            placeholder={config.pilot.placeholder}
+            placeholder={copy(config.pilot.placeholder)}
             rows={9}
           />
 
           <p className="text-xs text-muted-foreground">
-            Minimum recommandé : 20 caractères.
+            {copy("Minimum recommandé : 20 caractères.")}
           </p>
         </div>
       </div>
@@ -1312,13 +1314,13 @@ export default function PartnerOnboardingWizard({
       <div className="mx-auto max-w-xl space-y-6">
         <div>
           <h2 className="text-xl font-semibold">
-            Vérification de l’email
+            {copy("Vérification de l’email")}
           </h2>
 
           <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            Un code de vérification permet de confirmer que l’adresse
-            indiquée dans le dossier est bien accessible par son
-            interlocuteur.
+            {copy("Un code de vérification permet de confirmer que l’adresse")}
+            {copy("indiquée dans le dossier est bien accessible par son")}
+            {copy("interlocuteur.")}
           </p>
         </div>
 
@@ -1328,7 +1330,7 @@ export default function PartnerOnboardingWizard({
 
             <div>
               <p className="font-medium">
-                Adresse email vérifiée
+                {copy("Adresse email vérifiée")}
               </p>
 
               <p className="mt-1 text-sm text-muted-foreground">
@@ -1348,7 +1350,7 @@ export default function PartnerOnboardingWizard({
                   </p>
 
                   <p className="text-sm text-muted-foreground">
-                    Code à usage unique
+                    {copy("Code à usage unique")}
                   </p>
                 </div>
               </div>
@@ -1365,13 +1367,13 @@ export default function PartnerOnboardingWizard({
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
 
-                Envoyer le code
+                {copy("Envoyer le code")}
               </Button>
             ) : (
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="otp">
-                    Code à 6 chiffres
+                    {copy("Code à 6 chiffres")}
                   </Label>
 
                   <Input
@@ -1401,7 +1403,7 @@ export default function PartnerOnboardingWizard({
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
 
-                  Vérifier le code
+                  {copy("Vérifier le code")}
                 </Button>
 
                 <Button
@@ -1411,7 +1413,7 @@ export default function PartnerOnboardingWizard({
                   onClick={requestOtp}
                   disabled={otpLoading}
                 >
-                  Renvoyer un code
+                  {copy("Renvoyer un code")}
                 </Button>
               </div>
             )}
@@ -1426,19 +1428,19 @@ export default function PartnerOnboardingWizard({
       <div className="space-y-6">
         <div>
           <h2 className="text-xl font-semibold">
-            Vérification finale
+            {copy("Vérification finale")}
           </h2>
 
           <p className="mt-1 text-sm text-muted-foreground">
-            Vérifiez les informations avant de transmettre définitivement
-            le dossier à BIB.
+            {copy("Vérifiez les informations avant de transmettre définitivement")}
+            {copy("le dossier à BIB.")}
           </p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl border p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Entreprise
+              {copy("Entreprise")}
             </p>
 
             <p className="mt-2 font-medium">
@@ -1452,7 +1454,7 @@ export default function PartnerOnboardingWizard({
 
           <div className="rounded-2xl border p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Contact
+              {copy("Contact")}
             </p>
 
             <p className="mt-2 font-medium">
@@ -1466,7 +1468,7 @@ export default function PartnerOnboardingWizard({
 
           <div className="rounded-2xl border p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Documents
+              {copy("Documents")}
             </p>
 
             <p className="mt-2 font-medium">
@@ -1477,12 +1479,12 @@ export default function PartnerOnboardingWizard({
 
           <div className="rounded-2xl border p-5">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Engagements
+              {copy("Engagements")}
             </p>
 
             <p className="mt-2 font-medium">
               {config.commitments.length} /{" "}
-              {config.commitments.length} confirmés
+              {config.commitments.length} {copy("confirmés")}
             </p>
           </div>
         </div>
@@ -1493,15 +1495,15 @@ export default function PartnerOnboardingWizard({
 
             <div className="space-y-2">
               <p className="font-medium">
-                Déclaration
+                {copy("Déclaration")}
               </p>
 
               <p className="text-sm leading-6 text-muted-foreground">
-                Je confirme que les informations et documents transmis
-                dans ce dossier sont exacts et à jour à ma connaissance.
-                Je comprends que BIB peut demander des informations
-                complémentaires ou effectuer des contrôles nécessaires
-                à l’évaluation du dossier.
+                {copy("Je confirme que les informations et documents transmis")}
+                {copy("dans ce dossier sont exacts et à jour à ma connaissance.")}
+                {copy("Je comprends que BIB peut demander des informations")}
+                {copy("complémentaires ou effectuer des contrôles nécessaires")}
+                {copy("à l’évaluation du dossier.")}
               </p>
 
               <label className="flex cursor-pointer items-start gap-3 pt-2">
@@ -1514,7 +1516,7 @@ export default function PartnerOnboardingWizard({
                 />
 
                 <span className="text-sm font-medium">
-                  Je confirme cette déclaration.
+                  {copy("Je confirme cette déclaration.")}
                 </span>
               </label>
             </div>
@@ -1526,8 +1528,8 @@ export default function PartnerOnboardingWizard({
             <AlertCircle className="h-4 w-4" />
 
             <AlertDescription>
-              L’adresse email doit être vérifiée avant la transmission
-              finale du dossier.
+              {copy("L’adresse email doit être vérifiée avant la transmission")}
+              {copy("finale du dossier.")}
             </AlertDescription>
           </Alert>
         )}
@@ -1579,16 +1581,16 @@ export default function PartnerOnboardingWizard({
             </Badge>
 
             <Badge variant="outline">
-              Après présélection
+              {copy("Après présélection")}
             </Badge>
           </div>
 
           <h1 className="mt-4 text-3xl font-semibold tracking-tight">
-            {config.title}
+            {copy(config.title)}
           </h1>
 
           <p className="mt-2 max-w-3xl text-muted-foreground">
-            {config.subtitle}
+            {copy(config.subtitle)}
           </p>
         </div>
 
@@ -1627,7 +1629,7 @@ export default function PartnerOnboardingWizard({
                       <Icon className="h-4 w-4" />
                     )}
 
-                    <span>{item.label}</span>
+                    <span>{copy(item.label)}</span>
                   </button>
 
                   {index < STEPS.length - 1 && (
@@ -1661,7 +1663,7 @@ export default function PartnerOnboardingWizard({
             disabled={step === 1 || submitting}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour
+            {copy("Retour")}
           </Button>
 
           {step < STEPS.length ? (
@@ -1670,7 +1672,7 @@ export default function PartnerOnboardingWizard({
               onClick={goNext}
               disabled={submitting}
             >
-              Continuer
+              {copy("Continuer")}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
@@ -1683,7 +1685,7 @@ export default function PartnerOnboardingWizard({
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
 
-              Transmettre le dossier
+              {copy("Transmettre le dossier")}
               {!submitting && (
                 <Check className="ml-2 h-4 w-4" />
               )}
@@ -1692,9 +1694,9 @@ export default function PartnerOnboardingWizard({
         </div>
 
         <p className="text-center text-xs leading-5 text-muted-foreground">
-          Les informations transmises sont utilisées dans le cadre de
-          l’étude, de la qualification et de l’intégration opérationnelle
-          du partenaire auprès de BIB.
+          {copy("Les informations transmises sont utilisées dans le cadre de")}
+          {copy("l’étude, de la qualification et de l’intégration opérationnelle")}
+          {copy("du partenaire auprès de BIB.")}
         </p>
       </div>
     </section>

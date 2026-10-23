@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import {
   ArrowDownUp,
@@ -38,8 +39,8 @@ type SortOption =
   | "name-asc"
   | "name-desc";
 
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat("fr-FR", {
+function formatPrice(price: number, lang: "fr" | "en"): string {
+  return new Intl.NumberFormat(lang === "en" ? "en-IE" : "fr-FR", {
     style: "currency",
     currency: "EUR",
   }).format(price);
@@ -62,12 +63,14 @@ function ProductCard({
   favorite: boolean;
   onToggleFavorite: () => void;
 }) {
+  const { lang } = useLanguage();
+  const english = lang === "en";
   return (
     <article className="group min-w-0">
       <div className="relative overflow-hidden rounded-2xl bg-muted/40">
         <Link
           to={`/store/product/${product.id}`}
-          aria-label={`Voir ${product.name}`}
+          aria-label={english ? `View ${product.name}` : `Voir ${product.name}`}
           className="block aspect-square overflow-hidden"
         >
           {product.image_url ? (
@@ -88,8 +91,8 @@ function ProductCard({
           type="button"
           aria-label={
             favorite
-              ? `Retirer ${product.name} des favoris`
-              : `Ajouter ${product.name} aux favoris`
+              ? `Remove ${product.name} from favorites`
+              : `Add ${product.name} to favorites`
           }
           aria-pressed={favorite}
           onClick={(event) => {
@@ -112,7 +115,7 @@ function ProductCard({
 
         <div className="absolute bottom-3 left-3">
           <span className="inline-flex items-center rounded-full bg-background/90 px-2.5 py-1 text-[10px] font-medium shadow-sm backdrop-blur">
-            Vérifié par BIB
+            Verified by BIB
           </span>
         </div>
       </div>
@@ -129,7 +132,7 @@ function ProductCard({
           </Link>
 
           <span className="shrink-0 text-sm font-semibold">
-            {formatPrice(product.price)}
+            {formatPrice(product.price, lang)}
           </span>
         </div>
 
@@ -162,13 +165,15 @@ function ProductCard({
 }
 
 function CatalogLoading() {
+  const { lang } = useLanguage();
+  const english = lang === "en";
   return (
     <div className="flex min-h-[420px] items-center justify-center">
       <div className="flex flex-col items-center gap-3 text-muted-foreground">
         <Loader2 className="h-7 w-7 animate-spin" />
 
         <span className="text-sm">
-          Chargement des produits…
+          {english ? "Loading products…" : "Chargement des produits…"}
         </span>
       </div>
     </div>
@@ -180,6 +185,8 @@ function CatalogError({
 }: {
   onRetry: () => void;
 }) {
+  const { lang } = useLanguage();
+  const english = lang === "en";
   return (
     <div className="flex min-h-[420px] items-center justify-center">
       <div className="max-w-md text-center">
@@ -188,7 +195,7 @@ function CatalogError({
         </div>
 
         <h2 className="text-lg font-semibold">
-          Impossible de charger les produits
+          {english ? "Could not load products" : "Impossible de charger les produits"}
         </h2>
 
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -202,7 +209,7 @@ function CatalogError({
           className="mt-5 rounded-xl"
           onClick={onRetry}
         >
-          Réessayer
+          {english ? "Try again" : "Réessayer"}
         </Button>
       </div>
     </div>
@@ -216,6 +223,8 @@ function EmptyCatalog({
   hasFilters: boolean;
   onReset: () => void;
 }) {
+  const { lang } = useLanguage();
+  const english = lang === "en";
   return (
     <div className="flex min-h-[420px] items-center justify-center">
       <div className="max-w-md text-center">
@@ -224,13 +233,13 @@ function EmptyCatalog({
         </div>
 
         <h2 className="text-lg font-semibold">
-          Aucun produit trouvé
+          {english ? "No products found" : "Aucun produit trouvé"}
         </h2>
 
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
           {hasFilters
-            ? "Aucun produit ne correspond aux critères sélectionnés."
-            : "Aucun produit n'est actuellement disponible dans le Store."}
+            ? english ? "No products match the selected criteria." : "Aucun produit ne correspond aux critères sélectionnés."
+            : english ? "No products are currently available in the Store." : "Aucun produit n'est actuellement disponible dans le Store."}
         </p>
 
         {hasFilters && (
@@ -240,7 +249,7 @@ function EmptyCatalog({
             className="mt-5 rounded-xl"
             onClick={onReset}
           >
-            Réinitialiser les filtres
+            {english ? "Reset filters" : "Réinitialiser les filtres"}
           </Button>
         )}
       </div>
@@ -249,12 +258,14 @@ function EmptyCatalog({
 }
 
 function StoreHeader() {
+  const { lang } = useLanguage();
+  const english = lang === "en";
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-xl">
       <div className="mx-auto flex min-h-[68px] max-w-7xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <Link
           to="/store"
-          aria-label="Accueil BIB Store"
+          aria-label={english ? "BIB Store home" : "Accueil BIB Store"}
           className="flex shrink-0 items-center gap-2"
         >
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-foreground text-sm font-bold text-background">
@@ -273,7 +284,7 @@ function StoreHeader() {
         </Link>
 
         <nav
-          aria-label="Navigation BIB Store"
+          aria-label={english ? "BIB Store navigation" : "Navigation BIB Store"}
           className="hidden items-center gap-1 md:flex"
         >
           <Link
@@ -297,7 +308,7 @@ function StoreHeader() {
             className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <span className="hidden sm:inline">
-              Découvrir les boutiques
+              {english ? "Discover boutiques" : "Découvrir les boutiques"}
             </span>
 
             <span className="sm:hidden">
@@ -317,6 +328,8 @@ function CatalogSearch({
   value: string;
   onChange: (value: string) => void;
 }) {
+  const { lang } = useLanguage();
+  const english = lang === "en";
   return (
     <div className="relative">
       <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -326,15 +339,15 @@ function CatalogSearch({
         onChange={(event) =>
           onChange(event.target.value)
         }
-        placeholder="Rechercher un produit ou une boutique"
-        aria-label="Rechercher un produit ou une boutique"
+        placeholder={english ? "Search products or boutiques" : "Rechercher un produit ou une boutique"}
+        aria-label={english ? "Search products or boutiques" : "Rechercher un produit ou une boutique"}
         className="h-11 rounded-xl bg-muted/50 pl-9 pr-9"
       />
 
       {value && (
         <button
           type="button"
-          aria-label="Effacer la recherche"
+          aria-label={english ? "Clear search" : "Effacer la recherche"}
           onClick={() => onChange("")}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
         >
@@ -346,6 +359,8 @@ function CatalogSearch({
 }
 
 export default function StoreCatalog() {
+  const { lang } = useLanguage();
+  const english = lang === "en";
   const {
     data: products = [],
     isLoading,
@@ -538,15 +553,15 @@ export default function StoreCatalog() {
                   {filteredProducts.length}{" "}
                   {filteredProducts.length >
                   1
-                    ? "produits"
-                    : "produit"}
+                    ? english ? "products" : "produits"
+                    : english ? "product" : "produit"}
                 </div>
               )}
           </div>
         </section>
 
         <section
-          aria-label="Recherche"
+          aria-label={english ? "Search" : "Recherche"}
           className="mb-5"
         >
           <CatalogSearch
@@ -610,12 +625,12 @@ export default function StoreCatalog() {
                   onValueChange={setCategory}
                 >
                   <SelectTrigger className="w-full rounded-xl sm:w-[210px]">
-                    <SelectValue placeholder="Catégorie" />
+                    <SelectValue placeholder={english ? "Category" : "Catégorie"} />
                   </SelectTrigger>
 
                   <SelectContent>
                     <SelectItem value="all">
-                      Toutes les catégories
+                      {english ? "All categories" : "Toutes les catégories"}
                     </SelectItem>
 
                     {categories.map(
@@ -647,15 +662,15 @@ export default function StoreCatalog() {
 
                   <SelectContent>
                     <SelectItem value="recent">
-                      Plus récents
+                      {english ? "Newest" : "Plus récents"}
                     </SelectItem>
 
                     <SelectItem value="price-asc">
-                      Prix croissant
+                      {english ? "Price: low to high" : "Prix croissant"}
                     </SelectItem>
 
                     <SelectItem value="price-desc">
-                      Prix décroissant
+                      {english ? "Price: high to low" : "Prix décroissant"}
                     </SelectItem>
 
                     <SelectItem value="name-asc">
@@ -727,7 +742,7 @@ export default function StoreCatalog() {
           />
         ) : (
           <section
-            aria-label="Produits BIB Store"
+            aria-label={english ? "BIB Store products" : "Produits BIB Store"}
             className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-5 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-10"
           >
             {filteredProducts.map(
@@ -767,7 +782,7 @@ export default function StoreCatalog() {
                   to="/store"
                   className="inline-flex items-center gap-1 font-medium text-foreground hover:underline"
                 >
-                  Découvrir les boutiques
+                  {english ? "Discover boutiques" : "Découvrir les boutiques"}
 
                   <ChevronDown className="h-3.5 w-3.5 -rotate-90" />
                 </Link>
@@ -793,7 +808,7 @@ export default function StoreCatalog() {
             to="/store"
             className="transition-colors hover:text-foreground"
           >
-            Découvrir les boutiques
+            {english ? "Discover boutiques" : "Découvrir les boutiques"}
           </Link>
         </div>
       </footer>

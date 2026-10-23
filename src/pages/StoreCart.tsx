@@ -1,4 +1,5 @@
-import { useState } from "react";
+﻿import { useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -28,8 +29,8 @@ import {
 // HELPERS
 // ============================================================
 
-function formatPrice(price: number) {
-  return new Intl.NumberFormat("fr-FR", {
+function formatPrice(price: number, lang: "fr" | "en") {
+  return new Intl.NumberFormat(lang === "en" ? "en-IE" : "fr-FR", {
     style: "currency",
     currency: "EUR",
   }).format(price);
@@ -64,6 +65,9 @@ function StoreCartItemRow({
   onDecrease: () => void;
   onRemove: () => void;
 }) {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
   const isAtMaximumQuantity = item.quantity >= 99;
 
   return (
@@ -92,7 +96,7 @@ function StoreCartItemRow({
             </h3>
 
             <p className="mt-1 text-sm text-muted-foreground">
-              {formatPrice(item.price)} l’unité
+              {formatPrice(item.price, lang)} l’unité
             </p>
           </div>
 
@@ -139,7 +143,7 @@ function StoreCartItemRow({
 
           {/* Line total */}
           <p className="font-medium">
-            {formatPrice(item.price * item.quantity)}
+            {formatPrice(item.price * item.quantity, lang)}
           </p>
         </div>
       </div>
@@ -166,6 +170,9 @@ function BoutiqueCartGroup({
   onClear: () => void;
   onCheckout: () => void;
 }) {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
   const destination = getBoutiqueDestination(group);
   const isExternal = Boolean(group.boutiqueUrl);
 
@@ -180,7 +187,7 @@ function BoutiqueCartGroup({
 
             <p className="mt-1 text-sm text-muted-foreground">
               {group.totalItems}{" "}
-              {group.totalItems > 1 ? "articles" : "article"}
+              {group.totalItems > 1 ? tx("articles", "items") : tx("article", "item")}
             </p>
           </div>
 
@@ -196,12 +203,12 @@ function BoutiqueCartGroup({
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Continuer chez {group.boutiqueName}
+                {tx("Continuer chez", "Continue at")} {group.boutiqueName}
                 <ExternalLink className="ml-2 h-3.5 w-3.5" />
               </a>
             ) : (
               <Link to={destination}>
-                Voir la boutique
+                {tx("Voir la boutique", "View boutique")}
               </Link>
             )}
           </Button>
@@ -225,11 +232,11 @@ function BoutiqueCartGroup({
 
         <div className="flex items-center justify-between pt-4">
           <span className="text-sm text-muted-foreground">
-            Sous-total indicatif
+            {tx("Sous-total indicatif", "Estimated subtotal")}
           </span>
 
           <span className="font-semibold">
-            {formatPrice(group.totalPrice)}
+            {formatPrice(group.totalPrice, lang)}
           </span>
         </div>
 
@@ -239,7 +246,7 @@ function BoutiqueCartGroup({
             onClick={onCheckout}
             disabled={!group.boutiqueSlug}
           >
-            Commander cette boutique
+            {tx("Commander cette boutique", "Checkout this boutique")}
           </Button>
 
           <Button
@@ -250,7 +257,7 @@ function BoutiqueCartGroup({
             className="text-muted-foreground hover:text-destructive"
           >
             <Trash2 className="mr-2 h-3.5 w-3.5" />
-            Vider cette boutique
+            {tx("Vider cette boutique", "Clear this boutique")}
           </Button>
         </div>
       </CardContent>
@@ -263,6 +270,9 @@ function BoutiqueCartGroup({
 // ============================================================
 
 function EmptyStoreCart() {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
   return (
     <main className="min-h-screen bg-background">
       <div className="border-b">
@@ -274,7 +284,7 @@ function EmptyStoreCart() {
           >
             <Link to="/store">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour au Store
+              {tx("Retour au Store", "Back to BIB Store")}
             </Link>
           </Button>
         </div>
@@ -286,21 +296,21 @@ function EmptyStoreCart() {
         </div>
 
         <p className="mt-6 text-sm font-medium text-muted-foreground">
-          BIB Store
+          {tx("BIB Store", "BIB Store")}
         </p>
 
         <h1 className="mt-1 text-2xl font-semibold">
-          Votre panier est vide
+          {tx("Votre panier est vide", "Your cart is empty")}
         </h1>
 
         <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-          Ajoutez des produits depuis les boutiques présentes
-          dans BIB Store pour les retrouver ici.
+          {tx("Ajoutez des produits depuis les boutiques présentes", "Add products from the boutiques available")}
+          {tx("dans BIB Store pour les retrouver ici.", "in BIB Store to see them here.")}
         </p>
 
         <Button asChild className="mt-6">
           <Link to="/store">
-            Découvrir les boutiques
+            {tx("Découvrir les boutiques", "Explore boutiques")}
           </Link>
         </Button>
       </div>
@@ -313,6 +323,9 @@ function EmptyStoreCart() {
 // ============================================================
 
 export default function StoreCart() {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
   const [checkoutGroup, setCheckoutGroup] =
     useState<StoreCartBoutiqueGroup | null>(null);
   const {
@@ -336,12 +349,12 @@ export default function StoreCart() {
         <div className="border-b px-4 py-5">
           <Button type="button" variant="ghost" onClick={() => setCheckoutGroup(null)}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour au panier
+            {tx("Retour au panier", "Back to cart")}
           </Button>
         </div>
         <div className="mx-auto max-w-xl px-4 py-8">
           <h1 className="mb-6 text-2xl font-semibold">
-            Commander chez {checkoutGroup.boutiqueName}
+            {tx("Commander chez", "Checkout at")} {checkoutGroup.boutiqueName}
           </h1>
           <CheckoutForm
             boutiqueId={checkoutGroup.boutiqueId}
@@ -409,7 +422,7 @@ export default function StoreCart() {
           >
             <Link to="/store">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Continuer mes recherches
+              {tx("Continuer mes recherches", "Continue browsing")}
             </Link>
           </Button>
 
@@ -421,7 +434,7 @@ export default function StoreCart() {
             className="text-muted-foreground hover:text-destructive"
           >
             <Trash2 className="mr-2 h-3.5 w-3.5" />
-            Vider le panier
+            {tx("Vider le panier", "Clear cart")}
           </Button>
         </div>
       </div>
@@ -430,22 +443,22 @@ export default function StoreCart() {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
           <p className="text-sm font-medium text-muted-foreground">
-            BIB Store
+            {tx("BIB Store", "BIB Store")}
           </p>
 
           <h1 className="mt-1 text-3xl font-semibold tracking-tight">
-            Mon panier
+            {tx("Mon panier", "My cart")}
           </h1>
 
           <p className="mt-2 text-sm text-muted-foreground">
             {totalItems}{" "}
             {totalItems > 1
-              ? "articles sélectionnés"
-              : "article sélectionné"}{" "}
-            dans {boutiqueGroups.length}{" "}
+              ? tx("articles sélectionnés", "items selected")
+              : tx("article sélectionné", "item selected")}{" "}
+            {tx("dans", "across")} {boutiqueGroups.length}{" "}
             {boutiqueGroups.length > 1
-              ? "boutiques"
-              : "boutique"}.
+              ? tx("boutiques", "stores")
+              : tx("boutique", "store")}.
           </p>
         </div>
 
@@ -472,7 +485,7 @@ export default function StoreCart() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">
-                  Récapitulatif
+                  {tx("Récapitulatif", "Order summary")}
                 </CardTitle>
               </CardHeader>
 
@@ -480,7 +493,7 @@ export default function StoreCart() {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between gap-4">
                     <span className="text-muted-foreground">
-                      Articles
+                      {tx("Articles", "Items")}
                     </span>
 
                     <span>{totalItems}</span>
@@ -488,7 +501,7 @@ export default function StoreCart() {
 
                   <div className="flex justify-between gap-4">
                     <span className="text-muted-foreground">
-                      Boutiques
+                      {tx("Boutiques", "Boutiques")}
                     </span>
 
                     <span>{boutiqueGroups.length}</span>
@@ -500,16 +513,16 @@ export default function StoreCart() {
                     <span>Total indicatif</span>
 
                     <span>
-                      {formatPrice(totalPrice)}
+                      {formatPrice(totalPrice, lang)}
                     </span>
                   </div>
                 </div>
 
                 <div className="mt-6 rounded-xl bg-muted/50 p-4">
                   <p className="text-xs leading-5 text-muted-foreground">
-                    Les articles sont regroupés par boutique. Chaque
-                    boutique fait l'objet de sa propre commande et de
-                    son propre paiement.
+                    {tx("Les articles sont regroupés par boutique. Chaque", "Items are grouped by boutique. Each")}
+                    {tx("boutique fait l''objet de sa propre commande et de", "boutique has its own order and")}
+                    {tx("son propre paiement.", "payment.")}
                   </p>
                 </div>
               </CardContent>

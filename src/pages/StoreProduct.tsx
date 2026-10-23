@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+﻿import { useMemo } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   ArrowLeft,
   ArrowRight,
@@ -28,9 +29,10 @@ import { useStoreCart } from "@/contexts/StoreCartContext";
 
 function formatPrice(
   value: number,
+  lang: "fr" | "en",
 ): string {
   return new Intl.NumberFormat(
-    "fr-FR",
+    lang === "en" ? "en-IE" : "fr-FR",
     {
       style: "currency",
       currency: "EUR",
@@ -39,6 +41,9 @@ function formatPrice(
 }
 
 export default function StoreProduct() {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
   const {
     productId,
   } = useParams<{
@@ -114,7 +119,7 @@ export default function StoreProduct() {
             <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-muted-foreground" />
 
             <p className="text-sm text-muted-foreground">
-              Chargement du produit…
+              {english ? "Loading product…" : "Chargement du produit…"}
             </p>
           </div>
         </div>
@@ -139,7 +144,7 @@ export default function StoreProduct() {
             <ShoppingBag className="mx-auto mb-5 h-10 w-10 text-muted-foreground" />
 
             <h1 className="text-2xl font-semibold tracking-tight">
-              Produit introuvable
+              {english ? "Product not found" : "Produit introuvable"}
             </h1>
 
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -155,7 +160,7 @@ export default function StoreProduct() {
               >
                 <ArrowLeft className="h-4 w-4" />
 
-                Voir les produits
+                {english ? "View products" : "Voir les produits"}
               </Link>
 
               <button
@@ -165,7 +170,7 @@ export default function StoreProduct() {
                 }
                 className="inline-flex items-center gap-2 rounded-lg border px-5 py-3 text-sm font-semibold transition-colors hover:bg-muted"
               >
-                Réessayer
+                {english ? "Try again" : "Réessayer"}
               </button>
             </div>
           </div>
@@ -216,7 +221,7 @@ export default function StoreProduct() {
             <ArrowLeft className="h-4 w-4" />
 
             <span className="hidden sm:inline">
-              Retour aux produits
+              {english ? "Back to products" : "Retour aux produits"}
             </span>
 
             <span className="sm:hidden">
@@ -268,7 +273,7 @@ export default function StoreProduct() {
                   <span className="inline-flex items-center gap-1.5 rounded-full border bg-background/90 px-3 py-1.5 text-xs font-medium shadow-sm backdrop-blur">
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
 
-                    Vérifié par BIB
+                    {english ? "Verified by BIB" : "Vérifié par BIB"}
                   </span>
                 </div>
               </div>
@@ -334,9 +339,7 @@ export default function StoreProduct() {
 
                 <div className="mt-6 flex items-center gap-3">
                   <span className="text-2xl font-semibold">
-                    {formatPrice(
-                      product.price,
-                    )}
+                    {formatPrice(product.price, lang)}
                   </span>
 
                   {product.boutique_category && (
@@ -351,7 +354,7 @@ export default function StoreProduct() {
                 {product.description && (
                   <div className="mt-7 border-t pt-6">
                     <h2 className="text-sm font-semibold">
-                      À propos du produit
+                      {english ? "About" : "À propos"} du produit
                     </h2>
 
                     <p className="mt-3 whitespace-pre-line text-sm leading-7 text-muted-foreground">
@@ -374,7 +377,7 @@ export default function StoreProduct() {
 
                     <div>
                       <h2 className="font-semibold">
-                        Produit référencé par BIB
+                        {english ? "Product listed by BIB" : "Produit référencé par BIB"}
                       </h2>
 
                       <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
@@ -408,14 +411,14 @@ export default function StoreProduct() {
                     className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
                   >
                     <ShoppingBag className="h-4 w-4" />
-                    Ajouter au panier BIB
+                    {english ? "Add to BIB cart" : "Ajouter au panier BIB"}
                   </button>
 
                   <Link
                     to={merchantProductUrl}
                     className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border bg-background px-6 text-sm font-medium transition-colors hover:bg-muted"
                   >
-                    Voir dans la boutique
+                    {english ? "View in boutique" : "Voir dans la boutique"}
 
                     <ExternalLink className="h-4 w-4" />
                   </Link>
@@ -424,7 +427,7 @@ export default function StoreProduct() {
                     to={merchantProductsUrl}
                     className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border bg-background px-6 text-sm font-medium transition-colors hover:bg-muted"
                   >
-                    Voir les autres produits
+                    {english ? "View other products" : "Voir les autres produits"}
 
                     <ArrowRight className="h-4 w-4" />
                   </Link>
@@ -452,7 +455,7 @@ export default function StoreProduct() {
 
                 <div>
                   <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-                    Boutique
+                    {english ? "Boutique" : "Boutique"}
                   </p>
 
                   <h2 className="mt-1 text-lg font-semibold">
@@ -470,7 +473,7 @@ export default function StoreProduct() {
                 to={boutiqueStoreUrl}
                 className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border px-5 py-3 text-sm font-semibold transition-colors hover:bg-muted"
               >
-                Découvrir la boutique
+                {english ? "Explore boutique" : "Découvrir la boutique"}
 
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -489,7 +492,7 @@ export default function StoreProduct() {
             </div>
 
             <h2 className="mt-5 text-2xl font-semibold tracking-tight">
-              Découvrez et commandez sur BIB
+              {english ? "Discover and shop on BIB" : "Découvrez et commandez sur BIB"}
             </h2>
 
             <p className="mt-3 text-sm leading-7 text-muted-foreground">
@@ -530,7 +533,7 @@ export default function StoreProduct() {
               to="/a-propos"
               className="transition-colors hover:text-foreground"
             >
-              À propos
+              {english ? "About" : "À propos"}
             </Link>
           </div>
         </div>

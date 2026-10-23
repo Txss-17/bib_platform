@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   ArrowLeft,
@@ -23,6 +23,7 @@ import PartnerOnboardingWizard from "@/components/standalone/PartnerOnboardingWi
 import type { OnboardingConfig } from "@/components/standalone/PartnerOnboardingWizard";
 
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -99,7 +100,7 @@ const STATUS_CONFIG: Record<
   },
 
   submitted: {
-    label: "Dossier transmis",
+    label: english ? "Submitted" : "Dossier transmis",
     description:
       "Le dossier a été transmis à BIB et attend son examen.",
     icon: FileCheck2,
@@ -135,6 +136,14 @@ const STATUS_CONFIG: Record<
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
+const EN_STATUS_CONFIG: typeof STATUS_CONFIG = {
+  draft: { ...STATUS_CONFIG.draft, label: "Draft", description: "This file has been started but not yet submitted." },
+  email_verified: { ...STATUS_CONFIG.email_verified, label: "Email verified", description: "The email address on this file has been verified." },
+  submitted: { ...STATUS_CONFIG.submitted, label: "Submitted", description: "The file has been submitted to BIB and is awaiting review." },
+  under_review: { ...STATUS_CONFIG.under_review, label: "Under review", description: "BIB is reviewing the submitted information and documents." },
+  approved: { ...STATUS_CONFIG.approved, label: "Approved", description: "The file has been approved for the next onboarding steps." },
+  rejected: { ...STATUS_CONFIG.rejected, label: "Not selected", description: "The file has not been selected in its current state." },
+};
 const STATUS_ORDER: Status[] = [
   "draft",
   "email_verified",
@@ -143,7 +152,7 @@ const STATUS_ORDER: Status[] = [
   "approved",
 ];
 
-function formatDate(value?: string | null) {
+function formatDate(value?: string | null, lang: "fr" | "en" = "fr") {
   if (!value) return "—";
 
   const date = new Date(value);
@@ -152,7 +161,7 @@ function formatDate(value?: string | null) {
     return "—";
   }
 
-  return new Intl.DateTimeFormat("fr-FR", {
+  return new Intl.DateTimeFormat(lang === "en" ? "en-GB" : "fr-FR", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);
@@ -173,6 +182,9 @@ export default function PartnerOnboardingPortal({
   token,
   config,
 }: PartnerOnboardingPortalProps) {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
   const [submission, setSubmission] =
     useState<Submission | null>(null);
 
@@ -247,7 +259,7 @@ export default function PartnerOnboardingPortal({
         setRefreshing(false);
       }
     },
-    [token],
+    [token, english],
   );
 
   useEffect(() => {
@@ -260,7 +272,7 @@ export default function PartnerOnboardingPortal({
 
   const status = submission?.status ?? "draft";
 
-  const statusConfig = STATUS_CONFIG[status];
+  const statusConfig = english ? EN_STATUS_CONFIG[status] : STATUS_CONFIG[status];
 
   const StatusIcon = statusConfig.icon;
 
@@ -278,24 +290,24 @@ export default function PartnerOnboardingPortal({
     return [
       {
         status: "submitted" as Status,
-        label: "Dossier transmis",
+        label: english ? "Submitted" : "Dossier transmis",
         description:
-          "Le dossier complet a été transmis à BIB.",
+          english ? "The completed file has been submitted to BIB." : "Le dossier complet a été transmis à BIB.",
       },
       {
         status: "under_review" as Status,
-        label: "Examen du dossier",
+        label: english ? "File review" : "Examen du dossier",
         description:
-          "BIB vérifie les informations, documents et éléments opérationnels.",
+          english ? "BIB is reviewing the information, documents and operational details." : "BIB vérifie les informations, documents et éléments opérationnels.",
       },
       {
         status: "approved" as Status,
-        label: "Validation",
+        label: english ? "Approval" : "Validation",
         description:
           "Le dossier est validé pour la suite de l’intégration.",
       },
     ];
-  }, []);
+  }, [english]);
 
   /* ------------------------------------------------------------------------ */
   /* Edit mode                                                                */
@@ -312,7 +324,7 @@ export default function PartnerOnboardingPortal({
               onClick={() => setEditing(false)}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour au dossier
+              {tx("Retour au dossier", "Back to file")}
             </Button>
           </div>
 
@@ -392,7 +404,7 @@ export default function PartnerOnboardingPortal({
       <main className="flex min-h-[70vh] items-center justify-center px-4">
         <div className="flex items-center gap-3 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
-          Chargement du dossier…
+          {tx("Chargement du dossier…", "Loading file…")}
         </div>
       </main>
     );
@@ -412,7 +424,7 @@ export default function PartnerOnboardingPortal({
             </div>
 
             <CardTitle className="mt-4">
-              Dossier inaccessible
+              {tx("Dossier inaccessible", "File unavailable")}
             </CardTitle>
           </CardHeader>
 
@@ -427,7 +439,7 @@ export default function PartnerOnboardingPortal({
               onClick={() => loadPortal()}
             >
               <RefreshCw className="mr-2 h-4 w-4" />
-              Réessayer
+              {tx("Réessayer", "Try again")}
             </Button>
           </CardContent>
         </Card>
@@ -447,18 +459,16 @@ export default function PartnerOnboardingPortal({
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="secondary">
-                {portal === "suppliers"
-                  ? "Fournisseur"
-                  : "Partenaire logistique"}
+                {portal === "suppliers" ? tx("Fournisseur", "Supplier") : tx("Partenaire logistique", "Logistics partner")}
               </Badge>
 
               <Badge variant="outline">
-                Dossier partenaire
+                {tx("Dossier partenaire", "Partner file")}
               </Badge>
             </div>
 
             <h1 className="mt-4 text-3xl font-semibold tracking-tight">
-              Suivi de votre dossier
+              {tx("Suivi de votre dossier", "Your file status")}
             </h1>
 
             <p className="mt-2 max-w-2xl text-muted-foreground">
@@ -478,7 +488,7 @@ export default function PartnerOnboardingPortal({
               <RefreshCw className="mr-2 h-4 w-4" />
             )}
 
-            Actualiser
+            {tx("Actualiser", "Refresh")}
           </Button>
         </header>
 
@@ -524,7 +534,7 @@ export default function PartnerOnboardingPortal({
                     <Badge
                       variant={statusConfig.tone}
                     >
-                      {status}
+                      {statusConfig.label}
                     </Badge>
                   </div>
 
@@ -539,7 +549,7 @@ export default function PartnerOnboardingPortal({
                   type="button"
                   onClick={() => setEditing(true)}
                 >
-                  Modifier le dossier
+                  {tx("Modifier le dossier", "Edit file")}
                 </Button>
               )}
             </div>
@@ -550,12 +560,12 @@ export default function PartnerOnboardingPortal({
         <Card>
           <CardHeader>
             <CardTitle>
-              Progression du dossier
+              {tx("Progression du dossier", "File progress")}
             </CardTitle>
 
             <p className="text-sm text-muted-foreground">
-              Les étapes affichées correspondent à l’avancement connu
-              de votre dossier.
+              {tx("Les étapes affichées correspondent à l’avancement connu", "The steps shown reflect the latest known progress")}
+              {tx("de votre dossier.", "of your file.")}
             </p>
           </CardHeader>
 
@@ -635,12 +645,12 @@ export default function PartnerOnboardingPortal({
 
                   <div>
                     <p className="font-medium">
-                      Dossier non retenu
+                      {tx("Dossier non retenu", "Not selected")}
                     </p>
 
                     <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                      Consultez l’historique ci-dessous pour connaître
-                      les informations éventuellement communiquées par BIB.
+                      {tx("Consultez l’historique ci-dessous pour connaître", "See the history below for")}
+                      {tx("les informations éventuellement communiquées par BIB.", "any information shared by BIB.")}
                     </p>
                   </div>
                 </div>
@@ -654,14 +664,14 @@ export default function PartnerOnboardingPortal({
           <Card>
             <CardHeader>
               <CardTitle>
-                Informations du dossier
+                {tx("Informations du dossier", "File information")}
               </CardTitle>
             </CardHeader>
 
             <CardContent className="space-y-4">
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Société
+                  {tx("Société", "Company")}
                 </p>
 
                 <p className="mt-1 font-medium">
@@ -671,7 +681,7 @@ export default function PartnerOnboardingPortal({
 
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Contact
+                  {tx("Contact", "Contact")}
                 </p>
 
                 <p className="mt-1 font-medium">
@@ -685,7 +695,7 @@ export default function PartnerOnboardingPortal({
 
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Référence
+                  {tx("Référence", "Reference")}
                 </p>
 
                 <p className="mt-1 break-all font-mono text-sm">
@@ -698,39 +708,39 @@ export default function PartnerOnboardingPortal({
           <Card>
             <CardHeader>
               <CardTitle>
-                Dates clés
+                {tx("Dates clés", "Key dates")}
               </CardTitle>
             </CardHeader>
 
             <CardContent className="space-y-4">
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Création
+                  {tx("Création", "Created")}
                 </p>
 
                 <p className="mt-1 text-sm">
-                  {formatDate(submission.created_at)}
+                  {formatDate(submission.created_at, lang)}
                 </p>
               </div>
 
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                  Dernière mise à jour
+                  {tx("Dernière mise à jour", "Last updated")}
                 </p>
 
                 <p className="mt-1 text-sm">
-                  {formatDate(submission.updated_at)}
+                  {formatDate(submission.updated_at, lang)}
                 </p>
               </div>
 
               {submission.submitted_at && (
                 <div>
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                    Transmission
+                    {tx("Transmission", "Submitted")}
                   </p>
 
                   <p className="mt-1 text-sm">
-                    {formatDate(submission.submitted_at)}
+                    {formatDate(submission.submitted_at, lang)}
                   </p>
                 </div>
               )}
@@ -738,11 +748,11 @@ export default function PartnerOnboardingPortal({
               {submission.approved_at && (
                 <div>
                   <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                    Validation
+                    {tx("Validation", "Approval")}
                   </p>
 
                   <p className="mt-1 text-sm">
-                    {formatDate(submission.approved_at)}
+                    {formatDate(submission.approved_at, lang)}
                   </p>
                 </div>
               )}
@@ -761,13 +771,13 @@ export default function PartnerOnboardingPortal({
 
                 <div>
                   <h2 className="text-lg font-semibold">
-                    Dossier validé
+                    {tx("Dossier validé", "File approved")}
                   </h2>
 
                   <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-                    Votre dossier a été validé. Les prochaines étapes
-                    opérationnelles seront définies selon le périmètre
-                    retenu avec BIB.
+                    {tx("Votre dossier a été validé. Les prochaines étapes", "Your file has been approved. The next steps")}
+                    {tx("opérationnelles seront définies selon le périmètre", "will be set according to the agreed")}
+                    {tx("retenu avec BIB.", "scope with BIB.")}
                   </p>
                 </div>
               </div>
@@ -779,11 +789,11 @@ export default function PartnerOnboardingPortal({
         <Card>
           <CardHeader>
             <CardTitle>
-              Historique du dossier
+              {tx("Historique du dossier", "File history")}
             </CardTitle>
 
             <p className="text-sm text-muted-foreground">
-              Les dernières actions enregistrées sur votre dossier.
+              {tx("Les dernières actions enregistrées sur votre dossier.", "The latest actions recorded on your file.")}
             </p>
           </CardHeader>
 
@@ -793,7 +803,7 @@ export default function PartnerOnboardingPortal({
                 <Clock3 className="mx-auto h-5 w-5 text-muted-foreground" />
 
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Aucun événement complémentaire à afficher.
+                  {tx("Aucun événement complémentaire à afficher.", "No additional events to display.")}
                 </p>
               </div>
             ) : (
@@ -821,7 +831,7 @@ export default function PartnerOnboardingPortal({
 
                         {entry.created_at && (
                           <span className="text-xs text-muted-foreground">
-                            {formatDate(entry.created_at)}
+                            {formatDate(entry.created_at, lang)}
                           </span>
                         )}
                       </div>
@@ -850,17 +860,17 @@ export default function PartnerOnboardingPortal({
           <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
 
           <p className="text-sm leading-6 text-muted-foreground">
-            Ce portail permet de consulter et, lorsque le dossier le
-            permet, de compléter les informations transmises à BIB.
-            Les éventuelles étapes opérationnelles ultérieures sont
-            communiquées séparément selon la validation du dossier.
+            {tx("Ce portail permet de consulter et, lorsque le dossier le", "This portal lets you review and, when the file allows,")}
+            {tx("permet, de compléter les informations transmises à BIB.", "complete the information submitted to BIB.")}
+            {tx("Les éventuelles étapes opérationnelles ultérieures sont", "Any later operational steps will be")}
+            {tx("communiquées séparément selon la validation du dossier.", "communicated separately, based on the file review.")}
           </p>
         </div>
 
         {isFinal && (
           <p className="text-center text-xs text-muted-foreground">
-            Dernière mise à jour :{" "}
-            {formatDate(submission.updated_at)}
+            {tx("Dernière mise à jour :", "Last updated:")}{" "}
+            {formatDate(submission.updated_at, lang)}
           </p>
         )}
       </div>

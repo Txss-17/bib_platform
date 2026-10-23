@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
 import PartnerOnboardingWizard, {
   type OnboardingConfig,
@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSEO } from "@/hooks/useSEO";
 import { ArrowLeft } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { localizePartnerOnboardingCopy } from "@/lib/partnerOnboardingI18n";
 
 export const opsOnboardingConfig: OnboardingConfig = {
   portal: "ops",
@@ -73,31 +75,33 @@ export const opsOnboardingConfig: OnboardingConfig = {
 };
 
 export default function OpsOnboarding() {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const copy = (text: string) => localizePartnerOnboardingCopy(text, english);
   useSEO({
-    title: "Onboarding Partenaire Logistique — Brand-In-A-Box",
-    description:
-      "Activation opérationnelle pour 3PL et transporteurs présélectionnés : KYC, SLA, intégration technique et pilote.",
+    title: english ? "Logistics Partner Onboarding — Brand-In-A-Box" : "Onboarding Partenaire Logistique — Brand-In-A-Box",
+    description: english ? "Operational onboarding for preselected 3PLs and carriers: verification, SLAs, technical integration and pilot." : "Activation opérationnelle pour 3PL et transporteurs présélectionnés : KYC, SLA, intégration technique et pilote.",
   });
   return (
     <StandaloneLayout
       portal="Ops"
       accent="accent"
       menuItems={[
-        { label: "Présentation", href: "/ops", icon: "truck" },
-        { label: "Candidature", href: "/ops/apply", icon: "clipboard" },
+        { label: copy("Présentation"), href: "/ops", icon: "truck" },
+        { label: copy("Candidature"), href: "/ops/apply", icon: "clipboard" },
       ]}
     >
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14 max-w-3xl">
         <Button asChild variant="ghost" size="sm" className="mb-4 -ml-2">
-          <Link to="/ops"><ArrowLeft className="w-4 h-4 mr-1.5" /> Présentation</Link>
+          <Link to="/ops"><ArrowLeft className="w-4 h-4 mr-1.5" /> {copy("Présentation")}</Link>
         </Button>
-        <Badge variant="secondary" className="mb-3">Activation · Réservé aux partenaires présélectionnés</Badge>
-        <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">{opsOnboardingConfig.title}</h1>
-        <p className="text-sm sm:text-base text-muted-foreground mt-3 max-w-2xl">{opsOnboardingConfig.subtitle}</p>
+        <Badge variant="secondary" className="mb-3">{copy("Activation · Réservé aux partenaires présélectionnés")}</Badge>
+        <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">{copy(opsOnboardingConfig.title)}</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-3 max-w-2xl">{copy(opsOnboardingConfig.subtitle)}</p>
         <p className="text-xs text-muted-foreground mt-2 mb-8">
-          Déjà commencé ?{" "}
+          {copy("Déjà commencé ?")}{" "}
           <Link to="/ops/onboarding/resume?portal=ops" className="underline text-primary">
-            Reprendre mon dossier
+            {copy("Reprendre mon dossier")}
           </Link>
         </p>
         <PartnerOnboardingWizard config={opsOnboardingConfig} />

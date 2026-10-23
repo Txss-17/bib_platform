@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/input-otp";
 import { useToast } from "@/hooks/use-toast";
 import { useSEO } from "@/hooks/useSEO";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
   ArrowLeft,
@@ -23,6 +24,9 @@ import {
 } from "lucide-react";
 
 export default function PartnerOnboardingResume() {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
   const [params] = useSearchParams();
 
   const portalParam = params.get("portal");
@@ -30,8 +34,7 @@ export default function PartnerOnboardingResume() {
   const portal: "suppliers" | "ops" =
     portalParam === "ops" ? "ops" : "suppliers";
 
-  const portalLabel =
-    portal === "suppliers" ? "Suppliers" : "Logistique";
+  const portalLabel = portal === "suppliers" ? tx("Fournisseurs", "Suppliers") : tx("Logistique", "Logistics");
 
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -46,9 +49,8 @@ export default function PartnerOnboardingResume() {
   const [error, setError] = useState<string | null>(null);
 
   useSEO({
-    title: `Reprendre mon onboarding ${portalLabel} — Brand-In-A-Box`,
-    description:
-      "Reprenez et modifiez votre dossier d'onboarding avant sa validation finale.",
+    title: (english ? "Resume my onboarding " : "Reprendre mon onboarding ") + portalLabel + " — Brand-In-A-Box",
+    description: tx("Reprenez et modifiez votre dossier d'onboarding avant sa validation finale.", "Resume and update your onboarding file before final approval."),
   });
 
   async function sendCode() {
@@ -57,7 +59,7 @@ export default function PartnerOnboardingResume() {
     if (
       !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(normalizedEmail)
     ) {
-      setError("Veuillez saisir une adresse email valide.");
+      setError(tx("Veuillez saisir une adresse email valide.", "Enter a valid email address."));
       return;
     }
 
@@ -82,8 +84,8 @@ export default function PartnerOnboardingResume() {
     if (invokeError || !response?.ok) {
       setError(
         response?.error === "rate_limited"
-          ? "Trop de demandes. Veuillez patienter avant de réessayer."
-          : "Impossible d'envoyer le code. Veuillez réessayer."
+          ? tx("Trop de demandes. Veuillez patienter avant de réessayer.", "Too many requests. Please wait before trying again.")
+           : tx("Impossible d'envoyer le code. Veuillez réessayer.", "The code could not be sent. Please try again.")
       );
 
       return;
@@ -92,8 +94,8 @@ export default function PartnerOnboardingResume() {
     setSent(true);
 
     toast({
-      title: "Code envoyé",
-      description: `Vérifiez votre boîte email ${normalizedEmail}.`,
+      title: (english ? "Resume my onboarding " : "Reprendre mon onboarding ") + portalLabel + " — Brand-In-A-Box",
+      description: english ? "Check your inbox at " + normalizedEmail + "." : "Vérifiez votre boîte email " + normalizedEmail + ".",
     });
   }
 
@@ -101,7 +103,7 @@ export default function PartnerOnboardingResume() {
     const normalizedEmail = email.trim().toLowerCase();
 
     if (!/^\d{6}$/.test(code)) {
-      setError("Veuillez saisir les 6 chiffres du code.");
+      setError(tx("Veuillez saisir les 6 chiffres du code.", "Enter the 6-digit code."));
       return;
     }
 
@@ -128,19 +130,19 @@ export default function PartnerOnboardingResume() {
     if (invokeError || !response?.ok) {
       setError(
         response?.error === "invalid_code"
-          ? "Code incorrect."
+          ? tx("Code incorrect.", "Incorrect code.")
           : response?.error === "expired"
-            ? "Code expiré. Demandez un nouveau code."
+            ? tx("Code expiré. Demandez un nouveau code.", "Code expired. Request a new code.")
             : response?.error === "too_many_attempts"
-              ? "Trop de tentatives. Demandez un nouveau code."
-              : "Impossible de vérifier le code."
+              ? tx("Trop de tentatives. Demandez un nouveau code.", "Too many attempts. Request a new code.")
+               : tx("Impossible de vérifier le code.", "The code could not be verified.")
       );
 
       return;
     }
 
     if (!response.access_token) {
-      setError("Accès au dossier impossible. Veuillez réessayer.");
+      setError(tx("Accès au dossier impossible. Veuillez réessayer.", "Could not access the file. Please try again."));
       return;
     }
 
@@ -171,7 +173,7 @@ export default function PartnerOnboardingResume() {
             }
           >
             <ArrowLeft className="mr-1.5 h-4 w-4" />
-            Retour
+            {tx("Retour", "Back")}
           </Link>
         </Button>
 
@@ -180,17 +182,17 @@ export default function PartnerOnboardingResume() {
         {/* ------------------------------------------------------------------ */}
 
         <Badge variant="secondary" className="mb-3">
-          Reprise sécurisée
+          {tx("Reprise sécurisée", "Secure resume")}
         </Badge>
 
         <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-          Reprendre mon onboarding
+          {tx("Reprendre mon onboarding", "Resume my onboarding")}
         </h1>
 
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-          Utilisez l'adresse email associée à votre dossier. BIB vous
-          enverra un code à 6 chiffres permettant d'accéder à votre
-          dossier et de le modifier lorsque cela est encore possible.
+          {tx("Utilisez l'adresse email associée à votre dossier. BIB vous", "Use the email address linked to your file. BIB will send you")}
+          {tx("enverra un code à 6 chiffres permettant d'accéder à votre", "a 6-digit code to access your file and")}
+          {tx("dossier et de le modifier lorsque cela est encore possible.", "update it if the file is still editable.")}
         </p>
 
         {/* ------------------------------------------------------------------ */}
@@ -200,7 +202,7 @@ export default function PartnerOnboardingResume() {
         <Card className="mt-8 space-y-5 p-5 sm:p-6">
           <div className="space-y-1.5">
             <Label htmlFor="resume-email">
-              Email associé au dossier
+              {tx("Email associé au dossier", "Email linked to the file")}
             </Label>
 
             <Input
@@ -230,13 +232,13 @@ export default function PartnerOnboardingResume() {
                 <Mail className="mr-2 h-4 w-4" />
               )}
 
-              Recevoir mon code
+              {tx("Recevoir mon code", "Send me a code")}
             </Button>
           ) : (
             <div className="space-y-4">
               <div>
                 <Label className="text-xs">
-                  Code reçu par email
+                  {tx("Code reçu par email", "Code received by email")}
                 </Label>
 
                 <div className="mt-2">
@@ -276,7 +278,7 @@ export default function PartnerOnboardingResume() {
                     <ShieldCheck className="mr-2 h-4 w-4" />
                   )}
 
-                  Accéder à mon dossier
+                  {tx("Accéder à mon dossier", "Access my file")}
                 </Button>
 
                 <Button
@@ -289,7 +291,7 @@ export default function PartnerOnboardingResume() {
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
 
-                  Renvoyer le code
+                  {tx("Renvoyer le code", "Resend code")}
                 </Button>
               </div>
             </div>
@@ -315,7 +317,7 @@ export default function PartnerOnboardingResume() {
 
           <div className="border-t border-border/50 pt-4">
             <p className="text-[11px] leading-relaxed text-muted-foreground">
-              Vous n'avez pas encore déposé de candidature ?
+              {tx("Vous n'avez pas encore déposé de candidature ?", "Haven't applied yet?")}
             </p>
 
             <Link
@@ -326,7 +328,7 @@ export default function PartnerOnboardingResume() {
                   : "/ops/apply"
               }
             >
-              Déposer une candidature
+              {tx("Déposer une candidature", "Submit an application")}
             </Link>
           </div>
         </Card>
@@ -337,9 +339,9 @@ export default function PartnerOnboardingResume() {
 
         <div className="mt-6 rounded-lg border bg-muted/20 p-4">
           <p className="text-xs leading-relaxed text-muted-foreground">
-            Le code est envoyé uniquement à l'adresse email utilisée
-            lors de la candidature. Il permet d'accéder au dossier
-            correspondant au portail sélectionné.
+            {tx("Le code est envoyé uniquement à l'adresse email utilisée", "The code is sent only to the email address used")}
+            {tx("lors de la candidature. Il permet d'accéder au dossier", "when applying. It lets you access the file")}
+            {tx("correspondant au portail sélectionné.", "for the selected portal.")}
           </p>
         </div>
       </section>

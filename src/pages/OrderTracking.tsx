@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -114,15 +115,15 @@ function getStatusConfig(status: string): StatusConfig {
   return STATUS_MAP.pending;
 }
 
-function formatAmount(amount: number) {
-  return new Intl.NumberFormat("fr-FR", {
+function formatAmount(amount: number, lang: "fr" | "en") {
+  return new Intl.NumberFormat(lang === "en" ? "en-IE" : "fr-FR", {
     style: "currency",
     currency: "EUR",
   }).format(amount);
 }
 
-function formatOrderDate(date: string) {
-  return new Intl.DateTimeFormat("fr-FR", {
+function formatOrderDate(date: string, lang: "fr" | "en") {
+  return new Intl.DateTimeFormat(lang === "en" ? "en-IE" : "fr-FR", {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -131,6 +132,9 @@ function formatOrderDate(date: string) {
 
 import { ShipmentTimeline } from "@/components/tracking/ShipmentTimeline";
 export default function OrderTracking() {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
   const { slug } = useParams<{ slug?: string }>();
   const [searchParams] = useSearchParams();
 
@@ -146,7 +150,7 @@ export default function OrderTracking() {
   const [error, setError] = useState<string | null>(null);
 
   useSEO({
-    title: "Suivi de commande",
+    title: english ? "Order tracking" : "Suivi de commande",
     description:
       "Suivez l'état de votre commande passée auprès d'une boutique BIB.",
   });
@@ -191,7 +195,7 @@ export default function OrderTracking() {
 
     if (!normalizedOrderNumber || !normalizedEmail) {
       setError(
-        "Veuillez renseigner votre numéro de commande et votre adresse email.",
+        tx("Veuillez renseigner votre numéro de commande et votre adresse email.", "Please enter your order number and email address."),
       );
       setOrder(null);
       setSearched(true);
@@ -249,7 +253,7 @@ export default function OrderTracking() {
       console.error("Order tracking error:", err);
 
       setError(
-        "Une erreur est survenue lors de la recherche de votre commande. Veuillez réessayer.",
+        tx("Une erreur est survenue lors de la recherche de votre commande. Veuillez réessayer.", "An error occurred while looking up your order. Please try again."),
       );
     } finally {
       setLoading(false);
@@ -282,7 +286,7 @@ export default function OrderTracking() {
             </div>
 
             <h1 className="text-2xl font-bold text-gray-900">
-              Suivi de commande
+              {english ? "Order tracking" : "Suivi de commande"}
             </h1>
 
             <p className="mt-1 text-gray-500">
@@ -299,7 +303,7 @@ export default function OrderTracking() {
 
                 <div>
                   <p className="text-sm font-semibold text-green-900">
-                    Paiement traité
+                    {english ? "Payment processed" : "Paiement traité"}
                   </p>
 
                   <p className="mt-1 text-sm leading-relaxed text-green-800">
@@ -319,7 +323,7 @@ export default function OrderTracking() {
           >
             <div>
               <Label htmlFor="order-number">
-                Numéro de commande
+                {english ? "Order number" : "Numéro de commande"}
               </Label>
 
               <Input
@@ -337,7 +341,7 @@ export default function OrderTracking() {
 
             <div>
               <Label htmlFor="tracking-email">
-                Email utilisé lors de la commande
+                {english ? "Email used for the order" : "Email utilisé lors de la commande"}
               </Label>
 
               <Input
@@ -365,7 +369,7 @@ export default function OrderTracking() {
                 <Search className="mr-2 h-4 w-4" />
               )}
 
-              Rechercher ma commande
+              {english ? "Find my order" : "Rechercher ma commande"}
             </Button>
           </form>
 
@@ -388,7 +392,7 @@ export default function OrderTracking() {
                 <Package className="mx-auto h-8 w-8 text-gray-300" />
 
                 <p className="mt-3 text-sm font-medium text-gray-700">
-                  Aucune commande trouvée.
+                  {english ? "No order found." : "Aucune commande trouvée."}
                 </p>
 
                 <p className="mt-1 text-sm text-gray-500">
@@ -418,22 +422,18 @@ export default function OrderTracking() {
 
                   <Badge className={status.color}>
                     <StatusIcon className="mr-1 h-3.5 w-3.5" />
-                    {status.label}
+                    {tx(status.label, ({ pending: "Pending", processing: "Preparing", shipped: "Shipped", delivered: "Delivered", returned: "Returned" } as Record<string, string>)[order.logistics_status] ?? status.label)}
                   </Badge>
                 </div>
 
                 {order.refund_status && order.refund_status !== "none" && (
                   <div className="rounded-lg border border-amber-200 bg-amber-50 p-4" role="status" aria-live="polite">
                     <p className="text-sm font-medium text-amber-900">
-                      {order.refund_status === "pending"
-                        ? "Remboursement en cours"
-                        : order.refund_status === "refunded"
-                        ? "Commande remboursée"
-                        : "Remboursement partiel effectué"}
+                      {order.refund_status === "pending" ? tx("Remboursement en cours", "Refund pending") : order.refund_status === "refunded" ? tx("Commande remboursée", "Order refunded") : tx("Remboursement partiel effectué", "Partial refund issued")}
                     </p>
                     {(order.refunded_amount_cents ?? 0) > 0 && (
                       <p className="mt-1 text-sm text-amber-800">
-                        Montant confirmé : {formatAmount((order.refunded_amount_cents ?? 0) / 100)}
+                        {tx("Montant confirmé :", "Confirmed amount:")} {formatAmount((order.refunded_amount_cents ?? 0) / 100, lang)}
                       </p>
                     )}
                   </div>
@@ -442,7 +442,7 @@ export default function OrderTracking() {
                 {/* Status message */}
                 <div className="rounded-lg bg-gray-50 p-4">
                   <p className="text-sm leading-relaxed text-gray-700">
-                    {status.message}
+                    {tx(status.message, ({ pending: "Your order has been received and is awaiting preparation.", processing: "The boutique is currently preparing your order.", shipped: "Your order has shipped and is on its way.", delivered: "Your order has been delivered.", returned: "Your order return is being processed." } as Record<string, string>)[order.logistics_status] ?? status.message)}
                   </p>
                 </div>
 
@@ -476,7 +476,7 @@ export default function OrderTracking() {
                     </span>
 
                     <span className="font-medium text-gray-900">
-                      {formatAmount(order.amount)}
+                      {formatAmount(order.amount, lang)}
                     </span>
                   </div>
 
@@ -486,7 +486,7 @@ export default function OrderTracking() {
                     </span>
 
                     <span className="text-right font-medium text-gray-900">
-                      {formatOrderDate(order.created_at)}
+                      {formatOrderDate(order.created_at, lang)}
                     </span>
                   </div>
                 </div>
@@ -515,7 +515,7 @@ export default function OrderTracking() {
 
               <div className="rounded-xl border border-gray-200 bg-white p-5">
                 <h2 className="mb-4 text-sm font-semibold text-gray-900">
-                  Signaler un problème avec cette commande
+                  {english ? "Report an issue with this order" : "Signaler un problème avec cette commande"}
                 </h2>
                 <OrderIssueForm
                   orderNumber={order.order_number}
@@ -589,7 +589,7 @@ export default function OrderTracking() {
                     className="mt-4 w-full gap-2"
                   >
                     <Link to="/store">
-                      Découvrir les boutiques
+                      {english ? "Explore boutiques" : "Découvrir les boutiques"}
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
@@ -619,7 +619,7 @@ export default function OrderTracking() {
                   className="mt-4 w-full gap-2"
                 >
                   <Link to="/store/signup">
-                    Activer mon compte
+                    {english ? "Activate my account" : "Activer mon compte"}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
