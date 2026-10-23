@@ -68,6 +68,7 @@ export default function Personnalisation() {
   const { data: supplierProducts = [], isLoading, isError } =
     useSupplierProducts();
   const { data: myProducts = [] } = useProducts();
+  const selectedProduct = myProducts.find((item) => item.id === selectedProductId);
 
   const [view, setView] = useState<ViewMode>("catalogue");
   const [search, setSearch] = useState("");
