@@ -354,9 +354,12 @@ export type Database = {
           legal_siret: string | null
           logo_url: string | null
           name: string
+          seo_active_locales: string[]
+          seo_default_locale: string
           seo_description: string | null
           seo_jsonld: Json | null
           seo_og_image_url: string | null
+          seo_public_origin: string | null
           seo_title: string | null
           slug: string
           status: Database["public"]["Enums"]["boutique_status"]
@@ -383,9 +386,12 @@ export type Database = {
           legal_siret?: string | null
           logo_url?: string | null
           name: string
+          seo_active_locales?: string[]
+          seo_default_locale?: string
           seo_description?: string | null
           seo_jsonld?: Json | null
           seo_og_image_url?: string | null
+          seo_public_origin?: string | null
           seo_title?: string | null
           slug: string
           status?: Database["public"]["Enums"]["boutique_status"]
@@ -412,9 +418,12 @@ export type Database = {
           legal_siret?: string | null
           logo_url?: string | null
           name?: string
+          seo_active_locales?: string[]
+          seo_default_locale?: string
           seo_description?: string | null
           seo_jsonld?: Json | null
           seo_og_image_url?: string | null
+          seo_public_origin?: string | null
           seo_title?: string | null
           slug?: string
           status?: Database["public"]["Enums"]["boutique_status"]
@@ -640,6 +649,7 @@ export type Database = {
           id: string
           issue_id: string
           message: string | null
+          refund_id: string | null
         }
         Insert: {
           action: Database["public"]["Enums"]["issue_action"]
@@ -647,6 +657,7 @@ export type Database = {
           id?: string
           issue_id: string
           message?: string | null
+          refund_id?: string | null
         }
         Update: {
           action?: Database["public"]["Enums"]["issue_action"]
@@ -654,6 +665,7 @@ export type Database = {
           id?: string
           issue_id?: string
           message?: string | null
+          refund_id?: string | null
         }
         Relationships: [
           {
@@ -663,7 +675,35 @@ export type Database = {
             referencedRelation: "order_issues"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "issue_responses_refund_id_fkey"
+            columns: ["refund_id"]
+            isOneToOne: false
+            referencedRelation: "order_refunds"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      merchant_legal_acceptances: {
+        Row: {
+          accepted_at: string
+          document_key: string
+          document_version: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          document_key: string
+          document_version: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string
+          document_key?: string
+          document_version?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       moq_reservations: {
         Row: {
@@ -840,6 +880,75 @@ export type Database = {
           },
         ]
       }
+      order_refunds: {
+        Row: {
+          amount_cents: number
+          attempt: number
+          created_at: string
+          currency: string
+          failure_reason: string | null
+          id: string
+          idempotency_key: string
+          issue_id: string
+          order_id: string
+          payment_intent_id: string | null
+          processed_by: string
+          status: string
+          stock_disposition: string
+          stripe_refund_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          attempt: number
+          created_at?: string
+          currency?: string
+          failure_reason?: string | null
+          id?: string
+          idempotency_key: string
+          issue_id: string
+          order_id: string
+          payment_intent_id?: string | null
+          processed_by: string
+          status?: string
+          stock_disposition?: string
+          stripe_refund_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          attempt?: number
+          created_at?: string
+          currency?: string
+          failure_reason?: string | null
+          id?: string
+          idempotency_key?: string
+          issue_id?: string
+          order_id?: string
+          payment_intent_id?: string | null
+          processed_by?: string
+          status?: string
+          stock_disposition?: string
+          stripe_refund_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_refunds_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: false
+            referencedRelation: "order_issues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_refunds_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_shipments: {
         Row: {
           carrier: string | null
@@ -902,6 +1011,53 @@ export type Database = {
           },
         ]
       }
+      order_shipping_addresses: {
+        Row: {
+          address_line: string
+          city: string
+          country: string
+          created_at: string
+          order_id: string
+          postal_code: string
+          recipient_name: string
+          recipient_phone: string | null
+          region: string | null
+          updated_at: string
+        }
+        Insert: {
+          address_line: string
+          city: string
+          country: string
+          created_at?: string
+          order_id: string
+          postal_code: string
+          recipient_name: string
+          recipient_phone?: string | null
+          region?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address_line?: string
+          city?: string
+          country?: string
+          created_at?: string
+          order_id?: string
+          postal_code?: string
+          recipient_name?: string
+          recipient_phone?: string | null
+          region?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_shipping_addresses_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           amount: number
@@ -920,6 +1076,10 @@ export type Database = {
           pos_qr_url: string | null
           product_id: string
           quantity: number
+          refund_status: string
+          refunded_amount_cents: number
+          sales_channel: string
+          stripe_environment: string | null
           stripe_session_id: string | null
         }
         Insert: {
@@ -939,6 +1099,10 @@ export type Database = {
           pos_qr_url?: string | null
           product_id: string
           quantity?: number
+          refund_status?: string
+          refunded_amount_cents?: number
+          sales_channel?: string
+          stripe_environment?: string | null
           stripe_session_id?: string | null
         }
         Update: {
@@ -958,6 +1122,10 @@ export type Database = {
           pos_qr_url?: string | null
           product_id?: string
           quantity?: number
+          refund_status?: string
+          refunded_amount_cents?: number
+          sales_channel?: string
+          stripe_environment?: string | null
           stripe_session_id?: string | null
         }
         Relationships: [
@@ -1914,6 +2082,16 @@ export type Database = {
         Args: { p_stripe_session_id: string }
         Returns: number
       }
+      create_order_issue: {
+        Args: {
+          _customer_email: string
+          _image_url?: string
+          _message?: string
+          _order_number: string
+          _type: Database["public"]["Enums"]["issue_type"]
+        }
+        Returns: string
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -1922,6 +2100,16 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      finalize_order_issue_refund: {
+        Args: {
+          p_failure_reason?: string
+          p_payment_intent_id?: string
+          p_refund_id: string
+          p_status: string
+          p_stripe_refund_id?: string
+        }
+        Returns: undefined
       }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
@@ -1960,6 +2148,10 @@ export type Database = {
         Args: { p_checkout_key: string }
         Returns: number
       }
+      reserve_order_issue_refund: {
+        Args: { p_amount_cents: number; p_issue_id: string; p_user_id: string }
+        Returns: Json
+      }
       reserve_product_stock_checkout: {
         Args: { p_checkout_key: string; p_order_ids: string[] }
         Returns: number
@@ -1987,6 +2179,13 @@ export type Database = {
           logistics_status: string
           order_number: string
           product_name: string
+        }[]
+      }
+      track_order_refund_status: {
+        Args: { _customer_email: string; _order_number: string }
+        Returns: {
+          refund_status: string
+          refunded_amount_cents: number
         }[]
       }
       track_shipment: {
