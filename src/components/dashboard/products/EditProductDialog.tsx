@@ -1,4 +1,4 @@
-
+﻿
 import { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
@@ -174,7 +174,11 @@ export function EditProductDialog({
   const supplier = product.supplier_products;
   const supplierBasePrice = Number(supplier?.base_price ?? 0);
   const maxMargin = Number(supplier?.max_margin_percent ?? 0);
-  const moq = supplier?.moq ?? null;`r`n  const appliedMargin = Number(margin);`r`n  const publicPrice = Number.isFinite(appliedMargin)`r`n    ? Number((supplierBasePrice * (1 + appliedMargin / 100)).toFixed(2))`r`n    : 0;
+  const moq = supplier?.moq ?? null;
+  const appliedMargin = Number(margin);
+  const publicPrice = Number.isFinite(appliedMargin)
+    ? Number((supplierBasePrice * (1 + appliedMargin / 100)).toFixed(2))
+    : 0;
 
   const preview = useMemo(() => {
     const calculatedPrice = publicPrice;
@@ -663,3 +667,4 @@ function toDatetimeLocal(value: string | null | undefined): string {
     .toISOString()
     .slice(0, 16);
 }
+
