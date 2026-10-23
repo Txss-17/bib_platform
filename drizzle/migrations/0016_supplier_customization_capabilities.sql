@@ -1,0 +1,2 @@
+ALTER TABLE public.supplier_products ADD COLUMN IF NOT EXISTS customization_capabilities jsonb NOT NULL DEFAULT '{}'::jsonb;
+COMMENT ON COLUMN public.supplier_products.customization_capabilities IS 'Supplier-confirmed customization capabilities. Empty object means capabilities are not yet qualified.';
