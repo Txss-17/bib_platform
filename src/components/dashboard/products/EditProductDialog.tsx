@@ -1,5 +1,6 @@
 ﻿
-import { useEffect, useMemo, useState } from "react";`r`nimport { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   AlertCircle,
   BadgeEuro,
@@ -141,7 +142,8 @@ export function EditProductDialog({
   onOpenChange,
   product,
 }: EditProductDialogProps) {
-  const update = useUpdateProduct();`r`n  const navigate = useNavigate();
+  const update = useUpdateProduct();
+  const navigate = useNavigate();
 
   const [margin, setMargin] = useState("");
   const [threshold, setThreshold] = useState("");
@@ -577,6 +579,20 @@ export function EditProductDialog({
               title="Personnalisation du produit"
               description="La configuration avancée sera pilotée depuis le module Personnalisation."
             />
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => {
+                window.location.assign(
+                  `/dashboard/personnalisation?productId=${encodeURIComponent(product.id)}`,
+                );
+              }}
+            >
+              <Sparkles className="mr-2 h-4 w-4" />
+              Ouvrir l’outil de personnalisation
+            </Button>
 
             <div className="flex items-start gap-3 rounded-lg border border-dashed border-border p-4">
               <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
