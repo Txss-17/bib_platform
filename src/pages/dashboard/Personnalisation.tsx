@@ -1,5 +1,5 @@
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -68,7 +68,21 @@ export default function Personnalisation() {
   const { data: supplierProducts = [], isLoading, isError } =
     useSupplierProducts();
   const { data: myProducts = [] } = useProducts();
-  const selectedProduct = myProducts.find((item) => item.id === selectedProductId);
+  const selectedProduct = myProducts.find((item) => item.id === selectedProductId);  const [customization, setCustomization] = useState({ brand: "", color: "#172B4D", logo: "", packaging: "" });
+  const [saved, setSaved] = useState(false);
+  useEffect(() => {
+    if (!selectedProductId) return;
+    try {
+      const stored = localStorage.getItem(`bib-product-customization:${selectedProductId}`);
+      setCustomization(stored ? { ...{ brand: "", color: "#172B4D", logo: "", packaging: "" }, ...JSON.parse(stored) } : { brand: "", color: "#172B4D", logo: "", packaging: "" });
+      setSaved(false);
+    } catch { setSaved(false); }
+  }, [selectedProductId]);
+  const saveCustomization = () => {
+    if (!selectedProductId) return;
+    localStorage.setItem(`bib-product-customization:${selectedProductId}`, JSON.stringify(customization));
+    setSaved(true);
+  };
 
   const [view, setView] = useState<ViewMode>("catalogue");
   const [search, setSearch] = useState("");
@@ -217,21 +231,22 @@ export default function Personnalisation() {
             <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
               <div>
                 <label className="text-sm font-medium">Nom de marque souhaité</label>
-                <Input id="custom-brand" placeholder="Votre marque" className="mt-1" />
+                <Input id="custom-brand" placeholder="Votre marque" className="mt-1" value={customization.brand} onChange={(e) => { setCustomization({ ...customization, brand: e.target.value }); setSaved(false); }} />
               </div>
               <div>
                 <label className="text-sm font-medium">Couleur principale</label>
-                <Input id="custom-color" type="color" defaultValue="#172B4D" className="mt-1 h-10" />
+                <Input id="custom-color" type="color" value={customization.color} onChange={(e) => { setCustomization({ ...customization, color: e.target.value }); setSaved(false); }} className="mt-1 h-10" />
               </div>
               <div>
                 <label className="text-sm font-medium">Lien vers le logo</label>
-                <Input id="custom-logo" type="url" placeholder="https://" className="mt-1" />
+                <Input id="custom-logo" type="url" placeholder="https://" value={customization.logo} onChange={(e) => { setCustomization({ ...customization, logo: e.target.value }); setSaved(false); }} className="mt-1" />
               </div>
               <div>
                 <label className="text-sm font-medium">Demande de packaging</label>
-                <Input id="custom-packaging" placeholder="À confirmer avec le fournisseur" className="mt-1" />
+                <Input id="custom-packaging" placeholder="À confirmer avec le fournisseur" value={customization.packaging} onChange={(e) => { setCustomization({ ...customization, packaging: e.target.value }); setSaved(false); }} className="mt-1" />
               </div>
               <p className="text-xs text-muted-foreground sm:col-span-2">Cette page prépare la demande de personnalisation. Les valeurs seront à confirmer par le fournisseur avant commande.</p>
+              <div className="flex items-center gap-3 sm:col-span-2"><Button onClick={saveCustomization}>Enregistrer le brouillon</Button>{saved && <span className="text-sm text-emerald-700">Brouillon enregistré sur cet appareil.</span>}</div>
             </CardContent>
           </Card>
         )}
