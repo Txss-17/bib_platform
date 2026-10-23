@@ -337,6 +337,38 @@ export type Database = {
         }
         Relationships: []
       }
+      boutique_studio_answers: {
+        Row: {
+          answers: Json
+          boutique_id: string
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          answers?: Json
+          boutique_id: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          answers?: Json
+          boutique_id?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boutique_studio_answers_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: true
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       boutiques: {
         Row: {
           category: string
