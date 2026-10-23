@@ -185,7 +185,7 @@ export default function Personnalisation() {
               </div>
 
               <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                Personnalisation des produits
+                {selectedProduct ? `Personnaliser ${selectedProduct.supplier_products?.name ?? "ce produit"}` : "Personnalisation des produits"}
               </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
                 Identifiez les références à personnaliser, préparez votre
@@ -253,7 +253,7 @@ export default function Personnalisation() {
             </CardContent>
           </Card>
         )}
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <section className={selectedProduct ? "hidden" : "grid gap-3 sm:grid-cols-2 xl:grid-cols-4"}>
           <MetricCard
             icon={<Package className="h-4 w-4" />}
             label="Références au catalogue"
@@ -278,7 +278,7 @@ export default function Personnalisation() {
           />
         </section>
 
-        <Card className="overflow-hidden border-border shadow-sm">
+        <Card className={selectedProduct ? "hidden" : "overflow-hidden border-border shadow-sm"}>
           <div className="border-b border-border p-4 sm:p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
@@ -521,7 +521,7 @@ export default function Personnalisation() {
           </CardContent>
         </Card>
 
-        <section className="grid gap-4 lg:grid-cols-2">
+        <section className={selectedProduct ? "hidden" : "grid gap-4 lg:grid-cols-2"}>
           <div className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-start gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#172B4D]/[0.07] text-[#172B4D]">
