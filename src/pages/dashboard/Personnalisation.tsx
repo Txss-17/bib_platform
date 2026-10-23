@@ -196,6 +196,22 @@ export default function Personnalisation() {
           </div>
         </header>
 
+        {selectedProduct && (
+          <Card className="border-[#D0AD62]/40 bg-[#D0AD62]/5">
+            <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="font-semibold">{selectedProduct.supplier_products?.name ?? "Produit"}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {selectedProduct.supplier_products?.category ?? "Catégorie non renseignée"}
+                  {" · "}Prix fournisseur {Number(selectedProduct.supplier_products?.base_price ?? 0).toFixed(2)} €
+                  {" · "}Marge {selectedProduct.applied_margin} %
+                </p>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">Les options fournisseur sont à confirmer avant activation.</p>
+              </div>
+              <Button variant="outline" onClick={() => navigate(`/dashboard/produits?productId=${encodeURIComponent(selectedProduct.id)}`)}>Retour à la fiche produit</Button>
+            </CardContent>
+          </Card>
+        )}
         <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             icon={<Package className="h-4 w-4" />}
