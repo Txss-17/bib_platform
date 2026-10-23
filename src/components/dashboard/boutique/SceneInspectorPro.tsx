@@ -1,5 +1,6 @@
-import { SceneVariantPicker } from "./SceneVariantPicker";
+﻿import { SceneVariantPicker } from "./SceneVariantPicker";
 import { useRef, useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -126,6 +127,10 @@ export function ImageField({
       toast.error(e instanceof Error ? e.message : "Génération impossible");
     }
   };
+
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
 
   return (
     <div className="space-y-1.5">
@@ -419,6 +424,10 @@ export function SceneInspectorPro({
     )}
   </>
 );
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
+
   return (
     <Card className="p-3 mt-4 space-y-3">
       <div className="flex items-center justify-between">
@@ -2240,6 +2249,10 @@ function CornerRadiusControl({
     { id: "advanced", label: "Par coin" },
   ];
 
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
+
   return (
     <div className="space-y-2 rounded-md border border-border/40 bg-background/60 p-2">
       <div className="flex items-center justify-between">
@@ -2304,6 +2317,10 @@ function RadiusSlider({
   value: number;
   onChange: (v: number) => void;
 }) {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
+
   return (
     <div className="space-y-1">
       <Label className="text-[10px] opacity-70 flex justify-between">
@@ -2400,6 +2417,10 @@ function ProModePanel({
     delete cleaned.animation;
     setOv(Object.keys(cleaned).length === 0 ? null : cleaned);
   };
+
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
 
   return (
     <details className="rounded-md border border-border/40 bg-muted/20 px-2 py-1.5" open={hasPro}>

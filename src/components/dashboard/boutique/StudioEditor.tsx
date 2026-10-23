@@ -1,10 +1,11 @@
-import {
+﻿import {
   useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -398,6 +399,10 @@ function SortableSceneRow({
     scene.scene_type,
   );
 
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
+
   return (
     <div
       ref={setNodeRef}
@@ -424,7 +429,7 @@ function SortableSceneRow({
           event.stopPropagation()
         }
         className="mt-0.5 shrink-0 cursor-grab touch-none rounded p-1 opacity-40 hover:bg-muted hover:opacity-100 active:cursor-grabbing"
-        aria-label="Réorganiser la scène"
+        aria-label={english ? "Reorder scene" : "Réorganiser la scène"}
       >
         <GripVertical className="h-4 w-4" />
       </button>
@@ -467,14 +472,14 @@ function SortableSceneRow({
         <Switch
           checked={scene.is_visible}
           onCheckedChange={onToggle}
-          aria-label="Afficher ou masquer"
+          aria-label={english ? "Show or hide" : "Afficher ou masquer"}
         />
 
         <button
           type="button"
           className="rounded p-1 hover:bg-muted"
           onClick={onDuplicate}
-          title="Dupliquer"
+          title={english ? "Duplicate" : "Dupliquer"}
         >
           <Copy className="h-3.5 w-3.5" />
         </button>
@@ -483,7 +488,7 @@ function SortableSceneRow({
           type="button"
           className="rounded p-1 text-destructive hover:bg-destructive/10"
           onClick={onDelete}
-          title="Supprimer"
+          title={english ? "Delete" : "Supprimer"}
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>
@@ -565,6 +570,10 @@ function PageMetadata({
       .replace(/(^-|-$)/g, "")
       .slice(0, 60);
 
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
+
   return (
     <div className="border-t bg-muted/20 px-4 py-3">
       <div className="flex flex-wrap items-center gap-4">
@@ -636,7 +645,7 @@ function PageMetadata({
           setOpen((value) => !value)
         }
       >
-        <span>Métadonnées de la page</span>
+        <span>{tx("Métadonnées de la page", "Page metadata")}</span>
         {open ? (
           <ChevronUp className="h-4 w-4" />
         ) : (
@@ -841,7 +850,7 @@ function PageMetadata({
 
           <div className="flex items-center justify-between gap-3 md:col-span-2">
             <p className="text-xs text-muted-foreground">
-              Génération SEO assistée par BIB.
+              {tx("Génération SEO assistée par BIB.", "SEO generation powered by BIB.")}
             </p>
 
             <ActionButton
@@ -850,9 +859,9 @@ function PageMetadata({
               state={stateFromMutation(
                 generateSeo,
               )}
-              loadingLabel="Génération…"
-              successLabel="Généré"
-              errorLabel="Échec"
+              loadingLabel={english ? "Generating…" : "Génération…"}
+              successLabel={english ? "Generated" : "Généré"}
+              errorLabel={english ? "Failed" : "Échec"}
               onClick={() => {
                 generateSeo.mutate(
                   {
@@ -919,6 +928,10 @@ export function StudioEditor({
   isPublished,
   initialSeo,
 }: Props) {
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
+
   const navigate =
     useNavigate();
 
@@ -2032,7 +2045,7 @@ export function StudioEditor({
             )}
             loadingLabel="Publication…"
             successLabel="Publié"
-            errorLabel="Échec"
+            errorLabel={english ? "Failed" : "Échec"}
             onClick={() =>
               publish.mutate()
             }
@@ -2063,7 +2076,7 @@ export function StudioEditor({
             ))}
           </ul>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" onClick={() => setActivePageId(null)}>Accueil</Button>
+            <Button size="sm" variant="outline" onClick={() => setActivePageId(null)}>{tx("Accueil", "Home")}</Button>
             <Button size="sm" variant="outline" onClick={() => navigate("/dashboard/produits")}>Gérer les produits</Button>
             <Button size="sm" variant="outline" disabled={publicationScenesLoading || publicationData.isFetching} onClick={() => {
               void publicationData.refetch();
@@ -2081,7 +2094,7 @@ export function StudioEditor({
               Pages de la boutique
             </h2>
             <p className="text-xs text-muted-foreground">
-              Les pages sont persistées dans BIB et ne dépendent pas du navigateur.
+              {tx("Les pages sont persistées dans BIB et ne dépendent pas du navigateur.", "Pages are saved to BIB and are available across browsers.")}
             </p>
           </div>
 
@@ -2341,7 +2354,7 @@ export function StudioEditor({
                     Aucune scène
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Ajoutez une scène depuis la bibliothèque.
+                    {tx("Ajoutez une scène depuis la bibliothèque.", "Add a scene from the library.")}
                   </p>
                 </div>
               ) : (
@@ -2502,12 +2515,12 @@ export function StudioEditor({
                     </h3>
                     <p className="mt-1 text-xs text-muted-foreground">
                       Configure les langues déclarées pour cette boutique et son origine publique.
-                      Les traductions du contenu doivent être gérées séparément.
+                      {tx("Les traductions du contenu doivent être gérées séparément.", "Content translations must be managed separately.")}
                     </p>
                   </div>
 
                   <div>
-                    <Label>Langues actives</Label>
+                    <Label>{tx("Langues actives", "Active languages")}</Label>
                     <div className="mt-2 grid grid-cols-2 gap-3">
                       {SUPPORTED_SEO_LOCALES.map((locale) => {
                         const checked = seoActiveLocales.includes(
@@ -2581,7 +2594,7 @@ export function StudioEditor({
                       }}
                     >
                       <SelectTrigger className="mt-2">
-                        <SelectValue placeholder="Choisir une langue" />
+                        <SelectValue placeholder={english ? "Choose a language" : "Choisir une langue"} />
                       </SelectTrigger>
                       <SelectContent>
                         {SUPPORTED_SEO_LOCALES.filter((locale) =>
@@ -2849,9 +2862,9 @@ export function StudioEditor({
                     state={stateFromMutation(
                       generateBrief,
                     )}
-                    loadingLabel="Génération…"
-                    successLabel="Généré"
-                    errorLabel="Échec"
+                    loadingLabel={english ? "Generating…" : "Génération…"}
+                    successLabel={english ? "Generated" : "Généré"}
+                    errorLabel={english ? "Failed" : "Échec"}
                     onClick={() => {
                       generateBrief.mutate(
                         {
@@ -2889,9 +2902,9 @@ export function StudioEditor({
                     state={stateFromMutation(
                       generateClusters,
                     )}
-                    loadingLabel="Génération…"
-                    successLabel="Généré"
-                    errorLabel="Échec"
+                    loadingLabel={english ? "Generating…" : "Génération…"}
+                    successLabel={english ? "Generated" : "Généré"}
+                    errorLabel={english ? "Failed" : "Échec"}
                     onClick={() => {
                       generateClusters.mutate(
                         {
@@ -3011,7 +3024,7 @@ export function StudioEditor({
                 Aperçu
               </p>
               <p className="text-xs text-muted-foreground">
-                Les modifications sont prévisualisées directement.
+                {tx("Les modifications sont prévisualisées directement.", "Changes are previewed live.")}
               </p>
             </div>
 
@@ -3119,7 +3132,7 @@ export function StudioEditor({
               Supprimer cette scène ?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Cette suppression est définitive pour cette boutique.
+              {tx("Cette suppression est définitive pour cette boutique.", "This permanently deletes the scene from this boutique.")}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -3255,6 +3268,10 @@ function BrandPanel({
     brandDna.generated_typography ??
     {};
 
+  const { lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
+
   return (
     <div className="space-y-4">
       <Card className="flex items-center justify-between gap-3 p-4">
@@ -3263,7 +3280,7 @@ function BrandPanel({
             Identité de marque
           </p>
           <p className="text-xs text-muted-foreground">
-            Modifiez les éléments générés par le Brand Studio.
+            {tx("Modifiez les éléments générés par le Brand Studio.", "Edit the elements generated by Brand Studio.")}
           </p>
         </div>
 
@@ -3635,7 +3652,7 @@ function BrandPanel({
       </div>
 
       <div>
-        <Label>Mots-clés</Label>
+        <Label>{tx("Mots-clés", "Keywords")}</Label>
 
         <div className="mt-2 flex flex-wrap gap-1.5">
           {(
