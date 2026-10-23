@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 
 import {
   Link,
@@ -54,7 +54,9 @@ export default function StoreLogin() {
     useState(false);
 
   const { signIn } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -232,13 +234,13 @@ export default function StoreLogin() {
 
                 <CardTitle className="text-2xl">
                   {isSubscriberFlow
-                    ? "Continuer avec mon compte"
+                    ? tx("Continuer avec mon compte", "Continue with my account")
                     : t("login.title")}
                 </CardTitle>
 
                 <CardDescription>
                   {isSubscriberFlow
-                    ? "Connectez-vous pour poursuivre vers l'activation de BIB Abonné."
+                    ? tx("Connectez-vous pour poursuivre vers l'activation de BIB Abonné.", "Sign in to continue activating BIB Subscriber.")
                     : t("login.desc")}
                 </CardDescription>
               </CardHeader>
@@ -269,7 +271,7 @@ export default function StoreLogin() {
                       <Input
                         id="store-email"
                         type="email"
-                        placeholder="vous@exemple.com"
+                        placeholder={english ? "you@example.com" : "vous@exemple.com"}
                         value={email}
                         onChange={(event) =>
                           setEmail(
@@ -332,8 +334,8 @@ export default function StoreLogin() {
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                         aria-label={
                           showPassword
-                            ? "Masquer le mot de passe"
-                            : "Afficher le mot de passe"
+                            ? (english ? "Hide password" : "Masquer le mot de passe")
+                            : (english ? "Show password" : "Afficher le mot de passe")
                         }
                       >
                         {showPassword ? (
@@ -357,7 +359,7 @@ export default function StoreLogin() {
                     ) : (
                       <>
                         {isSubscriberFlow
-                          ? "Se connecter et continuer"
+                          ? tx("Se connecter et continuer", "Sign in and continue")
                           : t("login.submit")}
 
                         <ArrowRight className="h-4 w-4" />
@@ -387,14 +389,14 @@ export default function StoreLogin() {
                   to="/store"
                   className="text-center text-xs text-muted-foreground hover:text-foreground hover:underline"
                 >
-                  Retour au Store
+                  {tx("Retour au Store", "Back to the Store")}
                 </Link>
 
                 <Link
                   to="/login"
                   className="text-center text-xs text-muted-foreground hover:text-foreground hover:underline"
                 >
-                  Accès plateforme BIB
+                  {tx("Accès plateforme BIB", "BIB platform sign in")}
                 </Link>
               </CardFooter>
             </Card>
@@ -408,7 +410,7 @@ export default function StoreLogin() {
         <div className="hidden bg-gradient-to-br from-primary/10 via-accent/5 to-background p-12 lg:flex lg:items-center">
           <div className="mx-auto max-w-lg">
             <h2 className="text-3xl font-bold">
-              Votre espace client BIB
+              {tx("Votre espace client BIB", "Your BIB customer account")}
             </h2>
 
             <p className="mt-4 text-muted-foreground">
@@ -422,7 +424,7 @@ export default function StoreLogin() {
                   <ShoppingBag className="h-5 w-5" />
                 }
               >
-                Boutiques et commandes
+                {tx("Boutiques et commandes", "Boutiques and orders")}
               </Benefit>
 
               <Benefit
@@ -430,7 +432,7 @@ export default function StoreLogin() {
                   <Shield className="h-5 w-5" />
                 }
               >
-                Compte client séparé de l'espace marchand
+                {tx("Compte client séparé de l'espace marchand", "Customer account separate from the merchant workspace")}
               </Benefit>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 
 import {
   Link,
@@ -63,7 +63,9 @@ export default function StoreSignup() {
     useState(false);
 
   const { signUp } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const english = lang === "en";
+  const tx = (fr: string, en: string) => english ? en : fr;
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -290,14 +292,14 @@ export default function StoreSignup() {
 
                 <CardTitle className="text-2xl">
                   {isSubscriberFlow
-                    ? "Activer BIB Abonné"
-                    : "Créer votre compte BIB"}
+                    ? tx("Activer BIB Abonné", "Activate BIB Subscriber")
+                    : tx("Créer votre compte BIB", "Create your BIB account")}
                 </CardTitle>
 
                 <CardDescription>
                   {isSubscriberFlow
-                    ? "Créez votre compte client puis poursuivez immédiatement vers le paiement."
-                    : "Votre compte client BIB vous permet d'accéder à votre espace Store."}
+                    ? tx("Créez votre compte client puis poursuivez immédiatement vers le paiement.", "Create your customer account, then continue straight to payment.")
+                    : tx("Votre compte client BIB vous permet d'accéder à votre espace Store.", "Your BIB customer account gives you access to the Store.")}
                 </CardDescription>
               </CardHeader>
 
@@ -315,7 +317,7 @@ export default function StoreSignup() {
                         </p>
 
                         <p className="mt-1 text-xs text-muted-foreground">
-                          Abonnement mensuel
+                          {tx("Abonnement mensuel", "Monthly subscription")}
                         </p>
                       </div>
 
@@ -332,11 +334,11 @@ export default function StoreSignup() {
 
                     <div className="mt-4 grid gap-2">
                       <Benefit>
-                        Favoris et boutiques suivies
+                        {tx("Favoris et boutiques suivies", "Favorites and followed boutiques")}
                       </Benefit>
 
                       <Benefit>
-                        Commandes et suivi
+                        {tx("Commandes et suivi", "Orders and tracking")}
                       </Benefit>
                     </div>
 
@@ -377,7 +379,7 @@ export default function StoreSignup() {
                       <Link
                         to={loginUrl}
                       >
-                        Se connecter et continuer
+                        {tx("Se connecter", "Sign in")} et continuer
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
@@ -430,7 +432,7 @@ export default function StoreSignup() {
 
                     <div className="space-y-2">
                       <Label htmlFor="store-signup-password">
-                        Mot de passe
+                        {tx("Mot de passe", "Password")}
                       </Label>
 
                       <div className="relative">
@@ -466,8 +468,8 @@ export default function StoreSignup() {
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                           aria-label={
                             showPassword
-                              ? "Masquer le mot de passe"
-                              : "Afficher le mot de passe"
+                              ? (english ? "Hide password" : "Masquer le mot de passe")
+                              : (english ? "Show password" : "Afficher le mot de passe")
                           }
                         >
                           {showPassword ? (
@@ -479,7 +481,7 @@ export default function StoreSignup() {
                       </div>
 
                       <p className="text-xs text-muted-foreground">
-                        8 caractères minimum.
+                        {tx("8 caractères minimum.", "At least 8 characters.")}
                       </p>
                     </div>
 
@@ -487,7 +489,7 @@ export default function StoreSignup() {
 
                     <div className="space-y-2">
                       <Label htmlFor="store-signup-confirm-password">
-                        Confirmer le mot de passe
+                        {tx("Confirmer le mot de passe", "Confirm password")}
                       </Label>
 
                       <div className="relative">
@@ -550,8 +552,8 @@ export default function StoreSignup() {
                       ) : (
                         <>
                           {isSubscriberFlow
-                            ? "Créer mon compte et continuer"
-                            : "Créer mon compte"}
+                            ? tx("Créer mon compte et continuer", "Create account and continue")
+                            : tx("Créer mon compte", "Create my account")}
 
                           <ArrowRight className="h-4 w-4" />
                         </>
@@ -567,12 +569,12 @@ export default function StoreSignup() {
                     ================================================= */}
 
                 <div className="text-center text-sm text-muted-foreground">
-                  Vous avez déjà un compte ?{" "}
+                  {tx("Vous avez déjà un compte ?", "Already have an account?")}{" "}
                   <Link
                     to={loginUrl}
                     className="font-medium text-primary hover:underline"
                   >
-                    Se connecter
+                    {tx("Se connecter", "Sign in")}
                   </Link>
                 </div>
 
@@ -580,7 +582,7 @@ export default function StoreSignup() {
                   to="/store"
                   className="text-center text-xs text-muted-foreground hover:text-foreground hover:underline"
                 >
-                  Retour au Store
+                  {tx("Retour au Store", "Back to the Store")}
                 </Link>
               </CardFooter>
             </Card>
@@ -594,7 +596,7 @@ export default function StoreSignup() {
         <div className="hidden bg-gradient-to-br from-primary/10 via-accent/5 to-background p-12 lg:flex lg:items-center">
           <div className="mx-auto max-w-lg">
             <h2 className="text-3xl font-bold">
-              Un compte client BIB.
+              {tx("Un compte client BIB.", "A BIB customer account.")}
             </h2>
 
             <p className="mt-4 text-muted-foreground">
@@ -609,7 +611,7 @@ export default function StoreSignup() {
                   <Star className="h-5 w-5" />
                 }
               >
-                Boutiques et produits favoris
+                {tx("Boutiques et produits favoris", "Favorite boutiques and products")}
               </Benefit>
 
               <Benefit
