@@ -362,7 +362,7 @@ function PreviewFrame({
       : 768;
 
   return (
-    <div className="flex justify-center bg-muted/30 p-4">
+    <div className="flex justify-center bg-muted/30 p-2 sm:p-4">
       <div
         className="overflow-hidden rounded-2xl border bg-background shadow-xl"
         style={{
@@ -2213,14 +2213,14 @@ export function StudioEditor({
       </Card>
 
       {/* Main editor */}
-      <div className="grid min-h-[720px] gap-5 lg:grid-cols-[390px_minmax(0,1fr)]">
+      <div className="grid min-h-[620px] gap-4 xl:grid-cols-[390px_minmax(0,1fr)] xl:gap-5">
         {/* Left rail */}
-        <Card className="overflow-hidden">
+        <Card className="min-w-0 overflow-hidden">
           <Tabs
             defaultValue="scenes"
             className="flex h-full flex-col"
           >
-            <TabsList className="m-3 grid grid-cols-4">
+            <TabsList className="m-3 grid grid-cols-2 sm:grid-cols-4">
               <TabsTrigger value="scenes">
                 Scènes
               </TabsTrigger>
@@ -2237,7 +2237,7 @@ export function StudioEditor({
 
             <TabsContent
               value="scenes"
-              className="mt-0 flex-1 overflow-y-auto px-4 pb-5"
+              className="mt-0 min-h-0 flex-1 overflow-y-auto px-4 pb-5"
             >
               <div className="mb-4 flex items-center justify-between">
                 <div>
@@ -2474,7 +2474,7 @@ export function StudioEditor({
 
             <TabsContent
               value="brand"
-              className="mt-0 flex-1 overflow-y-auto px-4 pb-5"
+              className="mt-0 min-h-0 flex-1 overflow-y-auto px-4 pb-5"
             >
               {!brandDna ? (
                 <div className="rounded-xl border border-dashed p-6 text-center">
@@ -2508,7 +2508,7 @@ export function StudioEditor({
 
             <TabsContent
               value="seo"
-              className="mt-0 flex-1 overflow-y-auto px-4 pb-5"
+              className="mt-0 min-h-0 flex-1 overflow-y-auto px-4 pb-5"
             >
               <div className="space-y-4">
                 <Card className="space-y-4 p-4">
@@ -3019,7 +3019,7 @@ export function StudioEditor({
 
             <TabsContent
               value="stories"
-              className="mt-0 flex-1 overflow-y-auto px-4 pb-5"
+              className="mt-0 min-h-0 flex-1 overflow-y-auto px-4 pb-5"
             >
               <StoriesManager boutiqueId={boutiqueId} />
             </TabsContent>
@@ -3095,7 +3095,7 @@ export function StudioEditor({
             </div>
           </div>
 
-          <div className="min-h-[640px] overflow-auto">
+          <div className="min-h-[min(640px,70vh)] max-h-[80vh] overflow-auto xl:min-h-[640px] xl:max-h-none">
             <PreviewFrame
               device={
                 previewDevice
