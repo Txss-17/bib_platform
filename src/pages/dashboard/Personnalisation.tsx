@@ -212,6 +212,29 @@ export default function Personnalisation() {
             </CardContent>
           </Card>
         )}
+        {selectedProduct && (
+          <Card className="border-[#D0AD62]/40">
+            <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
+              <div>
+                <label className="text-sm font-medium">Nom de marque souhaité</label>
+                <Input id="custom-brand" placeholder="Votre marque" className="mt-1" />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Couleur principale</label>
+                <Input id="custom-color" type="color" defaultValue="#172B4D" className="mt-1 h-10" />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Lien vers le logo</label>
+                <Input id="custom-logo" type="url" placeholder="https://" className="mt-1" />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Demande de packaging</label>
+                <Input id="custom-packaging" placeholder="À confirmer avec le fournisseur" className="mt-1" />
+              </div>
+              <p className="text-xs text-muted-foreground sm:col-span-2">Cette page prépare la demande de personnalisation. Les valeurs seront à confirmer par le fournisseur avant commande.</p>
+            </CardContent>
+          </Card>
+        )}
         <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             icon={<Package className="h-4 w-4" />}
