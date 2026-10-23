@@ -92,6 +92,20 @@
       "when": 1792668000000,
       "tag": "0012_order_issue_refunds",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792716307721,
+      "tag": "0013_seo_settings_per_boutique",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1792716334382,
+      "tag": "0014_private_studio_answers",
+      "breakpoints": true
     }
   ]
 }

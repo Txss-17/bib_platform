@@ -625,7 +625,7 @@ export default function Commandes() {
               <div>
                 <p className="text-xs text-blue-200">Flux de commandes</p>
                 <p className="mt-0.5 text-sm font-semibold">
-                  {pulseStatus === "connected"
+                  {pulseStatus === "live"
                     ? "Connecté en temps réel"
                     : "Connexion en cours"}
                 </p>
@@ -831,12 +831,12 @@ export default function Commandes() {
               </div>
               <span
                 className={`mt-1 inline-flex h-2.5 w-2.5 shrink-0 rounded-full ${
-                  pulseStatus === "connected"
+                  pulseStatus === "live"
                     ? "bg-emerald-500"
                     : "animate-pulse bg-amber-400"
                 }`}
                 title={
-                  pulseStatus === "connected"
+                  pulseStatus === "live"
                     ? "Connecté"
                     : "Connexion en cours"
                 }

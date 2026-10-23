@@ -171,9 +171,10 @@ export function StorefrontEmbeddedCheckout({
         stripe={getStripe()}
         options={{
           fetchClientSecret,
+          onComplete,
         }}
       >
-        <EmbeddedCheckout onComplete={onComplete} />
+        <EmbeddedCheckout />
       </EmbeddedCheckoutProvider>
     </div>
   );

@@ -744,6 +744,8 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
 }
 
 function EventList({ events, emptyLabel }: { events: PortalEvent[]; emptyLabel: string }) {
+  const { lang } = useLanguage();
+  const english = lang === "en";
   if (events.length === 0) return <p className="text-sm text-muted-foreground">{emptyLabel}</p>;
   return (
     <ul className="space-y-3 text-sm">
@@ -754,7 +756,7 @@ function EventList({ events, emptyLabel }: { events: PortalEvent[]; emptyLabel: 
             <p className="text-[11px] text-muted-foreground">{new Date(e.created_at).toLocaleString(english ? "en-GB" : "fr-FR")}</p>
           </div>
           <Badge variant={e.status === "resolved" ? "default" : e.status === "rejected" ? "destructive" : "secondary"}>
-            {e.status === "resolved" ? "Résolu" : e.status === "rejected" ? "Refusé" : e.status === "in_progress" ? "En cours" : "Ouvert"}
+            {e.status === "resolved" ? (english ? "Resolved" : "Résolu") : e.status === "rejected" ? (english ? "Rejected" : "Refusé") : e.status === "in_progress" ? (english ? "In progress" : "En cours") : (english ? "Open" : "Ouvert")}
           </Badge>
         </li>
       ))}

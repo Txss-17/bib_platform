@@ -309,7 +309,7 @@ function SidebarContent({
         {/* Personal space */}
         <div className="space-y-0.5">
           <p className="px-3 pb-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-            Espace personnel
+            {english ? "Personal space" : "Espace personnel"}
           </p>
 
           {personalNavItems.map((item) => (

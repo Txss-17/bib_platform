@@ -1,5 +1,9 @@
 # Roadmap
 
+- [ ] Vérifier la connexion et déployer les fonctions backend nécessaires (demande du 23 octobre).
+- [ ] Corriger les traductions FR/EN partagées et vérifier le changement de langue.
+- [ ] Corriger les erreurs de compilation et vérifier les parcours concernés.
+
 - [x] Vérifier les trois signalements de stock et de migrations contre le code et la base actuelle.
 - [ ] Publier après les corrections vérifiées, conformément à la demande du 22 octobre 2026.
 - [ ] Corriger les problèmes confirmés sans supprimer les protections de stock.

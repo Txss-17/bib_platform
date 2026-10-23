@@ -287,7 +287,7 @@ const Header = () => {
                   className="flex items-center gap-3 border-b border-border/40 py-3.5 text-[15px] font-medium text-foreground"
                 >
                   <LifeBuoy className="h-4 w-4 text-bib-marine" />
-                  Centre d'aide
+                  {t("nav.help")}
                 </Link>
               </div>
 
