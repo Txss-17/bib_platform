@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
-import Header from "@/components/Header";
+import PublicPageLayout from "@/components/layout/PublicPageLayout";
 import HeroSection from "@/components/HeroSection";
-import Footer from "@/components/Footer";
 import DiscoverBoutiquesSection from "@/components/landing/DiscoverBoutiquesSection";
 import { Button } from "@/components/ui/button";
 import { useSEO } from "@/hooks/useSEO";
@@ -25,14 +24,8 @@ const Index = () => {
   useSEO({ title:"BIB — L'infrastructure des marques", description:"BIB accompagne les marques avec une boutique, des produits sélectionnés et un réseau de partenaires vérifiés." });
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-
-      <main>
-        {/* =========================================================
-            HERO
-        ========================================================= */}
-        <HeroSection />
+    <PublicPageLayout>
+      <HeroSection />
 
         {/* =========================================================
             BOUTIQUES / SOCIAL PROOF
@@ -460,10 +453,7 @@ const Index = () => {
             </div>
           </div>
         </section>
-      </main>
-
-      <Footer />
-    </div>
+    </PublicPageLayout>
   );
 };
 
