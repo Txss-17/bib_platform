@@ -14,6 +14,7 @@ import {
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Logo } from "@/components/Logo";
 import { BoutiqueSearchBar } from "@/components/search/BoutiqueSearchBar";
 import {
@@ -164,6 +165,7 @@ const Header = () => {
             />
 
             <LanguageSwitcher />
+            <ThemeToggle />
 
             <Button
               variant="ghost"
@@ -185,7 +187,7 @@ const Header = () => {
           </div>
 
           {/* Mobile button */}
-          <button
+          <Button
             type="button"
             className="lg:hidden -mr-2 inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-foreground transition-colors hover:bg-muted/60"
             onClick={() => setMobileMenuOpen((open) => !open)}
@@ -197,7 +199,7 @@ const Header = () => {
             ) : (
               <Menu size={23} />
             )}
-          </button>
+          </Button>
         </div>
 
         {/* Mobile navigation */}
@@ -293,6 +295,7 @@ const Header = () => {
 
               <div className="flex flex-col gap-2 pt-5">
                 <LanguageSwitcher />
+                <ThemeToggle />
 
                 <Button
                   variant="ghost"

@@ -19,13 +19,13 @@ const buttonVariants = cva(
         hero: "bg-gradient-accent text-accent-foreground font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]",
         "hero-outline": "border-2 border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground backdrop-blur-sm hover:bg-primary-foreground/20 hover:border-primary-foreground/50",
         trust: "bg-gradient-trust text-secondary-foreground font-semibold shadow-md hover:shadow-lg hover:scale-[1.01]",
-        coral: "bg-linksy-coral text-accent-foreground font-medium shadow-sm hover:bg-linksy-coral-light hover:shadow-md",
+        coral: "bg-accent text-accent-foreground font-medium shadow-sm hover:bg-accent/90 hover:shadow-md",
         navy: "bg-linksy-navy text-primary-foreground font-medium shadow-sm hover:bg-linksy-navy-light hover:shadow-md",
         // Premium gold-on-marine signature CTA
         premium:
           "bg-gradient-premium text-bib-gold font-display font-semibold shadow-premium hover:shadow-glow hover:scale-[1.02] active:scale-[0.98] border border-bib-gold/30",
         gold:
-          "bg-gradient-gold text-bib-marine font-semibold shadow-md hover:shadow-glow hover:scale-[1.01] active:scale-[0.98]",
+          "bg-gradient-gold text-accent-foreground font-semibold shadow-md hover:shadow-glow hover:scale-[1.01] active:scale-[0.98]",
       },
       size: {
         default: "h-10 px-4 py-2",
