@@ -1,3 +1,4 @@
+import { assertPaymentEnvironment } from "../_shared/payment-environment.ts";
 import {
   type StripeEnv,
   createStripeClient,
@@ -72,6 +73,7 @@ async function createCheckoutSession(
       !/^(bib_subscriber_monthly|(?:plan|insurance)_(?:starter|growth|pro)_(?:monthly|yearly))$/.test(options.priceId)) {
     throw new Error("Invalid priceId");
   }
+  assertPaymentEnvironment(options.environment, (key) => Deno.env.get(key));
   const returnUrl = new URL(options.returnUrl);
   if (returnUrl.protocol !== "https:" || returnUrl.username || returnUrl.password) {
     throw new Error("Invalid returnUrl");

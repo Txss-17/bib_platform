@@ -18,7 +18,12 @@ let handler: (request: Request) => Promise<Response>;
 beforeEach(async () => {
   vi.resetModules();
   vi.clearAllMocks();
-  vi.stubGlobal("Deno", { env: { get: () => "test-config" }, serve: (fn: typeof handler) => { handler = fn; } });
+  vi.stubGlobal("Deno", { env: { get: (key: string) => ({
+    PAYMENTS_ENVIRONMENT: "sandbox",
+    PAYMENTS_LIVE_PROJECT_REF: "live-project",
+    PAYMENTS_SANDBOX_PROJECT_REF: "sandbox-project",
+    SUPABASE_URL: "https://sandbox-project.supabase.co",
+  }[key] ?? "test-config") }, serve: (fn: typeof handler) => { handler = fn; } });
   mocks.getUser.mockResolvedValue({ data: { user: { id: "authenticated-user", email: "user@example.com" } }, error: null });
   mocks.subscriptions.mockResolvedValue({ data: [], error: null });
   mocks.prices.mockResolvedValue({ data: [{ id: "price_server", type: "recurring", currency: "eur", unit_amount: 499, recurring: { interval: "month" } }] });
@@ -45,6 +50,12 @@ describe("Subscription checkout endpoint", () => {
       subscription_data: { metadata: { userId: "authenticated-user", kind: priceId === "bib_subscriber_monthly" ? "bib_subscriber" : "subscription" } },
       line_items: [{ price: "price_server", quantity: 1 }],
     }));
+  });
+  it("rejects a browser attempting to switch the server payment mode", async () => {
+    const response = await handler(request({ environment: "live" }));
+    expect(response.status).not.toBe(200);
+    expect(mocks.getUser).not.toHaveBeenCalled();
+    expect(mocks.createSession).not.toHaveBeenCalled();
   });
   it("does not create a session without authentication", async () => {
     expect((await handler(request({}, false))).status).not.toBe(200);

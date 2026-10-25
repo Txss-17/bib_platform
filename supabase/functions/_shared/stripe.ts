@@ -1,3 +1,4 @@
+import { assertPaymentEnvironment, assertEventEnvironment } from "./payment-environment.ts";
 import { encode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
 import Stripe from "https://esm.sh/stripe@22.0.2";
 
@@ -12,6 +13,7 @@ export type StripeEnv = "sandbox" | "live";
 const GATEWAY_STRIPE_BASE = "https://connector-gateway.lovable.dev/stripe";
 
 export function getConnectionApiKey(env: StripeEnv): string {
+  assertPaymentEnvironment(env, (key) => Deno.env.get(key));
   return env === "sandbox"
     ? getEnv("STRIPE_SANDBOX_API_KEY")
     : getEnv("STRIPE_LIVE_API_KEY");
@@ -42,6 +44,7 @@ export async function verifyWebhook(
   req: Request,
   env: StripeEnv,
 ): Promise<{ type: string; data: { object: any } }> {
+  assertPaymentEnvironment(env, (key) => Deno.env.get(key));
   const signature = req.headers.get("stripe-signature");
   const body = await req.text();
   const secret =
@@ -79,7 +82,9 @@ export async function verifyWebhook(
 
   if (!v1Signatures.includes(expected)) throw new Error("Invalid webhook signature");
 
-  return JSON.parse(body);
+  const event = JSON.parse(body);
+  assertEventEnvironment(event, env);
+  return event;
 }
 
 // CORS

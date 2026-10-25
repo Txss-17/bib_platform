@@ -1,4 +1,5 @@
-﻿import { createClient } from "npm:@supabase/supabase-js@2";
+import { configuredPaymentEnvironment } from "../_shared/payment-environment.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { createStripeClient, corsHeaders, type StripeEnv } from "../_shared/stripe.ts";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -23,6 +24,7 @@ Deno.serve(async (req) => {
   if (!url || !anonKey || !serviceKey) return json({ error: "server_configuration_missing" }, 500);
 
   try {
+    configuredPaymentEnvironment((key) => Deno.env.get(key));
     const token = authorization.slice("Bearer ".length).trim();
     const authClient = createClient(url, anonKey, {
       auth: { persistSession: false, autoRefreshToken: false },

@@ -516,7 +516,7 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
   // Enregistrer la session Stripe et lire l'état précédent.
   const { data: ordersBefore, error: readError } = await supabase
     .from("orders")
-    .select("id, payment_status")
+    .select("id, payment_status, stripe_environment, stripe_session_id")
     .in("id", orderIds);
 
   if (readError) {
@@ -526,6 +526,13 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
   if (!ordersBefore?.length) {
     console.error("Aucune commande trouvée pour la session", session.id);
     return;
+  }
+
+  if (ordersBefore.length !== orderIds.length || ordersBefore.some((order) =>
+    (order.stripe_environment != null && order.stripe_environment !== env) ||
+    (order.stripe_session_id != null && order.stripe_session_id !== session.id)
+  )) {
+    throw new Error("La session de paiement ne correspond pas aux commandes enregistrées");
   }
 
   const { error: sessionError } = await supabase

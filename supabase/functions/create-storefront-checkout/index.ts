@@ -1,3 +1,4 @@
+import { assertPaymentEnvironment } from "../_shared/payment-environment.ts";
 import { checkoutOrderMetadata } from "../_shared/checkout-session.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
@@ -276,6 +277,7 @@ async function createStorefrontCheckout(
     throw new CheckoutError("Adresse de livraison incomplète.");
   }
 
+  assertPaymentEnvironment(body.environment, (key) => Deno.env.get(key));
   const returnUrl = validateReturnUrl(body.returnUrl);
   const country = normalizeCountry(body.shipping.country);
   const cart = normalizeCart(body.items);
@@ -408,6 +410,7 @@ async function createStorefrontCheckout(
         customer_email: customerEmail,
         amount: (line.unitAmount * line.quantity) / 100,
         payment_status: "pending",
+        stripe_environment: body.environment,
       })),
     )
     .select("id, order_number");

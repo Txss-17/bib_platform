@@ -1,3 +1,4 @@
+import { assertPaymentEnvironment } from "../_shared/payment-environment.ts";
 import { checkoutOrderMetadata } from "../_shared/checkout-session.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
@@ -201,6 +202,7 @@ async function createPosCheckout(
     throw new PosCheckoutError("Environnement de paiement invalide");
   }
 
+  assertPaymentEnvironment(body.environment, (key) => Deno.env.get(key));
   const cart = normalizeCart(body.items);
   const supabase = adminClient();
   const stripe = createStripeClient(body.environment);
@@ -362,6 +364,7 @@ async function createPosCheckout(
         amount: line.lineAmount,
         order_number: "PENDING",
         payment_status: "pending",
+        stripe_environment: body.environment,
         sales_channel: "pos",
       })),
     )

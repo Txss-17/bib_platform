@@ -127,6 +127,13 @@
                         "when":  1792792000000,
                         "tag":  "0017_stock_restock_requests",
                         "breakpoints":  true
+                    },
+                    {
+                        "idx":  18,
+                        "version":  "7",
+                        "when":  1792936800000,
+                        "tag":  "0018_live_payments_logistics_guard",
+                        "breakpoints":  true
                     }
                 ]
 }

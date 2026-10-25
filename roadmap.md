@@ -1,5 +1,13 @@
 # Roadmap
 
+## Séparation des paiements — correction préparée
+
+- [x] Imposer le mode de paiement côté serveur et vérifier le projet Supabase associé.
+- [x] Rejeter les événements Stripe de mauvais mode avant traitement.
+- [x] Préparer la migration excluant sandbox et POS de l’envoi logistique.
+- [ ] Configurer les deux projets distincts puis déployer et réaliser la recette.
+- Détails : `docs/payment-environment-isolation.md`.
+
 ## Vérification du 25 octobre 2026 — branche de correction
 
 - [x] Rétablir le checkout des abonnements et tester l’identité serveur.
