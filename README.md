@@ -48,7 +48,11 @@ d’exécuter `playwright test`.
 
 ## Base de données et fonctions
 
-Les migrations SQL sont dans `supabase/migrations` et les Edge Functions dans
-`supabase/functions`. Appliquer les migrations dans l’ordre de leurs préfixes
-horodatés et régénérer `src/integrations/supabase/types.ts` après toute
-évolution de schéma. Éviter d’ajouter des migrations non horodatées.
+L’historique de déploiement est le journal `drizzle/migrations/meta/_journal.json`.
+Les migrations applicables se trouvent dans `drizzle/migrations` et les Edge
+Functions dans `supabase/functions`. Les anciens fichiers `supabase/migrations`
+sont des références historiques : ne pas les rejouer en bloc, car ils contiennent
+des changements qui se chevauchent et des schémas externes.
+
+Après toute évolution du schéma, régénérer `src/integrations/supabase/types.ts`.
+Vérifier les migrations déjà appliquées et la base ciblée avant tout déploiement.

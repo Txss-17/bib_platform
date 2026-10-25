@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import ts from "typescript";
 
 /**
  * Guardrail tests: prevent regressions where a dashboard page would render
@@ -27,6 +28,27 @@ function listDashboardPageFiles(): string[] {
   return [DASHBOARD_HOME, ...files];
 }
 
+// Count headers within each rendered layout, not across separate loading/error
+// components or early returns in the same source file.
+function headersPerLayout(source: string): number[] {
+  const file = ts.createSourceFile("page.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const counts: number[] = [];
+  function visit(node: ts.Node) {
+    if (ts.isJsxElement(node) && node.openingElement.tagName.getText(file) === "DashboardLayout") {
+      let count = 0;
+      function countHeaders(child: ts.Node) {
+        if ((ts.isJsxSelfClosingElement(child) || ts.isJsxOpeningElement(child)) && child.tagName.getText(file) === "PageHeader") count++;
+        ts.forEachChild(child, countHeaders);
+      }
+      ts.forEachChild(node, countHeaders);
+      counts.push(count);
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(file);
+  return counts;
+}
+
 describe("DashboardLayout contract", () => {
   const layoutSrc = fs.readFileSync(LAYOUT_FILE, "utf8");
 
@@ -47,6 +69,14 @@ describe("DashboardLayout contract", () => {
 describe("Dashboard pages — no double title", () => {
   const pages = listDashboardPageFiles();
 
+  it("detects duplicate headers in one layout", () => {
+    expect(headersPerLayout("<DashboardLayout><PageHeader /><PageHeader /></DashboardLayout>")).toEqual([2]);
+  });
+
+  it("allows separate loading and ready layouts", () => {
+    expect(headersPerLayout("function Page() { if (loading) return <DashboardLayout><PageHeader /></DashboardLayout>; return <DashboardLayout><PageHeader /></DashboardLayout>; }")).toEqual([1, 1]);
+  });
+
   it.each(pages)("%s does not pass `title` to <DashboardLayout>", (file) => {
     const src = fs.readFileSync(file, "utf8");
     // Match `<DashboardLayout ... title=...>` even on multiple lines.
@@ -65,11 +95,9 @@ describe("Dashboard pages — no double title", () => {
     "%s renders at most one <PageHeader> per page section (no duplicate)",
     (file) => {
       const src = fs.readFileSync(file, "utf8");
-      // Count opening PageHeader tags. Multiple PageHeaders are valid only when
-      // they live in mutually-exclusive branches (loading / error / main).
-      // We assert the absolute count stays reasonable: never more than 4.
-      const matches = src.match(/<PageHeader\b/g) || [];
-      expect(matches.length).toBeLessThanOrEqual(4);
+      for (const count of headersPerLayout(src)) {
+        expect(count).toBeLessThanOrEqual(1);
+      }
     },
   );
 });

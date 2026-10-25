@@ -1,3 +1,4 @@
+import { checkoutOrderIds, checkoutShippingAddress } from "../_shared/checkout-session.ts";
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 
 import {
@@ -503,9 +504,7 @@ async function handleSubscriptionDeleted(
 async function handleCheckoutCompleted(session: any, env: StripeEnv) {
   if (session.metadata?.kind !== "storefront") return;
 
-  const orderIds = String(session.metadata?.orderIds ?? "")
-    .split(",")
-    .filter(Boolean);
+  const orderIds = checkoutOrderIds(session.metadata);
 
   if (!orderIds.length) {
     console.error("Checkout sans orderIds", session.id);
@@ -551,29 +550,10 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
   // POS checkout represents an in-person sale and has no shipping address.
   // Online storefront orders must persist the address collected by Stripe.
   if (session.metadata?.pos !== "1") {
-    const shippingDetails = session.shipping_details;
-    const shippingAddress = shippingDetails?.address;
-    const addressLine = [shippingAddress?.line1, shippingAddress?.line2]
-      .filter((value: unknown) => typeof value === "string" && value.trim())
-      .join(", ") || String(session.metadata?.shippingAddress ?? "").trim();
-    const city = String(shippingAddress?.city ?? session.metadata?.shippingCity ?? "").trim();
-    const postalCode = String(shippingAddress?.postal_code ?? session.metadata?.shippingPostalCode ?? "").trim();
-    const country = String(shippingAddress?.country ?? session.metadata?.shippingCountry ?? "").trim().toUpperCase();
-    const recipientName = String(shippingDetails?.name ?? session.customer_details?.name ?? session.metadata?.customerName ?? "").trim();
-
-    if (!addressLine || !city || !postalCode || !/^[A-Z]{2}$/.test(country) || !recipientName) {
-      throw new Error(`Adresse de livraison manquante pour la session ${session.id}`);
-    }
-
+    const shippingAddress = checkoutShippingAddress(session);
     const shippingRows = orderIds.map((orderId: string) => ({
       order_id: orderId,
-      recipient_name: recipientName,
-      recipient_phone: session.customer_details?.phone ?? session.metadata?.customerPhone ?? null,
-      address_line: addressLine,
-      city,
-      region: shippingAddress?.state ?? null,
-      postal_code: postalCode,
-      country,
+      ...shippingAddress,
     }));
     const { error: shippingError } = await supabase
       .from("order_shipping_addresses")
@@ -861,9 +841,7 @@ async function handleWebhook(
 
     case "checkout.session.async_payment_failed": {
       const session = event.data.object;
-      const orderIds = String(session.metadata?.orderIds ?? "")
-        .split(",")
-        .filter(Boolean);
+      const orderIds = checkoutOrderIds(session.metadata);
 
       if (session.metadata?.kind === "storefront" && orderIds.length) {
         const { error } = await getSupabase().rpc(
@@ -883,9 +861,7 @@ async function handleWebhook(
 
     case "checkout.session.expired": {
       const session = event.data.object;
-      const orderIds = String(session.metadata?.orderIds ?? "")
-        .split(",")
-        .filter(Boolean);
+      const orderIds = checkoutOrderIds(session.metadata);
 
       if (session.metadata?.kind === "storefront" && orderIds.length) {
         const { error } = await getSupabase().rpc(

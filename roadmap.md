@@ -1,5 +1,15 @@
 # Roadmap
 
+## Vérification du 25 octobre 2026 — branche de correction
+
+- [x] Rétablir le checkout des abonnements et tester l’identité serveur.
+- [x] Corriger les adresses Stripe et les identifiants des paniers de 14 à 20 lignes.
+- [x] Corriger le test des titres et les instructions de migration.
+- [ ] Déployer et réaliser la recette des paiements, abonnements et stocks.
+- [ ] Résoudre les écarts documentés dans `docs/platform-readiness-2026-10-25.md`.
+
+## Suivi existant
+
 - [ ] Terminer le déploiement demandé le 25 octobre après vérification.
 - [ ] Harmoniser les palettes claires et sombres et les sélecteurs de thème.
 - [ ] Harmoniser la langue de toutes les pages et vérifier les liens et actions.

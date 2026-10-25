@@ -1,4 +1,4 @@
-
+import { checkoutOrderMetadata } from "../_shared/checkout-session.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
   type StripeEnv,
@@ -481,7 +481,7 @@ async function createStorefrontCheckout(
         kind: "storefront",
         boutiqueId: boutique.id,
         boutiqueName: (boutique.name ?? "").slice(0, 200),
-        orderIds: orderIds.join(",").slice(0, 500),
+        ...checkoutOrderMetadata(orderIds),
         checkoutKey,
         customerName: body.customerName.trim().slice(0, 200),
         customerPhone: (body.customerPhone ?? "").slice(0, 100),

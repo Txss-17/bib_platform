@@ -1,4 +1,4 @@
-
+import { checkoutOrderMetadata } from "../_shared/checkout-session.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
   type StripeEnv,
@@ -429,7 +429,7 @@ async function createPosCheckout(
         boutiqueId: boutique.id,
         boutiqueName: boutique.name ?? body.boutiqueName ?? "",
         privateSaleId: privateSale.id,
-        orderIds: orderIds.join(","),
+        ...checkoutOrderMetadata(orderIds),
         checkoutKey,
         discountPercent: String(discountPercent),
       },
