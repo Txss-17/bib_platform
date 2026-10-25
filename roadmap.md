@@ -1,5 +1,9 @@
 # Roadmap
 
+- [ ] Terminer le déploiement demandé le 25 octobre après vérification.
+- [ ] Harmoniser les palettes claires et sombres et les sélecteurs de thème.
+- [ ] Harmoniser la langue de toutes les pages et vérifier les liens et actions.
+
 - [ ] Vérifier la connexion et déployer les fonctions backend nécessaires (demande du 23 octobre).
 - [ ] Corriger les traductions FR/EN partagées et vérifier le changement de langue.
 - [ ] Corriger les erreurs de compilation et vérifier les parcours concernés.

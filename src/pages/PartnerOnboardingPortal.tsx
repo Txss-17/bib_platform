@@ -100,7 +100,7 @@ const STATUS_CONFIG: Record<
   },
 
   submitted: {
-    label: english ? "Submitted" : "Dossier transmis",
+    label: "Dossier transmis",
     description:
       "Le dossier a été transmis à BIB et attend son examen.",
     icon: FileCheck2,
