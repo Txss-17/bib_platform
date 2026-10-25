@@ -1,0 +1,431 @@
+diff --git a/docs/payment-environment-isolation.md b/docs/payment-environment-isolation.md
+new file mode 100644
+index 0000000..4929a53
+--- /dev/null
++++ b/docs/payment-environment-isolation.md
+@@ -0,0 +1,73 @@
++# Séparation des paiements réels et de test
++
++## Comportement
++
++Chaque backend accepte un seul mode, choisi par sa configuration serveur.
++Le navigateur ne peut plus sélectionner l'autre mode. Un mode absent ou une
++configuration incohérente bloque les appels de paiement, sans valeur par défaut.
++
++Les projets Supabase live et sandbox doivent être distincts. L'URL Supabase du
++serveur doit correspondre à la référence déclarée pour le mode choisi. Cette
++vérification ne crée pas un deuxième projet et ne migre aucune donnée.
++Elle suppose que l'administrateur renseigne correctement les références réelles.
++
++Le contrôle commun précède la création des clients Stripe. Les trois checkouts
++le vérifient également explicitement avant tout traitement métier. Le webhook
++vérifie la configuration, la signature puis `event.livemode` avant de modifier
++les abonnements, commandes ou stocks. Les commandes sont marquées avec leur
++mode à la création ; un webhook ne peut pas remplacer un mode ou une session
++Stripe déjà enregistrés par une autre valeur.
++
++La migration Drizzle `0018_live_payments_logistics_guard` exclut de l'envoi en
++logistique les commandes sandbox, celles sans environnement vérifié et les
++ventes POS. Les commandes live storefront restent expédiables. Elle n'efface
++pas les expéditions déjà créées et ne requalifie pas les anciennes commandes.
++
++## Configuration requise AVANT le déploiement des fonctions
++
++Définir les variables serveur suivantes dans les secrets de chaque backend :
++
++| Variable | Backend réel | Backend de test |
++| --- | --- | --- |
++| `PAYMENTS_ENVIRONMENT` | `live` | `sandbox` |
++| `PAYMENTS_LIVE_PROJECT_REF` | Référence du vrai projet de production | Même référence de production |
++| `PAYMENTS_SANDBOX_PROJECT_REF` | Référence du projet de test distinct | Même référence de test |
++
++`SUPABASE_URL` doit être `https://<référence de ce projet>.supabase.co`.
++Les domaines Supabase personnalisés et les instances locales ne sont pas pris
++en charge par ce contrôle : ne pas les utiliser pour cette configuration.
++Les références ne sont pas des clés API. Ne jamais copier une clé service_role
++à leur place. Ne jamais désigner le projet contenant le stock réel comme sandbox.
++
++La clé publique du frontend doit correspondre au mode serveur. Le webhook
++Stripe doit viser le bon projet avec `?env=live` ou `?env=sandbox` et le secret de
++signature correspondant. Sur le projet de test, utiliser des données fictives
++et des intégrations externes de test (email, intranet, logistique).
++
++## Ordre de déploiement et recette
++
++1. Identifier les deux projets existants ou créer un projet de test séparé.
++   Ne pas activer le nouveau code avant d'avoir renseigné les variables ci-dessus.
++2. Vérifier le journal Drizzle réel et appliquer uniquement la nouvelle migration
++   après les précédentes migrations enregistrées. Ne pas rejouer le dossier legacy.
++3. Déployer `payments-webhook`, puis `create-checkout`, `create-storefront-checkout`,
++   `create-pos-checkout`, `manage-subscription`, `create-portal-session` et
++   `refund-order-issue`, avec les modules partagés.
++4. Sur le backend réel, tenter une requête sandbox : elle doit échouer avant toute
++   création de commande/réservation. Ne pas réaliser un paiement réel pour ce test.
++5. Sur le projet de test, effectuer une commande sandbox et vérifier son stock de
++   test, son adresse et l'absence d'expédition. Vérifier que le projet réel est intact.
++6. Vérifier le rejet d'un webhook de mauvais mode et l'idempotence des répétitions
++   valides. Revoir séparément les anciennes commandes/réservations sandbox du projet
++   réel : ce correctif ne les annule pas automatiquement.
++
++## Validation locale du correctif
++
++- 154 tests Vitest réussis, dont contrôle des modes, références de projet, URL,
++  événements Stripe et rejet d'un changement de mode depuis le checkout abonnement.
++- Migration exécutée dans PostgreSQL embarqué PGlite avec des tables de test :
++  seuls les paiements live storefront déclenchent l'expédition, en INSERT et UPDATE.
++  Aucun doublon lors d'une répétition de l'état payé.
++- Ces tests ne certifient pas la configuration ni les migrations du backend déployé.
++
++Référence Stripe : https://docs.stripe.com/api/events/object (`livemode`).
+diff --git a/drizzle/migrations/0018_live_payments_logistics_guard.sql b/drizzle/migrations/0018_live_payments_logistics_guard.sql
+new file mode 100644
+index 0000000..ea60f83
+--- /dev/null
++++ b/drizzle/migrations/0018_live_payments_logistics_guard.sql
+@@ -0,0 +1,23 @@
++-- A sandbox payment must never dispatch a real shipment. Do not backfill or
++-- dispatch historical orders whose Stripe environment has not been verified.
++CREATE OR REPLACE FUNCTION public.dispatch_paid_order_to_logistics()
++RETURNS trigger
++LANGUAGE plpgsql
++SECURITY DEFINER
++SET search_path = public
++AS $$
++BEGIN
++  IF NEW.payment_status = 'paid'
++     AND NEW.stripe_environment = 'live'
++     AND NEW.sales_channel <> 'pos'
++     AND (TG_OP = 'INSERT' OR OLD.payment_status IS DISTINCT FROM 'paid') THEN
++    INSERT INTO public.order_shipments (order_id)
++    VALUES (NEW.id)
++    ON CONFLICT (order_id) DO NOTHING;
++
++    INSERT INTO public.shipment_events (order_id, status, label)
++    VALUES (NEW.id, 'paid', 'Paiement confirmé — commande transmise à la logistique');
++  END IF;
++  RETURN NEW;
++END;
++$$;
+diff --git a/drizzle/migrations/meta/_journal.json b/drizzle/migrations/meta/_journal.json
+index fea489f..d7ae1be 100644
+--- a/drizzle/migrations/meta/_journal.json
++++ b/drizzle/migrations/meta/_journal.json
+@@ -127,6 +127,13 @@
+                         "when":  1792792000000,
+                         "tag":  "0017_stock_restock_requests",
+                         "breakpoints":  true
++                    },
++                    {
++                        "idx":  18,
++                        "version":  "7",
++                        "when":  1792936800000,
++                        "tag":  "0018_live_payments_logistics_guard",
++                        "breakpoints":  true
+                     }
+                 ]
+ }
+\ No newline at end of file
+diff --git a/roadmap.md b/roadmap.md
+index 0f6577f..6af19e2 100644
+--- a/roadmap.md
++++ b/roadmap.md
+@@ -1,5 +1,13 @@
+ # Roadmap
+ 
++## Séparation des paiements — correction préparée
++
++- [x] Imposer le mode de paiement côté serveur et vérifier le projet Supabase associé.
++- [x] Rejeter les événements Stripe de mauvais mode avant traitement.
++- [x] Préparer la migration excluant sandbox et POS de l’envoi logistique.
++- [ ] Configurer les deux projets distincts puis déployer et réaliser la recette.
++- Détails : `docs/payment-environment-isolation.md`.
++
+ ## Vérification du 25 octobre 2026 — branche de correction
+ 
+ - [x] Rétablir le checkout des abonnements et tester l’identité serveur.
+diff --git a/src/test/payment-environment.test.ts b/src/test/payment-environment.test.ts
+new file mode 100644
+index 0000000..8a902ea
+--- /dev/null
++++ b/src/test/payment-environment.test.ts
+@@ -0,0 +1,52 @@
++import { describe, expect, it } from "vitest";
++import { assertPaymentEnvironment, assertEventEnvironment, configuredPaymentEnvironment } from "../../supabase/functions/_shared/payment-environment";
++
++const config: Record<string, string> = {
++  PAYMENTS_ENVIRONMENT: "live",
++  PAYMENTS_LIVE_PROJECT_REF: "live-project",
++  PAYMENTS_SANDBOX_PROJECT_REF: "sandbox-project",
++  SUPABASE_URL: "https://live-project.supabase.co",
++};
++const reader = (overrides: Record<string, string | undefined> = {}) => {
++  const env = { ...config, ...overrides };
++  return (key: string) => env[key];
++};
++
++describe("Server payment isolation", () => {
++  it("accepts live payments only on the registered live project", () => {
++    expect(assertPaymentEnvironment("live", reader())).toBe("live");
++  });
++  it("rejects a sandbox request on the live backend", () => {
++    expect(() => assertPaymentEnvironment("sandbox", reader())).toThrow("not enabled");
++  });
++  it("accepts sandbox only on a separate sandbox project", () => {
++    expect(assertPaymentEnvironment("sandbox", reader({ PAYMENTS_ENVIRONMENT: "sandbox", SUPABASE_URL: "https://sandbox-project.supabase.co" }))).toBe("sandbox");
++  });
++  it("rejects changing only the mode on the live database", () => {
++    expect(() => assertPaymentEnvironment("sandbox", reader({ PAYMENTS_ENVIRONMENT: "sandbox" }))).toThrow("does not match");
++  });
++  it("rejects live mode against the sandbox database", () => {
++    expect(() => configuredPaymentEnvironment(reader({ SUPABASE_URL: "https://sandbox-project.supabase.co" }))).toThrow("does not match");
++  });
++  it.each([undefined, "", "test", "LIVE"])("fails closed for an unconfigured or invalid mode: %s", (mode) => {
++    expect(() => configuredPaymentEnvironment(reader({ PAYMENTS_ENVIRONMENT: mode }))).toThrow();
++  });
++  it.each(["PAYMENTS_LIVE_PROJECT_REF", "PAYMENTS_SANDBOX_PROJECT_REF", "SUPABASE_URL"])("fails closed without %s", (key) => {
++    expect(() => configuredPaymentEnvironment(reader({ [key]: undefined }))).toThrow();
++  });
++  it("rejects both modes using the same project", () => {
++    expect(() => configuredPaymentEnvironment(reader({ PAYMENTS_SANDBOX_PROJECT_REF: "live-project" }))).toThrow("Distinct");
++  });
++  it.each(["https://live-project.supabase.co.attacker.example", "http://live-project.supabase.co", "https://live-project.supabase.co:8443", "https://user:pass@live-project.supabase.co", "not-a-url"])("rejects a mismatched database URL: %s", (url) => {
++    expect(() => configuredPaymentEnvironment(reader({ SUPABASE_URL: url }))).toThrow();
++  });
++});
++
++describe("Verified Stripe event mode", () => {
++  it.each([["live", true], ["sandbox", false]] as const)("accepts matching %s events", (mode, livemode) => {
++    expect(() => assertEventEnvironment({ livemode }, mode)).not.toThrow();
++  });
++  it.each([["live", false], ["sandbox", true], ["live", undefined], ["sandbox", "false"]] as const)("rejects inconsistent event %s/%s", (mode, livemode) => {
++    expect(() => assertEventEnvironment({ livemode }, mode)).toThrow();
++  });
++});
+diff --git a/src/test/subscription-checkout.test.ts b/src/test/subscription-checkout.test.ts
+index fad2dd8..5760751 100644
+--- a/src/test/subscription-checkout.test.ts
++++ b/src/test/subscription-checkout.test.ts
+@@ -18,7 +18,12 @@ let handler: (request: Request) => Promise<Response>;
+ beforeEach(async () => {
+   vi.resetModules();
+   vi.clearAllMocks();
+-  vi.stubGlobal("Deno", { env: { get: () => "test-config" }, serve: (fn: typeof handler) => { handler = fn; } });
++  vi.stubGlobal("Deno", { env: { get: (key: string) => ({
++    PAYMENTS_ENVIRONMENT: "sandbox",
++    PAYMENTS_LIVE_PROJECT_REF: "live-project",
++    PAYMENTS_SANDBOX_PROJECT_REF: "sandbox-project",
++    SUPABASE_URL: "https://sandbox-project.supabase.co",
++  }[key] ?? "test-config") }, serve: (fn: typeof handler) => { handler = fn; } });
+   mocks.getUser.mockResolvedValue({ data: { user: { id: "authenticated-user", email: "user@example.com" } }, error: null });
+   mocks.subscriptions.mockResolvedValue({ data: [], error: null });
+   mocks.prices.mockResolvedValue({ data: [{ id: "price_server", type: "recurring", currency: "eur", unit_amount: 499, recurring: { interval: "month" } }] });
+@@ -46,6 +51,12 @@ describe("Subscription checkout endpoint", () => {
+       line_items: [{ price: "price_server", quantity: 1 }],
+     }));
+   });
++  it("rejects a browser attempting to switch the server payment mode", async () => {
++    const response = await handler(request({ environment: "live" }));
++    expect(response.status).not.toBe(200);
++    expect(mocks.getUser).not.toHaveBeenCalled();
++    expect(mocks.createSession).not.toHaveBeenCalled();
++  });
+   it("does not create a session without authentication", async () => {
+     expect((await handler(request({}, false))).status).not.toBe(200);
+     expect(mocks.createSession).not.toHaveBeenCalled();
+diff --git a/supabase/functions/_shared/payment-environment.ts b/supabase/functions/_shared/payment-environment.ts
+new file mode 100644
+index 0000000..cbd46b3
+--- /dev/null
++++ b/supabase/functions/_shared/payment-environment.ts
+@@ -0,0 +1,42 @@
++export type PaymentEnvironment = "sandbox" | "live";
++type ReadEnv = (name: string) => string | undefined;
++
++/** Each backend has one mode and a distinct, explicitly registered database. */
++export function configuredPaymentEnvironment(readEnv: ReadEnv): PaymentEnvironment {
++  const mode = readEnv("PAYMENTS_ENVIRONMENT");
++  const liveRef = readEnv("PAYMENTS_LIVE_PROJECT_REF");
++  const sandboxRef = readEnv("PAYMENTS_SANDBOX_PROJECT_REF");
++  const projectUrl = readEnv("SUPABASE_URL");
++  if (mode !== "live" && mode !== "sandbox") {
++    throw new Error("PAYMENTS_ENVIRONMENT must be configured on the server");
++  }
++  if (!liveRef || !sandboxRef || liveRef === sandboxRef ||
++      !/^[a-z0-9-]+$/.test(liveRef) || !/^[a-z0-9-]+$/.test(sandboxRef)) {
++    throw new Error("Distinct payment project references must be configured");
++  }
++  const expectedRef = mode === "live" ? liveRef : sandboxRef;
++  let url: URL;
++  try { url = new URL(projectUrl ?? ""); } catch {
++    throw new Error("Payment database URL is invalid");
++  }
++  if (url.protocol !== "https:" || url.hostname !== `${expectedRef}.supabase.co` ||
++      url.port || url.username || url.password || url.pathname !== "/" || url.search || url.hash) {
++    throw new Error("Payment mode does not match this Supabase project");
++  }
++  return mode;
++}
++
++export function assertPaymentEnvironment(requested: unknown, readEnv: ReadEnv): PaymentEnvironment {
++  const configured = configuredPaymentEnvironment(readEnv);
++  if (requested !== configured) {
++    throw new Error("Payment environment is not enabled on this server");
++  }
++  return configured;
++}
++
++/** Call only after verifying the signature of the complete event payload. */
++export function assertEventEnvironment(event: { livemode?: unknown }, environment: PaymentEnvironment) {
++  if (event.livemode !== (environment === "live")) {
++    throw new Error("Stripe event mode does not match this server");
++  }
++}
+diff --git a/supabase/functions/_shared/stripe.ts b/supabase/functions/_shared/stripe.ts
+index a0b2659..30a727d 100644
+--- a/supabase/functions/_shared/stripe.ts
++++ b/supabase/functions/_shared/stripe.ts
+@@ -1,3 +1,4 @@
++import { assertPaymentEnvironment, assertEventEnvironment } from "./payment-environment.ts";
+ import { encode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
+ import Stripe from "https://esm.sh/stripe@22.0.2";
+ 
+@@ -12,6 +13,7 @@ export type StripeEnv = "sandbox" | "live";
+ const GATEWAY_STRIPE_BASE = "https://connector-gateway.lovable.dev/stripe";
+ 
+ export function getConnectionApiKey(env: StripeEnv): string {
++  assertPaymentEnvironment(env, (key) => Deno.env.get(key));
+   return env === "sandbox"
+     ? getEnv("STRIPE_SANDBOX_API_KEY")
+     : getEnv("STRIPE_LIVE_API_KEY");
+@@ -42,6 +44,7 @@ export async function verifyWebhook(
+   req: Request,
+   env: StripeEnv,
+ ): Promise<{ type: string; data: { object: any } }> {
++  assertPaymentEnvironment(env, (key) => Deno.env.get(key));
+   const signature = req.headers.get("stripe-signature");
+   const body = await req.text();
+   const secret =
+@@ -79,7 +82,9 @@ export async function verifyWebhook(
+ 
+   if (!v1Signatures.includes(expected)) throw new Error("Invalid webhook signature");
+ 
+-  return JSON.parse(body);
++  const event = JSON.parse(body);
++  assertEventEnvironment(event, env);
++  return event;
+ }
+ 
+ // CORS
+diff --git a/supabase/functions/create-checkout/index.ts b/supabase/functions/create-checkout/index.ts
+index 57e2be0..4e7ffc8 100644
+--- a/supabase/functions/create-checkout/index.ts
++++ b/supabase/functions/create-checkout/index.ts
+@@ -1,3 +1,4 @@
++import { assertPaymentEnvironment } from "../_shared/payment-environment.ts";
+ import {
+   type StripeEnv,
+   createStripeClient,
+@@ -72,6 +73,7 @@ async function createCheckoutSession(
+       !/^(bib_subscriber_monthly|(?:plan|insurance)_(?:starter|growth|pro)_(?:monthly|yearly))$/.test(options.priceId)) {
+     throw new Error("Invalid priceId");
+   }
++  assertPaymentEnvironment(options.environment, (key) => Deno.env.get(key));
+   const returnUrl = new URL(options.returnUrl);
+   if (returnUrl.protocol !== "https:" || returnUrl.username || returnUrl.password) {
+     throw new Error("Invalid returnUrl");
+diff --git a/supabase/functions/create-pos-checkout/index.ts b/supabase/functions/create-pos-checkout/index.ts
+index 6210003..3512fc8 100644
+--- a/supabase/functions/create-pos-checkout/index.ts
++++ b/supabase/functions/create-pos-checkout/index.ts
+@@ -1,3 +1,4 @@
++import { assertPaymentEnvironment } from "../_shared/payment-environment.ts";
+ import { checkoutOrderMetadata } from "../_shared/checkout-session.ts";
+ import { createClient } from "npm:@supabase/supabase-js@2";
+ import {
+@@ -201,6 +202,7 @@ async function createPosCheckout(
+     throw new PosCheckoutError("Environnement de paiement invalide");
+   }
+ 
++  assertPaymentEnvironment(body.environment, (key) => Deno.env.get(key));
+   const cart = normalizeCart(body.items);
+   const supabase = adminClient();
+   const stripe = createStripeClient(body.environment);
+@@ -362,6 +364,7 @@ async function createPosCheckout(
+         amount: line.lineAmount,
+         order_number: "PENDING",
+         payment_status: "pending",
++        stripe_environment: body.environment,
+         sales_channel: "pos",
+       })),
+     )
+diff --git a/supabase/functions/create-storefront-checkout/index.ts b/supabase/functions/create-storefront-checkout/index.ts
+index 03c32be..6fb1421 100644
+--- a/supabase/functions/create-storefront-checkout/index.ts
++++ b/supabase/functions/create-storefront-checkout/index.ts
+@@ -1,3 +1,4 @@
++import { assertPaymentEnvironment } from "../_shared/payment-environment.ts";
+ import { checkoutOrderMetadata } from "../_shared/checkout-session.ts";
+ import { createClient } from "npm:@supabase/supabase-js@2";
+ import {
+@@ -276,6 +277,7 @@ async function createStorefrontCheckout(
+     throw new CheckoutError("Adresse de livraison incomplète.");
+   }
+ 
++  assertPaymentEnvironment(body.environment, (key) => Deno.env.get(key));
+   const returnUrl = validateReturnUrl(body.returnUrl);
+   const country = normalizeCountry(body.shipping.country);
+   const cart = normalizeCart(body.items);
+@@ -408,6 +410,7 @@ async function createStorefrontCheckout(
+         customer_email: customerEmail,
+         amount: (line.unitAmount * line.quantity) / 100,
+         payment_status: "pending",
++        stripe_environment: body.environment,
+       })),
+     )
+     .select("id, order_number");
+diff --git a/supabase/functions/payments-webhook/index.ts b/supabase/functions/payments-webhook/index.ts
+index 902b943..6ce21e4 100644
+--- a/supabase/functions/payments-webhook/index.ts
++++ b/supabase/functions/payments-webhook/index.ts
+@@ -516,7 +516,7 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
+   // Enregistrer la session Stripe et lire l'état précédent.
+   const { data: ordersBefore, error: readError } = await supabase
+     .from("orders")
+-    .select("id, payment_status")
++    .select("id, payment_status, stripe_environment, stripe_session_id")
+     .in("id", orderIds);
+ 
+   if (readError) {
+@@ -528,6 +528,13 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
+     return;
+   }
+ 
++  if (ordersBefore.length !== orderIds.length || ordersBefore.some((order) =>
++    (order.stripe_environment != null && order.stripe_environment !== env) ||
++    (order.stripe_session_id != null && order.stripe_session_id !== session.id)
++  )) {
++    throw new Error("La session de paiement ne correspond pas aux commandes enregistrées");
++  }
++
+   const { error: sessionError } = await supabase
+     .from("orders")
+     .update({ stripe_session_id: session.id, stripe_environment: env })
+diff --git a/supabase/functions/refund-order-issue/index.ts b/supabase/functions/refund-order-issue/index.ts
+index 9d26cea..427f36f 100644
+--- a/supabase/functions/refund-order-issue/index.ts
++++ b/supabase/functions/refund-order-issue/index.ts
+@@ -1,4 +1,5 @@
+-﻿import { createClient } from "npm:@supabase/supabase-js@2";
++import { configuredPaymentEnvironment } from "../_shared/payment-environment.ts";
++import { createClient } from "npm:@supabase/supabase-js@2";
+ import { createStripeClient, corsHeaders, type StripeEnv } from "../_shared/stripe.ts";
+ 
+ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+@@ -23,6 +24,7 @@ Deno.serve(async (req) => {
+   if (!url || !anonKey || !serviceKey) return json({ error: "server_configuration_missing" }, 500);
+ 
+   try {
++    configuredPaymentEnvironment((key) => Deno.env.get(key));
+     const token = authorization.slice("Bearer ".length).trim();
+     const authClient = createClient(url, anonKey, {
+       auth: { persistSession: false, autoRefreshToken: false },
