@@ -95,47 +95,46 @@
   .dark {
     color-scheme: dark;
 
-    --background: 215 50% 6%;
+    /* BIB ? th?me sombre domin? par le bleu marine */
+    --background: 216 58% 10%;
     --foreground: 40 25% 95%;
 
-    --card: 215 45% 10%;
+    --card: 216 48% 14%;
     --card-foreground: 40 25% 95%;
 
-    --popover: 215 45% 10%;
+    --popover: 216 48% 15%;
     --popover-foreground: 40 25% 95%;
 
-    /* Le bleu marine reste la base visuelle de BIB. */
-    --primary: 215 65% 56%;
+    --primary: 215 48% 34%;
     --primary-foreground: 40 30% 98%;
 
-    /* L'or reste l'accent premium. */
-    --secondary: 215 35% 20%;
+    --secondary: 216 38% 21%;
     --secondary-foreground: 40 25% 95%;
 
-    --muted: 215 35% 14%;
-    --muted-foreground: 215 15% 70%;
+    --muted: 216 38% 18%;
+    --muted-foreground: 215 20% 74%;
 
     --accent: 41 65% 62%;
-    --accent-foreground: 215 55% 12%;
+    --accent-foreground: 216 58% 10%;
 
     --destructive: 0 65% 55%;
     --destructive-foreground: 0 0% 100%;
 
     --success: 152 55% 50%;
-    --success-foreground: 215 50% 6%;
+    --success-foreground: 216 58% 10%;
 
     --warning: 38 92% 58%;
-    --warning-foreground: 215 55% 12%;
+    --warning-foreground: 216 58% 10%;
 
-    --info: 215 75% 65%;
-    --info-foreground: 215 50% 6%;
+    --info: 205 65% 68%;
+    --info-foreground: 216 58% 10%;
 
-    --border: 215 30% 21%;
-    --input: 215 30% 21%;
+    --border: 215 32% 27%;
+    --input: 215 32% 27%;
     --ring: 41 65% 62%;
 
-    --linksy-navy: 215 55% 24%;
-    --linksy-navy-light: 215 45% 32%;
+    --linksy-navy: 215 52% 30%;
+    --linksy-navy-light: 215 45% 38%;
     --linksy-teal: 41 55% 58%;
     --linksy-teal-light: 41 65% 68%;
     --linksy-coral: 14 75% 60%;
@@ -145,47 +144,30 @@
 
     --bib-gold: 41 65% 62%;
     --bib-gold-light: 41 65% 72%;
-    --bib-marine: 215 65% 72%;
+    --bib-marine: 215 52% 62%;
     --bib-ivory: 40 25% 95%;
 
-    --gradient-hero: linear-gradient(
-      180deg,
-      hsl(215 50% 6%) 0%,
-      hsl(215 50% 6%) 100%
-    );
-
-    --gradient-card: linear-gradient(
-      180deg,
-      hsl(215 45% 10%) 0%,
-      hsl(215 45% 10%) 100%
-    );
-
-    --gradient-accent: linear-gradient(
-      180deg,
-      hsl(41 65% 62%) 0%,
-      hsl(41 65% 62%) 100%
-    );
-
+    --gradient-hero: linear-gradient(180deg, hsl(216 58% 10%) 0%, hsl(216 58% 10%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(216 48% 14%) 0%, hsl(216 48% 14%) 100%);
+    --gradient-accent: linear-gradient(180deg, hsl(41 65% 62%) 0%, hsl(41 65% 62%) 100%);
     --gradient-trust: var(--gradient-accent);
     --gradient-premium: var(--gradient-hero);
     --gradient-gold: var(--gradient-accent);
 
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.2);
-    --shadow-md: 0 4px 8px -2px hsl(0 0% 0% / 0.25);
-    --shadow-lg: 0 10px 20px -5px hsl(0 0% 0% / 0.3);
-    --shadow-xl: 0 20px 30px -8px hsl(0 0% 0% / 0.35);
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.22);
+    --shadow-md: 0 4px 8px -2px hsl(0 0% 0% / 0.28);
+    --shadow-lg: 0 10px 20px -5px hsl(0 0% 0% / 0.32);
+    --shadow-xl: 0 20px 30px -8px hsl(0 0% 0% / 0.38);
     --shadow-glow: 0 0 30px -10px hsl(41 65% 62% / 0.25);
-    --shadow-premium:
-      0 20px 60px -20px hsl(0 0% 0% / 0.5),
-      0 0 0 1px hsl(41 65% 62% / 0.15);
+    --shadow-premium: 0 20px 60px -20px hsl(0 0% 0% / 0.5), 0 0 0 1px hsl(41 65% 62% / 0.15);
 
-    --sidebar-background: 215 48% 8%;
-    --sidebar-foreground: 40 25% 90%;
+    --sidebar-background: 216 62% 8%;
+    --sidebar-foreground: 40 25% 91%;
     --sidebar-primary: 41 65% 62%;
-    --sidebar-primary-foreground: 215 55% 12%;
-    --sidebar-accent: 215 35% 15%;
+    --sidebar-primary-foreground: 216 58% 10%;
+    --sidebar-accent: 216 42% 17%;
     --sidebar-accent-foreground: 40 25% 95%;
-    --sidebar-border: 215 30% 19%;
+    --sidebar-border: 215 32% 22%;
     --sidebar-ring: 41 65% 62%;
   }
 }
