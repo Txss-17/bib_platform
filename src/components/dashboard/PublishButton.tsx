@@ -38,3 +38,4 @@ export const PublishButton: React.FC<{ boutiqueId: string }> = ({ boutiqueId }) 
     </div>
   );
 };
+npx supabase functions new generate-brand-dna
