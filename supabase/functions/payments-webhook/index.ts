@@ -1,4 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 
 import {
   type StripeEnv,
@@ -6,7 +6,7 @@ import {
 } from "../_shared/stripe.ts";
 
 let _supabase:
-  | ReturnType<typeof createClient>
+  | SupabaseClient
   | null = null;
 
 function getSupabase() {
@@ -138,7 +138,7 @@ async function sendSubscriptionConfirmedEmail(userId: string, priceId: string | 
     const { data } = await getSupabase().auth.admin.getUserById(userId);
     const email = data?.user?.email;
     if (!email) return;
-    const name = (data.user.user_metadata as any)?.full_name ?? undefined;
+    const name = data?.user?.user_metadata?.full_name ?? undefined;
     const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-transactional-email`, {
       method: "POST",
