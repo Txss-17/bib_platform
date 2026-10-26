@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import type { HeroLayout } from "@/lib/boutiqueTemplates";
@@ -12,6 +13,7 @@ interface StorefrontHeroProps {
   showVerifiedBadge?: boolean;
   heroLayout?: HeroLayout;
   heroImageUrl?: string;
+  ctaUrl?: string;
 }
 
 export function StorefrontHero({
@@ -24,6 +26,7 @@ export function StorefrontHero({
   showVerifiedBadge = true,
   heroLayout = "text-left",
   heroImageUrl,
+  ctaUrl,
 }: StorefrontHeroProps) {
   const verifiedBadge = showVerifiedBadge && (
     <div className="absolute top-4 right-4 md:top-8 md:right-8 z-10">
@@ -57,12 +60,23 @@ export function StorefrontHero({
 
   const ctaButton = (
     <div className={heroLayout === "text-center" || heroLayout === "image-bg" ? "text-center" : ""}>
-      <Button
-        className="text-white font-medium px-6 py-2.5"
-        style={{ backgroundColor: primaryColor }}
-      >
-        {tagline}
-      </Button>
+      {ctaUrl ? (
+        <Link to={ctaUrl}>
+          <Button
+            className="text-white font-medium px-6 py-2.5"
+            style={{ backgroundColor: primaryColor }}
+          >
+            {tagline}
+          </Button>
+        </Link>
+      ) : (
+        <Button
+          className="text-white font-medium px-6 py-2.5"
+          style={{ backgroundColor: primaryColor }}
+        >
+          {tagline}
+        </Button>
+      )}
     </div>
   );
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Check, X, Clock, Sparkles, Tag, ArrowRight } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
@@ -193,6 +194,7 @@ export function StorefrontBundle({
   bundlePrice,
   primaryColor,
   secondaryColor,
+  ctaUrl,
 }: {
   title?: string;
   subtitle?: string;
@@ -201,6 +203,7 @@ export function StorefrontBundle({
   bundlePrice?: number;
   primaryColor?: string;
   secondaryColor?: string;
+  ctaUrl?: string;
 }) {
   const savings = originalPrice && bundlePrice ? originalPrice - bundlePrice : 0;
   const pct = originalPrice && savings > 0 ? Math.round((savings / originalPrice) * 100) : 0;
@@ -254,13 +257,16 @@ export function StorefrontBundle({
                 </p>
               )}
             </div>
-            <button
-              className="sm:ml-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold transition-transform hover:scale-[1.02]"
-              style={{ background: hex(primaryColor), color: hex(secondaryColor, "#C9A14A") }}
-            >
-              Ajouter le pack
-              <ArrowRight size={18} />
-            </button>
+            {ctaUrl && (
+              <Link
+                to={ctaUrl}
+                className="sm:ml-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold transition-transform hover:scale-[1.02]"
+                style={{ background: hex(primaryColor), color: hex(secondaryColor, "#C9A14A") }}
+              >
+                Voir les produits
+                <ArrowRight size={18} />
+              </Link>
+            )}
           </div>
         </div>
       </div>

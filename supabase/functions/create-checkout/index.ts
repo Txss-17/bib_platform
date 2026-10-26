@@ -197,6 +197,10 @@ async function createCheckoutSession(
 
           subscription_data:
             subscriptionData,
+        } as Parameters<
+          typeof stripe.checkout.sessions.create
+        >[0] & {
+          managed_payments: { enabled: boolean };
         },
       );
 
@@ -328,6 +332,10 @@ async function createCheckoutSession(
                 subscriptionData,
             }
           : {}),
+      } as Parameters<
+        typeof stripe.checkout.sessions.create
+      >[0] & {
+        managed_payments: { enabled: boolean };
       },
     );
 

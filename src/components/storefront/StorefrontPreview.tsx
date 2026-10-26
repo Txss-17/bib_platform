@@ -566,6 +566,11 @@ export function StorefrontPreview({
               heroImageUrl={
                 heroImageUrl
               }
+              ctaUrl={
+                boutiqueSlug
+                  ? `/boutique/${boutiqueSlug}/products`
+                  : undefined
+              }
             />
           </div>
         );
@@ -673,6 +678,11 @@ export function StorefrontPreview({
               }
               aboutImageUrl={
                 aboutImageUrl
+              }
+              aboutUrl={
+                boutiqueSlug
+                  ? `/boutique/${boutiqueSlug}/about`
+                  : undefined
               }
             />
           </div>
@@ -888,6 +898,11 @@ export function StorefrontPreview({
               }
               secondaryColor={
                 secondaryColor
+              }
+              ctaUrl={
+                boutiqueSlug
+                  ? `/boutique/${boutiqueSlug}/products`
+                  : undefined
               }
             />
           </div>

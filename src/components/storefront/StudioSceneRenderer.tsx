@@ -699,6 +699,7 @@ function SceneSwitch({
         <PricingTableScene
           content={content}
           displayFont={displayFont}
+          boutiqueSlug={boutiqueSlug}
         />
       );
 
@@ -4658,7 +4659,7 @@ function BlogListScene({
             {articles.map((article, i) => (
               <a
                 key={i}
-                href={article.url || "#"}
+                href={article.url || undefined}
                 className="grid md:grid-cols-[220px_1fr] gap-6 py-6 group"
               >
                 {renderImage(
@@ -4720,7 +4721,7 @@ function BlogListScene({
 
           {featured && (
             <a
-              href={featured.url || "#"}
+              href={featured.url || undefined}
               className="grid md:grid-cols-2 gap-8 items-center mb-12 group"
             >
               {renderImage(
@@ -4755,7 +4756,7 @@ function BlogListScene({
               {remaining.map((article, i) => (
                 <a
                   key={i}
-                  href={article.url || "#"}
+                  href={article.url || undefined}
                   className="group"
                 >
                   {renderImage(
@@ -4810,7 +4811,7 @@ function BlogListScene({
           {articles.map((article, i) => (
             <a
               key={i}
-              href={article.url || "#"}
+              href={article.url || undefined}
               className="group rounded-lg overflow-hidden border border-border/40 bg-white hover:shadow-md transition"
             >
               {renderImage(
@@ -5317,9 +5318,11 @@ function TeamGridScene({
 function PricingTableScene({
   content,
   displayFont,
+  boutiqueSlug,
 }: {
   content: any;
   displayFont: string;
+  boutiqueSlug?: string;
 }) {
   const plans =
     (content.plans ?? []) as Array<{
@@ -5420,7 +5423,11 @@ function PricingTableScene({
 
       {plan.cta && (
         <a
-          href="#"
+          href={
+            boutiqueSlug
+              ? `/boutique/${boutiqueSlug}/products`
+              : "/store"
+          }
           className="mt-7 rounded-full px-5 py-3 text-sm font-medium text-center"
           style={{
             background: plan.featured
@@ -5579,9 +5586,9 @@ function ImageTextSplitScene({
         </p>
       )}
 
-      {content.ctaLabel && (
+      {content.ctaLabel && content.ctaUrl && (
         <a
-          href={content.ctaUrl || "#"}
+          href={content.ctaUrl}
           className="inline-block rounded-full px-6 py-2.5 text-sm font-medium"
           style={{
             background:
