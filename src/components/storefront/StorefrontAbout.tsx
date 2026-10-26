@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
@@ -7,9 +8,10 @@ interface StorefrontAboutProps {
   boutiqueName: string;
   primaryColor: string;
   aboutImageUrl?: string;
+  aboutUrl?: string;
 }
 
-export function StorefrontAbout({ title, description, boutiqueName, primaryColor, aboutImageUrl }: StorefrontAboutProps) {
+export function StorefrontAbout({ title, description, boutiqueName, primaryColor, aboutImageUrl, aboutUrl }: StorefrontAboutProps) {
   return (
     <section id="about" className="py-12 md:py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -28,13 +30,25 @@ export function StorefrontAbout({ title, description, boutiqueName, primaryColor
             <p className="text-gray-600 mb-6">
               Simple, responsable, sans surprise.
             </p>
-            <Button
-              variant="outline"
-              className="gap-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white"
-            >
-              EN SAVOIR PLUS
-              <ArrowRight className="w-4 h-4" />
-            </Button>
+            {aboutUrl ? (
+              <Link to={aboutUrl}>
+                <Button
+                  variant="outline"
+                  className="gap-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white"
+                >
+                  EN SAVOIR PLUS
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                variant="outline"
+                className="gap-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white"
+              >
+                EN SAVOIR PLUS
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            )}
           </div>
 
           {/* Image */}
