@@ -1,5 +1,6 @@
 import React from 'react';
 import { useGenerateBrandDNA } from '../../hooks/useGenerateBrandDNA';
+import { StudioAnswers } from '@/hooks/useBrandStudio';
 
 export const StudioFinalStep: React.FC<{ boutiqueId: string; answers: StudioAnswers }> = ({ boutiqueId, answers }) => {
   const { generate, isGenerating, error } = useGenerateBrandDNA();
