@@ -899,6 +899,11 @@ export function StorefrontPreview({
               secondaryColor={
                 secondaryColor
               }
+              ctaUrl={
+                boutiqueSlug
+                  ? `/boutique/${boutiqueSlug}/products`
+                  : undefined
+              }
             />
           </div>
         );
