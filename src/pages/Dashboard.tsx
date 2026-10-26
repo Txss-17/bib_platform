@@ -1,3 +1,5 @@
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import { Link } from "react-router-dom";
 import {
@@ -40,14 +42,14 @@ import {
 import { ReminderLog } from "@/components/dashboard/ReminderLog";
 
 const euro = (value: number) =>
-  new Intl.NumberFormat("fr-FR", {
+  new Intl.NumberFormat(getUiLocale(), {
     style: "currency",
     currency: "EUR",
     maximumFractionDigits: 2,
   }).format(value);
 
 const compactEuro = (value: number) =>
-  new Intl.NumberFormat("fr-FR", {
+  new Intl.NumberFormat(getUiLocale(), {
     style: "currency",
     currency: "EUR",
     maximumFractionDigits: 0,
@@ -64,6 +66,7 @@ function SectionHeading({
   description?: string;
   action?: React.ReactNode;
 }) {
+  useLanguage();
   return (
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
@@ -93,6 +96,7 @@ function Panel({
   children: React.ReactNode;
   className?: string;
 }) {
+  useLanguage();
   return (
     <section
       className={`min-w-0 rounded-2xl border border-border/80 bg-card p-4 shadow-sm transition-colors sm:p-6 ${className}`}
@@ -117,6 +121,7 @@ function MetricCard({
   tone?: "marine" | "gold" | "neutral" | "green";
   loading?: boolean;
 }) {
+  useLanguage();
   const tones = {
     marine: "bg-primary/10 text-primary",
     gold: "bg-bib-gold/15 text-bib-gold",
@@ -156,6 +161,7 @@ function DataMessage({
   children: React.ReactNode;
   error?: boolean;
 }) {
+  useLanguage();
   return (
     <div
       role={error ? "alert" : undefined}
@@ -182,6 +188,7 @@ function EmptyState({
   description: string;
   action?: React.ReactNode;
 }) {
+  useLanguage();
   return (
     <div className="mt-5 rounded-2xl border border-dashed border-border bg-muted/30 px-5 py-9 text-center">
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -197,6 +204,7 @@ function EmptyState({
 }
 
 export default function Dashboard() {
+  useLanguage();
   const {
     data: boutiqueStats,
     isLoading: boutiqueStatsLoading,
@@ -309,38 +317,39 @@ export default function Dashboard() {
               <div className="mb-4 flex items-center gap-2">
                 <span className="h-px w-8 bg-bib-gold" />
                 <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-primary">
-                  BIB Platform · Espace marchand
+                  {translateUi("BIB Platform · Espace marchand")}
                 </p>
               </div>
 
               <h1 className="max-w-3xl text-3xl font-semibold leading-tight tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-                Votre activité,
+                {translateUi("Votre activité,")}
                 <span className="block text-bib-gold sm:inline sm:pl-2">
-                  en un regard.
+                  {translateUi("en un regard.")}
                 </span>
               </h1>
 
               <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-                Vos boutiques, vos commandes et vos indicateurs essentiels,
-                réunis dans un espace de pilotage conçu pour avancer étape par étape.
+                {translateUi(
+                  "Vos boutiques, vos commandes et vos indicateurs essentiels, réunis dans un espace de pilotage conçu pour avancer étape par étape.",
+                )}
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
               <PlatformTourLauncher
-                label="Guide de la plateforme"
+                label={translateUi("Guide de la plateforme")}
                 availablePersonas={["seller"]}
               />
               <Link to="/dashboard/produits-fournisseurs">
                 <Button variant="outline" className="gap-2">
                   <Sparkles className="h-4 w-4 text-bib-gold" />
-                  Catalogue BIB
+                  {translateUi("Catalogue BIB")}
                 </Button>
               </Link>
               <Link to="/dashboard/boutiques/create">
                 <Button className="gap-2">
                   <Plus className="h-4 w-4" />
-                  Créer une boutique
+                  {translateUi("Créer une boutique")}
                 </Button>
               </Link>
             </div>
@@ -360,7 +369,7 @@ export default function Dashboard() {
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary-foreground/15 bg-primary-foreground/5 px-3 py-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-bib-gold" />
                 <span className="text-[10px] font-semibold uppercase tracking-[0.17em] text-primary-foreground/80">
-                  Votre prochaine étape
+                  {translateUi("Votre prochaine étape")}
                 </span>
               </div>
 
@@ -376,7 +385,7 @@ export default function Dashboard() {
               {boutiqueDataLoading || boutiqueDataError ? (
                 <Link to="/dashboard/boutiques">
                   <Button variant="secondary" className="gap-2">
-                    Consulter mes boutiques
+                    {translateUi("Consulter mes boutiques")}
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
@@ -386,7 +395,7 @@ export default function Dashboard() {
                 pending > 0 ? (
                 <Link to="/dashboard/commandes">
                   <Button variant="secondary" className="gap-2">
-                    Traiter les commandes
+                    {translateUi("Traiter les commandes")}
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
@@ -400,15 +409,15 @@ export default function Dashboard() {
                 >
                   <Button variant="secondary" className="gap-2">
                     {publishedBoutiques > 0
-                      ? "Gérer mes boutiques"
-                      : "Continuer ma boutique"}
+                      ? translateUi("Gérer mes boutiques")
+                      : translateUi("Continuer ma boutique")}
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
               ) : (
                 <Link to="/dashboard/boutiques/create">
                   <Button variant="secondary" className="gap-2">
-                    Créer ma boutique
+                    {translateUi("Créer ma boutique")}
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
@@ -420,7 +429,7 @@ export default function Dashboard() {
                   className="gap-2 border-primary-foreground/25 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
                 >
                   <LifeBuoy className="h-4 w-4" />
-                  Aide
+                  {translateUi("Aide")}
                 </Button>
               </Link>
             </div>
@@ -430,54 +439,63 @@ export default function Dashboard() {
         {/* Indicateurs */}
         <section className="space-y-4">
           <SectionHeading
-            eyebrow="Vue d'ensemble"
-            title="Les chiffres essentiels"
-            description="Les principaux repères de votre activité sur la période suivie."
+            eyebrow={translateUi("Vue d'ensemble")}
+            title={translateUi("Les chiffres essentiels")}
+            description={translateUi(
+              "Les principaux repères de votre activité sur la période suivie.",
+            )}
           />
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
-              label="Chiffre d'affaires"
+              label={translateUi("Chiffre d'affaires")}
               value={orderStatsError ? "—" : compactEuro(revenue)}
               hint={
                 orderStatsError
-                  ? "Indicateur temporairement indisponible"
-                  : `${totalOrders} commande${totalOrders > 1 ? "s" : ""} sur la période`
+                  ? translateUi("Indicateur temporairement indisponible")
+                  : translateUi("{v0} commande{v1} sur la période", {
+                      v0: totalOrders,
+                      v1: totalOrders > 1 ? "s" : "",
+                    })
               }
               icon={<Wallet className="h-5 w-5" />}
               tone="marine"
               loading={orderStatsLoading}
             />
             <MetricCard
-              label="Commandes à suivre"
+              label={translateUi("Commandes à suivre")}
               value={orderStatsError ? "—" : pending}
               hint={
                 orderStatsError
-                  ? "Indicateur temporairement indisponible"
+                  ? translateUi("Indicateur temporairement indisponible")
                   : pending > 0
-                    ? "Des commandes restent à traiter"
-                    : "Aucune commande en attente"
+                    ? translateUi("Des commandes restent à traiter")
+                    : translateUi("Aucune commande en attente")
               }
               icon={<ShoppingCart className="h-5 w-5" />}
               tone={pending > 0 ? "gold" : "green"}
               loading={orderStatsLoading}
             />
             <MetricCard
-              label="Panier moyen"
+              label={translateUi("Panier moyen")}
               value={orderStatsError ? "—" : euro(averageBasket)}
               hint={
                 orderStatsError
-                  ? "Indicateur temporairement indisponible"
+                  ? translateUi("Indicateur temporairement indisponible")
                   : delivered > 0
-                    ? `${delivered} commande${delivered > 1 ? "s" : ""} livrée${delivered > 1 ? "s" : ""}`
-                    : "En attente des premières livraisons"
+                    ? translateUi("{v0} commande{v1} livrée{v2}", {
+                        v0: delivered,
+                        v1: delivered > 1 ? "s" : "",
+                        v2: delivered > 1 ? "s" : "",
+                      })
+                    : translateUi("En attente des premières livraisons")
               }
               icon={<ShoppingBag className="h-5 w-5" />}
               tone="neutral"
               loading={orderStatsLoading}
             />
             <MetricCard
-              label="Boutiques publiées"
+              label={translateUi("Boutiques publiées")}
               value={
                 boutiqueStatsError
                   ? "—"
@@ -485,10 +503,16 @@ export default function Dashboard() {
               }
               hint={
                 boutiqueStatsError
-                  ? "Indicateur temporairement indisponible"
+                  ? translateUi("Indicateur temporairement indisponible")
                   : productStatsError
-                    ? "Produits actifs temporairement indisponibles"
-                    : `${activeProducts} produit${activeProducts > 1 ? "s" : ""} actif${activeProducts > 1 ? "s" : ""}`
+                    ? translateUi(
+                        "Produits actifs temporairement indisponibles",
+                      )
+                    : translateUi("{v0} produit{v1} actif{v2}", {
+                        v0: activeProducts,
+                        v1: activeProducts > 1 ? "s" : "",
+                        v2: activeProducts > 1 ? "s" : "",
+                      })
               }
               icon={<Store className="h-5 w-5" />}
               tone="gold"
@@ -503,13 +527,15 @@ export default function Dashboard() {
             {/* Boutiques */}
             <Panel>
               <SectionHeading
-                eyebrow="Votre espace"
-                title="Mes boutiques"
-                description="Accédez à la gestion de vos vitrines et à leur état de publication."
+                eyebrow={translateUi("Votre espace")}
+                title={translateUi("Mes boutiques")}
+                description={translateUi(
+                  "Accédez à la gestion de vos vitrines et à leur état de publication.",
+                )}
                 action={
                   <Link to="/dashboard/boutiques">
                     <Button variant="outline" size="sm" className="gap-2">
-                      Toutes les boutiques
+                      {translateUi("Toutes les boutiques")}
                       <ArrowRight className="h-3.5 w-3.5" />
                     </Button>
                   </Link>
@@ -517,21 +543,27 @@ export default function Dashboard() {
               />
 
               {boutiqueDataLoading ? (
-                <DataMessage>Chargement de vos boutiques…</DataMessage>
+                <DataMessage>
+                  {translateUi("Chargement de vos boutiques…")}
+                </DataMessage>
               ) : boutiqueDataError ? (
                 <DataMessage error>
-                  Impossible de charger vos boutiques. Actualisez la page pour réessayer.
+                  {translateUi(
+                    "Impossible de charger vos boutiques. Actualisez la page pour réessayer.",
+                  )}
                 </DataMessage>
               ) : !hasBoutiques ? (
                 <EmptyState
                   icon={<Store className="h-6 w-6" />}
-                  title="Votre première boutique commence ici"
-                  description="Créez votre vitrine, définissez votre univers de marque et préparez votre catalogue dans l’écosystème BIB."
+                  title={translateUi("Votre première boutique commence ici")}
+                  description={translateUi(
+                    "Créez votre vitrine, définissez votre univers de marque et préparez votre catalogue dans l’écosystème BIB.",
+                  )}
                   action={
                     <Link to="/dashboard/boutiques/create">
                       <Button className="gap-2">
                         <Plus className="h-4 w-4" />
-                        Créer ma boutique
+                        {translateUi("Créer ma boutique")}
                       </Button>
                     </Link>
                   }
@@ -557,10 +589,16 @@ export default function Dashboard() {
                         )}
 
                         <Badge
-                          variant={boutique.status === "published" ? "default" : "secondary"}
+                          variant={
+                            boutique.status === "published"
+                              ? "default"
+                              : "secondary"
+                          }
                           className="absolute right-3 top-3 shadow-sm"
                         >
-                          {boutique.status === "published" ? "Publiée" : "Brouillon"}
+                          {boutique.status === "published"
+                            ? translateUi("Publiée")
+                            : translateUi("Brouillon")}
                         </Badge>
                       </div>
 
@@ -569,7 +607,8 @@ export default function Dashboard() {
                           {boutique.name}
                         </h3>
                         <p className="mt-1 truncate text-xs text-muted-foreground">
-                          {boutique.category || "Catégorie à définir"}
+                          {boutique.category ||
+                            translateUi("Catégorie à définir")}
                         </p>
 
                         <div className="mt-4 flex gap-2">
@@ -583,7 +622,7 @@ export default function Dashboard() {
                               className="w-full gap-1.5"
                             >
                               <Settings2 className="h-3.5 w-3.5" />
-                              Gérer
+                              {translateUi("Gérer")}
                             </Button>
                           </Link>
 
@@ -592,7 +631,10 @@ export default function Dashboard() {
                               href={`/boutique/${boutique.slug}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              aria-label={`Ouvrir la boutique ${boutique.name}`}
+                              aria-label={translateUi(
+                                "Ouvrir la boutique {v0}",
+                                { v0: boutique.name },
+                              )}
                             >
                               <Button variant="outline" size="sm">
                                 <ExternalLink className="h-3.5 w-3.5" />
@@ -616,13 +658,15 @@ export default function Dashboard() {
             {/* Commandes */}
             <Panel>
               <SectionHeading
-                eyebrow="Opérations"
-                title="Dernières commandes"
-                description="Un aperçu des commandes les plus récentes."
+                eyebrow={translateUi("Opérations")}
+                title={translateUi("Dernières commandes")}
+                description={translateUi(
+                  "Un aperçu des commandes les plus récentes.",
+                )}
                 action={
                   <Link to="/dashboard/commandes">
                     <Button variant="outline" size="sm" className="gap-2">
-                      Voir les commandes
+                      {translateUi("Voir les commandes")}
                       <ArrowRight className="h-3.5 w-3.5" />
                     </Button>
                   </Link>
@@ -630,31 +674,40 @@ export default function Dashboard() {
               />
 
               {ordersLoading ? (
-                <DataMessage>Chargement des commandes…</DataMessage>
+                <DataMessage>
+                  {translateUi("Chargement des commandes…")}
+                </DataMessage>
               ) : ordersError ? (
                 <DataMessage error>
-                  Impossible de charger les commandes récentes.
+                  {translateUi("Impossible de charger les commandes récentes.")}
                 </DataMessage>
               ) : recentOrders.length === 0 ? (
                 <EmptyState
                   icon={<Truck className="h-5 w-5" />}
-                  title="Pas encore de commande"
-                  description="Vos ventes apparaîtront ici dès les premières commandes."
+                  title={translateUi("Pas encore de commande")}
+                  description={translateUi(
+                    "Vos ventes apparaîtront ici dès les premières commandes.",
+                  )}
                 />
               ) : (
                 <div className="mt-5 overflow-x-auto">
                   <table className="w-full min-w-[520px] text-left">
                     <thead>
                       <tr className="border-b border-border text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground">
-                        <th className="pb-3 pr-4">Commande</th>
-                        <th className="pb-3 pr-4">Produit</th>
-                        <th className="pb-3 pr-4">Statut</th>
-                        <th className="pb-3 text-right">Montant</th>
+                        <th className="pb-3 pr-4">{translateUi("Commande")}</th>
+                        <th className="pb-3 pr-4">{translateUi("Produit")}</th>
+                        <th className="pb-3 pr-4">{translateUi("Statut")}</th>
+                        <th className="pb-3 text-right">
+                          {translateUi("Montant")}
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/70">
                       {recentOrders.map((order) => (
-                        <tr key={order.id} className="transition-colors hover:bg-muted/30">
+                        <tr
+                          key={order.id}
+                          className="transition-colors hover:bg-muted/30"
+                        >
                           <td className="py-3.5 pr-4">
                             <Link
                               to="/dashboard/commandes"
@@ -664,7 +717,8 @@ export default function Dashboard() {
                             </Link>
                           </td>
                           <td className="max-w-[220px] truncate py-3.5 pr-4 text-sm text-foreground">
-                            {order.products?.supplier_products?.name || "Produit"}
+                            {order.products?.supplier_products?.name ||
+                              translateUi("Produit")}
                           </td>
                           <td className="py-3.5 pr-4">
                             <Badge
@@ -678,12 +732,12 @@ export default function Dashboard() {
                               }
                             >
                               {order.logistics_status === "delivered"
-                                ? "Livrée"
+                                ? translateUi("Livrée")
                                 : order.logistics_status === "shipped"
-                                  ? "Expédiée"
+                                  ? translateUi("Expédiée")
                                   : order.logistics_status === "processing"
-                                    ? "En cours"
-                                    : "À suivre"}
+                                    ? translateUi("En cours")
+                                    : translateUi("À suivre")}
                             </Badge>
                           </td>
                           <td className="py-3.5 text-right text-sm font-semibold tabular-nums text-foreground">
@@ -703,12 +757,14 @@ export default function Dashboard() {
             <Panel>
               <SectionHeading
                 eyebrow="Catalogue"
-                title="Mes produits"
-                description="Suivez les produits intégrés à votre boutique."
+                title={translateUi("Mes produits")}
+                description={translateUi(
+                  "Suivez les produits intégrés à votre boutique.",
+                )}
                 action={
                   <Link to="/dashboard/produits">
                     <Button variant="outline" size="sm" className="gap-2">
-                      Gérer les produits
+                      {translateUi("Gérer les produits")}
                       <ArrowRight className="h-3.5 w-3.5" />
                     </Button>
                   </Link>
@@ -716,19 +772,25 @@ export default function Dashboard() {
               />
 
               {productsLoading ? (
-                <DataMessage>Chargement de vos produits…</DataMessage>
+                <DataMessage>
+                  {translateUi("Chargement de vos produits…")}
+                </DataMessage>
               ) : productsError ? (
-                <DataMessage error>Impossible de charger vos produits.</DataMessage>
+                <DataMessage error>
+                  {translateUi("Impossible de charger vos produits.")}
+                </DataMessage>
               ) : products.length === 0 ? (
                 <EmptyState
                   icon={<Package className="h-6 w-6" />}
-                  title="Aucun produit intégré"
-                  description="Parcourez le catalogue fournisseur pour découvrir les produits disponibles."
+                  title={translateUi("Aucun produit intégré")}
+                  description={translateUi(
+                    "Parcourez le catalogue fournisseur pour découvrir les produits disponibles.",
+                  )}
                   action={
                     <Link to="/dashboard/produits-fournisseurs">
                       <Button size="sm" className="gap-2">
                         <Sparkles className="h-4 w-4" />
-                        Explorer le catalogue
+                        {translateUi("Explorer le catalogue")}
                       </Button>
                     </Link>
                   }
@@ -756,12 +818,15 @@ export default function Dashboard() {
 
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-foreground">
-                          {product.supplier_products?.name || "Produit"}
+                          {product.supplier_products?.name ||
+                            translateUi("Produit")}
                         </p>
                         <p className="mt-1 truncate text-xs text-muted-foreground">
-                          {product.supplier_products?.category || "Catégorie non renseignée"}
+                          {product.supplier_products?.category ||
+                            translateUi("Catégorie non renseignée")}
                           {" · "}
-                          Marge {product.applied_margin}%
+                          {translateUi("Marge") + " "}
+                          {product.applied_margin}%
                         </p>
                       </div>
 
@@ -776,7 +841,9 @@ export default function Dashboard() {
                               : "text-muted-foreground"
                           }`}
                         >
-                          {product.status === "active" ? "Actif" : "En pause"}
+                          {product.status === "active"
+                            ? translateUi("Actif")
+                            : translateUi("En pause")}
                         </span>
                       </div>
                     </div>
@@ -788,9 +855,11 @@ export default function Dashboard() {
             {/* Performance */}
             <Panel>
               <SectionHeading
-                eyebrow="Pilotage"
-                title="Performance opérationnelle"
-                description="Visualisez l’activité et la répartition des commandes."
+                eyebrow={translateUi("Pilotage")}
+                title={translateUi("Performance opérationnelle")}
+                description={translateUi(
+                  "Visualisez l’activité et la répartition des commandes.",
+                )}
               />
               <div className="mt-5 min-w-0">
                 <OrdersChart />
@@ -806,13 +875,17 @@ export default function Dashboard() {
             {/* Recommandations */}
             <Panel>
               <SectionHeading
-                eyebrow="Sélection BIB"
-                title="Produits recommandés"
-                description="Produits signalés pour leur potentiel de rotation."
+                eyebrow={translateUi("Sélection BIB")}
+                title={translateUi("Produits recommandés")}
+                description={translateUi(
+                  "Produits signalés pour leur potentiel de rotation.",
+                )}
                 action={
                   <Link
                     to="/dashboard/produits-fournisseurs"
-                    aria-label="Parcourir le catalogue fournisseur"
+                    aria-label={translateUi(
+                      "Parcourir le catalogue fournisseur",
+                    )}
                     className="text-primary transition-colors hover:text-bib-gold"
                   >
                     <ArrowRight className="h-4 w-4" />
@@ -821,23 +894,32 @@ export default function Dashboard() {
               />
 
               {supplierProductsLoading ? (
-                <DataMessage>Chargement des recommandations…</DataMessage>
+                <DataMessage>
+                  {translateUi("Chargement des recommandations…")}
+                </DataMessage>
               ) : supplierProductsError ? (
                 <DataMessage error>
-                  Impossible de charger les recommandations du catalogue BIB.
+                  {translateUi(
+                    "Impossible de charger les recommandations du catalogue BIB.",
+                  )}
                 </DataMessage>
               ) : recommendedProducts.length === 0 ? (
                 <div className="mt-4 rounded-xl border border-border/70 bg-muted/30 p-4">
                   <Sparkles className="h-5 w-5 text-bib-gold" />
                   <p className="mt-3 text-sm font-semibold text-foreground">
-                    Sélection en préparation
+                    {translateUi("Sélection en préparation")}
                   </p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Consultez le catalogue pour explorer les produits disponibles.
+                    {translateUi(
+                      "Consultez le catalogue pour explorer les produits disponibles.",
+                    )}
                   </p>
-                  <Link to="/dashboard/produits-fournisseurs" className="mt-3 inline-flex">
+                  <Link
+                    to="/dashboard/produits-fournisseurs"
+                    className="mt-3 inline-flex"
+                  >
                     <Button variant="outline" size="sm" className="gap-2">
-                      Voir le catalogue
+                      {translateUi("Voir le catalogue")}
                       <ArrowRight className="h-3.5 w-3.5" />
                     </Button>
                   </Link>
@@ -870,7 +952,8 @@ export default function Dashboard() {
                           {euro(Number(product.base_price))}
                         </p>
                         <p className="mt-1 text-[11px] text-muted-foreground">
-                          Marge maximale : {product.max_margin_percent}%
+                          {translateUi("Marge maximale :") + " "}
+                          {product.max_margin_percent}%
                         </p>
                       </div>
                     </article>
@@ -882,9 +965,9 @@ export default function Dashboard() {
             {/* Finance */}
             <Panel>
               <SectionHeading
-                eyebrow="Suivi financier"
+                eyebrow={translateUi("Suivi financier")}
                 title="Finance"
-                description="Repères rapides sur votre activité."
+                description={translateUi("Repères rapides sur votre activité.")}
               />
 
               <div className="mt-4 space-y-3">
@@ -894,7 +977,7 @@ export default function Dashboard() {
                       <Wallet className="h-4 w-4" />
                     </div>
                     <span className="text-xs font-medium text-muted-foreground">
-                      CA de la période
+                      {translateUi("CA de la période")}
                     </span>
                   </div>
                   <span className="text-sm font-semibold tabular-nums text-foreground">
@@ -908,7 +991,7 @@ export default function Dashboard() {
                       <ShoppingCart className="h-4 w-4" />
                     </div>
                     <span className="text-xs font-medium text-muted-foreground">
-                      Commandes
+                      {translateUi("Commandes")}
                     </span>
                   </div>
                   <span className="text-sm font-semibold tabular-nums text-foreground">
@@ -918,7 +1001,7 @@ export default function Dashboard() {
 
                 <Link to="/dashboard/paiements" className="block pt-1">
                   <Button variant="outline" className="w-full gap-2">
-                    Accéder aux paiements
+                    {translateUi("Accéder aux paiements")}
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
@@ -928,9 +1011,11 @@ export default function Dashboard() {
             {/* Accès rapides */}
             <Panel>
               <SectionHeading
-                eyebrow="Accès rapides"
-                title="Continuer le travail"
-                description="Les espaces utiles pour la prochaine étape."
+                eyebrow={translateUi("Accès rapides")}
+                title={translateUi("Continuer le travail")}
+                description={translateUi(
+                  "Les espaces utiles pour la prochaine étape.",
+                )}
               />
 
               <div className="mt-4 space-y-2">
@@ -942,8 +1027,12 @@ export default function Dashboard() {
                     <Store className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-foreground">Mes boutiques</p>
-                    <p className="text-xs text-muted-foreground">Vitrines et publication</p>
+                    <p className="text-sm font-semibold text-foreground">
+                      {translateUi("Mes boutiques")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {translateUi("Vitrines et publication")}
+                    </p>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                 </Link>
@@ -956,12 +1045,14 @@ export default function Dashboard() {
                     <Truck className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-foreground">Commandes</p>
-                    <p className="text-xs text-muted-foreground">Traitement et suivi</p>
+                    <p className="text-sm font-semibold text-foreground">
+                      {translateUi("Commandes")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {translateUi("Traitement et suivi")}
+                    </p>
                   </div>
-                  {pending > 0 && (
-                    <Badge variant="secondary">{pending}</Badge>
-                  )}
+                  {pending > 0 && <Badge variant="secondary">{pending}</Badge>}
                   <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                 </Link>
 
@@ -973,8 +1064,12 @@ export default function Dashboard() {
                     <Package className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-foreground">Catalogue BIB</p>
-                    <p className="text-xs text-muted-foreground">Découvrir les produits</p>
+                    <p className="text-sm font-semibold text-foreground">
+                      {translateUi("Catalogue BIB")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {translateUi("Découvrir les produits")}
+                    </p>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                 </Link>
@@ -989,16 +1084,18 @@ export default function Dashboard() {
                 </div>
                 <div className="min-w-0">
                   <h2 className="font-semibold text-foreground">
-                    Besoin d’accompagnement ?
+                    {translateUi("Besoin d’accompagnement ?")}
                   </h2>
                   <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                    Retrouvez les ressources utiles pour avancer sur la plateforme.
+                    {translateUi(
+                      "Retrouvez les ressources utiles pour avancer sur la plateforme.",
+                    )}
                   </p>
                 </div>
               </div>
               <Link to="/dashboard/aide" className="mt-4 block">
                 <Button variant="outline" className="w-full gap-2">
-                  Ouvrir le centre d’aide
+                  {translateUi("Ouvrir le centre d’aide")}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -1009,10 +1106,18 @@ export default function Dashboard() {
         </div>
 
         <footer className="flex flex-col gap-2 border-t border-border pt-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>BIB Platform · Un espace pour piloter votre activité marchande.</p>
+          <p>
+            {translateUi(
+              "BIB Platform · Un espace pour piloter votre activité marchande.",
+            )}
+          </p>
           <div className="flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-success" />
-            <span>Les indicateurs reflètent les données disponibles.</span>
+            <span>
+              {translateUi(
+                "Les indicateurs reflètent les données disponibles.",
+              )}
+            </span>
           </div>
         </footer>
       </div>

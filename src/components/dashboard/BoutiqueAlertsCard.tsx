@@ -1,3 +1,5 @@
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -38,12 +40,16 @@ const severityConfig: Record<
   { label: string; className: string; icon: typeof AlertTriangle }
 > = {
   critical: {
-    label: "Critique",
+    get label() {
+      return translateUi("Critique");
+    },
     className: "border-destructive/25 bg-destructive/10 text-destructive",
     icon: AlertTriangle,
   },
   warning: {
-    label: "À surveiller",
+    get label() {
+      return translateUi("À surveiller");
+    },
     className: "border-secondary/40 bg-secondary/15 text-secondary-foreground",
     icon: AlertTriangle,
   },
@@ -68,10 +74,10 @@ function formatDate(value: string) {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return "Date indisponible";
+    return translateUi("Date indisponible");
   }
 
-  return new Intl.DateTimeFormat("fr-FR", {
+  return new Intl.DateTimeFormat(getUiLocale(), {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -81,6 +87,7 @@ function formatDate(value: string) {
 }
 
 export function BoutiqueAlertsCard() {
+  useLanguage();
   const { data: boutiques = [] } = useBoutiques();
 
   const [selectedBoutiqueId, setSelectedBoutiqueId] = useState("");
@@ -99,10 +106,8 @@ export function BoutiqueAlertsCard() {
 
   const criticalCount = useMemo(
     () =>
-      log.filter(
-        (alert) =>
-          !alert.resolved_at && alert.severity === "critical",
-      ).length,
+      log.filter((alert) => !alert.resolved_at && alert.severity === "critical")
+        .length,
     [log],
   );
 
@@ -120,10 +125,14 @@ export function BoutiqueAlertsCard() {
       await refetch();
 
       if (result.created === 0) {
-        toast.success("Diagnostic terminé : aucune nouvelle alerte.");
+        toast.success(
+          translateUi("Diagnostic terminé : aucune nouvelle alerte."),
+        );
       } else {
         toast.success(
-          `Diagnostic terminé : ${result.created} nouvelle(s) alerte(s).`,
+          translateUi("Diagnostic terminé : {v0} nouvelle(s) alerte(s).", {
+            v0: result.created,
+          }),
         );
       }
     } catch (error) {
@@ -141,18 +150,17 @@ export function BoutiqueAlertsCard() {
   return (
     <SectionCard
       icon={<Bell className="h-4 w-4" />}
-      title="Centre d’alertes"
-      description="Surveillez les événements qui nécessitent votre attention."
+      title={translateUi("Centre d’alertes")}
+      description={translateUi(
+        "Surveillez les événements qui nécessitent votre attention.",
+      )}
       actions={
         <div className="flex flex-wrap items-center gap-2">
           {boutiques.length > 1 && (
-            <Select
-              value={activeId}
-              onValueChange={setSelectedBoutiqueId}
-            >
+            <Select value={activeId} onValueChange={setSelectedBoutiqueId}>
               <SelectTrigger
                 className="h-9 w-[150px] text-xs"
-                aria-label="Choisir une boutique"
+                aria-label={translateUi("Choisir une boutique")}
               >
                 <SelectValue placeholder="Boutique" />
               </SelectTrigger>
@@ -179,7 +187,7 @@ export function BoutiqueAlertsCard() {
             ) : (
               <PlayCircle className="h-3.5 w-3.5" />
             )}
-            {running ? "Analyse…" : "Vérifier"}
+            {running ? translateUi("Analyse…") : translateUi("Vérifier")}
           </Button>
 
           <Button
@@ -187,7 +195,7 @@ export function BoutiqueAlertsCard() {
             size="icon"
             variant="ghost"
             className="h-9 w-9"
-            aria-label="Configurer les alertes"
+            aria-label={translateUi("Configurer les alertes")}
           >
             <Link to="/dashboard/parametres?tab=alerts">
               <Settings className="h-4 w-4" />
@@ -199,7 +207,7 @@ export function BoutiqueAlertsCard() {
       <div className="mb-4 grid grid-cols-2 gap-3">
         <div className="rounded-xl border border-border/70 bg-muted/20 p-3">
           <p className="text-xs text-muted-foreground">
-            Alertes ouvertes
+            {translateUi("Alertes ouvertes")}
           </p>
           <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
             {openCount}
@@ -214,13 +222,11 @@ export function BoutiqueAlertsCard() {
           }`}
         >
           <p className="text-xs text-muted-foreground">
-            Alertes critiques
+            {translateUi("Alertes critiques")}
           </p>
           <p
             className={`mt-1 text-2xl font-semibold tracking-tight ${
-              criticalCount > 0
-                ? "text-destructive"
-                : "text-foreground"
+              criticalCount > 0 ? "text-destructive" : "text-foreground"
             }`}
           >
             {criticalCount}
@@ -235,12 +241,13 @@ export function BoutiqueAlertsCard() {
           </span>
 
           <p className="mt-3 text-sm font-semibold text-foreground">
-            Aucune alerte enregistrée
+            {translateUi("Aucune alerte enregistrée")}
           </p>
 
           <p className="mt-1 max-w-sm text-xs leading-5 text-muted-foreground">
-            Lancez un diagnostic pour vérifier les points surveillés
-            selon les paramètres de cette boutique.
+            {translateUi(
+              "Lancez un diagnostic pour vérifier les points surveillés selon les paramètres de cette boutique.",
+            )}
           </p>
 
           <Button
@@ -251,7 +258,7 @@ export function BoutiqueAlertsCard() {
             className="mt-4 gap-2"
           >
             <PlayCircle className="h-3.5 w-3.5" />
-            Lancer le diagnostic
+            {translateUi("Lancer le diagnostic")}
           </Button>
         </div>
       ) : (
@@ -293,13 +300,13 @@ export function BoutiqueAlertsCard() {
 
                     {alert.email_status === "sent" && (
                       <Badge variant="outline" className="text-[10px]">
-                        Email envoyé
+                        {translateUi("Email envoyé")}
                       </Badge>
                     )}
 
                     {resolved && (
                       <Badge variant="secondary" className="text-[10px]">
-                        Résolue
+                        {translateUi("Résolue")}
                       </Badge>
                     )}
                   </div>
@@ -321,11 +328,16 @@ export function BoutiqueAlertsCard() {
                     variant="ghost"
                     className="h-8 shrink-0 gap-1.5 px-2 text-xs"
                     disabled={resolve.isPending}
-                    aria-label={`Marquer l’alerte « ${alert.title} » comme résolue`}
+                    aria-label={translateUi(
+                      "Marquer l’alerte « {v0} » comme résolue",
+                      { v0: alert.title },
+                    )}
                     onClick={() => resolve.mutate(alert.id)}
                   >
                     <Check className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Résoudre</span>
+                    <span className="hidden sm:inline">
+                      {translateUi("Résoudre")}
+                    </span>
                   </Button>
                 )}
               </li>

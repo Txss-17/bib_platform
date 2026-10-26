@@ -1,11 +1,9 @@
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  Menu,
-  Package,
-  ShoppingCart,
-  X,
-} from "lucide-react";
+import { Menu, Package, ShoppingCart, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
@@ -28,13 +26,13 @@ export function StorefrontHeader({
   navLinks,
   boutiqueSlug,
 }: StorefrontHeaderProps) {
+  useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { totalItems, setIsOpen } = useCart();
   const ctx = useStorefrontContext();
 
-  const { data: customPages = [] } =
-    usePublicBoutiquePages(ctx?.boutiqueId);
+  const { data: customPages = [] } = usePublicBoutiquePages(ctx?.boutiqueId);
 
   const accent = primaryColor || "#0f172a";
 
@@ -55,16 +53,14 @@ export function StorefrontHeader({
    * Checkout and order tracking remain on the boutique storefront.
    */
 
-  const boutiqueRoot = boutiqueSlug
-    ? `/boutique/${boutiqueSlug}`
-    : "#";
+  const boutiqueRoot = boutiqueSlug ? `/boutique/${boutiqueSlug}` : "#";
 
   const orderTrackingUrl = boutiqueSlug
     ? `/boutique/${boutiqueSlug}/order-tracking`
     : "#";
 
   const homeLink = {
-    label: "Accueil",
+    label: translateUi("Accueil"),
     href: boutiqueRoot,
   };
 
@@ -96,7 +92,7 @@ export function StorefrontHeader({
             href: "#products",
           },
           {
-            label: "À propos",
+            label: translateUi("À propos"),
             href: "#about",
           },
           {
@@ -106,13 +102,7 @@ export function StorefrontHeader({
         ]
       : [];
 
-  const links =
-    navLinks ??
-    [
-      homeLink,
-      ...dynamicLinks,
-      ...fallbackLinks,
-    ];
+  const links = navLinks ?? [homeLink, ...dynamicLinks, ...fallbackLinks];
 
   /*
    * --------------------------------------------------------------------------
@@ -139,7 +129,7 @@ export function StorefrontHeader({
               ["--tw-ring-color" as string]: accent,
             }}
             onClick={closeMobileMenu}
-            aria-label={`Accueil ${boutiqueName}`}
+            aria-label={translateUi("Accueil {v0}", { v0: boutiqueName })}
           >
             <span
               className="block max-w-[220px] truncate text-xl font-semibold tracking-tight md:max-w-none md:text-2xl"
@@ -154,7 +144,7 @@ export function StorefrontHeader({
           {/* ---------------------------------------------------------------- */}
 
           <nav
-            aria-label="Navigation principale"
+            aria-label={translateUi("Navigation principale")}
             className="hidden items-center gap-8 md:flex"
           >
             {links.map((link) => (
@@ -173,22 +163,17 @@ export function StorefrontHeader({
           {/* ---------------------------------------------------------------- */}
 
           <div className="flex items-center gap-1 sm:gap-2">
+            <LanguageSwitcher className="text-gray-700" />
             {boutiqueSlug && (
-              <Link
-                to={orderTrackingUrl}
-                className="hidden sm:block"
-              >
+              <Link to={orderTrackingUrl} className="hidden sm:block">
                 <Button
                   variant="ghost"
                   size="sm"
                   className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900"
                 >
-                  <Package
-                    className="h-4 w-4"
-                    aria-hidden="true"
-                  />
+                  <Package className="h-4 w-4" aria-hidden="true" />
                   <span className="text-xs font-medium">
-                    Suivi commande
+                    {translateUi("Suivi commande")}
                   </span>
                 </Button>
               </Link>
@@ -203,8 +188,11 @@ export function StorefrontHeader({
               onClick={() => setIsOpen(true)}
               aria-label={
                 totalItems > 0
-                  ? `Panier, ${totalItems} article${totalItems > 1 ? "s" : ""}`
-                  : "Panier"
+                  ? translateUi("Panier, {v0} article{v1}", {
+                      v0: totalItems,
+                      v1: totalItems > 1 ? "s" : "",
+                    })
+                  : translateUi("Panier")
               }
             >
               <ShoppingCart
@@ -231,26 +219,18 @@ export function StorefrontHeader({
               variant="ghost"
               size="icon"
               className="md:hidden"
-              onClick={() =>
-                setMobileMenuOpen((open) => !open)
-              }
+              onClick={() => setMobileMenuOpen((open) => !open)}
               aria-label={
                 mobileMenuOpen
-                  ? "Fermer le menu"
-                  : "Ouvrir le menu"
+                  ? translateUi("Fermer le menu")
+                  : translateUi("Ouvrir le menu")
               }
               aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? (
-                <X
-                  className="h-5 w-5"
-                  aria-hidden="true"
-                />
+                <X className="h-5 w-5" aria-hidden="true" />
               ) : (
-                <Menu
-                  className="h-5 w-5"
-                  aria-hidden="true"
-                />
+                <Menu className="h-5 w-5" aria-hidden="true" />
               )}
             </Button>
           </div>
@@ -263,7 +243,7 @@ export function StorefrontHeader({
         {mobileMenuOpen && (
           <div className="border-t border-gray-100 py-4 md:hidden">
             <nav
-              aria-label="Navigation mobile"
+              aria-label={translateUi("Navigation mobile")}
               className="flex flex-col gap-1"
             >
               {links.map((link) => (
@@ -283,11 +263,8 @@ export function StorefrontHeader({
                   className="flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
                   onClick={closeMobileMenu}
                 >
-                  <Package
-                    className="h-4 w-4"
-                    aria-hidden="true"
-                  />
-                  Suivre ma commande
+                  <Package className="h-4 w-4" aria-hidden="true" />
+                  {translateUi("Suivre ma commande")}
                 </Link>
               )}
             </nav>

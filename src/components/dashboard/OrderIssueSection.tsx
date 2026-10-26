@@ -1,4 +1,6 @@
-﻿import { useState } from "react";
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -53,15 +55,14 @@ interface OrderIssueSectionProps {
   orderId: string;
 }
 
-export function OrderIssueSection({
-  orderId,
-}: OrderIssueSectionProps) {
+export function OrderIssueSection({ orderId }: OrderIssueSectionProps) {
+  useLanguage();
   const { data: issues = [], isLoading } = useOrderIssues(orderId);
 
   if (isLoading) {
     return (
       <p className="text-xs text-muted-foreground">
-        Chargement des signalements...
+        {translateUi("Chargement des signalements...")}
       </p>
     );
   }
@@ -69,7 +70,7 @@ export function OrderIssueSection({
   if (issues.length === 0) {
     return (
       <p className="text-xs text-muted-foreground italic">
-        Aucun signalement pour cette commande.
+        {translateUi("Aucun signalement pour cette commande.")}
       </p>
     );
   }
@@ -84,6 +85,7 @@ export function OrderIssueSection({
 }
 
 function IssueCard({ issue }: { issue: OrderIssue }) {
+  useLanguage();
   const [showResponse, setShowResponse] = useState(false);
   const [action, setAction] = useState<IssueAction>("accept");
   const [message, setMessage] = useState("");
@@ -99,23 +101,39 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
     if (action === "partial_refund") {
       const amountCents = Math.round(Number(refundAmount) * 100);
       if (!Number.isSafeInteger(amountCents) || amountCents < 1) {
-        toast({ title: "Montant invalide", description: "Saisissez un montant positif en euros.", variant: "destructive" });
+        toast({
+          title: translateUi("Montant invalide"),
+          description: translateUi("Saisissez un montant positif en euros."),
+          variant: "destructive",
+        });
         return;
       }
-      refundMutation.mutate({ issueId: issue.id, amountCents }, {
-        onSuccess: (result) => {
-          toast({
-            title: result.status === "succeeded" ? "Remboursement effectuÃ©" : "Remboursement en attente",
-            description: result.status === "succeeded"
-              ? "Stripe a confirmÃ© le remboursement. Le stock attend une rÃ©ception contrÃ´lÃ©e."
-              : "Le rÃ©sultat Stripe est en attente de confirmation.",
-          });
-          setShowResponse(false);
-          setRefundAmount("");
-          setMessage("");
+      refundMutation.mutate(
+        { issueId: issue.id, amountCents },
+        {
+          onSuccess: (result) => {
+            toast({
+              title:
+                result.status === "succeeded"
+                  ? "Remboursement effectuÃ©"
+                  : "Remboursement en attente",
+              description:
+                result.status === "succeeded"
+                  ? "Stripe a confirmÃ© le remboursement. Le stock attend une rÃ©ception contrÃ´lÃ©e."
+                  : "Le rÃ©sultat Stripe est en attente de confirmation.",
+            });
+            setShowResponse(false);
+            setRefundAmount("");
+            setMessage("");
+          },
+          onError: (error) =>
+            toast({
+              title: translateUi("Remboursement impossible"),
+              description: error.message,
+              variant: "destructive",
+            }),
         },
-        onError: (error) => toast({ title: "Remboursement impossible", description: error.message, variant: "destructive" }),
-      });
+      );
       return;
     }
     const newStatus: IssueStatus =
@@ -135,8 +153,10 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
       {
         onSuccess: () => {
           toast({
-            title: "RÃ©ponse envoyÃ©e",
-            description: "RÃ©ponse enregistrÃ©e dans le dossier de commande.",
+            title: translateUi("RÃ©ponse envoyÃ©e"),
+            description: translateUi(
+              "RÃ©ponse enregistrÃ©e dans le dossier de commande.",
+            ),
           });
 
           setShowResponse(false);
@@ -145,7 +165,7 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
 
         onError: () =>
           toast({
-            title: "Erreur",
+            title: translateUi("Erreur"),
             variant: "destructive",
           }),
       },
@@ -185,7 +205,7 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
         {issue.image_url && (
           <img
             src={issue.image_url}
-            alt="Preuve"
+            alt={translateUi("Preuve")}
             className="w-20 h-20 rounded object-cover"
           />
         )}
@@ -193,10 +213,7 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
         {responses.length > 0 && (
           <div className="space-y-1.5 pt-1 border-t border-border/30">
             {responses.map((response) => (
-              <div
-                key={response.id}
-                className="flex items-start gap-2 text-xs"
-              >
+              <div key={response.id} className="flex items-start gap-2 text-xs">
                 <MessageSquare className="w-3 h-3 mt-0.5 text-primary shrink-0" />
 
                 <div>
@@ -207,14 +224,15 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
                   {response.message && (
                     <span className="text-muted-foreground">
                       {" "}
-                      â€” {response.message}
+                      {translateUi("â€”") + " "}
+                      {response.message}
                     </span>
                   )}
 
                   <p className="text-[10px] text-muted-foreground">
-                    {new Date(
-                      response.created_at,
-                    ).toLocaleDateString("fr-FR")}
+                    {new Date(response.created_at).toLocaleDateString(
+                      getUiLocale(),
+                    )}
                   </p>
                 </div>
               </div>
@@ -222,24 +240,23 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
           </div>
         )}
 
-        {(issue.status === "pending" || issue.status === "accepted") && !showResponse && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="w-full text-xs"
-            onClick={() => setShowResponse(true)}
-          >
-            RÃ©pondre au signalement
-          </Button>
-        )}
+        {(issue.status === "pending" || issue.status === "accepted") &&
+          !showResponse && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full text-xs"
+              onClick={() => setShowResponse(true)}
+            >
+              {translateUi("RÃ©pondre au signalement")}
+            </Button>
+          )}
 
         {showResponse && (
           <div className="space-y-2 pt-2 border-t border-border/30">
             <Select
               value={action}
-              onValueChange={(value) =>
-                setAction(value as IssueAction)
-              }
+              onValueChange={(value) => setAction(value as IssueAction)}
             >
               <SelectTrigger className="h-8 text-xs">
                 <SelectValue />
@@ -249,19 +266,21 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
                 {(Object.keys(ISSUE_ACTION_LABELS) as IssueAction[])
                   .filter((actionKey) => actionKey !== "resend")
                   .map((actionKey) => (
-                  <SelectItem
-                    key={actionKey}
-                    value={actionKey}
-                  >
-                    {ISSUE_ACTION_LABELS[actionKey]}
-                  </SelectItem>
-                ))}
+                    <SelectItem key={actionKey} value={actionKey}>
+                      {ISSUE_ACTION_LABELS[actionKey]}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
 
             {action === "partial_refund" && (
               <div className="space-y-1">
-                <label className="text-xs font-medium" htmlFor={`refund-amount-${issue.id}`}>Montant du remboursement (EUR)</label>
+                <label
+                  className="text-xs font-medium"
+                  htmlFor={`refund-amount-${issue.id}`}
+                >
+                  {translateUi("Montant du remboursement (EUR)")}
+                </label>
                 <Input
                   id={`refund-amount-${issue.id}`}
                   type="number"
@@ -273,15 +292,17 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
                   onChange={(event) => setRefundAmount(event.target.value)}
                   className="h-8 text-xs"
                 />
-                <p className="text-[10px] text-muted-foreground">Le montant est plafonnÃ© au solde de la ligne. Le stock ne sera rÃ©intÃ©grÃ© quâ€™aprÃ¨s rÃ©ception contrÃ´lÃ©e.</p>
+                <p className="text-[10px] text-muted-foreground">
+                  {translateUi(
+                    "Le montant est plafonnÃ© au solde de la ligne. Le stock ne sera rÃ©intÃ©grÃ© quâ€™aprÃ¨s rÃ©ception contrÃ´lÃ©e.",
+                  )}
+                </p>
               </div>
             )}
             <Textarea
-              placeholder="Message au client (optionnel)..."
+              placeholder={translateUi("Message au client (optionnel)...")}
               value={message}
-              onChange={(event) =>
-                setMessage(event.target.value)
-              }
+              onChange={(event) => setMessage(event.target.value)}
               className="text-xs min-h-[60px]"
             />
 
@@ -290,9 +311,13 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
                 size="sm"
                 className="flex-1 text-xs"
                 onClick={handleRespond}
-                disabled={respondMutation.isPending || refundMutation.isPending || (action === "partial_refund" && !refundAmount)}
+                disabled={
+                  respondMutation.isPending ||
+                  refundMutation.isPending ||
+                  (action === "partial_refund" && !refundAmount)
+                }
               >
-                Envoyer
+                {translateUi("Envoyer")}
               </Button>
 
               <Button
@@ -301,7 +326,7 @@ function IssueCard({ issue }: { issue: OrderIssue }) {
                 className="text-xs"
                 onClick={() => setShowResponse(false)}
               >
-                Annuler
+                {translateUi("Annuler")}
               </Button>
             </div>
           </div>

@@ -1,721 +1,503 @@
-
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useSearchParams } from "react-router-dom";
+import { translateUi } from "@/lib/uiTranslation";
+import { useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
-  ArrowRight,
-  CheckCircle2,
-  Filter,
-  Layers3,
+  ArrowLeft,
   Package,
-  Palette,
   Search,
-  Shirt,
   Sparkles,
-  Tags,
-  Box,
-  Clock3,
 } from "lucide-react";
-
+import { useQueryClient } from "@tanstack/react-query";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
-import { Badge } from "@/components/ui/badge";
+import { AddToBoutiqueDialog } from "@/components/dashboard/AddToBoutiqueDialog";
+import { ProductCustomizationEditor } from "@/components/dashboard/products/ProductCustomizationEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSupplierProducts } from "@/hooks/useSupplierProducts";
 import { useProducts } from "@/hooks/useProducts";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useBoutiques } from "@/hooks/useBoutiques";
+import {
+  hasCustomization,
+  readCatalogCustomization,
+} from "@/lib/productCustomization";
+import type { Tables } from "@/integrations/supabase/types";
 
-type ViewMode = "catalogue" | "mine";
-type CustomizationFilter = "all" | "product" | "packaging" | "branding";
-
-const customizationFilters: {
-  value: CustomizationFilter;
-  label: string;
-  description: string;
-  icon: typeof Package;
-}[] = [
-  {
-    value: "all",
-    label: "Toutes les possibilités",
-    description: "Toutes les références disponibles",
-    icon: Layers3,
-  },
-  {
-    value: "product",
-    label: "Produit",
-    description: "Logo, couleurs, matière, forme ou finition",
-    icon: Shirt,
-  },
-  {
-    value: "packaging",
-    label: "Packaging",
-    description: "Emballage, étiquette et conditionnement",
-    icon: Box,
-  },
-  {
-    value: "branding",
-    label: "Branding",
-    description: "Identité visuelle et marquage",
-    icon: Palette,
-  },
-];
-
+type Scope = "all" | "product" | "packaging" | "branding";
 export default function Personnalisation() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const selectedProductId = searchParams.get("productId");
-  const { data: supplierProducts = [], isLoading, isError } =
-    useSupplierProducts();
-  const { data: myProducts = [] } = useProducts();
-  const selectedProduct = myProducts.find((item) => item.id === selectedProductId);
-  const capabilities = (selectedProduct?.supplier_products as any)?.customization_capabilities ?? {};
-  const capabilityOptions = (key: string): string[] =>
-    Array.isArray(capabilities[key]) ? capabilities[key].filter((value: unknown): value is string => typeof value === "string" && value.trim().length > 0) : [];
-  const [customization, setCustomization] = useState({ brand: "", color: "#172B4D", logo: "", logoOption: "", packaging: "", marking: "", material: "", finish: "", dimensions: "", text: "", instructions: "" });
-  const availableColors = capabilityOptions("colors");
-  const previewColor = availableColors.includes(customization.color) ? customization.color : availableColors[0] ?? "#172B4D";
-  const [saved, setSaved] = useState(false);
-  const [previewView, setPreviewView] = useState("2d");
-  useEffect(() => {
-    if (!selectedProductId) return;
-    let active = true;
-    const loadCustomization = async () => {
-      setSaved(false);
-      const { data, error } = await (supabase as any)
-        .from("product_customization_dossiers")
-        .select("merchant_config")
-        .eq("product_id", selectedProductId)
-        .maybeSingle();
-      if (!active) return;
-      if (!error && data?.merchant_config) {
-        setCustomization((current) => ({ ...current, ...data.merchant_config }));
-        return;
-      }
-      try {
-        const stored = localStorage.getItem(`bib-product-customization:${selectedProductId}`);
-        if (stored) setCustomization((current) => ({ ...current, ...JSON.parse(stored) }));
-      } catch { /* Ignore invalid legacy local drafts. */ }
-    };
-    void loadCustomization();
-    return () => { active = false; };
-  }, [selectedProductId]);
-  const saveCustomization = async () => {
-    if (!selectedProductId) return;
-    const { error } = await (supabase as any)
-      .from("product_customization_dossiers")
-      .upsert(
-        { product_id: selectedProductId, merchant_config: { ...customization, color: previewColor, logoOption: capabilityOptions("logo").includes(customization.logoOption) ? customization.logoOption : "", logo: capabilityOptions("logo").length > 0 ? customization.logo : "", packaging: capabilityOptions("packaging").includes(customization.packaging) ? customization.packaging : "", marking: capabilityOptions("marking").includes(customization.marking) ? customization.marking : "", material: capabilityOptions("materials").includes(customization.material) ? customization.material : "", finish: capabilityOptions("finishes").includes(customization.finish) ? customization.finish : "", text: capabilities.text === true ? customization.text : "" }, updated_at: new Date().toISOString() },
-        { onConflict: "product_id" },
-      );
-    if (error) {
-      toast.error("Impossible d’enregistrer le dossier de personnalisation.");
-      return;
-    }
-    localStorage.removeItem(`bib-product-customization:${selectedProductId}`);
-    setSaved(true);
-    toast.success("Brouillon de personnalisation enregistré.");
-  };
-
-  const [view, setView] = useState<ViewMode>("catalogue");
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("all");
-  const [customizationFilter, setCustomizationFilter] =
-    useState<CustomizationFilter>("all");
-
-  const mySupplierProductIds = useMemo(
-    () => new Set(myProducts.map((product) => product.supplier_product_id)),
-    [myProducts],
+  const [params] = useSearchParams();
+  const { lang } = useLanguage();
+  const en = lang === "en";
+  const catalogue = useSupplierProducts();
+  const merchantProducts = useProducts();
+  const { data: boutiques = [] } = useBoutiques();
+  const cache = useQueryClient();
+  const products = catalogue.data ?? [];
+  const mine = merchantProducts.data ?? [];
+  const productId = params.get("productId");
+  const ownedProduct = mine.find((product) => product.id === productId);
+  // Older catalogue links passed a supplier id as productId. Resolve that case explicitly.
+  const supplierId =
+    params.get("supplierProductId") ??
+    ownedProduct?.supplier_product_id ??
+    (products.some((product) => product.id === productId) ? productId : null);
+  const supplierProduct =
+    products.find((product) => product.id === supplierId) ??
+    ownedProduct?.supplier_products;
+  const matches = mine.filter(
+    (product) => product.supplier_product_id === supplierId,
   );
-
+  const selected =
+    ownedProduct ?? (matches.length === 1 ? matches[0] : undefined);
+  const context = !!productId || !!supplierId;
+  const [view, setView] = useState<"all" | "mine">("all");
+  const [scope, setScope] = useState<Scope>("all");
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [addProduct, setAddProduct] =
+    useState<Tables<"supplier_products"> | null>(null);
   const categories = useMemo(
     () =>
-      Array.from(
-        new Set(
-          supplierProducts
-            .map((product) => product.category)
-            .filter((value): value is string => Boolean(value?.trim())),
-        ),
-      ).sort((a, b) => a.localeCompare(b, "fr")),
-    [supplierProducts],
+      [
+        ...new Set(products.map((product) => product.category).filter(Boolean)),
+      ].sort((a, b) => a.localeCompare(b, en ? "en" : "fr")),
+    [products, en],
   );
-
-  const filteredProducts = useMemo(() => {
-    const normalizedSearch = search.trim().toLocaleLowerCase("fr");
-
-    return supplierProducts.filter((product) => {
-      const matchesView =
-        view === "catalogue" || mySupplierProductIds.has(product.id);
-
-      const matchesSearch =
-        !normalizedSearch ||
-        [product.name, product.category, product.description]
-          .some((value) =>
-            String(value ?? "")
-              .toLocaleLowerCase("fr")
-              .includes(normalizedSearch),
-          );
-
-      const matchesCategory =
-        category === "all" || product.category === category;
-
-      /*
-       * Important:
-       * The current supplier_products schema does not expose a validated
-       * customization-capability matrix. These filters are therefore
-       * presented as desired customization scopes, not as claims that a
-       * particular supplier supports those options.
-       */
-      const matchesCustomizationScope = customizationFilter === "all";
-
-      return (
-        matchesView &&
-        matchesSearch &&
-        matchesCategory &&
-        matchesCustomizationScope
-      );
-    });
-  }, [
-    supplierProducts,
-    mySupplierProductIds,
-    view,
-    search,
-    category,
-    customizationFilter,
-  ]);
-
-  const alreadyUsedCount = supplierProducts.filter((product) =>
-    mySupplierProductIds.has(product.id),
-  ).length;
-
-  const clearFilters = () => {
+  const available = products.filter((product) => {
+    const caps = readCatalogCustomization(product).capabilities;
+    const supports =
+      scope === "all" ||
+      (scope === "packaging"
+        ? !!caps.packaging?.length
+        : scope === "branding"
+          ? !!caps.logo?.length || !!caps.marking?.length || caps.text === true
+          : !!caps.colors?.length ||
+            !!caps.materials?.length ||
+            !!caps.finishes?.length ||
+            !!caps.dimensions?.length);
+    const query = search.trim().toLocaleLowerCase(en ? "en" : "fr");
+    return (
+      (view === "all" ||
+        mine.some((item) => item.supplier_product_id === product.id)) &&
+      (!category || product.category === category) &&
+      supports &&
+      (!query ||
+        [product.name, product.category, product.description].some((value) =>
+          value?.toLocaleLowerCase(en ? "en" : "fr").includes(query),
+        ))
+    );
+  });
+  const qualified = products.filter((product) => {
+    const meta = readCatalogCustomization(product);
+    return meta.valid && hasCustomization(meta.capabilities);
+  }).length;
+  const open = (id: string) =>
+    navigate(
+      "/dashboard/personnalisation?supplierProductId=" + encodeURIComponent(id),
+    );
+  const clear = () => {
     setSearch("");
-    setCategory("all");
-    setCustomizationFilter("all");
+    setCategory("");
+    setScope("all");
+    setView("all");
   };
-
   return (
     <DashboardLayout>
-      <div className="mx-auto w-full max-w-[1440px] space-y-6 pb-10">
-        <header className="relative overflow-hidden rounded-2xl border border-border bg-card">
-          <div className="absolute inset-y-0 left-0 w-1 bg-[#D0AD62]" />
-          <div className="grid gap-6 p-5 sm:p-7 lg:grid-cols-[1fr_auto] lg:items-center">
-            <div className="min-w-0">
-              <div className="mb-3 flex flex-wrap items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className="border-[#D0AD62]/50 bg-[#D0AD62]/10 text-[#8B692B]"
-                >
-                  <Sparkles className="mr-1.5 h-3 w-3" />
-                  Studio de personnalisation
-                </Badge>
-                <span className="text-xs text-muted-foreground">
-                  Espace marchand BIB
-                </span>
-              </div>
-
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                {selectedProduct ? `Personnaliser ${selectedProduct.supplier_products?.name ?? "ce produit"}` : "Personnalisation des produits"}
-              </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Identifiez les références à personnaliser, préparez votre
-                identité de marque et suivez les étapes de qualification
-                avant de demander un échantillon.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-2 sm:flex-row lg:flex-col">
-              <Button
-                onClick={() => navigate("/dashboard/produits-fournisseurs")}
-                className="justify-between bg-[#172B4D] text-white hover:bg-[#223D66]"
-              >
-                Explorer le catalogue fournisseur
-                <ArrowRight className="ml-3 h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate("/dashboard/produits")}
-              >
-                <Package className="mr-2 h-4 w-4" />
-                Gérer mes produits
-              </Button>
-            </div>
+      <div className="mx-auto max-w-7xl space-y-6 pb-8">
+        <header className="flex flex-col gap-4 rounded-2xl border bg-card p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
+          <div>
+            <Badge
+              variant="outline"
+              className="mb-3 border-accent/30 bg-accent/10 text-accent-ink"
+            >
+              <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+              {en ? "BIB customization" : "Personnalisation BIB"}
+            </Badge>
+            <h1 className="text-2xl font-semibold text-foreground">
+              {selected
+                ? selected.supplier_products.name
+                : en
+                  ? "Product customization"
+                  : "Personnalisation des produits"}
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+              {en
+                ? "Choose a reference, select its boutique, and configure the options qualified by BIB."
+                : "Choisissez une référence, sélectionnez sa boutique, puis configurez les options qualifiées par BIB."}
+            </p>
           </div>
+          <Button
+            variant="outline"
+            onClick={() =>
+              context
+                ? navigate("/dashboard/personnalisation")
+                : navigate("/dashboard/produits-fournisseurs")
+            }
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            {context
+              ? en
+                ? "Back to references"
+                : "Retour aux références"
+              : en
+                ? "Supplier catalogue"
+                : "Catalogue fournisseur"}
+          </Button>
         </header>
-
-        {selectedProduct && (
-          <Card className="border-[#D0AD62]/40 bg-[#D0AD62]/5">
-            <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <p className="font-semibold">{selectedProduct.supplier_products?.name ?? "Produit"}</p>
+        {(catalogue.isError || merchantProducts.isError) && (
+          <div
+            role="alert"
+            className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive-ink"
+          >
+            <p>
+              {en
+                ? "Some catalogue or boutique data could not be loaded. Retry before configuring a product."
+                : "Certaines données du catalogue ou des boutiques n’ont pas pu être chargées. Réessayez avant de configurer un produit."}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3"
+              onClick={() => {
+                void catalogue.refetch();
+                void merchantProducts.refetch();
+              }}
+            >
+              {en ? "Retry" : "Réessayer"}
+            </Button>
+          </div>
+        )}
+        {context && (catalogue.isLoading || merchantProducts.isLoading) && (
+          <p role="status" className="text-sm text-muted-foreground">
+            {en ? "Loading product…" : "Chargement du produit…"}
+          </p>
+        )}
+        {context &&
+          !catalogue.isLoading &&
+          !merchantProducts.isLoading &&
+          !supplierProduct &&
+          !catalogue.isError &&
+          !merchantProducts.isError && (
+            <div
+              role="alert"
+              className="rounded-xl border border-warning/30 bg-warning/10 p-5 text-warning-ink"
+            >
+              {en
+                ? "This product is unavailable or is not accessible to your account."
+                : "Ce produit est indisponible ou n’est pas accessible à votre compte."}
+            </div>
+          )}
+        {context && supplierProduct && !merchantProducts.isError && (
+          <Card>
+            <CardContent className="space-y-4 p-5">
+              <div>
+                <p className="font-semibold">{supplierProduct.name}</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {selectedProduct.supplier_products?.category ?? "Catégorie non renseignée"}
-                  {" · "}Prix fournisseur {Number(selectedProduct.supplier_products?.base_price ?? 0).toFixed(2)} €
-                  {" · "}Marge {selectedProduct.applied_margin} %
+                  {supplierProduct.category}
                 </p>
-                <p className="mt-2 text-xs leading-5 text-muted-foreground">Les options fournisseur sont à confirmer avant activation.</p>
               </div>
-              <Button variant="outline" onClick={() => navigate(`/dashboard/produits?productId=${encodeURIComponent(selectedProduct.id)}`)}>Retour à la fiche produit</Button>
+              {matches.length > 1 && (
+                <div className="max-w-lg space-y-2">
+                  <label
+                    htmlFor="customization-boutique"
+                    className="text-sm font-medium"
+                  >
+                    {en ? "Select a boutique" : "Sélectionner une boutique"}
+                  </label>
+                  <select
+                    id="customization-boutique"
+                    value={selected?.id ?? ""}
+                    onChange={(event) =>
+                      navigate(
+                        "/dashboard/personnalisation?productId=" +
+                          encodeURIComponent(event.target.value),
+                      )
+                    }
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    <option value="">
+                      {en
+                        ? "Choose the boutique to configure"
+                        : "Choisir la boutique à configurer"}
+                    </option>
+                    {matches.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {boutiques.find(
+                          (boutique) => boutique.id === item.boutique_id,
+                        )?.name ??
+                          translateUi("Boutique ") +
+                            item.boutique_id.slice(0, 8)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {!matches.length && !merchantProducts.isLoading && (
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    {en
+                      ? "Add this reference to a boutique before creating its customization dossier."
+                      : "Ajoutez cette référence à une boutique avant de créer son dossier de personnalisation."}
+                  </p>
+                  <Button onClick={() => setAddProduct(supplierProduct)}>
+                    {en ? "Add to a boutique" : "Ajouter à une boutique"}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
-        {selectedProduct && (
-          <Card className="border-[#D0AD62]/40">
-            <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
-              <div>
-                <label className="text-sm font-medium">Nom de marque souhaité</label>
-                <Input id="custom-brand" placeholder="Votre marque" className="mt-1" value={customization.brand} onChange={(e) => { setCustomization({ ...customization, brand: e.target.value }); setSaved(false); }} />
-              </div>
-              {capabilityOptions("colors").length > 0 ? <div><label className="text-sm font-medium">Couleur disponible</label><select id="custom-color" value={previewColor} onChange={(e) => { setCustomization({ ...customization, color: e.target.value }); setSaved(false); }} className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm">{capabilityOptions("colors").map((color) => <option key={color} value={color}>{color}</option>)}</select></div> : <p className="text-sm text-muted-foreground">Couleurs : aucune option confirmée au catalogue BIB.</p>}
-              {capabilityOptions("logo").length > 0 && <div><label className="text-sm font-medium">Personnalisation du logo</label><select value={customization.logoOption} onChange={(e) => { setCustomization({ ...customization, logoOption: e.target.value }); setSaved(false); }} className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="">Choisir une option</option>{capabilityOptions("logo").map((option) => <option key={option} value={option}>{option}</option>)}</select><Input id="custom-logo" type="url" placeholder="Lien vers le fichier de logo (facultatif)" value={customization.logo} onChange={(e) => { setCustomization({ ...customization, logo: e.target.value }); setSaved(false); }} className="mt-2" /></div>}
-              {capabilityOptions("packaging").length > 0 && <div><label className="text-sm font-medium">Packaging disponible</label><select value={customization.packaging} onChange={(e) => { setCustomization({ ...customization, packaging: e.target.value }); setSaved(false); }} className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="">Choisir une option</option>{capabilityOptions("packaging").map((option) => <option key={option} value={option}>{option}</option>)}</select></div>}
-              {capabilityOptions("marking").length > 0 && <div><label className="text-sm font-medium">Type de marquage</label><select value={customization.marking} onChange={(e) => { setCustomization({ ...customization, marking: e.target.value }); setSaved(false); }} className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="">Choisir une option</option>{capabilityOptions("marking").map((option) => <option key={option} value={option}>{option}</option>)}</select></div>}
-              {capabilityOptions("materials").length > 0 && <div><label className="text-sm font-medium">Matière disponible</label><select value={customization.material} onChange={(e) => { setCustomization({ ...customization, material: e.target.value }); setSaved(false); }} className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="">Choisir une option</option>{capabilityOptions("materials").map((option) => <option key={option} value={option}>{option}</option>)}</select></div>}
-              {capabilityOptions("finishes").length > 0 && <div><label className="text-sm font-medium">Finition disponible</label><select value={customization.finish} onChange={(e) => { setCustomization({ ...customization, finish: e.target.value }); setSaved(false); }} className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="">Choisir une option</option>{capabilityOptions("finishes").map((option) => <option key={option} value={option}>{option}</option>)}</select></div>}
-              {capabilityOptions("logo").length === 0 && capabilityOptions("colors").length === 0 && capabilityOptions("packaging").length === 0 && capabilityOptions("marking").length === 0 && capabilityOptions("materials").length === 0 && capabilityOptions("finishes").length === 0 && capabilities.text !== true && <div className="sm:col-span-2 rounded-lg border border-dashed p-3 text-sm text-muted-foreground">Aucune option de personnalisation n’est confirmée pour ce produit dans le catalogue BIB.</div>}
-              <div><label className="text-sm font-medium">Dimensions</label><Input placeholder="L × l × H" value={customization.dimensions ?? ""} onChange={(e) => { setCustomization({ ...customization, dimensions: e.target.value }); setSaved(false); }} className="mt-1" /></div>
-              {capabilities.text === true && <div><label className="text-sm font-medium">Texte à imprimer</label><Input placeholder="Texte ou slogan" value={customization.text ?? ""} onChange={(e) => { setCustomization({ ...customization, text: e.target.value }); setSaved(false); }} className="mt-1" /></div>}
-              <div><label className="text-sm font-medium">Consignes complémentaires</label><Input placeholder="Précisions pour le fournisseur" value={customization.instructions ?? ""} onChange={(e) => { setCustomization({ ...customization, instructions: e.target.value }); setSaved(false); }} className="mt-1" /></div>              <div className="sm:col-span-2 min-w-0 overflow-hidden rounded-xl border p-3 sm:p-4" style={{ backgroundColor: previewColor + "12" }}>
-                <p className="mb-3 text-sm font-semibold">Aperçu de la configuration</p>
-                <div className="mb-3 flex flex-wrap gap-2">{["2d", "3d", "gauche", "droite", "haut", "bas"].map((view) => <Button key={view} type="button" size="sm" variant={previewView === view ? "default" : "outline"} onClick={() => setPreviewView(view)}>{view.toUpperCase()}</Button>)}</div>
-                <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:gap-6">
-                  {selectedProduct.supplier_products?.image_url && <img src={selectedProduct.supplier_products.image_url} alt={selectedProduct.supplier_products.name ?? "Produit"} className="h-64 w-full max-w-full shrink-0 rounded-xl border bg-white object-contain p-3 transition-transform duration-300 sm:h-80 sm:max-w-[28rem]" style={{ transform: previewView === "gauche" ? "perspective(500px) rotateY(-35deg)" : previewView === "droite" ? "perspective(500px) rotateY(35deg)" : previewView === "haut" ? "perspective(500px) rotateX(35deg)" : previewView === "bas" ? "perspective(500px) rotateX(-35deg)" : previewView === "3d" ? "perspective(500px) rotateY(-18deg) rotateX(8deg)" : "none" }} />}
-                  <div className="min-w-0">
-                    {capabilityOptions("logo").length > 0 && customization.logo && <img src={customization.logo} alt="Logo de marque" className="mb-2 h-8 max-w-full object-contain" />}
-                    <p className="font-semibold" style={{ color: previewColor }}>{customization.brand || selectedProduct.supplier_products?.name}</p>
-                    {capabilities.text === true && customization.text && <p className="mt-1 text-sm">{customization.text}</p>}
-                    <p className="mt-1 text-xs text-muted-foreground">Aperçu indicatif, à confirmer avec le fournisseur.</p>
+        {selected && !merchantProducts.isError && (
+          <ProductCustomizationEditor key={selected.id} product={selected} />
+        )}
+        {!context && (
+          <>
+            <section
+              className="grid gap-3 sm:grid-cols-3"
+              aria-label={en ? "Catalogue overview" : "Aperçu du catalogue"}
+            >
+              {[
+                [
+                  en ? "Catalogue references" : "Références au catalogue",
+                  products.length,
+                ],
+                [
+                  en ? "Qualified for customization" : "Capacités qualifiées",
+                  qualified,
+                ],
+                [
+                  en ? "In my boutiques" : "Dans mes boutiques",
+                  new Set(mine.map((product) => product.supplier_product_id))
+                    .size,
+                ],
+              ].map(([label, value]) => (
+                <Card key={label}>
+                  <CardContent className="p-5">
+                    <p className="text-sm text-muted-foreground">{label}</p>
+                    <p className="mt-2 text-2xl font-semibold">
+                      {catalogue.isLoading || merchantProducts.isLoading
+                        ? "…"
+                        : catalogue.isError || merchantProducts.isError
+                          ? "—"
+                          : value}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </section>
+            <Card>
+              <CardContent className="space-y-5 p-4 sm:p-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h2 className="font-semibold">
+                    {en ? "Choose a reference" : "Choisir une référence"}
+                  </h2>
+                  <div className="flex gap-2">
+                    <Button
+                      variant={view === "all" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setView("all")}
+                    >
+                      {en ? "All references" : "Toutes les références"}
+                    </Button>
+                    <Button
+                      variant={view === "mine" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setView("mine")}
+                    >
+                      {en ? "My boutiques" : "Mes boutiques"}
+                    </Button>
                   </div>
                 </div>
-              </div>              <p className="text-xs text-muted-foreground sm:col-span-2">Cette page prépare la demande de personnalisation. Les valeurs seront à confirmer par le fournisseur avant commande.</p>
-              <div className="flex items-center gap-3 sm:col-span-2"><Button onClick={saveCustomization}>Enregistrer le brouillon</Button>{saved && <span className="text-sm text-emerald-700">Brouillon enregistré dans votre dossier produit.</span>}</div>
-            </CardContent>
-          </Card>
-        )}
-        <section className={selectedProduct ? "hidden" : "grid gap-3 sm:grid-cols-2 xl:grid-cols-4"}>
-          <MetricCard
-            icon={<Package className="h-4 w-4" />}
-            label="Références au catalogue"
-            value={isLoading ? "…" : supplierProducts.length}
-          />
-          <MetricCard
-            icon={<CheckCircle2 className="h-4 w-4" />}
-            label="Déjà ajoutées à ma boutique"
-            value={isLoading ? "…" : alreadyUsedCount}
-            accent="gold"
-          />
-          <MetricCard
-            icon={<AlertCircle className="h-4 w-4" />}
-            label="Capacités à qualifier"
-            value={isLoading ? "…" : supplierProducts.length}
-          />
-          <MetricCard
-            icon={<Clock3 className="h-4 w-4" />}
-            label="Configurations en cours"
-            value="—"
-            note="Suivi disponible après mise en place du dossier de personnalisation"
-          />
-        </section>
-
-        <Card className={selectedProduct ? "hidden" : "overflow-hidden border-border shadow-sm"}>
-          <div className="border-b border-border p-4 sm:p-5">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <h2 className="font-semibold text-foreground">
-                  Références personnalisables
-                </h2>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                  Les options ne seront proposées qu’après confirmation des
-                  capacités réelles du fournisseur.
-                </p>
-              </div>
-
-              <div className="inline-flex w-full rounded-lg border border-border bg-muted/30 p-1 sm:w-auto">
-                <button
-                  type="button"
-                  onClick={() => setView("catalogue")}
-                  className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors sm:flex-none ${
-                    view === "catalogue"
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Catalogue
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setView("mine")}
-                  className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors sm:flex-none ${
-                    view === "mine"
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Mes produits
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-5 grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Rechercher un produit, une catégorie…"
-                  className="h-11 border-border bg-background pl-9"
-                  aria-label="Rechercher dans le catalogue"
-                />
-              </div>
-
-              <div className="relative">
-                <Filter className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <select
-                  value={category}
-                  onChange={(event) => setCategory(event.target.value)}
-                  className="h-11 w-full appearance-none rounded-md border border-border bg-background pl-9 pr-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-[#D0AD62]"
-                  aria-label="Filtrer par catégorie"
-                >
-                  <option value="all">Toutes les catégories</option>
-                  {categories.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
+                <div className="grid gap-3 md:grid-cols-[1fr_190px_190px]">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      className="pl-9"
+                      value={search}
+                      onChange={(event) => setSearch(event.target.value)}
+                      placeholder={
+                        en ? "Search references…" : "Rechercher une référence…"
+                      }
+                      aria-label={
+                        en ? "Search catalogue" : "Rechercher au catalogue"
+                      }
+                    />
+                  </div>
+                  <select
+                    aria-label={en ? "Category" : "Catégorie"}
+                    value={category}
+                    onChange={(event) => setCategory(event.target.value)}
+                    className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    <option value="">
+                      {en ? "All categories" : "Toutes les catégories"}
                     </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground">
-                  {filteredProducts.length}
-                </span>{" "}
-                référence(s) affichée(s)
-              </p>
-              {(search || category !== "all" || customizationFilter !== "all") && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearFilters}
-                  className="h-8 text-xs"
-                >
-                  Effacer les filtres
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <CardContent className="p-4 sm:p-5">
-            {isLoading ? (
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="h-64 animate-pulse rounded-xl border border-border bg-muted/30"
-                  />
-                ))}
-              </div>
-            ) : isError ? (
-              <EmptyState
-                title="Catalogue indisponible"
-                description="Impossible de charger les références fournisseur. Réessayez ou ouvrez le catalogue fournisseur."
-                action={
-                  <Button
-                    onClick={() => navigate("/dashboard/produits-fournisseurs")}
-                    className="bg-[#172B4D] text-white hover:bg-[#223D66]"
+                    {categories.map((value) => (
+                      <option key={value} value={value}>
+                        {value}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    aria-label={
+                      en ? "Customization type" : "Type de personnalisation"
+                    }
+                    value={scope}
+                    onChange={(event) => setScope(event.target.value as Scope)}
+                    className="h-10 rounded-md border border-input bg-background px-3 text-sm"
                   >
-                    Ouvrir le catalogue
-                  </Button>
-                }
-              />
-            ) : filteredProducts.length === 0 ? (
-              <EmptyState
-                title={
-                  view === "mine"
-                    ? "Aucun produit dans cette vue"
-                    : "Aucune référence trouvée"
-                }
-                description={
-                  view === "mine"
-                    ? "Ajoutez d’abord une référence depuis le catalogue fournisseur pour la retrouver ici."
-                    : "Modifiez votre recherche ou retirez certains filtres."
-                }
-                action={
-                  <Button variant="outline" onClick={clearFilters}>
-                    Réinitialiser les filtres
-                  </Button>
-                }
-              />
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {filteredProducts.map((product) => {
-                  const isMine = mySupplierProductIds.has(product.id);
-
-                  return (
-                    <article
-                      key={product.id}
-                      className="group flex min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-[#D0AD62]/60"
+                    <option value="all">
+                      {en ? "All possibilities" : "Toutes les possibilités"}
+                    </option>
+                    <option value="product">
+                      {en ? "Product" : "Produit"}
+                    </option>
+                    <option value="packaging">
+                      {translateUi("Packaging")}
+                    </option>
+                    <option value="branding">{translateUi("Branding")}</option>
+                  </select>
+                </div>
+                {catalogue.isLoading ? (
+                  <div
+                    role="status"
+                    className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+                  >
+                    {[1, 2, 3].map((value) => (
+                      <div
+                        key={value}
+                        className="h-60 animate-pulse rounded-xl bg-muted"
+                      />
+                    ))}
+                  </div>
+                ) : !catalogue.isError && !available.length ? (
+                  <div className="rounded-xl border border-dashed p-8 text-center">
+                    <Package className="mx-auto h-8 w-8 text-muted-foreground" />
+                    <p className="mt-3 text-sm text-muted-foreground">
+                      {en
+                        ? "No references match these filters."
+                        : "Aucune référence ne correspond à ces filtres."}
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-4"
+                      onClick={clear}
                     >
-                      <div className="relative aspect-[16/9] overflow-hidden bg-muted/40">
-                        {product.image_url ? (
-                          <img
-                            src={product.image_url}
-                            alt={product.name}
-                            loading="lazy"
-                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                          />
-                        ) : (
-                          <div className="flex h-full items-center justify-center">
-                            <Package className="h-10 w-10 text-muted-foreground/40" />
-                          </div>
-                        )}
-
-                        <div className="absolute left-3 top-3 flex flex-wrap gap-2">
-                          <Badge
-                            variant="secondary"
-                            className="border border-border/70 bg-background/95 text-foreground"
-                          >
-                            {product.category || "Sans catégorie"}
-                          </Badge>
-                        </div>
-
-                        {isMine && (
-                          <Badge className="absolute right-3 top-3 border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-50">
-                            Déjà dans ma boutique
-                          </Badge>
-                        )}
-                      </div>
-
-                      <div className="flex flex-1 flex-col p-4">
-                        <div className="flex-1">
-                          <h3 className="line-clamp-2 text-sm font-semibold leading-5 text-foreground">
-                            {product.name}
-                          </h3>
-                          <p className="mt-2 line-clamp-3 text-xs leading-5 text-muted-foreground">
-                            {product.description ||
-                              "Aucune description fournisseur disponible."}
-                          </p>
-
-                          <div className="mt-4 grid grid-cols-2 gap-2">
-                            <div className="rounded-lg bg-muted/40 p-3">
-                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                                Prix fournisseur
-                              </p>
-                              <p className="mt-1 text-sm font-semibold text-foreground">
-                                {Number(product.base_price ?? 0).toFixed(2)} €
-                              </p>
-                            </div>
-                            <div className="rounded-lg bg-muted/40 p-3">
-                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                                MOQ
-                              </p>
-                              <p className="mt-1 text-sm font-semibold text-foreground">
-                                {product.moq ?? "Non renseigné"}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="mt-3 flex items-start gap-2 rounded-lg border border-amber-200/80 bg-amber-50/60 p-3">
-                            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
-                            <div>
-                              <p className="text-xs font-medium text-amber-900">
-                                Capacités à confirmer
-                              </p>
-                              <p className="mt-1 text-[11px] leading-4 text-amber-800">
-                                Les possibilités de marquage et de packaging
-                                ne sont pas encore qualifiées dans les données
-                                du catalogue.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="mt-4 grid grid-cols-2 gap-2">
-                          <Button
-                            variant="outline"
-                            className="min-w-0"
-                            onClick={() =>
-                              navigate("/dashboard/produits-fournisseurs")
-                            }
-                          >
-                            <Package className="mr-2 h-4 w-4 shrink-0" />
-                            <span className="truncate">Voir la référence</span>
-                          </Button>
-                          <Button
-                            disabled
-                            className="min-w-0 bg-[#172B4D] text-white"
-                            title="Disponible après qualification des capacités fournisseur"
-                          >
-                            <Sparkles className="mr-2 h-4 w-4 shrink-0" />
-                            <span className="truncate">Configurer</span>
-                          </Button>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <section className={selectedProduct ? "hidden" : "grid gap-4 lg:grid-cols-2"}>
-          <div className="rounded-xl border border-border bg-card p-5">
-            <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#172B4D]/[0.07] text-[#172B4D]">
-                <Tags className="h-4 w-4" />
-              </div>
-              <div>
-                <h2 className="text-sm font-semibold text-foreground">
-                  Périmètre de personnalisation
-                </h2>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                  Les familles à qualifier comprennent le produit lui-même,
-                  le packaging et le branding. Elles ne constituent pas une
-                  liste d’options garanties pour chaque référence.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              {customizationFilters.slice(1).map((item) => {
-                const Icon = item.icon;
-                return (
-                  <div
-                    key={item.value}
-                    className="flex items-start gap-3 rounded-lg border border-border/80 p-3"
-                  >
-                    <Icon className="mt-0.5 h-4 w-4 shrink-0 text-[#A17B32]" />
-                    <div>
-                      <p className="text-xs font-medium text-foreground">
-                        {item.label}
-                      </p>
-                      <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
-                        {item.description}
-                      </p>
-                    </div>
+                      {en ? "Reset filters" : "Réinitialiser les filtres"}
+                    </Button>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-[#172B4D]/15 bg-[#172B4D]/[0.035] p-5">
-            <div className="flex items-start gap-3">
-              <ShieldCheckIcon />
-              <div>
-                <h2 className="text-sm font-semibold text-foreground">
-                  Parcours de validation BIB
-                </h2>
-                <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                  La personnalisation ne pourra être activée qu’après
-                  qualification des capacités fournisseur, confirmation des
-                  coûts, délais et MOQ applicables, puis validation de
-                  l’échantillon lorsque celui-ci est requis.
-                </p>
-              </div>
-            </div>
-
-            <ol className="mt-5 space-y-3">
-              {[
-                ["01", "Qualification fournisseur", "Options, contraintes, coûts et délais"],
-                ["02", "Configuration", "Logo, matière, dimensions et packaging autorisés"],
-                ["03", "Échantillon", "Demande, réception et contrôle physique si requis"],
-                ["04", "Validation", "Acceptation ou demande de modifications avant activation"],
-              ].map(([number, title, description]) => (
-                <li key={number} className="flex items-start gap-3">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-[#D0AD62]/40 bg-[#D0AD62]/10 text-[10px] font-semibold text-[#8B692B]">
-                    {number}
-                  </span>
-                  <div>
-                    <p className="text-xs font-semibold text-foreground">
-                      {title}
-                    </p>
-                    <p className="mt-0.5 text-xs leading-4 text-muted-foreground">
-                      {description}
-                    </p>
+                ) : (
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    {available.map((product) => {
+                      const meta = readCatalogCustomization(product),
+                        ready =
+                          meta.valid && hasCustomization(meta.capabilities);
+                      return (
+                        <article
+                          key={product.id}
+                          className="flex min-w-0 flex-col overflow-hidden rounded-xl border bg-card"
+                        >
+                          <div className="aspect-[16/10] bg-muted/40">
+                            {product.image_url ? (
+                              <img
+                                src={product.image_url}
+                                alt={product.name}
+                                className="h-full w-full object-contain"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="flex h-full items-center justify-center">
+                                <Package className="h-10 w-10 text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-1 flex-col gap-3 p-4">
+                            <p className="text-xs text-muted-foreground">
+                              {product.category}
+                            </p>
+                            <h3 className="font-semibold">{product.name}</h3>
+                            <p className="line-clamp-3 text-sm text-muted-foreground">
+                              {product.description ||
+                                (en
+                                  ? "No supplier description available."
+                                  : "Aucune description fournisseur disponible.")}
+                            </p>
+                            <Badge
+                              variant="outline"
+                              className={
+                                ready
+                                  ? "w-fit border-success/30 bg-success/10 text-success-ink"
+                                  : "w-fit border-warning/30 bg-warning/10 text-warning-ink"
+                              }
+                            >
+                              {ready
+                                ? en
+                                  ? "Qualified options"
+                                  : "Options qualifiées"
+                                : en
+                                  ? "Awaiting qualification"
+                                  : "Qualification en attente"}
+                            </Badge>
+                            <p className="text-xs text-muted-foreground">
+                              {en ? "MOQ: " : "MOQ : "}
+                              {meta.terms.moq ??
+                                product.moq ??
+                                (en ? "To confirm" : "À confirmer")}
+                            </p>
+                            <div className="mt-auto grid gap-2 pt-2">
+                              <Button
+                                disabled={!ready || merchantProducts.isError}
+                                onClick={() => open(product.id)}
+                              >
+                                <Sparkles className="mr-2 h-4 w-4" />
+                                {en ? "Configure" : "Configurer"}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                onClick={() =>
+                                  navigate(
+                                    "/dashboard/produits-fournisseurs?reference=" +
+                                      encodeURIComponent(product.id),
+                                  )
+                                }
+                              >
+                                {en ? "View reference" : "Voir la référence"}
+                              </Button>
+                            </div>
+                          </div>
+                        </article>
+                      );
+                    })}
                   </div>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
+                )}
+              </CardContent>
+            </Card>
+            <p className="flex items-start gap-2 text-sm leading-6 text-muted-foreground">
+              <AlertCircle className="mt-1 h-4 w-4 shrink-0" />
+              {en
+                ? "Missing capabilities, prices or lead times are left unconfirmed. BIB approval and a validated physical sample are required before production."
+                : "Les capacités, prix ou délais absents restent à confirmer. L’accord BIB et un échantillon physique validé sont nécessaires avant production."}
+            </p>
+          </>
+        )}
+        {addProduct && (
+          <AddToBoutiqueDialog
+            product={addProduct}
+            open
+            onOpenChange={(open) => {
+              if (!open) {
+                setAddProduct(null);
+                void cache.invalidateQueries({ queryKey: ["products"] });
+              }
+            }}
+          />
+        )}
       </div>
     </DashboardLayout>
-  );
-}
-
-function MetricCard({
-  icon,
-  label,
-  value,
-  note,
-  accent,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string | number;
-  note?: string;
-  accent?: "gold";
-}) {
-  return (
-    <Card className="border-border shadow-sm">
-      <CardContent className="flex h-full items-start gap-3 p-4">
-        <div
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-            accent === "gold"
-              ? "bg-[#D0AD62]/15 text-[#9A742E]"
-              : "bg-[#172B4D]/[0.07] text-[#172B4D]"
-          }`}
-        >
-          {icon}
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs leading-5 text-muted-foreground">{label}</p>
-          <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
-            {value}
-          </p>
-          {note && (
-            <p className="mt-1 text-[10px] leading-4 text-muted-foreground">
-              {note}
-            </p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function EmptyState({
-  title,
-  description,
-  action,
-}: {
-  title: string;
-  description: string;
-  action?: React.ReactNode;
-}) {
-  return (
-    <div className="flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed border-border px-5 py-10 text-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-        <Search className="h-5 w-5" />
-      </div>
-      <h3 className="mt-4 text-sm font-semibold text-foreground">{title}</h3>
-      <p className="mt-2 max-w-md text-xs leading-5 text-muted-foreground">
-        {description}
-      </p>
-      {action && <div className="mt-4">{action}</div>}
-    </div>
-  );
-}
-
-function ShieldCheckIcon() {
-  return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#D0AD62]/15 text-[#9A742E]">
-      <CheckCircle2 className="h-4 w-4" />
-    </div>
   );
 }

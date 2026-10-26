@@ -1,3 +1,4 @@
+import { translateUi } from "@/lib/uiTranslation";
 import { Link } from "react-router-dom";
 import {
   Twitter,
@@ -20,13 +21,12 @@ const Footer = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-16 lg:py-20">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.5fr_repeat(4,1fr)] lg:gap-10">
-
             {/* Brand */}
             <div className="max-w-sm">
               <Link
                 to="/"
                 className="inline-flex items-center"
-                aria-label="BIB — Accueil"
+                aria-label={translateUi("BIB — Accueil")}
               >
                 <Logo variant="full" onLight={false} />
               </Link>
@@ -71,7 +71,7 @@ const Footer = () => {
             {/* Découvrir */}
             <div>
               <h4 className="mb-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-foreground/45">
-                Découvrir
+                {translateUi("Découvrir")}
               </h4>
 
               <ul className="space-y-3.5">
@@ -80,7 +80,7 @@ const Footer = () => {
                     to="/store"
                     className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
                   >
-                    Boutiques
+                    {translateUi("Boutiques")}
                   </Link>
                 </li>
 
@@ -89,7 +89,7 @@ const Footer = () => {
                     to="/suivi-commande"
                     className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
                   >
-                    Suivre une commande
+                    {translateUi("Suivre une commande")}
                   </Link>
                 </li>
               </ul>
@@ -98,7 +98,7 @@ const Footer = () => {
             {/* Marques */}
             <div>
               <h4 className="mb-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-foreground/45">
-                Pour les marques
+                {translateUi("Pour les marques")}
               </h4>
 
               <ul className="space-y-3.5">
@@ -107,7 +107,7 @@ const Footer = () => {
                     to="/signup"
                     className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
                   >
-                    Créer ma boutique
+                    {translateUi("Créer ma boutique")}
                   </Link>
                 </li>
 
@@ -116,7 +116,7 @@ const Footer = () => {
                     to="/tarifs"
                     className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
                   >
-                    Tarifs
+                    {translateUi("Tarifs")}
                   </Link>
                 </li>
 
@@ -125,7 +125,7 @@ const Footer = () => {
                     to="/a-propos"
                     className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
                   >
-                    À propos de BIB
+                    {translateUi("À propos de BIB")}
                   </Link>
                 </li>
 
@@ -143,7 +143,7 @@ const Footer = () => {
                     to="/carrieres"
                     className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
                   >
-                    Carrières
+                    {translateUi("Carrières")}
                   </Link>
                 </li>
               </ul>
@@ -152,7 +152,7 @@ const Footer = () => {
             {/* Réseau BIB */}
             <div>
               <h4 className="mb-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-foreground/45">
-                Réseau BIB
+                {translateUi("Réseau BIB")}
               </h4>
 
               <ul className="space-y-3.5">
@@ -161,7 +161,7 @@ const Footer = () => {
                     to="/suppliers"
                     className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
                   >
-                    Fournisseurs
+                    {translateUi("Fournisseurs")}
                   </Link>
                 </li>
 
@@ -170,7 +170,7 @@ const Footer = () => {
                     to="/ops"
                     className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
                   >
-                    Logistique
+                    {translateUi("Logistique")}
                   </Link>
                 </li>
               </ul>
@@ -179,7 +179,7 @@ const Footer = () => {
             {/* Aide & légal */}
             <div>
               <h4 className="mb-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-foreground/45">
-                Aide & légal
+                {translateUi("Aide & légal")}
               </h4>
 
               <ul className="space-y-3.5">
@@ -188,7 +188,7 @@ const Footer = () => {
                     to="/centre-aide"
                     className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
                   >
-                    Centre d'aide
+                    {translateUi("Centre d'aide")}
                   </Link>
                 </li>
 
@@ -197,7 +197,7 @@ const Footer = () => {
                     to="/pack-legal"
                     className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
                   >
-                    Pack légal
+                    {translateUi("Pack légal")}
                   </Link>
                 </li>
 
@@ -206,7 +206,7 @@ const Footer = () => {
                     to="/mentions-legales"
                     className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
                   >
-                    Mentions légales
+                    {translateUi("Mentions légales")}
                   </Link>
                 </li>
 
@@ -215,7 +215,7 @@ const Footer = () => {
                     to="/confidentialite"
                     className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
                   >
-                    Confidentialité
+                    {translateUi("Confidentialité")}
                   </Link>
                 </li>
 
@@ -266,7 +266,7 @@ const Footer = () => {
 
               <div className="inline-flex items-center gap-2">
                 <MapPin size={15} />
-                <span>EU · UAE · Africa</span>
+                <span>{translateUi("EU · UAE · Africa")}</span>
               </div>
             </div>
 
@@ -279,7 +279,7 @@ const Footer = () => {
                 to="/a-propos"
                 className="inline-flex items-center gap-1 transition-colors hover:text-primary-foreground/80"
               >
-                À propos de BIB
+                {translateUi("À propos de BIB")}
                 <ArrowUpRight size={12} />
               </Link>
             </div>

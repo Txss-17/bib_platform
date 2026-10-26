@@ -39,7 +39,7 @@ export function SectionCard({
         <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 pb-3">
           <div className="flex items-start gap-3 min-w-0">
             {icon && (
-              <div className="w-9 h-9 rounded-xl bg-secondary/15 text-secondary flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                 {icon}
               </div>
             )}
@@ -56,7 +56,9 @@ export function SectionCard({
               )}
             </div>
           </div>
-          {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+          {actions && (
+            <div className="flex items-center gap-2 shrink-0">{actions}</div>
+          )}
         </CardHeader>
       )}
       <CardContent className={cn(flush ? "p-0" : "pt-2", contentClassName)}>

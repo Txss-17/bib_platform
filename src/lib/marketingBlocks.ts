@@ -1,3 +1,4 @@
+import { translateUi } from "@/lib/uiTranslation";
 /**
  * Marketing campaign blocks — typed schema + HTML renderer.
  *
@@ -15,35 +16,102 @@ export type MarketingBlock =
       id: string;
       type: "product_grid";
       product_ids: string[];
-      products?: { id: string; name: string; image_url: string | null; price: number; href: string }[];
+      products?: {
+        id: string;
+        name: string;
+        image_url: string | null;
+        price: number;
+        href: string;
+      }[];
     }
   | { id: string; type: "divider" }
   | { id: string; type: "spacer"; size: "sm" | "md" | "lg" };
 
-export const BLOCK_LIBRARY: { type: MarketingBlock["type"]; label: string; icon: string }[] = [
-  { type: "heading", label: "Titre", icon: "Heading1" },
-  { type: "text", label: "Paragraphe", icon: "Text" },
+export const BLOCK_LIBRARY: {
+  type: MarketingBlock["type"];
+  label: string;
+  icon: string;
+}[] = [
+  {
+    type: "heading",
+    get label() {
+      return translateUi("Titre");
+    },
+    icon: "Heading1",
+  },
+  {
+    type: "text",
+    get label() {
+      return translateUi("Paragraphe");
+    },
+    icon: "Text",
+  },
   { type: "image", label: "Image", icon: "Image" },
-  { type: "button", label: "Bouton d'action", icon: "MousePointerClick" },
-  { type: "promo_code", label: "Code promo", icon: "Tag" },
-  { type: "product_grid", label: "Produits", icon: "Package" },
-  { type: "divider", label: "Séparateur", icon: "Minus" },
-  { type: "spacer", label: "Espace vide", icon: "Space" },
+  {
+    type: "button",
+    get label() {
+      return translateUi("Bouton d'action");
+    },
+    icon: "MousePointerClick",
+  },
+  {
+    type: "promo_code",
+    get label() {
+      return translateUi("Code promo");
+    },
+    icon: "Tag",
+  },
+  {
+    type: "product_grid",
+    get label() {
+      return translateUi("Produits");
+    },
+    icon: "Package",
+  },
+  {
+    type: "divider",
+    get label() {
+      return translateUi("Séparateur");
+    },
+    icon: "Minus",
+  },
+  {
+    type: "spacer",
+    get label() {
+      return translateUi("Espace vide");
+    },
+    icon: "Space",
+  },
 ];
 
 export function newBlock(type: MarketingBlock["type"]): MarketingBlock {
-  const id = (typeof crypto !== "undefined" && "randomUUID" in crypto)
-    ? crypto.randomUUID()
-    : Math.random().toString(36).slice(2);
+  const id =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : Math.random().toString(36).slice(2);
   switch (type) {
-    case "heading": return { id, type, text: "Votre titre ici", level: 2 };
-    case "text": return { id, type, text: "Écrivez votre message ici. Vous pouvez parler de vos nouveautés, d'une promotion ou simplement remercier vos clients." };
-    case "image": return { id, type, url: "", alt: "" };
-    case "button": return { id, type, label: "Découvrir", href: "" };
-    case "promo_code": return { id, type, label: "Votre code" };
-    case "product_grid": return { id, type, product_ids: [] };
-    case "divider": return { id, type };
-    case "spacer": return { id, type, size: "md" };
+    case "heading":
+      return { id, type, text: translateUi("Votre titre ici"), level: 2 };
+    case "text":
+      return {
+        id,
+        type,
+        text: translateUi(
+          "Écrivez votre message ici. Vous pouvez parler de vos nouveautés, d'une promotion ou simplement remercier vos clients.",
+        ),
+      };
+    case "image":
+      return { id, type, url: "", alt: "" };
+    case "button":
+      return { id, type, label: translateUi("Découvrir"), href: "" };
+    case "promo_code":
+      return { id, type, label: translateUi("Votre code") };
+    case "product_grid":
+      return { id, type, product_ids: [] };
+    case "divider":
+      return { id, type };
+    case "spacer":
+      return { id, type, size: "md" };
   }
 }
 
@@ -53,7 +121,13 @@ export function applyVars(html: string, vars: Record<string, string>): string {
 }
 
 const escapeHtml = (s: string) =>
-  s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+  s.replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ]!,
+  );
 
 // Marine + or palette (must match brand tokens but inlined for email clients)
 const COLORS = {
@@ -79,9 +153,13 @@ export function renderBlocksToHtml(
     ? `<p style="margin:24px 0 0;font-style:italic;color:${COLORS.muted}">${escapeHtml(opts.signature)}</p>`
     : "";
   const footerLinks = opts.footerLinks
-    ? Object.entries(opts.footerLinks).filter(([, v]) => v).map(([k, v]) =>
-        `<a href="${escapeHtml(v)}" style="color:${COLORS.gold};text-decoration:none;margin:0 8px">${escapeHtml(k)}</a>`,
-      ).join(" · ")
+    ? Object.entries(opts.footerLinks)
+        .filter(([, v]) => v)
+        .map(
+          ([k, v]) =>
+            `<a href="${escapeHtml(v)}" style="color:${COLORS.gold};text-decoration:none;margin:0 8px">${escapeHtml(k)}</a>`,
+        )
+        .join(" · ")
     : "";
 
   return `<!doctype html><html><body style="margin:0;padding:0;background:${COLORS.ivory};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:${COLORS.text};line-height:1.55">
@@ -111,7 +189,9 @@ function renderBlock(b: MarketingBlock): string {
     case "image": {
       if (!b.url) return "";
       const img = `<img src="${escapeHtml(b.url)}" alt="${escapeHtml(b.alt || "")}" style="display:block;width:100%;max-width:100%;height:auto;border-radius:8px;margin:8px 0"/>`;
-      return b.href ? `<a href="${escapeHtml(b.href)}" style="text-decoration:none">${img}</a>` : img;
+      return b.href
+        ? `<a href="${escapeHtml(b.href)}" style="text-decoration:none">${img}</a>`
+        : img;
     }
     case "button":
       if (!b.label || !b.href) return "";
@@ -126,28 +206,38 @@ function renderBlock(b: MarketingBlock): string {
       if (!items.length) {
         return `<div style="padding:16px;border:1px dashed ${COLORS.border};border-radius:8px;color:${COLORS.muted};text-align:center;font-size:13px">Sélectionnez des produits dans l'éditeur.</div>`;
       }
-      const cells = items.map((p) => `
+      const cells = items
+        .map(
+          (p) => `
         <td valign="top" width="50%" style="padding:8px">
           <a href="${escapeHtml(p.href)}" style="text-decoration:none;color:${COLORS.text}">
             ${p.image_url ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" style="display:block;width:100%;border-radius:6px;margin-bottom:6px"/>` : ""}
             <div style="font-size:13px;font-weight:600">${escapeHtml(p.name)}</div>
             <div style="font-size:13px;color:${COLORS.gold};margin-top:2px">${Number(p.price).toFixed(2)} €</div>
           </a>
-        </td>`).join("");
+        </td>`,
+        )
+        .join("");
       // 2 columns
       const rows: string[] = [];
       for (let i = 0; i < items.length; i += 2) {
-        rows.push(`<tr>${cells.slice(i, i + 2)}${i + 1 >= items.length ? '<td width="50%"></td>' : ""}</tr>`);
+        rows.push(
+          `<tr>${cells.slice(i, i + 2)}${i + 1 >= items.length ? '<td width="50%"></td>' : ""}</tr>`,
+        );
       }
-      return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:16px 0">${items.reduce((acc, p, i) => {
-        if (i % 2 === 0) acc += "<tr>";
-        acc += `<td valign="top" width="50%" style="padding:8px"><a href="${escapeHtml(p.href)}" style="text-decoration:none;color:${COLORS.text}">${p.image_url ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" style="display:block;width:100%;border-radius:6px;margin-bottom:6px"/>` : ""}<div style="font-size:13px;font-weight:600">${escapeHtml(p.name)}</div><div style="font-size:13px;color:${COLORS.gold};margin-top:2px">${Number(p.price).toFixed(2)} €</div></a></td>`;
-        if (i % 2 === 1 || i === items.length - 1) {
-          if (i === items.length - 1 && i % 2 === 0) acc += '<td width="50%"></td>';
-          acc += "</tr>";
-        }
-        return acc;
-      }, "")}</table>`;
+      return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:16px 0">${items.reduce(
+        (acc, p, i) => {
+          if (i % 2 === 0) acc += "<tr>";
+          acc += `<td valign="top" width="50%" style="padding:8px"><a href="${escapeHtml(p.href)}" style="text-decoration:none;color:${COLORS.text}">${p.image_url ? `<img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" style="display:block;width:100%;border-radius:6px;margin-bottom:6px"/>` : ""}<div style="font-size:13px;font-weight:600">${escapeHtml(p.name)}</div><div style="font-size:13px;color:${COLORS.gold};margin-top:2px">${Number(p.price).toFixed(2)} €</div></a></td>`;
+          if (i % 2 === 1 || i === items.length - 1) {
+            if (i === items.length - 1 && i % 2 === 0)
+              acc += '<td width="50%"></td>';
+            acc += "</tr>";
+          }
+          return acc;
+        },
+        "",
+      )}</table>`;
     }
     case "divider":
       return `<hr style="border:none;border-top:1px solid ${COLORS.border};margin:24px 0"/>`;

@@ -1,7 +1,14 @@
-import React from 'react';
-import { useGenerateBrandDNA } from '../../hooks/useGenerateBrandDNA';
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
+import React from "react";
+import type { StudioAnswers } from "@/hooks/useBrandStudio";
+import { useGenerateBrandDNA } from "../../hooks/useGenerateBrandDNA";
 
-export const StudioFinalStep: React.FC<{ boutiqueId: string; answers: StudioAnswers }> = ({ boutiqueId, answers }) => {
+export const StudioFinalStep: React.FC<{
+  boutiqueId: string;
+  answers: StudioAnswers;
+}> = ({ boutiqueId, answers }) => {
+  useLanguage();
   const { generate, isGenerating, error } = useGenerateBrandDNA();
 
   const handleConfirmAndGenerate = async () => {
@@ -14,18 +21,24 @@ export const StudioFinalStep: React.FC<{ boutiqueId: string; answers: StudioAnsw
 
   return (
     <div>
-      <h3>Tout est prêt !</h3>
-      <p>Nous allons générer l'identité visuelle et le ton de votre marque basé sur vos réponses.</p>
-      
-      <button 
+      <h3>{translateUi("Tout est prêt !")}</h3>
+      <p>
+        {translateUi(
+          "Nous allons générer l'identité visuelle et le ton de votre marque basé sur vos réponses.",
+        )}
+      </p>
+
+      <button
         onClick={handleConfirmAndGenerate}
         disabled={isGenerating}
-        className="bg-indigo-600 text-white px-6 py-3 rounded-md disabled:opacity-50"
+        className="bg-primary text-primary-foreground px-6 py-3 rounded-md disabled:opacity-50"
       >
-        {isGenerating ? "✨ L'IA crée votre marque..." : "Générer mon ADN de marque"}
+        {isGenerating
+          ? translateUi("✨ L'IA crée votre marque...")
+          : translateUi("Générer mon ADN de marque")}
       </button>
 
-      {error && <p className="text-red-500 mt-2">{error}</p>}
+      {error && <p className="text-destructive-ink mt-2">{error}</p>}
     </div>
   );
 };

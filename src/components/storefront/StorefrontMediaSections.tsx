@@ -1,3 +1,4 @@
+import { translateUi } from "@/lib/uiTranslation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
 
@@ -11,11 +12,16 @@ function hex(c?: string, fb = "#0F172A") {
 
 function colsClass(cols?: number) {
   switch (cols) {
-    case 1: return "grid-cols-1";
-    case 2: return "grid-cols-1 sm:grid-cols-2";
-    case 3: return "grid-cols-2 md:grid-cols-3";
-    case 4: return "grid-cols-2 md:grid-cols-4";
-    default: return "grid-cols-2 md:grid-cols-3";
+    case 1:
+      return "grid-cols-1";
+    case 2:
+      return "grid-cols-1 sm:grid-cols-2";
+    case 3:
+      return "grid-cols-2 md:grid-cols-3";
+    case 4:
+      return "grid-cols-2 md:grid-cols-4";
+    default:
+      return "grid-cols-2 md:grid-cols-3";
   }
 }
 
@@ -24,9 +30,9 @@ function colsClass(cols?: number) {
 /* -------------------------------------------------------------------------- */
 
 export function StorefrontBannerCTA({
-  title = "Prêt à découvrir notre nouvelle collection ?",
+  title = translateUi("Prêt à découvrir notre nouvelle collection ?"),
   subtitle,
-  ctaLabel = "Voir les produits",
+  ctaLabel = translateUi("Voir les produits"),
   ctaHref = "#products",
   align = "left",
   primaryColor,
@@ -43,7 +49,11 @@ export function StorefrontBannerCTA({
   const bg = hex(primaryColor);
   const accent = hex(secondaryColor, "#C9A24C");
   const textAlign =
-    align === "center" ? "items-center text-center" : align === "right" ? "items-end text-right" : "items-start text-left";
+    align === "center"
+      ? "items-center text-center"
+      : align === "right"
+        ? "items-end text-right"
+        : "items-start text-left";
 
   return (
     <section className="w-full px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
@@ -57,7 +67,9 @@ export function StorefrontBannerCTA({
               {title}
             </h3>
             {subtitle && (
-              <p className="text-sm sm:text-base opacity-85 max-w-2xl">{subtitle}</p>
+              <p className="text-sm sm:text-base opacity-85 max-w-2xl">
+                {subtitle}
+              </p>
             )}
           </div>
           <a
@@ -81,9 +93,18 @@ export function StorefrontBannerCTA({
 type GalleryImage = { url: string; alt?: string; caption?: string };
 
 const DEFAULT_IMAGES: GalleryImage[] = [
-  { url: "https://images.unsplash.com/photo-1503602642458-232111445657?w=800&q=80", alt: "Look 1" },
-  { url: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80", alt: "Look 2" },
-  { url: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80", alt: "Look 3" },
+  {
+    url: "https://images.unsplash.com/photo-1503602642458-232111445657?w=800&q=80",
+    alt: "Look 1",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80",
+    alt: "Look 2",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80",
+    alt: "Look 3",
+  },
 ];
 
 function useReveal<T extends HTMLElement>() {
@@ -94,7 +115,7 @@ function useReveal<T extends HTMLElement>() {
     if (!el) return;
     const io = new IntersectionObserver(
       ([e]) => e.isIntersecting && setVisible(true),
-      { threshold: 0.15 }
+      { threshold: 0.15 },
     );
     io.observe(el);
     return () => io.disconnect();
@@ -117,12 +138,12 @@ function GalleryTile({
     effect === "slide-up"
       ? "opacity-0 translate-y-8"
       : effect === "zoom"
-      ? "opacity-0 scale-95"
-      : effect === "tilt"
-      ? "opacity-0 -rotate-2 translate-y-4"
-      : effect === "fade"
-      ? "opacity-0"
-      : "";
+        ? "opacity-0 scale-95"
+        : effect === "tilt"
+          ? "opacity-0 -rotate-2 translate-y-4"
+          : effect === "fade"
+            ? "opacity-0"
+            : "";
   const shown = "opacity-100 translate-y-0 scale-100 rotate-0";
   return (
     <div
@@ -144,7 +165,10 @@ export function StorefrontImageGallery({
   columns?: 1 | 2 | 3 | 4;
   effect?: "fade" | "slide-up" | "zoom" | "tilt" | "none";
 }) {
-  const items = (images && images.length > 0 ? images : DEFAULT_IMAGES).slice(0, 5);
+  const items = (images && images.length > 0 ? images : DEFAULT_IMAGES).slice(
+    0,
+    5,
+  );
 
   return (
     <section className="w-full px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
@@ -204,10 +228,15 @@ function VideoTile({
   }, [visible]);
 
   const hidden =
-    effect === "slide-up" ? "opacity-0 translate-y-8"
-      : effect === "zoom" ? "opacity-0 scale-95"
-      : effect === "tilt" ? "opacity-0 -rotate-2 translate-y-4"
-      : effect === "fade" ? "opacity-0" : "";
+    effect === "slide-up"
+      ? "opacity-0 translate-y-8"
+      : effect === "zoom"
+        ? "opacity-0 scale-95"
+        : effect === "tilt"
+          ? "opacity-0 -rotate-2 translate-y-4"
+          : effect === "fade"
+            ? "opacity-0"
+            : "";
   const shown = "opacity-100 translate-y-0 scale-100 rotate-0";
 
   return (
@@ -241,7 +270,10 @@ export function StorefrontVideoGallery({
   columns?: 1 | 2 | 3 | 4;
   effect?: "fade" | "slide-up" | "zoom" | "tilt" | "none";
 }) {
-  const items = (videos && videos.length > 0 ? videos : DEFAULT_VIDEOS).slice(0, 5);
+  const items = (videos && videos.length > 0 ? videos : DEFAULT_VIDEOS).slice(
+    0,
+    5,
+  );
 
   return (
     <section className="w-full px-4 sm:px-6 lg:px-8 py-12 sm:py-16">

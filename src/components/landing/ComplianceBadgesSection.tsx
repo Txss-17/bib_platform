@@ -1,4 +1,11 @@
-import { ShieldCheck, FileCheck, Lock, BadgeCheck, Scale, Users } from "lucide-react";
+import {
+  ShieldCheck,
+  FileCheck,
+  Lock,
+  BadgeCheck,
+  Scale,
+  Users,
+} from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 /**
@@ -63,7 +70,7 @@ export default function ComplianceBadgesSection() {
   return (
     <section
       id="compliance"
-      className="py-20 lg:py-28 bg-bib-marine text-primary-foreground relative overflow-hidden"
+      className="py-20 lg:py-28 bg-brand-marine text-primary-foreground relative overflow-hidden"
     >
       {/* discreet gold ring decor — never blended */}
       <div
@@ -109,7 +116,11 @@ export default function ComplianceBadgesSection() {
             >
               <div className="flex items-start gap-4">
                 <div className="shrink-0 w-11 h-11 rounded-xl bg-bib-gold/15 flex items-center justify-center group-hover:bg-bib-gold/25 transition-colors">
-                  <b.icon size={20} className="text-bib-gold" strokeWidth={2.25} />
+                  <b.icon
+                    size={20}
+                    className="text-bib-gold"
+                    strokeWidth={2.25}
+                  />
                 </div>
                 <div className="min-w-0">
                   <p className="font-display font-semibold text-primary-foreground leading-snug">
@@ -128,7 +139,9 @@ export default function ComplianceBadgesSection() {
         <div className="mt-10 lg:mt-12 flex flex-col sm:flex-row gap-3 sm:gap-6 sm:items-center sm:justify-between rounded-2xl border border-bib-gold/25 bg-bib-gold/[0.06] px-5 py-4">
           <p className="text-sm text-primary-foreground/85">
             <span className="font-semibold text-bib-gold">
-              {lang === "fr" ? "Verified by Brand-In-A-Box" : "Verified by Brand-In-A-Box"}
+              {lang === "fr"
+                ? "Verified by Brand-In-A-Box"
+                : "Verified by Brand-In-A-Box"}
             </span>{" "}
             ·{" "}
             {lang === "fr"

@@ -1,34 +1,22 @@
-import React from 'react';
-import { SceneRecord } from '../../types'; // Assure-toi de définir tes types selon le classDiagram
+import { StudioSceneRenderer } from "@/components/storefront/StudioSceneRenderer";
+import type { SceneRecord } from "@/lib/studioScenes";
+import type { BrandDNA } from "@/hooks/useBrandStudio";
 
-// Importe tes composants de scènes ici
-import HeroCinemaScene from './HeroCinemaScene';
-import StoryScrollyScene from './StoryScrollyScene';
-import ShowcaseScene from './ShowcaseScene';
-import CtaScene from './CtaScene';
-
-interface SceneRendererProps {
+/** Compatibility entry point; all scenes use the maintained Studio renderer. */
+export function SceneRenderer({
+  scene,
+  brandDna,
+}: {
   scene: SceneRecord;
-  brandDna: BrandDNA; // Nécessaire pour appliquer la palette/typo générée
+  brandDna: BrandDNA;
+}) {
+  return (
+    <StudioSceneRenderer
+      scenes={[scene]}
+      brandDna={brandDna}
+      boutiqueName={brandDna.seed}
+      products={[]}
+      disableTracking
+    />
+  );
 }
-
-export const SceneRenderer: React.FC<SceneRendererProps> = ({ scene, brandDna }) => {
-  // On passe le brandDna à chaque scène pour qu'elle s'applique automatiquement
-  const commonProps = { brandDna, content: scene.content, variant: scene.variant };
-
-  switch (scene.role) {
-    case 'hero_cinema':
-      return <HeroCinemaScene {...commonProps} />;
-    case 'story_scrolly':
-      return <StoryScrollyScene {...commonProps} />;
-    case 'showcase':
-      return <ShowcaseScene {...commonProps} />;
-    case 'cta':
-      return <CtaScene {...commonProps} />;
-    default:
-      // Si le rôle est inconnu, on affiche un placeholder ou rien
-      console.warn(`Rôle de scène inconnu : ${scene.role}`);
-      return null;
-  }
-};
-

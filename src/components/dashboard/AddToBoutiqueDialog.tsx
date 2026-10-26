@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -19,12 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  AlertCircle,
-  CheckCircle2,
-  Package,
-  Store,
-} from "lucide-react";
+import { AlertCircle, CheckCircle2, Package, Store } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,35 +42,25 @@ export function AddToBoutiqueDialog({
   open,
   onOpenChange,
 }: AddToBoutiqueDialogProps) {
+  useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const {
-    data: boutiques = [],
-    isLoading: boutiquesLoading,
-  } = useBoutiques();
+  const { data: boutiques = [], isLoading: boutiquesLoading } = useBoutiques();
 
-  const {
-    data: existingProducts = [],
-    isLoading: productsLoading,
-  } = useProducts();
+  const { data: existingProducts = [], isLoading: productsLoading } =
+    useProducts();
 
-  const [selectedBoutiqueId, setSelectedBoutiqueId] =
-    useState<string>("");
+  const [selectedBoutiqueId, setSelectedBoutiqueId] = useState<string>("");
 
   const [margin, setMargin] = useState<number>(
     product.max_margin_percent > 0
-      ? Math.min(
-          30,
-          product.max_margin_percent,
-        )
+      ? Math.min(30, product.max_margin_percent)
       : 0,
   );
 
-  const [isSubmitting, setIsSubmitting] =
-    useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [success, setSuccess] =
-    useState(false);
+  const [success, setSuccess] = useState(false);
 
   /* ---------------------------------------------------------------------- */
   /* Reset dialog state                                                     */
@@ -84,10 +71,7 @@ export function AddToBoutiqueDialog({
       setSelectedBoutiqueId("");
       setMargin(
         product.max_margin_percent > 0
-          ? Math.min(
-              30,
-              product.max_margin_percent,
-            )
+          ? Math.min(30, product.max_margin_percent)
           : 0,
       );
       setSuccess(false);
@@ -103,8 +87,7 @@ export function AddToBoutiqueDialog({
     () =>
       boutiques.filter(
         (boutique) =>
-          boutique.status === "draft" ||
-          boutique.status === "published",
+          boutique.status === "draft" || boutique.status === "published",
       ),
     [boutiques],
   );
@@ -113,16 +96,14 @@ export function AddToBoutiqueDialog({
   /* Existing product detection                                            */
   /* ---------------------------------------------------------------------- */
   const existingProduct = useMemo(() => {
-    return existingProducts.find(
-      (existing) =>
-        existing.supplier_product_id === product.id &&
-        existing.boutique_id === selectedBoutiqueId,
-    ) ?? null;
-  }, [
-    existingProducts,
-    product.id,
-    selectedBoutiqueId,
-  ]);    
+    return (
+      existingProducts.find(
+        (existing) =>
+          existing.supplier_product_id === product.id &&
+          existing.boutique_id === selectedBoutiqueId,
+      ) ?? null
+    );
+  }, [existingProducts, product.id, selectedBoutiqueId]);
 
   const isProductAlreadyAdded = Boolean(existingProduct);
 
@@ -130,33 +111,18 @@ export function AddToBoutiqueDialog({
   /* Commercial calculations                                                */
   /* ---------------------------------------------------------------------- */
 
-  const basePrice = Number(
-    product.base_price ?? 0,
-  );
+  const basePrice = Number(product.base_price ?? 0);
 
-  const maxMargin = Number(
-    product.max_margin_percent ?? 0,
-  );
+  const maxMargin = Number(product.max_margin_percent ?? 0);
 
-  const safeMargin = Math.min(
-    Math.max(margin, 0),
-    maxMargin,
-  );
+  const safeMargin = Math.min(Math.max(margin, 0), maxMargin);
 
   const sellingPrice = useMemo(
-    () =>
-      Number(
-        (
-          basePrice *
-          (1 + safeMargin / 100)
-        ).toFixed(2),
-      ),
+    () => Number((basePrice * (1 + safeMargin / 100)).toFixed(2)),
     [basePrice, safeMargin],
   );
 
-  const estimatedProfit = Number(
-    (sellingPrice - basePrice).toFixed(2),
-  );
+  const estimatedProfit = Number((sellingPrice - basePrice).toFixed(2));
 
   /* ---------------------------------------------------------------------- */
   /* Add product                                                             */
@@ -165,9 +131,10 @@ export function AddToBoutiqueDialog({
   const handleAdd = async () => {
     if (!selectedBoutiqueId) {
       toast({
-        title: "Boutique requise",
-        description:
+        title: translateUi("Boutique requise"),
+        description: translateUi(
           "Sélectionnez une boutique avant de continuer.",
+        ),
         variant: "destructive",
       });
 
@@ -180,9 +147,10 @@ export function AddToBoutiqueDialog({
       onOpenChange(false);
 
       toast({
-        title: "Produit déjà présent",
-        description:
+        title: translateUi("Produit déjà présent"),
+        description: translateUi(
           "Ouverture de sa fiche pour gérer le produit existant, sans créer de doublon.",
+        ),
       });
 
       navigate(
@@ -194,9 +162,10 @@ export function AddToBoutiqueDialog({
 
     if (safeMargin > maxMargin) {
       toast({
-        title: "Marge invalide",
-        description:
+        title: translateUi("Marge invalide"),
+        description: translateUi(
           "La marge sélectionnée dépasse la marge maximale autorisée.",
+        ),
         variant: "destructive",
       });
 
@@ -250,22 +219,18 @@ export function AddToBoutiqueDialog({
       setSuccess(true);
 
       toast({
-        title: "Produit ajouté",
-        description:
+        title: translateUi("Produit ajouté"),
+        description: translateUi(
           "Le produit a été ajouté à votre boutique et placé en attente de validation.",
+        ),
       });
     } catch (error) {
-      console.error(
-        "Erreur lors de l'ajout du produit :",
-        error,
-      );
+      console.error("Erreur lors de l'ajout du produit :", error);
 
       toast({
-        title: "Impossible d'ajouter le produit",
+        title: translateUi("Impossible d'ajouter le produit"),
         description:
-          error instanceof Error
-            ? error.message
-            : "Une erreur est survenue.",
+          error instanceof Error ? error.message : "Une erreur est survenue.",
         variant: "destructive",
       });
     } finally {
@@ -279,10 +244,7 @@ export function AddToBoutiqueDialog({
 
   if (success) {
     return (
-      <Dialog
-        open={open}
-        onOpenChange={onOpenChange}
-      >
+      <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-md">
           <div className="flex flex-col items-center justify-center gap-5 py-8 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-100">
@@ -291,12 +253,11 @@ export function AddToBoutiqueDialog({
 
             <div className="space-y-2">
               <h2 className="text-xl font-semibold">
-                Produit ajouté
+                {translateUi("Produit ajouté")}
               </h2>
 
               <p className="text-sm text-muted-foreground">
-                Le produit a bien été ajouté à votre
-                boutique.
+                {translateUi("Le produit a bien été ajouté à votre boutique.")}
               </p>
             </div>
 
@@ -305,15 +266,15 @@ export function AddToBoutiqueDialog({
               <AlertDescription>
                 {existingProduct ? (
                   <>
-                    Ce produit existe déjà dans cette boutique.
-                    Aucun doublon ne sera créé. Accédez à sa fiche
-                    pour gérer le produit existant.
+                    {translateUi(
+                      "Ce produit existe déjà dans cette boutique. Aucun doublon ne sera créé. Accédez à sa fiche pour gérer le produit existant.",
+                    )}
                   </>
                 ) : (
                   <>
-                    Le nouveau produit sera ajouté en pause.
-                    La validation initiale de l’échantillon reste
-                    requise lorsqu’elle n’a pas encore été acquise.
+                    {translateUi(
+                      "Le nouveau produit sera ajouté en pause. La validation initiale de l’échantillon reste requise lorsqu’elle n’a pas encore été acquise.",
+                    )}
                   </>
                 )}
               </AlertDescription>
@@ -328,10 +289,10 @@ export function AddToBoutiqueDialog({
               }
             >
               {isSubmitting
-                ? "Ajout..."
+                ? translateUi("Ajout...")
                 : existingProduct
-                  ? "Gérer le produit existant"
-                  : "Ajouter à ma boutique"}
+                  ? translateUi("Gérer le produit existant")
+                  : translateUi("Ajouter à ma boutique")}
             </Button>
           </div>
         </DialogContent>
@@ -344,19 +305,15 @@ export function AddToBoutiqueDialog({
   /* ---------------------------------------------------------------------- */
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={onOpenChange}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            Ajouter à ma boutique
-          </DialogTitle>
+          <DialogTitle>{translateUi("Ajouter à ma boutique")}</DialogTitle>
 
           <DialogDescription>
-            Configurez le prix de vente du produit avant
-            de l'ajouter à votre catalogue.
+            {translateUi(
+              "Configurez le prix de vente du produit avant de l'ajouter à votre catalogue.",
+            )}
           </DialogDescription>
         </DialogHeader>
 
@@ -379,17 +336,14 @@ export function AddToBoutiqueDialog({
             </div>
 
             <div className="min-w-0 flex-1">
-              <h3 className="font-medium">
-                {product.name}
-              </h3>
+              <h3 className="font-medium">{product.name}</h3>
 
               <p className="mt-1 text-sm text-muted-foreground">
                 {product.category}
               </p>
 
               <p className="mt-2 text-sm font-medium">
-                Prix fournisseur :{" "}
-                {basePrice.toFixed(2)} €
+                {translateUi("Prix fournisseur :")} {basePrice.toFixed(2)} €
               </p>
             </div>
           </div>
@@ -399,52 +353,39 @@ export function AddToBoutiqueDialog({
           {/* ---------------------------------------------------------------- */}
 
           <div className="space-y-2">
-            <Label htmlFor="boutique">
-              Boutique
-            </Label>
+            <Label htmlFor="boutique">Boutique</Label>
 
             <Select
               value={selectedBoutiqueId}
               onValueChange={setSelectedBoutiqueId}
-              disabled={
-                boutiquesLoading ||
-                productsLoading ||
-                isSubmitting
-              }
+              disabled={boutiquesLoading || productsLoading || isSubmitting}
             >
               <SelectTrigger id="boutique">
                 <SelectValue
                   placeholder={
                     boutiquesLoading
-                      ? "Chargement..."
-                      : "Sélectionner une boutique"
+                      ? translateUi("Chargement...")
+                      : translateUi("Sélectionner une boutique")
                   }
                 />
               </SelectTrigger>
 
               <SelectContent>
-                {eligibleBoutiques.map(
-                  (boutique) => (
-                    <SelectItem
-                      key={boutique.id}
-                      value={boutique.id}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Store className="h-4 w-4" />
+                {eligibleBoutiques.map((boutique) => (
+                  <SelectItem key={boutique.id} value={boutique.id}>
+                    <div className="flex items-center gap-2">
+                      <Store className="h-4 w-4" />
 
-                        <span>
-                          {boutique.name}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ),
-                )}
+                      <span>{boutique.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
             {eligibleBoutiques.length === 0 && (
               <p className="text-sm text-muted-foreground">
-                Aucune boutique disponible.
+                {translateUi("Aucune boutique disponible.")}
               </p>
             )}
           </div>
@@ -455,13 +396,9 @@ export function AddToBoutiqueDialog({
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label htmlFor="margin">
-                Marge appliquée
-              </Label>
+              <Label htmlFor="margin">{translateUi("Marge appliquée")}</Label>
 
-              <span className="font-medium">
-                {safeMargin} %
-              </span>
+              <span className="font-medium">{safeMargin} %</span>
             </div>
 
             <Slider
@@ -470,9 +407,7 @@ export function AddToBoutiqueDialog({
               min={0}
               max={Math.max(maxMargin, 1)}
               step={1}
-              onValueChange={([value]) =>
-                setMargin(value)
-              }
+              onValueChange={([value]) => setMargin(value)}
               disabled={isSubmitting}
             />
 
@@ -480,7 +415,8 @@ export function AddToBoutiqueDialog({
               <span>0 %</span>
 
               <span>
-                Maximum : {maxMargin} %
+                {translateUi("Maximum :") + " "}
+                {maxMargin} %
               </span>
             </div>
           </div>
@@ -492,29 +428,25 @@ export function AddToBoutiqueDialog({
           <div className="rounded-lg border bg-muted/30 p-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">
-                Prix fournisseur
+                {translateUi("Prix fournisseur")}
               </span>
 
-              <span>
-                {basePrice.toFixed(2)} €
-              </span>
+              <span>{basePrice.toFixed(2)} €</span>
             </div>
 
             <div className="mt-2 flex items-center justify-between">
               <span className="text-sm text-muted-foreground">
-                Marge
+                {translateUi("Marge")}
               </span>
 
-              <span>
-                {safeMargin} %
-              </span>
+              <span>{safeMargin} %</span>
             </div>
 
             <div className="my-3 border-t" />
 
             <div className="flex items-center justify-between">
               <span className="font-medium">
-                Prix de vente
+                {translateUi("Prix de vente")}
               </span>
 
               <span className="text-lg font-semibold">
@@ -524,7 +456,7 @@ export function AddToBoutiqueDialog({
 
             <div className="mt-1 flex items-center justify-between">
               <span className="text-sm text-muted-foreground">
-                Bénéfice estimé / unité
+                {translateUi("Bénéfice estimé / unité")}
               </span>
 
               <span className="text-sm font-medium">
@@ -541,9 +473,9 @@ export function AddToBoutiqueDialog({
             <AlertCircle className="h-4 w-4" />
 
             <AlertDescription>
-              Le produit sera ajouté en statut{" "}
-              <strong>en attente</strong>. Un échantillon
-              devra être validé avant sa mise en vente.
+              {translateUi("Le produit sera ajouté en statut")}{" "}
+              <strong>{translateUi("en attente")}</strong>. Un échantillon devra
+              être validé avant sa mise en vente.
             </AlertDescription>
           </Alert>
 
@@ -553,15 +485,12 @@ export function AddToBoutiqueDialog({
 
           <div className="rounded-lg border border-dashed p-4">
             <div className="space-y-1">
-              <p className="text-sm font-medium">
-                Promotion
-              </p>
+              <p className="text-sm font-medium">Promotion</p>
 
               <p className="text-sm text-muted-foreground">
-                Aucune promotion n'est configurée lors de
-                l'ajout. Vous pourrez définir ultérieurement
-                un prix promotionnel, une période et un
-                libellé depuis la gestion du produit.
+                {translateUi(
+                  "Aucune promotion n'est configurée lors de l'ajout. Vous pourrez définir ultérieurement un prix promotionnel, une période et un libellé depuis la gestion du produit.",
+                )}
               </p>
             </div>
           </div>
@@ -574,7 +503,7 @@ export function AddToBoutiqueDialog({
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >
-            Annuler
+            {translateUi("Annuler")}
           </Button>
 
           <Button
@@ -588,8 +517,8 @@ export function AddToBoutiqueDialog({
             }
           >
             {isSubmitting
-              ? "Ajout..."
-              : "Ajouter à ma boutique"}
+              ? translateUi("Ajout...")
+              : translateUi("Ajouter à ma boutique")}
           </Button>
         </DialogFooter>
       </DialogContent>

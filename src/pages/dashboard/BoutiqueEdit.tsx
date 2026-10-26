@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -34,22 +36,23 @@ interface BoutiqueProductPreview {
 }
 
 function LoadingState() {
+  useLanguage();
   return (
     <DashboardLayout>
       <PageHeader
-        eyebrow="Espace marchand"
-        title="Chargement de la boutique"
-        subtitle="Préparation de votre espace de configuration."
+        eyebrow={translateUi("Espace marchand")}
+        title={translateUi("Chargement de la boutique")}
+        subtitle={translateUi("Préparation de votre espace de configuration.")}
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Boutiques", href: "/dashboard/boutiques" },
+          { label: translateUi("Dashboard"), href: "/dashboard" },
+          { label: translateUi("Boutiques"), href: "/dashboard/boutiques" },
         ]}
       />
 
       <div className="flex min-h-[320px] flex-col items-center justify-center gap-3 rounded-2xl border bg-card">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="text-sm text-muted-foreground">
-          Chargement des informations…
+          {translateUi("Chargement des informations…")}
         </p>
       </div>
     </DashboardLayout>
@@ -57,21 +60,24 @@ function LoadingState() {
 }
 
 function NotFoundState() {
+  useLanguage();
   return (
     <DashboardLayout>
       <PageHeader
-        eyebrow="Espace marchand"
-        title="Boutique introuvable"
-        subtitle="Cette boutique n’existe pas ou n’est pas accessible avec votre compte."
+        eyebrow={translateUi("Espace marchand")}
+        title={translateUi("Boutique introuvable")}
+        subtitle={translateUi(
+          "Cette boutique n’existe pas ou n’est pas accessible avec votre compte.",
+        )}
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Boutiques", href: "/dashboard/boutiques" },
+          { label: translateUi("Dashboard"), href: "/dashboard" },
+          { label: translateUi("Boutiques"), href: "/dashboard/boutiques" },
         ]}
         actions={
           <Button variant="outline" size="sm" asChild>
             <Link to="/dashboard/boutiques">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Mes boutiques
+              {translateUi("Mes boutiques")}
             </Link>
           </Button>
         }
@@ -80,12 +86,14 @@ function NotFoundState() {
       <SectionCard>
         <EmptyState
           icon={<Store className="h-7 w-7" />}
-          title="Aucune boutique à afficher"
-          description="Retournez à votre portefeuille pour sélectionner une boutique existante ou en créer une."
+          title={translateUi("Aucune boutique à afficher")}
+          description={translateUi(
+            "Retournez à votre portefeuille pour sélectionner une boutique existante ou en créer une.",
+          )}
           action={
             <Button asChild>
               <Link to="/dashboard/boutiques">
-                Voir mes boutiques
+                {translateUi("Voir mes boutiques")}
               </Link>
             </Button>
           }
@@ -102,15 +110,18 @@ function LoadErrorState({
   onRetry: () => void;
   isRetrying: boolean;
 }) {
+  useLanguage();
   return (
     <DashboardLayout>
       <PageHeader
-        eyebrow="Espace marchand"
-        title="Chargement impossible"
-        subtitle="Une erreur empêche actuellement l’affichage de cette boutique."
+        eyebrow={translateUi("Espace marchand")}
+        title={translateUi("Chargement impossible")}
+        subtitle={translateUi(
+          "Une erreur empêche actuellement l’affichage de cette boutique.",
+        )}
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Boutiques", href: "/dashboard/boutiques" },
+          { label: translateUi("Dashboard"), href: "/dashboard" },
+          { label: translateUi("Boutiques"), href: "/dashboard/boutiques" },
         ]}
       />
 
@@ -122,31 +133,28 @@ function LoadErrorState({
 
           <div>
             <h2 className="font-semibold text-foreground">
-              Impossible de récupérer les données
+              {translateUi("Impossible de récupérer les données")}
             </h2>
             <p className="mt-1 max-w-xl text-sm leading-6 text-muted-foreground">
-              Vérifiez votre connexion. Si le problème persiste,
-              retournez à la liste des boutiques ou réessayez.
+              {translateUi(
+                "Vérifiez votre connexion. Si le problème persiste, retournez à la liste des boutiques ou réessayez.",
+              )}
             </p>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button
-              onClick={onRetry}
-              disabled={isRetrying}
-              className="gap-2"
-            >
+            <Button onClick={onRetry} disabled={isRetrying} className="gap-2">
               {isRetrying ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <ArrowRight className="h-4 w-4" />
               )}
-              Réessayer
+              {translateUi("Réessayer")}
             </Button>
 
             <Button variant="outline" asChild>
               <Link to="/dashboard/boutiques">
-                Mes boutiques
+                {translateUi("Mes boutiques")}
               </Link>
             </Button>
           </div>
@@ -156,24 +164,18 @@ function LoadErrorState({
   );
 }
 
-function BoutiqueStatusBadge({
-  published,
-}: {
-  published: boolean;
-}) {
+function BoutiqueStatusBadge({ published }: { published: boolean }) {
+  useLanguage();
   return (
-    <Badge
-      variant={published ? "default" : "secondary"}
-      className="shrink-0"
-    >
+    <Badge variant={published ? "default" : "secondary"} className="shrink-0">
       <span
         className={[
           "mr-1.5 h-1.5 w-1.5 rounded-full",
-          published ? "bg-white" : "bg-secondary-foreground/60",
+          published ? "bg-card" : "bg-secondary-foreground/60",
         ].join(" ")}
         aria-hidden="true"
       />
-      {published ? "Publiée" : "Brouillon"}
+      {published ? translateUi("Publiée") : translateUi("Brouillon")}
     </Badge>
   );
 }
@@ -187,6 +189,7 @@ function BoutiqueIdentityHeader({
   slug: string;
   published: boolean;
 }) {
+  useLanguage();
   const publicPath = `/boutique/${slug}`;
 
   return (
@@ -218,13 +221,9 @@ function BoutiqueIdentityHeader({
             className="w-fit shrink-0 gap-2"
             asChild
           >
-            <a
-              href={publicPath}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href={publicPath} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="h-4 w-4" />
-              Voir la boutique
+              {translateUi("Voir la boutique")}
             </a>
           </Button>
         )}
@@ -234,6 +233,7 @@ function BoutiqueIdentityHeader({
 }
 
 export default function BoutiqueEdit() {
+  useLanguage();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -356,12 +356,14 @@ export default function BoutiqueEdit() {
     return (
       <DashboardLayout>
         <PageHeader
-          eyebrow="Parcours marchand"
-          title="Construire l’identité de marque"
-          subtitle="Définissez une direction de marque cohérente avant de passer à la personnalisation de votre boutique."
+          eyebrow={translateUi("Parcours marchand")}
+          title={translateUi("Construire l’identité de marque")}
+          subtitle={translateUi(
+            "Définissez une direction de marque cohérente avant de passer à la personnalisation de votre boutique.",
+          )}
           breadcrumbs={[
-            { label: "Dashboard", href: "/dashboard" },
-            { label: "Boutiques", href: "/dashboard/boutiques" },
+            { label: translateUi("Dashboard"), href: "/dashboard" },
+            { label: translateUi("Boutiques"), href: "/dashboard/boutiques" },
             { label: boutique.name },
           ]}
           actions={
@@ -372,7 +374,7 @@ export default function BoutiqueEdit() {
               onClick={() => navigate("/dashboard/boutiques")}
             >
               <ArrowLeft className="h-4 w-4" />
-              Mes boutiques
+              {translateUi("Mes boutiques")}
             </Button>
           }
         />
@@ -389,14 +391,16 @@ export default function BoutiqueEdit() {
               <div className="flex items-center gap-2 text-primary">
                 <Sparkles className="h-4 w-4" />
                 <span className="text-xs font-semibold uppercase tracking-wide">
-                  Étape 1
+                  {translateUi("Étape 1")}
                 </span>
               </div>
               <p className="mt-2 font-medium text-foreground">
-                Identité de marque
+                {translateUi("Identité de marque")}
               </p>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Positionnement, clientèle, promesse et univers visuel.
+                {translateUi(
+                  "Positionnement, clientèle, promesse et univers visuel.",
+                )}
               </p>
             </div>
 
@@ -404,14 +408,16 @@ export default function BoutiqueEdit() {
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Package className="h-4 w-4" />
                 <span className="text-xs font-semibold uppercase tracking-wide">
-                  Étape 2
+                  {translateUi("Étape 2")}
                 </span>
               </div>
               <p className="mt-2 font-medium text-foreground">
-                Boutique et catalogue
+                {translateUi("Boutique et catalogue")}
               </p>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Contenu, pages et sélection des produits autorisés.
+                {translateUi(
+                  "Contenu, pages et sélection des produits autorisés.",
+                )}
               </p>
             </div>
 
@@ -419,14 +425,16 @@ export default function BoutiqueEdit() {
               <div className="flex items-center gap-2 text-muted-foreground">
                 <CheckCircle2 className="h-4 w-4" />
                 <span className="text-xs font-semibold uppercase tracking-wide">
-                  Étape 3
+                  {translateUi("Étape 3")}
                 </span>
               </div>
               <p className="mt-2 font-medium text-foreground">
-                Préparation à la publication
+                {translateUi("Préparation à la publication")}
               </p>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Vérification des éléments nécessaires à la mise en ligne.
+                {translateUi(
+                  "Vérification des éléments nécessaires à la mise en ligne.",
+                )}
               </p>
             </div>
           </div>
@@ -446,12 +454,14 @@ export default function BoutiqueEdit() {
   return (
     <DashboardLayout>
       <PageHeader
-        eyebrow="Studio marchand"
+        eyebrow={translateUi("Studio marchand")}
         title={boutique.name}
-        subtitle="Gérez la présentation, les pages, les scènes et les paramètres de votre boutique."
+        subtitle={translateUi(
+          "Gérez la présentation, les pages, les scènes et les paramètres de votre boutique.",
+        )}
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Boutiques", href: "/dashboard/boutiques" },
+          { label: translateUi("Dashboard"), href: "/dashboard" },
+          { label: translateUi("Boutiques"), href: "/dashboard/boutiques" },
           { label: boutique.name },
         ]}
         actions={
@@ -463,22 +473,14 @@ export default function BoutiqueEdit() {
               onClick={() => navigate("/dashboard/boutiques")}
             >
               <ArrowLeft className="h-4 w-4" />
-              Mes boutiques
+              {translateUi("Mes boutiques")}
             </Button>
 
             {isPublished && (
-              <Button
-                size="sm"
-                className="gap-2"
-                asChild
-              >
-                <a
-                  href={publicPath}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+              <Button size="sm" className="gap-2" asChild>
+                <a href={publicPath} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4" />
-                  Voir la boutique
+                  {translateUi("Voir la boutique")}
                 </a>
               </Button>
             )}
@@ -494,7 +496,7 @@ export default function BoutiqueEdit() {
 
           <div className="min-w-0">
             <p className="text-sm font-medium text-foreground">
-              Espace de gestion
+              {translateUi("Espace de gestion")}
             </p>
             <p className="break-all text-xs text-muted-foreground">
               {publicPath}
@@ -511,7 +513,7 @@ export default function BoutiqueEdit() {
           className="mb-4 flex items-center gap-2 rounded-xl border bg-muted/20 px-4 py-3 text-sm text-muted-foreground"
         >
           <Loader2 className="h-4 w-4 animate-spin" />
-          Chargement de l’aperçu du catalogue…
+          {translateUi("Chargement de l’aperçu du catalogue…")}
         </div>
       )}
 
@@ -521,11 +523,12 @@ export default function BoutiqueEdit() {
             <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
             <div>
               <p className="text-sm font-medium text-foreground">
-                Aperçu du catalogue indisponible
+                {translateUi("Aperçu du catalogue indisponible")}
               </p>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Le Studio reste accessible. Vous pouvez réessayer de charger
-                l’aperçu des produits.
+                {translateUi(
+                  "Le Studio reste accessible. Vous pouvez réessayer de charger l’aperçu des produits.",
+                )}
               </p>
             </div>
           </div>
@@ -537,7 +540,7 @@ export default function BoutiqueEdit() {
               void refetchProducts();
             }}
           >
-            Réessayer
+            {translateUi("Réessayer")}
           </Button>
         </div>
       )}

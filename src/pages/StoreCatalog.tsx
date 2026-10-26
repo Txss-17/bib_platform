@@ -1,4 +1,5 @@
-﻿import { useMemo, useState } from "react";
+import { translateUi } from "@/lib/uiTranslation";
+import { useMemo, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import {
@@ -14,10 +15,7 @@ import {
   X,
 } from "lucide-react";
 
-import {
-  useStoreProducts,
-  type StoreProduct,
-} from "@/hooks/useStore";
+import { useStoreProducts, type StoreProduct } from "@/hooks/useStore";
 import { useFavorites } from "@/hooks/useFavorites";
 
 import { Button } from "@/components/ui/button";
@@ -91,8 +89,8 @@ function ProductCard({
           type="button"
           aria-label={
             favorite
-              ? `Remove ${product.name} from favorites`
-              : `Add ${product.name} to favorites`
+              ? translateUi("Remove {v0} from favorites", { v0: product.name })
+              : translateUi("Add {v0} to favorites", { v0: product.name })
           }
           aria-pressed={favorite}
           onClick={(event) => {
@@ -104,28 +102,21 @@ function ProductCard({
         >
           <Heart
             className="h-[18px] w-[18px]"
-            fill={
-              favorite
-                ? "currentColor"
-                : "none"
-            }
+            fill={favorite ? "currentColor" : "none"}
             strokeWidth={1.8}
           />
         </button>
 
         <div className="absolute bottom-3 left-3">
           <span className="inline-flex items-center rounded-full bg-background/90 px-2.5 py-1 text-[10px] font-medium shadow-sm backdrop-blur">
-            Verified by BIB
+            {translateUi("Verified by BIB")}
           </span>
         </div>
       </div>
 
       <div className="pt-3">
         <div className="mb-1 flex items-start justify-between gap-3">
-          <Link
-            to={`/store/product/${product.id}`}
-            className="min-w-0 flex-1"
-          >
+          <Link to={`/store/product/${product.id}`} className="min-w-0 flex-1">
             <h2 className="line-clamp-2 text-sm font-medium leading-5 transition-colors hover:text-primary">
               {product.name}
             </h2>
@@ -137,16 +128,12 @@ function ProductCard({
         </div>
 
         <Link
-          to={`/store/boutique/${encodeURIComponent(
-            product.boutique_slug,
-          )}`}
+          to={`/store/boutique/${encodeURIComponent(product.boutique_slug)}`}
           className="inline-flex max-w-full items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           <Store className="h-3.5 w-3.5 shrink-0" />
 
-          <span className="truncate">
-            {product.boutique_name}
-          </span>
+          <span className="truncate">{product.boutique_name}</span>
         </Link>
 
         {product.boutique_category && (
@@ -180,11 +167,7 @@ function CatalogLoading() {
   );
 }
 
-function CatalogError({
-  onRetry,
-}: {
-  onRetry: () => void;
-}) {
+function CatalogError({ onRetry }: { onRetry: () => void }) {
   const { lang } = useLanguage();
   const english = lang === "en";
   return (
@@ -195,12 +178,15 @@ function CatalogError({
         </div>
 
         <h2 className="text-lg font-semibold">
-          {english ? "Could not load products" : "Impossible de charger les produits"}
+          {english
+            ? "Could not load products"
+            : "Impossible de charger les produits"}
         </h2>
 
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Une erreur est survenue lors du chargement
-          du Store. Réessayez dans quelques instants.
+          {translateUi(
+            "Une erreur est survenue lors du chargement du Store. Réessayez dans quelques instants.",
+          )}
         </p>
 
         <Button
@@ -238,8 +224,12 @@ function EmptyCatalog({
 
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
           {hasFilters
-            ? english ? "No products match the selected criteria." : "Aucun produit ne correspond aux critères sélectionnés."
-            : english ? "No products are currently available in the Store." : "Aucun produit n'est actuellement disponible dans le Store."}
+            ? english
+              ? "No products match the selected criteria."
+              : "Aucun produit ne correspond aux critères sélectionnés."
+            : english
+              ? "No products are currently available in the Store."
+              : "Aucun produit n'est actuellement disponible dans le Store."}
         </p>
 
         {hasFilters && (
@@ -273,9 +263,7 @@ function StoreHeader() {
           </div>
 
           <div className="hidden sm:block">
-            <div className="text-sm font-semibold leading-none">
-              BIB
-            </div>
+            <div className="text-sm font-semibold leading-none">BIB</div>
 
             <div className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
               Store
@@ -291,14 +279,14 @@ function StoreHeader() {
             to="/store"
             className="rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            Accueil
+            {translateUi("Accueil")}
           </Link>
 
           <Link
             to="/store/products"
             className="rounded-lg bg-muted px-3 py-2 text-sm font-medium text-foreground"
           >
-            Produits
+            {translateUi("Produits")}
           </Link>
         </nav>
 
@@ -311,9 +299,7 @@ function StoreHeader() {
               {english ? "Discover boutiques" : "Découvrir les boutiques"}
             </span>
 
-            <span className="sm:hidden">
-              Boutiques
-            </span>
+            <span className="sm:hidden">{translateUi("Boutiques")}</span>
           </Link>
         </div>
       </div>
@@ -336,11 +322,17 @@ function CatalogSearch({
 
       <Input
         value={value}
-        onChange={(event) =>
-          onChange(event.target.value)
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={
+          english
+            ? "Search products or boutiques"
+            : "Rechercher un produit ou une boutique"
         }
-        placeholder={english ? "Search products or boutiques" : "Rechercher un produit ou une boutique"}
-        aria-label={english ? "Search products or boutiques" : "Rechercher un produit ou une boutique"}
+        aria-label={
+          english
+            ? "Search products or boutiques"
+            : "Rechercher un produit ou une boutique"
+        }
         className="h-11 rounded-xl bg-muted/50 pl-9 pr-9"
       />
 
@@ -368,141 +360,84 @@ export default function StoreCatalog() {
     refetch,
   } = useStoreProducts();
 
-  const {
-    favorites,
-    toggleFavorite,
-    isFavorite,
-  } = useFavorites();
+  const { favorites, toggleFavorite, isFavorite } = useFavorites();
 
-  const [search, setSearch] =
-    useState("");
+  const [search, setSearch] = useState("");
 
-  const [category, setCategory] =
-    useState("all");
+  const [category, setCategory] = useState("all");
 
-  const [sort, setSort] =
-    useState<SortOption>("recent");
+  const [sort, setSort] = useState<SortOption>("recent");
 
-  const [
-    favoritesOnly,
-    setFavoritesOnly,
-  ] = useState(false);
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
 
-  const [
-    filtersOpen,
-    setFiltersOpen,
-  ] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const categories = useMemo(() => {
-    const uniqueCategories =
-      new Set<string>();
+    const uniqueCategories = new Set<string>();
 
     products.forEach((product) => {
-      const value =
-        product.boutique_category?.trim();
+      const value = product.boutique_category?.trim();
 
       if (value) {
         uniqueCategories.add(value);
       }
     });
 
-    return Array.from(
-      uniqueCategories,
-    ).sort((a, b) =>
+    return Array.from(uniqueCategories).sort((a, b) =>
       a.localeCompare(b, "fr"),
     );
   }, [products]);
 
   const filteredProducts = useMemo(() => {
-    const normalizedSearch =
-      normalizeSearch(search);
+    const normalizedSearch = normalizeSearch(search);
 
-    const result = products.filter(
-      (product) => {
-        const searchableText =
-          normalizeSearch(
-            [
-              product.name,
-              product.description ?? "",
-              product.boutique_name,
-              product.boutique_category ??
-                "",
-            ].join(" "),
+    const result = products.filter((product) => {
+      const searchableText = normalizeSearch(
+        [
+          product.name,
+          product.description ?? "",
+          product.boutique_name,
+          product.boutique_category ?? "",
+        ].join(" "),
+      );
+
+      const matchesSearch =
+        !normalizedSearch || searchableText.includes(normalizedSearch);
+
+      const matchesCategory =
+        category === "all" || product.boutique_category === category;
+
+      const matchesFavorites = !favoritesOnly || favorites.includes(product.id);
+
+      return matchesSearch && matchesCategory && matchesFavorites;
+    });
+
+    return [...result].sort((a, b) => {
+      switch (sort) {
+        case "price-asc":
+          return a.price - b.price;
+
+        case "price-desc":
+          return b.price - a.price;
+
+        case "name-asc":
+          return a.name.localeCompare(b.name, "fr", {
+            sensitivity: "base",
+          });
+
+        case "name-desc":
+          return b.name.localeCompare(a.name, "fr", {
+            sensitivity: "base",
+          });
+
+        case "recent":
+        default:
+          return (
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
           );
-
-        const matchesSearch =
-          !normalizedSearch ||
-          searchableText.includes(
-            normalizedSearch,
-          );
-
-        const matchesCategory =
-          category === "all" ||
-          product.boutique_category ===
-            category;
-
-        const matchesFavorites =
-          !favoritesOnly ||
-          favorites.includes(
-            product.id,
-          );
-
-        return (
-          matchesSearch &&
-          matchesCategory &&
-          matchesFavorites
-        );
-      },
-    );
-
-    return [...result].sort(
-      (a, b) => {
-        switch (sort) {
-          case "price-asc":
-            return a.price - b.price;
-
-          case "price-desc":
-            return b.price - a.price;
-
-          case "name-asc":
-            return a.name.localeCompare(
-              b.name,
-              "fr",
-              {
-                sensitivity: "base",
-              },
-            );
-
-          case "name-desc":
-            return b.name.localeCompare(
-              a.name,
-              "fr",
-              {
-                sensitivity: "base",
-              },
-            );
-
-          case "recent":
-          default:
-            return (
-              new Date(
-                b.created_at,
-              ).getTime() -
-              new Date(
-                a.created_at,
-              ).getTime()
-            );
-        }
-      },
-    );
-  }, [
-    products,
-    search,
-    category,
-    sort,
-    favoritesOnly,
-    favorites,
-  ]);
+      }
+    });
+  }, [products, search, category, sort, favoritesOnly, favorites]);
 
   const hasFilters =
     Boolean(search.trim()) ||
@@ -532,42 +467,37 @@ export default function StoreCatalog() {
             <div>
               <div className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
                 <Sparkles className="h-3.5 w-3.5" />
-
                 BIB Store
               </div>
 
               <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                Produits
+                {translateUi("Produits")}
               </h1>
 
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-                Découvrez une sélection de produits
-                proposés par les boutiques vérifiées
-                du réseau BIB.
+                {translateUi(
+                  "Découvrez une sélection de produits proposés par les boutiques vérifiées du réseau BIB.",
+                )}
               </p>
             </div>
 
-            {!isLoading &&
-              !isError && (
-                <div className="text-sm text-muted-foreground">
-                  {filteredProducts.length}{" "}
-                  {filteredProducts.length >
-                  1
-                    ? english ? "products" : "produits"
-                    : english ? "product" : "produit"}
-                </div>
-              )}
+            {!isLoading && !isError && (
+              <div className="text-sm text-muted-foreground">
+                {filteredProducts.length}{" "}
+                {filteredProducts.length > 1
+                  ? english
+                    ? "products"
+                    : "produits"
+                  : english
+                    ? "product"
+                    : "produit"}
+              </div>
+            )}
           </div>
         </section>
 
-        <section
-          aria-label={english ? "Search" : "Recherche"}
-          className="mb-5"
-        >
-          <CatalogSearch
-            value={search}
-            onChange={setSearch}
-          />
+        <section aria-label={english ? "Search" : "Recherche"} className="mb-5">
+          <CatalogSearch value={search} onChange={setSearch} />
         </section>
 
         <div className="mb-5 flex gap-2 lg:hidden">
@@ -575,16 +505,11 @@ export default function StoreCatalog() {
             type="button"
             variant="outline"
             className="rounded-xl"
-            onClick={() =>
-              setFiltersOpen(
-                (current) => !current,
-              )
-            }
+            onClick={() => setFiltersOpen((current) => !current)}
           >
             <SlidersHorizontal className="mr-2 h-4 w-4" />
 
-            Filtres
-
+            {translateUi("Filtres")}
             {activeFilterCount > 0 && (
               <span className="ml-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1.5 text-[10px] text-background">
                 {activeFilterCount}
@@ -597,13 +522,11 @@ export default function StoreCatalog() {
               type="button"
               variant="secondary"
               className="rounded-xl"
-              onClick={() =>
-                setFavoritesOnly(false)
-              }
+              onClick={() => setFavoritesOnly(false)}
             >
               <Heart className="mr-2 h-4 w-4 fill-current" />
 
-              Favoris
+              {translateUi("Favoris")}
             </Button>
           )}
         </div>
@@ -611,21 +534,18 @@ export default function StoreCatalog() {
         <div
           className={[
             "mb-8",
-            filtersOpen
-              ? "block"
-              : "hidden",
+            filtersOpen ? "block" : "hidden",
             "lg:block",
           ].join(" ")}
         >
           <div className="rounded-2xl border bg-card p-4">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Select
-                  value={category}
-                  onValueChange={setCategory}
-                >
+                <Select value={category} onValueChange={setCategory}>
                   <SelectTrigger className="w-full rounded-xl sm:w-[210px]">
-                    <SelectValue placeholder={english ? "Category" : "Catégorie"} />
+                    <SelectValue
+                      placeholder={english ? "Category" : "Catégorie"}
+                    />
                   </SelectTrigger>
 
                   <SelectContent>
@@ -633,26 +553,17 @@ export default function StoreCatalog() {
                       {english ? "All categories" : "Toutes les catégories"}
                     </SelectItem>
 
-                    {categories.map(
-                      (item) => (
-                        <SelectItem
-                          key={item}
-                          value={item}
-                        >
-                          {item}
-                        </SelectItem>
-                      ),
-                    )}
+                    {categories.map((item) => (
+                      <SelectItem key={item} value={item}>
+                        {item}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
 
                 <Select
                   value={sort}
-                  onValueChange={(value) =>
-                    setSort(
-                      value as SortOption,
-                    )
-                  }
+                  onValueChange={(value) => setSort(value as SortOption)}
                 >
                   <SelectTrigger className="w-full rounded-xl sm:w-[210px]">
                     <ArrowDownUp className="mr-2 h-4 w-4 text-muted-foreground" />
@@ -674,39 +585,29 @@ export default function StoreCatalog() {
                     </SelectItem>
 
                     <SelectItem value="name-asc">
-                      Nom A → Z
+                      {translateUi("Nom A → Z")}
                     </SelectItem>
 
                     <SelectItem value="name-desc">
-                      Nom Z → A
+                      {translateUi("Nom Z → A")}
                     </SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Button
                   type="button"
-                  variant={
-                    favoritesOnly
-                      ? "default"
-                      : "outline"
-                  }
+                  variant={favoritesOnly ? "default" : "outline"}
                   className="rounded-xl"
-                  onClick={() =>
-                    setFavoritesOnly(
-                      (current) => !current,
-                    )
-                  }
+                  onClick={() => setFavoritesOnly((current) => !current)}
                 >
                   <Heart
                     className={[
                       "mr-2 h-4 w-4",
-                      favoritesOnly
-                        ? "fill-current"
-                        : "",
+                      favoritesOnly ? "fill-current" : "",
                     ].join(" ")}
                   />
 
-                  Favoris
+                  {translateUi("Favoris")}
                 </Button>
               </div>
 
@@ -719,7 +620,7 @@ export default function StoreCatalog() {
                 >
                   <X className="mr-2 h-4 w-4" />
 
-                  Réinitialiser
+                  {translateUi("Réinitialiser")}
                 </Button>
               )}
             </div>
@@ -734,61 +635,46 @@ export default function StoreCatalog() {
               void refetch();
             }}
           />
-        ) : filteredProducts.length ===
-          0 ? (
-          <EmptyCatalog
-            hasFilters={hasFilters}
-            onReset={resetFilters}
-          />
+        ) : filteredProducts.length === 0 ? (
+          <EmptyCatalog hasFilters={hasFilters} onReset={resetFilters} />
         ) : (
           <section
             aria-label={english ? "BIB Store products" : "Produits BIB Store"}
             className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-5 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-10"
           >
-            {filteredProducts.map(
-              (product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  favorite={isFavorite(
-                    product.id,
-                  )}
-                  onToggleFavorite={() =>
-                    void toggleFavorite(
-                      product.id,
-                    )
-                  }
-                />
-              ),
-            )}
+            {filteredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                favorite={isFavorite(product.id)}
+                onToggleFavorite={() => void toggleFavorite(product.id)}
+              />
+            ))}
           </section>
         )}
 
-        {!isLoading &&
-          !isError &&
-          filteredProducts.length >
-            0 && (
-            <div className="mt-12">
-              <Separator />
+        {!isLoading && !isError && filteredProducts.length > 0 && (
+          <div className="mt-12">
+            <Separator />
 
-              <div className="flex flex-col gap-3 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-                <p>
-                  Les produits présentés sont
-                  proposés par des boutiques
-                  vérifiées du réseau BIB.
-                </p>
+            <div className="flex flex-col gap-3 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+              <p>
+                {translateUi(
+                  "Les produits présentés sont proposés par des boutiques vérifiées du réseau BIB.",
+                )}
+              </p>
 
-                <Link
-                  to="/store"
-                  className="inline-flex items-center gap-1 font-medium text-foreground hover:underline"
-                >
-                  {english ? "Discover boutiques" : "Découvrir les boutiques"}
+              <Link
+                to="/store"
+                className="inline-flex items-center gap-1 font-medium text-foreground hover:underline"
+              >
+                {english ? "Discover boutiques" : "Découvrir les boutiques"}
 
-                  <ChevronDown className="h-3.5 w-3.5 -rotate-90" />
-                </Link>
-              </div>
+                <ChevronDown className="h-3.5 w-3.5 -rotate-90" />
+              </Link>
             </div>
-          )}
+          </div>
+        )}
       </main>
 
       <footer className="border-t border-border">
@@ -799,15 +685,13 @@ export default function StoreCatalog() {
             </div>
 
             <span>
-              BIB Store — découverte de produits
-              et de boutiques vérifiées
+              {translateUi(
+                "BIB Store — découverte de produits et de boutiques vérifiées",
+              )}
             </span>
           </div>
 
-          <Link
-            to="/store"
-            className="transition-colors hover:text-foreground"
-          >
+          <Link to="/store" className="transition-colors hover:text-foreground">
             {english ? "Discover boutiques" : "Découvrir les boutiques"}
           </Link>
         </div>

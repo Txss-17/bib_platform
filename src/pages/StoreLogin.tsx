@@ -1,4 +1,5 @@
-﻿import { useState } from "react";
+import { translateUi } from "@/lib/uiTranslation";
+import { useState } from "react";
 
 import {
   Link,
@@ -23,10 +24,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import {
-  Alert,
-  AlertDescription,
-} from "@/components/ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import {
   ArrowRight,
@@ -44,19 +42,16 @@ export default function StoreLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [showPassword, setShowPassword] =
-    useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const [error, setError] =
-    useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
   const { signIn } = useAuth();
   const { t, lang } = useLanguage();
   const english = lang === "en";
-  const tx = (fr: string, en: string) => english ? en : fr;
+  const tx = (fr: string, en: string) => (english ? en : fr);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -70,9 +65,7 @@ export default function StoreLogin() {
    * ou avec une destination Store classique.
    */
   const requestedDestination =
-    searchParams.get("next") ||
-    location.state?.from?.pathname ||
-    "/store";
+    searchParams.get("next") || location.state?.from?.pathname || "/store";
 
   /*
    * Sécurité de la redirection :
@@ -82,18 +75,12 @@ export default function StoreLogin() {
     requestedDestination === "/store" ||
     requestedDestination.startsWith("/store/");
 
-  const destination = isStorePath
-    ? requestedDestination
-    : "/store";
+  const destination = isStorePath ? requestedDestination : "/store";
 
-  const isSubscriberFlow =
-    destination === "/store/subscribe";
+  const isSubscriberFlow = destination === "/store/subscribe";
 
-  const getErrorMessage = (
-    message: string,
-  ) => {
-    const normalized =
-      message.toLowerCase();
+  const getErrorMessage = (message: string) => {
+    const normalized = message.toLowerCase();
 
     if (
       message === "Load failed" ||
@@ -104,19 +91,11 @@ export default function StoreLogin() {
       return t("auth.error.network");
     }
 
-    if (
-      normalized.includes(
-        "invalid login credentials",
-      )
-    ) {
+    if (normalized.includes("invalid login credentials")) {
       return t("auth.error.invalid");
     }
 
-    if (
-      normalized.includes(
-        "email not confirmed",
-      )
-    ) {
+    if (normalized.includes("email not confirmed")) {
       return (
         "Votre adresse e-mail n'est pas encore confirmée. " +
         "Consultez votre boîte mail avant de vous connecter."
@@ -126,45 +105,29 @@ export default function StoreLogin() {
     return message;
   };
 
-  const handleSubmit = async (
-    event: React.FormEvent,
-  ) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     setError(null);
 
-    const normalizedEmail =
-      email.trim().toLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
 
     if (!normalizedEmail) {
-      setError(
-        "Veuillez saisir votre adresse e-mail.",
-      );
+      setError(translateUi("Veuillez saisir votre adresse e-mail."));
       return;
     }
 
     if (!password) {
-      setError(
-        "Veuillez saisir votre mot de passe.",
-      );
+      setError(translateUi("Veuillez saisir votre mot de passe."));
       return;
     }
 
     setLoading(true);
 
-    const {
-      error: signInError,
-    } = await signIn(
-      normalizedEmail,
-      password,
-    );
+    const { error: signInError } = await signIn(normalizedEmail, password);
 
     if (signInError) {
-      setError(
-        getErrorMessage(
-          signInError.message,
-        ),
-      );
+      setError(getErrorMessage(signInError.message));
 
       setLoading(false);
       return;
@@ -184,10 +147,7 @@ export default function StoreLogin() {
     });
   };
 
-  const signupUrl =
-    `/store/signup?next=${encodeURIComponent(
-      destination,
-    )}`;
+  const signupUrl = `/store/signup?next=${encodeURIComponent(destination)}`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -211,13 +171,9 @@ export default function StoreLogin() {
                 </div>
 
                 <div>
-                  <div className="text-2xl font-bold leading-none">
-                    BIB
-                  </div>
+                  <div className="text-2xl font-bold leading-none">BIB</div>
 
-                  <div className="text-xs text-muted-foreground">
-                    Store
-                  </div>
+                  <div className="text-xs text-muted-foreground">Store</div>
                 </div>
               </Link>
 
@@ -228,42 +184,41 @@ export default function StoreLogin() {
               <CardHeader>
                 {isSubscriberFlow && (
                   <div className="mb-3 inline-flex w-fit items-center rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
-                    BIB Abonné · 4,99 €/mois
+                    {translateUi("BIB Abonné · 4,99 €/mois")}
                   </div>
                 )}
 
                 <CardTitle className="text-2xl">
                   {isSubscriberFlow
-                    ? tx("Continuer avec mon compte", "Continue with my account")
+                    ? tx(
+                        "Continuer avec mon compte",
+                        "Continue with my account",
+                      )
                     : t("login.title")}
                 </CardTitle>
 
                 <CardDescription>
                   {isSubscriberFlow
-                    ? tx("Connectez-vous pour poursuivre vers l'activation de BIB Abonné.", "Sign in to continue activating BIB Subscriber.")
+                    ? tx(
+                        "Connectez-vous pour poursuivre vers l'activation de BIB Abonné.",
+                        "Sign in to continue activating BIB Subscriber.",
+                      )
                     : t("login.desc")}
                 </CardDescription>
               </CardHeader>
 
               <CardContent>
-                <form
-                  onSubmit={handleSubmit}
-                  className="space-y-4"
-                >
+                <form onSubmit={handleSubmit} className="space-y-4">
                   {error && (
                     <Alert variant="destructive">
-                      <AlertDescription>
-                        {error}
-                      </AlertDescription>
+                      <AlertDescription>{error}</AlertDescription>
                     </Alert>
                   )}
 
                   {/* E-MAIL */}
 
                   <div className="space-y-2">
-                    <Label htmlFor="store-email">
-                      {t("login.email")}
-                    </Label>
+                    <Label htmlFor="store-email">{t("login.email")}</Label>
 
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -271,13 +226,11 @@ export default function StoreLogin() {
                       <Input
                         id="store-email"
                         type="email"
-                        placeholder={english ? "you@example.com" : "vous@exemple.com"}
-                        value={email}
-                        onChange={(event) =>
-                          setEmail(
-                            event.target.value,
-                          )
+                        placeholder={
+                          english ? "you@example.com" : "vous@exemple.com"
                         }
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
                         className="pl-10"
                         autoComplete="email"
                         required
@@ -306,18 +259,10 @@ export default function StoreLogin() {
 
                       <Input
                         id="store-password"
-                        type={
-                          showPassword
-                            ? "text"
-                            : "password"
-                        }
+                        type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         value={password}
-                        onChange={(event) =>
-                          setPassword(
-                            event.target.value,
-                          )
-                        }
+                        onChange={(event) => setPassword(event.target.value)}
                         className="pl-10 pr-10"
                         autoComplete="current-password"
                         required
@@ -325,17 +270,16 @@ export default function StoreLogin() {
 
                       <button
                         type="button"
-                        onClick={() =>
-                          setShowPassword(
-                            (current) =>
-                              !current,
-                          )
-                        }
+                        onClick={() => setShowPassword((current) => !current)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                         aria-label={
                           showPassword
-                            ? (english ? "Hide password" : "Masquer le mot de passe")
-                            : (english ? "Show password" : "Afficher le mot de passe")
+                            ? english
+                              ? "Hide password"
+                              : "Masquer le mot de passe"
+                            : english
+                              ? "Show password"
+                              : "Afficher le mot de passe"
                         }
                       >
                         {showPassword ? (
@@ -359,7 +303,10 @@ export default function StoreLogin() {
                     ) : (
                       <>
                         {isSubscriberFlow
-                          ? tx("Se connecter et continuer", "Sign in and continue")
+                          ? tx(
+                              "Se connecter et continuer",
+                              "Sign in and continue",
+                            )
                           : t("login.submit")}
 
                         <ArrowRight className="h-4 w-4" />
@@ -376,7 +323,6 @@ export default function StoreLogin() {
 
                 <div className="text-center text-sm text-muted-foreground">
                   {t("login.noaccount")}{" "}
-
                   <Link
                     to={signupUrl}
                     className="font-medium text-primary hover:underline"
@@ -414,25 +360,21 @@ export default function StoreLogin() {
             </h2>
 
             <p className="mt-4 text-muted-foreground">
-              Votre compte vous permet de retrouver vos
-              boutiques, commandes et suivi.
+              {translateUi(
+                "Votre compte vous permet de retrouver vos boutiques, commandes et suivi.",
+              )}
             </p>
 
             <div className="mt-8 space-y-5">
-              <Benefit
-                icon={
-                  <ShoppingBag className="h-5 w-5" />
-                }
-              >
+              <Benefit icon={<ShoppingBag className="h-5 w-5" />}>
                 {tx("Boutiques et commandes", "Boutiques and orders")}
               </Benefit>
 
-              <Benefit
-                icon={
-                  <Shield className="h-5 w-5" />
-                }
-              >
-                {tx("Compte client séparé de l'espace marchand", "Customer account separate from the merchant workspace")}
+              <Benefit icon={<Shield className="h-5 w-5" />}>
+                {tx(
+                  "Compte client séparé de l'espace marchand",
+                  "Customer account separate from the merchant workspace",
+                )}
               </Benefit>
             </div>
           </div>
@@ -453,6 +395,7 @@ function Benefit({
   icon: React.ReactNode;
   children: React.ReactNode;
 }) {
+  useLanguage();
   return (
     <div className="flex items-center gap-3 text-sm">
       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">

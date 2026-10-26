@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +18,9 @@ export function BoutiqueUrlBadge({
   size?: "xs" | "sm" | "md";
   className?: string;
 }) {
-  const textSize = size === "xs" ? "text-[10px]" : size === "md" ? "text-sm" : "text-xs";
+  useLanguage();
+  const textSize =
+    size === "xs" ? "text-[10px]" : size === "md" ? "text-sm" : "text-xs";
   return (
     <span
       className={cn(
@@ -24,7 +28,10 @@ export function BoutiqueUrlBadge({
         textSize,
         className,
       )}
-      title={`URL publique de votre boutique : ${slug}.brand-in-a-box.space`}
+      title={translateUi(
+        "URL publique de votre boutique : {v0}.brand-in-a-box.space",
+        { v0: slug },
+      )}
     >
       <Globe className="h-3 w-3 shrink-0" aria-hidden />
       <span className="truncate">

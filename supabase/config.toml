@@ -34,3 +34,15 @@ verify_jwt = false
 
 [functions.refund-order-issue]
 verify_jwt = true
+
+
+# Server-to-server bridge: checkBridgeKey runs before privileged access.
+[functions.intranet-import]
+verify_jwt = false
+
+[functions.intranet-export]
+verify_jwt = false
+
+# The partner token and approval are checked in the handler.
+[functions.partner-portal-action]
+verify_jwt = false

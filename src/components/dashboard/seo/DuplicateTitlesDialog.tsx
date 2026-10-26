@@ -1,7 +1,13 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useMemo, useState } from "react";
 import {
-  Dialog, DialogContent, DialogDescription, DialogFooter,
-  DialogHeader, DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -50,13 +56,17 @@ function applyTemplate(
 }
 
 export function DuplicateTitlesDialog({
-  open, onOpenChange, boutiques, products,
+  open,
+  onOpenChange,
+  boutiques,
+  products,
 }: Props) {
+  useLanguage();
   const qc = useQueryClient();
-  const [boutiqueTemplate, setBoutiqueTemplate] = useState("{name} — {category}");
-  const [productTemplate, setProductTemplate] = useState(
-    "{name} — {boutique}",
+  const [boutiqueTemplate, setBoutiqueTemplate] = useState(
+    "{name} — {category}",
   );
+  const [productTemplate, setProductTemplate] = useState("{name} — {boutique}");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [applying, setApplying] = useState(false);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
@@ -76,8 +86,12 @@ export function DuplicateTitlesDialog({
       pMap.set(key, [...(pMap.get(key) ?? []), p]);
     }
     return {
-      duplicateBoutiques: [...bMap.values()].filter((arr) => arr.length > 1).flat(),
-      duplicateProducts: [...pMap.values()].filter((arr) => arr.length > 1).flat(),
+      duplicateBoutiques: [...bMap.values()]
+        .filter((arr) => arr.length > 1)
+        .flat(),
+      duplicateProducts: [...pMap.values()]
+        .filter((arr) => arr.length > 1)
+        .flat(),
     };
   }, [boutiques, products]);
 
@@ -137,7 +151,7 @@ export function DuplicateTitlesDialog({
       selectedBoutiqueIds.includes(s.id),
     );
     if (targets.length === 0) {
-      toast.error("Sélectionnez au moins une boutique à renommer");
+      toast.error(translateUi("Sélectionnez au moins une boutique à renommer"));
       return;
     }
     setApplying(true);
@@ -153,16 +167,23 @@ export function DuplicateTitlesDialog({
     }
     setApplying(false);
     if (success > 0) {
-      toast.success(`${success} boutique(s) renommée(s)`, {
-        description:
-          failed > 0 ? `${failed} échec(s) — vérifiez vos permissions.` : undefined,
-      });
+      toast.success(
+        translateUi("{v0} boutique(s) renommée(s)", { v0: success }),
+        {
+          description:
+            failed > 0
+              ? translateUi("{v0} échec(s) — vérifiez vos permissions.", {
+                  v0: failed,
+                })
+              : undefined,
+        },
+      );
       qc.invalidateQueries({ queryKey: ["boutiques"] });
       qc.invalidateQueries({ queryKey: ["seo-products"] });
       setSelected({});
       onOpenChange(false);
     } else {
-      toast.error("Aucune boutique n'a pu être renommée");
+      toast.error(translateUi("Aucune boutique n'a pu être renommée"));
     }
   };
 
@@ -174,12 +195,15 @@ export function DuplicateTitlesDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Wand2 className="w-5 h-5 text-secondary" />
-            Corriger les titres dupliqués en masse
+            {translateUi("Corriger les titres dupliqués en masse")}
           </DialogTitle>
           <DialogDescription>
             {totalDup === 0
-              ? "Aucun doublon détecté pour l'instant. Bravo !"
-              : `${totalDup} page(s) partagent leur titre avec d'autres. Générez des titres uniques avec un template, puis appliquez en une fois.`}
+              ? translateUi("Aucun doublon détecté pour l'instant. Bravo !")
+              : translateUi(
+                  "{v0} page(s) partagent leur titre avec d'autres. Générez des titres uniques avec un template, puis appliquez en une fois.",
+                  { v0: totalDup },
+                )}
           </DialogDescription>
         </DialogHeader>
 
@@ -191,12 +215,14 @@ export function DuplicateTitlesDialog({
                 <div className="flex items-center gap-2">
                   <Store className="w-4 h-4 text-secondary" />
                   <h3 className="font-display font-semibold text-sm text-foreground">
-                    Boutiques en doublon ({boutiqueSuggestions.length})
+                    {translateUi("Boutiques en doublon (")}
+                    {boutiqueSuggestions.length})
                   </h3>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-foreground">
-                    Template (variables : {"{name} {category}"})
+                    {translateUi("Template (variables :") + " "}
+                    {"{name} {category}"})
                   </label>
                   <Input
                     value={boutiqueTemplate}
@@ -208,13 +234,17 @@ export function DuplicateTitlesDialog({
                   <Checkbox
                     id="select-all-b"
                     checked={
-                      selectedBoutiqueIds.length === boutiqueSuggestions.length &&
+                      selectedBoutiqueIds.length ===
+                        boutiqueSuggestions.length &&
                       boutiqueSuggestions.length > 0
                     }
                     onCheckedChange={(c) => toggleAllBoutiques(Boolean(c))}
                   />
-                  <label htmlFor="select-all-b" className="text-xs text-muted-foreground">
-                    Tout sélectionner
+                  <label
+                    htmlFor="select-all-b"
+                    className="text-xs text-muted-foreground"
+                  >
+                    {translateUi("Tout sélectionner")}
                   </label>
                 </div>
                 <div className="rounded-xl border border-border divide-y divide-border max-h-60 overflow-y-auto">
@@ -223,7 +253,10 @@ export function DuplicateTitlesDialog({
                       <Checkbox
                         checked={!!selected[`b:${s.id}`]}
                         onCheckedChange={(c) =>
-                          setSelected({ ...selected, [`b:${s.id}`]: Boolean(c) })
+                          setSelected({
+                            ...selected,
+                            [`b:${s.id}`]: Boolean(c),
+                          })
                         }
                       />
                       <div className="min-w-0 flex-1">
@@ -249,17 +282,19 @@ export function DuplicateTitlesDialog({
                 <div className="flex items-center gap-2">
                   <Package className="w-4 h-4 text-secondary" />
                   <h3 className="font-display font-semibold text-sm text-foreground">
-                    Produits en doublon ({productSuggestions.length})
+                    {translateUi("Produits en doublon (")}
+                    {productSuggestions.length})
                   </h3>
                 </div>
                 <div className="rounded-xl border border-warning/30/30 bg-warning/5 p-2.5 text-[11px] text-foreground/80">
-                  Les noms produits proviennent du catalogue fournisseur (lecture
-                  seule). Copiez le titre suggéré et utilisez-le dans la
-                  description ou les meta de votre boutique pour les différencier.
+                  {translateUi(
+                    "Les noms produits proviennent du catalogue fournisseur (lecture seule). Copiez le titre suggéré et utilisez-le dans la description ou les meta de votre boutique pour les différencier.",
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-foreground">
-                    Template (variables : {"{name} {boutique} {category}"})
+                    {translateUi("Template (variables :") + " "}
+                    {"{name} {boutique} {category}"})
                   </label>
                   <Input
                     value={productTemplate}
@@ -300,7 +335,7 @@ export function DuplicateTitlesDialog({
 
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Fermer
+            {translateUi("Fermer")}
           </Button>
           {boutiqueSuggestions.length > 0 && (
             <Button
@@ -313,7 +348,8 @@ export function DuplicateTitlesDialog({
               ) : (
                 <Wand2 className="w-4 h-4" />
               )}
-              Appliquer ({selectedBoutiqueIds.length})
+              {translateUi("Appliquer (")}
+              {selectedBoutiqueIds.length})
             </Button>
           )}
         </DialogFooter>

@@ -1,13 +1,31 @@
+import { translateUi, getUiLocale, getUiLanguage } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-  Search, TrendingUp, Sparkles, Zap, RefreshCw, BarChart3, Store, ArrowRight, Eye,
-  AlertTriangle, ImageOff, Copy, FileWarning, Wand2,
+  Search,
+  TrendingUp,
+  Sparkles,
+  Zap,
+  RefreshCw,
+  BarChart3,
+  Store,
+  ArrowRight,
+  Eye,
+  AlertTriangle,
+  ImageOff,
+  Copy,
+  FileWarning,
+  Wand2,
 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,25 +36,50 @@ import { useProducts } from "@/hooks/useProducts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState, useMemo } from "react";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
 } from "recharts";
 import { subDays, format } from "date-fns";
 import { Link } from "react-router-dom";
-import { PageHeader, SectionCard, KpiTile, EmptyState, KpiGrid } from "@/components/dashboard/shared";
+import {
+  PageHeader,
+  SectionCard,
+  KpiTile,
+  EmptyState,
+  KpiGrid,
+} from "@/components/dashboard/shared";
 import { DuplicateTitlesDialog } from "@/components/dashboard/seo/DuplicateTitlesDialog";
 
 function computeSEOScore(name: string, description: string | null) {
   const issues: string[] = [];
   const strengths: string[] = [];
   let score = 100;
-  if (!name || name.length < 10) { score -= 15; issues.push("Titre trop court"); }
-  else strengths.push("Titre bien dimensionné");
-  if (name && name.length > 60) { score -= 10; issues.push("Titre trop long"); }
-  if (!description) { score -= 25; issues.push("Pas de méta-description"); }
-  else {
-    if (description.length < 50) { score -= 15; issues.push("Description trop courte"); }
-    else if (description.length <= 160) strengths.push("Méta-description optimale");
-    if (description.length > 160) { score -= 10; issues.push("Description trop longue"); }
+  if (!name || name.length < 10) {
+    score -= 15;
+    issues.push("Titre trop court");
+  } else strengths.push("Titre bien dimensionné");
+  if (name && name.length > 60) {
+    score -= 10;
+    issues.push("Titre trop long");
+  }
+  if (!description) {
+    score -= 25;
+    issues.push("Pas de méta-description");
+  } else {
+    if (description.length < 50) {
+      score -= 15;
+      issues.push("Description trop courte");
+    } else if (description.length <= 160)
+      strengths.push("Méta-description optimale");
+    if (description.length > 160) {
+      score -= 10;
+      issues.push("Description trop longue");
+    }
   }
   return { score: Math.max(0, score), issues, strengths };
 }
@@ -68,12 +111,13 @@ const ALERT_ICON = {
 };
 
 function scoreColor(score: number) {
-  if (score >= 80) return "text-success";
+  if (score >= 80) return "text-success-ink";
   if (score >= 60) return "text-secondary";
   return "text-destructive";
 }
 
 export default function SEOAnalytics() {
+  useLanguage();
   const { user } = useAuth();
   const { data: boutiques = [], isLoading: boutiquesLoading } = useBoutiques();
   const { data: allOrders } = useOrders();
@@ -83,7 +127,9 @@ export default function SEOAnalytics() {
   const queryClient = useQueryClient();
 
   const filteredBoutiques =
-    selectedBoutique === "all" ? boutiques : boutiques.filter((b) => b.id === selectedBoutique);
+    selectedBoutique === "all"
+      ? boutiques
+      : boutiques.filter((b) => b.id === selectedBoutique);
 
   const { data: seoProducts = [], isLoading: productsLoading } = useQuery({
     queryKey: ["seo-products", user?.id, selectedBoutique],
@@ -92,7 +138,9 @@ export default function SEOAnalytics() {
       const ids = filteredBoutiques.map((b) => b.id);
       const { data, error } = await supabase
         .from("products")
-        .select("id, boutique_id, supplier_products(name, description, image_url)")
+        .select(
+          "id, boutique_id, supplier_products(name, description, image_url)",
+        )
         .in("boutique_id", ids)
         .eq("status", "active");
       if (error) throw error;
@@ -156,9 +204,10 @@ export default function SEOAnalytics() {
       alerts.push({
         severity: "high",
         category: "og",
-        title: "Image Open Graph manquante",
-        detail:
+        title: translateUi("Image Open Graph manquante"),
+        detail: translateUi(
           "Sans cover ni logo, vos boutiques s'affichent sans aperçu sur Google, WhatsApp et les réseaux sociaux.",
+        ),
         pages: boutiquesNoOG.map((b) => `Boutique · ${b.name}`),
       });
     }
@@ -171,9 +220,10 @@ export default function SEOAnalytics() {
       alerts.push({
         severity: "high",
         category: "meta",
-        title: "Méta-description boutique manquante",
-        detail:
+        title: translateUi("Méta-description boutique manquante"),
+        detail: translateUi(
           "Ajoutez une description (50–160 caractères) pour expliciter votre offre dans les résultats Google.",
+        ),
         pages: boutiquesNoDesc.map((b) => `Boutique · ${b.name}`),
       });
     }
@@ -188,8 +238,11 @@ export default function SEOAnalytics() {
       alerts.push({
         severity: "medium",
         category: "meta",
-        title: "Description produit manquante",
-        detail: `${productsNoDesc.length} produit(s) actif(s) n'ont pas de description.`,
+        title: translateUi("Description produit manquante"),
+        detail: translateUi(
+          "{v0} produit(s) actif(s) n'ont pas de description.",
+          { v0: productsNoDesc.length },
+        ),
         pages: productsNoDesc
           .slice(0, 5)
           .map((p: any) => p.supplier_products?.name || "Produit"),
@@ -204,9 +257,10 @@ export default function SEOAnalytics() {
       alerts.push({
         severity: "high",
         category: "og",
-        title: "Image produit absente",
-        detail:
+        title: translateUi("Image produit absente"),
+        detail: translateUi(
           "Sans visuel, ces fiches produits sont pénalisées dans Google Shopping et n'ont pas d'image OG.",
+        ),
         pages: productsNoImage
           .slice(0, 5)
           .map((p: any) => p.supplier_products?.name || "Produit"),
@@ -228,36 +282,43 @@ export default function SEOAnalytics() {
         `Produit · ${p.supplier_products?.name}`,
       ]);
     }
-    const duplicates = [...titleMap.values()].filter((arr) => arr.length > 1).flat();
+    const duplicates = [...titleMap.values()]
+      .filter((arr) => arr.length > 1)
+      .flat();
     if (duplicates.length > 0) {
       alerts.push({
         severity: "medium",
         category: "duplicate",
-        title: "Titres dupliqués détectés",
-        detail:
+        title: translateUi("Titres dupliqués détectés"),
+        detail: translateUi(
           "Plusieurs pages partagent le même titre — Google peut n'en indexer qu'une seule.",
+        ),
         pages: duplicates.slice(0, 6),
       });
     }
 
     // 6. Title length issues across all pages
-    const badTitles = seoPages.filter(
-      (p) => p.issues.some((i) => i.toLowerCase().includes("titre")),
+    const badTitles = seoPages.filter((p) =>
+      p.issues.some((i) => i.toLowerCase().includes("titre")),
     );
     if (badTitles.length > 0) {
       alerts.push({
         severity: "low",
         category: "title",
-        title: "Longueur de titre non optimale",
-        detail: "Visez 30–60 caractères pour un affichage complet dans les SERP.",
+        title: translateUi("Longueur de titre non optimale"),
+        detail: translateUi(
+          "Visez 30–60 caractères pour un affichage complet dans les SERP.",
+        ),
         pages: badTitles.slice(0, 5).map((p) => p.page),
       });
     }
 
     return alerts;
-  }, [filteredBoutiques, seoProducts, seoPages]);
+  }, [filteredBoutiques, seoProducts, seoPages, getUiLanguage()]);
 
-  const criticalAlertCount = seoAlerts.filter((a) => a.severity === "high").length;
+  const criticalAlertCount = seoAlerts.filter(
+    (a) => a.severity === "high",
+  ).length;
 
   const avgScore = seoPages.length
     ? Math.round(seoPages.reduce((s, p) => s + p.score, 0) / seoPages.length)
@@ -266,36 +327,46 @@ export default function SEOAnalytics() {
   const totalRevenue = recentOrders.reduce((s, o) => s + Number(o.amount), 0);
 
   const boutiqueAnalytics = filteredBoutiques.map((boutique) => {
-    const bOrders = allOrders?.filter((o) => o.boutique_id === boutique.id) || [];
-    const bProducts = allProducts?.filter((p) => p.boutique_id === boutique.id) || [];
+    const bOrders =
+      allOrders?.filter((o) => o.boutique_id === boutique.id) || [];
+    const bProducts =
+      allProducts?.filter((p) => p.boutique_id === boutique.id) || [];
     const revenue = bOrders.reduce((s, o) => s + Number(o.amount), 0);
-    const delivered = bOrders.filter((o) => o.logistics_status === "delivered").length;
+    const delivered = bOrders.filter(
+      (o) => o.logistics_status === "delivered",
+    ).length;
     return {
       ...boutique,
       orderCount: bOrders.length,
       productCount: bProducts.length,
       revenue,
-      conversionRate: bOrders.length ? Math.round((delivered / bOrders.length) * 100) : 0,
+      conversionRate: bOrders.length
+        ? Math.round((delivered / bOrders.length) * 100)
+        : 0,
     };
   });
 
-  const recommendations: { title: string; desc: string; priority: "haute" | "moyenne" }[] = [];
+  const recommendations: {
+    title: string;
+    desc: string;
+    priority: "haute" | "moyenne";
+  }[] = [];
   if (recentOrders.length === 0)
     recommendations.push({
-      title: "Optimiser le tunnel de conversion",
-      desc: "Simplifiez le processus d'achat",
+      title: translateUi("Optimiser le tunnel de conversion"),
+      desc: translateUi("Simplifiez le processus d'achat"),
       priority: "haute",
     });
   if (avgScore < 70)
     recommendations.push({
-      title: "Améliorer les méta-données",
-      desc: "Optimisez titres et descriptions",
+      title: translateUi("Améliorer les méta-données"),
+      desc: translateUi("Optimisez titres et descriptions"),
       priority: "haute",
     });
   if (seoProducts.length < 4)
     recommendations.push({
-      title: "Enrichir le catalogue",
-      desc: "Ajoutez plus de produits",
+      title: translateUi("Enrichir le catalogue"),
+      desc: translateUi("Ajoutez plus de produits"),
       priority: "moyenne",
     });
 
@@ -305,17 +376,23 @@ export default function SEOAnalytics() {
     <DashboardLayout>
       <PageHeader
         eyebrow="Analytics & SEO"
-        title="Performance & découvrabilité"
-        subtitle="Vos KPIs revenus, vos scores SEO par page et les optimisations recommandées."
+        title={translateUi("Performance & découvrabilité")}
+        subtitle={translateUi(
+          "Vos KPIs revenus, vos scores SEO par page et les optimisations recommandées.",
+        )}
         actions={
           <Select value={selectedBoutique} onValueChange={setSelectedBoutique}>
             <SelectTrigger className="w-full sm:w-[220px]">
-              <SelectValue placeholder="Toutes les boutiques" />
+              <SelectValue placeholder={translateUi("Toutes les boutiques")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Toutes les boutiques</SelectItem>
+              <SelectItem value="all">
+                {translateUi("Toutes les boutiques")}
+              </SelectItem>
               {boutiques.map((b) => (
-                <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                <SelectItem key={b.id} value={b.id}>
+                  {b.name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -326,21 +403,27 @@ export default function SEOAnalytics() {
       <KpiGrid cols={2}>
         <KpiTile
           tone="primary"
-          label="Score SEO moyen"
+          label={translateUi("Score SEO moyen")}
           value={`${avgScore}/100`}
           icon={<Search className="w-5 h-5" />}
-          hint={avgScore >= 80 ? "Excellent" : avgScore >= 60 ? "À améliorer" : "Critique"}
+          hint={
+            avgScore >= 80
+              ? "Excellent"
+              : avgScore >= 60
+                ? translateUi("À améliorer")
+                : translateUi("Critique")
+          }
         />
         <KpiTile
-          label="Alertes SEO"
+          label={translateUi("Alertes SEO")}
           value={totalIssues}
           icon={<AlertTriangle className="w-5 h-5" />}
           hint={
             criticalAlertCount > 0
-              ? `${criticalAlertCount} critique(s)`
+              ? translateUi("{v0} critique(s)", { v0: criticalAlertCount })
               : totalIssues === 0
-              ? "Aucune à corriger"
-              : "À traiter"
+                ? translateUi("Aucune à corriger")
+                : translateUi("À traiter")
           }
         />
       </KpiGrid>
@@ -348,8 +431,10 @@ export default function SEOAnalytics() {
       {/* Concrete SEO alerts */}
       <SectionCard
         className="mb-6"
-        title="Alertes SEO à corriger"
-        description="Titres dupliqués, méta manquants, images Open Graph absentes — détectés automatiquement."
+        title={translateUi("Alertes SEO à corriger")}
+        description={translateUi(
+          "Titres dupliqués, méta manquants, images Open Graph absentes — détectés automatiquement.",
+        )}
         icon={<AlertTriangle className="w-4 h-4 text-destructive" />}
         actions={
           <Button
@@ -358,14 +443,17 @@ export default function SEOAnalytics() {
             className="gap-1.5"
             onClick={() => setDupDialogOpen(true)}
           >
-            <Wand2 className="w-3.5 h-3.5" /> Corriger les doublons
+            <Wand2 className="w-3.5 h-3.5" />{" "}
+            {translateUi("Corriger les doublons")}
           </Button>
         }
       >
         {seoAlerts.length === 0 ? (
           <EmptyState
-            title="Aucune alerte"
-            description="Vos boutiques et produits respectent les bonnes pratiques SEO essentielles."
+            title={translateUi("Aucune alerte")}
+            description={translateUi(
+              "Vos boutiques et produits respectent les bonnes pratiques SEO essentielles.",
+            )}
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -383,7 +471,10 @@ export default function SEOAnalytics() {
                         <p className="text-sm font-semibold text-foreground truncate">
                           {alert.title}
                         </p>
-                        <Badge variant="outline" className="text-[10px] shrink-0">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] shrink-0"
+                        >
                           {SEVERITY_LABEL[alert.severity]}
                         </Badge>
                       </div>
@@ -394,11 +485,13 @@ export default function SEOAnalytics() {
                   </div>
                   <ul className="text-[11px] text-muted-foreground space-y-0.5 pl-1">
                     {alert.pages.slice(0, 4).map((p, j) => (
-                      <li key={j} className="truncate">• {p}</li>
+                      <li key={j} className="truncate">
+                        • {p}
+                      </li>
                     ))}
                     {alert.pages.length > 4 && (
                       <li className="text-foreground/70">
-                        + {alert.pages.length - 4} autre(s)
+                        + {alert.pages.length - 4} {translateUi("autre(s)")}
                       </li>
                     )}
                   </ul>
@@ -430,23 +523,38 @@ export default function SEOAnalytics() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
         <SectionCard
           className="lg:col-span-3"
-          title="Revenus (7 derniers jours)"
-          description="Évolution quotidienne, toutes boutiques sélectionnées"
+          title={translateUi("Revenus (7 derniers jours)")}
+          description={translateUi(
+            "Évolution quotidienne, toutes boutiques sélectionnées",
+          )}
           icon={<TrendingUp className="w-4 h-4" />}
         >
           <div className="h-[240px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={revenueChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="hsl(var(--border))"
+                />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 12 }}
+                  stroke="hsl(var(--muted-foreground))"
+                />
+                <YAxis
+                  tick={{ fontSize: 12 }}
+                  stroke="hsl(var(--muted-foreground))"
+                />
                 <Tooltip
                   contentStyle={{
                     background: "hsl(var(--card))",
                     border: "1px solid hsl(var(--border))",
                     borderRadius: 8,
                   }}
-                  formatter={(value: number) => [`${value.toFixed(2)} €`, "Revenus"]}
+                  formatter={(value: number) => [
+                    `${value.toFixed(2)} €`,
+                    "Revenus",
+                  ]}
                 />
                 <Line
                   type="monotone"
@@ -462,15 +570,17 @@ export default function SEOAnalytics() {
 
         <SectionCard
           className="lg:col-span-2"
-          title="Recommandations IA"
-          description="Actions prioritaires pour booster votre découvrabilité"
+          title={translateUi("Recommandations IA")}
+          description={translateUi(
+            "Actions prioritaires pour booster votre découvrabilité",
+          )}
           icon={<Sparkles className="w-4 h-4 text-secondary" />}
           actions={
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              title="Rafraîchir"
+              title={translateUi("Rafraîchir")}
               onClick={() => {
                 queryClient.invalidateQueries({ queryKey: ["seo-products"] });
                 queryClient.invalidateQueries({ queryKey: ["seo-orders"] });
@@ -483,8 +593,12 @@ export default function SEOAnalytics() {
           <div className="space-y-3">
             <div className="p-3 rounded-xl bg-primary/5 border border-primary/15">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-sm font-medium text-foreground">Score SEO global</span>
-                <span className={`text-xl font-display font-bold ${scoreColor(avgScore)}`}>
+                <span className="text-sm font-medium text-foreground">
+                  {translateUi("Score SEO global")}
+                </span>
+                <span
+                  className={`text-xl font-display font-bold ${scoreColor(avgScore)}`}
+                >
                   {avgScore}/100
                 </span>
               </div>
@@ -492,8 +606,10 @@ export default function SEOAnalytics() {
             </div>
             {recommendations.length === 0 ? (
               <EmptyState
-                title="Tout est optimal"
-                description="Aucune recommandation à appliquer pour l'instant."
+                title={translateUi("Tout est optimal")}
+                description={translateUi(
+                  "Aucune recommandation à appliquer pour l'instant.",
+                )}
               />
             ) : (
               <div className="space-y-2">
@@ -502,8 +618,12 @@ export default function SEOAnalytics() {
                     key={i}
                     className="p-2.5 rounded-lg bg-secondary/5 border border-secondary/20"
                   >
-                    <p className="font-medium text-xs text-foreground">{rec.title}</p>
-                    <p className="text-[11px] text-muted-foreground">{rec.desc}</p>
+                    <p className="font-medium text-xs text-foreground">
+                      {rec.title}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {rec.desc}
+                    </p>
                     <Badge
                       variant="outline"
                       className={`mt-1.5 text-[10px] ${
@@ -512,7 +632,8 @@ export default function SEOAnalytics() {
                           : "text-secondary border-secondary/40"
                       }`}
                     >
-                      Priorité {rec.priority}
+                      {translateUi("Priorité") + " "}
+                      {rec.priority}
                     </Badge>
                   </div>
                 ))}
@@ -525,19 +646,22 @@ export default function SEOAnalytics() {
       {/* Boutique performance grid */}
       <SectionCard
         className="mb-6"
-        title="Performance par boutique"
-        description="Comparez vos boutiques d'un coup d'œil"
+        title={translateUi("Performance par boutique")}
+        description={translateUi("Comparez vos boutiques d'un coup d'œil")}
         icon={<BarChart3 className="w-4 h-4" />}
       >
         {boutiqueAnalytics.length === 0 ? (
           <EmptyState
             icon={<Store className="w-6 h-6" />}
-            title="Aucune boutique créée"
-            description="Créez votre première boutique pour voir ses performances ici."
+            title={translateUi("Aucune boutique créée")}
+            description={translateUi(
+              "Créez votre première boutique pour voir ses performances ici.",
+            )}
             action={
               <Link to="/dashboard/boutiques/create">
                 <Button size="sm" className="gap-2">
-                  <Store className="w-4 h-4" /> Créer une boutique
+                  <Store className="w-4 h-4" />{" "}
+                  {translateUi("Créer une boutique")}
                 </Button>
               </Link>
             }
@@ -558,17 +682,21 @@ export default function SEOAnalytics() {
                       {b.name}
                     </h4>
                     <Badge
-                      variant={b.status === "published" ? "default" : "secondary"}
+                      variant={
+                        b.status === "published" ? "default" : "secondary"
+                      }
                       className="text-[10px]"
                     >
-                      {b.status === "published" ? "Publiée" : "Brouillon"}
+                      {b.status === "published"
+                        ? translateUi("Publiée")
+                        : translateUi("Brouillon")}
                     </Badge>
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-2 mb-3">
                   <div className="p-2 rounded-lg bg-muted/40 text-center">
                     <p className="text-sm font-display font-bold text-foreground tabular-nums">
-                      {b.revenue.toLocaleString("fr-FR")} €
+                      {b.revenue.toLocaleString(getUiLocale())} €
                     </p>
                     <p className="text-[10px] text-muted-foreground">CA</p>
                   </div>
@@ -576,18 +704,27 @@ export default function SEOAnalytics() {
                     <p className="text-sm font-display font-bold text-foreground tabular-nums">
                       {b.orderCount}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">Cmd</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {translateUi("Cmd")}
+                    </p>
                   </div>
                   <div className="p-2 rounded-lg bg-muted/40 text-center">
                     <p className="text-sm font-display font-bold text-foreground tabular-nums">
                       {b.productCount}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">Produits</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {translateUi("Produits")}
+                    </p>
                   </div>
                 </div>
                 <Link to={`/dashboard/boutiques/edit/${b.id}`}>
-                  <Button variant="outline" size="sm" className="w-full gap-1 text-xs">
-                    Gérer <ArrowRight className="w-3 h-3" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full gap-1 text-xs"
+                  >
+                    {translateUi("Gérer") + " "}
+                    <ArrowRight className="w-3 h-3" />
                   </Button>
                 </Link>
               </div>
@@ -598,28 +735,39 @@ export default function SEOAnalytics() {
 
       {/* SEO per page */}
       <SectionCard
-        title="Score SEO par page"
-        description="Détail des points à optimiser pour chaque page indexée"
+        title={translateUi("Score SEO par page")}
+        description={translateUi(
+          "Détail des points à optimiser pour chaque page indexée",
+        )}
         icon={<Search className="w-4 h-4" />}
       >
         {isLoading ? (
           <div className="space-y-3">
-            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full" />)}
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
           </div>
         ) : seoPages.length === 0 ? (
           <EmptyState
-            title="Aucune page à analyser"
-            description="Publiez une boutique ou ajoutez des produits pour démarrer l'analyse SEO."
+            title={translateUi("Aucune page à analyser")}
+            description={translateUi(
+              "Publiez une boutique ou ajoutez des produits pour démarrer l'analyse SEO.",
+            )}
           />
         ) : (
           <div className="space-y-3">
             {seoPages.map((page, idx) => (
-              <div key={idx} className="p-3 rounded-xl bg-muted/30 border border-border/40">
+              <div
+                key={idx}
+                className="p-3 rounded-xl bg-muted/30 border border-border/40"
+              >
                 <div className="flex items-center justify-between mb-1.5 gap-3">
                   <span className="font-medium text-foreground text-sm truncate">
                     {page.page}
                   </span>
-                  <span className={`font-display font-bold text-sm shrink-0 ${scoreColor(page.score)}`}>
+                  <span
+                    className={`font-display font-bold text-sm shrink-0 ${scoreColor(page.score)}`}
+                  >
                     {page.score}%
                   </span>
                 </div>

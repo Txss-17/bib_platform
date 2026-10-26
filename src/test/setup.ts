@@ -18,3 +18,9 @@ Object.defineProperty(window, "matchMedia", {
 if (!window.HTMLElement.prototype.scrollIntoView) {
   window.HTMLElement.prototype.scrollIntoView = () => {};
 }
+import { beforeEach } from "vitest";
+import { setUiLanguage } from "@/lib/uiLanguage";
+beforeEach(() => {
+  localStorage.clear();
+  setUiLanguage("fr");
+});

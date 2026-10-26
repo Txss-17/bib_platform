@@ -1,3 +1,5 @@
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import { Link } from "react-router-dom";
 import {
@@ -28,7 +30,7 @@ function timeAgo(iso: string) {
   const timestamp = new Date(iso).getTime();
 
   if (!Number.isFinite(timestamp)) {
-    return "Date indisponible";
+    return translateUi("Date indisponible");
   }
 
   const diffSeconds = Math.max(0, Math.floor((Date.now() - timestamp) / 1000));
@@ -38,22 +40,22 @@ function timeAgo(iso: string) {
   }
 
   const minutes = Math.floor(diffSeconds / 60);
-  if (minutes < 60) return `Il y a ${minutes} min`;
+  if (minutes < 60) return translateUi("Il y a {v0} min", { v0: minutes });
 
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `Il y a ${hours} h`;
+  if (hours < 24) return translateUi("Il y a {v0} h", { v0: hours });
 
   const days = Math.floor(hours / 24);
-  if (days < 30) return `Il y a ${days} j`;
+  if (days < 30) return translateUi("Il y a {v0} j", { v0: days });
 
-  return new Date(iso).toLocaleDateString("fr-FR", {
+  return new Date(iso).toLocaleDateString(getUiLocale(), {
     day: "2-digit",
     month: "short",
   });
 }
 
 function formatAmount(amount: number) {
-  return new Intl.NumberFormat("fr-FR", {
+  return new Intl.NumberFormat(getUiLocale(), {
     style: "currency",
     currency: "EUR",
     minimumFractionDigits: 2,
@@ -62,20 +64,24 @@ function formatAmount(amount: number) {
 }
 
 export function HomeActivityCard() {
+  useLanguage();
   const { feed, status, windowMinutes } = useOrderPulse("all");
   const visible = feed.slice(0, 6);
 
   return (
     <SectionCard
       icon={<Activity className="h-4 w-4" />}
-      title="Activité en direct"
-      description={`Commandes et changements de statut · ${windowMinutes} dernières minutes`}
+      title={translateUi("Activité en direct")}
+      description={translateUi(
+        "Commandes et changements de statut · {v0} dernières minutes",
+        { v0: windowMinutes },
+      )}
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <RealtimeStatusPill status={status} />
           <Link to="/dashboard/commandes">
             <Button variant="ghost" size="sm" className="gap-1.5">
-              Tout voir
+              {translateUi("Tout voir")}
               <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
@@ -88,10 +94,12 @@ export function HomeActivityCard() {
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold text-foreground">
-            Flux de commandes
+            {translateUi("Flux de commandes")}
           </p>
           <p className="text-[11px] leading-4 text-muted-foreground">
-            Les événements disponibles apparaissent dans cette liste.
+            {translateUi(
+              "Les événements disponibles apparaissent dans cette liste.",
+            )}
           </p>
         </div>
       </div>
@@ -99,8 +107,10 @@ export function HomeActivityCard() {
       {visible.length === 0 ? (
         <EmptyState
           icon={<ShoppingBag className="h-6 w-6" />}
-          title="Pas d’activité récente"
-          description="Les nouvelles commandes et les changements de statut apparaîtront ici dès qu’ils seront disponibles."
+          title={translateUi("Pas d’activité récente")}
+          description={translateUi(
+            "Les nouvelles commandes et les changements de statut apparaîtront ici dès qu’ils seront disponibles.",
+          )}
         />
       ) : (
         <ul className="divide-y divide-border/70">
@@ -139,7 +149,9 @@ export function HomeActivityCard() {
                           : "bg-muted text-muted-foreground"
                       }`}
                     >
-                      {isNewOrder ? "Nouvelle commande" : "Mise à jour"}
+                      {isNewOrder
+                        ? translateUi("Nouvelle commande")
+                        : translateUi("Mise à jour")}
                     </span>
                     <span className="text-[10px] text-muted-foreground">
                       {timeAgo(event.created_at)}
@@ -147,7 +159,7 @@ export function HomeActivityCard() {
                   </div>
 
                   <p className="mt-1.5 truncate text-sm font-semibold text-foreground">
-                    {event.customer_name || "Client"}
+                    {event.customer_name || translateUi("Client")}
                   </p>
 
                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
@@ -158,7 +170,9 @@ export function HomeActivityCard() {
                       {event.order_number}
                     </Link>
                     <span aria-hidden="true">·</span>
-                    <span>{isNewOrder ? "Commande reçue" : statusLabel}</span>
+                    <span>
+                      {isNewOrder ? translateUi("Commande reçue") : statusLabel}
+                    </span>
                   </div>
                 </div>
 
@@ -168,10 +182,12 @@ export function HomeActivityCard() {
                   </p>
                   <Link
                     to="/dashboard/commandes"
-                    aria-label={`Consulter la commande ${event.order_number}`}
+                    aria-label={translateUi("Consulter la commande {v0}", {
+                      v0: event.order_number,
+                    })}
                     className="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold text-primary opacity-80 transition-opacity hover:opacity-100"
                   >
-                    Détails
+                    {translateUi("Détails")}
                     <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
                   </Link>
                 </div>

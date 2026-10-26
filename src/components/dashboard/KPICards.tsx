@@ -1,5 +1,14 @@
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent } from "@/components/ui/card";
-import { ShoppingCart, Package, Euro, Store, TrendingUp, TrendingDown } from "lucide-react";
+import {
+  ShoppingCart,
+  Package,
+  Euro,
+  Store,
+  TrendingUp,
+  TrendingDown,
+} from "lucide-react";
 
 interface KPICardProps {
   title: string;
@@ -9,6 +18,7 @@ interface KPICardProps {
 }
 
 function KPICard({ title, value, trend, icon: Icon }: KPICardProps) {
+  useLanguage();
   const isPositive = trend && trend > 0;
   const isNegative = trend && trend < 0;
 
@@ -20,16 +30,27 @@ function KPICard({ title, value, trend, icon: Icon }: KPICardProps) {
             <p className="text-sm text-muted-foreground">{title}</p>
             <p className="text-3xl font-bold text-foreground">{value}</p>
             {trend !== undefined && (
-              <div className={`flex items-center gap-1 text-sm ${
-                isPositive ? "text-success" : isNegative ? "text-destructive" : "text-muted-foreground"
-              }`}>
+              <div
+                className={`flex items-center gap-1 text-sm ${
+                  isPositive
+                    ? "text-success"
+                    : isNegative
+                      ? "text-destructive"
+                      : "text-muted-foreground"
+                }`}
+              >
                 {isPositive ? (
                   <TrendingUp className="w-4 h-4" />
                 ) : isNegative ? (
                   <TrendingDown className="w-4 h-4" />
                 ) : null}
-                <span>{isPositive ? "+" : ""}{trend}%</span>
-                <span className="text-muted-foreground">vs mois dernier</span>
+                <span>
+                  {isPositive ? "+" : ""}
+                  {trend}%
+                </span>
+                <span className="text-muted-foreground">
+                  {translateUi("vs mois dernier")}
+                </span>
               </div>
             )}
           </div>
@@ -63,28 +84,29 @@ export function KPICards({
   activeBoutiques,
   boutiquesTrend,
 }: KPICardsProps) {
+  useLanguage();
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <KPICard
-        title="Commandes"
+        title={translateUi("Commandes")}
         value={ordersCount}
         trend={ordersTrend}
         icon={ShoppingCart}
       />
       <KPICard
-        title="Produits actifs"
+        title={translateUi("Produits actifs")}
         value={activeProducts}
         trend={productsTrend}
         icon={Package}
       />
       <KPICard
-        title="Revenus"
-        value={`${revenue.toLocaleString('fr-FR')} €`}
+        title={translateUi("Revenus")}
+        value={`${revenue.toLocaleString(getUiLocale())} €`}
         trend={revenueTrend}
         icon={Euro}
       />
       <KPICard
-        title="Boutiques actives"
+        title={translateUi("Boutiques actives")}
         value={activeBoutiques}
         trend={boutiquesTrend}
         icon={Store}

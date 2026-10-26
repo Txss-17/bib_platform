@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, Loader2, Store } from "lucide-react";
@@ -16,10 +18,11 @@ interface Props {
 
 export function BoutiqueSearchBar({
   className,
-  placeholder = "Rechercher une boutique ou un produit…",
+  placeholder = translateUi("Rechercher une boutique ou un produit…"),
   onPick,
   compact,
 }: Props) {
+  useLanguage();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -70,7 +73,7 @@ export function BoutiqueSearchBar({
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
           className={cn("pl-9", compact ? "h-9" : "h-10")}
-          aria-label="Rechercher une boutique"
+          aria-label={translateUi("Rechercher une boutique")}
         />
       </form>
 
@@ -78,11 +81,12 @@ export function BoutiqueSearchBar({
         <div className="absolute left-0 right-0 z-50 mt-2 max-h-[70vh] overflow-y-auto rounded-xl border border-border bg-popover p-2 shadow-lg">
           {isFetching && results.length === 0 ? (
             <div className="flex items-center gap-2 px-3 py-4 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" /> Recherche…
+              <Loader2 className="h-4 w-4 animate-spin" />{" "}
+              {translateUi("Recherche…")}
             </div>
           ) : results.length === 0 ? (
             <div className="px-3 py-6 text-center text-sm text-muted-foreground">
-              Aucun résultat. Essayez un autre mot-clé.
+              {translateUi("Aucun résultat. Essayez un autre mot-clé.")}
             </div>
           ) : (
             <ul className="space-y-1">
@@ -126,7 +130,7 @@ export function BoutiqueSearchBar({
                   onClick={() => setOpen(false)}
                   className="block rounded-lg px-3 py-2 text-center text-xs font-medium text-primary hover:bg-accent/50"
                 >
-                  Voir tous les résultats →
+                  {translateUi("Voir tous les résultats →")}
                 </Link>
               </li>
             </ul>

@@ -1,3 +1,5 @@
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -54,15 +56,36 @@ const STATUS_CLASSES: Record<OrderStatus, string> = {
 };
 
 const FILTERS = [
-  { value: "all", label: "Toutes" },
-  { value: "active", label: "En cours" },
-  { value: "delivered", label: "Livrées" },
-  { value: "cancelled", label: "Annulées" },
+  {
+    value: "all",
+    get label() {
+      return translateUi("Toutes");
+    },
+  },
+  {
+    value: "active",
+    get label() {
+      return translateUi("En cours");
+    },
+  },
+  {
+    value: "delivered",
+    get label() {
+      return translateUi("Livrées");
+    },
+  },
+  {
+    value: "cancelled",
+    get label() {
+      return translateUi("Annulées");
+    },
+  },
 ] as const;
 
 type FilterValue = (typeof FILTERS)[number]["value"];
 
 export default function StoreSubscriberOrders() {
+  useLanguage();
   const [orders] = useState<StoreOrder[]>([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterValue>("all");
@@ -92,17 +115,16 @@ export default function StoreSubscriberOrders() {
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <p className="text-sm font-medium text-muted-foreground">
-            BIB Store
-          </p>
+          <p className="text-sm font-medium text-muted-foreground">BIB Store</p>
 
           <h1 className="mt-1 text-3xl font-semibold tracking-tight">
-            Mes commandes
+            {translateUi("Mes commandes")}
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Retrouvez l'historique des commandes associées à votre espace
-            abonné BIB.
+            {translateUi(
+              "Retrouvez l'historique des commandes associées à votre espace abonné BIB.",
+            )}
           </p>
         </div>
 
@@ -116,7 +138,7 @@ export default function StoreSubscriberOrders() {
                 type="search"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Rechercher une commande..."
+                placeholder={translateUi("Rechercher une commande...")}
                 className="h-11 w-full rounded-full border bg-background pl-10 pr-4 text-sm outline-none transition focus:ring-2 focus:ring-primary/20"
               />
             </div>
@@ -158,7 +180,8 @@ export default function StoreSubscriberOrders() {
 }
 
 function OrderCard({ order }: { order: StoreOrder }) {
-  const formattedDate = new Intl.DateTimeFormat("fr-FR", {
+  useLanguage();
+  const formattedDate = new Intl.DateTimeFormat(getUiLocale(), {
     day: "2-digit",
     month: "long",
     year: "numeric",
@@ -166,7 +189,7 @@ function OrderCard({ order }: { order: StoreOrder }) {
 
   const totalItems = order.items.reduce(
     (total, item) => total + item.quantity,
-    0
+    0,
   );
 
   return (
@@ -175,9 +198,7 @@ function OrderCard({ order }: { order: StoreOrder }) {
       <div className="flex flex-col gap-4 border-b p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-semibold">
-              {order.reference}
-            </span>
+            <span className="text-sm font-semibold">{order.reference}</span>
 
             <span
               className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_CLASSES[order.status]}`}
@@ -194,16 +215,13 @@ function OrderCard({ order }: { order: StoreOrder }) {
 
             <span className="inline-flex items-center gap-1.5">
               <Package className="h-3.5 w-3.5" />
-              {totalItems}{" "}
-              {totalItems > 1 ? "articles" : "article"}
+              {totalItems} {totalItems > 1 ? "articles" : "article"}
             </span>
           </div>
         </div>
 
         <div className="text-left sm:text-right">
-          <p className="text-xs text-muted-foreground">
-            Total
-          </p>
+          <p className="text-xs text-muted-foreground">Total</p>
 
           <p className="mt-1 text-lg font-semibold">
             {order.total.toFixed(2).replace(".", ",")} €
@@ -234,12 +252,11 @@ function OrderCard({ order }: { order: StoreOrder }) {
               </div>
 
               <div className="max-w-[180px]">
-                <p className="truncate text-sm font-medium">
-                  {item.name}
-                </p>
+                <p className="truncate text-sm font-medium">{item.name}</p>
 
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  Quantité : {item.quantity}
+                  {translateUi("Quantité :") + " "}
+                  {item.quantity}
                 </p>
               </div>
             </div>
@@ -256,13 +273,9 @@ function OrderCard({ order }: { order: StoreOrder }) {
       {/* Footer */}
       <div className="flex flex-col gap-3 border-t bg-muted/20 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs text-muted-foreground">
-            Boutique
-          </p>
+          <p className="text-xs text-muted-foreground">Boutique</p>
 
-          <p className="mt-0.5 text-sm font-medium">
-            {order.boutiqueName}
-          </p>
+          <p className="mt-0.5 text-sm font-medium">{order.boutiqueName}</p>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -271,7 +284,7 @@ function OrderCard({ order }: { order: StoreOrder }) {
               to={`/boutique/${order.boutiqueSlug}`}
               className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border bg-background px-4 text-sm font-medium transition-colors hover:bg-muted"
             >
-              Voir la boutique
+              {translateUi("Voir la boutique")}
             </Link>
           )}
 
@@ -279,7 +292,7 @@ function OrderCard({ order }: { order: StoreOrder }) {
             type="button"
             className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
-            Détails
+            {translateUi("Détails")}
             <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -289,6 +302,7 @@ function OrderCard({ order }: { order: StoreOrder }) {
 }
 
 function EmptyOrders() {
+  useLanguage();
   return (
     <div className="flex min-h-[430px] flex-col items-center justify-center rounded-2xl border bg-card px-6 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
@@ -296,19 +310,20 @@ function EmptyOrders() {
       </div>
 
       <h2 className="mt-5 text-lg font-semibold">
-        Aucune commande
+        {translateUi("Aucune commande")}
       </h2>
 
       <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-        Vos commandes apparaîtront ici lorsqu'une commande sera associée à
-        votre espace BIB.
+        {translateUi(
+          "Vos commandes apparaîtront ici lorsqu'une commande sera associée à votre espace BIB.",
+        )}
       </p>
 
       <Link
         to="/store/products"
         className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
       >
-        Découvrir les produits
+        {translateUi("Découvrir les produits")}
         <ArrowRight className="h-4 w-4" />
       </Link>
     </div>
@@ -316,6 +331,7 @@ function EmptyOrders() {
 }
 
 function NoResults() {
+  useLanguage();
   return (
     <div className="flex min-h-[320px] flex-col items-center justify-center rounded-2xl border bg-card px-6 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
@@ -323,12 +339,13 @@ function NoResults() {
       </div>
 
       <h2 className="mt-5 text-lg font-semibold">
-        Aucune commande trouvée
+        {translateUi("Aucune commande trouvée")}
       </h2>
 
       <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-        Aucune commande ne correspond à votre recherche ou au filtre
-        sélectionné.
+        {translateUi(
+          "Aucune commande ne correspond à votre recherche ou au filtre sélectionné.",
+        )}
       </p>
     </div>
   );

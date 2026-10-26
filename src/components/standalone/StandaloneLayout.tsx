@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { ReactNode } from "react";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
@@ -50,6 +52,7 @@ export function StandaloneLayout({
   portal,
   accent = "primary",
 }: StandaloneLayoutProps) {
+  useLanguage();
   const accentClasses: Record<string, string> = {
     primary: "bg-primary/10 text-primary border-primary/20",
     accent: "bg-accent/10 text-accent border-accent/20",
@@ -67,7 +70,7 @@ export function StandaloneLayout({
       {portal && (
         <div
           className="border-b border-border/50 bg-background"
-          aria-label={`Portail ${portal}`}
+          aria-label={translateUi("Portail {v0}", { v0: portal })}
         >
           <div className="container mx-auto flex h-10 items-center px-4 sm:px-6 lg:px-8">
             <span

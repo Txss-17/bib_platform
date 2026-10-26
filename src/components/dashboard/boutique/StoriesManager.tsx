@@ -1,9 +1,7 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useRef, useState, useMemo } from "react";
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -91,18 +89,9 @@ export interface Story {
 const MAX_STORIES = 8;
 const MAX_AI_VARIANTS = 4;
 
-const ALLOWED_IMAGE = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-];
+const ALLOWED_IMAGE = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
-const ALLOWED_VIDEO = [
-  "video/mp4",
-  "video/webm",
-  "video/quicktime",
-];
+const ALLOWED_VIDEO = ["video/mp4", "video/webm", "video/quicktime"];
 
 const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 30 * 1024 * 1024;
@@ -112,8 +101,7 @@ const MAX_VIDEO_BYTES = 30 * 1024 * 1024;
 /* -------------------------------------------------------------------------- */
 
 function uid() {
-  return typeof crypto !== "undefined" &&
-    "randomUUID" in crypto
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
     : Math.random().toString(36).slice(2);
 }
@@ -126,7 +114,7 @@ function currentSeason(): string {
   }
 
   if (month >= 6 && month <= 8) {
-    return "été";
+    return translateUi("été");
   }
 
   if (month >= 9 && month <= 11) {
@@ -149,9 +137,7 @@ function toLocalInput(iso?: string | null): string {
 
   const offset = date.getTimezoneOffset();
 
-  const local = new Date(
-    date.getTime() - offset * 60000,
-  );
+  const local = new Date(date.getTime() - offset * 60000);
 
   return local.toISOString().slice(0, 16);
 }
@@ -163,9 +149,7 @@ function fromLocalInput(value: string): string | null {
 
   const date = new Date(value);
 
-  return Number.isNaN(date.getTime())
-    ? null
-    : date.toISOString();
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
 function removeStorageFile(url: string) {
@@ -177,9 +161,7 @@ function removeStorageFile(url: string) {
   }
 
   const path = decodeURIComponent(
-    url
-      .slice(index + marker.length)
-      .split("?")[0],
+    url.slice(index + marker.length).split("?")[0],
   );
 
   if (!path) {
@@ -207,12 +189,10 @@ function SortableStory({
 }: {
   story: Story;
   index: number;
-  onPatch: (
-    id: string,
-    patch: Partial<Story>,
-  ) => void;
+  onPatch: (id: string, patch: Partial<Story>) => void;
   onRemove: (id: string) => void;
 }) {
+  useLanguage();
   const {
     attributes,
     listeners,
@@ -271,7 +251,7 @@ function SortableStory({
           {...attributes}
           {...listeners}
           type="button"
-          aria-label="Réordonner la Story"
+          aria-label={translateUi("Réordonner la Story")}
           className="absolute right-1.5 top-1.5 inline-flex h-6 w-6 cursor-grab touch-none items-center justify-center rounded bg-black/60 text-white active:cursor-grabbing"
         >
           <GripVertical className="h-3.5 w-3.5" />
@@ -279,16 +259,14 @@ function SortableStory({
 
         {!enabled && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-[11px] font-medium text-white">
-            Désactivée
+            {translateUi("Désactivée")}
           </div>
         )}
       </div>
 
       <div className="space-y-1.5 p-2">
         <div className="flex items-center justify-between gap-2">
-          <Label className="text-[11px] text-muted-foreground">
-            Active
-          </Label>
+          <Label className="text-[11px] text-muted-foreground">Active</Label>
 
           <Switch
             checked={enabled}
@@ -307,7 +285,7 @@ function SortableStory({
               label: event.target.value,
             })
           }
-          placeholder="Titre (optionnel)"
+          placeholder={translateUi("Titre (optionnel)")}
           className="h-7 text-xs"
         />
 
@@ -318,14 +296,14 @@ function SortableStory({
               cta_url: event.target.value,
             })
           }
-          placeholder="Lien CTA (optionnel)"
+          placeholder={translateUi("Lien CTA (optionnel)")}
           className="h-7 text-xs"
         />
 
         <div className="grid grid-cols-2 gap-1">
           <div className="space-y-0.5">
             <Label className="text-[10px] text-muted-foreground">
-              Début
+              {translateUi("Début")}
             </Label>
 
             <Input
@@ -333,9 +311,7 @@ function SortableStory({
               value={toLocalInput(story.starts_at)}
               onChange={(event) =>
                 onPatch(story.id, {
-                  starts_at: fromLocalInput(
-                    event.target.value,
-                  ),
+                  starts_at: fromLocalInput(event.target.value),
                 })
               }
               className="h-7 px-1 text-[11px]"
@@ -344,7 +320,7 @@ function SortableStory({
 
           <div className="space-y-0.5">
             <Label className="text-[10px] text-muted-foreground">
-              Fin
+              {translateUi("Fin")}
             </Label>
 
             <Input
@@ -352,9 +328,7 @@ function SortableStory({
               value={toLocalInput(story.ends_at)}
               onChange={(event) =>
                 onPatch(story.id, {
-                  ends_at: fromLocalInput(
-                    event.target.value,
-                  ),
+                  ends_at: fromLocalInput(event.target.value),
                 })
               }
               className="h-7 px-1 text-[11px]"
@@ -369,7 +343,7 @@ function SortableStory({
             variant="ghost"
             className="h-6 w-6 text-muted-foreground hover:text-destructive"
             onClick={() => onRemove(story.id)}
-            aria-label="Supprimer la Story"
+            aria-label={translateUi("Supprimer la Story")}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
@@ -383,11 +357,8 @@ function SortableStory({
 /* Stories Manager                                                            */
 /* -------------------------------------------------------------------------- */
 
-export function StoriesManager({
-  boutiqueId,
-}: {
-  boutiqueId: string;
-}) {
+export function StoriesManager({ boutiqueId }: { boutiqueId: string }) {
+  useLanguage();
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -415,8 +386,7 @@ export function StoriesManager({
       },
     }),
     useSensor(KeyboardSensor, {
-      coordinateGetter:
-        sortableKeyboardCoordinates,
+      coordinateGetter: sortableKeyboardCoordinates,
     }),
   );
 
@@ -424,14 +394,8 @@ export function StoriesManager({
   /* Boutique                                                                 */
   /* ------------------------------------------------------------------------ */
 
-  const {
-    data: boutique,
-    isLoading,
-  } = useQuery({
-    queryKey: [
-      "boutique-highlights",
-      boutiqueId,
-    ],
+  const { data: boutique, isLoading } = useQuery({
+    queryKey: ["boutique-highlights", boutiqueId],
 
     queryFn: async () => {
       const { data, error } = await supabase
@@ -460,9 +424,7 @@ export function StoriesManager({
 
   const stories: Story[] = useMemo(
     () =>
-      Array.isArray(boutique?.highlight_media)
-        ? boutique.highlight_media
-        : [],
+      Array.isArray(boutique?.highlight_media) ? boutique.highlight_media : [],
     [boutique],
   );
 
@@ -486,10 +448,7 @@ export function StoriesManager({
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [
-          "boutique-highlights",
-          boutiqueId,
-        ],
+        queryKey: ["boutique-highlights", boutiqueId],
       });
 
       queryClient.invalidateQueries({
@@ -499,8 +458,7 @@ export function StoriesManager({
 
     onError: (error: any) => {
       toast.error(
-        error?.message ??
-          "Erreur lors de l'enregistrement",
+        error?.message ?? translateUi("Erreur lors de l'enregistrement"),
       );
     },
   });
@@ -512,7 +470,7 @@ export function StoriesManager({
   const addStory = (story: Story) => {
     if (stories.length >= MAX_STORIES) {
       toast.error(
-        `Limite de ${MAX_STORIES} Stories atteinte.`,
+        translateUi("Limite de {v0} Stories atteinte.", { v0: MAX_STORIES }),
       );
       return;
     }
@@ -530,10 +488,7 @@ export function StoriesManager({
   /* Update                                                                   */
   /* ------------------------------------------------------------------------ */
 
-  const updateStory = (
-    id: string,
-    patch: Partial<Story>,
-  ) => {
+  const updateStory = (id: string, patch: Partial<Story>) => {
     saveMutation.mutate(
       stories.map((story) =>
         story.id === id
@@ -551,15 +506,9 @@ export function StoriesManager({
   /* ------------------------------------------------------------------------ */
 
   const removeStory = (id: string) => {
-    const target = stories.find(
-      (story) => story.id === id,
-    );
+    const target = stories.find((story) => story.id === id);
 
-    saveMutation.mutate(
-      stories.filter(
-        (story) => story.id !== id,
-      ),
-    );
+    saveMutation.mutate(stories.filter((story) => story.id !== id));
 
     if (target) {
       removeStorageFile(target.url);
@@ -571,34 +520,21 @@ export function StoriesManager({
   /* ------------------------------------------------------------------------ */
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const {
-      active,
-      over,
-    } = event;
+    const { active, over } = event;
 
     if (!over || active.id === over.id) {
       return;
     }
 
-    const oldIndex = stories.findIndex(
-      (story) => story.id === active.id,
-    );
+    const oldIndex = stories.findIndex((story) => story.id === active.id);
 
-    const newIndex = stories.findIndex(
-      (story) => story.id === over.id,
-    );
+    const newIndex = stories.findIndex((story) => story.id === over.id);
 
     if (oldIndex === -1 || newIndex === -1) {
       return;
     }
 
-    saveMutation.mutate(
-      arrayMove(
-        stories,
-        oldIndex,
-        newIndex,
-      ),
-    );
+    saveMutation.mutate(arrayMove(stories, oldIndex, newIndex));
   };
 
   /* ------------------------------------------------------------------------ */
@@ -607,37 +543,33 @@ export function StoriesManager({
 
   const handleFile = async (file: File) => {
     if (!user) {
-      toast.error("Session expirée");
+      toast.error(translateUi("Session expirée"));
       return;
     }
 
-    const isImage = ALLOWED_IMAGE.includes(
-      file.type,
-    );
+    const isImage = ALLOWED_IMAGE.includes(file.type);
 
-    const isVideo = ALLOWED_VIDEO.includes(
-      file.type,
-    );
+    const isVideo = ALLOWED_VIDEO.includes(file.type);
 
     if (!isImage && !isVideo) {
-      toast.error("Format non supporté.");
+      toast.error(translateUi("Format non supporté."));
       return;
     }
 
-    const maxBytes = isImage
-      ? MAX_IMAGE_BYTES
-      : MAX_VIDEO_BYTES;
+    const maxBytes = isImage ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES;
 
     if (file.size > maxBytes) {
       toast.error(
-        `Fichier trop volumineux (max ${(maxBytes / 1024 / 1024).toFixed(0)} Mo).`,
+        translateUi("Fichier trop volumineux (max {v0} Mo).", {
+          v0: (maxBytes / 1024 / 1024).toFixed(0),
+        }),
       );
       return;
     }
 
     if (stories.length >= MAX_STORIES) {
       toast.error(
-        `Limite de ${MAX_STORIES} Stories atteinte.`,
+        translateUi("Limite de {v0} Stories atteinte.", { v0: MAX_STORIES }),
       );
       return;
     }
@@ -645,63 +577,41 @@ export function StoriesManager({
     setUploading(true);
 
     try {
-      const extension =
-        file.name.split(".").pop() ||
-        (isImage ? "jpg" : "mp4");
+      const extension = file.name.split(".").pop() || (isImage ? "jpg" : "mp4");
 
-      const path =
-        `highlights/${user.id}/${boutiqueId}_${Date.now()}.${extension}`;
+      const path = `highlights/${user.id}/${boutiqueId}_${Date.now()}.${extension}`;
 
-      const {
-        error: uploadError,
-      } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("boutique-media")
-        .upload(
-          path,
-          file,
-          {
-            upsert: false,
-            cacheControl: "3600",
-            contentType: file.type,
-          },
-        );
+        .upload(path, file, {
+          upsert: false,
+          cacheControl: "3600",
+          contentType: file.type,
+        });
 
       if (uploadError) {
         throw uploadError;
       }
 
-      const {
-        data: publicData,
-      } = supabase.storage
+      const { data: publicData } = supabase.storage
         .from("boutique-media")
         .getPublicUrl(path);
 
       addStory({
         id: uid(),
-        kind: isImage
-          ? "image"
-          : "video",
+        kind: isImage ? "image" : "video",
         url: publicData.publicUrl,
-        label:
-          draftLabel.trim() ||
-          undefined,
-        cta_url:
-          draftCta.trim() ||
-          undefined,
+        label: draftLabel.trim() || undefined,
+        cta_url: draftCta.trim() || undefined,
         enabled: true,
       });
 
       setDraftLabel("");
       setDraftCta("");
 
-      toast.success(
-        "Story ajoutée",
-      );
+      toast.success(translateUi("Story ajoutée"));
     } catch (error: any) {
-      toast.error(
-        error?.message ??
-          "Échec de l'upload",
-      );
+      toast.error(error?.message ?? translateUi("Échec de l'upload"));
     } finally {
       setUploading(false);
 
@@ -717,69 +627,54 @@ export function StoriesManager({
 
   const handleGenerate = async () => {
     if (!user) {
-      toast.error("Session expirée");
+      toast.error(translateUi("Session expirée"));
       return;
     }
 
-    const userPrompt =
-      aiPrompt.trim();
+    const userPrompt = aiPrompt.trim();
 
     if (userPrompt.length < 4) {
       toast.error(
-        "Décris ton actualité (ex: soldes été, nouvelle collection capsule)",
+        translateUi(
+          "Décris ton actualité (ex: soldes été, nouvelle collection capsule)",
+        ),
       );
       return;
     }
 
     if (stories.length >= MAX_STORIES) {
       toast.error(
-        `Limite de ${MAX_STORIES} Stories atteinte.`,
+        translateUi("Limite de {v0} Stories atteinte.", { v0: MAX_STORIES }),
       );
       return;
     }
 
     const contextParts = [
-      boutique?.name &&
-        `Boutique: ${boutique.name}`,
+      boutique?.name && `Boutique: ${boutique.name}`,
 
-      boutique?.category &&
-        `Catégorie: ${boutique.category}`,
+      boutique?.category && `Catégorie: ${boutique.category}`,
 
-      Array.isArray(
-        boutique?.target_markets,
-      ) &&
-        boutique.target_markets.length
+      Array.isArray(boutique?.target_markets) && boutique.target_markets.length
         ? `Marché: ${boutique.target_markets.join(", ")}`
         : null,
 
-      boutique?.tagline &&
-        `Positionnement: ${boutique.tagline}`,
+      boutique?.tagline && `Positionnement: ${boutique.tagline}`,
 
       `Saison: ${currentSeason()} ${new Date().getFullYear()}`,
 
       `Actualité: ${userPrompt}`,
     ].filter(Boolean);
 
-    const enrichedPrompt =
-      contextParts.join(" · ");
+    const enrichedPrompt = contextParts.join(" · ");
 
-    const remaining =
-      MAX_STORIES -
-      stories.length;
+    const remaining = MAX_STORIES - stories.length;
 
-    const wanted = Math.min(
-      Math.max(aiCount, 1),
-      MAX_AI_VARIANTS,
-      remaining,
-    );
+    const wanted = Math.min(Math.max(aiCount, 1), MAX_AI_VARIANTS, remaining);
 
     setGenerating(true);
 
     try {
-      const {
-        data,
-        error,
-      } = await supabase.functions.invoke(
+      const { data, error } = await supabase.functions.invoke(
         "studio-image-gen",
         {
           body: {
@@ -795,7 +690,7 @@ export function StoriesManager({
       }
 
       const urls =
-        (
+        ((
           data as {
             urls?: string[];
             url?: string;
@@ -805,7 +700,7 @@ export function StoriesManager({
           data as {
             url?: string;
           }
-        )?.url
+        )?.url)
           ? [
               (
                 data as {
@@ -816,33 +711,19 @@ export function StoriesManager({
           : [];
 
       if (urls.length === 0) {
-        throw new Error(
-          "Génération échouée",
-        );
+        throw new Error("Génération échouée");
       }
 
-      const baseLabel =
-        draftLabel.trim() ||
-        userPrompt.slice(0, 40);
+      const baseLabel = draftLabel.trim() || userPrompt.slice(0, 40);
 
       setVariantPicker({
         urls,
-        selected:
-          new Set<string>(
-            urls.length === 1
-              ? urls
-              : [],
-          ),
+        selected: new Set<string>(urls.length === 1 ? urls : []),
         label: baseLabel,
-        cta:
-          draftCta.trim() ||
-          undefined,
+        cta: draftCta.trim() || undefined,
       });
     } catch (error: any) {
-      toast.error(
-        error?.message ??
-          "Erreur de génération",
-      );
+      toast.error(error?.message ?? translateUi("Erreur de génération"));
     } finally {
       setGenerating(false);
     }
@@ -857,58 +738,41 @@ export function StoriesManager({
       return;
     }
 
-    const chosen =
-      variantPicker.urls.filter(
-        (url) =>
-          variantPicker.selected.has(
-            url,
-          ),
-      );
+    const chosen = variantPicker.urls.filter((url) =>
+      variantPicker.selected.has(url),
+    );
 
     if (chosen.length === 0) {
-      toast.error(
-        "Sélectionnez au moins une variante",
-      );
+      toast.error(translateUi("Sélectionnez au moins une variante"));
       return;
     }
 
     const next = [...stories];
 
-    const remaining =
-      MAX_STORIES -
-      next.length;
+    const remaining = MAX_STORIES - next.length;
 
-    chosen
-      .slice(0, remaining)
-      .forEach((url, index) => {
-        next.push({
-          id: uid(),
-          kind: "image",
-          url,
+    chosen.slice(0, remaining).forEach((url, index) => {
+      next.push({
+        id: uid(),
+        kind: "image",
+        url,
 
-          label:
-            chosen.length > 1
-              ? `${variantPicker.label} (${index + 1})`
-              : variantPicker.label,
+        label:
+          chosen.length > 1
+            ? `${variantPicker.label} (${index + 1})`
+            : variantPicker.label,
 
-          cta_url:
-            variantPicker.cta,
+        cta_url: variantPicker.cta,
 
-          enabled: true,
-        });
+        enabled: true,
       });
+    });
 
-    const discarded =
-      variantPicker.urls.filter(
-        (url) =>
-          !variantPicker.selected.has(
-            url,
-          ),
-      );
-
-    discarded.forEach(
-      removeStorageFile,
+    const discarded = variantPicker.urls.filter(
+      (url) => !variantPicker.selected.has(url),
     );
+
+    discarded.forEach(removeStorageFile);
 
     saveMutation.mutate(next);
 
@@ -918,15 +782,11 @@ export function StoriesManager({
     setDraftCta("");
 
     toast.success(
-      `${chosen.length} visuel${
-        chosen.length > 1
-          ? "s"
-          : ""
-      } ajouté${
-        chosen.length > 1
-          ? "s"
-          : ""
-      }`,
+      translateUi("{v0} visuel{v1} ajouté{v2}", {
+        v0: chosen.length,
+        v1: chosen.length > 1 ? "s" : "",
+        v2: chosen.length > 1 ? "s" : "",
+      }),
     );
   };
 
@@ -939,9 +799,7 @@ export function StoriesManager({
       return;
     }
 
-    variantPicker.urls.forEach(
-      removeStorageFile,
-    );
+    variantPicker.urls.forEach(removeStorageFile);
 
     setVariantPicker(null);
   };
@@ -955,14 +813,15 @@ export function StoriesManager({
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Sparkles className="h-4 w-4 text-primary" />
-          Stories du Store
+          {translateUi("Stories du Store")}
         </CardTitle>
 
         <CardDescription>
-          Ajoutez de 1 à {MAX_STORIES} visuels ou
-          vidéos pour enrichir la présentation de
-          votre boutique sur le Store. Activez,
-          programmez et réordonnez vos Stories.
+          {translateUi("Ajoutez de 1 à") + " "}
+          {MAX_STORIES}{" "}
+          {translateUi(
+            "visuels ou vidéos pour enrichir la présentation de votre boutique sur le Store. Activez, programmez et réordonnez vos Stories.",
+          )}
         </CardDescription>
       </CardHeader>
 
@@ -976,107 +835,56 @@ export function StoriesManager({
             {stories.length > 0 && (
               <DndContext
                 sensors={sensors}
-                collisionDetection={
-                  closestCenter
-                }
-                onDragEnd={
-                  handleDragEnd
-                }
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
               >
                 <SortableContext
-                  items={stories.map(
-                    (story) =>
-                      story.id,
-                  )}
-                  strategy={
-                    verticalListSortingStrategy
-                  }
+                  items={stories.map((story) => story.id)}
+                  strategy={verticalListSortingStrategy}
                 >
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                    {stories.map(
-                      (
-                        story,
-                        index,
-                      ) => (
-                        <SortableStory
-                          key={
-                            story.id
-                          }
-                          story={
-                            story
-                          }
-                          index={
-                            index
-                          }
-                          onPatch={
-                            updateStory
-                          }
-                          onRemove={
-                            removeStory
-                          }
-                        />
-                      ),
-                    )}
+                    {stories.map((story, index) => (
+                      <SortableStory
+                        key={story.id}
+                        story={story}
+                        index={index}
+                        onPatch={updateStory}
+                        onRemove={removeStory}
+                      />
+                    ))}
                   </div>
                 </SortableContext>
               </DndContext>
             )}
 
-            {stories.length <
-              MAX_STORIES && (
+            {stories.length < MAX_STORIES && (
               <div className="space-y-3 rounded-lg border border-dashed border-border/60 bg-muted/20 p-3">
                 <div className="grid gap-2 sm:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label
-                      htmlFor="story-label"
-                      className="text-xs"
-                    >
-                      Titre
-                      (optionnel)
+                    <Label htmlFor="story-label" className="text-xs">
+                      {translateUi("Titre (optionnel)")}
                     </Label>
 
                     <Input
                       id="story-label"
-                      value={
-                        draftLabel
-                      }
-                      onChange={(
-                        event,
-                      ) =>
-                        setDraftLabel(
-                          event
-                            .target
-                            .value,
-                        )
-                      }
-                      placeholder="Ex : Nouvelle collection automne"
+                      value={draftLabel}
+                      onChange={(event) => setDraftLabel(event.target.value)}
+                      placeholder={translateUi(
+                        "Ex : Nouvelle collection automne",
+                      )}
                       className="h-8 text-sm"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label
-                      htmlFor="story-cta"
-                      className="text-xs"
-                    >
-                      Lien CTA
-                      (optionnel)
+                    <Label htmlFor="story-cta" className="text-xs">
+                      {translateUi("Lien CTA (optionnel)")}
                     </Label>
 
                     <Input
                       id="story-cta"
-                      value={
-                        draftCta
-                      }
-                      onChange={(
-                        event,
-                      ) =>
-                        setDraftCta(
-                          event
-                            .target
-                            .value,
-                        )
-                      }
+                      value={draftCta}
+                      onChange={(event) => setDraftCta(event.target.value)}
                       placeholder="https://… ou /produit/…"
                       className="h-8 text-sm"
                     />
@@ -1086,23 +894,13 @@ export function StoriesManager({
                 <input
                   ref={fileRef}
                   type="file"
-                  accept={[
-                    ...ALLOWED_IMAGE,
-                    ...ALLOWED_VIDEO,
-                  ].join(",")}
+                  accept={[...ALLOWED_IMAGE, ...ALLOWED_VIDEO].join(",")}
                   hidden
-                  onChange={(
-                    event,
-                  ) => {
-                    const file =
-                      event
-                        .target
-                        .files?.[0];
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
 
                     if (file) {
-                      handleFile(
-                        file,
-                      );
+                      handleFile(file);
                     }
                   }}
                 />
@@ -1111,14 +909,8 @@ export function StoriesManager({
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() =>
-                      fileRef.current?.click()
-                    }
-                    disabled={
-                      uploading ||
-                      generating ||
-                      saveMutation.isPending
-                    }
+                    onClick={() => fileRef.current?.click()}
+                    disabled={uploading || generating || saveMutation.isPending}
                   >
                     {uploading ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -1126,29 +918,16 @@ export function StoriesManager({
                       <Upload className="mr-2 h-4 w-4" />
                     )}
 
-                    Uploader image /
-                    vidéo
+                    {translateUi("Uploader image / vidéo")}
                   </Button>
 
                   <div className="flex gap-2">
                     <Input
-                      value={
-                        aiPrompt
-                      }
-                      onChange={(
-                        event,
-                      ) =>
-                        setAiPrompt(
-                          event
-                            .target
-                            .value,
-                        )
-                      }
-                      placeholder="Actualité (promo, nouveauté…)"
+                      value={aiPrompt}
+                      onChange={(event) => setAiPrompt(event.target.value)}
+                      placeholder={translateUi("Actualité (promo, nouveauté…)")}
                       className="h-9 text-sm"
-                      disabled={
-                        generating
-                      }
+                      disabled={generating}
                     />
 
                     <Input
@@ -1156,50 +935,35 @@ export function StoriesManager({
                       min={1}
                       max={Math.min(
                         MAX_AI_VARIANTS,
-                        Math.max(
-                          1,
-                          MAX_STORIES -
-                            stories.length,
-                        ),
+                        Math.max(1, MAX_STORIES - stories.length),
                       )}
                       value={aiCount}
-                      onChange={(
-                        event,
-                      ) =>
+                      onChange={(event) =>
                         setAiCount(
                           Math.max(
                             1,
                             Math.min(
                               MAX_AI_VARIANTS,
-                              MAX_STORIES -
-                                stories.length,
-                              Number(
-                                event
-                                  .target
-                                  .value,
-                              ) || 1,
+                              MAX_STORIES - stories.length,
+                              Number(event.target.value) || 1,
                             ),
                           ),
                         )
                       }
                       className="h-9 w-14 text-sm"
-                      disabled={
-                        generating
-                      }
-                      title="Nombre de variantes à générer"
+                      disabled={generating}
+                      title={translateUi("Nombre de variantes à générer")}
                     />
 
                     <Button
                       type="button"
-                      onClick={
-                        handleGenerate
-                      }
+                      onClick={handleGenerate}
                       disabled={
-                        generating ||
-                        uploading ||
-                        saveMutation.isPending
+                        generating || uploading || saveMutation.isPending
                       }
-                      title={`Générer ${aiCount} variante(s)`}
+                      title={translateUi("Générer {v0} variante(s)", {
+                        v0: aiCount,
+                      })}
                     >
                       {generating ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -1213,15 +977,15 @@ export function StoriesManager({
                 <p className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
                   <CalendarClock className="mt-0.5 h-3 w-3 shrink-0" />
 
-                  L'IA s'appuie sur votre identité
-                  (palette, ambiance, mots-clés),
-                  votre catégorie (
+                  {translateUi(
+                    "L'IA s'appuie sur votre identité (palette, ambiance, mots-clés), votre catégorie (",
+                  )}
                   {boutique?.category ?? "—"}
-                  ), votre marché et la saison (
+                  {translateUi("), votre marché et la saison (")}
                   {currentSeason()}
-                  ). Jusqu'à 4 variantes — vous
-                  choisissez celle(s) à conserver.
-                  Image ≤ 6 Mo · Vidéo ≤ 30 Mo.
+                  {translateUi(
+                    "). Jusqu'à 4 variantes — vous choisissez celle(s) à conserver. Image ≤ 6 Mo · Vidéo ≤ 30 Mo.",
+                  )}
                 </p>
               </div>
             )}
@@ -1233,7 +997,7 @@ export function StoriesManager({
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
               >
-                Voir le rendu sur le Store
+                {translateUi("Voir le rendu sur le Store")}
                 <ExternalLink className="h-3 w-3" />
               </a>
             )}
@@ -1257,101 +1021,71 @@ export function StoriesManager({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
-              Choisir vos variantes
+              {translateUi("Choisir vos variantes")}
             </DialogTitle>
 
             <DialogDescription>
-              Sélectionnez les visuels à conserver.
-              Les variantes non retenues seront
-              supprimées.
+              {translateUi(
+                "Sélectionnez les visuels à conserver. Les variantes non retenues seront supprimées.",
+              )}
             </DialogDescription>
           </DialogHeader>
 
           {variantPicker && (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {variantPicker.urls.map(
-                (url, index) => {
-                  const isSelected =
-                    variantPicker.selected.has(
-                      url,
-                    );
+              {variantPicker.urls.map((url, index) => {
+                const isSelected = variantPicker.selected.has(url);
 
-                  return (
-                    <button
-                      key={url}
-                      type="button"
-                      onClick={() => {
-                        const next =
-                          new Set(
-                            variantPicker.selected,
-                          );
+                return (
+                  <button
+                    key={url}
+                    type="button"
+                    onClick={() => {
+                      const next = new Set(variantPicker.selected);
 
-                        if (
-                          next.has(
-                            url,
-                          )
-                        ) {
-                          next.delete(
-                            url,
-                          );
-                        } else {
-                          next.add(
-                            url,
-                          );
-                        }
-
-                        setVariantPicker({
-                          ...variantPicker,
-                          selected:
-                            next,
-                        });
-                      }}
-                      className={`group relative aspect-[4/5] overflow-hidden rounded-lg border-2 transition-all ${
-                        isSelected
-                          ? "border-primary ring-2 ring-primary/30"
-                          : "border-border/60 hover:border-primary/40"
-                      }`}
-                      aria-pressed={
-                        isSelected
+                      if (next.has(url)) {
+                        next.delete(url);
+                      } else {
+                        next.add(url);
                       }
-                    >
-                      <img
-                        src={url}
-                        alt={`Variante ${index + 1}`}
-                        className="h-full w-full object-cover"
-                      />
 
-                      <div className="absolute left-1.5 top-1.5">
-                        <Badge
-                          variant={
-                            isSelected
-                              ? "default"
-                              : "secondary"
-                          }
-                          className="text-[10px]"
-                        >
-                          {isSelected
-                            ? "✓ Sélectionnée"
-                            : `Variante ${
-                                index + 1
-                              }`}
-                        </Badge>
-                      </div>
-                    </button>
-                  );
-                },
-              )}
+                      setVariantPicker({
+                        ...variantPicker,
+                        selected: next,
+                      });
+                    }}
+                    className={`group relative aspect-[4/5] overflow-hidden rounded-lg border-2 transition-all ${
+                      isSelected
+                        ? "border-primary ring-2 ring-primary/30"
+                        : "border-border/60 hover:border-primary/40"
+                    }`}
+                    aria-pressed={isSelected}
+                  >
+                    <img
+                      src={url}
+                      alt={translateUi("Variante {v0}", { v0: index + 1 })}
+                      className="h-full w-full object-cover"
+                    />
+
+                    <div className="absolute left-1.5 top-1.5">
+                      <Badge
+                        variant={isSelected ? "default" : "secondary"}
+                        className="text-[10px]"
+                      >
+                        {isSelected
+                          ? translateUi("✓ Sélectionnée")
+                          : translateUi("Variante {v0}", { v0: index + 1 })}
+                      </Badge>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           )}
 
           <DialogFooter className="gap-2 sm:gap-2">
-            <Button
-              variant="outline"
-              onClick={
-                cancelVariantPick
-              }
-            >
-              Tout rejeter
+            <Button variant="outline" onClick={cancelVariantPick}>
+              {translateUi("Tout rejeter")}
             </Button>
 
             <Button
@@ -1360,29 +1094,19 @@ export function StoriesManager({
                 variantPicker &&
                 setVariantPicker({
                   ...variantPicker,
-                  selected:
-                    new Set(
-                      variantPicker.urls,
-                    ),
+                  selected: new Set(variantPicker.urls),
                 })
               }
             >
-              Tout sélectionner
+              {translateUi("Tout sélectionner")}
             </Button>
 
             <Button
-              onClick={
-                confirmVariantPick
-              }
-              disabled={
-                !variantPicker?.selected
-                  .size
-              }
+              onClick={confirmVariantPick}
+              disabled={!variantPicker?.selected.size}
             >
-              Ajouter (
-              {variantPicker?.selected
-                .size ?? 0}
-              )
+              {translateUi("Ajouter (")}
+              {variantPicker?.selected.size ?? 0})
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,5 +1,8 @@
+import { translateUi } from "@/lib/uiTranslation";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useTheme } from "next-themes";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -53,11 +56,6 @@ type SettingsTab =
   | "paiement"
   | "apparence";
 
-type DashboardThemePreference = "light" | "dark" | "system";
-
-const THEME_STORAGE_KEY = "bib-dashboard-theme";
-const THEME_CHANGE_EVENT = "bib-dashboard-theme-change";
-
 export default function Parametres() {
   const { user } = useAuth();
   const portal = useOpenBillingPortal();
@@ -66,69 +64,36 @@ export default function Parametres() {
   const [sendingReset, setSendingReset] = useState(false);
   const [signingOutAll, setSigningOutAll] = useState(false);
 
-  const [activeTab, setActiveTab] =
-    useState<SettingsTab>("notifications");
+  const [activeTab, setActiveTab] = useState<SettingsTab>("notifications");
 
-  const [themePreference, setThemePreference] =
-    useState<DashboardThemePreference>(() => {
-      try {
-        const saved = window.localStorage.getItem(
-          THEME_STORAGE_KEY,
-        );
-
-        return saved === "light" ||
-          saved === "dark" ||
-          saved === "system"
-          ? saved
-          : "light";
-      } catch {
-        return "light";
-      }
-    });
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(
-        THEME_STORAGE_KEY,
-        themePreference,
-      );
-    } catch {
-      // La préférence reste utilisable pendant la session.
-    }
-
-    window.dispatchEvent(
-      new CustomEvent<DashboardThemePreference>(
-        THEME_CHANGE_EVENT,
-        { detail: themePreference },
-      ),
-    );
-  }, [themePreference]);
+  const { theme: themePreference, setTheme: setThemePreference } = useTheme();
+  const { lang } = useLanguage();
+  const english = lang === "en";
 
   const handleSendPasswordReset = async () => {
     if (!user?.email) {
-      toast.error("Aucune adresse e-mail associée au compte.");
+      toast.error(translateUi("Aucune adresse e-mail associée au compte."));
       return;
     }
 
     setSendingReset(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(
-        user.email,
-        {
-          redirectTo: `${window.location.origin}/reset-password`,
-        },
-      );
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
 
       if (error) throw error;
 
       toast.success(
-        `Lien de réinitialisation envoyé à ${user.email}.`,
+        translateUi("Lien de réinitialisation envoyé à {v0}.", {
+          v0: user.email,
+        }),
       );
     } catch (error) {
       console.error("Password reset error:", error);
       toast.error(
-        "Impossible d'envoyer l'e-mail de réinitialisation.",
+        translateUi("Impossible d'envoyer l'e-mail de réinitialisation."),
       );
     } finally {
       setSendingReset(false);
@@ -145,11 +110,11 @@ export default function Parametres() {
 
       if (error) throw error;
 
-      toast.success("Déconnexion des sessions demandée.");
+      toast.success(translateUi("Déconnexion des sessions demandée."));
     } catch (error) {
       console.error("Global sign out error:", error);
       toast.error(
-        "Impossible de déconnecter toutes les sessions.",
+        translateUi("Impossible de déconnecter toutes les sessions."),
       );
     } finally {
       setSigningOutAll(false);
@@ -159,9 +124,11 @@ export default function Parametres() {
   return (
     <DashboardLayout>
       <PageHeader
-        eyebrow="Compte et configuration"
-        title="Paramètres"
-        subtitle="Gérez les préférences, la sécurité, les documents et les services associés à votre compte BIB."
+        eyebrow={translateUi("Compte et configuration")}
+        title={translateUi("Paramètres")}
+        subtitle={translateUi(
+          "Gérez les préférences, la sécurité, les documents et les services associés à votre compte BIB.",
+        )}
       />
 
       <div className="max-w-5xl space-y-5">
@@ -174,12 +141,12 @@ export default function Parametres() {
 
             <div className="min-w-0">
               <h2 className="text-sm font-semibold text-foreground">
-                Configuration de votre compte
+                {translateUi("Configuration de votre compte")}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Les informations personnelles sont disponibles dans
-                « Mon profil ». Cette page regroupe les préférences
-                et les configurations de votre environnement BIB.
+                {translateUi(
+                  "Les informations personnelles sont disponibles dans « Mon profil ». Cette page regroupe les préférences et les configurations de votre environnement BIB.",
+                )}
               </p>
             </div>
           </div>
@@ -187,9 +154,7 @@ export default function Parametres() {
 
         <Tabs
           value={activeTab}
-          onValueChange={(value) =>
-            setActiveTab(value as SettingsTab)
-          }
+          onValueChange={(value) => setActiveTab(value as SettingsTab)}
           className="w-full"
         >
           <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-muted/50 p-1 sm:grid-cols-4 lg:grid-cols-8">
@@ -201,12 +166,9 @@ export default function Parametres() {
               Notifications
             </TabsTrigger>
 
-            <TabsTrigger
-              value="securite"
-              className="gap-1.5 px-2 py-2 text-xs"
-            >
+            <TabsTrigger value="securite" className="gap-1.5 px-2 py-2 text-xs">
               <Shield className="h-3.5 w-3.5" />
-              Sécurité
+              {translateUi("Sécurité")}
             </TabsTrigger>
 
             <TabsTrigger
@@ -222,31 +184,22 @@ export default function Parametres() {
               className="gap-1.5 px-2 py-2 text-xs"
             >
               <Crown className="h-3.5 w-3.5" />
-              Abonnement
+              {translateUi("Abonnement")}
             </TabsTrigger>
 
-            <TabsTrigger
-              value="paiement"
-              className="gap-1.5 px-2 py-2 text-xs"
-            >
+            <TabsTrigger value="paiement" className="gap-1.5 px-2 py-2 text-xs">
               <CreditCard className="h-3.5 w-3.5" />
-              Paiement
+              {translateUi("Paiement")}
             </TabsTrigger>
 
-            <TabsTrigger
-              value="email"
-              className="gap-1.5 px-2 py-2 text-xs"
-            >
+            <TabsTrigger value="email" className="gap-1.5 px-2 py-2 text-xs">
               <Mail className="h-3.5 w-3.5" />
-              E-mail
+              {translateUi("E-mail")}
             </TabsTrigger>
 
-            <TabsTrigger
-              value="alerts"
-              className="gap-1.5 px-2 py-2 text-xs"
-            >
+            <TabsTrigger value="alerts" className="gap-1.5 px-2 py-2 text-xs">
               <AlertTriangle className="h-3.5 w-3.5" />
-              Alertes
+              {translateUi("Alertes")}
             </TabsTrigger>
 
             <TabsTrigger
@@ -254,40 +207,53 @@ export default function Parametres() {
               className="gap-1.5 px-2 py-2 text-xs"
             >
               <Monitor className="h-3.5 w-3.5" />
-              Apparence
+              {translateUi("Apparence")}
             </TabsTrigger>
           </TabsList>
 
           {/* Apparence */}
-          <TabsContent
-            value="apparence"
-            className="mt-5 space-y-4"
-          >
+          <TabsContent value="apparence" className="mt-5 space-y-4">
             <SectionCard
-              title="Apparence de l’administration"
-              description="Choisissez le thème utilisé dans votre espace d’administration BIB. Ce réglage ne modifie pas l’apparence publique de vos boutiques."
+              title={english ? "BIB appearance" : "Apparence de BIB"}
+              description={
+                english
+                  ? "Use the same theme across BIB pages and your dashboard. Your boutique’s brand palette stays unchanged."
+                  : "Utilisez le même thème dans les pages BIB et votre espace marchand. La palette de marque de votre boutique reste inchangée."
+              }
               icon={<Monitor className="h-4 w-4" />}
             >
               <div className="grid gap-3 sm:grid-cols-3">
                 <ThemePreferenceOption
-                  title="Clair"
-                  description="Fond clair, bleu marine et accents or."
+                  title={english ? "Light" : "Clair"}
+                  description={
+                    english
+                      ? "Light surfaces, navy and gold accents."
+                      : "Fond clair, bleu marine et accents or."
+                  }
                   selected={themePreference === "light"}
                   onClick={() => setThemePreference("light")}
                   icon={<Sun className="h-5 w-5" />}
                 />
 
                 <ThemePreferenceOption
-                  title="Sombre"
-                  description="Surfaces foncées et contraste adapté."
+                  title={english ? "Dark" : "Sombre"}
+                  description={
+                    english
+                      ? "Dark surfaces and adapted contrast."
+                      : "Surfaces foncées et contraste adapté."
+                  }
                   selected={themePreference === "dark"}
                   onClick={() => setThemePreference("dark")}
                   icon={<Moon className="h-5 w-5" />}
                 />
 
                 <ThemePreferenceOption
-                  title="Système"
-                  description="Suit le thème de votre appareil."
+                  title={english ? "System" : "Système"}
+                  description={
+                    english
+                      ? "Follow your device’s theme."
+                      : "Suit le thème de votre appareil."
+                  }
                   selected={themePreference === "system"}
                   onClick={() => setThemePreference("system")}
                   icon={<Monitor className="h-5 w-5" />}
@@ -295,34 +261,33 @@ export default function Parametres() {
               </div>
 
               <p className="text-xs text-muted-foreground">
-                Votre choix est enregistré dans ce navigateur.
-                Le bouton soleil/lune de l’en-tête reste disponible
-                pour basculer rapidement entre clair et sombre.
+                {translateUi(
+                  "Votre choix est enregistré dans ce navigateur. Le bouton soleil/lune de l’en-tête reste disponible pour basculer rapidement entre clair et sombre.",
+                )}
               </p>
             </SectionCard>
           </TabsContent>
 
           {/* Notifications */}
-          <TabsContent
-            value="notifications"
-            className="mt-5 space-y-4"
-          >
+          <TabsContent value="notifications" className="mt-5 space-y-4">
             <SectionCard
-              title="Préférences de notification"
-              description="Définissez les types de notifications utiles à votre activité."
+              title={translateUi("Préférences de notification")}
+              description={translateUi(
+                "Définissez les types de notifications utiles à votre activité.",
+              )}
               icon={<Bell className="h-4 w-4" />}
             >
               <div className="rounded-lg border border-border/60 bg-muted/30 p-4">
                 <p className="text-sm font-medium text-foreground">
-                  Configuration des notifications
+                  {translateUi("Configuration des notifications")}
                 </p>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  Les réglages affichés dans cette section doivent être
-                  reliés à des préférences persistantes pour que vos choix
-                  soient conservés entre les sessions.
+                  {translateUi(
+                    "Les préférences par catégorie ne sont pas encore disponibles. Consultez les commandes et les alertes dans leurs modules.",
+                  )}
                 </p>
                 <Badge variant="outline" className="mt-3">
-                  Persistance à vérifier
+                  {translateUi("Bientôt disponible")}
                 </Badge>
               </div>
 
@@ -333,10 +298,12 @@ export default function Parametres() {
                   </div>
                   <div>
                     <p className="text-sm font-medium">
-                      Activité des boutiques
+                      {translateUi("Activité des boutiques")}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Commandes, changements d'état et activité commerciale.
+                      {translateUi(
+                        "Commandes, changements d'état et activité commerciale.",
+                      )}
                     </p>
                   </div>
                 </div>
@@ -347,10 +314,12 @@ export default function Parametres() {
                   </div>
                   <div>
                     <p className="text-sm font-medium">
-                      Produits et stocks
+                      {translateUi("Produits et stocks")}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Alertes liées aux produits et à la disponibilité du catalogue.
+                      {translateUi(
+                        "Alertes liées aux produits et à la disponibilité du catalogue.",
+                      )}
                     </p>
                   </div>
                 </div>
@@ -361,10 +330,12 @@ export default function Parametres() {
                   </div>
                   <div>
                     <p className="text-sm font-medium">
-                      Communications BIB
+                      {translateUi("Communications BIB")}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Informations importantes concernant le compte et la plateforme.
+                      {translateUi(
+                        "Informations importantes concernant le compte et la plateforme.",
+                      )}
                     </p>
                   </div>
                 </div>
@@ -373,22 +344,22 @@ export default function Parametres() {
           </TabsContent>
 
           {/* Sécurité */}
-          <TabsContent
-            value="securite"
-            className="mt-5 space-y-4"
-          >
+          <TabsContent value="securite" className="mt-5 space-y-4">
             <SectionCard
-              title="Mot de passe"
-              description="Recevez un lien sécurisé pour réinitialiser votre mot de passe."
+              title={translateUi("Mot de passe")}
+              description={translateUi(
+                "Recevez un lien sécurisé pour réinitialiser votre mot de passe.",
+              )}
               icon={<KeyRound className="h-4 w-4" />}
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground">
-                    Réinitialisation du mot de passe
+                    {translateUi("Réinitialisation du mot de passe")}
                   </p>
                   <p className="break-all text-xs text-muted-foreground">
-                    {user?.email || "Adresse e-mail non disponible"}
+                    {user?.email ||
+                      translateUi("Adresse e-mail non disponible")}
                   </p>
                 </div>
 
@@ -403,28 +374,31 @@ export default function Parametres() {
                   ) : (
                     <Mail className="mr-1.5 h-3.5 w-3.5" />
                   )}
-                  Envoyer le lien
+                  {translateUi("Envoyer le lien")}
                 </Button>
               </div>
             </SectionCard>
 
             <SectionCard
-              title="Authentification à deux facteurs"
-              description="Renforcez la protection de votre compte."
+              title={translateUi("Authentification à deux facteurs")}
+              description={translateUi(
+                "Renforcez la protection de votre compte.",
+              )}
               icon={<ShieldCheck className="h-4 w-4" />}
             >
               <div className="flex items-start gap-3">
                 <ShieldCheck className="mt-0.5 h-5 w-5 text-muted-foreground" />
                 <div className="min-w-0">
                   <p className="text-sm font-medium">
-                    Authentification par application (TOTP)
+                    {translateUi("Authentification par application (TOTP)")}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Cette fonctionnalité nécessite une intégration complète
-                    de l'authentification multifacteur côté Supabase.
+                    {translateUi(
+                      "La validation par application n’est pas encore disponible. Vous pouvez déjà réinitialiser votre mot de passe et révoquer vos sessions.",
+                    )}
                   </p>
                   <Badge variant="outline" className="mt-2">
-                    À implémenter
+                    {translateUi("Bientôt disponible")}
                   </Badge>
                 </div>
               </div>
@@ -432,16 +406,20 @@ export default function Parametres() {
 
             <SectionCard
               title="Sessions"
-              description="Révoquez les sessions actives de votre compte."
+              description={translateUi(
+                "Révoquez les sessions actives de votre compte.",
+              )}
               icon={<Smartphone className="h-4 w-4" />}
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                   <p className="text-sm font-medium">
-                    Déconnexion globale
+                    {translateUi("Déconnexion globale")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Vous devrez vous reconnecter sur les appareils concernés.
+                    {translateUi(
+                      "Vous devrez vous reconnecter sur les appareils concernés.",
+                    )}
                   </p>
                 </div>
 
@@ -456,7 +434,7 @@ export default function Parametres() {
                   ) : (
                     <LogOut className="mr-1.5 h-3.5 w-3.5" />
                   )}
-                  Déconnecter les sessions
+                  {translateUi("Déconnecter les sessions")}
                 </Button>
               </div>
             </SectionCard>
@@ -465,8 +443,10 @@ export default function Parametres() {
           {/* Documents */}
           <TabsContent value="documents" className="mt-5">
             <SectionCard
-              title="Documents professionnels"
-              description="Consultez et gérez les documents demandés pour votre activité BIB."
+              title={translateUi("Documents professionnels")}
+              description={translateUi(
+                "Consultez et gérez les documents demandés pour votre activité BIB.",
+              )}
               icon={<FileCheck className="h-4 w-4" />}
             >
               <BusinessDocuments />
@@ -474,10 +454,7 @@ export default function Parametres() {
           </TabsContent>
 
           {/* Abonnement */}
-          <TabsContent
-            value="abonnement"
-            className="mt-5 space-y-4"
-          >
+          <TabsContent value="abonnement" className="mt-5 space-y-4">
             <SubscriptionSection />
 
             <AddOnsCompact
@@ -488,24 +465,24 @@ export default function Parametres() {
           </TabsContent>
 
           {/* Paiement */}
-          <TabsContent
-            value="paiement"
-            className="mt-5 space-y-4"
-          >
+          <TabsContent value="paiement" className="mt-5 space-y-4">
             <SectionCard
-              title="Facturation et moyens de paiement"
-              description="Gérez vos factures et moyens de paiement via le portail de facturation."
+              title={translateUi("Facturation et moyens de paiement")}
+              description={translateUi(
+                "Gérez vos factures et moyens de paiement via le portail de facturation.",
+              )}
               icon={<CreditCard className="h-4 w-4" />}
             >
               <div className="flex items-start gap-3 rounded-lg border border-border/50 bg-muted/30 p-3">
                 <CreditCard className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">
-                    Portail de facturation
+                    {translateUi("Portail de facturation")}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Les factures et moyens de paiement disponibles dépendent
-                    de votre abonnement et de la configuration Stripe.
+                    {translateUi(
+                      "Les factures et moyens de paiement disponibles dépendent de votre abonnement et de la configuration Stripe.",
+                    )}
                   </p>
                 </div>
               </div>
@@ -514,9 +491,7 @@ export default function Parametres() {
                 size="sm"
                 variant="outline"
                 onClick={() => portal.mutate()}
-                disabled={
-                  portal.isPending || subscriptions.length === 0
-                }
+                disabled={portal.isPending || subscriptions.length === 0}
               >
                 {portal.isPending ? (
                   <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
@@ -524,26 +499,29 @@ export default function Parametres() {
                   <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
                 )}
                 {subscriptions.length === 0
-                  ? "Aucun abonnement disponible"
-                  : "Ouvrir le portail de facturation"}
+                  ? translateUi("Aucun abonnement disponible")
+                  : translateUi("Ouvrir le portail de facturation")}
               </Button>
             </SectionCard>
 
             <SectionCard
-              title="Versements marchands"
-              description="Les versements commerciaux sont distincts de la facturation de l'abonnement."
+              title={translateUi("Versements marchands")}
+              description={translateUi(
+                "Les versements commerciaux sont distincts de la facturation de l'abonnement.",
+              )}
               icon={<CreditCard className="h-4 w-4" />}
             >
               <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
                 <p className="text-sm font-medium">
-                  Configuration des versements
+                  {translateUi("Configuration des versements")}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  La configuration du compte de versement marchand doit être
-                  effectuée via le parcours Stripe Connect prévu à cet effet.
+                  {translateUi(
+                    "La configuration des versements n’est pas encore accessible depuis cette page. Consultez Paiements pour suivre les versements enregistrés.",
+                  )}
                 </p>
                 <Badge variant="outline" className="mt-3">
-                  Parcours Connect à vérifier
+                  {translateUi("Configuration indisponible ici")}
                 </Badge>
               </div>
             </SectionCard>
@@ -577,6 +555,7 @@ function ThemePreferenceOption({
   onClick: () => void;
   icon: React.ReactNode;
 }) {
+  useLanguage();
   return (
     <Button
       type="button"
@@ -598,7 +577,7 @@ function ThemePreferenceOption({
 
             {selected && (
               <Badge variant="secondary" className="text-[10px]">
-                Actif
+                {translateUi("Actif")}
               </Badge>
             )}
           </span>
@@ -613,6 +592,7 @@ function ThemePreferenceOption({
 }
 
 function PackageIcon() {
+  useLanguage();
   return <Store className="h-4 w-4 text-primary" />;
 }
 
@@ -625,15 +605,14 @@ function AddOnsCompact({
   portalPending: boolean;
   hasSub: boolean;
 }) {
+  useLanguage();
   const [extraBoutiques, setExtraBoutiques] = useReactState(0);
   const [extraSeats, setExtraSeats] = useReactState(0);
 
   const BOUTIQUE_PRICE = 9;
   const SEAT_PRICE = 6;
 
-  const totalDelta =
-    extraBoutiques * BOUTIQUE_PRICE +
-    extraSeats * SEAT_PRICE;
+  const totalDelta = extraBoutiques * BOUTIQUE_PRICE + extraSeats * SEAT_PRICE;
 
   const AddOnRow = ({
     icon,
@@ -649,69 +628,78 @@ function AddOnsCompact({
     value: number;
     onChange: (value: number) => void;
     unitPrice: number;
-  }) => (
-    <div className="flex items-center justify-between gap-3 py-3">
-      <div className="flex min-w-0 items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          {icon}
+  }) => {
+    useLanguage();
+    return (
+      <div className="flex items-center justify-between gap-3 py-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            {icon}
+          </div>
+
+          <div className="min-w-0">
+            <p className="text-sm font-medium">{title}</p>
+            <p className="text-xs text-muted-foreground">{description}</p>
+          </div>
         </div>
 
-        <div className="min-w-0">
-          <p className="text-sm font-medium">{title}</p>
-          <p className="text-xs text-muted-foreground">
-            {description}
-          </p>
-        </div>
-      </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <div className="flex items-center gap-1 rounded-lg border border-border/60 p-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => onChange(Math.max(0, value - 1))}
+              aria-label={translateUi("Retirer un élément : {v0}", {
+                v0: title,
+              })}
+              disabled={value === 0}
+            >
+              <Minus className="h-3 w-3" />
+            </Button>
 
-      <div className="flex shrink-0 items-center gap-2">
-        <div className="flex items-center gap-1 rounded-lg border border-border/60 p-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => onChange(Math.max(0, value - 1))}
-            aria-label={`Retirer un élément : ${title}`}
-            disabled={value === 0}
-          >
-            <Minus className="h-3 w-3" />
-          </Button>
+            <span className="w-5 text-center text-sm font-semibold tabular-nums">
+              {value}
+            </span>
 
-          <span className="w-5 text-center text-sm font-semibold tabular-nums">
-            {value}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7"
+              onClick={() => onChange(value + 1)}
+              aria-label={translateUi("Ajouter un élément : {v0}", {
+                v0: title,
+              })}
+            >
+              <Plus className="h-3 w-3" />
+            </Button>
+          </div>
+
+          <span className="w-16 text-right text-xs font-semibold tabular-nums">
+            +{value * unitPrice} {translateUi("€/mois")}
           </span>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => onChange(value + 1)}
-            aria-label={`Ajouter un élément : ${title}`}
-          >
-            <Plus className="h-3 w-3" />
-          </Button>
         </div>
-
-        <span className="w-16 text-right text-xs font-semibold tabular-nums">
-          +{value * unitPrice} €/mois
-        </span>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <SectionCard
-      title="Options supplémentaires"
-      description="Estimation des options au-delà des limites du plan."
+      title={translateUi("Options supplémentaires")}
+      description={translateUi(
+        "Estimation des options au-delà des limites du plan.",
+      )}
       icon={<Sparkles className="h-4 w-4" />}
     >
       <div className="divide-y divide-border/50">
         <AddOnRow
           icon={<Store className="h-4 w-4" />}
-          title="Boutique supplémentaire"
-          description={`${BOUTIQUE_PRICE} €/mois par boutique`}
+          title={translateUi("Boutique supplémentaire")}
+          description={translateUi("{v0} €/mois par boutique", {
+            v0: BOUTIQUE_PRICE,
+          })}
           value={extraBoutiques}
           onChange={setExtraBoutiques}
           unitPrice={BOUTIQUE_PRICE}
@@ -719,8 +707,8 @@ function AddOnsCompact({
 
         <AddOnRow
           icon={<Users className="h-4 w-4" />}
-          title="Membre d'équipe supplémentaire"
-          description={`${SEAT_PRICE} €/mois par siège`}
+          title={translateUi("Membre d'équipe supplémentaire")}
+          description={translateUi("{v0} €/mois par siège", { v0: SEAT_PRICE })}
           value={extraSeats}
           onChange={setExtraSeats}
           unitPrice={SEAT_PRICE}
@@ -731,10 +719,10 @@ function AddOnsCompact({
         <div className="mt-4 flex flex-col gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs text-muted-foreground">
-              Supplément estimé
+              {translateUi("Supplément estimé")}
             </p>
             <p className="text-lg font-bold tabular-nums">
-              +{totalDelta} €/mois
+              +{totalDelta} {translateUi("€/mois")}
             </p>
           </div>
 
@@ -742,20 +730,20 @@ function AddOnsCompact({
             size="sm"
             onClick={onOpenPortal}
             disabled={portalPending || !hasSub}
-            title={!hasSub ? "Aucun abonnement actif" : undefined}
+            title={!hasSub ? translateUi("Aucun abonnement actif") : undefined}
           >
             {portalPending && (
               <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
             )}
-            Continuer vers la facturation
+            {translateUi("Continuer vers la facturation")}
           </Button>
         </div>
       )}
 
       <p className="mt-3 text-xs text-muted-foreground">
-        Cette estimation n'ajoute pas automatiquement les options à
-        votre abonnement. Le changement effectif doit être confirmé et
-        pris en charge par le système de facturation.
+        {translateUi(
+          "Cette estimation n'ajoute pas automatiquement les options à votre abonnement. Le changement effectif doit être confirmé et pris en charge par le système de facturation.",
+        )}
       </p>
     </SectionCard>
   );

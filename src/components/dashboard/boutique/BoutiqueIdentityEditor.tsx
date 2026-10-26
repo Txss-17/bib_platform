@@ -1,5 +1,17 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
-import { Palette, Type, Eye, ShoppingCart, Home, Package, Music, Loader2, X } from "lucide-react";
+import {
+  Palette,
+  Type,
+  Eye,
+  ShoppingCart,
+  Home,
+  Package,
+  Music,
+  Loader2,
+  X,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -89,9 +101,7 @@ const FONT_PAIRS = [
 
 interface Props {
   themeSettings: ThemeSettings;
-  setThemeSettings: React.Dispatch<
-    React.SetStateAction<ThemeSettings>
-  >;
+  setThemeSettings: React.Dispatch<React.SetStateAction<ThemeSettings>>;
   boutiqueName: string;
   logoUrl?: string | null;
   onLogoChange?: (url: string) => void;
@@ -116,37 +126,33 @@ export function BoutiqueIdentityEditor({
   voiceTone,
   onVoiceToneChange,
 }: Props) {
-  const primary =
-    themeSettings.primaryColor || "#1B2A41";
+  useLanguage();
+  const primary = themeSettings.primaryColor || "#1B2A41";
 
-  const secondary =
-    themeSettings.secondaryColor || "#C9A961";
+  const secondary = themeSettings.secondaryColor || "#C9A961";
 
-  const headingFont =
-    themeSettings.fonts?.heading || "Playfair Display";
+  const headingFont = themeSettings.fonts?.heading || "Playfair Display";
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_1.1fr]">
       {/* Édition */}
       <div className="space-y-4">
         <SectionCard
-          title="Identité visuelle"
-          description="Le socle de votre marque, propagé partout"
+          title={translateUi("Identité visuelle")}
+          description={translateUi("Le socle de votre marque, propagé partout")}
           icon={<Palette className="h-4 w-4" />}
         >
           <div className="space-y-4">
             {/* Tagline */}
             <div className="space-y-1.5">
               <Label className="text-xs">
-                Tagline (sous le nom de la marque)
+                {translateUi("Tagline (sous le nom de la marque)")}
               </Label>
 
               <Input
                 value={tagline}
-                onChange={(event) =>
-                  onTaglineChange(event.target.value)
-                }
-                placeholder="Ex: La beauté éthique au quotidien"
+                onChange={(event) => onTaglineChange(event.target.value)}
+                placeholder={translateUi("Ex: La beauté éthique au quotidien")}
                 maxLength={80}
               />
             </div>
@@ -154,14 +160,12 @@ export function BoutiqueIdentityEditor({
             {/* Palette */}
             <div className="space-y-1.5">
               <Label className="text-xs">
-                Palette de couleurs
+                {translateUi("Palette de couleurs")}
               </Label>
 
               <div className="grid grid-cols-4 gap-2">
                 {COLOR_PALETTES.map((palette) => {
-                  const active =
-                    themeSettings.colorScheme ===
-                    palette.name;
+                  const active = themeSettings.colorScheme === palette.name;
 
                   return (
                     <button
@@ -172,8 +176,7 @@ export function BoutiqueIdentityEditor({
                           ...previous,
                           colorScheme: palette.name,
                           primaryColor: palette.primary,
-                          secondaryColor:
-                            palette.secondary,
+                          secondaryColor: palette.secondary,
                         }))
                       }
                       className={`group rounded-lg border-2 p-1.5 transition-all ${
@@ -187,16 +190,14 @@ export function BoutiqueIdentityEditor({
                         <span
                           className="h-6 flex-1 rounded"
                           style={{
-                            backgroundColor:
-                              palette.primary,
+                            backgroundColor: palette.primary,
                           }}
                         />
 
                         <span
                           className="h-6 flex-1 rounded"
                           style={{
-                            backgroundColor:
-                              palette.secondary,
+                            backgroundColor: palette.secondary,
                           }}
                         />
                       </div>
@@ -214,7 +215,7 @@ export function BoutiqueIdentityEditor({
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1.5">
                 <Label className="text-xs">
-                  Couleur principale
+                  {translateUi("Couleur principale")}
                 </Label>
 
                 <div className="flex gap-2">
@@ -224,8 +225,7 @@ export function BoutiqueIdentityEditor({
                     onChange={(event) =>
                       setThemeSettings((previous) => ({
                         ...previous,
-                        primaryColor:
-                          event.target.value,
+                        primaryColor: event.target.value,
                       }))
                     }
                     className="h-9 w-12 cursor-pointer rounded border border-border"
@@ -236,8 +236,7 @@ export function BoutiqueIdentityEditor({
                     onChange={(event) =>
                       setThemeSettings((previous) => ({
                         ...previous,
-                        primaryColor:
-                          event.target.value,
+                        primaryColor: event.target.value,
                       }))
                     }
                     className="font-mono text-xs"
@@ -247,7 +246,7 @@ export function BoutiqueIdentityEditor({
 
               <div className="space-y-1.5">
                 <Label className="text-xs">
-                  Couleur secondaire
+                  {translateUi("Couleur secondaire")}
                 </Label>
 
                 <div className="flex gap-2">
@@ -257,8 +256,7 @@ export function BoutiqueIdentityEditor({
                     onChange={(event) =>
                       setThemeSettings((previous) => ({
                         ...previous,
-                        secondaryColor:
-                          event.target.value,
+                        secondaryColor: event.target.value,
                       }))
                     }
                     className="h-9 w-12 cursor-pointer rounded border border-border"
@@ -269,8 +267,7 @@ export function BoutiqueIdentityEditor({
                     onChange={(event) =>
                       setThemeSettings((previous) => ({
                         ...previous,
-                        secondaryColor:
-                          event.target.value,
+                        secondaryColor: event.target.value,
                       }))
                     }
                     className="font-mono text-xs"
@@ -283,15 +280,13 @@ export function BoutiqueIdentityEditor({
 
         {/* Typographie */}
         <SectionCard
-          title="Typographie"
-          description="Polices appliquées sur tous les écrans"
+          title={translateUi("Typographie")}
+          description={translateUi("Polices appliquées sur tous les écrans")}
           icon={<Type className="h-4 w-4" />}
         >
           <div className="space-y-2">
             {FONT_PAIRS.map((pair) => {
-              const active =
-                themeSettings.fonts?.heading ===
-                pair.heading;
+              const active = themeSettings.fonts?.heading === pair.heading;
 
               return (
                 <button
@@ -333,7 +328,7 @@ export function BoutiqueIdentityEditor({
                     }}
                     className="mt-1 text-xs text-muted-foreground"
                   >
-                    Le quick brown fox jumps over the lazy dog.
+                    {translateUi("Le quick brown fox jumps over the lazy dog.")}
                   </p>
                 </button>
               );
@@ -343,16 +338,18 @@ export function BoutiqueIdentityEditor({
 
         {/* Ton de voix */}
         <SectionCard
-          title="Ton de voix"
-          description="Inspiration éditoriale pour vos textes et emails"
+          title={translateUi("Ton de voix")}
+          description={translateUi(
+            "Inspiration éditoriale pour vos textes et emails",
+          )}
           icon={<Eye className="h-4 w-4" />}
         >
           <Textarea
             value={voiceTone}
-            onChange={(event) =>
-              onVoiceToneChange(event.target.value)
-            }
-            placeholder="Ex: chaleureux, expert, complice, premium mais accessible…"
+            onChange={(event) => onVoiceToneChange(event.target.value)}
+            placeholder={translateUi(
+              "Ex: chaleureux, expert, complice, premium mais accessible…",
+            )}
             rows={3}
           />
         </SectionCard>
@@ -367,44 +364,29 @@ export function BoutiqueIdentityEditor({
       {/* Aperçu en direct */}
       <div className="lg:sticky lg:top-4 lg:self-start">
         <SectionCard
-          title="Aperçu sur 3 écrans"
-          description="Accueil · Page produit · Checkout"
+          title={translateUi("Aperçu sur 3 écrans")}
+          description={translateUi("Accueil · Page produit · Checkout")}
           icon={<Eye className="h-4 w-4" />}
         >
-          <Tabs
-            defaultValue="home"
-            className="w-full"
-          >
+          <Tabs defaultValue="home" className="w-full">
             <TabsList className="grid h-9 w-full grid-cols-3">
-              <TabsTrigger
-                value="home"
-                className="gap-1 text-xs"
-              >
+              <TabsTrigger value="home" className="gap-1 text-xs">
                 <Home className="h-3 w-3" />
-                Accueil
+                {translateUi("Accueil")}
               </TabsTrigger>
 
-              <TabsTrigger
-                value="product"
-                className="gap-1 text-xs"
-              >
+              <TabsTrigger value="product" className="gap-1 text-xs">
                 <Package className="h-3 w-3" />
-                Produit
+                {translateUi("Produit")}
               </TabsTrigger>
 
-              <TabsTrigger
-                value="checkout"
-                className="gap-1 text-xs"
-              >
+              <TabsTrigger value="checkout" className="gap-1 text-xs">
                 <ShoppingCart className="h-3 w-3" />
-                Checkout
+                {translateUi("Checkout")}
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent
-              value="home"
-              className="mt-3"
-            >
+            <TabsContent value="home" className="mt-3">
               <PreviewFrame
                 primary={primary}
                 secondary={secondary}
@@ -421,10 +403,7 @@ export function BoutiqueIdentityEditor({
               </PreviewFrame>
             </TabsContent>
 
-            <TabsContent
-              value="product"
-              className="mt-3"
-            >
+            <TabsContent value="product" className="mt-3">
               <PreviewFrame
                 primary={primary}
                 secondary={secondary}
@@ -439,10 +418,7 @@ export function BoutiqueIdentityEditor({
               </PreviewFrame>
             </TabsContent>
 
-            <TabsContent
-              value="checkout"
-              className="mt-3"
-            >
+            <TabsContent value="checkout" className="mt-3">
               <PreviewFrame
                 primary={primary}
                 secondary={secondary}
@@ -478,6 +454,7 @@ function PreviewFrame({
   headingFont: string;
   children: React.ReactNode;
 }) {
+  useLanguage();
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
       <div className="flex items-center gap-1 border-b border-border bg-muted/30 px-3 py-1.5">
@@ -525,6 +502,7 @@ function PreviewHome({
   secondary: string;
   headingFont: string;
 }) {
+  useLanguage();
   return (
     <div className="space-y-3 p-4">
       <div className="flex items-center justify-between border-b pb-2">
@@ -553,7 +531,7 @@ function PreviewHome({
             }}
             className="text-sm font-semibold"
           >
-            {name || "Ma marque"}
+            {name || translateUi("Ma marque")}
           </span>
         </div>
 
@@ -577,7 +555,7 @@ function PreviewHome({
           }}
           className="text-base font-bold leading-tight text-white"
         >
-          {tagline || "Votre tagline ici"}
+          {tagline || translateUi("Votre tagline ici")}
         </p>
 
         <span
@@ -586,16 +564,13 @@ function PreviewHome({
             background: secondary,
           }}
         >
-          Découvrir →
+          {translateUi("Découvrir →")}
         </span>
       </div>
 
       <div className="grid grid-cols-3 gap-1.5">
         {[1, 2, 3].map((item) => (
-          <div
-            key={item}
-            className="aspect-square rounded bg-muted/60"
-          />
+          <div key={item} className="aspect-square rounded bg-muted/60" />
         ))}
       </div>
     </div>
@@ -617,6 +592,7 @@ function PreviewProduct({
   secondary: string;
   headingFont: string;
 }) {
+  useLanguage();
   return (
     <div className="space-y-3 p-4">
       <div className="flex items-center gap-2 border-b pb-2">
@@ -627,7 +603,7 @@ function PreviewProduct({
           }}
           className="text-sm font-semibold"
         >
-          {name || "Ma marque"}
+          {name || translateUi("Ma marque")}
         </span>
       </div>
 
@@ -636,7 +612,7 @@ function PreviewProduct({
 
         <div>
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-            Catégorie
+            {translateUi("Catégorie")}
           </p>
 
           <p
@@ -645,7 +621,7 @@ function PreviewProduct({
             }}
             className="mt-0.5 text-base font-bold"
           >
-            Produit phare
+            {translateUi("Produit phare")}
           </p>
 
           <p
@@ -658,7 +634,9 @@ function PreviewProduct({
           </p>
 
           <p className="mt-1 text-[10px] text-muted-foreground">
-            Description courte du produit, en deux lignes maximum.
+            {translateUi(
+              "Description courte du produit, en deux lignes maximum.",
+            )}
           </p>
 
           <button
@@ -668,7 +646,7 @@ function PreviewProduct({
               background: primary,
             }}
           >
-            Ajouter au panier
+            {translateUi("Ajouter au panier")}
           </button>
 
           <button
@@ -679,7 +657,7 @@ function PreviewProduct({
               color: secondary,
             }}
           >
-            Acheter maintenant
+            {translateUi("Acheter maintenant")}
           </button>
         </div>
       </div>
@@ -702,6 +680,7 @@ function PreviewCheckout({
   secondary: string;
   headingFont: string;
 }) {
+  useLanguage();
   return (
     <div className="space-y-3 p-4">
       <div className="flex items-center justify-between border-b pb-2">
@@ -712,11 +691,11 @@ function PreviewCheckout({
           }}
           className="text-sm font-semibold"
         >
-          {name || "Ma marque"}
+          {name || translateUi("Ma marque")}
         </span>
 
         <span className="text-[10px] text-muted-foreground">
-          Paiement sécurisé
+          {translateUi("Paiement sécurisé")}
         </span>
       </div>
 
@@ -727,7 +706,7 @@ function PreviewCheckout({
           }}
           className="text-sm font-bold"
         >
-          Finalisez votre commande
+          {translateUi("Finalisez votre commande")}
         </p>
 
         <div className="space-y-1.5">
@@ -747,7 +726,8 @@ function PreviewCheckout({
             color: primary,
           }}
         >
-          Total : <strong>39,00 €</strong> · Livraison incluse
+          {translateUi("Total :") + " "}
+          <strong>39,00 €</strong> {translateUi("· Livraison incluse")}
         </div>
 
         <button
@@ -757,7 +737,7 @@ function PreviewCheckout({
             background: secondary,
           }}
         >
-          Payer 39,00 €
+          {translateUi("Payer 39,00 €")}
         </button>
       </div>
     </div>
@@ -773,21 +753,21 @@ function AmbientAudioSection({
   setThemeSettings,
 }: {
   themeSettings: ThemeSettings;
-  setThemeSettings: React.Dispatch<
-    React.SetStateAction<ThemeSettings>
-  >;
+  setThemeSettings: React.Dispatch<React.SetStateAction<ThemeSettings>>;
 }) {
+  useLanguage();
   const [uploading, setUploading] = useState(false);
 
   const url = themeSettings.backgroundAudioUrl;
 
-  const volume =
-    themeSettings.backgroundAudioVolume ?? 0.4;
+  const volume = themeSettings.backgroundAudioVolume ?? 0.4;
 
   const handleUpload = async (file: File) => {
     if (file.size > 8 * 1024 * 1024) {
       toast.error(
-        "Fichier trop lourd (max 8 Mo). Privilégiez un MP3 court (boucle).",
+        translateUi(
+          "Fichier trop lourd (max 8 Mo). Privilégiez un MP3 court (boucle).",
+        ),
       );
       return;
     }
@@ -795,8 +775,7 @@ function AmbientAudioSection({
     setUploading(true);
 
     try {
-      const { data: userData } =
-        await supabase.auth.getUser();
+      const { data: userData } = await supabase.auth.getUser();
 
       const userId = userData?.user?.id;
 
@@ -804,12 +783,9 @@ function AmbientAudioSection({
         throw new Error("Session expirée");
       }
 
-      const extension =
-        file.name.split(".").pop()?.toLowerCase() ||
-        "mp3";
+      const extension = file.name.split(".").pop()?.toLowerCase() || "mp3";
 
-      const path =
-        `${userId}/audio/${crypto.randomUUID()}.${extension}`;
+      const path = `${userId}/audio/${crypto.randomUUID()}.${extension}`;
 
       const { error } = await supabase.storage
         .from("boutique-media")
@@ -822,22 +798,21 @@ function AmbientAudioSection({
         throw error;
       }
 
-      const { data } =
-        supabase.storage
-          .from("boutique-media")
-          .getPublicUrl(path);
+      const { data } = supabase.storage
+        .from("boutique-media")
+        .getPublicUrl(path);
 
       setThemeSettings((previous) => ({
         ...previous,
         backgroundAudioUrl: data.publicUrl,
       }));
 
-      toast.success("Ambiance sonore chargée");
+      toast.success(translateUi("Ambiance sonore chargée"));
     } catch (error) {
       toast.error(
         error instanceof Error
           ? error.message
-          : "Upload impossible",
+          : translateUi("Upload impossible"),
       );
     } finally {
       setUploading(false);
@@ -846,25 +821,23 @@ function AmbientAudioSection({
 
   return (
     <SectionCard
-      title="Ambiance sonore"
-      description="Une boucle douce, jouée seulement après clic du visiteur"
+      title={translateUi("Ambiance sonore")}
+      description={translateUi(
+        "Une boucle douce, jouée seulement après clic du visiteur",
+      )}
       icon={<Music className="h-4 w-4" />}
     >
       <div className="space-y-3">
         {url ? (
           <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/30 p-2">
-            <audio
-              src={url}
-              controls
-              className="h-8 flex-1"
-            />
+            <audio src={url} controls className="h-8 flex-1" />
 
             <Button
               type="button"
               size="icon"
               variant="ghost"
               className="h-7 w-7"
-              title="Retirer l'ambiance sonore"
+              title={translateUi("Retirer l'ambiance sonore")}
               onClick={() =>
                 setThemeSettings((previous) => ({
                   ...previous,
@@ -877,17 +850,15 @@ function AmbientAudioSection({
           </div>
         ) : (
           <p className="text-xs text-muted-foreground">
-            Aucune ambiance. Importez un MP3 court
-            (≤ 8 Mo, idéalement en boucle).
+            {translateUi(
+              "Aucune ambiance. Importez un MP3 court (≤ 8 Mo, idéalement en boucle).",
+            )}
           </p>
         )}
 
         <div>
-          <Label
-            htmlFor="ambient-audio-input"
-            className="sr-only"
-          >
-            Importer un fichier audio
+          <Label htmlFor="ambient-audio-input" className="sr-only">
+            {translateUi("Importer un fichier audio")}
           </Label>
 
           <input
@@ -912,21 +883,19 @@ function AmbientAudioSection({
             variant="outline"
             disabled={uploading}
             onClick={() =>
-              document
-                .getElementById("ambient-audio-input")
-                ?.click()
+              document.getElementById("ambient-audio-input")?.click()
             }
           >
             {uploading ? (
               <>
                 <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                Envoi…
+                {translateUi("Envoi…")}
               </>
             ) : (
               <>
                 {url
-                  ? "Remplacer le fichier"
-                  : "Importer un fichier audio"}
+                  ? translateUi("Remplacer le fichier")
+                  : translateUi("Importer un fichier audio")}
               </>
             )}
           </Button>
@@ -934,7 +903,8 @@ function AmbientAudioSection({
 
         <div className="space-y-1.5">
           <Label className="text-xs">
-            Volume par défaut · {Math.round(volume * 100)}%
+            {translateUi("Volume par défaut ·") + " "}
+            {Math.round(volume * 100)}%
           </Label>
 
           <Slider
@@ -945,8 +915,7 @@ function AmbientAudioSection({
             onValueChange={(value) =>
               setThemeSettings((previous) => ({
                 ...previous,
-                backgroundAudioVolume:
-                  (value[0] ?? 40) / 100,
+                backgroundAudioVolume: (value[0] ?? 40) / 100,
               }))
             }
           />

@@ -1,3 +1,4 @@
+import { translateUi } from "@/lib/uiTranslation";
 /**
  * Page Templates — bundles de scènes prêts à l'emploi pour créer une page en un clic.
  * Chaque template = un titre par défaut + un slug + une liste de scènes à seeder.
@@ -37,25 +38,41 @@ export const PRODUCT_PAGE_SCENES: PageTemplateScene[] = [
   { sceneType: "product-hero", variant: "image-left" },
   { sceneType: "product-description", variant: "centered" },
   { sceneType: "product-specs", variant: "table" },
-  { sceneType: "trust-wall", variant: "badges-row", contentPatch: { title: "Achetez en confiance" } },
+  {
+    sceneType: "trust-wall",
+    variant: "badges-row",
+    contentPatch: {
+      get title() {
+        return translateUi("Achetez en confiance");
+      },
+    },
+  },
   { sceneType: "product-related", variant: "3-up" },
 ];
 
 export const PAGE_TEMPLATES: PageTemplate[] = [
   {
     key: "blank",
-    label: "Page vierge",
+    get label() {
+      return translateUi("Page vierge");
+    },
     emoji: "✨",
-    description: "Une page vide à composer librement",
+    get description() {
+      return translateUi("Une page vide à composer librement");
+    },
     defaultTitle: "Nouvelle page",
     defaultSlug: "page",
     scenes: [],
   },
   {
     key: "products",
-    label: "Nos produits",
+    get label() {
+      return translateUi("Nos produits");
+    },
     emoji: "🛍️",
-    description: "Hero + grille complète des produits + CTA",
+    get description() {
+      return translateUi("Hero + grille complète des produits + CTA");
+    },
     defaultTitle: "Nos produits",
     defaultSlug: "produits",
     seoTitle: "Nos produits — collection complète",
@@ -66,9 +83,15 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
         sceneType: "hero-cinema",
         variant: "type-only",
         contentPatch: {
-          title: "Toute la collection",
-          subtitle: "Chaque pièce, soigneusement sélectionnée.",
-          ctaLabel: "Explorer",
+          get title() {
+            return translateUi("Toute la collection");
+          },
+          get subtitle() {
+            return translateUi("Chaque pièce, soigneusement sélectionnée.");
+          },
+          get ctaLabel() {
+            return translateUi("Explorer");
+          },
         },
       },
       { sceneType: "products-grid", variant: "4-up" },
@@ -77,9 +100,13 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
   },
   {
     key: "cart",
-    label: "Panier",
+    get label() {
+      return translateUi("Panier");
+    },
     emoji: "🛒",
-    description: "Page panier dédiée avec récap et CTA checkout",
+    get description() {
+      return translateUi("Page panier dédiée avec récap et CTA checkout");
+    },
     defaultTitle: "Mon panier",
     defaultSlug: "panier",
     seoTitle: "Votre panier",
@@ -89,7 +116,11 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
       {
         sceneType: "trust-wall",
         variant: "badges-row",
-        contentPatch: { title: "Achat 100 % sécurisé" },
+        contentPatch: {
+          get title() {
+            return translateUi("Achat 100 % sécurisé");
+          },
+        },
       },
     ],
   },
@@ -97,7 +128,9 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
     key: "blog",
     label: "Blog / Journal",
     emoji: "📰",
-    description: "Liste d'articles éditoriale + newsletter",
+    get description() {
+      return translateUi("Liste d'articles éditoriale + newsletter");
+    },
     defaultTitle: "Le journal",
     defaultSlug: "journal",
     seoTitle: "Le journal — actualités et coulisses",
@@ -108,9 +141,15 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
         sceneType: "hero-cinema",
         variant: "type-only",
         contentPatch: {
-          title: "Le journal",
-          subtitle: "Histoires, conseils et coulisses.",
-          ctaLabel: "Lire le dernier article",
+          get title() {
+            return translateUi("Le journal");
+          },
+          get subtitle() {
+            return translateUi("Histoires, conseils et coulisses.");
+          },
+          get ctaLabel() {
+            return translateUi("Lire le dernier article");
+          },
         },
       },
       { sceneType: "blog-list", variant: "grid" },
@@ -119,9 +158,13 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
   },
   {
     key: "about",
-    label: "À propos",
+    get label() {
+      return translateUi("À propos");
+    },
     emoji: "🌿",
-    description: "Manifeste + histoire + équipe + chiffres clés",
+    get description() {
+      return translateUi("Manifeste + histoire + équipe + chiffres clés");
+    },
     defaultTitle: "À propos",
     defaultSlug: "a-propos",
     seoTitle: "À propos — notre histoire",
@@ -139,25 +182,32 @@ export const PAGE_TEMPLATES: PageTemplate[] = [
     key: "contact",
     label: "Contact",
     emoji: "✉️",
-    description: "Formulaire + carte + FAQ rapide",
+    get description() {
+      return translateUi("Formulaire + carte + FAQ rapide");
+    },
     defaultTitle: "Contact",
     defaultSlug: "contact",
     seoTitle: "Contactez-nous",
-    seoDescription:
-      "Une question ? Notre équipe vous répond sous 24 heures.",
+    seoDescription: "Une question ? Notre équipe vous répond sous 24 heures.",
     scenes: [
       { sceneType: "contact-form", variant: "split" },
       { sceneType: "map-location" },
       {
         sceneType: "faq-accordion",
         variant: "accordion",
-        contentPatch: { title: "Questions fréquentes" },
+        contentPatch: {
+          get title() {
+            return translateUi("Questions fréquentes");
+          },
+        },
       },
     ],
   },
 ];
 
-export function findPageTemplate(key: PageTemplateKey): PageTemplate | undefined {
+export function findPageTemplate(
+  key: PageTemplateKey,
+): PageTemplate | undefined {
   return PAGE_TEMPLATES.find((t) => t.key === key);
 }
 
@@ -170,19 +220,38 @@ export function recommendedSceneTypesForPage(
   slug?: string | null,
 ): string[] {
   const haystack = `${title ?? ""} ${slug ?? ""}`.toLowerCase();
-  const has = (...needles: string[]) => needles.some((n) => haystack.includes(n));
+  const has = (...needles: string[]) =>
+    needles.some((n) => haystack.includes(n));
 
   if (has("produit", "shop", "boutique", "catalog")) {
-    return ["products-grid", "product-spotlight", "showcase-magazine", "cta-sticky", "trust-wall"];
+    return [
+      "products-grid",
+      "product-spotlight",
+      "showcase-magazine",
+      "cta-sticky",
+      "trust-wall",
+    ];
   }
   if (has("panier", "cart", "checkout")) {
     return ["cart-summary", "trust-wall", "cta-sticky", "faq-accordion"];
   }
   if (has("blog", "journal", "actu", "article", "news")) {
-    return ["blog-list", "hero-cinema", "newsletter-editorial", "marquee-strip"];
+    return [
+      "blog-list",
+      "hero-cinema",
+      "newsletter-editorial",
+      "marquee-strip",
+    ];
   }
   if (has("propos", "about", "histoire", "story", "equipe", "team")) {
-    return ["manifesto-typographic", "story-scrolly", "founder-letter", "team-grid", "stats-counter", "timeline"];
+    return [
+      "manifesto-typographic",
+      "story-scrolly",
+      "founder-letter",
+      "team-grid",
+      "stats-counter",
+      "timeline",
+    ];
   }
   if (has("contact", "support", "aide", "help")) {
     return ["contact-form", "map-location", "faq-accordion"];
@@ -191,5 +260,11 @@ export function recommendedSceneTypesForPage(
     return ["pricing-table", "comparison-table", "faq-accordion", "cta-sticky"];
   }
   // Fallback : grands classiques universels
-  return ["hero-cinema", "showcase-magazine", "story-scrolly", "trust-wall", "cta-sticky"];
+  return [
+    "hero-cinema",
+    "showcase-magazine",
+    "story-scrolly",
+    "trust-wall",
+    "cta-sticky",
+  ];
 }

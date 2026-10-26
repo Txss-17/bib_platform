@@ -1,3 +1,4 @@
+import { translateUi } from "@/lib/uiTranslation";
 import DOMPurify from "dompurify";
 
 /**
@@ -26,14 +27,38 @@ export function renderSafeMarkdown(src: string | null | undefined): string {
   );
   html = html
     .split(/\n{2,}/)
-    .map((b) => (/^<h[1-6]>/.test(b.trim()) ? b : `<p>${b.replace(/\n/g, "<br/>")}</p>`))
+    .map((b) =>
+      /^<h[1-6]>/.test(b.trim()) ? b : `<p>${b.replace(/\n/g, "<br/>")}</p>`,
+    )
     .join("\n");
 
   return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ["p", "br", "strong", "em", "a", "h1", "h2", "h3", "ul", "ol", "li", "blockquote", "code"],
+    ALLOWED_TAGS: [
+      "p",
+      "br",
+      "strong",
+      "em",
+      "a",
+      "h1",
+      "h2",
+      "h3",
+      "ul",
+      "ol",
+      "li",
+      "blockquote",
+      "code",
+    ],
     ALLOWED_ATTR: ["href", "target", "rel"],
     ALLOWED_URI_REGEXP: /^https?:\/\//i,
-    FORBID_TAGS: ["style", "script", "iframe", "object", "embed", "form", "input"],
+    FORBID_TAGS: [
+      "style",
+      "script",
+      "iframe",
+      "object",
+      "embed",
+      "form",
+      "input",
+    ],
     FORBID_ATTR: ["style", "onerror", "onload", "onclick"],
   });
 }
@@ -56,10 +81,18 @@ export function validateMarkdownLinks(
   while ((m = re.exec(src)) !== null) {
     const url = (m[2] ?? "").trim();
     if (!url) {
-      errors.push({ raw: m[0], url, message: "Lien vide — ajoute une URL ou supprime le lien." });
+      errors.push({
+        raw: m[0],
+        url,
+        message: translateUi("Lien vide — ajoute une URL ou supprime le lien."),
+      });
       continue;
     }
-    if (/^javascript:/i.test(url) || /^data:/i.test(url) || /^vbscript:/i.test(url)) {
+    if (
+      /^javascript:/i.test(url) ||
+      /^data:/i.test(url) ||
+      /^vbscript:/i.test(url)
+    ) {
       errors.push({
         raw: m[0],
         url,

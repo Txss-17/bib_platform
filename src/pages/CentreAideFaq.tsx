@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useMemo } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import Header from "@/components/Header";
@@ -5,13 +7,23 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
-  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useSEO } from "@/hooks/useSEO";
 import { faq, personas } from "@/lib/centreAideData";
-import { ArrowLeft, ArrowRight, HelpCircle, LifeBuoy, Mail } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  HelpCircle,
+  LifeBuoy,
+  Mail,
+} from "lucide-react";
 
 export default function CentreAideFaq() {
+  useLanguage();
   const { persona } = useParams<{ persona: string }>();
   const cat = faq.find((c) => c.id === persona);
   const personaMeta = personas.find((p) => p.id === persona);
@@ -45,23 +57,31 @@ export default function CentreAideFaq() {
   const Icon = personaMeta.icon;
 
   return (
-    <div className="min-h-screen bg-bib-ivory">
+    <div className="min-h-screen bg-background">
       <Header />
       {jsonLd && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       )}
       <main className="pt-16 lg:pt-20">
-        <section className="bg-bib-marine text-bib-ivory">
+        <section className="bg-brand-marine text-bib-ivory">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-            <Link to="/centre-aide" className="inline-flex items-center gap-1.5 text-sm text-bib-ivory/80 hover:text-bib-ivory mb-4">
-              <ArrowLeft className="h-4 w-4" /> Centre d'aide
+            <Link
+              to="/centre-aide"
+              className="inline-flex items-center gap-1.5 text-sm text-bib-ivory/80 hover:text-bib-ivory mb-4"
+            >
+              <ArrowLeft className="h-4 w-4" /> {translateUi("Centre d'aide")}
             </Link>
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-bib-gold/15 text-bib-gold flex items-center justify-center shrink-0">
                 <Icon className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="font-display text-3xl sm:text-4xl font-bold">{personaMeta.label}</h1>
+                <h1 className="font-display text-3xl sm:text-4xl font-bold">
+                  {personaMeta.label}
+                </h1>
                 <p className="mt-2 text-bib-ivory/80">{personaMeta.desc}</p>
               </div>
             </div>
@@ -69,9 +89,11 @@ export default function CentreAideFaq() {
         </section>
 
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
-          <div className="mb-5 flex items-center gap-2 text-bib-marine">
+          <div className="mb-5 flex items-center gap-2 text-foreground">
             <HelpCircle className="h-5 w-5 text-bib-gold" />
-            <h2 className="font-display text-xl font-bold">Questions fréquentes</h2>
+            <h2 className="font-display text-xl font-bold">
+              {translateUi("Questions fréquentes")}
+            </h2>
           </div>
           <Card className="p-2 sm:p-4">
             <Accordion type="single" collapsible className="w-full">
@@ -83,8 +105,16 @@ export default function CentreAideFaq() {
                   <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
                     <p>{it.a}</p>
                     {it.to && (
-                      <Button asChild variant="outline" size="sm" className="mt-3">
-                        <Link to={it.to}>{it.ctaLabel ?? "Ouvrir"} <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="mt-3"
+                      >
+                        <Link to={it.to}>
+                          {it.ctaLabel ?? translateUi("Ouvrir")}{" "}
+                          <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                        </Link>
                       </Button>
                     )}
                   </AccordionContent>
@@ -97,23 +127,35 @@ export default function CentreAideFaq() {
             <Card className="p-5 flex items-start gap-3">
               <Mail className="h-5 w-5 text-bib-gold shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="font-semibold text-bib-marine">Vous n'avez pas trouvé ?</p>
-                <p className="text-sm text-muted-foreground">Contactez le support, réponse sous 24h ouvrées.</p>
+                <p className="font-semibold text-foreground">
+                  {translateUi("Vous n'avez pas trouvé ?")}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {translateUi(
+                    "Contactez le support, réponse sous 24h ouvrées.",
+                  )}
+                </p>
                 <Button asChild variant="outline" size="sm" className="mt-3">
-                  <a href="mailto:support@brand-in-a-box.space">support@brand-in-a-box.space</a>
+                  <a href="mailto:support@brand-in-a-box.space">
+                    support@brand-in-a-box.space
+                  </a>
                 </Button>
               </div>
             </Card>
             <Card className="p-5 flex items-start gap-3">
               <LifeBuoy className="h-5 w-5 text-bib-gold shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="font-semibold text-bib-marine">Autres profils</p>
+                <p className="font-semibold text-foreground">
+                  {translateUi("Autres profils")}
+                </p>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {personas.filter((p) => p.id !== cat.id).map((p) => (
-                    <Button key={p.id} asChild variant="ghost" size="sm">
-                      <Link to={`/centre-aide/faq/${p.id}`}>{p.label}</Link>
-                    </Button>
-                  ))}
+                  {personas
+                    .filter((p) => p.id !== cat.id)
+                    .map((p) => (
+                      <Button key={p.id} asChild variant="ghost" size="sm">
+                        <Link to={`/centre-aide/faq/${p.id}`}>{p.label}</Link>
+                      </Button>
+                    ))}
                 </div>
               </div>
             </Card>

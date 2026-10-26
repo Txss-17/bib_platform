@@ -1,6 +1,13 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { ContactShadows, Environment, Float, RoundedBox } from "@react-three/drei";
+import {
+  ContactShadows,
+  Environment,
+  Float,
+  RoundedBox,
+} from "@react-three/drei";
 import type { Group, Mesh } from "three";
 import { MathUtils } from "three";
 
@@ -17,6 +24,7 @@ const GOLD_SOFT = "#e3c277";
 const IVORY = "#f7f1e5";
 
 function Lid() {
+  useLanguage();
   // Rotating top lid that opens on a hinge along the back edge
   const ref = useRef<Mesh>(null);
   useFrame(({ clock }) => {
@@ -40,11 +48,18 @@ function Lid() {
 }
 
 function Box() {
+  useLanguage();
   // Open marine box, slightly rounded corners
   return (
     <group position={[0, -0.35, 0]}>
       {/* Floor */}
-      <RoundedBox args={[2.5, 0.12, 1.8]} radius={0.04} smoothness={4} castShadow receiveShadow>
+      <RoundedBox
+        args={[2.5, 0.12, 1.8]}
+        radius={0.04}
+        smoothness={4}
+        castShadow
+        receiveShadow
+      >
         <meshStandardMaterial color={MARINE_DEEP} roughness={0.55} />
       </RoundedBox>
       {/* Walls */}
@@ -54,9 +69,18 @@ function Box() {
         { pos: [-1.21, 0.55, 0], size: [0.08, 1.1, 1.8] }, // left
         { pos: [1.21, 0.55, 0], size: [0.08, 1.1, 1.8] }, // right
       ].map((w, i) => (
-        <mesh key={i} position={w.pos as [number, number, number]} castShadow receiveShadow>
+        <mesh
+          key={i}
+          position={w.pos as [number, number, number]}
+          castShadow
+          receiveShadow
+        >
           <boxGeometry args={w.size as [number, number, number]} />
-          <meshStandardMaterial color={MARINE} roughness={0.5} metalness={0.08} />
+          <meshStandardMaterial
+            color={MARINE}
+            roughness={0.5}
+            metalness={0.08}
+          />
         </mesh>
       ))}
       {/* Inner ivory liner at top edge — premium wink */}
@@ -82,6 +106,7 @@ interface ProductProps {
 }
 
 function Product({ delay, radius, height, shape, tone }: ProductProps) {
+  useLanguage();
   const ref = useRef<Group>(null);
 
   useFrame(({ clock }) => {
@@ -116,26 +141,46 @@ function Product({ delay, radius, height, shape, tone }: ProductProps) {
   });
 
   const color = tone === "gold" ? GOLD : tone === "ivory" ? IVORY : MARINE;
-  const accent = tone === "gold" ? GOLD_SOFT : tone === "ivory" ? "#ded5c1" : "#1c3050";
+  const accent =
+    tone === "gold" ? GOLD_SOFT : tone === "ivory" ? "#ded5c1" : "#1c3050";
 
   return (
     <group ref={ref}>
       <Float speed={2} rotationIntensity={0.4} floatIntensity={0.3}>
         {shape === "box" && (
-          <RoundedBox args={[0.42, 0.42, 0.42]} radius={0.06} smoothness={4} castShadow>
-            <meshStandardMaterial color={color} roughness={0.3} metalness={0.6} emissive={accent} emissiveIntensity={0.05} />
+          <RoundedBox
+            args={[0.42, 0.42, 0.42]}
+            radius={0.06}
+            smoothness={4}
+            castShadow
+          >
+            <meshStandardMaterial
+              color={color}
+              roughness={0.3}
+              metalness={0.6}
+              emissive={accent}
+              emissiveIntensity={0.05}
+            />
           </RoundedBox>
         )}
         {shape === "sphere" && (
           <mesh castShadow>
             <sphereGeometry args={[0.24, 32, 32]} />
-            <meshStandardMaterial color={color} roughness={0.2} metalness={0.7} />
+            <meshStandardMaterial
+              color={color}
+              roughness={0.2}
+              metalness={0.7}
+            />
           </mesh>
         )}
         {shape === "cyl" && (
           <mesh castShadow>
             <cylinderGeometry args={[0.18, 0.18, 0.5, 28]} />
-            <meshStandardMaterial color={color} roughness={0.25} metalness={0.65} />
+            <meshStandardMaterial
+              color={color}
+              roughness={0.25}
+              metalness={0.65}
+            />
           </mesh>
         )}
       </Float>
@@ -144,6 +189,7 @@ function Product({ delay, radius, height, shape, tone }: ProductProps) {
 }
 
 function Sparkle({ delay, x, z }: { delay: number; x: number; z: number }) {
+  useLanguage();
   const ref = useRef<Mesh>(null);
   useFrame(({ clock }) => {
     if (!ref.current) return;
@@ -155,12 +201,17 @@ function Sparkle({ delay, x, z }: { delay: number; x: number; z: number }) {
   return (
     <mesh ref={ref} position={[x, 1.1, z]}>
       <octahedronGeometry args={[0.08, 0]} />
-      <meshStandardMaterial color={GOLD_SOFT} emissive={GOLD} emissiveIntensity={0.6} />
+      <meshStandardMaterial
+        color={GOLD_SOFT}
+        emissive={GOLD}
+        emissiveIntensity={0.6}
+      />
     </mesh>
   );
 }
 
 function Scene() {
+  useLanguage();
   return (
     <>
       <ambientLight intensity={0.55} color={IVORY} />
@@ -172,25 +223,66 @@ function Scene() {
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
       />
-      <directionalLight position={[-3, 2, -2]} intensity={0.45} color="#cfd8e6" />
+      <directionalLight
+        position={[-3, 2, -2]}
+        intensity={0.45}
+        color="#cfd8e6"
+      />
 
       <Suspense fallback={null}>
         <Environment preset="studio" />
         <Box />
         <Lid />
         {/* Products in orbit */}
-        <Product delay={0.0} radius={1.4} height={1.0} shape="box" tone="gold" />
-        <Product delay={1.2} radius={1.55} height={1.3} shape="sphere" tone="ivory" />
-        <Product delay={2.4} radius={1.3} height={1.15} shape="cyl" tone="gold" />
-        <Product delay={3.6} radius={1.6} height={1.35} shape="box" tone="marine" />
-        <Product delay={4.8} radius={1.45} height={1.05} shape="sphere" tone="gold" />
+        <Product
+          delay={0.0}
+          radius={1.4}
+          height={1.0}
+          shape="box"
+          tone="gold"
+        />
+        <Product
+          delay={1.2}
+          radius={1.55}
+          height={1.3}
+          shape="sphere"
+          tone="ivory"
+        />
+        <Product
+          delay={2.4}
+          radius={1.3}
+          height={1.15}
+          shape="cyl"
+          tone="gold"
+        />
+        <Product
+          delay={3.6}
+          radius={1.6}
+          height={1.35}
+          shape="box"
+          tone="marine"
+        />
+        <Product
+          delay={4.8}
+          radius={1.45}
+          height={1.05}
+          shape="sphere"
+          tone="gold"
+        />
         {/* Sparkles rising above the lid */}
         <Sparkle delay={0} x={-0.4} z={0.2} />
         <Sparkle delay={0.8} x={0.5} z={-0.1} />
         <Sparkle delay={1.6} x={0.1} z={0.4} />
       </Suspense>
 
-      <ContactShadows position={[0, -0.42, 0]} opacity={0.4} scale={7} blur={2.6} far={4} color={MARINE} />
+      <ContactShadows
+        position={[0, -0.42, 0]}
+        opacity={0.4}
+        scale={7}
+        blur={2.6}
+        far={4}
+        color={MARINE}
+      />
     </>
   );
 }
@@ -201,14 +293,23 @@ interface Props {
 }
 
 /** Hero 3D : box marine qui s'ouvre + produits dorés du catalogue qui en sortent. */
-export function BoxWithProductsHero3D({ className = "", aspect = "1/1" }: Props) {
-  const camera = useMemo(() => ({ position: [0, 2.1, 5.4] as [number, number, number], fov: 36 }), []);
+export function BoxWithProductsHero3D({
+  className = "",
+  aspect = "1/1",
+}: Props) {
+  useLanguage();
+  const camera = useMemo(
+    () => ({ position: [0, 2.1, 5.4] as [number, number, number], fov: 36 }),
+    [],
+  );
   return (
     <div
       className={className}
       style={{ aspectRatio: aspect, width: "100%" }}
       role="img"
-      aria-label="Brand-In-A-Box — Box premium qui s'ouvre et révèle des produits du catalogue"
+      aria-label={translateUi(
+        "Brand-In-A-Box — Box premium qui s'ouvre et révèle des produits du catalogue",
+      )}
     >
       <Canvas
         shadows

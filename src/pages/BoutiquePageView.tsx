@@ -1,40 +1,42 @@
-// src/pages/BoutiquePageView.tsx
-import React, { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabaseClient';
-import { SceneRenderer } from '../scenes/SceneRenderer';
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useBrandDNA, useBoutiqueScenes } from "@/hooks/useBrandStudio";
+import { StudioSceneRenderer } from "@/components/storefront/StudioSceneRenderer";
 
-export const BoutiquePageView: React.FC<{ pageId: string }> = ({ pageId }) => {
-  const [scenes, setScenes] = useState<SceneRecord[]>([]);
-  const [brandDna, setBrandDna] = useState<BrandDNA | null>(null);
-
-  useEffect(() => {
-    const fetchPageData = async () => {
-      // 1. Récupérer les scènes de la page, triées par position
-      const { data: scenesData, error: scenesError } = await supabase
-        .from('scenes')
-        .select('*')
-        .eq('boutique_page_id', pageId)
-        .order('position', { ascending: true });
-
-      if (scenesError) throw scenesError;
-      setScenes(scenesData);
-
-      // 2. Récupérer le BrandDNA (via la boutique associée)
-      // (Adapte la requête selon tes relations de clés étrangères)
-      // const { data: dnaData } = await supabase.from('brand_dna').select('*').eq('boutique_id', boutiqueId).single();
-      // setBrandDna(dnaData);
-    };
-
-    fetchPageData();
-  }, [pageId]);
-
-  if (!brandDna) return <div>Chargement de l'ADN de la marque...</div>;
-
+/** Legacy embedded page entry point, backed by the current page and scene schema. */
+export function BoutiquePageView({ pageId }: { pageId: string }) {
+  useLanguage();
+  const page = useQuery({
+    queryKey: ["boutique-page-view", pageId],
+    enabled: Boolean(pageId),
+    queryFn: async () => {
+      const result = await supabase
+        .from("boutique_pages")
+        .select("boutique_id, title")
+        .eq("id", pageId)
+        .single();
+      if (result.error) throw result.error;
+      return result.data;
+    },
+  });
+  const dna = useBrandDNA(page.data?.boutique_id);
+  const scenes = useBoutiqueScenes(page.data?.boutique_id, pageId);
+  if (page.isLoading || dna.isLoading || scenes.isLoading)
+    return <p role="status">{translateUi("Chargement de la page…")}</p>;
+  if (page.isError || dna.isError || scenes.isError)
+    return (
+      <p role="alert">{translateUi("Impossible de charger cette page.")}</p>
+    );
+  if (!page.data) return null;
   return (
-    <div className="boutique-page-container">
-      {scenes.map((scene) => (
-        <SceneRenderer key={scene.id} scene={scene} brandDna={brandDna} />
-      ))}
-    </div>
+    <StudioSceneRenderer
+      scenes={scenes.data ?? []}
+      brandDna={dna.data ?? null}
+      boutiqueName={page.data.title}
+      products={[]}
+      disableTracking
+    />
   );
-};
+}

@@ -1,7 +1,15 @@
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -75,14 +83,29 @@ type Boutique = {
 const MARKETS = [
   { code: "FR", label: "France" },
   { code: "EU", label: "Europe" },
-  { code: "UK", label: "Royaume-Uni" },
-  { code: "US", label: "États-Unis" },
+  {
+    code: "UK",
+    get label() {
+      return translateUi("Royaume-Uni");
+    },
+  },
+  {
+    code: "US",
+    get label() {
+      return translateUi("États-Unis");
+    },
+  },
   { code: "CA", label: "Canada" },
   { code: "INTL", label: "International" },
 ];
 
 const ROLES = [
-  { value: "manager", label: "Manager" },
+  {
+    value: "manager",
+    get label() {
+      return translateUi("Manager");
+    },
+  },
   { value: "marketing", label: "Marketing" },
   { value: "support", label: "Support" },
 ] as const;
@@ -93,13 +116,55 @@ const COUNTRY_PRESETS: Record<
   { label: string; currency: string; markets: string[] }
 > = {
   FR: { label: "France", currency: "EUR", markets: ["FR", "EU"] },
-  BE: { label: "Belgique", currency: "EUR", markets: ["EU"] },
-  DE: { label: "Allemagne", currency: "EUR", markets: ["EU"] },
-  ES: { label: "Espagne", currency: "EUR", markets: ["EU"] },
-  IT: { label: "Italie", currency: "EUR", markets: ["EU"] },
-  CH: { label: "Suisse", currency: "CHF", markets: ["EU", "INTL"] },
-  GB: { label: "Royaume-Uni", currency: "GBP", markets: ["UK", "EU"] },
-  US: { label: "États-Unis", currency: "USD", markets: ["US", "INTL"] },
+  BE: {
+    get label() {
+      return translateUi("Belgique");
+    },
+    currency: "EUR",
+    markets: ["EU"],
+  },
+  DE: {
+    get label() {
+      return translateUi("Allemagne");
+    },
+    currency: "EUR",
+    markets: ["EU"],
+  },
+  ES: {
+    get label() {
+      return translateUi("Espagne");
+    },
+    currency: "EUR",
+    markets: ["EU"],
+  },
+  IT: {
+    get label() {
+      return translateUi("Italie");
+    },
+    currency: "EUR",
+    markets: ["EU"],
+  },
+  CH: {
+    get label() {
+      return translateUi("Suisse");
+    },
+    currency: "CHF",
+    markets: ["EU", "INTL"],
+  },
+  GB: {
+    get label() {
+      return translateUi("Royaume-Uni");
+    },
+    currency: "GBP",
+    markets: ["UK", "EU"],
+  },
+  US: {
+    get label() {
+      return translateUi("États-Unis");
+    },
+    currency: "USD",
+    markets: ["US", "INTL"],
+  },
   CA: { label: "Canada", currency: "CAD", markets: ["CA", "US"] },
   INTL: { label: "International", currency: "EUR", markets: ["INTL"] },
 };
@@ -109,8 +174,18 @@ const COUNTRY_PRESETS: Record<
  * the latest migration so users get immediate feedback before the round-trip.
  */
 const settingsSchema = z.object({
-  seo_title: z.string().trim().max(80, "80 caractères max").optional().or(z.literal("")),
-  seo_description: z.string().trim().max(200, "200 caractères max").optional().or(z.literal("")),
+  seo_title: z
+    .string()
+    .trim()
+    .max(80, "80 caractères max")
+    .optional()
+    .or(z.literal("")),
+  seo_description: z
+    .string()
+    .trim()
+    .max(200, "200 caractères max")
+    .optional()
+    .or(z.literal("")),
   seo_og_image_url: z
     .string()
     .trim()
@@ -126,7 +201,7 @@ const settingsSchema = z.object({
     .or(z.literal(""))
     .refine(
       (v) => !v || /^[0-9]{14}$/.test(v.replace(/\s+/g, "")),
-      "Le SIRET doit contenir exactement 14 chiffres"
+      "Le SIRET doit contenir exactement 14 chiffres",
     ),
   legal_address: z.string().trim().max(500).optional().or(z.literal("")),
   legal_email: z
@@ -137,7 +212,7 @@ const settingsSchema = z.object({
     .or(z.literal(""))
     .refine(
       (v) => !v || /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(v),
-      "Format email invalide"
+      "Format email invalide",
     ),
   legal_phone: z
     .string()
@@ -146,13 +221,15 @@ const settingsSchema = z.object({
     .or(z.literal(""))
     .refine(
       (v) => !v || /^\+?[0-9\s.\-()]{7,25}$/.test(v),
-      "Numéro invalide (7 à 20 chiffres)"
+      "Numéro invalide (7 à 20 chiffres)",
     ),
   default_currency: z.string().min(3).max(3),
   target_markets: z.array(z.string()).min(1, "Sélectionnez au moins un marché"),
 });
 
-type SettingsErrors = Partial<Record<keyof z.infer<typeof settingsSchema>, string>>;
+type SettingsErrors = Partial<
+  Record<keyof z.infer<typeof settingsSchema>, string>
+>;
 
 /**
  * Translate a Postgres `RAISE EXCEPTION` from our boutique guard triggers
@@ -163,21 +240,28 @@ function formatServerError(err: any): string {
   const hint: string | undefined = err?.hint;
   if (hint) return hint;
   if (msg.includes("invalid_legal_email"))
-    return "Format email invalide. Vérifiez le champ email professionnel.";
+    return translateUi(
+      "Format email invalide. Vérifiez le champ email professionnel.",
+    );
   if (msg.includes("invalid_legal_siret"))
-    return "Le SIRET doit contenir exactement 14 chiffres.";
+    return translateUi("Le SIRET doit contenir exactement 14 chiffres.");
   if (msg.includes("invalid_legal_phone"))
-    return "Numéro de téléphone invalide.";
+    return translateUi("Numéro de téléphone invalide.");
   if (msg.includes("boutique_has_open_orders"))
-    return "Suppression bloquée : commandes en cours à traiter.";
+    return translateUi("Suppression bloquée : commandes en cours à traiter.");
   if (msg.includes("boutique_has_recent_orders"))
-    return "Suppression bloquée : des commandes récentes (< 30 jours) doivent être conservées.";
+    return translateUi(
+      "Suppression bloquée : des commandes récentes (< 30 jours) doivent être conservées.",
+    );
   if (msg.includes("boutique_has_engaged_stock"))
-    return "Suppression bloquée : du stock est encore engagé sur des produits actifs.";
+    return translateUi(
+      "Suppression bloquée : du stock est encore engagé sur des produits actifs.",
+    );
   return msg || "Erreur inconnue";
 }
 
 export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
+  useLanguage();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -188,7 +272,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
       const { data, error } = await supabase
         .from("boutiques")
         .select(
-          "id, name, slug, status, seo_title, seo_description, seo_og_image_url, legal_business_name, legal_siret, legal_address, legal_email, legal_phone, default_currency, target_markets"
+          "id, name, slug, status, seo_title, seo_description, seo_og_image_url, legal_business_name, legal_siret, legal_address, legal_email, legal_phone, default_currency, target_markets",
         )
         .eq("id", boutiqueId)
         .single();
@@ -235,7 +319,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
       });
       // Infer country from currency on first load (best guess only)
       const guessed = Object.entries(COUNTRY_PRESETS).find(
-        ([, p]) => p.currency === (boutique.default_currency ?? "EUR")
+        ([, p]) => p.currency === (boutique.default_currency ?? "EUR"),
       );
       if (guessed) setCountry(guessed[0]);
     }
@@ -253,8 +337,11 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
     const preset = COUNTRY_PRESETS[code];
     if (!preset) return;
     const currentMarkets = form.target_markets ?? [];
-    const currencyChanges = (form.default_currency ?? "EUR") !== preset.currency;
-    const marketsToAdd = preset.markets.filter((m) => !currentMarkets.includes(m));
+    const currencyChanges =
+      (form.default_currency ?? "EUR") !== preset.currency;
+    const marketsToAdd = preset.markets.filter(
+      (m) => !currentMarkets.includes(m),
+    );
     if (!currencyChanges && marketsToAdd.length === 0) {
       setCountry(code); // nothing to confirm
       return;
@@ -269,10 +356,15 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
     const currentMarkets = form.target_markets ?? [];
     update({
       default_currency: preset.currency,
-      target_markets: Array.from(new Set([...preset.markets, ...currentMarkets])),
+      target_markets: Array.from(
+        new Set([...preset.markets, ...currentMarkets]),
+      ),
     });
     toast.success(
-      `Devise ${preset.currency} et marchés ${preset.markets.join(", ")} appliqués.`
+      translateUi("Devise {v0} et marchés {v1} appliqués.", {
+        v0: preset.currency,
+        v1: preset.markets.join(", "),
+      }),
     );
     setPendingCountry(null);
   };
@@ -283,19 +375,32 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
     const markets = form.target_markets ?? [];
     const currency = form.default_currency ?? "EUR";
     if (markets.includes("US") && currency !== "USD") {
-      warns.push("Marché US sélectionné mais devise ≠ USD — préférez USD pour ce marché.");
+      warns.push(
+        "Marché US sélectionné mais devise ≠ USD — préférez USD pour ce marché.",
+      );
     }
     if (markets.includes("UK") && currency !== "GBP") {
-      warns.push("Marché UK sélectionné mais devise ≠ GBP — préférez GBP pour ce marché.");
+      warns.push(
+        "Marché UK sélectionné mais devise ≠ GBP — préférez GBP pour ce marché.",
+      );
     }
     if (markets.length === 0) {
-      warns.push("Aucun marché cible défini — au moins un est nécessaire pour la livraison.");
+      warns.push(
+        "Aucun marché cible défini — au moins un est nécessaire pour la livraison.",
+      );
     }
     if (!form.legal_business_name && !form.legal_siret) {
-      warns.push("Aucune information légale renseignée — requis pour CGV et factures.");
+      warns.push(
+        "Aucune information légale renseignée — requis pour CGV et factures.",
+      );
     }
     return warns;
-  }, [form.target_markets, form.default_currency, form.legal_business_name, form.legal_siret]);
+  }, [
+    form.target_markets,
+    form.default_currency,
+    form.legal_business_name,
+    form.legal_siret,
+  ]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -332,9 +437,13 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Réglages enregistrés");
-      queryClient.invalidateQueries({ queryKey: ["boutique-settings", boutiqueId] });
-      queryClient.invalidateQueries({ queryKey: ["boutique-edit", boutiqueId] });
+      toast.success(translateUi("Réglages enregistrés"));
+      queryClient.invalidateQueries({
+        queryKey: ["boutique-settings", boutiqueId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["boutique-edit", boutiqueId],
+      });
     },
     onError: (e: any) => toast.error(formatServerError(e)),
   });
@@ -345,17 +454,22 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
     const allowed = ["image/jpeg", "image/png", "image/webp"];
     if (!allowed.includes(file.type)) {
       toast.error(
-        `Format non supporté (${file.type || "inconnu"}). JPG, PNG ou WebP uniquement.`
+        translateUi(
+          "Format non supporté ({v0}). JPG, PNG ou WebP uniquement.",
+          { v0: file.type || "inconnu" },
+        ),
       );
       return;
     }
     if (file.size > 8 * 1024 * 1024) {
-      toast.error("L'image ne doit pas dépasser 8 Mo");
+      toast.error(translateUi("L'image ne doit pas dépasser 8 Mo"));
       return;
     }
     // Tiny files are almost certainly broken or over-compressed for OG use.
     if (file.size < 4 * 1024) {
-      toast.error("Fichier trop petit — image probablement corrompue.");
+      toast.error(
+        translateUi("Fichier trop petit — image probablement corrompue."),
+      );
       return;
     }
     setCropperFile(file);
@@ -366,7 +480,9 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
    * Extract the storage path of a public URL pointing to our boutique-media
    * bucket. Returns null for external URLs so we never try to delete them.
    */
-  const extractStoragePath = (url: string | null | undefined): string | null => {
+  const extractStoragePath = (
+    url: string | null | undefined,
+  ): string | null => {
     if (!url) return null;
     const marker = "/boutique-media/";
     const i = url.indexOf(marker);
@@ -391,16 +507,28 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
    */
   const performOgUpload = async (blob: Blob) => {
     if (!user) {
-      toast.error("Session expirée");
-      setOgUpload({ status: "error", progress: 0, message: "Session expirée" });
+      toast.error(translateUi("Session expirée"));
+      setOgUpload({
+        status: "error",
+        progress: 0,
+        message: translateUi("Session expirée"),
+      });
       return;
     }
     setUploadingOg(true);
-    setOgUpload({ status: "exporting", progress: 15, message: "Préparation du fichier…" });
+    setOgUpload({
+      status: "exporting",
+      progress: 15,
+      message: translateUi("Préparation du fichier…"),
+    });
     const previousUrl = form.seo_og_image_url ?? "";
     try {
       const path = `og/${user.id}/${boutiqueId}_${Date.now()}.jpg`;
-      setOgUpload({ status: "uploading", progress: 45, message: "Téléversement vers le stockage…" });
+      setOgUpload({
+        status: "uploading",
+        progress: 45,
+        message: translateUi("Téléversement vers le stockage…"),
+      });
       const { error: upErr } = await supabase.storage
         .from("boutique-media")
         .upload(path, blob, {
@@ -409,7 +537,11 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
           contentType: "image/jpeg",
         });
       if (upErr) throw upErr;
-      setOgUpload({ status: "uploading", progress: 80, message: "Finalisation…" });
+      setOgUpload({
+        status: "uploading",
+        progress: 80,
+        message: translateUi("Finalisation…"),
+      });
       const { data: pub } = supabase.storage
         .from("boutique-media")
         .getPublicUrl(path);
@@ -428,7 +560,9 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
           byte_size: blob.size,
           source_filename: cropperFile?.name ?? null,
         });
-        queryClient.invalidateQueries({ queryKey: ["boutique-og-history", boutiqueId] });
+        queryClient.invalidateQueries({
+          queryKey: ["boutique-og-history", boutiqueId],
+        });
       } catch {
         /* history is non-critical */
       }
@@ -437,7 +571,9 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
       // (only if it's not still referenced by a history row)
       await deleteOgFromStorage(previousUrl);
       setOgUpload({ status: "success", progress: 100 });
-      toast.success("Image OG recadrée — n'oubliez pas d'enregistrer.");
+      toast.success(
+        translateUi("Image OG recadrée — n'oubliez pas d'enregistrer."),
+      );
       setCropperOpen(false);
       setCropperFile(null);
       lastBlobRef.current = null;
@@ -460,14 +596,20 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
   /** Retry the last cropped upload after a transient failure. */
   const handleRetryUpload = async () => {
     if (!lastBlobRef.current) {
-      toast.error("Aucun recadrage à réessayer — veuillez sélectionner à nouveau l'image.");
+      toast.error(
+        translateUi(
+          "Aucun recadrage à réessayer — veuillez sélectionner à nouveau l'image.",
+        ),
+      );
       return;
     }
     await performOgUpload(lastBlobRef.current);
   };
 
   /** Read width/height from a JPEG blob (used for history logging). */
-  const readBlobDimensions = (blob: Blob): Promise<{ width: number; height: number } | null> =>
+  const readBlobDimensions = (
+    blob: Blob,
+  ): Promise<{ width: number; height: number } | null> =>
     new Promise((resolve) => {
       const url = URL.createObjectURL(blob);
       const im = new Image();
@@ -487,7 +629,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
     const prev = form.seo_og_image_url ?? "";
     update({ seo_og_image_url: "" });
     await deleteOgFromStorage(prev);
-    if (prev) toast.success("Image OG supprimée du stockage.");
+    if (prev) toast.success(translateUi("Image OG supprimée du stockage."));
   };
 
   // OG image history — list previous cropped versions for rollback.
@@ -496,7 +638,9 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("boutique_og_history")
-        .select("id, image_url, storage_path, width, height, byte_size, source_filename, created_at")
+        .select(
+          "id, image_url, storage_path, width, height, byte_size, source_filename, created_at",
+        )
         .eq("boutique_id", boutiqueId)
         .order("created_at", { ascending: false })
         .limit(12);
@@ -508,26 +652,37 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
   /** Restore a previous OG image (does not re-upload — just points the form to it). */
   const restoreFromHistory = (url: string) => {
     update({ seo_og_image_url: url });
-    toast.success("Image restaurée — pensez à enregistrer.");
+    toast.success(translateUi("Image restaurée — pensez à enregistrer."));
   };
 
   /** Delete a history entry (and its storage file when not currently selected). */
-  const deleteHistoryEntry = async (entry: { id: string; storage_path: string | null; image_url: string }) => {
+  const deleteHistoryEntry = async (entry: {
+    id: string;
+    storage_path: string | null;
+    image_url: string;
+  }) => {
     const inUse = entry.image_url === form.seo_og_image_url;
-    const { error } = await supabase.from("boutique_og_history").delete().eq("id", entry.id);
+    const { error } = await supabase
+      .from("boutique_og_history")
+      .delete()
+      .eq("id", entry.id);
     if (error) {
-      toast.error("Suppression impossible : " + error.message);
+      toast.error(translateUi("Suppression impossible : ") + error.message);
       return;
     }
     if (!inUse && entry.storage_path) {
       try {
-        await supabase.storage.from("boutique-media").remove([entry.storage_path]);
+        await supabase.storage
+          .from("boutique-media")
+          .remove([entry.storage_path]);
       } catch {
         /* non-critical */
       }
     }
-    queryClient.invalidateQueries({ queryKey: ["boutique-og-history", boutiqueId] });
-    toast.success("Version supprimée de l'historique.");
+    queryClient.invalidateQueries({
+      queryKey: ["boutique-og-history", boutiqueId],
+    });
+    toast.success(translateUi("Version supprimée de l'historique."));
   };
 
   // Unpublish
@@ -540,10 +695,14 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Boutique mise hors ligne");
+      toast.success(translateUi("Boutique mise hors ligne"));
       queryClient.invalidateQueries({ queryKey: ["boutiques"] });
-      queryClient.invalidateQueries({ queryKey: ["boutique-edit", boutiqueId] });
-      queryClient.invalidateQueries({ queryKey: ["boutique-settings", boutiqueId] });
+      queryClient.invalidateQueries({
+        queryKey: ["boutique-edit", boutiqueId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["boutique-settings", boutiqueId],
+      });
     },
     onError: (e: any) => toast.error(e?.message || "Erreur"),
   });
@@ -564,7 +723,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Boutique supprimée");
+      toast.success(translateUi("Boutique supprimée"));
       queryClient.invalidateQueries({ queryKey: ["boutiques"] });
       navigate("/dashboard/boutiques");
     },
@@ -590,7 +749,8 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
   });
 
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState<typeof ROLES[number]["value"]>("support");
+  const [inviteRole, setInviteRole] =
+    useState<(typeof ROLES)[number]["value"]>("support");
 
   const inviteMutation = useMutation({
     mutationFn: async () => {
@@ -606,11 +766,14 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Invitation envoyée");
+      toast.success(translateUi("Invitation envoyée"));
       setInviteEmail("");
-      queryClient.invalidateQueries({ queryKey: ["boutique-members", boutiqueId] });
+      queryClient.invalidateQueries({
+        queryKey: ["boutique-members", boutiqueId],
+      });
     },
-    onError: (e: any) => toast.error(e?.message || "Erreur d'invitation"),
+    onError: (e: any) =>
+      toast.error(e?.message || translateUi("Erreur d'invitation")),
   });
 
   const removeMemberMutation = useMutation({
@@ -622,8 +785,10 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Membre retiré");
-      queryClient.invalidateQueries({ queryKey: ["boutique-members", boutiqueId] });
+      toast.success(translateUi("Membre retiré"));
+      queryClient.invalidateQueries({
+        queryKey: ["boutique-members", boutiqueId],
+      });
     },
     onError: (e: any) => toast.error(e?.message || "Erreur"),
   });
@@ -652,25 +817,30 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Search className="w-4 h-4 text-primary" />
-            SEO de la boutique
+            {translateUi("SEO de la boutique")}
           </CardTitle>
           <CardDescription>
-            Surcharge les méta par défaut. Laissez vide pour utiliser le nom et la
-            description de la boutique.
+            {translateUi(
+              "Surcharge les méta par défaut. Laissez vide pour utiliser le nom et la description de la boutique.",
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="seo_title">Titre SEO</Label>
-              <span className={`text-xs ${(form.seo_title?.length ?? 0) > 65 ? "text-destructive" : "text-muted-foreground"}`}>
-                {(form.seo_title?.length ?? 0)}/65
+              <Label htmlFor="seo_title">{translateUi("Titre SEO")}</Label>
+              <span
+                className={`text-xs ${(form.seo_title?.length ?? 0) > 65 ? "text-destructive" : "text-muted-foreground"}`}
+              >
+                {form.seo_title?.length ?? 0}/65
               </span>
             </div>
             <Input
               id="seo_title"
               maxLength={80}
-              placeholder="Ex: Bijoux artisanaux faits main — Atelier Lina"
+              placeholder={translateUi(
+                "Ex: Bijoux artisanaux faits main — Atelier Lina",
+              )}
               value={form.seo_title ?? ""}
               onChange={(e) => update({ seo_title: e.target.value })}
               aria-invalid={!!errors.seo_title}
@@ -681,27 +851,37 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="seo_description">Meta description</Label>
-              <span className={`text-xs ${(form.seo_description?.length ?? 0) > 160 ? "text-destructive" : "text-muted-foreground"}`}>
-                {(form.seo_description?.length ?? 0)}/160
+              <Label htmlFor="seo_description">
+                {translateUi("Meta description")}
+              </Label>
+              <span
+                className={`text-xs ${(form.seo_description?.length ?? 0) > 160 ? "text-destructive" : "text-muted-foreground"}`}
+              >
+                {form.seo_description?.length ?? 0}/160
               </span>
             </div>
             <Textarea
               id="seo_description"
               rows={3}
               maxLength={200}
-              placeholder="Phrase d'accroche affichée dans les résultats Google."
+              placeholder={translateUi(
+                "Phrase d'accroche affichée dans les résultats Google.",
+              )}
               value={form.seo_description ?? ""}
               onChange={(e) => update({ seo_description: e.target.value })}
             />
             {errors.seo_description && (
-              <p className="text-xs text-destructive">{errors.seo_description}</p>
+              <p className="text-xs text-destructive">
+                {errors.seo_description}
+              </p>
             )}
           </div>
 
           {/* OG Image uploader with preview */}
           <div className="space-y-2">
-            <Label>Image Open Graph (1200×630 recommandé)</Label>
+            <Label>
+              {translateUi("Image Open Graph (1200×630 recommandé)")}
+            </Label>
             <input
               ref={ogFileRef}
               type="file"
@@ -717,7 +897,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                 <div className="relative aspect-[1200/630] bg-muted">
                   <img
                     src={form.seo_og_image_url}
-                    alt="Aperçu image OG"
+                    alt={translateUi("Aperçu image OG")}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -733,7 +913,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                       disabled={uploadingOg}
                     >
                       <Upload className="w-3.5 h-3.5 mr-1.5" />
-                      Remplacer
+                      {translateUi("Remplacer")}
                     </Button>
                     <Button
                       size="sm"
@@ -741,7 +921,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                       onClick={() => handleRemoveOg()}
                     >
                       <X className="w-3.5 h-3.5 mr-1.5" />
-                      Supprimer
+                      {translateUi("Supprimer")}
                     </Button>
                   </div>
                 </div>
@@ -759,24 +939,26 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                   <>
                     <ImageIcon className="w-7 h-7" />
                     <span className="text-sm font-medium">
-                      Cliquez pour téléverser une image OG
+                      {translateUi("Cliquez pour téléverser une image OG")}
                     </span>
                     <span className="text-xs">
-                      PNG / JPG / WebP — max 5 Mo
+                      {translateUi("PNG / JPG / WebP — max 5 Mo")}
                     </span>
                   </>
                 )}
               </button>
             )}
             <Input
-              placeholder="ou collez une URL externe"
+              placeholder={translateUi("ou collez une URL externe")}
               value={form.seo_og_image_url ?? ""}
               onChange={(e) => update({ seo_og_image_url: e.target.value })}
               aria-invalid={!!errors.seo_og_image_url}
               className="text-xs"
             />
             {errors.seo_og_image_url && (
-              <p className="text-xs text-destructive">{errors.seo_og_image_url}</p>
+              <p className="text-xs text-destructive">
+                {errors.seo_og_image_url}
+              </p>
             )}
 
             {/* Upload progress + retry */}
@@ -789,18 +971,25 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                     ) : (
                       <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
                     )}
-                    {ogUpload.status === "exporting" && "Export du recadrage…"}
-                    {ogUpload.status === "uploading" && "Upload en cours…"}
-                    {ogUpload.status === "error" && "Échec — réessayez ci-dessous"}
+                    {ogUpload.status === "exporting" &&
+                      translateUi("Export du recadrage…")}
+                    {ogUpload.status === "uploading" &&
+                      translateUi("Upload en cours…")}
+                    {ogUpload.status === "error" &&
+                      translateUi("Échec — réessayez ci-dessous")}
                   </span>
-                  <span className="text-muted-foreground">{ogUpload.progress}%</span>
+                  <span className="text-muted-foreground">
+                    {ogUpload.progress}%
+                  </span>
                 </div>
                 <Progress
                   value={ogUpload.progress}
                   className={`h-1.5 ${ogUpload.status === "error" ? "[&>div]:bg-destructive" : ""}`}
                 />
                 {ogUpload.message && (
-                  <p className="text-[11px] text-muted-foreground">{ogUpload.message}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {ogUpload.message}
+                  </p>
                 )}
                 {ogUpload.status === "error" && lastBlobRef.current && (
                   <Button
@@ -810,7 +999,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                     className="w-full"
                   >
                     <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-                    Réessayer l'upload
+                    {translateUi("Réessayer l'upload")}
                   </Button>
                 )}
               </div>
@@ -822,7 +1011,8 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                 <div className="flex items-center justify-between">
                   <Label className="flex items-center gap-1.5 text-xs">
                     <History className="w-3.5 h-3.5 text-primary" />
-                    Historique ({ogHistory.length})
+                    {translateUi("Historique (")}
+                    {ogHistory.length})
                   </Label>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -840,21 +1030,29 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                         <div className="aspect-[1200/630] bg-muted">
                           <img
                             src={entry.image_url}
-                            alt={`Version OG du ${new Date(entry.created_at).toLocaleString()}`}
+                            alt={translateUi("Version OG du {v0}", {
+                              v0: new Date(entry.created_at).toLocaleString(
+                                getUiLocale(),
+                              ),
+                            })}
                             loading="lazy"
                             className="w-full h-full object-cover"
                           />
                         </div>
                         <div className="p-1.5 space-y-1">
                           <p className="text-[10px] text-muted-foreground leading-tight">
-                            {new Date(entry.created_at).toLocaleString("fr-FR", {
-                              dateStyle: "short",
-                              timeStyle: "short",
-                            })}
+                            {new Date(entry.created_at).toLocaleString(
+                              getUiLocale(),
+                              {
+                                dateStyle: "short",
+                                timeStyle: "short",
+                              },
+                            )}
                           </p>
                           {entry.byte_size && (
                             <p className="text-[10px] text-muted-foreground/80">
-                              {(entry.byte_size / 1024).toFixed(0)} Ko
+                              {(entry.byte_size / 1024).toFixed(0)}{" "}
+                              {translateUi("Ko")}
                             </p>
                           )}
                           <div className="flex gap-1">
@@ -863,7 +1061,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                                 variant="default"
                                 className="text-[9px] h-5 px-1.5 w-full justify-center"
                               >
-                                En ligne
+                                {translateUi("En ligne")}
                               </Badge>
                             ) : (
                               <>
@@ -871,17 +1069,21 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                                   size="sm"
                                   variant="outline"
                                   className="h-6 px-2 text-[10px] flex-1"
-                                  onClick={() => restoreFromHistory(entry.image_url)}
+                                  onClick={() =>
+                                    restoreFromHistory(entry.image_url)
+                                  }
                                 >
                                   <RotateCw className="w-3 h-3 mr-1" />
-                                  Restaurer
+                                  {translateUi("Restaurer")}
                                 </Button>
                                 <Button
                                   size="sm"
                                   variant="ghost"
                                   className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
                                   onClick={() => deleteHistoryEntry(entry)}
-                                  aria-label="Supprimer cette version"
+                                  aria-label={translateUi(
+                                    "Supprimer cette version",
+                                  )}
                                 >
                                   <X className="w-3 h-3" />
                                 </Button>
@@ -903,7 +1105,9 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
             title={form.seo_title || boutique.name}
             description={
               form.seo_description ||
-              "Découvrez notre boutique et nos produits soigneusement sélectionnés."
+              translateUi(
+                "Découvrez notre boutique et nos produits soigneusement sélectionnés.",
+              )
             }
             ogImage={form.seo_og_image_url || ""}
           />
@@ -915,15 +1119,19 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Building2 className="w-4 h-4 text-primary" />
-            Informations légales
+            {translateUi("Informations légales")}
           </CardTitle>
           <CardDescription>
-            Utilisées dans les CGV, mentions légales et factures. Verified by Linksy.
+            {translateUi(
+              "Utilisées dans les CGV, mentions légales et factures. Verified by Linksy.",
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid sm:grid-cols-2 gap-4">
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="legal_business_name">Raison sociale</Label>
+            <Label htmlFor="legal_business_name">
+              {translateUi("Raison sociale")}
+            </Label>
             <Input
               id="legal_business_name"
               placeholder="SARL Atelier Lina"
@@ -932,7 +1140,9 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="legal_siret">SIRET / N° entreprise</Label>
+            <Label htmlFor="legal_siret">
+              {translateUi("SIRET / N° entreprise")}
+            </Label>
             <Input
               id="legal_siret"
               placeholder="123 456 789 00012"
@@ -945,7 +1155,9 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="legal_phone">Téléphone professionnel</Label>
+            <Label htmlFor="legal_phone">
+              {translateUi("Téléphone professionnel")}
+            </Label>
             <Input
               id="legal_phone"
               placeholder="+33 1 23 45 67 89"
@@ -958,7 +1170,9 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
             )}
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="legal_address">Adresse postale</Label>
+            <Label htmlFor="legal_address">
+              {translateUi("Adresse postale")}
+            </Label>
             <Textarea
               id="legal_address"
               rows={2}
@@ -968,11 +1182,13 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="legal_email">Email professionnel</Label>
+            <Label htmlFor="legal_email">
+              {translateUi("Email professionnel")}
+            </Label>
             <Input
               id="legal_email"
               type="email"
-              placeholder="contact@maboutique.com"
+              placeholder={translateUi("contact@maboutique.com")}
               value={form.legal_email ?? ""}
               onChange={(e) => update({ legal_email: e.target.value })}
               aria-invalid={!!errors.legal_email}
@@ -989,22 +1205,25 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <ShoppingBag className="w-4 h-4 text-primary" />
-            Paramètres commerciaux
+            {translateUi("Paramètres commerciaux")}
           </CardTitle>
           <CardDescription>
-            Devise affichée et marchés ciblés (utilisé pour le SEO multilingue et la
-            logistique).
+            {translateUi(
+              "Devise affichée et marchés ciblés (utilisé pour le SEO multilingue et la logistique).",
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
               <Globe className="w-3.5 h-3.5 text-primary" />
-              Pays principal
+              {translateUi("Pays principal")}
             </Label>
             <Select value={country} onValueChange={requestCountryChange}>
               <SelectTrigger className="max-w-xs">
-                <SelectValue placeholder="Sélectionnez un pays" />
+                <SelectValue
+                  placeholder={translateUi("Sélectionnez un pays")}
+                />
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(COUNTRY_PRESETS).map(([code, p]) => (
@@ -1015,13 +1234,14 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              Ajuste automatiquement la devise et propose les marchés les plus
-              pertinents.
+              {translateUi(
+                "Ajuste automatiquement la devise et propose les marchés les plus pertinents.",
+              )}
             </p>
           </div>
 
           <div className="space-y-2 max-w-xs">
-            <Label>Devise par défaut</Label>
+            <Label>{translateUi("Devise par défaut")}</Label>
             <Select
               value={form.default_currency ?? "EUR"}
               onValueChange={(v) => update({ default_currency: v })}
@@ -1031,15 +1251,23 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="EUR">EUR — Euro (€)</SelectItem>
-                <SelectItem value="USD">USD — US Dollar ($)</SelectItem>
-                <SelectItem value="GBP">GBP — Livre Sterling (£)</SelectItem>
-                <SelectItem value="CHF">CHF — Franc Suisse</SelectItem>
-                <SelectItem value="CAD">CAD — Dollar Canadien</SelectItem>
+                <SelectItem value="USD">
+                  {translateUi("USD — US Dollar ($)")}
+                </SelectItem>
+                <SelectItem value="GBP">
+                  {translateUi("GBP — Livre Sterling (£)")}
+                </SelectItem>
+                <SelectItem value="CHF">
+                  {translateUi("CHF — Franc Suisse")}
+                </SelectItem>
+                <SelectItem value="CAD">
+                  {translateUi("CAD — Dollar Canadien")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Marchés cibles</Label>
+            <Label>{translateUi("Marchés cibles")}</Label>
             <div className="flex flex-wrap gap-2">
               {MARKETS.map((m) => {
                 const active = (form.target_markets ?? []).includes(m.code);
@@ -1060,16 +1288,23 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
               })}
             </div>
             {errors.target_markets && (
-              <p className="text-xs text-destructive">{errors.target_markets}</p>
+              <p className="text-xs text-destructive">
+                {errors.target_markets}
+              </p>
             )}
           </div>
 
           {/* Consistency warnings */}
           {consistencyWarnings.length > 0 ? (
-            <Alert variant="default" className="border-warning/30/40 bg-warning/10/40">
+            <Alert
+              variant="default"
+              className="border-warning/30/40 bg-warning/10/40"
+            >
               <Info className="h-4 w-4 text-warning" />
               <AlertDescription>
-                <p className="text-xs font-medium mb-1">Configuration à compléter :</p>
+                <p className="text-xs font-medium mb-1">
+                  {translateUi("Configuration à compléter :")}
+                </p>
                 <ul className="text-xs space-y-0.5 list-disc pl-4">
                   {consistencyWarnings.map((w, i) => (
                     <li key={i}>{w}</li>
@@ -1081,7 +1316,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
             <Alert className="border-success/30/40 bg-success/10/40">
               <CheckCircle2 className="h-4 w-4 text-success" />
               <AlertDescription className="text-xs">
-                Configuration commerciale cohérente.
+                {translateUi("Configuration commerciale cohérente.")}
               </AlertDescription>
             </Alert>
           )}
@@ -1096,7 +1331,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
           {saveMutation.isPending ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
           ) : null}
-          Enregistrer les réglages
+          {translateUi("Enregistrer les réglages")}
         </Button>
       </div>
 
@@ -1105,22 +1340,26 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Users className="w-4 h-4 text-primary" />
-            Équipe & invitations
+            {translateUi("Équipe & invitations")}
           </CardTitle>
           <CardDescription>
-            Invitez des collaborateurs avec un rôle dédié. Ils rejoignent la boutique
-            quand ils acceptent l'invitation par email.
+            {translateUi(
+              "Invitez des collaborateurs avec un rôle dédié. Ils rejoignent la boutique quand ils acceptent l'invitation par email.",
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid sm:grid-cols-[1fr_180px_auto] gap-2">
             <Input
               type="email"
-              placeholder="email@exemple.com"
+              placeholder={translateUi("email@exemple.com")}
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
             />
-            <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as any)}>
+            <Select
+              value={inviteRole}
+              onValueChange={(v) => setInviteRole(v as any)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -1136,13 +1375,13 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
               onClick={() => inviteMutation.mutate()}
               disabled={inviteMutation.isPending}
             >
-              <Plus className="w-4 h-4 mr-1" /> Inviter
+              <Plus className="w-4 h-4 mr-1" /> {translateUi("Inviter")}
             </Button>
           </div>
 
           {members.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
-              Aucun membre invité pour le moment.
+              {translateUi("Aucun membre invité pour le moment.")}
             </p>
           ) : (
             <div className="space-y-2">
@@ -1162,14 +1401,16 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                           {m.role}
                         </Badge>
                         <Badge
-                          variant={m.status === "active" ? "default" : "secondary"}
+                          variant={
+                            m.status === "active" ? "default" : "secondary"
+                          }
                           className="text-[10px]"
                         >
                           {m.status === "active"
-                            ? "Actif"
+                            ? translateUi("Actif")
                             : m.status === "pending"
-                            ? "En attente"
-                            : m.status}
+                              ? translateUi("En attente")
+                              : m.status}
                         </Badge>
                       </div>
                     </div>
@@ -1193,41 +1434,55 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base text-destructive">
             <AlertTriangle className="w-4 h-4" />
-            Zone de danger
+            {translateUi("Zone de danger")}
           </CardTitle>
           <CardDescription>
-            Actions irréversibles. Soyez attentif avant de continuer.
+            {translateUi(
+              "Actions irréversibles. Soyez attentif avant de continuer.",
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {boutique.status === "published" && (
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div>
-                <p className="text-sm font-medium">Mettre la boutique hors ligne</p>
+                <p className="text-sm font-medium">
+                  {translateUi("Mettre la boutique hors ligne")}
+                </p>
                 <p className="text-xs text-muted-foreground">
-                  Les visiteurs ne pourront plus y accéder. Vos données sont
-                  conservées.
+                  {translateUi(
+                    "Les visiteurs ne pourront plus y accéder. Vos données sont conservées.",
+                  )}
                 </p>
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="outline" size="sm">
                     <EyeOff className="w-4 h-4 mr-2" />
-                    Dépublier
+                    {translateUi("Dépublier")}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Mettre hors ligne ?</AlertDialogTitle>
+                    <AlertDialogTitle>
+                      {translateUi("Mettre hors ligne ?")}
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
-                      Votre boutique « {boutique.name} » ne sera plus accessible
-                      publiquement. Vous pourrez la republier à tout moment.
+                      {translateUi("Votre boutique «") + " "}
+                      {boutique.name}{" "}
+                      {translateUi(
+                        "» ne sera plus accessible publiquement. Vous pourrez la republier à tout moment.",
+                      )}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Annuler</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => unpublishMutation.mutate()}>
-                      Confirmer
+                    <AlertDialogCancel>
+                      {translateUi("Annuler")}
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => unpublishMutation.mutate()}
+                    >
+                      {translateUi("Confirmer")}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -1240,27 +1495,31 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div>
               <p className="text-sm font-medium text-destructive">
-                Supprimer définitivement la boutique
+                {translateUi("Supprimer définitivement la boutique")}
               </p>
               <p className="text-xs text-muted-foreground">
-                Supprime la boutique et ses paramètres. Bloqué si du stock est encore
-                actif.
+                {translateUi(
+                  "Supprime la boutique et ses paramètres. Bloqué si du stock est encore actif.",
+                )}
               </p>
             </div>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm">
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Supprimer
+                  {translateUi("Supprimer")}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Supprimer la boutique ?</AlertDialogTitle>
+                  <AlertDialogTitle>
+                    {translateUi("Supprimer la boutique ?")}
+                  </AlertDialogTitle>
                   <AlertDialogDescription asChild>
                     <div className="space-y-3">
                       <p>
-                        Cette action est <strong>irréversible</strong>. Pour
+                        {translateUi("Cette action est") + " "}
+                        <strong>{translateUi("irréversible")}</strong>. Pour
                         confirmer, tapez le nom exact de la boutique :
                       </p>
                       <p className="font-mono text-sm bg-muted px-2 py-1 rounded inline-block">
@@ -1269,7 +1528,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                       <Input
                         value={confirmName}
                         onChange={(e) => setConfirmName(e.target.value)}
-                        placeholder="Tapez le nom exact"
+                        placeholder={translateUi("Tapez le nom exact")}
                         autoFocus
                       />
                       {deleteError && (
@@ -1282,8 +1541,13 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel onClick={() => { setConfirmName(""); setDeleteError(null); }}>
-                    Annuler
+                  <AlertDialogCancel
+                    onClick={() => {
+                      setConfirmName("");
+                      setDeleteError(null);
+                    }}
+                  >
+                    {translateUi("Annuler")}
                   </AlertDialogCancel>
                   <AlertDialogAction
                     disabled={
@@ -1296,7 +1560,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                     {deleteMutation.isPending ? (
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     ) : null}
-                    Supprimer définitivement
+                    {translateUi("Supprimer définitivement")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -1309,7 +1573,10 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
       <OgImageCropperDialog
         open={cropperOpen}
         file={cropperFile}
-        onClose={() => { setCropperOpen(false); setCropperFile(null); }}
+        onClose={() => {
+          setCropperOpen(false);
+          setCropperFile(null);
+        }}
         onConfirm={handleCroppedUpload}
       />
 
@@ -1321,37 +1588,48 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Appliquer les réglages pour{" "}
+              {translateUi("Appliquer les réglages pour")}{" "}
               {pendingCountry ? COUNTRY_PRESETS[pendingCountry]?.label : ""} ?
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-2 text-sm">
                 {pendingCountry && (
                   <>
-                    <p>Les ajustements suivants seront appliqués :</p>
+                    <p>
+                      {translateUi(
+                        "Les ajustements suivants seront appliqués :",
+                      )}
+                    </p>
                     <ul className="list-disc pl-5 space-y-1">
                       {(form.default_currency ?? "EUR") !==
                         COUNTRY_PRESETS[pendingCountry].currency && (
                         <li>
-                          Devise : <strong>{form.default_currency ?? "EUR"}</strong>{" "}
-                          → <strong>{COUNTRY_PRESETS[pendingCountry].currency}</strong>
+                          {translateUi("Devise :") + " "}
+                          <strong>
+                            {form.default_currency ?? "EUR"}
+                          </strong> →{" "}
+                          <strong>
+                            {COUNTRY_PRESETS[pendingCountry].currency}
+                          </strong>
                         </li>
                       )}
-                      {COUNTRY_PRESETS[pendingCountry].markets
-                        .filter((m) => !(form.target_markets ?? []).includes(m))
-                        .length > 0 && (
+                      {COUNTRY_PRESETS[pendingCountry].markets.filter(
+                        (m) => !(form.target_markets ?? []).includes(m),
+                      ).length > 0 && (
                         <li>
-                          Marchés ajoutés :{" "}
+                          {translateUi("Marchés ajoutés :")}{" "}
                           <strong>
                             {COUNTRY_PRESETS[pendingCountry].markets
-                              .filter((m) => !(form.target_markets ?? []).includes(m))
+                              .filter(
+                                (m) => !(form.target_markets ?? []).includes(m),
+                              )
                               .join(", ")}
                           </strong>
                         </li>
                       )}
                     </ul>
                     <p className="text-xs text-muted-foreground">
-                      Vos marchés actuels seront conservés.
+                      {translateUi("Vos marchés actuels seront conservés.")}
                     </p>
                   </>
                 )}
@@ -1360,10 +1638,10 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setPendingCountry(null)}>
-              Annuler
+              {translateUi("Annuler")}
             </AlertDialogCancel>
             <AlertDialogAction onClick={acceptCountryChange}>
-              Appliquer
+              {translateUi("Appliquer")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1388,8 +1666,11 @@ function SnippetPreview({
   description: string;
   ogImage: string;
 }) {
+  useLanguage();
   const origin =
-    typeof window !== "undefined" ? window.location.origin : "https://app.bib.com";
+    typeof window !== "undefined"
+      ? window.location.origin
+      : "https://app.bib.com";
   const url = `${origin}/boutique/${slug}`;
   const titleTooLong = title.length > 65;
   const descTooLong = description.length > 160;
@@ -1399,7 +1680,7 @@ function SnippetPreview({
   return (
     <div className="space-y-3 pt-2 border-t border-border/40">
       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-        Aperçu temps réel
+        {translateUi("Aperçu temps réel")}
       </p>
 
       {/* Google SERP-like snippet */}
@@ -1408,25 +1689,46 @@ function SnippetPreview({
         {/* Google SERP fidelity: #1a0dab is Google's exact result-link colour.
             Intentional non-token exception for visual realism of the preview only. */}
         <p className="text-[#1a0dab] dark:text-info text-lg leading-tight mt-0.5 truncate">
-          {title || "(titre manquant)"}
+          {title || translateUi("(titre manquant)")}
         </p>
         <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-          {description || "(meta description manquante)"}
+          {description || translateUi("(meta description manquante)")}
         </p>
         <div className="flex flex-wrap gap-1.5 mt-2">
           <Badge
-            variant={titleTooLong ? "destructive" : titleTooShort ? "secondary" : "default"}
+            variant={
+              titleTooLong
+                ? "destructive"
+                : titleTooShort
+                  ? "secondary"
+                  : "default"
+            }
             className="text-[10px]"
           >
-            Titre {title.length}c
-            {titleTooLong ? " — trop long" : titleTooShort ? " — trop court" : " ✓"}
+            {translateUi("Titre") + " "}
+            {title.length}c
+            {titleTooLong
+              ? translateUi(" — trop long")
+              : titleTooShort
+                ? translateUi(" — trop court")
+                : " ✓"}
           </Badge>
           <Badge
-            variant={descTooLong ? "destructive" : descTooShort ? "secondary" : "default"}
+            variant={
+              descTooLong
+                ? "destructive"
+                : descTooShort
+                  ? "secondary"
+                  : "default"
+            }
             className="text-[10px]"
           >
             Meta {description.length}c
-            {descTooLong ? " — trop long" : descTooShort ? " — trop court" : " ✓"}
+            {descTooLong
+              ? translateUi(" — trop long")
+              : descTooShort
+                ? translateUi(" — trop court")
+                : " ✓"}
           </Badge>
         </div>
       </div>
@@ -1437,13 +1739,15 @@ function SnippetPreview({
           {ogImage ? (
             <img
               src={ogImage}
-              alt="Aperçu carte sociale"
+              alt={translateUi("Aperçu carte sociale")}
               className="w-full h-full object-cover"
             />
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
               <ImageIcon className="w-8 h-8 mb-1" />
-              <span className="text-xs">Image OG manquante</span>
+              <span className="text-xs">
+                {translateUi("Image OG manquante")}
+              </span>
             </div>
           )}
         </div>
@@ -1452,7 +1756,7 @@ function SnippetPreview({
             {origin.replace(/^https?:\/\//, "")}
           </p>
           <p className="text-sm font-medium leading-tight mt-0.5 line-clamp-2">
-            {title || "(titre manquant)"}
+            {title || translateUi("(titre manquant)")}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
             {description}

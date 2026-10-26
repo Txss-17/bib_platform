@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +15,7 @@ interface LegalPageProps {
 }
 
 function LegalPageContent({ type }: LegalPageProps) {
+  useLanguage();
   const { slug } = useParams<{ slug: string }>();
 
   const { data: boutique, isLoading } = useQuery({
@@ -42,12 +45,14 @@ function LegalPageContent({ type }: LegalPageProps) {
   if (!boutique) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Page introuvable</p>
+        <p className="text-muted-foreground">
+          {translateUi("Page introuvable")}
+        </p>
       </div>
     );
   }
 
-  const theme = (boutique.theme_settings as unknown) as ThemeSettings | null;
+  const theme = boutique.theme_settings as unknown as ThemeSettings | null;
   const primaryColor = theme?.primaryColor || "#3b82f6";
 
   const titles: Record<string, string> = {
@@ -56,29 +61,40 @@ function LegalPageContent({ type }: LegalPageProps) {
     about: "À Propos",
   };
 
-  const content = type === "cgv" 
-    ? theme?.cgvText 
-    : type === "cgu" 
-    ? theme?.cguText 
-    : theme?.customAboutText || boutique.description;
+  const content =
+    type === "cgv"
+      ? theme?.cgvText
+      : type === "cgu"
+        ? theme?.cguText
+        : theme?.customAboutText || boutique.description;
 
   return (
     <CartProvider>
       <div className="bg-background min-h-screen">
-        <StorefrontHeader boutiqueName={boutique.name} primaryColor={primaryColor} boutiqueSlug={slug} />
+        <StorefrontHeader
+          boutiqueName={boutique.name}
+          primaryColor={primaryColor}
+          boutiqueSlug={slug}
+        />
         <div className="max-w-3xl mx-auto px-4 py-8">
           <Link to={`/boutique/${slug}`}>
             <Button variant="ghost" size="sm" className="mb-4 gap-2">
-              <ArrowLeft className="w-4 h-4" /> Retour
+              <ArrowLeft className="w-4 h-4" /> {translateUi("Retour")}
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold text-foreground mb-6">{titles[type]}</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-6">
+            {titles[type]}
+          </h1>
           {content ? (
             <div className="prose prose-gray max-w-none whitespace-pre-wrap text-foreground/80">
               {content}
             </div>
           ) : (
-            <p className="text-muted-foreground">Cette page n'a pas encore été renseignée par le propriétaire de la boutique.</p>
+            <p className="text-muted-foreground">
+              {translateUi(
+                "Cette page n'a pas encore été renseignée par le propriétaire de la boutique.",
+              )}
+            </p>
           )}
         </div>
         <StorefrontFooter primaryColor={primaryColor} />
@@ -87,6 +103,15 @@ function LegalPageContent({ type }: LegalPageProps) {
   );
 }
 
-export function BoutiqueCGVPage() { return <LegalPageContent type="cgv" />; }
-export function BoutiqueCGUPage() { return <LegalPageContent type="cgu" />; }
-export function BoutiqueAboutPage() { return <LegalPageContent type="about" />; }
+export function BoutiqueCGVPage() {
+  useLanguage();
+  return <LegalPageContent type="cgv" />;
+}
+export function BoutiqueCGUPage() {
+  useLanguage();
+  return <LegalPageContent type="cgu" />;
+}
+export function BoutiqueAboutPage() {
+  useLanguage();
+  return <LegalPageContent type="about" />;
+}

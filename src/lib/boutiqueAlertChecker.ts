@@ -1,3 +1,4 @@
+import { translateUi } from "@/lib/uiTranslation";
 import { supabase } from "@/integrations/supabase/client";
 import type { AlertSettings } from "@/hooks/useBoutiqueAlerts";
 
@@ -32,12 +33,22 @@ export async function runBoutiqueAlertCheck(s: AlertSettings): Promise<{
 
   // 1. Views drop
   const [{ data: cur }, { data: prev }] = await Promise.all([
-    supabase.rpc("boutique_period_kpis" as never, {
-      _boutique_id: boutiqueId, _since: since, _until: now.toISOString(),
-    } as never),
-    supabase.rpc("boutique_period_kpis" as never, {
-      _boutique_id: boutiqueId, _since: prevSince, _until: since,
-    } as never),
+    supabase.rpc(
+      "boutique_period_kpis" as never,
+      {
+        _boutique_id: boutiqueId,
+        _since: since,
+        _until: now.toISOString(),
+      } as never,
+    ),
+    supabase.rpc(
+      "boutique_period_kpis" as never,
+      {
+        _boutique_id: boutiqueId,
+        _since: prevSince,
+        _until: since,
+      } as never,
+    ),
   ]);
   const curK = (cur as any[])?.[0];
   const prevK = (prev as any[])?.[0];
@@ -48,26 +59,52 @@ export async function runBoutiqueAlertCheck(s: AlertSettings): Promise<{
         boutique_id: boutiqueId,
         type: "views_drop",
         severity: dropPct >= 60 ? "critical" : "warning",
-        title: `Chute des vues : -${dropPct.toFixed(0)}%`,
-        message: `Vues sur ${days}j : ${curK.views} contre ${prevK.views} la période précédente.`,
-        metadata: { current: curK.views, previous: prevK.views, drop_pct: dropPct },
+        title: translateUi("Chute des vues : -{v0}%", {
+          v0: dropPct.toFixed(0),
+        }),
+        message: translateUi(
+          "Vues sur {v0}j : {v1} contre {v2} la période précédente.",
+          { v0: days, v1: curK.views, v2: prevK.views },
+        ),
+        metadata: {
+          current: curK.views,
+          previous: prevK.views,
+          drop_pct: dropPct,
+        },
       });
     }
   }
 
   // 2. CTR drop on scenes
-  const { data: scenes } = await supabase.rpc("scene_analytics_summary" as never, {
-    _boutique_id: boutiqueId, _since: since,
-  } as never);
-  const lowCtr = ((scenes as any[]) ?? []).filter((r) => Number(r.impressions) > 50 && Number(r.ctr) < s.ctr_floor);
+  const { data: scenes } = await supabase.rpc(
+    "scene_analytics_summary" as never,
+    {
+      _boutique_id: boutiqueId,
+      _since: since,
+    } as never,
+  );
+  const lowCtr = ((scenes as any[]) ?? []).filter(
+    (r) => Number(r.impressions) > 50 && Number(r.ctr) < s.ctr_floor,
+  );
   if (lowCtr.length > 0 && !recentTypes.has("ctr_drop")) {
     toInsert.push({
       boutique_id: boutiqueId,
       type: "ctr_drop",
       severity: "warning",
-      title: `${lowCtr.length} scène(s) sous-performante(s)`,
-      message: `CTR < ${s.ctr_floor}% détecté sur ${lowCtr.length} scène(s). Pensez à retravailler vos CTA.`,
-      metadata: { scenes: lowCtr.map((r) => ({ id: r.scene_id, type: r.scene_type, ctr: r.ctr })) },
+      title: translateUi("{v0} scène(s) sous-performante(s)", {
+        v0: lowCtr.length,
+      }),
+      message: translateUi(
+        "CTR < {v0}% détecté sur {v1} scène(s). Pensez à retravailler vos CTA.",
+        { v0: s.ctr_floor, v1: lowCtr.length },
+      ),
+      metadata: {
+        scenes: lowCtr.map((r) => ({
+          id: r.scene_id,
+          type: r.scene_type,
+          ctr: r.ctr,
+        })),
+      },
     });
   }
 
@@ -83,15 +120,21 @@ export async function runBoutiqueAlertCheck(s: AlertSettings): Promise<{
     if (!sp) continue;
     const stock = Number(sp.stock ?? 0);
     const moq = Math.max(Number(sp.moq ?? 1), 1);
-    if (stock / moq <= s.low_stock_ratio) lowStock.push({ id: p.id, name: sp.name, stock, moq });
+    if (stock / moq <= s.low_stock_ratio)
+      lowStock.push({ id: p.id, name: sp.name, stock, moq });
   }
   if (lowStock.length > 0 && !recentTypes.has("low_stock")) {
     toInsert.push({
       boutique_id: boutiqueId,
       type: "low_stock",
       severity: lowStock.some((x) => x.stock <= 0) ? "critical" : "warning",
-      title: `Stock faible sur ${lowStock.length} produit(s)`,
-      message: lowStock.slice(0, 3).map((x) => `${x.name} (${x.stock}/${x.moq})`).join(", "),
+      title: translateUi("Stock faible sur {v0} produit(s)", {
+        v0: lowStock.length,
+      }),
+      message: lowStock
+        .slice(0, 3)
+        .map((x) => `${x.name} (${x.stock}/${x.moq})`)
+        .join(", "),
       metadata: { products: lowStock },
     });
   }
@@ -112,8 +155,12 @@ export async function runBoutiqueAlertCheck(s: AlertSettings): Promise<{
         boutique_id: boutiqueId,
         type: "audit",
         severity: "info",
-        title: `Audit : ${missing.length} action(s) à compléter`,
-        message: `Pour rester conforme : ${missing.join(", ")}.`,
+        title: translateUi("Audit : {v0} action(s) à compléter", {
+          v0: missing.length,
+        }),
+        message: translateUi("Pour rester conforme : {v0}.", {
+          v0: missing.join(", "),
+        }),
         metadata: { missing },
       });
     }
@@ -134,15 +181,18 @@ export async function runBoutiqueAlertCheck(s: AlertSettings): Promise<{
               Alerte automatique Brand-In-A-Box — réglez vos seuils dans Paramètres &gt; Alertes.
             </p>
           </div>`;
-        const { error } = await supabase.functions.invoke("send-boutique-email", {
-          body: {
-            boutique_id: boutiqueId,
-            type: "alert",
-            recipient_email: s.notify_email,
-            subject_override: subject,
-            body_override: body,
+        const { error } = await supabase.functions.invoke(
+          "send-boutique-email",
+          {
+            body: {
+              boutique_id: boutiqueId,
+              type: "alert",
+              recipient_email: s.notify_email,
+              subject_override: subject,
+              body_override: body,
+            },
           },
-        });
+        );
         emailStatus = error ? "failed" : "sent";
         if (!error) emailed++;
       } catch {
@@ -166,12 +216,24 @@ export async function runBoutiqueAlertCheck(s: AlertSettings): Promise<{
   return {
     created: toInsert.length,
     emailed,
-    alerts: toInsert.map((a) => ({ type: a.type, title: a.title, severity: a.severity })),
+    alerts: toInsert.map((a) => ({
+      type: a.type,
+      title: a.title,
+      severity: a.severity,
+    })),
   };
 }
 
 function escapeHtml(s: string) {
-  return s.replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-  })[c]!);
+  return s.replace(
+    /[&<>"']/g,
+    (c) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[c]!,
+  );
 }

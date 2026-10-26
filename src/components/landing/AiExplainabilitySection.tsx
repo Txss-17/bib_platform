@@ -53,7 +53,7 @@ export default function AiExplainabilitySection() {
   return (
     <section
       id="ai-explainability"
-      className="py-20 lg:py-28 bg-bib-ivory relative overflow-hidden"
+      className="py-20 lg:py-28 bg-background relative overflow-hidden"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-[1.1fr_1fr] gap-10 lg:gap-16 items-center">
@@ -63,12 +63,18 @@ export default function AiExplainabilitySection() {
               {/* Header */}
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-bib-marine flex items-center justify-center">
-                    <Brain size={18} className="text-bib-gold" strokeWidth={2.25} />
+                  <div className="w-10 h-10 rounded-xl bg-brand-marine flex items-center justify-center">
+                    <Brain
+                      size={18}
+                      className="text-bib-gold"
+                      strokeWidth={2.25}
+                    />
                   </div>
                   <div>
-                    <p className="font-display font-semibold text-bib-marine leading-tight">
-                      {lang === "fr" ? "Recommandation IA" : "AI recommendation"}
+                    <p className="font-display font-semibold text-foreground leading-tight">
+                      {lang === "fr"
+                        ? "Recommandation IA"
+                        : "AI recommendation"}
                     </p>
                     <p className="text-[11px] text-muted-foreground">
                       {lang === "fr"
@@ -93,8 +99,8 @@ export default function AiExplainabilitySection() {
                   <div key={f.label.fr}>
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2">
-                        <f.icon size={14} className="text-bib-marine" />
-                        <span className="text-sm font-medium text-bib-marine">
+                        <f.icon size={14} className="text-foreground" />
+                        <span className="text-sm font-medium text-foreground">
                           {f.label[lang]}
                         </span>
                       </div>
@@ -102,7 +108,7 @@ export default function AiExplainabilitySection() {
                         {f.weight}%
                       </span>
                     </div>
-                    <div className="h-1.5 rounded-full bg-bib-marine/8 overflow-hidden">
+                    <div className="h-1.5 rounded-full bg-primary/8 overflow-hidden">
                       <div
                         className="h-full bg-bib-gold rounded-full transition-all duration-700"
                         style={{ width: `${f.weight * 2.5}%` }}
@@ -122,7 +128,7 @@ export default function AiExplainabilitySection() {
                     ? "Vous pouvez désactiver l'IA à tout moment."
                     : "You can disable AI at any time."}
                 </p>
-                <span className="text-xs font-semibold text-bib-marine inline-flex items-center gap-1">
+                <span className="text-xs font-semibold text-foreground inline-flex items-center gap-1">
                   {lang === "fr" ? "Voir détails" : "See details"}
                   <ArrowRight size={12} />
                 </span>
@@ -130,7 +136,7 @@ export default function AiExplainabilitySection() {
             </div>
 
             {/* Floating chip — model lineage */}
-            <div className="absolute -top-4 -right-4 bg-bib-marine text-primary-foreground rounded-xl shadow-lg px-3 py-2 text-xs">
+            <div className="absolute -top-4 -right-4 bg-brand-marine text-primary-foreground rounded-xl shadow-lg px-3 py-2 text-xs">
               <span className="opacity-70 mr-1.5">model</span>
               <span className="font-semibold">commerce-os v2.1</span>
             </div>
@@ -138,17 +144,19 @@ export default function AiExplainabilitySection() {
 
           {/* RIGHT — copy */}
           <div className="order-1 lg:order-2 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-bib-marine/8 border border-bib-marine/15 mb-5">
-              <Brain size={14} className="text-bib-marine" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-bib-marine">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/8 border border-bib-marine/15 mb-5">
+              <Brain size={14} className="text-foreground" />
+              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">
                 {lang === "fr" ? "IA explicable" : "Explainable AI"}
               </span>
             </div>
-            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-5 text-bib-marine">
+            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-5 text-foreground">
               {lang === "fr" ? (
                 <>
                   Pas de boîte noire.{" "}
-                  <span className="text-bib-gold">Que des décisions claires.</span>
+                  <span className="text-bib-gold">
+                    Que des décisions claires.
+                  </span>
                 </>
               ) : (
                 <>
@@ -166,14 +174,18 @@ export default function AiExplainabilitySection() {
             <div className="grid sm:grid-cols-2 gap-3">
               {[
                 {
-                  k: lang === "fr" ? "100% des facteurs visibles" : "100% factors visible",
+                  k:
+                    lang === "fr"
+                      ? "100% des facteurs visibles"
+                      : "100% factors visible",
                   v:
                     lang === "fr"
                       ? "Aucun critère caché ne pèse sur le score."
                       : "No hidden criterion weighs on the score.",
                 },
                 {
-                  k: lang === "fr" ? "Opt-out à tout moment" : "Opt-out anytime",
+                  k:
+                    lang === "fr" ? "Opt-out à tout moment" : "Opt-out anytime",
                   v:
                     lang === "fr"
                       ? "Désactivez l'IA, vous gardez le contrôle manuel."
@@ -184,10 +196,12 @@ export default function AiExplainabilitySection() {
                   key={it.k}
                   className="rounded-xl border border-bib-marine/10 bg-card p-4"
                 >
-                  <p className="font-display font-semibold text-bib-marine text-sm mb-1">
+                  <p className="font-display font-semibold text-foreground text-sm mb-1">
                     {it.k}
                   </p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{it.v}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {it.v}
+                  </p>
                 </div>
               ))}
             </div>

@@ -1,5 +1,13 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Star, CheckCircle, AlertCircle, TrendingUp } from "lucide-react";
+import {
+  Shield,
+  Star,
+  CheckCircle,
+  AlertCircle,
+  TrendingUp,
+} from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 interface TrustMetric {
@@ -11,10 +19,34 @@ interface TrustMetric {
 }
 
 const trustMetrics: TrustMetric[] = [
-  { name: "Order Fulfillment", score: 98, maxScore: 100, status: "excellent", icon: <CheckCircle className="w-4 h-4" /> },
-  { name: "Customer Reviews", score: 4.7, maxScore: 5, status: "excellent", icon: <Star className="w-4 h-4" /> },
-  { name: "Response Time", score: 85, maxScore: 100, status: "good", icon: <TrendingUp className="w-4 h-4" /> },
-  { name: "Compliance", score: 72, maxScore: 100, status: "needs-attention", icon: <AlertCircle className="w-4 h-4" /> },
+  {
+    name: "Order Fulfillment",
+    score: 98,
+    maxScore: 100,
+    status: "excellent",
+    icon: <CheckCircle className="w-4 h-4" />,
+  },
+  {
+    name: "Customer Reviews",
+    score: 4.7,
+    maxScore: 5,
+    status: "excellent",
+    icon: <Star className="w-4 h-4" />,
+  },
+  {
+    name: "Response Time",
+    score: 85,
+    maxScore: 100,
+    status: "good",
+    icon: <TrendingUp className="w-4 h-4" />,
+  },
+  {
+    name: "Compliance",
+    score: 72,
+    maxScore: 100,
+    status: "needs-attention",
+    icon: <AlertCircle className="w-4 h-4" />,
+  },
 ];
 
 const statusColors = {
@@ -24,6 +56,7 @@ const statusColors = {
 };
 
 export function TrustScore() {
+  useLanguage();
   const overallScore = 92;
 
   return (
@@ -31,7 +64,9 @@ export function TrustScore() {
       <CardHeader>
         <div className="flex items-center gap-2">
           <Shield className="w-5 h-5 text-primary" />
-          <CardTitle className="text-lg font-semibold">Trust Score</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            {translateUi("Trust Score")}
+          </CardTitle>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -59,7 +94,9 @@ export function TrustScore() {
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-3xl font-bold text-foreground">{overallScore}</span>
+              <span className="text-3xl font-bold text-foreground">
+                {overallScore}
+              </span>
               <span className="text-xs text-muted-foreground">/ 100</span>
             </div>
           </div>
@@ -68,7 +105,7 @@ export function TrustScore() {
         <div className="text-center">
           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-success/10 text-success text-sm font-medium">
             <CheckCircle className="w-4 h-4" />
-            Excellent Standing
+            {translateUi("Excellent Standing")}
           </span>
         </div>
 
@@ -78,15 +115,18 @@ export function TrustScore() {
             <div key={metric.name} className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className={statusColors[metric.status]}>{metric.icon}</span>
+                  <span className={statusColors[metric.status]}>
+                    {metric.icon}
+                  </span>
                   <span className="text-sm text-foreground">{metric.name}</span>
                 </div>
                 <span className="text-sm font-semibold text-foreground">
-                  {metric.score}{metric.maxScore === 5 ? "/5" : "%"}
+                  {metric.score}
+                  {metric.maxScore === 5 ? "/5" : "%"}
                 </span>
               </div>
-              <Progress 
-                value={(metric.score / metric.maxScore) * 100} 
+              <Progress
+                value={(metric.score / metric.maxScore) * 100}
                 className="h-2"
               />
             </div>
@@ -98,9 +138,9 @@ export function TrustScore() {
           <div className="flex items-center gap-3">
             <div className="flex">
               {[...Array(5)].map((_, i) => (
-                <Star 
-                  key={i} 
-                  className={`w-4 h-4 ${i < 4 ? "text-success fill-success" : "text-success/30"}`} 
+                <Star
+                  key={i}
+                  className={`w-4 h-4 ${i < 4 ? "text-success fill-success" : "text-success/30"}`}
                 />
               ))}
             </div>

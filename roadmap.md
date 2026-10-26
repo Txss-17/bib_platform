@@ -1,11 +1,19 @@
 # Roadmap
 
+## Bridge Platform–Intranet — correctif préparé le 25 octobre 2026
+
+- [x] Corriger les contrats produits et statuts, les répétitions et les identifiants catalogue/boutiques.
+- [x] Préparer les protections commandes clients, affectations Ops et crédits Circular.
+- [x] Valider 57 tests backend ciblés et TypeScript sur les fonctions concernées.
+- [ ] Intégrer les correctifs dans les deux dépôts et vérifier les migrations Drizzle réelles.
+- [ ] Restaurer les prérequis manquants de l’onboarding partenaires, puis réaliser la recette des services déployés.
+
 ## Séparation des paiements — correction préparée
 
 - [x] Imposer le mode de paiement côté serveur et vérifier le projet Supabase associé.
 - [x] Rejeter les événements Stripe de mauvais mode avant traitement.
 - [x] Préparer la migration excluant sandbox et POS de l’envoi logistique.
-- [ ] Configurer les deux projets distincts puis déployer et réaliser la recette.
+- [ ] Configurer le projet réel ; prévoir un projet distinct seulement pour activer le sandbox. Déployer et réaliser la recette.
 - Détails : `docs/payment-environment-isolation.md`.
 
 ## Vérification du 25 octobre 2026 — branche de correction

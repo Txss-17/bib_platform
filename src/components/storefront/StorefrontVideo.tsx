@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Play } from "lucide-react";
 
 interface StorefrontVideoProps {
@@ -6,10 +8,17 @@ interface StorefrontVideoProps {
   title?: string;
 }
 
-export function StorefrontVideo({ primaryColor, videoUrl, title }: StorefrontVideoProps) {
+export function StorefrontVideo({
+  primaryColor,
+  videoUrl,
+  title,
+}: StorefrontVideoProps) {
+  useLanguage();
   // Extract YouTube/Vimeo embed URL
   const getEmbedUrl = (url: string): string | null => {
-    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+    const ytMatch = url.match(
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/,
+    );
     if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
     const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
     if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
@@ -33,7 +42,7 @@ export function StorefrontVideo({ primaryColor, videoUrl, title }: StorefrontVid
               className="w-full h-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
-              title={title || "Vidéo"}
+              title={title || translateUi("Vidéo")}
             />
           ) : (
             <div
@@ -46,7 +55,9 @@ export function StorefrontVideo({ primaryColor, videoUrl, title }: StorefrontVid
               >
                 <Play className="w-7 h-7 text-white ml-1" />
               </div>
-              <p className="text-gray-400 text-sm">Vidéo de présentation</p>
+              <p className="text-gray-400 text-sm">
+                {translateUi("Vidéo de présentation")}
+              </p>
             </div>
           )}
         </div>

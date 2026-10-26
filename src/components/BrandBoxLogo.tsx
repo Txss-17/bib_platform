@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useRef, useState } from "react";
 import logoImg from "@/assets/brand-in-a-box-logo.png";
 
@@ -49,6 +51,7 @@ export function BrandBoxLogo({
   className = "",
   variant = "icon",
 }: BrandBoxLogoProps) {
+  useLanguage();
   const ref = useRef<HTMLDivElement>(null);
   const [playing, setPlaying] = useState(false);
 
@@ -80,7 +83,8 @@ export function BrandBoxLogo({
   }, [replayOnScroll, progress]);
 
   const aspectFull = 1243 / 629;
-  const width = variant === "full" ? size * aspectFull : Math.round(size * ICON.ratio);
+  const width =
+    variant === "full" ? size * aspectFull : Math.round(size * ICON.ratio);
   const height = size;
 
   // ---- FULL variant: render the official asset 1:1, with a discreet entry fade.
@@ -93,7 +97,9 @@ export function BrandBoxLogo({
         className={`relative inline-block ${className}`}
         style={{ width, height }}
         role="img"
-        aria-label="Brand-In-A-Box — Your brand. Ready to launch."
+        aria-label={translateUi(
+          "Brand-In-A-Box — Your brand. Ready to launch.",
+        )}
       >
         <img
           src={logoImg}
@@ -186,7 +192,10 @@ export function BrandBoxLogo({
             typeof progress === "number"
               ? `translateY(${(-1 + Math.min(Math.max(progress, 0), 1)) * 80}%) scale(${0.92 + 0.08 * Math.min(progress, 1)})`
               : undefined,
-          opacity: typeof progress === "number" ? Math.min(0.4 + progress * 0.8, 1) : undefined,
+          opacity:
+            typeof progress === "number"
+              ? Math.min(0.4 + progress * 0.8, 1)
+              : undefined,
           transformOrigin: "50% 100%",
           transition:
             typeof progress === "number"

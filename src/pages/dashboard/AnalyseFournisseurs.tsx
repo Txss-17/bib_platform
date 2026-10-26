@@ -1,57 +1,91 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
-import { PageHeader, SectionCard, KpiTile, KpiGrid } from "@/components/dashboard/shared";
+import {
+  PageHeader,
+  SectionCard,
+  KpiTile,
+  KpiGrid,
+} from "@/components/dashboard/shared";
 import { useSupplierProducts } from "@/hooks/useSupplierProducts";
 import { useProducts } from "@/hooks/useProducts";
 import { Package, TrendingUp, BarChart3 } from "lucide-react";
 
 export default function AnalyseFournisseurs() {
+  useLanguage();
   const { data: supplierProducts } = useSupplierProducts();
   const { data: userProducts } = useProducts();
 
   // Group supplier products by category
-  const categoryStats = supplierProducts?.reduce((acc, product) => {
-    if (!acc[product.category]) {
-      acc[product.category] = { count: 0, avgPrice: 0, avgMargin: 0, totalPrice: 0, totalMargin: 0 };
-    }
-    acc[product.category].count++;
-    acc[product.category].totalPrice += product.base_price;
-    acc[product.category].totalMargin += product.max_margin_percent;
-    acc[product.category].avgPrice = acc[product.category].totalPrice / acc[product.category].count;
-    acc[product.category].avgMargin = acc[product.category].totalMargin / acc[product.category].count;
-    return acc;
-  }, {} as Record<string, { count: number; avgPrice: number; avgMargin: number; totalPrice: number; totalMargin: number }>) || {};
+  const categoryStats =
+    supplierProducts?.reduce(
+      (acc, product) => {
+        if (!acc[product.category]) {
+          acc[product.category] = {
+            count: 0,
+            avgPrice: 0,
+            avgMargin: 0,
+            totalPrice: 0,
+            totalMargin: 0,
+          };
+        }
+        acc[product.category].count++;
+        acc[product.category].totalPrice += product.base_price;
+        acc[product.category].totalMargin += product.max_margin_percent;
+        acc[product.category].avgPrice =
+          acc[product.category].totalPrice / acc[product.category].count;
+        acc[product.category].avgMargin =
+          acc[product.category].totalMargin / acc[product.category].count;
+        return acc;
+      },
+      {} as Record<
+        string,
+        {
+          count: number;
+          avgPrice: number;
+          avgMargin: number;
+          totalPrice: number;
+          totalMargin: number;
+        }
+      >,
+    ) || {};
 
-  const usedProductIds = new Set(userProducts?.map(p => p.supplier_product_id) || []);
-  const usedCount = supplierProducts?.filter(p => usedProductIds.has(p.id)).length || 0;
+  const usedProductIds = new Set(
+    userProducts?.map((p) => p.supplier_product_id) || [],
+  );
+  const usedCount =
+    supplierProducts?.filter((p) => usedProductIds.has(p.id)).length || 0;
 
   return (
     <DashboardLayout>
       <PageHeader
-        eyebrow="Analytics"
-        title="Analyse fournisseurs"
-        subtitle="Performance et disponibilité du catalogue fournisseur."
+        eyebrow={translateUi("Analytics")}
+        title={translateUi("Analyse fournisseurs")}
+        subtitle={translateUi(
+          "Performance et disponibilité du catalogue fournisseur.",
+        )}
         breadcrumbs={[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Analyse fournisseurs" },
+          { label: translateUi("Dashboard"), href: "/dashboard" },
+          { label: translateUi("Analyse fournisseurs") },
         ]}
       />
 
       {/* Overview */}
       <KpiGrid cols={3}>
         <KpiTile
-          label="Produits disponibles"
+          label={translateUi("Produits disponibles")}
           value={supplierProducts?.length || 0}
           icon={<Package className="w-5 h-5" />}
         />
         <KpiTile
-          label="Produits utilisés par vous"
+          label={translateUi("Produits utilisés par vous")}
           value={usedCount}
           icon={<TrendingUp className="w-5 h-5" />}
           tone="gold"
         />
         <KpiTile
-          label="Catégories"
+          label={translateUi("Catégories")}
           value={Object.keys(categoryStats).length}
           icon={<BarChart3 className="w-5 h-5" />}
         />
@@ -59,8 +93,10 @@ export default function AnalyseFournisseurs() {
 
       {/* Category breakdown */}
       <SectionCard
-        title="Par catégorie"
-        description="Prix et marges moyens par catégorie de produit."
+        title={translateUi("Par catégorie")}
+        description={translateUi(
+          "Prix et marges moyens par catégorie de produit.",
+        )}
         icon={<BarChart3 className="w-4 h-4" />}
         className="mb-6"
       >
@@ -79,13 +115,17 @@ export default function AnalyseFournisseurs() {
                   <p className="text-sm font-bold text-foreground">
                     €{stats.avgPrice.toFixed(2)}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">Prix moyen</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {translateUi("Prix moyen")}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm font-bold text-foreground">
                     {Math.round(stats.avgMargin)}%
                   </p>
-                  <p className="text-[10px] text-muted-foreground">Marge moy.</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {translateUi("Marge moy.")}
+                  </p>
                 </div>
               </div>
             </div>
@@ -95,8 +135,8 @@ export default function AnalyseFournisseurs() {
 
       {/* Top products */}
       <SectionCard
-        title="Produits les plus performants"
-        description="Top 5 du catalogue à forte demande."
+        title={translateUi("Produits les plus performants")}
+        description={translateUi("Top 5 du catalogue à forte demande.")}
         icon={<TrendingUp className="w-4 h-4" />}
       >
         <div className="space-y-3">
@@ -135,9 +175,9 @@ export default function AnalyseFournisseurs() {
                   </p>
                   <Badge
                     variant="outline"
-                    className="bg-success/15 text-success text-[10px]"
+                    className="bg-success/15 text-success-ink text-[10px]"
                   >
-                    Demande élevée
+                    {translateUi("Demande élevée")}
                   </Badge>
                 </div>
               </div>

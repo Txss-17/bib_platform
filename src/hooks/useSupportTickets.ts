@@ -1,9 +1,14 @@
+import { translateUi } from "@/lib/uiTranslation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
-export type SupportTicketStatus = "open" | "in_progress" | "resolved" | "closed";
+export type SupportTicketStatus =
+  | "open"
+  | "in_progress"
+  | "resolved"
+  | "closed";
 
 export interface SupportTicketRow {
   id: string;
@@ -100,7 +105,9 @@ export function useUpdateTicketStatus() {
       // Notify customer if a meaningful transition happens
       if (
         ticket.contact_email &&
-        (status === "in_progress" || status === "resolved" || status === "closed")
+        (status === "in_progress" ||
+          status === "resolved" ||
+          status === "closed")
       ) {
         const trackingUrl =
           typeof window !== "undefined"
@@ -128,11 +135,12 @@ export function useUpdateTicketStatus() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["support_tickets"] });
-      toast.success("Statut mis à jour", {
-        description: "Le client est notifié par e-mail.",
+      toast.success(translateUi("Statut mis à jour"), {
+        description: translateUi("Le client est notifié par e-mail."),
       });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Erreur de mise à jour"),
+    onError: (e: any) =>
+      toast.error(e?.message ?? translateUi("Erreur de mise à jour")),
   });
 }
 
@@ -140,7 +148,13 @@ export function useAddTicketResponse() {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async ({ ticketId, message }: { ticketId: string; message: string }) => {
+    mutationFn: async ({
+      ticketId,
+      message,
+    }: {
+      ticketId: string;
+      message: string;
+    }) => {
       if (!user) throw new Error("Auth requise");
       const { error } = await supabase
         .from("support_ticket_responses")
@@ -148,8 +162,10 @@ export function useAddTicketResponse() {
       if (error) throw error;
     },
     onSuccess: (_d, vars) => {
-      qc.invalidateQueries({ queryKey: ["support_ticket_detail", vars.ticketId] });
-      toast.success("Réponse publiée");
+      qc.invalidateQueries({
+        queryKey: ["support_ticket_detail", vars.ticketId],
+      });
+      toast.success(translateUi("Réponse publiée"));
     },
     onError: (e: any) => toast.error(e?.message ?? "Erreur"),
   });
@@ -170,14 +186,16 @@ export async function uploadTicketAttachment(
     .from("support-attachments")
     .upload(path, file, { contentType: file.type, upsert: false });
   if (upErr) throw upErr;
-  const { error: rowErr } = await supabase.from("support_ticket_attachments").insert({
-    ticket_id: ticketId,
-    storage_path: path,
-    file_name: file.name,
-    mime_type: file.type || null,
-    byte_size: file.size,
-    uploaded_by: uploadedBy,
-  });
+  const { error: rowErr } = await supabase
+    .from("support_ticket_attachments")
+    .insert({
+      ticket_id: ticketId,
+      storage_path: path,
+      file_name: file.name,
+      mime_type: file.type || null,
+      byte_size: file.size,
+      uploaded_by: uploadedBy,
+    });
   if (rowErr) throw rowErr;
   return path;
 }

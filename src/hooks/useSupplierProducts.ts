@@ -1,3 +1,4 @@
+import { translateUi } from "@/lib/uiTranslation";
 import { useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,7 +36,9 @@ export function useSupplierProductsByCategory(category?: string) {
         query = query.eq("category", category);
       }
 
-      const { data, error } = await query.order("created_at", { ascending: false });
+      const { data, error } = await query.order("created_at", {
+        ascending: false,
+      });
 
       if (error) throw error;
       return data as SupplierProduct[];
@@ -65,6 +68,7 @@ export function useSupplierProductsRealtime(opts?: { silent?: boolean }) {
         { event: "*", schema: "public", table: "supplier_products" },
         (payload) => {
           qc.invalidateQueries({ queryKey: ["supplier-products"] });
+          qc.invalidateQueries({ queryKey: ["products"] });
           qc.invalidateQueries({ queryKey: ["per-boutique-health"] });
 
           if (silent || !initialized.current) {
@@ -76,13 +80,25 @@ export function useSupplierProductsRealtime(opts?: { silent?: boolean }) {
           const oldRow = payload.old as Partial<SupplierProduct> | undefined;
 
           if (payload.eventType === "INSERT" && newRow?.is_active) {
-            toast.success(`Nouveau produit catalogue : ${newRow.name}`);
+            toast.success(
+              translateUi("Nouveau produit catalogue : {v0}", {
+                v0: newRow.name,
+              }),
+            );
           } else if (payload.eventType === "UPDATE") {
             if (oldRow?.is_active && newRow?.is_active === false) {
-              toast.warning(`Produit retiré du catalogue : ${newRow?.name}`);
+              toast.warning(
+                translateUi("Produit retiré du catalogue : {v0}", {
+                  v0: newRow?.name,
+                }),
+              );
             } else if (oldRow?.moq !== newRow?.moq) {
               toast.info(
-                `MOQ mis à jour : ${newRow?.name} (${oldRow?.moq} → ${newRow?.moq})`,
+                translateUi("MOQ mis à jour : {v0} ({v1} → {v2})", {
+                  v0: newRow?.name,
+                  v1: oldRow?.moq,
+                  v2: newRow?.moq,
+                }),
               );
             }
           }

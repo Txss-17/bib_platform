@@ -1,3 +1,4 @@
+import { translateUi, getUiLanguage } from "@/lib/uiTranslation";
 import { useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBoutiques } from "@/hooks/useBoutiques";
@@ -32,36 +33,44 @@ export function useOnboardingState() {
   const hasBusinessType = !!profile?.business_type;
   const hasBoutique = (boutiques?.length || 0) > 0;
   const firstBoutique = boutiques?.[0];
-  const hasPublishedBoutique = boutiques?.some((b) => b.status === "published") || false;
+  const hasPublishedBoutique =
+    boutiques?.some((b) => b.status === "published") || false;
   const hasProduct = (products?.length || 0) > 0;
   const isBusiness = profile?.business_type === "business";
   const isMultiMarket = (firstBoutique?.target_markets?.length || 0) > 1;
 
   // Wizard appears post-signup until all 3 essentials are filled.
-  const needsWizard = !!user && !!profile && (!hasProfileBasics || !hasMarket || !hasBusinessType);
+  const needsWizard =
+    !!user &&
+    !!profile &&
+    (!hasProfileBasics || !hasMarket || !hasBusinessType);
 
   const steps: OnboardingStep[] = useMemo(() => {
     const list: OnboardingStep[] = [
       {
         key: "profile",
-        label: "Compléter votre profil",
-        description: "Nom, marché cible et type d'activité.",
+        label: translateUi("Compléter votre profil"),
+        description: translateUi("Nom, marché cible et type d'activité."),
         done: hasProfileBasics && hasMarket && hasBusinessType,
         href: "/dashboard/parametres",
         cta: "Compléter",
       },
       {
         key: "boutique",
-        label: "Créer votre première boutique",
-        description: "Choisissez un nom, une catégorie et un slug public.",
+        label: translateUi("Créer votre première boutique"),
+        description: translateUi(
+          "Choisissez un nom, une catégorie et un slug public.",
+        ),
         done: hasBoutique,
         href: "/dashboard/boutiques/create",
         cta: "Créer",
       },
       {
         key: "product",
-        label: "Importer un premier produit",
-        description: "Sélectionnez depuis le catalogue fournisseur validé.",
+        label: translateUi("Importer un premier produit"),
+        description: translateUi(
+          "Sélectionnez depuis le catalogue fournisseur validé.",
+        ),
         done: hasProduct,
         href: "/dashboard/produits-fournisseurs",
         cta: "Choisir",
@@ -72,8 +81,10 @@ export function useOnboardingState() {
     if (isBusiness) {
       list.push({
         key: "kyc",
-        label: "Téléverser vos documents KYC",
-        description: "Obligatoire pour un compte business (SIRET, justificatif).",
+        label: translateUi("Téléverser vos documents KYC"),
+        description: translateUi(
+          "Obligatoire pour un compte business (SIRET, justificatif).",
+        ),
         done: !!profile?.is_verified,
         href: "/dashboard/parametres",
         cta: "Téléverser",
@@ -84,10 +95,14 @@ export function useOnboardingState() {
     if (hasBoutique && isMultiMarket) {
       list.push({
         key: "markets",
-        label: "Configurer vos marchés cibles",
-        description: `Activez devises et langues pour ${firstBoutique?.target_markets?.join(", ")}.`,
+        label: translateUi("Configurer vos marchés cibles"),
+        description: translateUi("Activez devises et langues pour {v0}.", {
+          v0: firstBoutique?.target_markets?.join(", "),
+        }),
         done: hasPublishedBoutique,
-        href: firstBoutique ? `/dashboard/boutiques/edit/${firstBoutique.id}` : "/dashboard/boutiques",
+        href: firstBoutique
+          ? `/dashboard/boutiques/edit/${firstBoutique.id}`
+          : "/dashboard/boutiques",
         cta: "Configurer",
       });
     }
@@ -95,10 +110,12 @@ export function useOnboardingState() {
     // Final activation: publish.
     list.push({
       key: "publish",
-      label: "Publier votre boutique",
-      description: "Rendez votre vitrine accessible publiquement.",
+      label: translateUi("Publier votre boutique"),
+      description: translateUi("Rendez votre vitrine accessible publiquement."),
       done: hasPublishedBoutique,
-      href: firstBoutique ? `/dashboard/boutiques/edit/${firstBoutique.id}` : "/dashboard/boutiques",
+      href: firstBoutique
+        ? `/dashboard/boutiques/edit/${firstBoutique.id}`
+        : "/dashboard/boutiques",
       cta: "Publier",
     });
 
@@ -114,11 +131,13 @@ export function useOnboardingState() {
     isMultiMarket,
     firstBoutique,
     profile?.is_verified,
+    getUiLanguage(),
   ]);
 
   const doneCount = steps.filter((s) => s.done).length;
   const totalCount = steps.length;
-  const completionPct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+  const completionPct =
+    totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
   const allDone = doneCount === totalCount && totalCount > 0;
 
   return {

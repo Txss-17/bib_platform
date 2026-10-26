@@ -21,22 +21,33 @@ interface PageHeaderProps {
  * Provides: optional eyebrow + breadcrumbs, large display title,
  * supporting subtitle and a slot for primary actions.
  */
-export function PageHeader({ title, subtitle, breadcrumbs, actions, eyebrow }: PageHeaderProps) {
+export function PageHeader({
+  title,
+  subtitle,
+  breadcrumbs,
+  actions,
+  eyebrow,
+}: PageHeaderProps) {
   return (
     <div className="mb-6 md:mb-8">
       {(breadcrumbs?.length || eyebrow) && (
         <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground mb-2">
           {eyebrow && (
-            <span className="uppercase tracking-[0.18em] text-secondary font-medium">
+            <span className="uppercase tracking-[0.18em] text-accent-ink font-medium">
               {eyebrow}
             </span>
           )}
-          {eyebrow && breadcrumbs?.length ? <span className="opacity-50">·</span> : null}
+          {eyebrow && breadcrumbs?.length ? (
+            <span className="opacity-50">·</span>
+          ) : null}
           {breadcrumbs?.map((b, i) => (
             <span key={i} className="flex items-center gap-2">
               {i > 0 && <ChevronRight className="w-3 h-3 opacity-50" />}
               {b.href ? (
-                <Link to={b.href} className="hover:text-foreground transition-colors">
+                <Link
+                  to={b.href}
+                  className="hover:text-foreground transition-colors"
+                >
                   {b.label}
                 </Link>
               ) : (
@@ -57,7 +68,9 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions, eyebrow }: P
             </p>
           )}
         </div>
-        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+        {actions && (
+          <div className="flex flex-wrap items-center gap-2">{actions}</div>
+        )}
       </div>
     </div>
   );

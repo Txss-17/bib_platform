@@ -1,3 +1,5 @@
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -21,7 +23,7 @@ import { Separator } from "@/components/ui/separator";
    ========================================================= */
 
 function formatPrice(price: number) {
-  return new Intl.NumberFormat("fr-FR", {
+  return new Intl.NumberFormat(getUiLocale(), {
     style: "currency",
     currency: "EUR",
   }).format(price);
@@ -44,10 +46,8 @@ export function StoreProductDetailDialog({
   product,
   onClose,
 }: StoreProductDetailDialogProps) {
-  const {
-    isFavorite,
-    toggleFavorite,
-  } = useFavorites();
+  useLanguage();
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   const favorite = isFavorite(product.id);
 
@@ -64,13 +64,13 @@ export function StoreProductDetailDialog({
             className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
-            Retour aux produits
+            {translateUi("Retour aux produits")}
           </Link>
 
           <div className="ml-auto flex items-center gap-2">
             <Link
               to="/store/cart"
-              aria-label="Panier"
+              aria-label={translateUi("Panier")}
               className="flex h-10 w-10 items-center justify-center rounded-xl transition-colors hover:bg-muted"
             >
               <ShoppingBag className="h-[19px] w-[19px]" />
@@ -108,7 +108,7 @@ export function StoreProductDetailDialog({
               <div className="absolute left-4 top-4">
                 <Badge className="rounded-full bg-background/90 px-3 py-1.5 text-foreground shadow-sm backdrop-blur hover:bg-background">
                   <ShieldCheck className="mr-1.5 h-3.5 w-3.5" />
-                  Vérifié par BIB
+                  {translateUi("Vérifié par BIB")}
                 </Badge>
               </div>
 
@@ -116,13 +116,15 @@ export function StoreProductDetailDialog({
                 type="button"
                 aria-label={
                   favorite
-                    ? `Retirer ${product.name} des favoris`
-                    : `Ajouter ${product.name} aux favoris`
+                    ? translateUi("Retirer {v0} des favoris", {
+                        v0: product.name,
+                      })
+                    : translateUi("Ajouter {v0} aux favoris", {
+                        v0: product.name,
+                      })
                 }
                 aria-pressed={favorite}
-                onClick={() =>
-                  toggleFavorite(product.id)
-                }
+                onClick={() => toggleFavorite(product.id)}
                 className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-background/90 shadow-sm backdrop-blur transition hover:bg-background"
               >
                 <Heart
@@ -157,7 +159,7 @@ export function StoreProductDetailDialog({
                   className="rounded-full px-3 py-1 text-xs"
                 >
                   <ShieldCheck className="mr-1.5 h-3 w-3" />
-                  Vérifié
+                  {translateUi("Vérifié")}
                 </Badge>
               </div>
 
@@ -195,10 +197,8 @@ export function StoreProductDetailDialog({
                     size="sm"
                     className="shrink-0 rounded-xl"
                   >
-                    <Link
-                      to={`/store/boutique/${product.boutique_slug}`}
-                    >
-                      Voir
+                    <Link to={`/store/boutique/${product.boutique_slug}`}>
+                      {translateUi("Voir")}
                     </Link>
                   </Button>
                 </div>
@@ -209,12 +209,14 @@ export function StoreProductDetailDialog({
 
             <section className="mt-8">
               <h2 className="text-base font-semibold">
-                À propos du produit
+                {translateUi("À propos du produit")}
               </h2>
 
               <p className="mt-3 whitespace-pre-line text-sm leading-7 text-muted-foreground">
                 {product.description ||
-                  "Aucune description détaillée n’est disponible pour le moment."}
+                  translateUi(
+                    "Aucune description détaillée n’est disponible pour le moment.",
+                  )}
               </p>
             </section>
 
@@ -224,7 +226,7 @@ export function StoreProductDetailDialog({
 
             <section>
               <h2 className="text-base font-semibold">
-                Sélection BIB
+                {translateUi("Sélection BIB")}
               </h2>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -232,12 +234,13 @@ export function StoreProductDetailDialog({
                   <ShieldCheck className="h-5 w-5" />
 
                   <p className="mt-3 text-sm font-medium">
-                    Boutique vérifiée
+                    {translateUi("Boutique vérifiée")}
                   </p>
 
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Ce produit est présenté par une boutique
-                    intégrée au réseau BIB.
+                    {translateUi(
+                      "Ce produit est présenté par une boutique intégrée au réseau BIB.",
+                    )}
                   </p>
                 </div>
 
@@ -245,13 +248,13 @@ export function StoreProductDetailDialog({
                   <Store className="h-5 w-5" />
 
                   <p className="mt-3 text-sm font-medium">
-                    Achat auprès de la boutique
+                    {translateUi("Achat auprès de la boutique")}
                   </p>
 
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                    Le Store sert à découvrir les produits.
-                    L’achat s’effectue ensuite sur le site de
-                    la boutique.
+                    {translateUi(
+                      "Le Store sert à découvrir les produits. L’achat s’effectue ensuite sur le site de la boutique.",
+                    )}
                   </p>
                 </div>
               </div>
@@ -260,16 +263,10 @@ export function StoreProductDetailDialog({
             {/* Actions */}
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button
-                asChild
-                size="lg"
-                className="flex-1 rounded-xl"
-              >
-                <Link
-                  to={`/store/boutique/${product.boutique_slug}`}
-                >
+              <Button asChild size="lg" className="flex-1 rounded-xl">
+                <Link to={`/store/boutique/${product.boutique_slug}`}>
                   <Store className="mr-2 h-4 w-4" />
-                  Voir la boutique
+                  {translateUi("Voir la boutique")}
                 </Link>
               </Button>
 
@@ -278,18 +275,14 @@ export function StoreProductDetailDialog({
                 variant="outline"
                 size="lg"
                 className="rounded-xl"
-                onClick={() =>
-                  toggleFavorite(product.id)
-                }
+                onClick={() => toggleFavorite(product.id)}
               >
                 <Heart
-                  className={`mr-2 h-4 w-4 ${
-                    favorite ? "fill-current" : ""
-                  }`}
+                  className={`mr-2 h-4 w-4 ${favorite ? "fill-current" : ""}`}
                 />
                 {favorite
-                  ? "Retirer des favoris"
-                  : "Ajouter aux favoris"}
+                  ? translateUi("Retirer des favoris")
+                  : translateUi("Ajouter aux favoris")}
               </Button>
             </div>
 
@@ -300,7 +293,7 @@ export function StoreProductDetailDialog({
                 className="mt-3 rounded-xl"
                 onClick={onClose}
               >
-                Fermer
+                {translateUi("Fermer")}
               </Button>
             )}
           </div>

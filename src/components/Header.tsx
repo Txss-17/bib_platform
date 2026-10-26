@@ -29,9 +29,36 @@ import {
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { t, lang } = useLanguage();
-  const nav = lang === "fr"
-    ? { stores: "Boutiques", about: "À propos", network: "Réseau BIB", infrastructure: "Infrastructure BIB", suppliers: "Fournisseurs", supplierDesc: "Rejoindre le catalogue BIB", logistics: "Logistique", logisticsDesc: "Opérer pour le réseau BIB", create: "Créer ma boutique", search: "Rechercher une boutique ou un produit…", open: "Ouvrir le menu", close: "Fermer le menu" }
-    : { stores: "Stores", about: "About", network: "BIB Network", infrastructure: "BIB Infrastructure", suppliers: "Suppliers", supplierDesc: "Join the BIB catalog", logistics: "Logistics", logisticsDesc: "Operate for the BIB network", create: "Create my store", search: "Search for a store or product…", open: "Open menu", close: "Close menu" };
+  const nav =
+    lang === "fr"
+      ? {
+          stores: "Boutiques",
+          about: "À propos",
+          network: "Réseau BIB",
+          infrastructure: "Infrastructure BIB",
+          suppliers: "Fournisseurs",
+          supplierDesc: "Rejoindre le catalogue BIB",
+          logistics: "Logistique",
+          logisticsDesc: "Opérer pour le réseau BIB",
+          create: "Créer ma boutique",
+          search: "Rechercher une boutique ou un produit…",
+          open: "Ouvrir le menu",
+          close: "Fermer le menu",
+        }
+      : {
+          stores: "Stores",
+          about: "About",
+          network: "BIB Network",
+          infrastructure: "BIB Infrastructure",
+          suppliers: "Suppliers",
+          supplierDesc: "Join the BIB catalog",
+          logistics: "Logistics",
+          logisticsDesc: "Operate for the BIB network",
+          create: "Create my store",
+          search: "Search for a store or product…",
+          open: "Open menu",
+          close: "Close menu",
+        };
 
   const networkItems = [
     {
@@ -69,47 +96,47 @@ const Header = () => {
             aria-label={lang === "fr" ? "BIB — Accueil" : "BIB — Home"}
           >
             <span className="lg:hidden">
-              <Logo iconSize={36} />
+              <Logo iconSize={36} asLink={false} />
             </span>
 
             <span className="hidden lg:inline-flex">
-              <Logo iconSize={42} />
+              <Logo iconSize={42} asLink={false} />
             </span>
           </Link>
 
           {/* Desktop navigation */}
-          <div className="hidden items-center gap-7 lg:flex">
+          <div className="hidden items-center gap-4 lg:flex xl:gap-5">
             <Link
               to="/store"
-              className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
+              className="whitespace-nowrap text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
             >
               {nav.stores}
             </Link>
 
             <Link
               to="/tarifs"
-              className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
+              className="whitespace-nowrap text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
             >
               {t("nav.pricing")}
             </Link>
 
             <Link
               to="/a-propos"
-              className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
+              className="whitespace-nowrap text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
             >
               {nav.about}
             </Link>
 
             <Link
               to="/bib-talent"
-              className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
+              className="whitespace-nowrap text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
             >
               BIB Talent
             </Link>
 
             {/* Réseau BIB */}
             <DropdownMenu>
-              <DropdownMenuTrigger className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground/80 transition-colors hover:text-foreground focus:outline-none">
+              <DropdownMenuTrigger className="inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-medium text-foreground/80 transition-colors hover:text-foreground focus:outline-none">
                 {nav.network}
                 <ChevronDown className="h-3.5 w-3.5" />
               </DropdownMenuTrigger>
@@ -124,34 +151,28 @@ const Header = () => {
 
                 <DropdownMenuSeparator />
 
-                {networkItems.map(
-                  ({ to, label, desc, icon: Icon }) => (
-                    <DropdownMenuItem
-                      key={to}
-                      asChild
-                      className="rounded-xl"
+                {networkItems.map(({ to, label, desc, icon: Icon }) => (
+                  <DropdownMenuItem key={to} asChild className="rounded-xl">
+                    <Link
+                      to={to}
+                      className="flex cursor-pointer items-center gap-3 px-3 py-3"
                     >
-                      <Link
-                        to={to}
-                        className="flex cursor-pointer items-center gap-3 px-3 py-3"
-                      >
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-bib-marine/5 text-bib-marine">
-                          <Icon className="h-4 w-4" />
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-foreground">
+                        <Icon className="h-4 w-4" />
+                      </span>
+
+                      <span className="flex min-w-0 flex-col">
+                        <span className="text-sm font-medium text-foreground">
+                          {label}
                         </span>
 
-                        <span className="flex min-w-0 flex-col">
-                          <span className="text-sm font-medium text-foreground">
-                            {label}
-                          </span>
-
-                          <span className="text-xs text-muted-foreground">
-                            {desc}
-                          </span>
+                        <span className="text-xs text-muted-foreground">
+                          {desc}
                         </span>
-                      </Link>
-                    </DropdownMenuItem>
-                  )
-                )}
+                      </span>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -167,12 +188,7 @@ const Header = () => {
             <LanguageSwitcher />
             <ThemeToggle />
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className="px-3"
-              asChild
-            >
+            <Button variant="ghost" size="sm" className="px-3" asChild>
               <Link to="/login">{t("nav.signin")}</Link>
             </Button>
 
@@ -194,11 +210,7 @@ const Header = () => {
             aria-label={mobileMenuOpen ? nav.close : nav.open}
             aria-expanded={mobileMenuOpen}
           >
-            {mobileMenuOpen ? (
-              <X size={23} />
-            ) : (
-              <Menu size={23} />
-            )}
+            {mobileMenuOpen ? <X size={23} /> : <Menu size={23} />}
           </Button>
         </div>
 
@@ -207,10 +219,7 @@ const Header = () => {
           <div className="animate-fade-in border-t border-border/40 py-4 lg:hidden">
             <div className="flex max-h-[calc(100vh-5rem)] flex-col overflow-y-auto">
               <div className="pb-4">
-                <BoutiqueSearchBar
-                  compact
-                  placeholder={nav.search}
-                />
+                <BoutiqueSearchBar compact placeholder={nav.search} />
               </div>
 
               <div className="flex flex-col">
@@ -219,8 +228,8 @@ const Header = () => {
                   onClick={closeMobileMenu}
                   className="flex items-center gap-3 border-b border-border/40 py-3.5 text-[15px] font-medium text-foreground"
                 >
-                  <Store className="h-4 w-4 text-bib-marine" />
-              {nav.stores}
+                  <Store className="h-4 w-4 text-foreground" />
+                  {nav.stores}
                 </Link>
 
                 <Link
@@ -228,7 +237,7 @@ const Header = () => {
                   onClick={closeMobileMenu}
                   className="flex items-center border-b border-border/40 py-3.5 text-[15px] font-medium text-foreground"
                 >
-              {t("nav.pricing")}
+                  {t("nav.pricing")}
                 </Link>
 
                 <Link
@@ -236,8 +245,8 @@ const Header = () => {
                   onClick={closeMobileMenu}
                   className="flex items-center gap-3 border-b border-border/40 py-3.5 text-[15px] font-medium text-foreground"
                 >
-                  <Info className="h-4 w-4 text-bib-marine" />
-              {nav.about}
+                  <Info className="h-4 w-4 text-foreground" />
+                  {nav.about}
                 </Link>
 
                 <Link
@@ -245,7 +254,7 @@ const Header = () => {
                   onClick={closeMobileMenu}
                   className="flex items-center gap-3 border-b border-border/40 py-3.5 text-[15px] font-medium text-foreground"
                 >
-                  <Users className="h-4 w-4 text-bib-marine" />
+                  <Users className="h-4 w-4 text-foreground" />
                   BIB Talent
                 </Link>
 
@@ -256,30 +265,28 @@ const Header = () => {
                   </div>
 
                   <div className="pb-3 pl-3">
-                    {networkItems.map(
-                      ({ to, label, desc, icon: Icon }) => (
-                        <Link
-                          key={to}
-                          to={to}
-                          onClick={closeMobileMenu}
-                          className="flex items-center gap-3 rounded-xl px-2 py-3 transition-colors hover:bg-muted/60"
-                        >
-                          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-bib-marine/5 text-bib-marine">
-                            <Icon className="h-4 w-4" />
+                    {networkItems.map(({ to, label, desc, icon: Icon }) => (
+                      <Link
+                        key={to}
+                        to={to}
+                        onClick={closeMobileMenu}
+                        className="flex items-center gap-3 rounded-xl px-2 py-3 transition-colors hover:bg-muted/60"
+                      >
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-foreground">
+                          <Icon className="h-4 w-4" />
+                        </span>
+
+                        <span className="flex flex-col">
+                          <span className="text-sm font-medium text-foreground">
+                            {label}
                           </span>
 
-                          <span className="flex flex-col">
-                            <span className="text-sm font-medium text-foreground">
-                              {label}
-                            </span>
-
-                            <span className="text-xs text-muted-foreground">
-                              {desc}
-                            </span>
+                          <span className="text-xs text-muted-foreground">
+                            {desc}
                           </span>
-                        </Link>
-                      )
-                    )}
+                        </span>
+                      </Link>
+                    ))}
                   </div>
                 </div>
 
@@ -288,7 +295,7 @@ const Header = () => {
                   onClick={closeMobileMenu}
                   className="flex items-center gap-3 border-b border-border/40 py-3.5 text-[15px] font-medium text-foreground"
                 >
-                  <LifeBuoy className="h-4 w-4 text-bib-marine" />
+                  <LifeBuoy className="h-4 w-4 text-foreground" />
                   {t("nav.help")}
                 </Link>
               </div>

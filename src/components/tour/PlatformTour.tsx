@@ -1,17 +1,49 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useMemo, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
 import {
-  Store, Package, ShoppingCart, Wallet, Megaphone, LifeBuoy, Sparkles,
-  Truck, ScanLine, PackageCheck, PackageX, AlertTriangle, Printer,
-  Boxes, ShieldCheck, FileCheck2, ClipboardList, ArrowRight, ArrowLeft,
-  Check, X, Compass, Rocket, Users,
+  Store,
+  Package,
+  ShoppingCart,
+  Wallet,
+  Megaphone,
+  LifeBuoy,
+  Sparkles,
+  Truck,
+  ScanLine,
+  PackageCheck,
+  PackageX,
+  AlertTriangle,
+  Printer,
+  Boxes,
+  ShieldCheck,
+  FileCheck2,
+  ClipboardList,
+  ArrowRight,
+  ArrowLeft,
+  Check,
+  X,
+  Compass,
+  Rocket,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useTourProgress, type TourPersona as Persona, type TourScope } from "@/hooks/useTourProgress";
+import {
+  useTourProgress,
+  type TourPersona as Persona,
+  type TourScope,
+} from "@/hooks/useTourProgress";
 
 interface TourStep {
   icon: React.ComponentType<{ className?: string }>;
@@ -24,140 +56,318 @@ interface TourStep {
 const SELLER_STEPS: TourStep[] = [
   {
     icon: Rocket,
-    title: "Bienvenue dans votre Commerce OS",
-    description: "Brand-In-A-Box vous fournit boutique, catalogue fournisseurs pré-validé, logistique et paiements. Vous gardez la marque et la relation client.",
+    get title() {
+      return translateUi("Bienvenue dans votre Commerce OS");
+    },
+    get description() {
+      return translateUi(
+        "Brand-In-A-Box vous fournit boutique, catalogue fournisseurs pré-validé, logistique et paiements. Vous gardez la marque et la relation client.",
+      );
+    },
   },
   {
     icon: Store,
-    title: "1. Créez votre boutique",
-    description: "Choisissez un template (Fashion, Tech, One-product, Fitness), votre nom, slug et couleurs. Vous pourrez tout modifier en drag-and-drop.",
-    cta: { label: "Créer une boutique", to: "/dashboard/boutiques/create" },
+    get title() {
+      return translateUi("1. Créez votre boutique");
+    },
+    get description() {
+      return translateUi(
+        "Choisissez un template (Fashion, Tech, One-product, Fitness), votre nom, slug et couleurs. Vous pourrez tout modifier en drag-and-drop.",
+      );
+    },
+    cta: {
+      get label() {
+        return translateUi("Créer une boutique");
+      },
+      to: "/dashboard/boutiques/create",
+    },
   },
   {
     icon: Package,
-    title: "2. Piochez dans le catalogue fournisseur",
-    description: "Parcourez les produits déjà sourcés et validés. Appliquez votre marge, choisissez la boutique cible.",
+    get title() {
+      return translateUi("2. Piochez dans le catalogue fournisseur");
+    },
+    get description() {
+      return translateUi(
+        "Parcourez les produits déjà sourcés et validés. Appliquez votre marge, choisissez la boutique cible.",
+      );
+    },
     tip: "Un échantillon Stripe est obligatoire avant activation : garantie qualité avant la mise en vente.",
-    cta: { label: "Catalogue fournisseurs", to: "/dashboard/produits-fournisseurs" },
+    cta: {
+      get label() {
+        return translateUi("Catalogue fournisseurs");
+      },
+      to: "/dashboard/produits-fournisseurs",
+    },
   },
   {
     icon: Sparkles,
-    title: "3. Personnalisez votre vitrine",
-    description: "Sections de conversion, blocs marketing, pages FAQ/CGV : tout est modulable. Publiez quand vous êtes prêt.",
-    cta: { label: "Mes boutiques", to: "/dashboard/boutiques" },
+    get title() {
+      return translateUi("3. Personnalisez votre vitrine");
+    },
+    get description() {
+      return translateUi(
+        "Sections de conversion, blocs marketing, pages FAQ/CGV : tout est modulable. Publiez quand vous êtes prêt.",
+      );
+    },
+    cta: {
+      get label() {
+        return translateUi("Mes boutiques");
+      },
+      to: "/dashboard/boutiques",
+    },
   },
   {
     icon: ShoppingCart,
-    title: "4. Recevez et validez vos commandes",
-    description: "Chaque vente déclenche une notification sonore. Vous validez la commande, la logistique BIB prend le relais pour l'expédition.",
-    cta: { label: "Mes commandes", to: "/dashboard/commandes" },
+    get title() {
+      return translateUi("4. Recevez et validez vos commandes");
+    },
+    get description() {
+      return translateUi(
+        "Chaque vente déclenche une notification sonore. Vous validez la commande, la logistique BIB prend le relais pour l'expédition.",
+      );
+    },
+    cta: {
+      get label() {
+        return translateUi("Mes commandes");
+      },
+      to: "/dashboard/commandes",
+    },
   },
   {
     icon: Megaphone,
-    title: "5. Fidélisez et marketez",
-    description: "Emails transactionnels et campagnes promotionnelles, ventes privées, suivi clients : tout est intégré.",
+    get title() {
+      return translateUi("5. Fidélisez et marketez");
+    },
+    get description() {
+      return translateUi(
+        "Emails transactionnels et campagnes promotionnelles, ventes privées, suivi clients : tout est intégré.",
+      );
+    },
     cta: { label: "Marketing", to: "/dashboard/marketing" },
   },
   {
     icon: Wallet,
-    title: "6. Encaissez en toute sérénité",
-    description: "Versements automatiques tous les 15 jours sur votre IBAN. Frais logistiques déjà inclus dans vos prix.",
-    cta: { label: "Paiements", to: "/dashboard/paiements" },
+    get title() {
+      return translateUi("6. Encaissez en toute sérénité");
+    },
+    get description() {
+      return translateUi(
+        "Versements automatiques tous les 15 jours sur votre IBAN. Frais logistiques déjà inclus dans vos prix.",
+      );
+    },
+    cta: {
+      get label() {
+        return translateUi("Paiements");
+      },
+      to: "/dashboard/paiements",
+    },
   },
   {
     icon: LifeBuoy,
-    title: "Besoin d'aide ?",
-    description: "FAQ, tickets et chat de support sont accessibles 24/7 depuis le Centre d'aide. Litiges client : escalade automatique sous 48h.",
-    cta: { label: "Centre d'aide", to: "/dashboard/aide" },
+    get title() {
+      return translateUi("Besoin d'aide ?");
+    },
+    get description() {
+      return translateUi(
+        "FAQ, tickets et chat de support sont accessibles 24/7 depuis le Centre d'aide. Litiges client : escalade automatique sous 48h.",
+      );
+    },
+    cta: {
+      get label() {
+        return translateUi("Centre d'aide");
+      },
+      to: "/dashboard/aide",
+    },
   },
 ];
 
 const OPS_STEPS: TourStep[] = [
   {
     icon: Truck,
-    title: "Portail Logistique BIB",
-    description: "Vous orchestrez la réception, le scan, l'expédition et les retours pour toutes les boutiques de la plateforme.",
+    get title() {
+      return translateUi("Portail Logistique BIB");
+    },
+    get description() {
+      return translateUi(
+        "Vous orchestrez la réception, le scan, l'expédition et les retours pour toutes les boutiques de la plateforme.",
+      );
+    },
   },
   {
     icon: ClipboardList,
-    title: "1. Commandes à traiter",
-    description: "Le tableau Opérations affiche en temps réel les commandes validées par les marchands, prêtes à être préparées.",
+    get title() {
+      return translateUi("1. Commandes à traiter");
+    },
+    get description() {
+      return translateUi(
+        "Le tableau Opérations affiche en temps réel les commandes validées par les marchands, prêtes à être préparées.",
+      );
+    },
   },
   {
     icon: PackageCheck,
-    title: "2. Réception marchandises",
-    description: "Scannez ou saisissez les bons de livraison fournisseurs. Le stock se met à jour automatiquement.",
+    get title() {
+      return translateUi("2. Réception marchandises");
+    },
+    get description() {
+      return translateUi(
+        "Scannez ou saisissez les bons de livraison fournisseurs. Le stock se met à jour automatiquement.",
+      );
+    },
   },
   {
     icon: ScanLine,
-    title: "3. Scan colis",
-    description: "Un scan = une étiquette imprimée. Le statut de la commande passe automatiquement à « Prête à expédier ».",
+    get title() {
+      return translateUi("3. Scan colis");
+    },
+    get description() {
+      return translateUi(
+        "Un scan = une étiquette imprimée. Le statut de la commande passe automatiquement à « Prête à expédier ».",
+      );
+    },
   },
   {
     icon: Printer,
-    title: "4. Étiquettes BIB",
-    description: "Format A6 thermique unitaire ou planche A4 (4 étiquettes). Logo BIB, expéditeur, destinataire, code-barres et QR de suivi.",
+    get title() {
+      return translateUi("4. Étiquettes BIB");
+    },
+    get description() {
+      return translateUi(
+        "Format A6 thermique unitaire ou planche A4 (4 étiquettes). Logo BIB, expéditeur, destinataire, code-barres et QR de suivi.",
+      );
+    },
     tip: "Les API transporteurs (carrier, tracking, poids) seront branchées plus tard — les champs sont déjà prêts.",
   },
   {
     icon: PackageX,
-    title: "5. Gestion des retours",
-    description: "Réception, contrôle, restock des cartons d'emballage réutilisables. Statut transmis au marchand et au client.",
+    get title() {
+      return translateUi("5. Gestion des retours");
+    },
+    get description() {
+      return translateUi(
+        "Réception, contrôle, restock des cartons d'emballage réutilisables. Statut transmis au marchand et au client.",
+      );
+    },
   },
   {
     icon: AlertTriangle,
-    title: "6. Gestion des incidents",
-    description: "Colis perdus, cassés, erreurs d'adresse : ouvrez un incident, escaladé sous 48h au marchand pour décision.",
+    get title() {
+      return translateUi("6. Gestion des incidents");
+    },
+    get description() {
+      return translateUi(
+        "Colis perdus, cassés, erreurs d'adresse : ouvrez un incident, escaladé sous 48h au marchand pour décision.",
+      );
+    },
   },
 ];
 
 const SUPPLIER_STEPS: TourStep[] = [
   {
     icon: Boxes,
-    title: "Portail Fournisseur & Admin",
-    description: "Référencez vos produits dans le catalogue BIB et suivez vos performances logistiques mois par mois.",
+    get title() {
+      return translateUi("Portail Fournisseur & Admin");
+    },
+    get description() {
+      return translateUi(
+        "Référencez vos produits dans le catalogue BIB et suivez vos performances logistiques mois par mois.",
+      );
+    },
   },
   {
     icon: Package,
-    title: "1. Soumettre un produit",
-    description: "Renseignez SKU, MOQ, prix d'achat, marge max conseillée, photos. La plateforme vérifie avant publication.",
+    get title() {
+      return translateUi("1. Soumettre un produit");
+    },
+    get description() {
+      return translateUi(
+        "Renseignez SKU, MOQ, prix d'achat, marge max conseillée, photos. La plateforme vérifie avant publication.",
+      );
+    },
   },
   {
     icon: ShieldCheck,
-    title: "2. Validation KYC",
-    description: "Documents légaux (Kbis, IBAN, assurance) à uploader. Approbation par l'équipe Admin sous quelques jours.",
+    get title() {
+      return translateUi("2. Validation KYC");
+    },
+    get description() {
+      return translateUi(
+        "Documents légaux (Kbis, IBAN, assurance) à uploader. Approbation par l'équipe Admin sous quelques jours.",
+      );
+    },
   },
   {
     icon: FileCheck2,
-    title: "3. Performance & rotation",
-    description: "Graphique 6 mois, indicateurs de rotation (vert/orange/rouge), simulateur de marge pour vos vendeurs.",
+    get title() {
+      return translateUi("3. Performance & rotation");
+    },
+    get description() {
+      return translateUi(
+        "Graphique 6 mois, indicateurs de rotation (vert/orange/rouge), simulateur de marge pour vos vendeurs.",
+      );
+    },
   },
   {
     icon: Users,
-    title: "4. Admin — Vérifications",
-    description: "Les admins approuvent les KYC marchands & fournisseurs, gèrent les litiges escaladés et surveillent la conformité.",
-    cta: { label: "Admin Documents", to: "/dashboard/admin/documents" },
+    get title() {
+      return translateUi("4. Admin — Vérifications");
+    },
+    get description() {
+      return translateUi(
+        "Les admins approuvent les KYC marchands & fournisseurs, gèrent les litiges escaladés et surveillent la conformité.",
+      );
+    },
+    cta: {
+      get label() {
+        return translateUi("Admin Documents");
+      },
+      to: "/dashboard/admin/documents",
+    },
   },
 ];
 
-const PERSONAS: Record<Persona, { label: string; description: string; icon: React.ComponentType<{ className?: string }>; steps: TourStep[]; accent: string }> = {
+const PERSONAS: Record<
+  Persona,
+  {
+    label: string;
+    description: string;
+    icon: React.ComponentType<{ className?: string }>;
+    steps: TourStep[];
+    accent: string;
+  }
+> = {
   seller: {
-    label: "Vendeur",
-    description: "Je lance ma boutique et vends mes produits",
+    get label() {
+      return translateUi("Vendeur");
+    },
+    get description() {
+      return translateUi("Je lance ma boutique et vends mes produits");
+    },
     icon: Store,
     steps: SELLER_STEPS,
     accent: "from-secondary/20 to-secondary/5 border-secondary/30",
   },
   ops: {
-    label: "Opérateur logistique",
-    description: "Je gère la réception, l'expédition et les retours",
+    get label() {
+      return translateUi("Opérateur logistique");
+    },
+    get description() {
+      return translateUi("Je gère la réception, l'expédition et les retours");
+    },
     icon: Truck,
     steps: OPS_STEPS,
     accent: "from-info/20 to-info/5 border-info/30",
   },
   supplier: {
-    label: "Fournisseur / Admin",
-    description: "Je référence des produits ou je supervise la plateforme",
+    get label() {
+      return translateUi("Fournisseur / Admin");
+    },
+    get description() {
+      return translateUi(
+        "Je référence des produits ou je supervise la plateforme",
+      );
+    },
     icon: Boxes,
     steps: SUPPLIER_STEPS,
     accent: "from-accent/20 to-accent/5 border-accent/30",
@@ -185,13 +395,19 @@ export function PlatformTour({
   onOpenChange,
   autoOpen,
 }: PlatformTourProps) {
-  const personasList = forcedPersona ? [forcedPersona] : (availablePersonas ?? ALL_PERSONAS);
+  useLanguage();
+  const personasList = forcedPersona
+    ? [forcedPersona]
+    : (availablePersonas ?? ALL_PERSONAS);
   // "seller" tour scope vs "partner" tour scope — saved separately so a user
   // can resume each one independently across devices.
-  const scope: TourScope = personasList.every((p) => p === "seller") ? "seller" : "partner";
+  const scope: TourScope = personasList.every((p) => p === "seller")
+    ? "seller"
+    : "partner";
   const { progress, save, loaded } = useTourProgress(scope);
 
-  const autoSelectedPersona = personasList.length === 1 ? personasList[0] : null;
+  const autoSelectedPersona =
+    personasList.length === 1 ? personasList[0] : null;
   const [internalOpen, setInternalOpen] = useState(false);
   const [persona, setPersona] = useState<Persona | null>(autoSelectedPersona);
   const [stepIdx, setStepIdx] = useState(0);
@@ -214,33 +430,53 @@ export function PlatformTour({
   // Resume from saved progress once loaded.
   useEffect(() => {
     if (!loaded) return;
-    const savedPersona = progress.persona && personasList.includes(progress.persona)
-      ? progress.persona
-      : autoSelectedPersona;
+    const savedPersona =
+      progress.persona && personasList.includes(progress.persona)
+        ? progress.persona
+        : autoSelectedPersona;
     setPersona(savedPersona ?? null);
     setStepIdx(savedPersona ? Math.max(0, progress.stepIdx) : 0);
-  }, [loaded, progress.persona, progress.stepIdx, personasList, autoSelectedPersona]);
+  }, [
+    loaded,
+    progress.persona,
+    progress.stepIdx,
+    personasList,
+    autoSelectedPersona,
+  ]);
 
   // Auto-open for first-time users (no persona completed yet, never dismissed)
   useEffect(() => {
     if (!autoOpen || !loaded) return;
-    const hasCompletedAny = personasList.some((p) => progress.completedPersonas.includes(p));
+    const hasCompletedAny = personasList.some((p) =>
+      progress.completedPersonas.includes(p),
+    );
     if (progress.dismissed || hasCompletedAny) return;
     const t = setTimeout(() => setInternalOpen(true), 800);
     return () => clearTimeout(t);
-  }, [autoOpen, loaded, progress.dismissed, progress.completedPersonas, personasList]);
+  }, [
+    autoOpen,
+    loaded,
+    progress.dismissed,
+    progress.completedPersonas,
+    personasList,
+  ]);
 
   const steps = persona ? PERSONAS[persona].steps : [];
   const currentStep = steps[stepIdx];
   const totalSteps = steps.length;
   const progressPct = totalSteps > 0 ? ((stepIdx + 1) / totalSteps) * 100 : 0;
 
-  const persist = (next: { persona?: Persona | null; stepIdx?: number; completed?: boolean }) => {
+  const persist = (next: {
+    persona?: Persona | null;
+    stepIdx?: number;
+    completed?: boolean;
+  }) => {
     const nextPersona = next.persona !== undefined ? next.persona : persona;
     const nextStep = next.stepIdx !== undefined ? next.stepIdx : stepIdx;
-    const completedPersonas = next.completed && nextPersona
-      ? Array.from(new Set([...progress.completedPersonas, nextPersona]))
-      : progress.completedPersonas;
+    const completedPersonas =
+      next.completed && nextPersona
+        ? Array.from(new Set([...progress.completedPersonas, nextPersona]))
+        : progress.completedPersonas;
     save({
       persona: nextPersona ?? null,
       stepIdx: nextStep,
@@ -257,16 +493,19 @@ export function PlatformTour({
           <div className="p-6 sm:p-8">
             <DialogHeader className="mb-5">
               <div className="inline-flex items-center gap-2 text-xs font-medium text-secondary mb-2">
-                <Compass className="w-4 h-4" /> Guide d'utilisation
+                <Compass className="w-4 h-4" />{" "}
+                {translateUi("Guide d'utilisation")}
               </div>
               <DialogTitle className="text-2xl sm:text-3xl font-display">
-                Quel est votre rôle sur Brand-In-A-Box ?
+                {translateUi("Quel est votre rôle sur Brand-In-A-Box ?")}
               </DialogTitle>
               <DialogDescription>
-                Choisissez un parcours, on vous montre l'essentiel en quelques étapes.
+                {translateUi(
+                  "Choisissez un parcours, on vous montre l'essentiel en quelques étapes.",
+                )}
               </DialogDescription>
             </DialogHeader>
-             <div className="grid gap-3">
+            <div className="grid gap-3">
               {personasList.map((p) => {
                 const def = PERSONAS[p];
                 const Icon = def.icon;
@@ -276,7 +515,8 @@ export function PlatformTour({
                     key={p}
                     type="button"
                     onClick={() => {
-                      const resumeAt = progress.persona === p ? progress.stepIdx : 0;
+                      const resumeAt =
+                        progress.persona === p ? progress.stepIdx : 0;
                       setPersona(p);
                       setStepIdx(resumeAt);
                       persist({ persona: p, stepIdx: resumeAt });
@@ -294,16 +534,22 @@ export function PlatformTour({
                         {def.label}
                         {completed && (
                           <span className="inline-flex items-center gap-1 text-[10px] font-medium text-success">
-                            <Check className="w-3 h-3" /> Terminé
+                            <Check className="w-3 h-3" />{" "}
+                            {translateUi("Terminé")}
                           </span>
                         )}
-                        {!completed && progress.persona === p && progress.stepIdx > 0 && (
-                          <span className="text-[10px] font-medium text-secondary">
-                            Reprendre — étape {progress.stepIdx + 1}
-                          </span>
-                        )}
+                        {!completed &&
+                          progress.persona === p &&
+                          progress.stepIdx > 0 && (
+                            <span className="text-[10px] font-medium text-secondary">
+                              {translateUi("Reprendre — étape") + " "}
+                              {progress.stepIdx + 1}
+                            </span>
+                          )}
                       </p>
-                      <p className="text-sm text-muted-foreground">{def.description}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {def.description}
+                      </p>
                     </div>
                     <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
                   </button>
@@ -311,7 +557,9 @@ export function PlatformTour({
               })}
             </div>
             <p className="mt-5 text-[11px] text-muted-foreground text-center">
-              Vous pourrez relancer ce guide à tout moment depuis le Centre d'aide.
+              {translateUi(
+                "Vous pourrez relancer ce guide à tout moment depuis le Centre d'aide.",
+              )}
             </p>
           </div>
         ) : (
@@ -319,15 +567,20 @@ export function PlatformTour({
           <div className="flex flex-col">
             <div className="px-6 sm:px-8 pt-6 pb-4 border-b border-border/60 bg-muted/30">
               <div className="flex items-center justify-between gap-3 mb-3">
-                <Badge variant="outline" className="text-[10px] border-secondary/40 text-secondary gap-1">
+                <Badge
+                  variant="outline"
+                  className="text-[10px] border-secondary/40 text-secondary gap-1"
+                >
                   {(() => {
                     const Icon = PERSONAS[persona].icon;
                     return <Icon className="w-3 h-3" />;
                   })()}
-                  Parcours {PERSONAS[persona].label}
+                  {translateUi("Parcours") + " "}
+                  {PERSONAS[persona].label}
                 </Badge>
                 <span className="text-xs text-muted-foreground tabular-nums">
-                  Étape {stepIdx + 1} / {totalSteps}
+                  {translateUi("Étape") + " "}
+                  {stepIdx + 1} / {totalSteps}
                 </span>
               </div>
               <Progress value={progressPct} className="h-1.5" />
@@ -349,13 +602,23 @@ export function PlatformTour({
                   </div>
                   {currentStep.tip && (
                     <div className="w-full rounded-xl border border-info/30 bg-info/5 p-3 text-xs text-foreground/80">
-                      <strong className="text-info">Astuce :</strong> {currentStep.tip}
+                      <strong className="text-info">
+                        {translateUi("Astuce :")}
+                      </strong>{" "}
+                      {currentStep.tip}
                     </div>
                   )}
                   {currentStep.cta && (
-                    <Button asChild variant="outline" size="sm" className="gap-1.5" onClick={() => setOpen(false)}>
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => setOpen(false)}
+                    >
                       <Link to={currentStep.cta.to}>
-                        {currentStep.cta.label} <ArrowRight className="w-3.5 h-3.5" />
+                        {currentStep.cta.label}{" "}
+                        <ArrowRight className="w-3.5 h-3.5" />
                       </Link>
                     </Button>
                   )}
@@ -382,22 +645,36 @@ export function PlatformTour({
                 className="gap-1.5"
               >
                 <ArrowLeft className="w-4 h-4" />
-                {stepIdx === 0 ? (personasList.length > 1 ? "Changer de rôle" : "Fermer") : "Précédent"}
+                {stepIdx === 0
+                  ? personasList.length > 1
+                    ? translateUi("Changer de rôle")
+                    : translateUi("Fermer")
+                  : translateUi("Précédent")}
               </Button>
               {stepIdx < totalSteps - 1 ? (
-                <Button size="sm" className="gap-1.5" onClick={() => {
-                  const next = stepIdx + 1;
-                  setStepIdx(next);
-                  persist({ stepIdx: next });
-                }}>
-                  Suivant <ArrowRight className="w-4 h-4" />
+                <Button
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={() => {
+                    const next = stepIdx + 1;
+                    setStepIdx(next);
+                    persist({ stepIdx: next });
+                  }}
+                >
+                  {translateUi("Suivant") + " "}
+                  <ArrowRight className="w-4 h-4" />
                 </Button>
               ) : (
-                <Button size="sm" className="gap-1.5" onClick={() => {
-                  persist({ completed: true, stepIdx: 0, persona: null });
-                  setOpen(false);
-                }}>
-                  Terminer <Check className="w-4 h-4" />
+                <Button
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={() => {
+                    persist({ completed: true, stepIdx: 0, persona: null });
+                    setOpen(false);
+                  }}
+                >
+                  {translateUi("Terminer") + " "}
+                  <Check className="w-4 h-4" />
                 </Button>
               )}
             </div>
@@ -412,7 +689,7 @@ export function PlatformTour({
 export function PlatformTourLauncher({
   forcedPersona,
   availablePersonas,
-  label = "Guide d'utilisation",
+  label = translateUi("Guide d'utilisation"),
   variant = "outline",
   size = "sm",
 }: {
@@ -422,10 +699,16 @@ export function PlatformTourLauncher({
   variant?: "outline" | "ghost" | "default" | "secondary";
   size?: "sm" | "default" | "lg" | "icon";
 }) {
+  useLanguage();
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button variant={variant} size={size} className="gap-1.5" onClick={() => setOpen(true)}>
+      <Button
+        variant={variant}
+        size={size}
+        className="gap-1.5"
+        onClick={() => setOpen(true)}
+      >
         <Compass className="w-4 h-4" /> {label}
       </Button>
       <PlatformTour

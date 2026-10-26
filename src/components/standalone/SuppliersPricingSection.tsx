@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import {
   Check,
@@ -27,39 +29,69 @@ import { Card } from "@/components/ui/card";
 const SUPPLIER_SERVICES = [
   {
     icon: ClipboardCheck,
-    title: "Référencement contrôlé",
-    description:
-      "BIB étudie l'entreprise, ses documents, ses capacités et les références proposées avant toute intégration au catalogue.",
+    get title() {
+      return translateUi("Référencement contrôlé");
+    },
+    get description() {
+      return translateUi(
+        "BIB étudie l'entreprise, ses documents, ses capacités et les références proposées avant toute intégration au catalogue.",
+      );
+    },
   },
   {
     icon: ShieldCheck,
-    title: "Qualité & conformité",
-    description:
-      "Les éléments nécessaires à la commercialisation des produits sont examinés selon le profil du fournisseur, les produits concernés et les zones visées.",
+    get title() {
+      return translateUi("Qualité & conformité");
+    },
+    get description() {
+      return translateUi(
+        "Les éléments nécessaires à la commercialisation des produits sont examinés selon le profil du fournisseur, les produits concernés et les zones visées.",
+      );
+    },
   },
   {
     icon: Boxes,
-    title: "Catalogue BIB",
-    description:
-      "Les références validées peuvent être intégrées au catalogue BIB et proposées aux boutiques correspondant aux critères du réseau.",
+    get title() {
+      return translateUi("Catalogue BIB");
+    },
+    get description() {
+      return translateUi(
+        "Les références validées peuvent être intégrées au catalogue BIB et proposées aux boutiques correspondant aux critères du réseau.",
+      );
+    },
   },
   {
     icon: Truck,
-    title: "Coordination logistique",
-    description:
-      "Les flux de stock, de préparation et d'expédition sont organisés selon le schéma opérationnel BIB et les partenaires logistiques retenus.",
+    get title() {
+      return translateUi("Coordination logistique");
+    },
+    get description() {
+      return translateUi(
+        "Les flux de stock, de préparation et d'expédition sont organisés selon le schéma opérationnel BIB et les partenaires logistiques retenus.",
+      );
+    },
   },
   {
     icon: BarChart3,
-    title: "Suivi des opérations",
-    description:
-      "Les informations relatives aux références, disponibilités et opérations sont structurées dans le cadre de suivi défini par BIB.",
+    get title() {
+      return translateUi("Suivi des opérations");
+    },
+    get description() {
+      return translateUi(
+        "Les informations relatives aux références, disponibilités et opérations sont structurées dans le cadre de suivi défini par BIB.",
+      );
+    },
   },
   {
     icon: FileCheck2,
-    title: "Traçabilité documentaire",
-    description:
-      "Les documents, informations produit et éléments nécessaires au suivi fournisseur sont centralisés et maintenus selon les exigences BIB.",
+    get title() {
+      return translateUi("Traçabilité documentaire");
+    },
+    get description() {
+      return translateUi(
+        "Les documents, informations produit et éléments nécessaires au suivi fournisseur sont centralisés et maintenus selon les exigences BIB.",
+      );
+    },
   },
 ];
 
@@ -69,49 +101,108 @@ const SUPPLIER_SERVICES = [
 
 const FAQ = [
   {
-    question: "Le référencement d'un fournisseur est-il automatique ?",
-    answer:
-      "Non. La candidature constitue uniquement la première étape. BIB étudie le fournisseur, son activité, ses documents, ses capacités et les produits proposés avant toute décision de référencement.",
+    get question() {
+      return translateUi(
+        "Le référencement d'un fournisseur est-il automatique ?",
+      );
+    },
+    get answer() {
+      return translateUi(
+        "Non. La candidature constitue uniquement la première étape. BIB étudie le fournisseur, son activité, ses documents, ses capacités et les produits proposés avant toute décision de référencement.",
+      );
+    },
   },
   {
-    question: "L'acceptation d'un fournisseur signifie-t-elle que tous ses produits seront référencés ?",
-    answer:
-      "Non. Le fournisseur et ses références font l'objet d'une appréciation distincte. BIB peut accepter un fournisseur tout en ne retenant qu'une partie des produits proposés.",
+    get question() {
+      return translateUi(
+        "L'acceptation d'un fournisseur signifie-t-elle que tous ses produits seront référencés ?",
+      );
+    },
+    get answer() {
+      return translateUi(
+        "Non. Le fournisseur et ses références font l'objet d'une appréciation distincte. BIB peut accepter un fournisseur tout en ne retenant qu'une partie des produits proposés.",
+      );
+    },
   },
   {
-    question: "Qui sélectionne les produits proposés aux boutiques ?",
-    answer:
-      "BIB définit et contrôle les références pouvant entrer dans son catalogue. Les boutiques n'accèdent pas directement à l'intégralité du catalogue d'un fournisseur.",
+    get question() {
+      return translateUi(
+        "Qui sélectionne les produits proposés aux boutiques ?",
+      );
+    },
+    get answer() {
+      return translateUi(
+        "BIB définit et contrôle les références pouvant entrer dans son catalogue. Les boutiques n'accèdent pas directement à l'intégralité du catalogue d'un fournisseur.",
+      );
+    },
   },
   {
-    question: "Le fournisseur travaille-t-il directement avec les boutiques ?",
-    answer:
-      "Le modèle BIB vise à encadrer la relation opérationnelle entre fournisseurs et boutiques. Les échanges, flux et procédures sont organisés par BIB afin de conserver un fonctionnement cohérent et traçable.",
+    get question() {
+      return translateUi(
+        "Le fournisseur travaille-t-il directement avec les boutiques ?",
+      );
+    },
+    get answer() {
+      return translateUi(
+        "Le modèle BIB vise à encadrer la relation opérationnelle entre fournisseurs et boutiques. Les échanges, flux et procédures sont organisés par BIB afin de conserver un fonctionnement cohérent et traçable.",
+      );
+    },
   },
   {
-    question: "Faut-il payer un abonnement pour devenir fournisseur ?",
-    answer:
-      "Le référencement BIB ne repose pas sur un modèle ouvert de paiement pour simplement apparaître dans un catalogue. Les éventuelles conditions commerciales, prestations ou coûts applicables sont déterminés selon le parcours du fournisseur et présentés avant tout engagement contractuel.",
+    get question() {
+      return translateUi(
+        "Faut-il payer un abonnement pour devenir fournisseur ?",
+      );
+    },
+    get answer() {
+      return translateUi(
+        "Le référencement BIB ne repose pas sur un modèle ouvert de paiement pour simplement apparaître dans un catalogue. Les éventuelles conditions commerciales, prestations ou coûts applicables sont déterminés selon le parcours du fournisseur et présentés avant tout engagement contractuel.",
+      );
+    },
   },
   {
-    question: "Des contrôles ou audits peuvent-ils être demandés ?",
-    answer:
-      "Oui. Selon le profil du fournisseur, les produits, le pays, le niveau de risque et les exigences applicables, BIB peut demander des documents complémentaires, des échantillons, des contrôles ou un audit adapté. Celui-ci peut notamment être réalisé sur site lorsque cela est pertinent.",
+    get question() {
+      return translateUi("Des contrôles ou audits peuvent-ils être demandés ?");
+    },
+    get answer() {
+      return translateUi(
+        "Oui. Selon le profil du fournisseur, les produits, le pays, le niveau de risque et les exigences applicables, BIB peut demander des documents complémentaires, des échantillons, des contrôles ou un audit adapté. Celui-ci peut notamment être réalisé sur site lorsque cela est pertinent.",
+      );
+    },
   },
   {
-    question: "Comment les informations de stock sont-elles gérées ?",
-    answer:
-      "Le fournisseur transmet les informations de disponibilité selon les procédures définies avec BIB. Le niveau de suivi et les modalités opérationnelles peuvent varier selon le schéma logistique retenu pour les références concernées.",
+    get question() {
+      return translateUi(
+        "Comment les informations de stock sont-elles gérées ?",
+      );
+    },
+    get answer() {
+      return translateUi(
+        "Le fournisseur transmet les informations de disponibilité selon les procédures définies avec BIB. Le niveau de suivi et les modalités opérationnelles peuvent varier selon le schéma logistique retenu pour les références concernées.",
+      );
+    },
   },
   {
-    question: "Comment les conditions financières sont-elles définies ?",
-    answer:
-      "Les conditions financières sont définies dans le cadre contractuel applicable au fournisseur et aux services concernés. Elles sont communiquées avant engagement et ne constituent pas un tarif public automatique applicable à tous les fournisseurs.",
+    get question() {
+      return translateUi(
+        "Comment les conditions financières sont-elles définies ?",
+      );
+    },
+    get answer() {
+      return translateUi(
+        "Les conditions financières sont définies dans le cadre contractuel applicable au fournisseur et aux services concernés. Elles sont communiquées avant engagement et ne constituent pas un tarif public automatique applicable à tous les fournisseurs.",
+      );
+    },
   },
   {
-    question: "Une référence peut-elle être retirée du catalogue ?",
-    answer:
-      "Oui. Une référence peut être suspendue ou retirée en cas de non-conformité, indisponibilité, évolution des exigences, problème qualité ou autre motif opérationnel ou contractuel. Les commandes et engagements déjà concernés sont traités selon les procédures applicables.",
+    get question() {
+      return translateUi("Une référence peut-elle être retirée du catalogue ?");
+    },
+    get answer() {
+      return translateUi(
+        "Oui. Une référence peut être suspendue ou retirée en cas de non-conformité, indisponibilité, évolution des exigences, problème qualité ou autre motif opérationnel ou contractuel. Les commandes et engagements déjà concernés sont traités selon les procédures applicables.",
+      );
+    },
   },
 ];
 
@@ -120,6 +211,7 @@ const FAQ = [
 /* -------------------------------------------------------------------------- */
 
 export function SuppliersPricingSection() {
+  useLanguage();
   return (
     <section className="border-y border-border/50 bg-muted/20">
       <div className="container mx-auto px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
@@ -129,18 +221,17 @@ export function SuppliersPricingSection() {
 
         <div className="mx-auto max-w-3xl text-center">
           <Badge variant="secondary" className="mb-4">
-            Conditions fournisseur
+            {translateUi("Conditions fournisseur")}
           </Badge>
 
           <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
-            Un cadre défini avant l'intégration au réseau
+            {translateUi("Un cadre défini avant l'intégration au réseau")}
           </h2>
 
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
-            BIB ne fonctionne pas comme une marketplace ouverte où un fournisseur
-            paie simplement pour publier ses produits. Chaque candidature est
-            étudiée et les conditions applicables sont définies en fonction du
-            parcours, des contrôles nécessaires et des opérations concernées.
+            {translateUi(
+              "BIB ne fonctionne pas comme une marketplace ouverte où un fournisseur paie simplement pour publier ses produits. Chaque candidature est étudiée et les conditions applicables sont définies en fonction du parcours, des contrôles nécessaires et des opérations concernées.",
+            )}
           </p>
         </div>
 
@@ -151,11 +242,11 @@ export function SuppliersPricingSection() {
         <div className="mt-12">
           <div className="mb-7">
             <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-secondary">
-              Ce que BIB structure
+              {translateUi("Ce que BIB structure")}
             </p>
 
             <h3 className="font-display text-xl font-bold sm:text-2xl">
-              Un parcours fournisseur encadré
+              {translateUi("Un parcours fournisseur encadré")}
             </h3>
           </div>
 
@@ -172,9 +263,7 @@ export function SuppliersPricingSection() {
                     <Icon className="h-5 w-5" />
                   </div>
 
-                  <h4 className="text-sm font-semibold">
-                    {service.title}
-                  </h4>
+                  <h4 className="text-sm font-semibold">{service.title}</h4>
 
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     {service.description}
@@ -192,17 +281,19 @@ export function SuppliersPricingSection() {
         <div className="mt-14">
           <div className="mb-7 max-w-2xl">
             <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-secondary">
-              Logique commerciale
+              {translateUi("Logique commerciale")}
             </p>
 
             <h3 className="font-display text-xl font-bold sm:text-2xl">
-              Pas de paiement pour une simple présence au catalogue
+              {translateUi(
+                "Pas de paiement pour une simple présence au catalogue",
+              )}
             </h3>
 
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              Le modèle fournisseur BIB repose sur un parcours qualifié et sur
-              les services réellement nécessaires à l'intégration et aux
-              opérations. Les conditions sont définies avant contractualisation.
+              {translateUi(
+                "Le modèle fournisseur BIB repose sur un parcours qualifié et sur les services réellement nécessaires à l'intégration et aux opérations. Les conditions sont définies avant contractualisation.",
+              )}
             </p>
           </div>
 
@@ -212,23 +303,21 @@ export function SuppliersPricingSection() {
                 <ClipboardCheck className="h-5 w-5" />
               </div>
 
-              <h4 className="font-semibold">Référencement</h4>
+              <h4 className="font-semibold">{translateUi("Référencement")}</h4>
 
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                L'accès au réseau commence par une candidature et une étude du
-                dossier. Aucune intégration automatique n'est effectuée.
+                {translateUi(
+                  "L'accès au réseau commence par une candidature et une étude du dossier. Aucune intégration automatique n'est effectuée.",
+                )}
               </p>
 
               <ul className="mt-5 space-y-2.5">
                 {[
-                  "Étude du fournisseur",
-                  "Étude des références",
-                  "Vérification des informations",
+                  translateUi("Étude du fournisseur"),
+                  translateUi("Étude des références"),
+                  translateUi("Vérification des informations"),
                 ].map((item) => (
-                  <li
-                    key={item}
-                    className="flex items-start gap-2 text-xs"
-                  >
+                  <li key={item} className="flex items-start gap-2 text-xs">
                     <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
                     <span>{item}</span>
                   </li>
@@ -241,23 +330,21 @@ export function SuppliersPricingSection() {
                 <ShieldCheck className="h-5 w-5" />
               </div>
 
-              <h4 className="font-semibold">Contrôles</h4>
+              <h4 className="font-semibold">{translateUi("Contrôles")}</h4>
 
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Les contrôles nécessaires sont déterminés selon le fournisseur,
-                les produits, les zones concernées et les exigences applicables.
+                {translateUi(
+                  "Les contrôles nécessaires sont déterminés selon le fournisseur, les produits, les zones concernées et les exigences applicables.",
+                )}
               </p>
 
               <ul className="mt-5 space-y-2.5">
                 {[
-                  "Documents de conformité",
-                  "Qualité et informations produit",
-                  "Contrôles adaptés au profil",
+                  translateUi("Documents de conformité"),
+                  translateUi("Qualité et informations produit"),
+                  translateUi("Contrôles adaptés au profil"),
                 ].map((item) => (
-                  <li
-                    key={item}
-                    className="flex items-start gap-2 text-xs"
-                  >
+                  <li key={item} className="flex items-start gap-2 text-xs">
                     <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
                     <span>{item}</span>
                   </li>
@@ -270,24 +357,21 @@ export function SuppliersPricingSection() {
                 <Truck className="h-5 w-5" />
               </div>
 
-              <h4 className="font-semibold">Opérations</h4>
+              <h4 className="font-semibold">{translateUi("Opérations")}</h4>
 
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Une fois les références validées, leur exploitation est
-                organisée selon les procédures BIB et le schéma logistique
-                applicable.
+                {translateUi(
+                  "Une fois les références validées, leur exploitation est organisée selon les procédures BIB et le schéma logistique applicable.",
+                )}
               </p>
 
               <ul className="mt-5 space-y-2.5">
                 {[
-                  "Disponibilité des références",
-                  "Préparation et expédition",
-                  "Suivi et traçabilité",
+                  translateUi("Disponibilité des références"),
+                  translateUi("Préparation et expédition"),
+                  translateUi("Suivi et traçabilité"),
                 ].map((item) => (
-                  <li
-                    key={item}
-                    className="flex items-start gap-2 text-xs"
-                  >
+                  <li key={item} className="flex items-start gap-2 text-xs">
                     <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
                     <span>{item}</span>
                   </li>
@@ -302,14 +386,15 @@ export function SuppliersPricingSection() {
 
               <div>
                 <p className="text-sm font-semibold">
-                  Les conditions sont communiquées avant engagement
+                  {translateUi(
+                    "Les conditions sont communiquées avant engagement",
+                  )}
                 </p>
 
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-                  Le dépôt d'une candidature ne constitue pas un engagement
-                  contractuel. Si le dossier est retenu pour la suite du
-                  parcours, BIB présente les conditions applicables avant toute
-                  contractualisation.
+                  {translateUi(
+                    "Le dépôt d'une candidature ne constitue pas un engagement contractuel. Si le dossier est retenu pour la suite du parcours, BIB présente les conditions applicables avant toute contractualisation.",
+                  )}
                 </p>
               </div>
             </div>
@@ -323,11 +408,11 @@ export function SuppliersPricingSection() {
         <div className="mt-14">
           <div className="mb-7 max-w-2xl">
             <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-secondary">
-              Parcours
+              {translateUi("Parcours")}
             </p>
 
             <h3 className="font-display text-xl font-bold sm:text-2xl">
-              De la candidature à l'intégration
+              {translateUi("De la candidature à l'intégration")}
             </h3>
           </div>
 
@@ -335,23 +420,31 @@ export function SuppliersPricingSection() {
             {[
               {
                 number: "01",
-                title: "Candidature",
-                text: "Présentation de l'entreprise, des capacités et des références proposées.",
+                title: translateUi("Candidature"),
+                text: translateUi(
+                  "Présentation de l'entreprise, des capacités et des références proposées.",
+                ),
               },
               {
                 number: "02",
-                title: "Évaluation",
-                text: "Étude du dossier, des produits, des documents et de la compatibilité avec le réseau.",
+                title: translateUi("Évaluation"),
+                text: translateUi(
+                  "Étude du dossier, des produits, des documents et de la compatibilité avec le réseau.",
+                ),
               },
               {
                 number: "03",
-                title: "Validation",
-                text: "Contrôles complémentaires et décision sur les références pouvant être retenues.",
+                title: translateUi("Validation"),
+                text: translateUi(
+                  "Contrôles complémentaires et décision sur les références pouvant être retenues.",
+                ),
               },
               {
                 number: "04",
-                title: "Intégration",
-                text: "Mise en place du référencement et des procédures opérationnelles applicables.",
+                title: translateUi("Intégration"),
+                text: translateUi(
+                  "Mise en place du référencement et des procédures opérationnelles applicables.",
+                ),
               },
             ].map((step) => (
               <Card key={step.number} className="p-5">
@@ -359,9 +452,7 @@ export function SuppliersPricingSection() {
                   {step.number}
                 </span>
 
-                <h4 className="mt-3 text-sm font-semibold">
-                  {step.title}
-                </h4>
+                <h4 className="mt-3 text-sm font-semibold">{step.title}</h4>
 
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                   {step.text}
@@ -378,11 +469,11 @@ export function SuppliersPricingSection() {
         <div className="mt-14">
           <div className="mb-7 max-w-2xl">
             <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-secondary">
-              Questions fréquentes
+              {translateUi("Questions fréquentes")}
             </p>
 
             <h3 className="font-display text-xl font-bold sm:text-2xl">
-              Comprendre le fonctionnement fournisseur
+              {translateUi("Comprendre le fonctionnement fournisseur")}
             </h3>
           </div>
 
@@ -419,23 +510,26 @@ export function SuppliersPricingSection() {
                   <ShieldCheck className="h-5 w-5 text-primary" />
 
                   <span className="text-xs font-medium uppercase tracking-[0.16em] text-primary">
-                    Prochaine étape
+                    {translateUi("Prochaine étape")}
                   </span>
                 </div>
 
                 <h3 className="font-display text-xl font-bold sm:text-2xl">
-                  Votre entreprise souhaite rejoindre le réseau BIB ?
+                  {translateUi(
+                    "Votre entreprise souhaite rejoindre le réseau BIB ?",
+                  )}
                 </h3>
 
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  Déposez votre candidature pour permettre à BIB d'étudier
-                  votre activité, vos produits et vos capacités opérationnelles.
+                  {translateUi(
+                    "Déposez votre candidature pour permettre à BIB d'étudier votre activité, vos produits et vos capacités opérationnelles.",
+                  )}
                 </p>
               </div>
 
               <Button asChild size="lg" className="shrink-0 gap-2">
                 <Link to="/suppliers/apply">
-                  Candidater
+                  {translateUi("Candidater")}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>

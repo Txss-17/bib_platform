@@ -1,4 +1,5 @@
-﻿import { SceneVariantPicker } from "./SceneVariantPicker";
+import { translateUi } from "@/lib/uiTranslation";
+import { SceneVariantPicker } from "./SceneVariantPicker";
 import { useRef, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,20 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Trash2, Plus, Wand2, Image as ImageIcon, Upload, Loader2, Sparkles, Palette, RotateCcw, Layout as LayoutIcon, Sliders, Film } from "lucide-react";
+import {
+  Trash2,
+  Plus,
+  Wand2,
+  Image as ImageIcon,
+  Upload,
+  Loader2,
+  Sparkles,
+  Palette,
+  RotateCcw,
+  Layout as LayoutIcon,
+  Sliders,
+  Film,
+} from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { ALL_FONTS, loadGoogleFont } from "@/lib/googleFonts";
 import { toast } from "sonner";
@@ -26,12 +40,16 @@ import {
 import { ActionButton, stateFromMutation } from "./ActionButton";
 import { resizeImageFile } from "@/lib/imageResize";
 
-type Patch = Partial<Pick<SceneRecord, "content" | "variant" | "is_visible" | "style_overrides">>;
+type Patch = Partial<
+  Pick<SceneRecord, "content" | "variant" | "is_visible" | "style_overrides">
+>;
 
 /* ---------- HSL <-> hex helpers (local copy) ---------- */
 function hslToHex(hsl?: string | null): string {
   if (!hsl) return "#000000";
-  const m = hsl.trim().match(/^(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)%\s+(-?\d+(?:\.\d+)?)%$/);
+  const m = hsl
+    .trim()
+    .match(/^(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)%\s+(-?\d+(?:\.\d+)?)%$/);
   if (!m) return "#000000";
   const h = parseFloat(m[1]) / 360;
   const s = parseFloat(m[2]) / 100;
@@ -40,7 +58,9 @@ function hslToHex(hsl?: string | null): string {
   const f = (n: number) => {
     const k = (n + h * 12) % 12;
     const c = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
-    return Math.round(c * 255).toString(16).padStart(2, "0");
+    return Math.round(c * 255)
+      .toString(16)
+      .padStart(2, "0");
   };
   return `#${f(0)}${f(8)}${f(4)}`;
 }
@@ -50,16 +70,23 @@ function hexToHsl(hex: string): string {
   const r = parseInt(m.slice(0, 2), 16) / 255;
   const g = parseInt(m.slice(2, 4), 16) / 255;
   const b = parseInt(m.slice(4, 6), 16) / 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const max = Math.max(r, g, b),
+    min = Math.min(r, g, b);
   const l = (max + min) / 2;
-  let h = 0, s = 0;
+  let h = 0,
+    s = 0;
   if (max !== min) {
     const d = max - min;
     s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
     switch (max) {
-      case r: h = ((g - b) / d + (g < b ? 6 : 0)); break;
-      case g: h = ((b - r) / d + 2); break;
-      default: h = ((r - g) / d + 4);
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      default:
+        h = (r - g) / d + 4;
     }
     h *= 60;
   }
@@ -101,7 +128,7 @@ export function ImageField({
   const handleFile = async (f: File | null) => {
     if (!f) return;
     if (f.size > 10 * 1024 * 1024) {
-      toast.error("Image > 10 Mo, choisis un fichier plus léger.");
+      toast.error(translateUi("Image > 10 Mo, choisis un fichier plus léger."));
       return;
     }
     try {
@@ -110,9 +137,11 @@ export function ImageField({
       const optimized = await resizeImageFile(f).catch(() => f);
       const url = await upload.mutateAsync({ boutiqueId, file: optimized });
       onChange(url);
-      toast.success("Image téléversée");
+      toast.success(translateUi("Image téléversée"));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Upload impossible");
+      toast.error(
+        e instanceof Error ? e.message : translateUi("Upload impossible"),
+      );
     }
   };
 
@@ -122,15 +151,17 @@ export function ImageField({
       const url = await genImg.mutateAsync({ boutiqueId, prompt, aspect });
       onChange(url);
       setShowAi(false);
-      toast.success("Image IA générée");
+      toast.success(translateUi("Image IA générée"));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Génération impossible");
+      toast.error(
+        e instanceof Error ? e.message : translateUi("Génération impossible"),
+      );
     }
   };
 
   const { lang } = useLanguage();
   const english = lang === "en";
-  const tx = (fr: string, en: string) => english ? en : fr;
+  const tx = (fr: string, en: string) => (english ? en : fr);
 
   return (
     <div className="space-y-1.5">
@@ -168,7 +199,7 @@ export function ImageField({
               ) : (
                 <Upload className="w-3 h-3 mr-1" />
               )}
-              Téléverser
+              {translateUi("Téléverser")}
             </Button>
             <Button
               type="button"
@@ -187,7 +218,7 @@ export function ImageField({
                 onClick={() => onChange(null)}
                 className="h-7 text-xs text-destructive"
               >
-                Retirer
+                {translateUi("Retirer")}
               </Button>
             )}
           </div>
@@ -195,7 +226,9 @@ export function ImageField({
             <div className="space-y-1.5 rounded-md border border-border/40 p-2 bg-muted/20">
               <Textarea
                 rows={2}
-                placeholder={promptHint ?? "Décris l'image à générer…"}
+                placeholder={
+                  promptHint ?? translateUi("Décris l'image à générer…")
+                }
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 className="text-xs"
@@ -210,7 +243,8 @@ export function ImageField({
                 disabled={prompt.trim().length < 4}
                 className="w-full h-7 text-xs"
               >
-                <Wand2 className="w-3 h-3 mr-1 inline" /> Générer avec l'IA
+                <Wand2 className="w-3 h-3 mr-1 inline" />{" "}
+                {translateUi("Générer avec l'IA")}
               </ActionButton>
             </div>
           )}
@@ -236,20 +270,26 @@ function ListEditor<T extends Record<string, any>>({
   addLabel: string;
   maxItems?: number;
 }) {
+  useLanguage();
   return (
     <div className="space-y-2">
       {items.map((it, i) => (
-        <div key={i} className="rounded-md border border-border/40 p-2 space-y-1.5 relative">
+        <div
+          key={i}
+          className="rounded-md border border-border/40 p-2 space-y-1.5 relative"
+        >
           <button
             type="button"
             onClick={() => onChange(items.filter((_, idx) => idx !== i))}
             className="absolute top-1.5 right-1.5 p-1 rounded hover:bg-destructive/10 text-destructive"
-            aria-label="Supprimer"
+            aria-label={translateUi("Supprimer")}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
           {renderItem(it, (patch) =>
-            onChange(items.map((x, idx) => (idx === i ? { ...x, ...patch } : x))),
+            onChange(
+              items.map((x, idx) => (idx === i ? { ...x, ...patch } : x)),
+            ),
           )}
         </div>
       ))}
@@ -260,7 +300,8 @@ function ListEditor<T extends Record<string, any>>({
         className="w-full h-8 text-xs"
         disabled={maxItems !== undefined && items.length >= maxItems}
         onClick={() => {
-          if (maxItems === undefined || items.length < maxItems) onChange([...items, factory()]);
+          if (maxItems === undefined || items.length < maxItems)
+            onChange([...items, factory()]);
         }}
       >
         <Plus className="w-3.5 h-3.5 mr-1" /> {addLabel}
@@ -284,13 +325,20 @@ export function SceneInspectorPro({
     onPatch({ content: { ...c, [key]: value } });
 
   const ov = scene.style_overrides ?? null;
-  const hasOverrides = !!ov && (
-    !!ov.palette?.primary || !!ov.palette?.accent || !!ov.palette?.surface || !!ov.palette?.ink ||
-    !!ov.fonts?.display || !!ov.fonts?.body
-  );
+  const hasOverrides =
+    !!ov &&
+    (!!ov.palette?.primary ||
+      !!ov.palette?.accent ||
+      !!ov.palette?.surface ||
+      !!ov.palette?.ink ||
+      !!ov.fonts?.display ||
+      !!ov.fonts?.body);
   const setOv = (next: SceneRecord["style_overrides"]) =>
     onPatch({ style_overrides: next });
-  const setOvPalette = (k: "primary" | "accent" | "surface" | "ink", hsl: string) =>
+  const setOvPalette = (
+    k: "primary" | "accent" | "surface" | "ink",
+    hsl: string,
+  ) =>
     setOv({
       ...(ov ?? {}),
       palette: { ...(ov?.palette ?? {}), [k]: hsl },
@@ -304,140 +352,100 @@ export function SceneInspectorPro({
   };
 
   const generic = (
-  <>
-    {"title" in c && (
-      <div>
-        <Label className="text-xs">
-          Titre
-        </Label>
-
-        <Input
-          value={c.title ?? ""}
-          onChange={(e) =>
-            setField(
-              "title",
-              e.target.value,
-            )
-          }
-        />
-      </div>
-    )}
-
-    {"subtitle" in c && (
-      <div>
-        <Label className="text-xs">
-          Sous-titre
-        </Label>
-
-        <Textarea
-          rows={2}
-          value={c.subtitle ?? ""}
-          onChange={(e) =>
-            setField(
-              "subtitle",
-              e.target.value,
-            )
-          }
-        />
-      </div>
-    )}
-
-    {"ctaLabel" in c && (
-      <div className="space-y-2">
+    <>
+      {"title" in c && (
         <div>
-          <Label className="text-xs">
-            CTA principal
-          </Label>
+          <Label className="text-xs">{translateUi("Titre")}</Label>
 
           <Input
-            placeholder="Ex. Découvrir"
-            value={c.ctaLabel ?? ""}
-            onChange={(e) =>
-              setField(
-                "ctaLabel",
-                e.target.value,
-              )
-            }
+            value={c.title ?? ""}
+            onChange={(e) => setField("title", e.target.value)}
           />
         </div>
+      )}
 
+      {"subtitle" in c && (
         <div>
-          <Label className="text-xs">
-            Destination du CTA principal
-          </Label>
+          <Label className="text-xs">{translateUi("Sous-titre")}</Label>
 
-          <Input
-            placeholder="#shop ou https://…"
-            value={c.ctaUrl ?? ""}
-            onChange={(e) =>
-              setField(
-                "ctaUrl",
-                e.target.value,
-              )
-            }
-          />
-
-          <p className="text-[10px] opacity-50 mt-1">
-            Utilise une ancre comme #shop,
-            une route interne ou une URL
-            complète.
-          </p>
-        </div>
-      </div>
-    )}
-
-    {"ctaSecondaryLabel" in c && (
-      <div className="space-y-2">
-        <div>
-          <Label className="text-xs">
-            CTA secondaire
-          </Label>
-
-          <Input
-            placeholder="Ex. En savoir plus"
-            value={
-              c.ctaSecondaryLabel ?? ""
-            }
-            onChange={(e) =>
-              setField(
-                "ctaSecondaryLabel",
-                e.target.value,
-              )
-            }
+          <Textarea
+            rows={2}
+            value={c.subtitle ?? ""}
+            onChange={(e) => setField("subtitle", e.target.value)}
           />
         </div>
+      )}
 
-        <div>
-          <Label className="text-xs">
-            Destination du CTA secondaire
-          </Label>
+      {"ctaLabel" in c && (
+        <div className="space-y-2">
+          <div>
+            <Label className="text-xs">{translateUi("CTA principal")}</Label>
 
-          <Input
-            placeholder="#newsletter ou https://…"
-            value={
-              c.ctaSecondaryUrl ?? ""
-            }
-            onChange={(e) =>
-              setField(
-                "ctaSecondaryUrl",
-                e.target.value,
-              )
-            }
-          />
+            <Input
+              placeholder={translateUi("Ex. Découvrir")}
+              value={c.ctaLabel ?? ""}
+              onChange={(e) => setField("ctaLabel", e.target.value)}
+            />
+          </div>
+
+          <div>
+            <Label className="text-xs">
+              {translateUi("Destination du CTA principal")}
+            </Label>
+
+            <Input
+              placeholder="#shop ou https://…"
+              value={c.ctaUrl ?? ""}
+              onChange={(e) => setField("ctaUrl", e.target.value)}
+            />
+
+            <p className="text-[10px] opacity-50 mt-1">
+              {translateUi(
+                "Utilise une ancre comme #shop, une route interne ou une URL complète.",
+              )}
+            </p>
+          </div>
         </div>
-      </div>
-    )}
-  </>
-);
+      )}
+
+      {"ctaSecondaryLabel" in c && (
+        <div className="space-y-2">
+          <div>
+            <Label className="text-xs">{translateUi("CTA secondaire")}</Label>
+
+            <Input
+              placeholder={translateUi("Ex. En savoir plus")}
+              value={c.ctaSecondaryLabel ?? ""}
+              onChange={(e) => setField("ctaSecondaryLabel", e.target.value)}
+            />
+          </div>
+
+          <div>
+            <Label className="text-xs">
+              {translateUi("Destination du CTA secondaire")}
+            </Label>
+
+            <Input
+              placeholder="#newsletter ou https://…"
+              value={c.ctaSecondaryUrl ?? ""}
+              onChange={(e) => setField("ctaSecondaryUrl", e.target.value)}
+            />
+          </div>
+        </div>
+      )}
+    </>
+  );
   const { lang } = useLanguage();
   const english = lang === "en";
-  const tx = (fr: string, en: string) => english ? en : fr;
+  const tx = (fr: string, en: string) => (english ? en : fr);
 
   return (
     <Card className="p-3 mt-4 space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-wide opacity-60">Inspecteur</p>
+          <p className="text-xs uppercase tracking-wide opacity-60">
+            {translateUi("Inspecteur")}
+          </p>
           <p className="text-sm font-semibold">{def?.name}</p>
         </div>
         <div className="flex items-center gap-1">
@@ -449,7 +457,7 @@ export function SceneInspectorPro({
             loadingLabel=""
             successLabel=""
             errorLabel=""
-            title="Remix IA — réécrit le contenu textuel"
+            title={translateUi("Remix IA — réécrit le contenu textuel")}
           >
             <Wand2 className="w-4 h-4" />
           </ActionButton>
@@ -457,7 +465,12 @@ export function SceneInspectorPro({
             checked={scene.is_visible}
             onCheckedChange={(v) => onPatch({ is_visible: v })}
           />
-          <Button variant="ghost" size="icon" onClick={onDelete} className="text-destructive">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onDelete}
+            className="text-destructive"
+          >
             <Trash2 className="w-4 h-4" />
           </Button>
         </div>
@@ -472,26 +485,37 @@ export function SceneInspectorPro({
       )}
 
       {/* STYLE — hériter / personnaliser */}
-      <details className="rounded-md border border-border/40 bg-muted/20 px-2 py-1.5" open={hasOverrides}>
+      <details
+        className="rounded-md border border-border/40 bg-muted/20 px-2 py-1.5"
+        open={hasOverrides}
+      >
         <summary className="cursor-pointer text-xs flex items-center justify-between">
           <span className="flex items-center gap-1.5 font-medium">
             <Palette className="w-3.5 h-3.5" />
-            Style — {hasOverrides ? "Personnalisé" : "Hérite de l'identité"}
+            Style —{" "}
+            {hasOverrides
+              ? translateUi("Personnalisé")
+              : translateUi("Hérite de l'identité")}
           </span>
           {hasOverrides && (
             <button
               type="button"
-              onClick={(e) => { e.preventDefault(); setOv(null); }}
+              onClick={(e) => {
+                e.preventDefault();
+                setOv(null);
+              }}
               className="text-[10px] text-primary hover:underline flex items-center gap-1"
-              title="Réinitialiser → hériter"
+              title={translateUi("Réinitialiser → hériter")}
             >
-              <RotateCcw className="w-3 h-3" /> Réinit.
+              <RotateCcw className="w-3 h-3" /> {translateUi("Réinit.")}
             </button>
           )}
         </summary>
         <div className="mt-2 space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-[11px]">Hériter de l'identité</Label>
+            <Label className="text-[11px]">
+              {translateUi("Hériter de l'identité")}
+            </Label>
             <Switch
               checked={!hasOverrides}
               onCheckedChange={(checked) => {
@@ -503,59 +527,98 @@ export function SceneInspectorPro({
           {hasOverrides && (
             <>
               <div>
-                <Label className="text-[10px] uppercase opacity-60">Palette (override)</Label>
+                <Label className="text-[10px] uppercase opacity-60">
+                  {translateUi("Palette (override)")}
+                </Label>
                 <div className="grid grid-cols-4 gap-2 mt-1">
-                  {(["primary", "accent", "surface", "ink"] as const).map((k) => {
-                    const v = ov?.palette?.[k];
-                    const hex = hslToHex(v);
-                    return (
-                      <label key={k} className="flex flex-col items-center gap-1 cursor-pointer">
-                        <span
-                          className="relative h-7 w-full rounded border border-border overflow-hidden"
-                          style={{ background: v ? `hsl(${v})` : "repeating-linear-gradient(45deg, transparent 0 4px, hsl(var(--muted)) 4px 8px)" }}
+                  {(["primary", "accent", "surface", "ink"] as const).map(
+                    (k) => {
+                      const v = ov?.palette?.[k];
+                      const hex = hslToHex(v);
+                      return (
+                        <label
+                          key={k}
+                          className="flex flex-col items-center gap-1 cursor-pointer"
                         >
-                          <input
-                            type="color"
-                            value={hex}
-                            onChange={(e) => setOvPalette(k, hexToHsl(e.target.value))}
-                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                            aria-label={`Override ${k}`}
-                          />
-                        </span>
-                        <span className="text-[10px] opacity-60 capitalize">{k}</span>
-                      </label>
-                    );
-                  })}
+                          <span
+                            className="relative h-7 w-full rounded border border-border overflow-hidden"
+                            style={{
+                              background: v
+                                ? `hsl(${v})`
+                                : "repeating-linear-gradient(45deg, transparent 0 4px, hsl(var(--muted)) 4px 8px)",
+                            }}
+                          >
+                            <input
+                              type="color"
+                              value={hex}
+                              onChange={(e) =>
+                                setOvPalette(k, hexToHsl(e.target.value))
+                              }
+                              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                              aria-label={translateUi("Override {v0}", {
+                                v0: k,
+                              })}
+                            />
+                          </span>
+                          <span className="text-[10px] opacity-60 capitalize">
+                            {k}
+                          </span>
+                        </label>
+                      );
+                    },
+                  )}
                 </div>
-                <p className="text-[10px] opacity-50 mt-1">Vide = hérite de l'identité.</p>
+                <p className="text-[10px] opacity-50 mt-1">
+                  {translateUi("Vide = hérite de l'identité.")}
+                </p>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label className="text-[10px] uppercase opacity-60">Police titres</Label>
+                  <Label className="text-[10px] uppercase opacity-60">
+                    {translateUi("Police titres")}
+                  </Label>
                   <Select
                     value={ov?.fonts?.display || "__inherit"}
-                    onValueChange={(v) => setOvFont("display", v === "__inherit" ? "" : v)}
+                    onValueChange={(v) =>
+                      setOvFont("display", v === "__inherit" ? "" : v)
+                    }
                   >
-                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent className="max-h-60">
-                      <SelectItem value="__inherit">— Hériter —</SelectItem>
+                      <SelectItem value="__inherit">
+                        {translateUi("— Hériter —")}
+                      </SelectItem>
                       {ALL_FONTS.map((f) => (
-                        <SelectItem key={f} value={f} style={{ fontFamily: f }}>{f}</SelectItem>
+                        <SelectItem key={f} value={f} style={{ fontFamily: f }}>
+                          {f}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-[10px] uppercase opacity-60">Police corps</Label>
+                  <Label className="text-[10px] uppercase opacity-60">
+                    {translateUi("Police corps")}
+                  </Label>
                   <Select
                     value={ov?.fonts?.body || "__inherit"}
-                    onValueChange={(v) => setOvFont("body", v === "__inherit" ? "" : v)}
+                    onValueChange={(v) =>
+                      setOvFont("body", v === "__inherit" ? "" : v)
+                    }
                   >
-                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent className="max-h-60">
-                      <SelectItem value="__inherit">— Hériter —</SelectItem>
+                      <SelectItem value="__inherit">
+                        {translateUi("— Hériter —")}
+                      </SelectItem>
                       {ALL_FONTS.map((f) => (
-                        <SelectItem key={f} value={f} style={{ fontFamily: f }}>{f}</SelectItem>
+                        <SelectItem key={f} value={f} style={{ fontFamily: f }}>
+                          {f}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -567,11 +630,7 @@ export function SceneInspectorPro({
       </details>
 
       {/* MODE PRO — layout, fond, boutons, animation */}
-      <ProModePanel
-        scene={scene}
-        boutiqueId={boutiqueId}
-        onPatch={onPatch}
-      />
+      <ProModePanel scene={scene} boutiqueId={boutiqueId} onPatch={onPatch} />
 
       {/* HERO CINEMA */}
       {scene.scene_type === "hero-cinema" && (
@@ -579,14 +638,16 @@ export function SceneInspectorPro({
           {generic}
           <ImageField
             boutiqueId={boutiqueId}
-            label="Image de fond"
+            label={translateUi("Image de fond")}
             value={c.backgroundImage}
             onChange={(url) => setField("backgroundImage", url)}
             aspect="16:9"
             promptHint="Visuel hero cinématographique pour la marque"
           />
           <div>
-            <Label className="text-xs">URL vidéo de fond (optionnel)</Label>
+            <Label className="text-xs">
+              {translateUi("URL vidéo de fond (optionnel)")}
+            </Label>
             <Input
               placeholder="https://…/hero.mp4"
               value={c.videoUrl ?? ""}
@@ -595,8 +656,14 @@ export function SceneInspectorPro({
           </div>
           <div className="flex items-center justify-between rounded-md border border-border/40 px-2 py-1.5">
             <div>
-              <Label className="text-xs">Image de fond pleine page</Label>
-              <p className="text-[10px] opacity-60">Étend l'image à toute la home (pas seulement le hero).</p>
+              <Label className="text-xs">
+                {translateUi("Image de fond pleine page")}
+              </Label>
+              <p className="text-[10px] opacity-60">
+                {translateUi(
+                  "Étend l'image à toute la home (pas seulement le hero).",
+                )}
+              </p>
             </div>
             <Switch
               checked={!!c.fullPageBackground}
@@ -604,231 +671,166 @@ export function SceneInspectorPro({
             />
           </div>
           <div>
-            <Label className="text-xs">Alignement du texte</Label>
+            <Label className="text-xs">
+              {translateUi("Alignement du texte")}
+            </Label>
             <Select
               value={c.textAlign ?? "center"}
               onValueChange={(v) => setField("textAlign", v)}
             >
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                <SelectItem value="left">Gauche</SelectItem>
-                <SelectItem value="center">Centré</SelectItem>
-                <SelectItem value="right">Droite</SelectItem>
+                <SelectItem value="left">{translateUi("Gauche")}</SelectItem>
+                <SelectItem value="center">{translateUi("Centré")}</SelectItem>
+                <SelectItem value="right">{translateUi("Droite")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </>
       )}
 
-     {/* SHOWCASE MAGAZINE */}
-{scene.scene_type ===
-  "showcase-magazine" && (
-  <>
-    {generic}
+      {/* SHOWCASE MAGAZINE */}
+      {scene.scene_type === "showcase-magazine" && (
+        <>
+          {generic}
 
-    <div className="grid grid-cols-2 gap-2">
-      <div>
-        <Label className="text-xs">
-          Forme des cadres
-        </Label>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">
+                {translateUi("Forme des cadres")}
+              </Label>
 
-        <Select
-          value={
-            c.cardShape ?? "rounded"
-          }
-          onValueChange={(v) =>
-            setField(
-              "cardShape",
-              v,
-            )
-          }
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
+              <Select
+                value={c.cardShape ?? "rounded"}
+                onValueChange={(v) => setField("cardShape", v)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
 
-          <SelectContent>
-            <SelectItem value="square">
-              Carré
-            </SelectItem>
+                <SelectContent>
+                  <SelectItem value="square">{translateUi("Carré")}</SelectItem>
 
-            <SelectItem value="rounded">
-              Arrondi
-            </SelectItem>
+                  <SelectItem value="rounded">
+                    {translateUi("Arrondi")}
+                  </SelectItem>
 
-            <SelectItem value="rounded-xl">
-              Très arrondi
-            </SelectItem>
+                  <SelectItem value="rounded-xl">
+                    {translateUi("Très arrondi")}
+                  </SelectItem>
 
-            <SelectItem value="circle">
-              Cercle
-            </SelectItem>
+                  <SelectItem value="circle">
+                    {translateUi("Cercle")}
+                  </SelectItem>
 
-            <SelectItem value="arch">
-              Arche
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+                  <SelectItem value="arch">{translateUi("Arche")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-      <div>
-        <Label className="text-xs">
-          Style cadre
-        </Label>
+            <div>
+              <Label className="text-xs">{translateUi("Style cadre")}</Label>
 
-        <Select
-          value={
-            c.cardStyle ?? "minimal"
-          }
-          onValueChange={(v) =>
-            setField(
-              "cardStyle",
-              v,
-            )
-          }
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
+              <Select
+                value={c.cardStyle ?? "minimal"}
+                onValueChange={(v) => setField("cardStyle", v)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
 
-          <SelectContent>
-            <SelectItem value="minimal">
-              Minimal
-            </SelectItem>
+                <SelectContent>
+                  <SelectItem value="minimal">Minimal</SelectItem>
 
-            <SelectItem value="card">
-              Carte (ombre)
-            </SelectItem>
+                  <SelectItem value="card">
+                    {translateUi("Carte (ombre)")}
+                  </SelectItem>
 
-            <SelectItem value="bordered">
-              Avec bordure
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
+                  <SelectItem value="bordered">
+                    {translateUi("Avec bordure")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-    {products.length > 0 && (
-      <div>
-        <Label className="text-xs flex items-center justify-between mb-1">
-          <span>
-            Produits présentés
-          </span>
+          {products.length > 0 && (
+            <div>
+              <Label className="text-xs flex items-center justify-between mb-1">
+                <span>{translateUi("Produits présentés")}</span>
 
-          <button
-            type="button"
-            onClick={() =>
-              setField(
-                "productIds",
-                [],
-              )
-            }
-            className="text-[10px] text-primary hover:underline"
-          >
-            Sélection automatique
-          </button>
-        </Label>
-
-        <div className="max-h-48 overflow-auto rounded-md border border-border/40 p-2 space-y-1">
-          {products.map(
-            (product) => {
-              const ids =
-                (c.productIds ??
-                  []) as string[];
-
-              const automatic =
-                ids.length === 0;
-
-              const checked =
-                automatic ||
-                ids.includes(
-                  product.id,
-                );
-
-              return (
-                <label
-                  key={product.id}
-                  className="flex items-center gap-2 rounded px-1.5 py-1 text-xs cursor-pointer hover:bg-muted/50"
+                <button
+                  type="button"
+                  onClick={() => setField("productIds", [])}
+                  className="text-[10px] text-primary hover:underline"
                 >
-                  <input
-                    type="checkbox"
-                    checked={
-                      checked
-                    }
-                    onChange={(
-                      e,
-                    ) => {
-                      const current =
-                        automatic
-                          ? products.map(
-                              (
-                                item,
-                              ) =>
-                                item.id,
-                            )
-                          : ids;
+                  {translateUi("Sélection automatique")}
+                </button>
+              </Label>
 
-                      const next =
-                        e.target
-                          .checked
-                          ? Array.from(
-                              new Set([
-                                ...current,
-                                product.id,
-                              ]),
-                            )
-                          : current.filter(
-                              (
-                                id,
-                              ) =>
-                                id !==
-                                product.id,
-                            );
+              <div className="max-h-48 overflow-auto rounded-md border border-border/40 p-2 space-y-1">
+                {products.map((product) => {
+                  const ids = (c.productIds ?? []) as string[];
 
-                      setField(
-                        "productIds",
-                        next.length ===
-                          products.length
-                          ? []
-                          : next,
-                      );
-                    }}
-                  />
+                  const automatic = ids.length === 0;
 
-                  {product.image_url && (
-                    <span
-                      className="w-7 h-7 rounded bg-muted bg-cover bg-center shrink-0"
-                      style={{
-                        backgroundImage:
-                          `url(${product.image_url})`,
-                      }}
-                    />
-                  )}
+                  const checked = automatic || ids.includes(product.id);
 
-                  <span className="truncate">
-                    {product.name}
-                  </span>
-                </label>
-              );
-            },
+                  return (
+                    <label
+                      key={product.id}
+                      className="flex items-center gap-2 rounded px-1.5 py-1 text-xs cursor-pointer hover:bg-muted/50"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) => {
+                          const current = automatic
+                            ? products.map((item) => item.id)
+                            : ids;
+
+                          const next = e.target.checked
+                            ? Array.from(new Set([...current, product.id]))
+                            : current.filter((id) => id !== product.id);
+
+                          setField(
+                            "productIds",
+                            next.length === products.length ? [] : next,
+                          );
+                        }}
+                      />
+
+                      {product.image_url && (
+                        <span
+                          className="w-7 h-7 rounded bg-muted bg-cover bg-center shrink-0"
+                          style={{
+                            backgroundImage: `url(${product.image_url})`,
+                          }}
+                        />
+                      )}
+
+                      <span className="truncate">{product.name}</span>
+                    </label>
+                  );
+                })}
+              </div>
+
+              <p className="text-[10px] opacity-50 mt-1">
+                {translateUi(
+                  "Sans sélection manuelle, BIB utilise automatiquement les premiers produits selon la variante choisie.",
+                )}
+              </p>
+            </div>
           )}
-        </div>
-
-        <p className="text-[10px] opacity-50 mt-1">
-          Sans sélection manuelle,
-          BIB utilise automatiquement
-          les premiers produits selon
-          la variante choisie.
-        </p>
-      </div>
-    )}
-  </>
-)}
+        </>
+      )}
       {/* MARQUEE STRIP */}
       {scene.scene_type === "marquee-strip" && (
         <>
           <div>
-            <Label className="text-xs">Texte défilant</Label>
+            <Label className="text-xs">{translateUi("Texte défilant")}</Label>
             <Textarea
               rows={2}
               value={c.text ?? ""}
@@ -837,11 +839,14 @@ export function SceneInspectorPro({
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-xs">Séparateur</Label>
-              <Input value={c.separator ?? "·"} onChange={(e) => setField("separator", e.target.value)} />
+              <Label className="text-xs">{translateUi("Séparateur")}</Label>
+              <Input
+                value={c.separator ?? "·"}
+                onChange={(e) => setField("separator", e.target.value)}
+              />
             </div>
             <div>
-              <Label className="text-xs">Vitesse (s)</Label>
+              <Label className="text-xs">{translateUi("Vitesse (s)")}</Label>
               <Input
                 type="number"
                 value={c.speed ?? 30}
@@ -850,7 +855,7 @@ export function SceneInspectorPro({
             </div>
           </div>
           <div>
-            <Label className="text-xs">Police</Label>
+            <Label className="text-xs">{translateUi("Police")}</Label>
             <Select
               value={c.fontFamily || "__inherit"}
               onValueChange={(v) => {
@@ -859,18 +864,24 @@ export function SceneInspectorPro({
                 if (val) loadGoogleFont(val);
               }}
             >
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent className="max-h-60">
-                <SelectItem value="__inherit">— Hériter de l'identité —</SelectItem>
+                <SelectItem value="__inherit">
+                  {translateUi("— Hériter de l'identité —")}
+                </SelectItem>
                 {ALL_FONTS.map((f) => (
-                  <SelectItem key={f} value={f} style={{ fontFamily: f }}>{f}</SelectItem>
+                  <SelectItem key={f} value={f} style={{ fontFamily: f }}>
+                    {f}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-xs">Taille (px)</Label>
+              <Label className="text-xs">{translateUi("Taille (px)")}</Label>
               <Input
                 type="number"
                 value={c.fontSize ?? 18}
@@ -879,11 +890,20 @@ export function SceneInspectorPro({
             </div>
             <div>
               <Label className="text-xs">Direction</Label>
-              <Select value={c.direction ?? "left"} onValueChange={(v) => setField("direction", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={c.direction ?? "left"}
+                onValueChange={(v) => setField("direction", v)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="left">← Gauche</SelectItem>
-                  <SelectItem value="right">Droite →</SelectItem>
+                  <SelectItem value="left">
+                    {translateUi("← Gauche")}
+                  </SelectItem>
+                  <SelectItem value="right">
+                    {translateUi("Droite →")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -903,17 +923,21 @@ export function SceneInspectorPro({
         <>
           {generic}
           <div>
-            <Label className="text-xs mb-2 block">Visuels (jusqu'à 12)</Label>
+            <Label className="text-xs mb-2 block">
+              {translateUi("Visuels (jusqu'à 12)")}
+            </Label>
             <ListEditor
               items={((c.images ?? []) as string[]).map((url) => ({ url }))}
               factory={() => ({ url: "" })}
               addLabel="Ajouter un visuel"
               maxItems={12}
-              onChange={(next) => setField("images", next.map((x) => x.url).filter(Boolean))}
+              onChange={(next) =>
+                setField("images", next.map((x) => x.url).filter(Boolean))
+              }
               renderItem={(item, update) => (
                 <ImageField
                   boutiqueId={boutiqueId}
-                  label="Visuel"
+                  label={translateUi("Visuel")}
                   value={item.url}
                   onChange={(url) => update({ url: url ?? "" })}
                   aspect="1:1"
@@ -930,12 +954,17 @@ export function SceneInspectorPro({
         <>
           {"title" in c && (
             <div>
-              <Label className="text-xs">Titre</Label>
-              <Input value={c.title ?? ""} onChange={(e) => setField("title", e.target.value)} />
+              <Label className="text-xs">{translateUi("Titre")}</Label>
+              <Input
+                value={c.title ?? ""}
+                onChange={(e) => setField("title", e.target.value)}
+              />
             </div>
           )}
           <div>
-            <Label className="text-xs mb-2 block">Statistiques</Label>
+            <Label className="text-xs mb-2 block">
+              {translateUi("Statistiques")}
+            </Label>
             <ListEditor
               items={(c.stats ?? []) as Array<Record<string, any>>}
               factory={() => ({ value: "", label: "" })}
@@ -943,8 +972,16 @@ export function SceneInspectorPro({
               onChange={(next) => setField("stats", next)}
               renderItem={(s, update) => (
                 <>
-                  <Input placeholder="ex. 10K+" value={s.value ?? ""} onChange={(e) => update({ value: e.target.value })} />
-                  <Input placeholder="ex. Clients" value={s.label ?? ""} onChange={(e) => update({ label: e.target.value })} />
+                  <Input
+                    placeholder={translateUi("ex. 10K+")}
+                    value={s.value ?? ""}
+                    onChange={(e) => update({ value: e.target.value })}
+                  />
+                  <Input
+                    placeholder={translateUi("ex. Clients")}
+                    value={s.label ?? ""}
+                    onChange={(e) => update({ label: e.target.value })}
+                  />
                 </>
               )}
             />
@@ -957,7 +994,9 @@ export function SceneInspectorPro({
         <>
           {generic}
           <div>
-            <Label className="text-xs">URL vidéo (mp4 / webm)</Label>
+            <Label className="text-xs">
+              {translateUi("URL vidéo (mp4 / webm)")}
+            </Label>
             <Input
               placeholder="https://…/video.mp4"
               value={c.videoUrl ?? ""}
@@ -966,7 +1005,7 @@ export function SceneInspectorPro({
           </div>
           <ImageField
             boutiqueId={boutiqueId}
-            label="Image poster (avant lecture)"
+            label={translateUi("Image poster (avant lecture)")}
             value={c.poster}
             onChange={(url) => setField("poster", url)}
             aspect="16:9"
@@ -979,27 +1018,45 @@ export function SceneInspectorPro({
       {scene.scene_type === "banner-promo" && (
         <>
           <div>
-            <Label className="text-xs">Texte</Label>
-            <Input value={c.text ?? ""} onChange={(e) => setField("text", e.target.value)} />
+            <Label className="text-xs">{translateUi("Texte")}</Label>
+            <Input
+              value={c.text ?? ""}
+              onChange={(e) => setField("text", e.target.value)}
+            />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-xs">Libellé CTA</Label>
-              <Input value={c.ctaLabel ?? ""} onChange={(e) => setField("ctaLabel", e.target.value)} />
+              <Label className="text-xs">{translateUi("Libellé CTA")}</Label>
+              <Input
+                value={c.ctaLabel ?? ""}
+                onChange={(e) => setField("ctaLabel", e.target.value)}
+              />
             </div>
             <div>
-              <Label className="text-xs">URL CTA</Label>
-              <Input value={c.ctaUrl ?? ""} onChange={(e) => setField("ctaUrl", e.target.value)} />
+              <Label className="text-xs">{translateUi("URL CTA")}</Label>
+              <Input
+                value={c.ctaUrl ?? ""}
+                onChange={(e) => setField("ctaUrl", e.target.value)}
+              />
             </div>
           </div>
           <div>
-            <Label className="text-xs">Couleur</Label>
-            <Select value={c.bgColor ?? "primary"} onValueChange={(v) => setField("bgColor", v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+            <Label className="text-xs">{translateUi("Couleur")}</Label>
+            <Select
+              value={c.bgColor ?? "primary"}
+              onValueChange={(v) => setField("bgColor", v)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                <SelectItem value="primary">Primaire</SelectItem>
+                <SelectItem value="primary">
+                  {translateUi("Primaire")}
+                </SelectItem>
                 <SelectItem value="accent">Accent</SelectItem>
-                <SelectItem value="ink">Encre (foncé)</SelectItem>
+                <SelectItem value="ink">
+                  {translateUi("Encre (foncé)")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1009,37 +1066,44 @@ export function SceneInspectorPro({
       {/* STORY SCROLLY */}
       {scene.scene_type === "story-scrolly" && (
         <div>
-          <Label className="text-xs mb-2 block">Chapitres</Label>
+          <Label className="text-xs mb-2 block">
+            {translateUi("Chapitres")}
+          </Label>
           <ListEditor
             items={(c.chapters ?? []) as Array<Record<string, any>>}
-            factory={() => ({ eyebrow: "Chapitre", title: "", body: "", image: null })}
+            factory={() => ({
+              eyebrow: translateUi("Chapitre"),
+              title: "",
+              body: "",
+              image: null,
+            })}
             addLabel="Ajouter un chapitre"
             onChange={(next) => setField("chapters", next)}
             renderItem={(ch, update) => (
               <>
                 <Input
-                  placeholder="Eyebrow"
+                  placeholder={translateUi("Eyebrow")}
                   value={ch.eyebrow ?? ""}
                   onChange={(e) => update({ eyebrow: e.target.value })}
                 />
                 <Input
-                  placeholder="Titre"
+                  placeholder={translateUi("Titre")}
                   value={ch.title ?? ""}
                   onChange={(e) => update({ title: e.target.value })}
                 />
                 <Textarea
                   rows={2}
-                  placeholder="Texte"
+                  placeholder={translateUi("Texte")}
                   value={ch.body ?? ""}
                   onChange={(e) => update({ body: e.target.value })}
                 />
                 <ImageField
                   boutiqueId={boutiqueId}
-                  label="Visuel du chapitre"
+                  label={translateUi("Visuel du chapitre")}
                   value={ch.image}
                   onChange={(url) => update({ image: url })}
                   aspect="3:4"
-                  promptHint={ch.title || "Visuel narratif"}
+                  promptHint={ch.title || translateUi("Visuel narratif")}
                 />
               </>
             )}
@@ -1052,16 +1116,20 @@ export function SceneInspectorPro({
         <>
           {generic}
           <div>
-            <Label className="text-xs mb-2 block">Visuels du lookbook</Label>
+            <Label className="text-xs mb-2 block">
+              {translateUi("Visuels du lookbook")}
+            </Label>
             <ListEditor
               items={((c.images ?? []) as string[]).map((url) => ({ url }))}
               factory={() => ({ url: "" })}
               addLabel="Ajouter un visuel"
-              onChange={(next) => setField("images", next.map((x) => x.url).filter(Boolean))}
+              onChange={(next) =>
+                setField("images", next.map((x) => x.url).filter(Boolean))
+              }
               renderItem={(item, update) => (
                 <ImageField
                   boutiqueId={boutiqueId}
-                  label="Visuel"
+                  label={translateUi("Visuel")}
                   value={item.url}
                   onChange={(url) => update({ url: url ?? "" })}
                   aspect="3:4"
@@ -1073,234 +1141,172 @@ export function SceneInspectorPro({
         </>
       )}
 
-     {/* TRUST WALL */}
-{scene.scene_type ===
-  "trust-wall" && (
-  <>
-    {generic}
+      {/* TRUST WALL */}
+      {scene.scene_type === "trust-wall" && (
+        <>
+          {generic}
 
-    <div>
-      <Label className="text-xs mb-2 block">
-        Avis clients
-      </Label>
+          <div>
+            <Label className="text-xs mb-2 block">
+              {translateUi("Avis clients")}
+            </Label>
 
-      <ListEditor
-        items={
-          (c.reviews ??
-            []) as Array<
-            Record<string, any>
-          >
-        }
-        factory={() => ({
-          author: "",
-          quote: "",
-          rating: 5,
-        })}
-        addLabel="Ajouter un avis"
-        onChange={(next) =>
-          setField(
-            "reviews",
-            next,
-          )
-        }
-        renderItem={(
-          review,
-          update,
-        ) => (
-          <>
-            <Input
-              placeholder="Auteur"
-              value={
-                review.author ?? ""
-              }
-              onChange={(e) =>
-                update({
-                  author:
-                    e.target.value,
-                })
-              }
+            <ListEditor
+              items={(c.reviews ?? []) as Array<Record<string, any>>}
+              factory={() => ({
+                author: "",
+                quote: "",
+                rating: 5,
+              })}
+              addLabel="Ajouter un avis"
+              onChange={(next) => setField("reviews", next)}
+              renderItem={(review, update) => (
+                <>
+                  <Input
+                    placeholder={translateUi("Auteur")}
+                    value={review.author ?? ""}
+                    onChange={(e) =>
+                      update({
+                        author: e.target.value,
+                      })
+                    }
+                  />
+
+                  <Textarea
+                    rows={2}
+                    placeholder={translateUi("Citation")}
+                    value={review.quote ?? ""}
+                    onChange={(e) =>
+                      update({
+                        quote: e.target.value,
+                      })
+                    }
+                  />
+                </>
+              )}
             />
+          </div>
+
+          <div>
+            <Label className="text-xs mb-2 block">
+              {translateUi("Badges de confiance")}
+            </Label>
 
             <Textarea
-              rows={2}
-              placeholder="Citation"
-              value={
-                review.quote ?? ""
-              }
+              rows={3}
+              placeholder={translateUi(
+                "Paiement sécurisé\nLivraison suivie\nProduits vérifiés",
+              )}
+              value={(c.badges ?? []).join("\n")}
               onChange={(e) =>
-                update({
-                  quote:
-                    e.target.value,
-                })
-              }
-            />
-          </>
-        )}
-      />
-    </div>
-
-    <div>
-      <Label className="text-xs mb-2 block">
-        Badges de confiance
-      </Label>
-
-      <Textarea
-        rows={3}
-        placeholder={
-          "Paiement sécurisé\nLivraison suivie\nProduits vérifiés"
-        }
-        value={
-          (c.badges ?? []).join(
-            "\n",
-          )
-        }
-        onChange={(e) =>
-          setField(
-            "badges",
-            e.target.value
-              .split("\n")
-              .map((s) =>
-                s.trim(),
-              )
-              .filter(Boolean),
-          )
-        }
-      />
-
-      <p className="text-[10px] opacity-50 mt-1">
-        Un badge par ligne.
-      </p>
-    </div>
-
-    <div>
-      <Label className="text-xs">
-        Libellé presse
-      </Label>
-
-      <Input
-        placeholder="Vu dans"
-        value={
-          c.pressLabel ?? ""
-        }
-        onChange={(e) =>
-          setField(
-            "pressLabel",
-            e.target.value,
-          )
-        }
-      />
-    </div>
-
-    <div>
-      <Label className="text-xs mb-2 block">
-        Presse et références
-      </Label>
-
-      <ListEditor
-        items={
-          (
-            c.pressLogos ??
-            c.press ??
-            c.logos ??
-            []
-          ).map(
-            (
-              item:
-                | string
-                | {
-                    name?: string;
-                    url?: string | null;
-                  },
-            ) =>
-              typeof item ===
-              "string"
-                ? {
-                    name: item,
-                    url: "",
-                  }
-                : {
-                    name:
-                      item.name ??
-                      "",
-                    url:
-                      item.url ??
-                      "",
-                  },
-          )
-        }
-        factory={() => ({
-          name: "",
-          url: "",
-        })}
-        addLabel="Ajouter une référence"
-        onChange={(next) =>
-          setField(
-            "pressLogos",
-            next
-              .filter(
-                (item) =>
-                  item.name?.trim() ||
-                  item.url?.trim(),
-              )
-              .map((item) => ({
-                name:
-                  item.name?.trim() ??
-                  "",
-                url:
-                  item.url?.trim() ||
-                  null,
-              })),
-          )
-        }
-        renderItem={(
-          item,
-          update,
-        ) => (
-          <>
-            <Input
-              placeholder="Nom — ex. Vogue"
-              value={
-                item.name ?? ""
-              }
-              onChange={(e) =>
-                update({
-                  name:
-                    e.target.value,
-                })
+                setField(
+                  "badges",
+                  e.target.value
+                    .split("\n")
+                    .map((s) => s.trim())
+                    .filter(Boolean),
+                )
               }
             />
 
-            <Input
-              placeholder="URL du logo — optionnel"
-              value={
-                item.url ?? ""
-              }
-              onChange={(e) =>
-                update({
-                  url:
-                    e.target.value,
-                })
-              }
-            />
-
-            <p className="text-[10px] opacity-50">
-              Sans URL, le nom est
-              affiché sous forme
-              typographique.
+            <p className="text-[10px] opacity-50 mt-1">
+              {translateUi("Un badge par ligne.")}
             </p>
-          </>
-        )}
-      />
-    </div>
-  </>
-)}
+          </div>
+
+          <div>
+            <Label className="text-xs">{translateUi("Libellé presse")}</Label>
+
+            <Input
+              placeholder={translateUi("Vu dans")}
+              value={c.pressLabel ?? ""}
+              onChange={(e) => setField("pressLabel", e.target.value)}
+            />
+          </div>
+
+          <div>
+            <Label className="text-xs mb-2 block">
+              {translateUi("Presse et références")}
+            </Label>
+
+            <ListEditor
+              items={(c.pressLogos ?? c.press ?? c.logos ?? []).map(
+                (
+                  item:
+                    | string
+                    | {
+                        name?: string;
+                        url?: string | null;
+                      },
+                ) =>
+                  typeof item === "string"
+                    ? {
+                        name: item,
+                        url: "",
+                      }
+                    : {
+                        name: item.name ?? "",
+                        url: item.url ?? "",
+                      },
+              )}
+              factory={() => ({
+                name: "",
+                url: "",
+              })}
+              addLabel="Ajouter une référence"
+              onChange={(next) =>
+                setField(
+                  "pressLogos",
+                  next
+                    .filter((item) => item.name?.trim() || item.url?.trim())
+                    .map((item) => ({
+                      name: item.name?.trim() ?? "",
+                      url: item.url?.trim() || null,
+                    })),
+                )
+              }
+              renderItem={(item, update) => (
+                <>
+                  <Input
+                    placeholder={translateUi("Nom — ex. Vogue")}
+                    value={item.name ?? ""}
+                    onChange={(e) =>
+                      update({
+                        name: e.target.value,
+                      })
+                    }
+                  />
+
+                  <Input
+                    placeholder={translateUi("URL du logo — optionnel")}
+                    value={item.url ?? ""}
+                    onChange={(e) =>
+                      update({
+                        url: e.target.value,
+                      })
+                    }
+                  />
+
+                  <p className="text-[10px] opacity-50">
+                    {translateUi(
+                      "Sans URL, le nom est affiché sous forme typographique.",
+                    )}
+                  </p>
+                </>
+              )}
+            />
+          </div>
+        </>
+      )}
 
       {/* FAQ */}
       {scene.scene_type === "faq-accordion" && (
         <>
           {generic}
           <div>
-            <Label className="text-xs mb-2 block">Questions / Réponses</Label>
+            <Label className="text-xs mb-2 block">
+              {translateUi("Questions / Réponses")}
+            </Label>
             <ListEditor
               items={(c.items ?? []) as Array<Record<string, any>>}
               factory={() => ({ q: "", a: "" })}
@@ -1315,7 +1321,7 @@ export function SceneInspectorPro({
                   />
                   <Textarea
                     rows={2}
-                    placeholder="Réponse"
+                    placeholder={translateUi("Réponse")}
                     value={it.a ?? ""}
                     onChange={(e) => update({ a: e.target.value })}
                   />
@@ -1332,14 +1338,14 @@ export function SceneInspectorPro({
           {generic}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-xs">Notre nom</Label>
+              <Label className="text-xs">{translateUi("Notre nom")}</Label>
               <Input
                 value={c.brand_name ?? ""}
                 onChange={(e) => setField("brand_name", e.target.value)}
               />
             </div>
             <div>
-              <Label className="text-xs">Concurrent</Label>
+              <Label className="text-xs">{translateUi("Concurrent")}</Label>
               <Input
                 value={c.competitor_name ?? ""}
                 onChange={(e) => setField("competitor_name", e.target.value)}
@@ -1347,7 +1353,9 @@ export function SceneInspectorPro({
             </div>
           </div>
           <div>
-            <Label className="text-xs mb-2 block">Lignes de comparaison</Label>
+            <Label className="text-xs mb-2 block">
+              {translateUi("Lignes de comparaison")}
+            </Label>
             <ListEditor
               items={(c.rows ?? []) as Array<Record<string, any>>}
               factory={() => ({ label: "", us: true, them: false })}
@@ -1356,7 +1364,7 @@ export function SceneInspectorPro({
               renderItem={(r, update) => (
                 <>
                   <Input
-                    placeholder="Critère"
+                    placeholder={translateUi("Critère")}
                     value={r.label ?? ""}
                     onChange={(e) => update({ label: e.target.value })}
                   />
@@ -1367,7 +1375,7 @@ export function SceneInspectorPro({
                         checked={!!r.us}
                         onChange={(e) => update({ us: e.target.checked })}
                       />
-                      Nous
+                      {translateUi("Nous")}
                     </label>
                     <label className="flex items-center gap-1">
                       <input
@@ -1375,7 +1383,7 @@ export function SceneInspectorPro({
                         checked={!!r.them}
                         onChange={(e) => update({ them: e.target.checked })}
                       />
-                      Eux
+                      {translateUi("Eux")}
                     </label>
                   </div>
                 </>
@@ -1391,7 +1399,7 @@ export function SceneInspectorPro({
           {generic}
           {"eyebrow" in c && (
             <div>
-              <Label className="text-xs">Eyebrow</Label>
+              <Label className="text-xs">{translateUi("Eyebrow")}</Label>
               <Input
                 value={c.eyebrow ?? ""}
                 onChange={(e) => setField("eyebrow", e.target.value)}
@@ -1399,7 +1407,9 @@ export function SceneInspectorPro({
             </div>
           )}
           <div>
-            <Label className="text-xs">Texte de la lettre</Label>
+            <Label className="text-xs">
+              {translateUi("Texte de la lettre")}
+            </Label>
             <Textarea
               rows={5}
               value={c.body ?? ""}
@@ -1415,7 +1425,7 @@ export function SceneInspectorPro({
           </div>
           <ImageField
             boutiqueId={boutiqueId}
-            label="Portrait du fondateur"
+            label={translateUi("Portrait du fondateur")}
             value={c.portraitUrl}
             onChange={(url) => setField("portraitUrl", url)}
             aspect="1:1"
@@ -1428,15 +1438,22 @@ export function SceneInspectorPro({
       {scene.scene_type === "manifesto-typographic" && (
         <>
           <div>
-            <Label className="text-xs mb-2 block">Lignes du manifeste</Label>
+            <Label className="text-xs mb-2 block">
+              {translateUi("Lignes du manifeste")}
+            </Label>
             <ListEditor
               items={((c.lines ?? []) as string[]).map((line) => ({ line }))}
               factory={() => ({ line: "" })}
               addLabel="Ajouter une ligne"
-              onChange={(next) => setField("lines", next.map((x) => x.line))}
+              onChange={(next) =>
+                setField(
+                  "lines",
+                  next.map((x) => x.line),
+                )
+              }
               renderItem={(item, update) => (
                 <Input
-                  placeholder="Une affirmation forte"
+                  placeholder={translateUi("Une affirmation forte")}
                   value={item.line ?? ""}
                   onChange={(e) => update({ line: e.target.value })}
                 />
@@ -1444,7 +1461,7 @@ export function SceneInspectorPro({
             />
           </div>
           <div>
-            <Label className="text-xs">Note de bas</Label>
+            <Label className="text-xs">{translateUi("Note de bas")}</Label>
             <Input
               value={c.footnote ?? ""}
               onChange={(e) => setField("footnote", e.target.value)}
@@ -1456,12 +1473,14 @@ export function SceneInspectorPro({
       {/* PRESS */}
       {scene.scene_type === "press-strip" && (
         <div>
-          <Label className="text-xs">Eyebrow</Label>
+          <Label className="text-xs">{translateUi("Eyebrow")}</Label>
           <Input
             value={c.eyebrow ?? ""}
             onChange={(e) => setField("eyebrow", e.target.value)}
           />
-          <Label className="text-xs mt-3 mb-2 block">Médias (un par ligne)</Label>
+          <Label className="text-xs mt-3 mb-2 block">
+            {translateUi("Médias (un par ligne)")}
+          </Label>
           <Textarea
             rows={4}
             value={(c.logos ?? []).map((l: any) => l.name).join("\n")}
@@ -1483,7 +1502,7 @@ export function SceneInspectorPro({
       {scene.scene_type === "newsletter-editorial" && (
         <>
           <div>
-            <Label className="text-xs">Eyebrow</Label>
+            <Label className="text-xs">{translateUi("Eyebrow")}</Label>
             <Input
               value={c.eyebrow ?? ""}
               onChange={(e) => setField("eyebrow", e.target.value)}
@@ -1491,14 +1510,19 @@ export function SceneInspectorPro({
           </div>
           {generic}
           <div>
-            <Label className="text-xs">Bénéfices (un par ligne)</Label>
+            <Label className="text-xs">
+              {translateUi("Bénéfices (un par ligne)")}
+            </Label>
             <Textarea
               rows={3}
               value={(c.benefits ?? []).join("\n")}
               onChange={(e) =>
                 setField(
                   "benefits",
-                  e.target.value.split("\n").map((s) => s.trim()).filter(Boolean),
+                  e.target.value
+                    .split("\n")
+                    .map((s) => s.trim())
+                    .filter(Boolean),
                 )
               }
             />
@@ -1512,56 +1536,93 @@ export function SceneInspectorPro({
           {generic}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-xs">Disposition</Label>
-              <Select value={c.layout || "3-up"} onValueChange={(v) => setField("layout", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Label className="text-xs">{translateUi("Disposition")}</Label>
+              <Select
+                value={c.layout || "3-up"}
+                onValueChange={(v) => setField("layout", v)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="2-up">2 colonnes</SelectItem>
-                  <SelectItem value="3-up">3 colonnes</SelectItem>
-                  <SelectItem value="4-up">4 colonnes</SelectItem>
-                  <SelectItem value="compact">Compact (5 col)</SelectItem>
-                  <SelectItem value="masonry">Masonry</SelectItem>
-                  <SelectItem value="carousel">Carrousel</SelectItem>
+                  <SelectItem value="2-up">
+                    {translateUi("2 colonnes")}
+                  </SelectItem>
+                  <SelectItem value="3-up">
+                    {translateUi("3 colonnes")}
+                  </SelectItem>
+                  <SelectItem value="4-up">
+                    {translateUi("4 colonnes")}
+                  </SelectItem>
+                  <SelectItem value="compact">
+                    {translateUi("Compact (5 col)")}
+                  </SelectItem>
+                  <SelectItem value="masonry">
+                    {translateUi("Masonry")}
+                  </SelectItem>
+                  <SelectItem value="carousel">
+                    {translateUi("Carrousel")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-xs">Forme du cadre</Label>
-              <Select value={c.cardShape ?? "rounded"} onValueChange={(v) => setField("cardShape", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Label className="text-xs">{translateUi("Forme du cadre")}</Label>
+              <Select
+                value={c.cardShape ?? "rounded"}
+                onValueChange={(v) => setField("cardShape", v)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="square">Carré</SelectItem>
-                  <SelectItem value="rounded">Arrondi</SelectItem>
-                  <SelectItem value="rounded-xl">Très arrondi</SelectItem>
-                  <SelectItem value="circle">Cercle</SelectItem>
-                  <SelectItem value="arch">Arche</SelectItem>
+                  <SelectItem value="square">{translateUi("Carré")}</SelectItem>
+                  <SelectItem value="rounded">
+                    {translateUi("Arrondi")}
+                  </SelectItem>
+                  <SelectItem value="rounded-xl">
+                    {translateUi("Très arrondi")}
+                  </SelectItem>
+                  <SelectItem value="circle">
+                    {translateUi("Cercle")}
+                  </SelectItem>
+                  <SelectItem value="arch">{translateUi("Arche")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <div>
-            <Label className="text-xs">Effet au survol</Label>
-            <Select value={c.hoverEffect ?? "zoom"} onValueChange={(v) => setField("hoverEffect", v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+            <Label className="text-xs">{translateUi("Effet au survol")}</Label>
+            <Select
+              value={c.hoverEffect ?? "zoom"}
+              onValueChange={(v) => setField("hoverEffect", v)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Aucun</SelectItem>
-                <SelectItem value="zoom">Zoom doux</SelectItem>
-                <SelectItem value="shine">Brillance</SelectItem>
-                <SelectItem value="tilt">Tilt 3D</SelectItem>
-                <SelectItem value="lift">Soulèvement</SelectItem>
+                <SelectItem value="none">{translateUi("Aucun")}</SelectItem>
+                <SelectItem value="zoom">{translateUi("Zoom doux")}</SelectItem>
+                <SelectItem value="shine">
+                  {translateUi("Brillance")}
+                </SelectItem>
+                <SelectItem value="tilt">{translateUi("Tilt 3D")}</SelectItem>
+                <SelectItem value="lift">
+                  {translateUi("Soulèvement")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
           {products.length > 0 && (
             <div>
               <Label className="text-xs flex items-center justify-between mb-1">
-                <span>Produits affichés</span>
+                <span>{translateUi("Produits affichés")}</span>
                 <button
                   type="button"
                   onClick={() => setField("productIds", [])}
                   className="text-[10px] text-primary hover:underline"
                 >
-                  Tout afficher
+                  {translateUi("Tout afficher")}
                 </button>
               </Label>
               <div className="max-h-48 overflow-auto rounded border border-border/40 p-2 space-y-1">
@@ -1570,17 +1631,25 @@ export function SceneInspectorPro({
                   const allSelected = ids.length === 0;
                   const checked = allSelected || ids.includes(p.id);
                   return (
-                    <label key={p.id} className="flex items-center gap-2 text-xs cursor-pointer">
+                    <label
+                      key={p.id}
+                      className="flex items-center gap-2 text-xs cursor-pointer"
+                    >
                       <input
                         type="checkbox"
                         checked={checked}
                         onChange={(e) => {
-                          const current = allSelected ? products.map((x) => x.id) : ids;
+                          const current = allSelected
+                            ? products.map((x) => x.id)
+                            : ids;
                           const next = e.target.checked
                             ? Array.from(new Set([...current, p.id]))
                             : current.filter((x) => x !== p.id);
                           // If next == all, store [] (= afficher tout)
-                          setField("productIds", next.length === products.length ? [] : next);
+                          setField(
+                            "productIds",
+                            next.length === products.length ? [] : next,
+                          );
                         }}
                       />
                       {p.image_url && (
@@ -1595,7 +1664,9 @@ export function SceneInspectorPro({
                 })}
               </div>
               <p className="text-[10px] opacity-50 mt-1">
-                Décoche pour limiter à une sélection. Vide = tout afficher.
+                {translateUi(
+                  "Décoche pour limiter à une sélection. Vide = tout afficher.",
+                )}
               </p>
             </div>
           )}
@@ -1606,17 +1677,24 @@ export function SceneInspectorPro({
       {scene.scene_type === "product-description" && (
         <>
           <div>
-            <Label className="text-xs">Titre</Label>
-            <Input value={c.title ?? ""} onChange={(e) => setField("title", e.target.value)} />
+            <Label className="text-xs">{translateUi("Titre")}</Label>
+            <Input
+              value={c.title ?? ""}
+              onChange={(e) => setField("title", e.target.value)}
+            />
           </div>
           <div>
-            <Label className="text-xs">Texte de secours</Label>
+            <Label className="text-xs">{translateUi("Texte de secours")}</Label>
             <Textarea
               rows={4}
               value={c.fallbackBody ?? ""}
               onChange={(e) => setField("fallbackBody", e.target.value)}
             />
-            <p className="text-[10px] opacity-50 mt-1">Affiché si la fiche produit n'a pas de description.</p>
+            <p className="text-[10px] opacity-50 mt-1">
+              {translateUi(
+                "Affiché si la fiche produit n'a pas de description.",
+              )}
+            </p>
           </div>
         </>
       )}
@@ -1625,11 +1703,16 @@ export function SceneInspectorPro({
       {scene.scene_type === "product-specs" && (
         <>
           <div>
-            <Label className="text-xs">Titre</Label>
-            <Input value={c.title ?? ""} onChange={(e) => setField("title", e.target.value)} />
+            <Label className="text-xs">{translateUi("Titre")}</Label>
+            <Input
+              value={c.title ?? ""}
+              onChange={(e) => setField("title", e.target.value)}
+            />
           </div>
           <div>
-            <Label className="text-xs mb-2 block">Lignes (label / valeur)</Label>
+            <Label className="text-xs mb-2 block">
+              {translateUi("Lignes (label / valeur)")}
+            </Label>
             <ListEditor
               items={(c.rows ?? []) as Array<Record<string, any>>}
               factory={() => ({ label: "", value: "" })}
@@ -1637,8 +1720,16 @@ export function SceneInspectorPro({
               onChange={(next) => setField("rows", next)}
               renderItem={(r, update) => (
                 <>
-                  <Input placeholder="Label" value={r.label ?? ""} onChange={(e) => update({ label: e.target.value })} />
-                  <Input placeholder="Valeur" value={r.value ?? ""} onChange={(e) => update({ value: e.target.value })} />
+                  <Input
+                    placeholder={translateUi("Label")}
+                    value={r.label ?? ""}
+                    onChange={(e) => update({ label: e.target.value })}
+                  />
+                  <Input
+                    placeholder={translateUi("Valeur")}
+                    value={r.value ?? ""}
+                    onChange={(e) => update({ value: e.target.value })}
+                  />
                 </>
               )}
             />
@@ -1647,29 +1738,43 @@ export function SceneInspectorPro({
       )}
 
       {/* PRODUCT — HERO / RELATED — generic only */}
-      {(scene.scene_type === "product-hero" || scene.scene_type === "product-related") && (
+      {(scene.scene_type === "product-hero" ||
+        scene.scene_type === "product-related") && (
         <>
           {"title" in c && (
             <div>
-              <Label className="text-xs">Titre</Label>
-              <Input value={c.title ?? ""} onChange={(e) => setField("title", e.target.value)} />
+              <Label className="text-xs">{translateUi("Titre")}</Label>
+              <Input
+                value={c.title ?? ""}
+                onChange={(e) => setField("title", e.target.value)}
+              />
             </div>
           )}
           {"ctaLabel" in c && (
             <div>
               <Label className="text-xs">CTA</Label>
-              <Input value={c.ctaLabel ?? ""} onChange={(e) => setField("ctaLabel", e.target.value)} />
+              <Input
+                value={c.ctaLabel ?? ""}
+                onChange={(e) => setField("ctaLabel", e.target.value)}
+              />
             </div>
           )}
           {scene.scene_type === "product-related" && (
             <div>
-              <Label className="text-xs">Nombre de produits</Label>
+              <Label className="text-xs">
+                {translateUi("Nombre de produits")}
+              </Label>
               <Input
                 type="number"
                 min={2}
                 max={12}
                 value={c.limit ?? 4}
-                onChange={(e) => setField("limit", Math.max(2, Math.min(12, Number(e.target.value) || 4)))}
+                onChange={(e) =>
+                  setField(
+                    "limit",
+                    Math.max(2, Math.min(12, Number(e.target.value) || 4)),
+                  )
+                }
               />
             </div>
           )}
@@ -1677,202 +1782,139 @@ export function SceneInspectorPro({
       )}
 
       {/* CTA STICKY */}
-{scene.scene_type ===
-  "cta-sticky" && (
-  <>
-    {generic}
+      {scene.scene_type === "cta-sticky" && (
+        <>
+          {generic}
 
-    <div className="flex items-center justify-between gap-4 rounded-md border border-border/40 px-3 py-2">
-      <div>
-        <Label className="text-xs">
-          Barre fixe
-        </Label>
+          <div className="flex items-center justify-between gap-4 rounded-md border border-border/40 px-3 py-2">
+            <div>
+              <Label className="text-xs">{translateUi("Barre fixe")}</Label>
 
-        <p className="text-[10px] opacity-60 mt-0.5">
-          Active la barre d'action
-          permanente lorsque la variante
-          « Sticky only » est utilisée.
-        </p>
-      </div>
+              <p className="text-[10px] opacity-60 mt-0.5">
+                {translateUi(
+                  "Active la barre d'action permanente lorsque la variante « Sticky only » est utilisée.",
+                )}
+              </p>
+            </div>
 
-      <Switch
-        checked={
-          c.stickyEnabled !==
-          false
-        }
-        onCheckedChange={(v) =>
-          setField(
-            "stickyEnabled",
-            v,
-          )
-        }
-      />
-    </div>
+            <Switch
+              checked={c.stickyEnabled !== false}
+              onCheckedChange={(v) => setField("stickyEnabled", v)}
+            />
+          </div>
 
-    <div>
-      <Label className="text-xs">
-        Texte de la barre fixe
-      </Label>
+          <div>
+            <Label className="text-xs">
+              {translateUi("Texte de la barre fixe")}
+            </Label>
 
-      <Input
-        placeholder={
-          c.title ||
-          "Découvrir la collection"
-        }
-        value={
-          c.stickyLabel ?? ""
-        }
-        onChange={(e) =>
-          setField(
-            "stickyLabel",
-            e.target.value,
-          )
-        }
-      />
+            <Input
+              placeholder={c.title || translateUi("Découvrir la collection")}
+              value={c.stickyLabel ?? ""}
+              onChange={(e) => setField("stickyLabel", e.target.value)}
+            />
 
-      <p className="text-[10px] opacity-50 mt-1">
-        Si ce champ est vide, le titre
-        principal de la scène est utilisé.
-      </p>
-    </div>
+            <p className="text-[10px] opacity-50 mt-1">
+              {translateUi(
+                "Si ce champ est vide, le titre principal de la scène est utilisé.",
+              )}
+            </p>
+          </div>
 
-    <div>
-      <Label className="text-xs">
-        Sous-texte de la barre
-      </Label>
+          <div>
+            <Label className="text-xs">
+              {translateUi("Sous-texte de la barre")}
+            </Label>
 
-      <Input
-        placeholder="Livraison offerte dès 50 €"
-        value={
-          c.stickySubtitle ?? ""
-        }
-        onChange={(e) =>
-          setField(
-            "stickySubtitle",
-            e.target.value,
-          )
-        }
-      />
-    </div>
+            <Input
+              placeholder={translateUi("Livraison offerte dès 50 €")}
+              value={c.stickySubtitle ?? ""}
+              onChange={(e) => setField("stickySubtitle", e.target.value)}
+            />
+          </div>
 
-    {scene.variant ===
-      "split-newsletter" && (
-      <div className="space-y-3 rounded-md border border-border/40 p-3">
-        <div>
-          <p className="text-xs font-medium">
-            Newsletter
-          </p>
+          {scene.variant === "split-newsletter" && (
+            <div className="space-y-3 rounded-md border border-border/40 p-3">
+              <div>
+                <p className="text-xs font-medium">Newsletter</p>
 
-          <p className="text-[10px] opacity-50">
-            Contenu du formulaire affiché
-            dans cette variante.
-          </p>
-        </div>
+                <p className="text-[10px] opacity-50">
+                  {translateUi(
+                    "Contenu du formulaire affiché dans cette variante.",
+                  )}
+                </p>
+              </div>
 
-        <div>
-          <Label className="text-xs">
-            Sur-titre
-          </Label>
+              <div>
+                <Label className="text-xs">{translateUi("Sur-titre")}</Label>
 
-          <Input
-            placeholder="Newsletter"
-            value={
-              c.newsletterEyebrow ??
-              ""
-            }
-            onChange={(e) =>
-              setField(
-                "newsletterEyebrow",
-                e.target.value,
-              )
-            }
-          />
-        </div>
+                <Input
+                  placeholder="Newsletter"
+                  value={c.newsletterEyebrow ?? ""}
+                  onChange={(e) =>
+                    setField("newsletterEyebrow", e.target.value)
+                  }
+                />
+              </div>
 
-        <div>
-          <Label className="text-xs">
-            Titre newsletter
-          </Label>
+              <div>
+                <Label className="text-xs">
+                  {translateUi("Titre newsletter")}
+                </Label>
 
-          <Input
-            placeholder="Restez informé"
-            value={
-              c.newsletterTitle ??
-              ""
-            }
-            onChange={(e) =>
-              setField(
-                "newsletterTitle",
-                e.target.value,
-              )
-            }
-          />
-        </div>
+                <Input
+                  placeholder={translateUi("Restez informé")}
+                  value={c.newsletterTitle ?? ""}
+                  onChange={(e) => setField("newsletterTitle", e.target.value)}
+                />
+              </div>
 
-        <div>
-          <Label className="text-xs">
-            Description
-          </Label>
+              <div>
+                <Label className="text-xs">Description</Label>
 
-          <Textarea
-            rows={2}
-            placeholder="Recevez nos nouveautés directement dans votre boîte mail."
-            value={
-              c.newsletterSubtitle ??
-              ""
-            }
-            onChange={(e) =>
-              setField(
-                "newsletterSubtitle",
-                e.target.value,
-              )
-            }
-          />
-        </div>
+                <Textarea
+                  rows={2}
+                  placeholder={translateUi(
+                    "Recevez nos nouveautés directement dans votre boîte mail.",
+                  )}
+                  value={c.newsletterSubtitle ?? ""}
+                  onChange={(e) =>
+                    setField("newsletterSubtitle", e.target.value)
+                  }
+                />
+              </div>
 
-        <div>
-          <Label className="text-xs">
-            Placeholder email
-          </Label>
+              <div>
+                <Label className="text-xs">
+                  {translateUi("Placeholder email")}
+                </Label>
 
-          <Input
-            placeholder="Votre email"
-            value={
-              c.newsletterPlaceholder ??
-              ""
-            }
-            onChange={(e) =>
-              setField(
-                "newsletterPlaceholder",
-                e.target.value,
-              )
-            }
-          />
-        </div>
+                <Input
+                  placeholder={translateUi("Votre email")}
+                  value={c.newsletterPlaceholder ?? ""}
+                  onChange={(e) =>
+                    setField("newsletterPlaceholder", e.target.value)
+                  }
+                />
+              </div>
 
-        <div>
-          <Label className="text-xs">
-            Texte du bouton
-          </Label>
+              <div>
+                <Label className="text-xs">
+                  {translateUi("Texte du bouton")}
+                </Label>
 
-          <Input
-            placeholder="S'inscrire"
-            value={
-              c.newsletterCtaLabel ??
-              ""
-            }
-            onChange={(e) =>
-              setField(
-                "newsletterCtaLabel",
-                e.target.value,
-              )
-            }
-          />
-        </div>
-      </div>
-    )}
-  </>
-)}
+                <Input
+                  placeholder={translateUi("S'inscrire")}
+                  value={c.newsletterCtaLabel ?? ""}
+                  onChange={(e) =>
+                    setField("newsletterCtaLabel", e.target.value)
+                  }
+                />
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
       {/* PRODUCT SPOTLIGHT */}
       {scene.scene_type === "product-spotlight" && (
@@ -1880,16 +1922,26 @@ export function SceneInspectorPro({
           {generic}
           {products.length > 0 && (
             <div>
-              <Label className="text-xs">Produit mis en avant</Label>
+              <Label className="text-xs">
+                {translateUi("Produit mis en avant")}
+              </Label>
               <Select
                 value={c.productId ?? "__first"}
-                onValueChange={(v) => setField("productId", v === "__first" ? null : v)}
+                onValueChange={(v) =>
+                  setField("productId", v === "__first" ? null : v)
+                }
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent className="max-h-60">
-                  <SelectItem value="__first">— Premier produit —</SelectItem>
+                  <SelectItem value="__first">
+                    {translateUi("— Premier produit —")}
+                  </SelectItem>
                   {products.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -1897,7 +1949,9 @@ export function SceneInspectorPro({
           )}
           <ImageField
             boutiqueId={boutiqueId}
-            label="Visuel de remplacement (si pas de photo produit)"
+            label={translateUi(
+              "Visuel de remplacement (si pas de photo produit)",
+            )}
             value={c.backgroundImage}
             onChange={(url) => setField("backgroundImage", url)}
             aspect="4:3"
@@ -1914,21 +1968,41 @@ export function SceneInspectorPro({
             <Label className="text-xs mb-2 block">Articles</Label>
             <ListEditor
               items={(c.articles ?? []) as Array<Record<string, any>>}
-              factory={() => ({ title: "", excerpt: "", image: null, url: "#" })}
+              factory={() => ({
+                title: "",
+                excerpt: "",
+                image: null,
+                url: "#",
+              })}
               addLabel="Ajouter un article"
               onChange={(next) => setField("articles", next)}
               renderItem={(a, update) => (
                 <>
-                  <Input placeholder="Titre" value={a.title ?? ""} onChange={(e) => update({ title: e.target.value })} />
-                  <Textarea rows={2} placeholder="Extrait" value={a.excerpt ?? ""} onChange={(e) => update({ excerpt: e.target.value })} />
-                  <Input placeholder="URL (#)" value={a.url ?? ""} onChange={(e) => update({ url: e.target.value })} />
+                  <Input
+                    placeholder={translateUi("Titre")}
+                    value={a.title ?? ""}
+                    onChange={(e) => update({ title: e.target.value })}
+                  />
+                  <Textarea
+                    rows={2}
+                    placeholder={translateUi("Extrait")}
+                    value={a.excerpt ?? ""}
+                    onChange={(e) => update({ excerpt: e.target.value })}
+                  />
+                  <Input
+                    placeholder="URL (#)"
+                    value={a.url ?? ""}
+                    onChange={(e) => update({ url: e.target.value })}
+                  />
                   <ImageField
                     boutiqueId={boutiqueId}
-                    label="Image de couverture"
+                    label={translateUi("Image de couverture")}
                     value={a.image}
                     onChange={(url) => update({ image: url })}
                     aspect="16:9"
-                    promptHint={a.title || "Couverture d'article éditoriale"}
+                    promptHint={
+                      a.title || translateUi("Couverture d'article éditoriale")
+                    }
                   />
                 </>
               )}
@@ -1942,7 +2016,9 @@ export function SceneInspectorPro({
         <>
           {generic}
           <div>
-            <Label className="text-xs">Texte « panier vide »</Label>
+            <Label className="text-xs">
+              {translateUi("Texte « panier vide »")}
+            </Label>
             <Textarea
               rows={2}
               value={c.emptyText ?? ""}
@@ -1957,24 +2033,24 @@ export function SceneInspectorPro({
         <>
           {generic}
           <div>
-            <Label className="text-xs">Email de contact</Label>
+            <Label className="text-xs">{translateUi("Email de contact")}</Label>
             <Input
               type="email"
-              placeholder="hello@maboutique.com"
+              placeholder={translateUi("hello@maboutique.com")}
               value={c.contactEmail ?? ""}
               onChange={(e) => setField("contactEmail", e.target.value)}
             />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-xs">Téléphone</Label>
+              <Label className="text-xs">{translateUi("Téléphone")}</Label>
               <Input
                 value={c.contactPhone ?? ""}
                 onChange={(e) => setField("contactPhone", e.target.value)}
               />
             </div>
             <div>
-              <Label className="text-xs">Adresse</Label>
+              <Label className="text-xs">{translateUi("Adresse")}</Label>
               <Input
                 value={c.contactAddress ?? ""}
                 onChange={(e) => setField("contactAddress", e.target.value)}
@@ -1989,7 +2065,9 @@ export function SceneInspectorPro({
         <>
           {generic}
           <div>
-            <Label className="text-xs mb-2 block">Membres de l'équipe</Label>
+            <Label className="text-xs mb-2 block">
+              {translateUi("Membres de l'équipe")}
+            </Label>
             <ListEditor
               items={(c.members ?? []) as Array<Record<string, any>>}
               factory={() => ({ name: "", role: "", photo: null, bio: "" })}
@@ -1998,17 +2076,32 @@ export function SceneInspectorPro({
               renderItem={(m, update) => (
                 <>
                   <div className="grid grid-cols-2 gap-2">
-                    <Input placeholder="Nom" value={m.name ?? ""} onChange={(e) => update({ name: e.target.value })} />
-                    <Input placeholder="Rôle" value={m.role ?? ""} onChange={(e) => update({ role: e.target.value })} />
+                    <Input
+                      placeholder={translateUi("Nom")}
+                      value={m.name ?? ""}
+                      onChange={(e) => update({ name: e.target.value })}
+                    />
+                    <Input
+                      placeholder={translateUi("Rôle")}
+                      value={m.role ?? ""}
+                      onChange={(e) => update({ role: e.target.value })}
+                    />
                   </div>
-                  <Textarea rows={2} placeholder="Bio (facultatif)" value={m.bio ?? ""} onChange={(e) => update({ bio: e.target.value })} />
+                  <Textarea
+                    rows={2}
+                    placeholder={translateUi("Bio (facultatif)")}
+                    value={m.bio ?? ""}
+                    onChange={(e) => update({ bio: e.target.value })}
+                  />
                   <ImageField
                     boutiqueId={boutiqueId}
                     label="Photo"
                     value={m.photo}
                     onChange={(url) => update({ photo: url })}
                     aspect="1:1"
-                    promptHint={`Portrait pro de ${m.name || "membre équipe"}`}
+                    promptHint={translateUi("Portrait pro de {v0}", {
+                      v0: m.name || translateUi("membre équipe"),
+                    })}
                   />
                 </>
               )}
@@ -2022,34 +2115,62 @@ export function SceneInspectorPro({
         <>
           {generic}
           <div>
-            <Label className="text-xs mb-2 block">Formules tarifaires</Label>
+            <Label className="text-xs mb-2 block">
+              {translateUi("Formules tarifaires")}
+            </Label>
             <ListEditor
               items={(c.plans ?? []) as Array<Record<string, any>>}
-              factory={() => ({ name: "Nouvelle offre", price: "0€", period: "/mois", features: [], cta: "Choisir", featured: false })}
+              factory={() => ({
+                name: "Nouvelle offre",
+                price: "0€",
+                period: "/mois",
+                features: [],
+                cta: "Choisir",
+                featured: false,
+              })}
               addLabel="Ajouter une formule"
               onChange={(next) => setField("plans", next)}
               renderItem={(p, update) => (
                 <>
                   <div className="grid grid-cols-2 gap-2">
-                    <Input placeholder="Nom (ex. Pro)" value={p.name ?? ""} onChange={(e) => update({ name: e.target.value })} />
-                    <Input placeholder="Prix (ex. 79€)" value={p.price ?? ""} onChange={(e) => update({ price: e.target.value })} />
+                    <Input
+                      placeholder={translateUi("Nom (ex. Pro)")}
+                      value={p.name ?? ""}
+                      onChange={(e) => update({ name: e.target.value })}
+                    />
+                    <Input
+                      placeholder={translateUi("Prix (ex. 79€)")}
+                      value={p.price ?? ""}
+                      onChange={(e) => update({ price: e.target.value })}
+                    />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <Input placeholder="Période (/mois)" value={p.period ?? ""} onChange={(e) => update({ period: e.target.value })} />
-                    <Input placeholder="Texte CTA" value={p.cta ?? ""} onChange={(e) => update({ cta: e.target.value })} />
+                    <Input
+                      placeholder={translateUi("Période (/mois)")}
+                      value={p.period ?? ""}
+                      onChange={(e) => update({ period: e.target.value })}
+                    />
+                    <Input
+                      placeholder={translateUi("Texte CTA")}
+                      value={p.cta ?? ""}
+                      onChange={(e) => update({ cta: e.target.value })}
+                    />
                   </div>
                   <Textarea
                     rows={3}
-                    placeholder="Une fonctionnalité par ligne"
+                    placeholder={translateUi("Une fonctionnalité par ligne")}
                     value={(p.features ?? []).join("\n")}
                     onChange={(e) =>
                       update({
-                        features: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean),
+                        features: e.target.value
+                          .split("\n")
+                          .map((s) => s.trim())
+                          .filter(Boolean),
                       })
                     }
                   />
                   <label className="flex items-center justify-between text-xs rounded-md border border-border/40 px-2 py-1.5">
-                    <span>Mettre en avant (badge)</span>
+                    <span>{translateUi("Mettre en avant (badge)")}</span>
                     <Switch
                       checked={!!p.featured}
                       onCheckedChange={(v) => update({ featured: v })}
@@ -2067,7 +2188,7 @@ export function SceneInspectorPro({
         <>
           {generic}
           <div>
-            <Label className="text-xs">URL du CTA</Label>
+            <Label className="text-xs">{translateUi("URL du CTA")}</Label>
             <Input
               placeholder="#shop"
               value={c.ctaUrl ?? ""}
@@ -2080,7 +2201,7 @@ export function SceneInspectorPro({
             value={c.image}
             onChange={(url) => setField("image", url)}
             aspect="4:3"
-            promptHint={c.title || "Visuel éditorial"}
+            promptHint={c.title || translateUi("Visuel éditorial")}
           />
         </>
       )}
@@ -2090,12 +2211,17 @@ export function SceneInspectorPro({
         <>
           {"title" in c && (
             <div>
-              <Label className="text-xs">Titre</Label>
-              <Input value={c.title ?? ""} onChange={(e) => setField("title", e.target.value)} />
+              <Label className="text-xs">{translateUi("Titre")}</Label>
+              <Input
+                value={c.title ?? ""}
+                onChange={(e) => setField("title", e.target.value)}
+              />
             </div>
           )}
           <div>
-            <Label className="text-xs mb-2 block">Étapes</Label>
+            <Label className="text-xs mb-2 block">
+              {translateUi("Étapes")}
+            </Label>
             <ListEditor
               items={(c.events ?? []) as Array<Record<string, any>>}
               factory={() => ({ year: "", title: "", body: "" })}
@@ -2105,13 +2231,13 @@ export function SceneInspectorPro({
                 <>
                   <div className="grid grid-cols-3 gap-2">
                     <Input
-                      placeholder="Année"
+                      placeholder={translateUi("Année")}
                       value={ev.year ?? ""}
                       onChange={(e) => update({ year: e.target.value })}
                     />
                     <div className="col-span-2">
                       <Input
-                        placeholder="Titre"
+                        placeholder={translateUi("Titre")}
                         value={ev.title ?? ""}
                         onChange={(e) => update({ title: e.target.value })}
                       />
@@ -2135,33 +2261,41 @@ export function SceneInspectorPro({
         <>
           {"title" in c && (
             <div>
-              <Label className="text-xs">Titre</Label>
-              <Input value={c.title ?? ""} onChange={(e) => setField("title", e.target.value)} />
+              <Label className="text-xs">{translateUi("Titre")}</Label>
+              <Input
+                value={c.title ?? ""}
+                onChange={(e) => setField("title", e.target.value)}
+              />
             </div>
           )}
           <div>
-            <Label className="text-xs">Adresse</Label>
+            <Label className="text-xs">{translateUi("Adresse")}</Label>
             <Input
               value={c.address ?? ""}
               onChange={(e) => setField("address", e.target.value)}
             />
           </div>
           <div>
-            <Label className="text-xs">Horaires</Label>
+            <Label className="text-xs">{translateUi("Horaires")}</Label>
             <Input
               value={c.hours ?? ""}
               onChange={(e) => setField("hours", e.target.value)}
             />
           </div>
           <div>
-            <Label className="text-xs">URL d'intégration Google Maps</Label>
+            <Label className="text-xs">
+              {translateUi("URL d'intégration Google Maps")}
+            </Label>
             <Input
               placeholder="https://www.google.com/maps/embed?…"
               value={c.mapEmbedUrl ?? ""}
               onChange={(e) => setField("mapEmbedUrl", e.target.value)}
             />
             <p className="text-[10px] opacity-50 mt-1">
-              Sur Google Maps : Partager → Intégrer une carte → copie l'URL <code>src</code>.
+              {translateUi(
+                "Sur Google Maps : Partager → Intégrer une carte → copie l'URL",
+              ) + " "}
+              <code>src</code>.
             </p>
           </div>
         </>
@@ -2242,27 +2376,33 @@ function CornerRadiusControl({
     if (!v) onChange({});
     else onChange({ tl: v, tr: v, br: v, bl: v });
   };
-  const setTop = (v: number) => onChange({ ...radii, tl: v || undefined, tr: v || undefined });
-  const setBot = (v: number) => onChange({ ...radii, bl: v || undefined, br: v || undefined });
-  const setLeft = (v: number) => onChange({ ...radii, tl: v || undefined, bl: v || undefined });
-  const setRight = (v: number) => onChange({ ...radii, tr: v || undefined, br: v || undefined });
+  const setTop = (v: number) =>
+    onChange({ ...radii, tl: v || undefined, tr: v || undefined });
+  const setBot = (v: number) =>
+    onChange({ ...radii, bl: v || undefined, br: v || undefined });
+  const setLeft = (v: number) =>
+    onChange({ ...radii, tl: v || undefined, bl: v || undefined });
+  const setRight = (v: number) =>
+    onChange({ ...radii, tr: v || undefined, br: v || undefined });
   const setOne = (k: keyof Radii, v: number) =>
     onChange({ ...radii, [k]: v || undefined });
 
   const tabs: Array<{ id: typeof mode; label: string }> = [
     { id: "all", label: "Global" },
-    { id: "sides", label: "Côtés" },
-    { id: "advanced", label: "Par coin" },
+    { id: "sides", label: translateUi("Côtés") },
+    { id: "advanced", label: translateUi("Par coin") },
   ];
 
   const { lang } = useLanguage();
   const english = lang === "en";
-  const tx = (fr: string, en: string) => english ? en : fr;
+  const tx = (fr: string, en: string) => (english ? en : fr);
 
   return (
     <div className="space-y-2 rounded-md border border-border/40 bg-background/60 p-2">
       <div className="flex items-center justify-between">
-        <Label className="text-[10px] opacity-70">Arrondi (rayon de courbure)</Label>
+        <Label className="text-[10px] opacity-70">
+          {translateUi("Arrondi (rayon de courbure)")}
+        </Label>
         <div className="flex rounded-md border border-border/50 overflow-hidden">
           {tabs.map((t) => (
             <button
@@ -2270,7 +2410,9 @@ function CornerRadiusControl({
               type="button"
               onClick={() => setMode(t.id)}
               className={`text-[10px] px-2 py-0.5 ${
-                mode === t.id ? "bg-primary text-primary-foreground" : "hover:bg-muted/60"
+                mode === t.id
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted/60"
               }`}
             >
               {t.label}
@@ -2280,34 +2422,74 @@ function CornerRadiusControl({
       </div>
 
       {mode === "all" && (
-        <RadiusSlider label="Tous les coins" value={all} onChange={setAll} />
+        <RadiusSlider
+          label={translateUi("Tous les coins")}
+          value={all}
+          onChange={setAll}
+        />
       )}
 
       {mode === "sides" && (
         <div className="grid grid-cols-2 gap-2">
-          <RadiusSlider label="Haut" value={top} onChange={setTop} />
-          <RadiusSlider label="Bas" value={bot} onChange={setBot} />
-          <RadiusSlider label="Gauche" value={left} onChange={setLeft} />
-          <RadiusSlider label="Droite" value={right} onChange={setRight} />
+          <RadiusSlider
+            label={translateUi("Haut")}
+            value={top}
+            onChange={setTop}
+          />
+          <RadiusSlider
+            label={translateUi("Bas")}
+            value={bot}
+            onChange={setBot}
+          />
+          <RadiusSlider
+            label={translateUi("Gauche")}
+            value={left}
+            onChange={setLeft}
+          />
+          <RadiusSlider
+            label={translateUi("Droite")}
+            value={right}
+            onChange={setRight}
+          />
         </div>
       )}
 
       {mode === "advanced" && (
         <div className="grid grid-cols-2 gap-2">
-          <RadiusSlider label="↖ Haut-G" value={radii.tl ?? 0} onChange={(v) => setOne("tl", v)} />
-          <RadiusSlider label="↗ Haut-D" value={radii.tr ?? 0} onChange={(v) => setOne("tr", v)} />
-          <RadiusSlider label="↙ Bas-G" value={radii.bl ?? 0} onChange={(v) => setOne("bl", v)} />
-          <RadiusSlider label="↘ Bas-D" value={radii.br ?? 0} onChange={(v) => setOne("br", v)} />
+          <RadiusSlider
+            label={translateUi("↖ Haut-G")}
+            value={radii.tl ?? 0}
+            onChange={(v) => setOne("tl", v)}
+          />
+          <RadiusSlider
+            label={translateUi("↗ Haut-D")}
+            value={radii.tr ?? 0}
+            onChange={(v) => setOne("tr", v)}
+          />
+          <RadiusSlider
+            label={translateUi("↙ Bas-G")}
+            value={radii.bl ?? 0}
+            onChange={(v) => setOne("bl", v)}
+          />
+          <RadiusSlider
+            label={translateUi("↘ Bas-D")}
+            value={radii.br ?? 0}
+            onChange={(v) => setOne("br", v)}
+          />
         </div>
       )}
 
-      {(radii.tl != null || radii.tr != null || radii.br != null || radii.bl != null) && (
+      {(radii.tl != null ||
+        radii.tr != null ||
+        radii.br != null ||
+        radii.bl != null) && (
         <button
           type="button"
           onClick={() => onChange({})}
           className="text-[10px] text-primary hover:underline flex items-center gap-1"
         >
-          <RotateCcw className="w-3 h-3" /> Réinitialiser l'arrondi
+          <RotateCcw className="w-3 h-3" />{" "}
+          {translateUi("Réinitialiser l'arrondi")}
         </button>
       )}
     </div>
@@ -2325,7 +2507,7 @@ function RadiusSlider({
 }) {
   const { lang } = useLanguage();
   const english = lang === "en";
-  const tx = (fr: string, en: string) => english ? en : fr;
+  const tx = (fr: string, en: string) => (english ? en : fr);
 
   return (
     <div className="space-y-1">
@@ -2333,7 +2515,13 @@ function RadiusSlider({
         <span>{label}</span>
         <span className="opacity-60">{value}px</span>
       </Label>
-      <Slider min={0} max={80} step={1} value={[value]} onValueChange={([v]) => onChange(v)} />
+      <Slider
+        min={0}
+        max={80}
+        step={1}
+        value={[value]}
+        onValueChange={([v]) => onChange(v)}
+      />
     </div>
   );
 }
@@ -2368,7 +2556,12 @@ function ProModePanel({
     // Strip empty objects to keep payload clean
     (Object.keys(next) as Array<keyof Ov>).forEach((k) => {
       const v = next[k];
-      if (v && typeof v === "object" && !Array.isArray(v) && Object.keys(v as object).length === 0) {
+      if (
+        v &&
+        typeof v === "object" &&
+        !Array.isArray(v) &&
+        Object.keys(v as object).length === 0
+      ) {
         delete next[k];
       }
     });
@@ -2403,15 +2596,17 @@ function ProModePanel({
   const handleVideo = async (f: File | null) => {
     if (!f) return;
     if (f.size > 25 * 1024 * 1024) {
-      toast.error("Vidéo > 25 Mo, choisis un fichier plus léger.");
+      toast.error(translateUi("Vidéo > 25 Mo, choisis un fichier plus léger."));
       return;
     }
     try {
       const url = await upload.mutateAsync({ boutiqueId, file: f });
       setBg("videoUrl", url);
-      toast.success("Vidéo téléversée");
+      toast.success(translateUi("Vidéo téléversée"));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Upload impossible");
+      toast.error(
+        e instanceof Error ? e.message : translateUi("Upload impossible"),
+      );
     }
   };
 
@@ -2426,23 +2621,34 @@ function ProModePanel({
 
   const { lang } = useLanguage();
   const english = lang === "en";
-  const tx = (fr: string, en: string) => english ? en : fr;
+  const tx = (fr: string, en: string) => (english ? en : fr);
 
   return (
-    <details className="rounded-md border border-border/40 bg-muted/20 px-2 py-1.5" open={hasPro}>
+    <details
+      className="rounded-md border border-border/40 bg-muted/20 px-2 py-1.5"
+      open={hasPro}
+    >
       <summary className="cursor-pointer text-xs flex items-center justify-between">
         <span className="flex items-center gap-1.5 font-medium">
           <Sliders className="w-3.5 h-3.5" />
-          Mode Pro {hasPro && <span className="ml-1 text-[10px] rounded px-1 bg-primary/15 text-primary">actif</span>}
+          {translateUi("Mode Pro") + " "}
+          {hasPro && (
+            <span className="ml-1 text-[10px] rounded px-1 bg-primary/15 text-primary">
+              actif
+            </span>
+          )}
         </span>
         {hasPro && (
           <button
             type="button"
-            onClick={(e) => { e.preventDefault(); resetPro(); }}
+            onClick={(e) => {
+              e.preventDefault();
+              resetPro();
+            }}
             className="text-[10px] text-primary hover:underline flex items-center gap-1"
-            title="Réinitialiser le Mode Pro"
+            title={translateUi("Réinitialiser le Mode Pro")}
           >
-            <RotateCcw className="w-3 h-3" /> Réinit.
+            <RotateCcw className="w-3 h-3" /> {translateUi("Réinit.")}
           </button>
         )}
       </summary>
@@ -2451,33 +2657,67 @@ function ProModePanel({
         {/* ---------- Mise en page ---------- */}
         <section className="space-y-2">
           <p className="text-[10px] uppercase tracking-wide opacity-60 flex items-center gap-1">
-            <LayoutIcon className="w-3 h-3" /> Mise en page
+            <LayoutIcon className="w-3 h-3" /> {translateUi("Mise en page")}
           </p>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-[10px] opacity-70">Cadre</Label>
-              <Select value={layout.frame ?? "none"} onValueChange={(v) => setLayout("frame", v === "none" ? null : v)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+              <Label className="text-[10px] opacity-70">
+                {translateUi("Cadre")}
+              </Label>
+              <Select
+                value={layout.frame ?? "none"}
+                onValueChange={(v) =>
+                  setLayout("frame", v === "none" ? null : v)
+                }
+              >
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">— Aucun —</SelectItem>
-                  <SelectItem value="rounded">Arrondi</SelectItem>
-                  <SelectItem value="rounded-xl">Très arrondi</SelectItem>
-                  <SelectItem value="sharp">Net (carré)</SelectItem>
-                  <SelectItem value="inset">Inset (carte)</SelectItem>
-                  <SelectItem value="blob">Blob organique</SelectItem>
+                  <SelectItem value="none">
+                    {translateUi("— Aucun —")}
+                  </SelectItem>
+                  <SelectItem value="rounded">
+                    {translateUi("Arrondi")}
+                  </SelectItem>
+                  <SelectItem value="rounded-xl">
+                    {translateUi("Très arrondi")}
+                  </SelectItem>
+                  <SelectItem value="sharp">
+                    {translateUi("Net (carré)")}
+                  </SelectItem>
+                  <SelectItem value="inset">
+                    {translateUi("Inset (carte)")}
+                  </SelectItem>
+                  <SelectItem value="blob">
+                    {translateUi("Blob organique")}
+                  </SelectItem>
                   <SelectItem value="ticket">Ticket</SelectItem>
-                  <SelectItem value="tilt">Inclinée</SelectItem>
+                  <SelectItem value="tilt">
+                    {translateUi("Inclinée")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-[10px] opacity-70">Espacement</Label>
-              <Select value={layout.padding ?? "normal"} onValueChange={(v) => setLayout("padding", v === "normal" ? null : v)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+              <Label className="text-[10px] opacity-70">
+                {translateUi("Espacement")}
+              </Label>
+              <Select
+                value={layout.padding ?? "normal"}
+                onValueChange={(v) =>
+                  setLayout("padding", v === "normal" ? null : v)
+                }
+              >
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="compact">Compact</SelectItem>
                   <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="spacious">Aéré</SelectItem>
+                  <SelectItem value="spacious">
+                    {translateUi("Aéré")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -2485,25 +2725,31 @@ function ProModePanel({
 
           {/* Presets professionnels — un clic */}
           <div className="space-y-1.5">
-            <Label className="text-[10px] opacity-70">Style de cadre (presets pro)</Label>
+            <Label className="text-[10px] opacity-70">
+              {translateUi("Style de cadre (presets pro)")}
+            </Label>
             <div className="grid grid-cols-3 gap-1.5">
-              {([
-                { id: "none", label: "Aucun" },
-                { id: "flat", label: "Plat" },
-                { id: "soft", label: "Doux" },
-                { id: "elevated", label: "Élevé" },
-                { id: "outline", label: "Contour" },
-                { id: "glass", label: "Verre" },
-                { id: "spotlight", label: "Spotlight" },
-                { id: "polaroid", label: "Polaroid" },
-                { id: "neo", label: "Néo-brut" },
-              ] as const).map((p) => {
+              {(
+                [
+                  { id: "none", label: translateUi("Aucun") },
+                  { id: "flat", label: translateUi("Plat") },
+                  { id: "soft", label: translateUi("Doux") },
+                  { id: "elevated", label: translateUi("Élevé") },
+                  { id: "outline", label: translateUi("Contour") },
+                  { id: "glass", label: translateUi("Verre") },
+                  { id: "spotlight", label: translateUi("Spotlight") },
+                  { id: "polaroid", label: "Polaroid" },
+                  { id: "neo", label: translateUi("Néo-brut") },
+                ] as const
+              ).map((p) => {
                 const active = (layout.preset ?? "none") === p.id;
                 return (
                   <button
                     key={p.id}
                     type="button"
-                    onClick={() => setLayout("preset", p.id === "none" ? null : p.id)}
+                    onClick={() =>
+                      setLayout("preset", p.id === "none" ? null : p.id)
+                    }
                     className={`text-[11px] py-1.5 rounded-md border transition ${
                       active
                         ? "border-primary bg-primary/10 text-primary font-medium"
@@ -2520,14 +2766,16 @@ function ProModePanel({
           {/* Arrondi personnalisable — global + par côté + avancé */}
           <CornerRadiusControl
             radii={layout.radii ?? {}}
-            onChange={(r) => setLayout("radii", Object.keys(r).length ? r : null)}
+            onChange={(r) =>
+              setLayout("radii", Object.keys(r).length ? r : null)
+            }
           />
 
           {/* Bordure & ombre fines */}
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
               <Label className="text-[10px] opacity-70 flex justify-between">
-                <span>Bordure</span>
+                <span>{translateUi("Bordure")}</span>
                 <span className="opacity-60">{layout.borderWidth ?? 0}px</span>
               </Label>
               <Slider
@@ -2540,7 +2788,7 @@ function ProModePanel({
             </div>
             <div className="space-y-1">
               <Label className="text-[10px] opacity-70 flex justify-between">
-                <span>Ombre</span>
+                <span>{translateUi("Ombre")}</span>
                 <span className="opacity-60">{layout.shadow ?? 0}/5</span>
               </Label>
               <Slider
@@ -2557,18 +2805,20 @@ function ProModePanel({
         {/* ---------- Fond personnalisé ---------- */}
         <section className="space-y-2">
           <p className="text-[10px] uppercase tracking-wide opacity-60 flex items-center gap-1">
-            <ImageIcon className="w-3 h-3" /> Fond personnalisé
+            <ImageIcon className="w-3 h-3" /> {translateUi("Fond personnalisé")}
           </p>
           <ImageField
             boutiqueId={boutiqueId}
-            label="Image de fond"
+            label={translateUi("Image de fond")}
             value={bg.imageUrl}
             onChange={(url) => setBg("imageUrl", url)}
             aspect="16:9"
             promptHint="Visuel de fond ambiance pour la section"
           />
           <div className="space-y-1.5">
-            <Label className="text-[10px] opacity-70">Vidéo de fond (mp4/webm, autoplay muet)</Label>
+            <Label className="text-[10px] opacity-70">
+              {translateUi("Vidéo de fond (mp4/webm, autoplay muet)")}
+            </Label>
             <input
               ref={videoInput}
               type="file"
@@ -2585,8 +2835,14 @@ function ProModePanel({
                 disabled={upload.isPending}
                 className="h-7 text-xs"
               >
-                {upload.isPending ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Film className="w-3 h-3 mr-1" />}
-                {bg.videoUrl ? "Remplacer la vidéo" : "Téléverser une vidéo"}
+                {upload.isPending ? (
+                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                ) : (
+                  <Film className="w-3 h-3 mr-1" />
+                )}
+                {bg.videoUrl
+                  ? translateUi("Remplacer la vidéo")
+                  : translateUi("Téléverser une vidéo")}
               </Button>
               {bg.videoUrl && (
                 <Button
@@ -2596,7 +2852,7 @@ function ProModePanel({
                   onClick={() => setBg("videoUrl", null)}
                   className="h-7 text-xs text-destructive"
                 >
-                  Retirer
+                  {translateUi("Retirer")}
                 </Button>
               )}
             </div>
@@ -2610,7 +2866,8 @@ function ProModePanel({
           {(bg.imageUrl || bg.videoUrl) && (
             <div>
               <Label className="text-[10px] opacity-70">
-                Voile sombre — {Math.round((bg.overlayOpacity ?? 0.4) * 100)}%
+                {translateUi("Voile sombre —") + " "}
+                {Math.round((bg.overlayOpacity ?? 0.4) * 100)}%
               </Label>
               <Slider
                 min={0}
@@ -2625,44 +2882,79 @@ function ProModePanel({
 
         {/* ---------- Boutons ---------- */}
         <section className="space-y-2">
-          <p className="text-[10px] uppercase tracking-wide opacity-60">Boutons CTA</p>
+          <p className="text-[10px] uppercase tracking-wide opacity-60">
+            {translateUi("Boutons CTA")}
+          </p>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-[10px] opacity-70">Forme</Label>
-              <Select value={btn.shape ?? "default"} onValueChange={(v) => setBtn("shape", v === "default" ? null : v)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Par défaut" /></SelectTrigger>
+              <Label className="text-[10px] opacity-70">
+                {translateUi("Forme")}
+              </Label>
+              <Select
+                value={btn.shape ?? "default"}
+                onValueChange={(v) =>
+                  setBtn("shape", v === "default" ? null : v)
+                }
+              >
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder={translateUi("Par défaut")} />
+                </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="default">Par défaut</SelectItem>
-                  <SelectItem value="pill">Pilule</SelectItem>
-                  <SelectItem value="rounded">Arrondi</SelectItem>
-                  <SelectItem value="square">Carré</SelectItem>
+                  <SelectItem value="default">
+                    {translateUi("Par défaut")}
+                  </SelectItem>
+                  <SelectItem value="pill">{translateUi("Pilule")}</SelectItem>
+                  <SelectItem value="rounded">
+                    {translateUi("Arrondi")}
+                  </SelectItem>
+                  <SelectItem value="square">{translateUi("Carré")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
               <Label className="text-[10px] opacity-70">Style</Label>
-              <Select value={btn.variant ?? "solid"} onValueChange={(v) => setBtn("variant", v === "solid" ? null : v)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+              <Select
+                value={btn.variant ?? "solid"}
+                onValueChange={(v) =>
+                  setBtn("variant", v === "solid" ? null : v)
+                }
+              >
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="solid">Plein</SelectItem>
-                  <SelectItem value="outline">Contour</SelectItem>
-                  <SelectItem value="ghost">Fantôme</SelectItem>
+                  <SelectItem value="solid">{translateUi("Plein")}</SelectItem>
+                  <SelectItem value="outline">
+                    {translateUi("Contour")}
+                  </SelectItem>
+                  <SelectItem value="ghost">
+                    {translateUi("Fantôme")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-[10px] opacity-70">Taille</Label>
-              <Select value={btn.size ?? "md"} onValueChange={(v) => setBtn("size", v === "md" ? null : v)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+              <Label className="text-[10px] opacity-70">
+                {translateUi("Taille")}
+              </Label>
+              <Select
+                value={btn.size ?? "md"}
+                onValueChange={(v) => setBtn("size", v === "md" ? null : v)}
+              >
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="sm">Compact</SelectItem>
                   <SelectItem value="md">Normal</SelectItem>
-                  <SelectItem value="lg">Grand</SelectItem>
+                  <SelectItem value="lg">{translateUi("Grand")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="flex items-end justify-between rounded-md border border-border/40 px-2 py-1.5">
-              <Label className="text-[10px] opacity-70">Flottant (ombre)</Label>
+              <Label className="text-[10px] opacity-70">
+                {translateUi("Flottant (ombre)")}
+              </Label>
               <Switch
                 checked={!!btn.floating}
                 onCheckedChange={(v) => setBtn("floating", v || null)}
@@ -2673,31 +2965,59 @@ function ProModePanel({
 
         {/* ---------- Animation d'entrée ---------- */}
         <section className="space-y-2">
-          <p className="text-[10px] uppercase tracking-wide opacity-60">Animation d'entrée</p>
+          <p className="text-[10px] uppercase tracking-wide opacity-60">
+            {translateUi("Animation d'entrée")}
+          </p>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-[10px] opacity-70">Effet</Label>
-              <Select value={anim.entry ?? "none"} onValueChange={(v) => setAnim("entry", v === "none" ? null : v)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+              <Label className="text-[10px] opacity-70">
+                {translateUi("Effet")}
+              </Label>
+              <Select
+                value={anim.entry ?? "none"}
+                onValueChange={(v) => setAnim("entry", v === "none" ? null : v)}
+              >
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">— Aucun —</SelectItem>
-                  <SelectItem value="fade">Fondu</SelectItem>
-                  <SelectItem value="fade-up">Fondu vers le haut</SelectItem>
-                  <SelectItem value="slide-left">Glisse depuis la gauche</SelectItem>
-                  <SelectItem value="slide-right">Glisse depuis la droite</SelectItem>
+                  <SelectItem value="none">
+                    {translateUi("— Aucun —")}
+                  </SelectItem>
+                  <SelectItem value="fade">{translateUi("Fondu")}</SelectItem>
+                  <SelectItem value="fade-up">
+                    {translateUi("Fondu vers le haut")}
+                  </SelectItem>
+                  <SelectItem value="slide-left">
+                    {translateUi("Glisse depuis la gauche")}
+                  </SelectItem>
+                  <SelectItem value="slide-right">
+                    {translateUi("Glisse depuis la droite")}
+                  </SelectItem>
                   <SelectItem value="zoom">Zoom</SelectItem>
-                  <SelectItem value="blur">Flou cinéma</SelectItem>
+                  <SelectItem value="blur">
+                    {translateUi("Flou cinéma")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-[10px] opacity-70">Durée</Label>
-              <Select value={anim.duration ?? "normal"} onValueChange={(v) => setAnim("duration", v === "normal" ? null : v)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+              <Label className="text-[10px] opacity-70">
+                {translateUi("Durée")}
+              </Label>
+              <Select
+                value={anim.duration ?? "normal"}
+                onValueChange={(v) =>
+                  setAnim("duration", v === "normal" ? null : v)
+                }
+              >
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="fast">Rapide</SelectItem>
+                  <SelectItem value="fast">{translateUi("Rapide")}</SelectItem>
                   <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="slow">Lent</SelectItem>
+                  <SelectItem value="slow">{translateUi("Lent")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -2705,7 +3025,8 @@ function ProModePanel({
           {anim.entry && anim.entry !== "none" && (
             <div>
               <Label className="text-[10px] opacity-70">
-                Délai — {anim.delay ?? 0}ms
+                {translateUi("Délai —") + " "}
+                {anim.delay ?? 0}ms
               </Label>
               <Slider
                 min={0}

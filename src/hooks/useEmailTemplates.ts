@@ -1,3 +1,4 @@
+import { translateUi } from "@/lib/uiTranslation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,10 +13,17 @@ export interface EmailTemplate {
   updated_at: string;
 }
 
-const DEFAULT_TEMPLATES: { type: string; label: string; subject: string; body_html: string }[] = [
+const DEFAULT_TEMPLATES: {
+  type: string;
+  label: string;
+  subject: string;
+  body_html: string;
+}[] = [
   {
     type: "welcome",
-    label: "Bienvenue",
+    get label() {
+      return translateUi("Bienvenue");
+    },
     subject: "Bienvenue chez {{boutique_name}} ! 🎉",
     body_html: `<h1>Bienvenue chez {{boutique_name}} !</h1>
 <p>Merci de votre inscription. Nous sommes ravis de vous compter parmi nos clients.</p>
@@ -24,7 +32,9 @@ const DEFAULT_TEMPLATES: { type: string; label: string; subject: string; body_ht
   },
   {
     type: "order_confirmation",
-    label: "Confirmation de commande",
+    get label() {
+      return translateUi("Confirmation de commande");
+    },
     subject: "Commande {{order_number}} confirmée ✅",
     body_html: `<h1>Merci pour votre commande !</h1>
 <p>Votre commande <strong>{{order_number}}</strong> a bien été enregistrée.</p>
@@ -38,7 +48,9 @@ const DEFAULT_TEMPLATES: { type: string; label: string; subject: string; body_ht
   },
   {
     type: "shipping",
-    label: "Expédition",
+    get label() {
+      return translateUi("Expédition");
+    },
     subject: "Votre commande {{order_number}} est en route ! 🚚",
     body_html: `<h1>Votre colis est en route !</h1>
 <p>Bonne nouvelle ! Votre commande <strong>{{order_number}}</strong> vient d'être expédiée.</p>
@@ -97,7 +109,7 @@ export function useUpsertEmailTemplate() {
             body_html: template.body_html,
             is_active: template.is_active ?? true,
           },
-          { onConflict: "boutique_id,type" }
+          { onConflict: "boutique_id,type" },
         )
         .select()
         .single();
@@ -105,7 +117,9 @@ export function useUpsertEmailTemplate() {
       return data;
     },
     onSuccess: (_, vars) => {
-      queryClient.invalidateQueries({ queryKey: ["email-templates", vars.boutique_id] });
+      queryClient.invalidateQueries({
+        queryKey: ["email-templates", vars.boutique_id],
+      });
     },
   });
 }

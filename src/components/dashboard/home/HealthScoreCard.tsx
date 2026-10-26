@@ -1,10 +1,7 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-import {
-  CheckCircle2,
-  AlertTriangle,
-  AlertCircle,
-  Heart,
-} from "lucide-react";
+import { CheckCircle2, AlertTriangle, AlertCircle, Heart } from "lucide-react";
 
 import { SectionCard } from "@/components/dashboard/shared";
 import { useBoutiqueHealth } from "@/hooks/useBoutiqueHealth";
@@ -30,6 +27,7 @@ const STATUS_TONE = {
 } as const;
 
 export function HealthScoreCard() {
+  useLanguage();
   const { score, level, signals, loading } = useBoutiqueHealth();
 
   const safeScore = Math.min(100, Math.max(0, Number(score) || 0));
@@ -47,8 +45,10 @@ export function HealthScoreCard() {
   return (
     <SectionCard
       icon={<Heart className="h-4 w-4" />}
-      title="Santé de la boutique"
-      description="Les signaux essentiels pour garder votre activité sur la bonne voie."
+      title={translateUi("Santé de la boutique")}
+      description={translateUi(
+        "Les signaux essentiels pour garder votre activité sur la bonne voie.",
+      )}
     >
       <div className="grid grid-cols-1 items-center gap-6 pt-3 md:grid-cols-[160px_minmax(0,1fr)]">
         <div className="flex flex-col items-center justify-center rounded-2xl border border-border/70 bg-muted/20 px-4 py-5">
@@ -59,8 +59,10 @@ export function HealthScoreCard() {
               role="img"
               aria-label={
                 loading
-                  ? "Chargement du score de santé"
-                  : `Score de santé : ${safeScore} sur 100`
+                  ? translateUi("Chargement du score de santé")
+                  : translateUi("Score de santé : {v0} sur 100", {
+                      v0: safeScore,
+                    })
               }
             >
               <circle
@@ -90,7 +92,7 @@ export function HealthScoreCard() {
                 {loading ? "—" : safeScore}
               </span>
               <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                sur 100
+                {translateUi("sur 100")}
               </span>
             </div>
           </div>
@@ -108,17 +110,21 @@ export function HealthScoreCard() {
                       : "bg-primary",
               )}
             />
-            {loading ? "Analyse en cours" : LEVEL_LABEL[level] ?? "État à confirmer"}
+            {loading
+              ? translateUi("Analyse en cours")
+              : (LEVEL_LABEL[level] ?? translateUi("État à confirmer"))}
           </span>
         </div>
 
         <div className="min-w-0">
           <div className="mb-3 flex items-center justify-between gap-3">
             <h3 className="text-sm font-semibold text-foreground">
-              Points de vigilance
+              {translateUi("Points de vigilance")}
             </h3>
             <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-              {loading ? "Actualisation" : `${signals.length} signal${signals.length > 1 ? "s" : ""}`}
+              {loading
+                ? translateUi("Actualisation")
+                : `${signals.length} signal${signals.length > 1 ? "s" : ""}`}
             </span>
           </div>
 
@@ -135,10 +141,14 @@ export function HealthScoreCard() {
             <div className="rounded-xl border border-success/20 bg-success/5 p-4">
               <div className="flex items-center gap-2 text-success">
                 <CheckCircle2 className="h-4 w-4" />
-                <p className="text-sm font-semibold">Aucun signal à afficher</p>
+                <p className="text-sm font-semibold">
+                  {translateUi("Aucun signal à afficher")}
+                </p>
               </div>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Les prochains indicateurs apparaîtront ici lorsque des données seront disponibles.
+                {translateUi(
+                  "Les prochains indicateurs apparaîtront ici lorsque des données seront disponibles.",
+                )}
               </p>
             </div>
           ) : (

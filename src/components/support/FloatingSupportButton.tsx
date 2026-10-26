@@ -1,10 +1,24 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
-import { LifeBuoy, Send, Sparkles, Ticket, Loader2, Paperclip, X } from "lucide-react";
+import {
+  LifeBuoy,
+  Send,
+  Sparkles,
+  Ticket,
+  Loader2,
+  Paperclip,
+  X,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -33,6 +47,7 @@ export function FloatingSupportButton({
   contactName,
   className,
 }: FloatingSupportButtonProps) {
+  useLanguage();
   const { user, profile } = useAuth();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -49,7 +64,10 @@ export function FloatingSupportButton({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: "smooth",
+    });
   }, [messages, loading]);
 
   const send = async () => {
@@ -87,8 +105,10 @@ export function FloatingSupportButton({
           }
           setPendingFiles([]);
         }
-        toast.success("Ticket créé", {
-          description: `« ${data.ticket.subject} » — réponse sous 24 h ouvrées.`,
+        toast.success(translateUi("Ticket créé"), {
+          description: translateUi("« {v0} » — réponse sous 24 h ouvrées.", {
+            v0: data.ticket.subject,
+          }),
           icon: <Ticket className="w-4 h-4" />,
         });
       }
@@ -96,9 +116,12 @@ export function FloatingSupportButton({
       const msg = e?.message ?? "Erreur réseau";
       setMessages((m) => [
         ...m,
-        { role: "assistant", content: `Désolé, une erreur s'est produite : ${msg}` },
+        {
+          role: "assistant",
+          content: `Désolé, une erreur s'est produite : ${msg}`,
+        },
       ]);
-      toast.error("Assistant indisponible");
+      toast.error(translateUi("Assistant indisponible"));
     } finally {
       setLoading(false);
     }
@@ -108,7 +131,7 @@ export function FloatingSupportButton({
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button
-          aria-label="Ouvrir l'assistant support"
+          aria-label={translateUi("Ouvrir l'assistant support")}
           className={cn(
             "fixed bottom-5 right-5 z-50 h-14 w-14 rounded-full shadow-lg",
             "bg-primary hover:bg-primary/90 text-primary-foreground",
@@ -120,14 +143,19 @@ export function FloatingSupportButton({
           <LifeBuoy className="w-6 h-6" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-md flex flex-col p-0">
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-md flex flex-col p-0"
+      >
         <SheetHeader className="border-b p-4">
           <SheetTitle className="flex items-center gap-2 text-base">
             <Sparkles className="w-4 h-4 text-secondary" />
-            Assistant Support
+            {translateUi("Assistant Support")}
           </SheetTitle>
           <p className="text-xs text-muted-foreground">
-            Réponses instantanées · ticket créé automatiquement si besoin
+            {translateUi(
+              "Réponses instantanées · ticket créé automatiquement si besoin",
+            )}
           </p>
         </SheetHeader>
 
@@ -147,7 +175,8 @@ export function FloatingSupportButton({
           ))}
           {loading && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Loader2 className="w-3 h-3 animate-spin" /> L'assistant rédige…
+              <Loader2 className="w-3 h-3 animate-spin" />{" "}
+              {translateUi("L'assistant rédige…")}
             </div>
           )}
         </div>
@@ -164,7 +193,7 @@ export function FloatingSupportButton({
               const max = 5 * 1024 * 1024; // 5 MB
               const ok = files.filter((f) => f.size <= max);
               if (ok.length < files.length) {
-                toast.error("Fichier trop volumineux (>5 Mo)");
+                toast.error(translateUi("Fichier trop volumineux (>5 Mo)"));
               }
               setPendingFiles((prev) => [...prev, ...ok].slice(0, 5));
               if (fileInputRef.current) fileInputRef.current.value = "";
@@ -176,14 +205,14 @@ export function FloatingSupportButton({
             size="icon"
             onClick={() => fileInputRef.current?.click()}
             disabled={loading}
-            aria-label="Joindre un fichier"
+            aria-label={translateUi("Joindre un fichier")}
           >
             <Paperclip className="w-4 h-4" />
           </Button>
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Votre question…"
+            placeholder={translateUi("Votre question…")}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -192,7 +221,11 @@ export function FloatingSupportButton({
             }}
             disabled={loading}
           />
-          <Button onClick={send} disabled={loading || !input.trim()} size="icon">
+          <Button
+            onClick={send}
+            disabled={loading || !input.trim()}
+            size="icon"
+          >
             <Send className="w-4 h-4" />
           </Button>
         </div>
@@ -208,17 +241,21 @@ export function FloatingSupportButton({
                 <button
                   type="button"
                   onClick={() =>
-                    setPendingFiles((prev) => prev.filter((_, idx) => idx !== i))
+                    setPendingFiles((prev) =>
+                      prev.filter((_, idx) => idx !== i),
+                    )
                   }
                   className="ml-1 hover:text-destructive"
-                  aria-label="Retirer"
+                  aria-label={translateUi("Retirer")}
                 >
                   <X className="w-3 h-3" />
                 </button>
               </span>
             ))}
             <span className="text-[10px] text-muted-foreground self-center">
-              Les fichiers seront envoyés dès la création du ticket.
+              {translateUi(
+                "Les fichiers seront envoyés dès la création du ticket.",
+              )}
             </span>
           </div>
         )}

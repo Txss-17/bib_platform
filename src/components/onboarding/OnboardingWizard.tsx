@@ -1,10 +1,27 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowRight, ArrowLeft, Check, Globe2, Building2, User, Sparkles, Star } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowLeft,
+  Check,
+  Globe2,
+  Building2,
+  User,
+  Sparkles,
+  Star,
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -22,28 +39,69 @@ import { useSearchParams } from "react-router-dom";
  */
 
 const MARKETS = [
-  { value: "EU", label: "Union Européenne", desc: "FR, DE, IT, ES… — TVA UE, RGPD" },
-  { value: "UAE", label: "Émirats Arabes Unis", desc: "Dubaï, Abu Dhabi — AED, EN/AR" },
-  { value: "AF", label: "Afrique", desc: "Multi-pays, multi-devises locales" },
-  { value: "WW", label: "Mondial", desc: "Tous marchés — config avancée" },
+  {
+    value: "EU",
+    get label() {
+      return translateUi("Union Européenne");
+    },
+    get desc() {
+      return translateUi("FR, DE, IT, ES… — TVA UE, RGPD");
+    },
+  },
+  {
+    value: "UAE",
+    get label() {
+      return translateUi("Émirats Arabes Unis");
+    },
+    get desc() {
+      return translateUi("Dubaï, Abu Dhabi — AED, EN/AR");
+    },
+  },
+  {
+    value: "AF",
+    get label() {
+      return translateUi("Afrique");
+    },
+    get desc() {
+      return translateUi("Multi-pays, multi-devises locales");
+    },
+  },
+  {
+    value: "WW",
+    get label() {
+      return translateUi("Mondial");
+    },
+    get desc() {
+      return translateUi("Tous marchés — config avancée");
+    },
+  },
 ];
 
 const TYPES = [
   {
     value: "individual",
-    label: "Particulier",
-    desc: "Vendeur indépendant, micro-entreprise.",
+    get label() {
+      return translateUi("Particulier");
+    },
+    get desc() {
+      return translateUi("Vendeur indépendant, micro-entreprise.");
+    },
     icon: User,
   },
   {
     value: "business",
-    label: "Business / Société",
-    desc: "SIRET requis, KYC complet à l'étape suivante.",
+    get label() {
+      return translateUi("Business / Société");
+    },
+    get desc() {
+      return translateUi("SIRET requis, KYC complet à l'étape suivante.");
+    },
     icon: Building2,
   },
 ];
 
 export function OnboardingWizard() {
+  useLanguage();
   const { user, profile, refreshProfile } = useAuth();
   const { needsWizard } = useOnboardingState();
   const { data: plans } = usePlans();
@@ -55,7 +113,9 @@ export function OnboardingWizard() {
   const [businessType, setBusinessType] = useState<string>("");
   const [businessName, setBusinessName] = useState("");
   const [planTier, setPlanTier] = useState<PlanTier>("starter");
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(
+    "monthly",
+  );
   const [saving, setSaving] = useState(false);
 
   // Open automatically when conditions are met.
@@ -68,10 +128,16 @@ export function OnboardingWizard() {
       setBusinessName(profile?.business_name || "");
       const queryPlan = searchParams.get("plan") as PlanTier | null;
       const queryCycle = searchParams.get("cycle");
-      setPlanTier((queryPlan && ["starter", "growth", "pro"].includes(queryPlan)
-        ? queryPlan
-        : (profile?.plan_tier as PlanTier) || "starter"));
-      setBillingCycle(queryCycle === "annual" ? "annual" : ((profile?.plan_billing_cycle as "monthly" | "annual") || "monthly"));
+      setPlanTier(
+        queryPlan && ["starter", "growth", "pro"].includes(queryPlan)
+          ? queryPlan
+          : (profile?.plan_tier as PlanTier) || "starter",
+      );
+      setBillingCycle(
+        queryCycle === "annual"
+          ? "annual"
+          : (profile?.plan_billing_cycle as "monthly" | "annual") || "monthly",
+      );
     }
   }, [needsWizard, profile, searchParams]);
 
@@ -79,7 +145,9 @@ export function OnboardingWizard() {
   const canNext =
     (step === 0 && fullName.trim().length >= 2) ||
     (step === 1 && !!market) ||
-    (step === 2 && !!businessType && (businessType !== "business" || businessName.trim().length >= 2)) ||
+    (step === 2 &&
+      !!businessType &&
+      (businessType !== "business" || businessName.trim().length >= 2)) ||
     (step === 3 && !!planTier);
 
   const handleSave = async () => {
@@ -98,12 +166,16 @@ export function OnboardingWizard() {
       .eq("user_id", user.id);
 
     if (error) {
-      toast.error("Impossible de sauvegarder votre profil", { description: error.message });
+      toast.error(translateUi("Impossible de sauvegarder votre profil"), {
+        description: error.message,
+      });
       setSaving(false);
       return;
     }
     await refreshProfile();
-    toast.success("Profil complété 🎉", { description: "Continuons avec votre première boutique." });
+    toast.success(translateUi("Profil complété 🎉"), {
+      description: translateUi("Continuons avec votre première boutique."),
+    });
     setOpen(false);
     setSaving(false);
   };
@@ -114,25 +186,36 @@ export function OnboardingWizard() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-xl p-0 gap-0 overflow-hidden">
         {/* Marine band */}
-        <div className="bg-bib-marine text-primary-foreground px-6 py-5">
+        <div className="bg-brand-marine text-primary-foreground px-6 py-5">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles size={14} className="text-bib-gold" />
             <span className="text-[11px] uppercase tracking-[0.18em] font-semibold text-bib-gold">
-              First 5 minutes · {step + 1}/{totalSteps}
+              {translateUi("First 5 minutes ·") + " "}
+              {step + 1}/{totalSteps}
             </span>
           </div>
           <DialogHeader className="space-y-1 text-left">
             <DialogTitle className="font-display text-xl sm:text-2xl text-primary-foreground">
-              {step === 0 && "Faisons connaissance"}
-              {step === 1 && "Choisissez votre marché"}
-              {step === 2 && "Particulier ou business ?"}
-              {step === 3 && "Choisissez votre plan"}
+              {step === 0 && translateUi("Faisons connaissance")}
+              {step === 1 && translateUi("Choisissez votre marché")}
+              {step === 2 && translateUi("Particulier ou business ?")}
+              {step === 3 && translateUi("Choisissez votre plan")}
             </DialogTitle>
             <DialogDescription className="text-primary-foreground/70 text-sm">
-              {step === 0 && "Comment souhaitez-vous être appelé sur Brand-In-A-Box ?"}
-              {step === 1 && "Le marché principal détermine devises, langues et règles fiscales par défaut."}
-              {step === 2 && "Cela conditionne les documents de conformité que nous demanderons."}
-              {step === 3 && "Modifiable à tout moment depuis vos paramètres."}
+              {step === 0 &&
+                translateUi(
+                  "Comment souhaitez-vous être appelé sur Brand-In-A-Box ?",
+                )}
+              {step === 1 &&
+                translateUi(
+                  "Le marché principal détermine devises, langues et règles fiscales par défaut.",
+                )}
+              {step === 2 &&
+                translateUi(
+                  "Cela conditionne les documents de conformité que nous demanderons.",
+                )}
+              {step === 3 &&
+                translateUi("Modifiable à tout moment depuis vos paramètres.")}
             </DialogDescription>
           </DialogHeader>
 
@@ -153,22 +236,28 @@ export function OnboardingWizard() {
         <div className="px-6 py-6">
           {step === 0 && (
             <div className="space-y-3">
-              <Label htmlFor="ob-name">Nom complet</Label>
+              <Label htmlFor="ob-name">{translateUi("Nom complet")}</Label>
               <Input
                 id="ob-name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="Jean Dupont"
+                placeholder={translateUi("Jean Dupont")}
                 autoFocus
               />
               <p className="text-xs text-muted-foreground">
-                Affiché dans votre profil et utilisé pour la signature des emails clients.
+                {translateUi(
+                  "Affiché dans votre profil et utilisé pour la signature des emails clients.",
+                )}
               </p>
             </div>
           )}
 
           {step === 1 && (
-            <RadioGroup value={market} onValueChange={setMarket} className="space-y-2">
+            <RadioGroup
+              value={market}
+              onValueChange={setMarket}
+              className="space-y-2"
+            >
               {MARKETS.map((m) => (
                 <label
                   key={m.value}
@@ -179,12 +268,21 @@ export function OnboardingWizard() {
                       : "border-border hover:border-bib-marine/30 hover:bg-muted/50"
                   }`}
                 >
-                  <RadioGroupItem value={m.value} id={`market-${m.value}`} className="mt-0.5" />
+                  <RadioGroupItem
+                    value={m.value}
+                    id={`market-${m.value}`}
+                    className="mt-0.5"
+                  />
                   <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <Globe2 size={18} className="text-bib-marine mt-0.5 shrink-0" />
+                    <Globe2
+                      size={18}
+                      className="text-foreground mt-0.5 shrink-0"
+                    />
                     <div className="min-w-0">
                       <p className="font-medium text-foreground">{m.label}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{m.desc}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {m.desc}
+                      </p>
                     </div>
                   </div>
                 </label>
@@ -194,7 +292,11 @@ export function OnboardingWizard() {
 
           {step === 2 && (
             <div className="space-y-3">
-              <RadioGroup value={businessType} onValueChange={setBusinessType} className="space-y-2">
+              <RadioGroup
+                value={businessType}
+                onValueChange={setBusinessType}
+                className="space-y-2"
+              >
                 {TYPES.map((t) => (
                   <label
                     key={t.value}
@@ -205,12 +307,21 @@ export function OnboardingWizard() {
                         : "border-border hover:border-bib-marine/30 hover:bg-muted/50"
                     }`}
                   >
-                    <RadioGroupItem value={t.value} id={`type-${t.value}`} className="mt-0.5" />
+                    <RadioGroupItem
+                      value={t.value}
+                      id={`type-${t.value}`}
+                      className="mt-0.5"
+                    />
                     <div className="flex items-start gap-3 flex-1 min-w-0">
-                      <t.icon size={18} className="text-bib-marine mt-0.5 shrink-0" />
+                      <t.icon
+                        size={18}
+                        className="text-foreground mt-0.5 shrink-0"
+                      />
                       <div className="min-w-0">
                         <p className="font-medium text-foreground">{t.label}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{t.desc}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {t.desc}
+                        </p>
                       </div>
                     </div>
                   </label>
@@ -219,7 +330,9 @@ export function OnboardingWizard() {
 
               {businessType === "business" && (
                 <div className="space-y-2 pt-2 animate-fade-in">
-                  <Label htmlFor="ob-business">Raison sociale</Label>
+                  <Label htmlFor="ob-business">
+                    {translateUi("Raison sociale")}
+                  </Label>
                   <Input
                     id="ob-business"
                     value={businessName}
@@ -234,31 +347,44 @@ export function OnboardingWizard() {
           {step === 3 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2 mb-2">
-                <Label className="text-xs text-muted-foreground">Facturation</Label>
+                <Label className="text-xs text-muted-foreground">
+                  {translateUi("Facturation")}
+                </Label>
                 <div className="inline-flex rounded-full border border-border bg-muted/40 p-0.5 text-xs">
                   <button
                     type="button"
                     onClick={() => setBillingCycle("monthly")}
                     className={`px-3 py-1 rounded-full transition-colors ${
-                      billingCycle === "monthly" ? "bg-bib-marine text-primary-foreground" : "text-muted-foreground"
+                      billingCycle === "monthly"
+                        ? "bg-brand-marine text-primary-foreground"
+                        : "text-muted-foreground"
                     }`}
                   >
-                    Mensuel
+                    {translateUi("Mensuel")}
                   </button>
                   <button
                     type="button"
                     onClick={() => setBillingCycle("annual")}
                     className={`px-3 py-1 rounded-full transition-colors ${
-                      billingCycle === "annual" ? "bg-bib-marine text-primary-foreground" : "text-muted-foreground"
+                      billingCycle === "annual"
+                        ? "bg-brand-marine text-primary-foreground"
+                        : "text-muted-foreground"
                     }`}
                   >
-                    Annuel −20%
+                    {translateUi("Annuel −20%")}
                   </button>
                 </div>
               </div>
-              <RadioGroup value={planTier} onValueChange={(v) => setPlanTier(v as PlanTier)} className="space-y-2">
+              <RadioGroup
+                value={planTier}
+                onValueChange={(v) => setPlanTier(v as PlanTier)}
+                className="space-y-2"
+              >
                 {(plans || []).map((p) => {
-                  const price = billingCycle === "annual" ? p.annual_monthly_price_eur : p.monthly_price_eur;
+                  const price =
+                    billingCycle === "annual"
+                      ? p.annual_monthly_price_eur
+                      : p.monthly_price_eur;
                   const recommended = p.tier === "growth";
                   return (
                     <label
@@ -270,21 +396,38 @@ export function OnboardingWizard() {
                           : "border-border hover:border-bib-marine/30 hover:bg-muted/50"
                       }`}
                     >
-                      <RadioGroupItem value={p.tier} id={`plan-${p.tier}`} className="mt-0.5" />
+                      <RadioGroupItem
+                        value={p.tier}
+                        id={`plan-${p.tier}`}
+                        className="mt-0.5"
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                           <p className="font-medium text-foreground flex items-center gap-1.5">
                             {p.name}
-                            {recommended && <Star size={12} className="text-bib-gold fill-bib-gold" />}
+                            {recommended && (
+                              <Star
+                                size={12}
+                                className="text-bib-gold fill-bib-gold"
+                              />
+                            )}
                           </p>
-                          <p className="text-sm font-semibold text-bib-marine">
-                            {price}€<span className="text-xs text-muted-foreground font-normal">/mois</span>
+                          <p className="text-sm font-semibold text-foreground">
+                            {price}€
+                            <span className="text-xs text-muted-foreground font-normal">
+                              /mois
+                            </span>
                           </p>
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5">
                           Commission {p.commission_percent}% ·{" "}
-                          {p.max_products ? `${p.max_products} produits` : "Catalogue illimité"} ·{" "}
-                          {p.max_boutiques} boutique{p.max_boutiques > 1 ? "s" : ""}
+                          {p.max_products
+                            ? translateUi("{v0} produits", {
+                                v0: p.max_products,
+                              })
+                            : translateUi("Catalogue illimité")}{" "}
+                          · {p.max_boutiques} boutique
+                          {p.max_boutiques > 1 ? "s" : ""}
                         </p>
                       </div>
                     </label>
@@ -292,7 +435,9 @@ export function OnboardingWizard() {
                 })}
               </RadioGroup>
               <p className="text-[11px] text-muted-foreground">
-                Vous pourrez changer de plan à tout moment. Aucune carte requise pour la phase bêta.
+                {translateUi(
+                  "Vous pourrez changer de plan à tout moment. Aucune carte requise pour la phase bêta.",
+                )}
               </p>
             </div>
           )}
@@ -300,24 +445,46 @@ export function OnboardingWizard() {
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-border bg-muted/30 flex items-center justify-between gap-3">
-          <Button variant="ghost" size="sm" onClick={handleSkip} disabled={saving}>
-            Plus tard
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSkip}
+            disabled={saving}
+          >
+            {translateUi("Plus tard")}
           </Button>
           <div className="flex items-center gap-2">
             {step > 0 && (
-              <Button variant="outline" size="sm" onClick={() => setStep(step - 1)} disabled={saving}>
-                <ArrowLeft size={14} /> Retour
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setStep(step - 1)}
+                disabled={saving}
+              >
+                <ArrowLeft size={14} /> {translateUi("Retour")}
               </Button>
             )}
             {step < totalSteps - 1 ? (
-              <Button size="sm" onClick={() => setStep(step + 1)} disabled={!canNext}>
-                Continuer <ArrowRight size={14} />
+              <Button
+                size="sm"
+                onClick={() => setStep(step + 1)}
+                disabled={!canNext}
+              >
+                {translateUi("Continuer") + " "}
+                <ArrowRight size={14} />
               </Button>
             ) : (
-              <Button size="sm" onClick={handleSave} disabled={!canNext || saving}>
-                {saving ? "Enregistrement…" : (
+              <Button
+                size="sm"
+                onClick={handleSave}
+                disabled={!canNext || saving}
+              >
+                {saving ? (
+                  translateUi("Enregistrement…")
+                ) : (
                   <>
-                    Terminer <Check size={14} />
+                    {translateUi("Terminer") + " "}
+                    <Check size={14} />
                   </>
                 )}
               </Button>

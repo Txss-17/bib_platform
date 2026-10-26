@@ -1,26 +1,56 @@
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
-  Euro, Clock, CheckCircle, TrendingUp, Wallet, CalendarClock, Sparkles, ExternalLink, Loader2, CreditCard,
+  Euro,
+  Clock,
+  CheckCircle,
+  TrendingUp,
+  Wallet,
+  CalendarClock,
+  Sparkles,
+  ExternalLink,
+  Loader2,
+  CreditCard,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBoutiques } from "@/hooks/useBoutiques";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PageHeader, SectionCard, KpiTile, KpiTileSkeleton, EmptyState, RealtimeStatusPill, KpiGrid } from "@/components/dashboard/shared";
+import {
+  PageHeader,
+  SectionCard,
+  KpiTile,
+  KpiTileSkeleton,
+  EmptyState,
+  RealtimeStatusPill,
+  KpiGrid,
+} from "@/components/dashboard/shared";
 import { usePaymentsRealtime } from "@/hooks/usePaymentsRealtime";
 import { PaymentsActivityFeed } from "@/components/dashboard/payments/PaymentsActivityFeed";
-import { useOpenBillingPortal, useUserSubscriptions } from "@/hooks/useSubscriptions";
+import {
+  useOpenBillingPortal,
+  useUserSubscriptions,
+} from "@/hooks/useSubscriptions";
 import { useCurrentPlan } from "@/hooks/usePlans";
 import { Link } from "react-router-dom";
 
 const fmt = (n: number) =>
-  n.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  n.toLocaleString(getUiLocale(), {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
 
 function nextPayoutDate(): Date {
   // Versements tous les 15 jours: 1er et 15 du mois.
@@ -32,11 +62,18 @@ function nextPayoutDate(): Date {
 }
 
 export default function Paiements() {
+  useLanguage();
   const { user } = useAuth();
   const { data: boutiques = [] } = useBoutiques();
   const boutiqueIds = boutiques.map((b) => b.id);
-  const { status: rtStatus, feed, clearFeed } = usePaymentsRealtime(boutiqueIds);
-  const boutiqueLookup = Object.fromEntries(boutiques.map((b) => [b.id, b.name]));
+  const {
+    status: rtStatus,
+    feed,
+    clearFeed,
+  } = usePaymentsRealtime(boutiqueIds);
+  const boutiqueLookup = Object.fromEntries(
+    boutiques.map((b) => [b.id, b.name]),
+  );
   const portal = useOpenBillingPortal();
   const { data: subs = [] } = useUserSubscriptions();
   const { plan, tier, billingCycle } = useCurrentPlan();
@@ -56,10 +93,14 @@ export default function Paiements() {
     enabled: !!user,
   });
 
-  const { data: orderRevenue = { total: 0, byBoutique: [] as any[] }, isLoading: revenueLoading } = useQuery({
+  const {
+    data: orderRevenue = { total: 0, byBoutique: [] as any[] },
+    isLoading: revenueLoading,
+  } = useQuery({
     queryKey: ["order-revenue", user?.id],
     queryFn: async () => {
-      if (!user || boutiqueIds.length === 0) return { total: 0, byBoutique: [] };
+      if (!user || boutiqueIds.length === 0)
+        return { total: 0, byBoutique: [] };
       const { data, error } = await supabase
         .from("orders")
         .select("amount, boutique_id")
@@ -86,14 +127,19 @@ export default function Paiements() {
 
   const next = nextPayoutDate();
   const topBoutique = orderRevenue.byBoutique[0];
-  const maxRev = Math.max(1, ...orderRevenue.byBoutique.map((b: any) => b.revenue));
+  const maxRev = Math.max(
+    1,
+    ...orderRevenue.byBoutique.map((b: any) => b.revenue),
+  );
 
   return (
     <DashboardLayout>
       <PageHeader
         eyebrow="Finance"
-        title="Cockpit financier"
-        subtitle="Revenus en temps réel, prochains virements et historique de versements."
+        title={translateUi("Cockpit financier")}
+        subtitle={translateUi(
+          "Revenus en temps réel, prochains virements et historique de versements.",
+        )}
         actions={<RealtimeStatusPill status={rtStatus} />}
       />
 
@@ -108,17 +154,26 @@ export default function Paiements() {
               <p className="text-sm font-semibold text-foreground capitalize">
                 Plan {tier}
                 <Badge variant="outline" className="ml-2 text-[10px]">
-                  {billingCycle === "annual" ? "Annuel" : "Mensuel"}
+                  {billingCycle === "annual"
+                    ? translateUi("Annuel")
+                    : translateUi("Mensuel")}
                 </Badge>
               </p>
               <p className="text-xs text-muted-foreground">
-                {plan ? `Commission ${plan.commission_percent}% · jusqu'à ${plan.max_boutiques} boutique(s)` : "Référentiel en cours de chargement"}
+                {plan
+                  ? translateUi("Commission {v0}% · jusqu'à {v1} boutique(s)", {
+                      v0: plan.commission_percent,
+                      v1: plan.max_boutiques,
+                    })
+                  : translateUi("Référentiel en cours de chargement")}
               </p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" asChild>
-              <Link to="/dashboard/parametres?tab=abonnement">Changer de plan</Link>
+              <Link to="/dashboard/parametres?tab=abonnement">
+                {translateUi("Changer de plan")}
+              </Link>
             </Button>
             <Button
               size="sm"
@@ -130,7 +185,7 @@ export default function Paiements() {
               ) : (
                 <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
               )}
-              Portail de facturation
+              {translateUi("Portail de facturation")}
             </Button>
           </div>
         </div>
@@ -149,29 +204,36 @@ export default function Paiements() {
           <>
             <KpiTile
               tone="primary"
-              label="Revenus cumulés"
+              label={translateUi("Revenus cumulés")}
               value={`${fmt(orderRevenue.total)} €`}
               icon={<Euro className="w-5 h-5" />}
-              hint="Toutes boutiques confondues"
+              hint={translateUi("Toutes boutiques confondues")}
             />
             <KpiTile
-              label="En attente de versement"
+              label={translateUi("En attente de versement")}
               value={`${fmt(totalPending)} €`}
               icon={<Clock className="w-5 h-5" />}
-              hint={pending.length > 0 ? `${pending.length} versement(s)` : "Aucun en attente"}
+              hint={
+                pending.length > 0
+                  ? translateUi("{v0} versement(s)", { v0: pending.length })
+                  : translateUi("Aucun en attente")
+              }
             />
             <KpiTile
               tone="gold"
-              label="Prochain virement"
-              value={next.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" })}
+              label={translateUi("Prochain virement")}
+              value={next.toLocaleDateString(getUiLocale(), {
+                day: "2-digit",
+                month: "short",
+              })}
               icon={<CalendarClock className="w-5 h-5" />}
-              hint="Cycle de 15 jours"
+              hint={translateUi("Cycle de 15 jours")}
             />
             <KpiTile
-              label="Déjà versé"
+              label={translateUi("Déjà versé")}
               value={`${fmt(totalPaid)} €`}
               icon={<TrendingUp className="w-5 h-5" />}
-              hint={`${completed.length} versement(s)`}
+              hint={translateUi("{v0} versement(s)", { v0: completed.length })}
             />
           </>
         )}
@@ -182,8 +244,12 @@ export default function Paiements() {
         <div className="flex items-start gap-3">
           <Sparkles className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
           <p className="text-sm text-foreground">
-            <span className="font-medium">Frais logistiques inclus dans vos prix.</span>{" "}
-            Aucun ajustement à prévoir — vos versements sont déclenchés tous les 15 jours et apparaissent ci-dessous dès leur émission.
+            <span className="font-medium">
+              {translateUi("Frais logistiques inclus dans vos prix.")}
+            </span>{" "}
+            {translateUi(
+              "Aucun ajustement à prévoir — vos versements sont déclenchés tous les 15 jours et apparaissent ci-dessous dès leur émission.",
+            )}
           </p>
         </div>
       </SectionCard>
@@ -192,20 +258,24 @@ export default function Paiements() {
         {/* Payout History */}
         <SectionCard
           className="lg:col-span-2"
-          title="Historique des versements"
-          description="Vos transferts émis et à venir"
+          title={translateUi("Historique des versements")}
+          description={translateUi("Vos transferts émis et à venir")}
           icon={<Wallet className="w-4 h-4" />}
           flush
         >
           {isLoading ? (
             <div className="p-4 space-y-3">
-              {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 w-full" />)}
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
             </div>
           ) : payments.length === 0 ? (
             <EmptyState
               icon={<Wallet className="w-6 h-6" />}
-              title="Aucun versement pour le moment"
-              description="Vos premiers versements apparaîtront ici dès qu'une commande sera comptabilisée et clôturée."
+              title={translateUi("Aucun versement pour le moment")}
+              description={translateUi(
+                "Vos premiers versements apparaîtront ici dès qu'une commande sera comptabilisée et clôturée.",
+              )}
             />
           ) : (
             <>
@@ -213,10 +283,12 @@ export default function Paiements() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Période</TableHead>
+                      <TableHead>{translateUi("Période")}</TableHead>
                       <TableHead>Boutique</TableHead>
-                      <TableHead>Statut</TableHead>
-                      <TableHead className="text-right">Montant</TableHead>
+                      <TableHead>{translateUi("Statut")}</TableHead>
+                      <TableHead className="text-right">
+                        {translateUi("Montant")}
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -225,24 +297,40 @@ export default function Paiements() {
                         <TableCell>
                           <div>
                             <p className="font-medium text-sm">
-                              {new Date(p.period_start).toLocaleDateString("fr-FR")} – {new Date(p.period_end).toLocaleDateString("fr-FR")}
+                              {new Date(p.period_start).toLocaleDateString(
+                                getUiLocale(),
+                              )}{" "}
+                              –{" "}
+                              {new Date(p.period_end).toLocaleDateString(
+                                getUiLocale(),
+                              )}
                             </p>
                             {p.payout_date && (
                               <p className="text-xs text-muted-foreground">
-                                Versé le {new Date(p.payout_date).toLocaleDateString("fr-FR")}
+                                {translateUi("Versé le") + " "}
+                                {new Date(p.payout_date).toLocaleDateString(
+                                  getUiLocale(),
+                                )}
                               </p>
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="text-sm">{p.boutiques?.name || "—"}</TableCell>
+                        <TableCell className="text-sm">
+                          {p.boutiques?.name || "—"}
+                        </TableCell>
                         <TableCell>
                           {p.status === "completed" ? (
-                            <Badge className="gap-1 bg-success/10 text-success hover:bg-success/20 border-0">
-                              <CheckCircle className="w-3 h-3" /> Versé
+                            <Badge className="gap-1 bg-success/10 text-success-ink hover:bg-success/20 border-0">
+                              <CheckCircle className="w-3 h-3" />{" "}
+                              {translateUi("Versé")}
                             </Badge>
                           ) : p.status === "pending" ? (
-                            <Badge variant="outline" className="gap-1 text-secondary border-secondary/40">
-                              <Clock className="w-3 h-3" /> En attente
+                            <Badge
+                              variant="outline"
+                              className="gap-1 text-secondary border-secondary/40"
+                            >
+                              <Clock className="w-3 h-3" />{" "}
+                              {translateUi("En attente")}
                             </Badge>
                           ) : (
                             <Badge variant="destructive">{p.status}</Badge>
@@ -259,10 +347,19 @@ export default function Paiements() {
               </div>
               <div className="sm:hidden p-3 space-y-3">
                 {payments.map((p: any) => (
-                  <div key={p.id} className="p-3 rounded-xl bg-muted/40 space-y-2 border border-border/40">
+                  <div
+                    key={p.id}
+                    className="p-3 rounded-xl bg-muted/40 space-y-2 border border-border/40"
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">
-                        {new Date(p.period_start).toLocaleDateString("fr-FR")} → {new Date(p.period_end).toLocaleDateString("fr-FR")}
+                        {new Date(p.period_start).toLocaleDateString(
+                          getUiLocale(),
+                        )}{" "}
+                        →{" "}
+                        {new Date(p.period_end).toLocaleDateString(
+                          getUiLocale(),
+                        )}
                       </span>
                       <span className="text-sm font-display font-bold text-foreground">
                         {p.status === "completed" ? "+" : ""}
@@ -270,17 +367,26 @@ export default function Paiements() {
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">{p.boutiques?.name || "—"}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {p.boutiques?.name || "—"}
+                      </span>
                       {p.status === "completed" ? (
-                        <Badge className="gap-1 bg-success/10 text-success border-0 text-[10px]">
-                          <CheckCircle className="w-3 h-3" /> Versé
+                        <Badge className="gap-1 bg-success/10 text-success-ink border-0 text-[10px]">
+                          <CheckCircle className="w-3 h-3" />{" "}
+                          {translateUi("Versé")}
                         </Badge>
                       ) : p.status === "pending" ? (
-                        <Badge variant="outline" className="gap-1 text-secondary border-secondary/40 text-[10px]">
-                          <Clock className="w-3 h-3" /> En attente
+                        <Badge
+                          variant="outline"
+                          className="gap-1 text-secondary border-secondary/40 text-[10px]"
+                        >
+                          <Clock className="w-3 h-3" />{" "}
+                          {translateUi("En attente")}
                         </Badge>
                       ) : (
-                        <Badge variant="destructive" className="text-[10px]">{p.status}</Badge>
+                        <Badge variant="destructive" className="text-[10px]">
+                          {p.status}
+                        </Badge>
                       )}
                     </div>
                   </div>
@@ -302,18 +408,26 @@ export default function Paiements() {
       {/* Revenue by Boutique */}
       <div className="mt-6">
         <SectionCard
-          title="Revenus par boutique"
-          description={topBoutique ? `${topBoutique.name} en tête` : "Répartition portefeuille"}
+          title={translateUi("Revenus par boutique")}
+          description={
+            topBoutique
+              ? translateUi("{v0} en tête", { v0: topBoutique.name })
+              : translateUi("Répartition portefeuille")
+          }
           icon={<TrendingUp className="w-4 h-4" />}
         >
           {isLoading ? (
             <div className="space-y-3">
-              {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full" />)}
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
             </div>
           ) : orderRevenue.byBoutique.length === 0 ? (
             <EmptyState
-              title="Pas encore de revenus"
-              description="Publiez votre boutique pour commencer à générer des ventes."
+              title={translateUi("Pas encore de revenus")}
+              description={translateUi(
+                "Publiez votre boutique pour commencer à générer des ventes.",
+              )}
             />
           ) : (
             <div className="space-y-3">
@@ -322,7 +436,9 @@ export default function Paiements() {
                 return (
                   <div key={b.id} className="space-y-1.5">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium text-foreground truncate">{b.name}</span>
+                      <span className="font-medium text-foreground truncate">
+                        {b.name}
+                      </span>
                       <span className="font-display font-semibold tabular-nums">
                         {fmt(b.revenue)} €
                       </span>
@@ -330,7 +446,9 @@ export default function Paiements() {
                     <div className="h-2 rounded-full bg-muted overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-500"
-                        style={{ width: `${Math.max(pct, b.revenue > 0 ? 6 : 0)}%` }}
+                        style={{
+                          width: `${Math.max(pct, b.revenue > 0 ? 6 : 0)}%`,
+                        }}
                       />
                     </div>
                   </div>

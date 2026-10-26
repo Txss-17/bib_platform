@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect } from "react";
 
 import { StorefrontHeader } from "./StorefrontHeader";
@@ -115,9 +117,7 @@ function effectToReveal(
  * --------------------------------------------------------------------------
  */
 
-function widthClass(
-  width?: SectionConfig["width"],
-): string {
+function widthClass(width?: SectionConfig["width"]): string {
   switch (width) {
     case "full":
       return "sf-w-full";
@@ -131,9 +131,7 @@ function widthClass(
   }
 }
 
-function spacingClass(
-  spacing?: SectionConfig["spacing"],
-): string {
+function spacingClass(spacing?: SectionConfig["spacing"]): string {
   switch (spacing) {
     case "compact":
       return "sf-sp-compact";
@@ -147,9 +145,7 @@ function spacingClass(
   }
 }
 
-function alignClass(
-  align?: SectionConfig["align"],
-): string {
+function alignClass(align?: SectionConfig["align"]): string {
   switch (align) {
     case "left":
       return "text-left";
@@ -169,9 +165,7 @@ function alignClass(
  * --------------------------------------------------------------------------
  */
 
-const effectClassMap: Partial<
-  Record<SectionEffect, string>
-> = {
+const effectClassMap: Partial<Record<SectionEffect, string>> = {
   flip: "sf-effect-flip",
   rotate: "sf-effect-rotate",
   "blur-in": "sf-effect-blur-in",
@@ -189,19 +183,10 @@ const effectClassMap: Partial<
  * --------------------------------------------------------------------------
  */
 
-function buildGoogleFontsUrl(
-  heading: string,
-  body: string,
-): string {
+function buildGoogleFontsUrl(heading: string, body: string): string {
   const families = [heading, body]
-    .filter(
-      (font, index, array) =>
-        array.indexOf(font) === index,
-    )
-    .map(
-      (font) =>
-        `${font.replace(/ /g, "+")}:wght@400;500;600;700`,
-    )
+    .filter((font, index, array) => array.indexOf(font) === index)
+    .map((font) => `${font.replace(/ /g, "+")}:wght@400;500;600;700`)
     .join("&family=");
 
   return `https://fonts.googleapis.com/css2?family=${families}&display=swap`;
@@ -213,9 +198,7 @@ function buildGoogleFontsUrl(
  * --------------------------------------------------------------------------
  */
 
-function getAnimClasses(
-  level: AnimationLevel,
-): {
+function getAnimClasses(level: AnimationLevel): {
   section: string;
   hero: string;
   delayBase: number;
@@ -283,14 +266,14 @@ export function StorefrontPreview({
   products = [],
   isPreview = false,
 }: StorefrontPreviewProps) {
+  useLanguage();
   /*
    * ------------------------------------------------------------------------
    * Template
    * ------------------------------------------------------------------------
    */
 
-  const template =
-    getTemplateForCategory(category);
+  const template = getTemplateForCategory(category);
 
   /*
    * ------------------------------------------------------------------------
@@ -298,40 +281,25 @@ export function StorefrontPreview({
    * ------------------------------------------------------------------------
    */
 
-  const primaryColor =
-    themeSettings?.primaryColor ||
-    "#3b82f6";
+  const primaryColor = themeSettings?.primaryColor || "#3b82f6";
 
-  const secondaryColor =
-    themeSettings?.secondaryColor ||
-    "#1e40af";
+  const secondaryColor = themeSettings?.secondaryColor || "#1e40af";
 
-  const fonts =
-    themeSettings?.fonts ||
-    template.fonts;
+  const fonts = themeSettings?.fonts || template.fonts;
 
-  const siteType: SiteType =
-    themeSettings?.siteType ||
-    "classic";
+  const siteType: SiteType = themeSettings?.siteType || "classic";
 
-  const is3D =
-    siteType === "3d";
+  const is3D = siteType === "3d";
 
   /*
    * Keep the configured drag-and-drop order.
    */
 
-  const sections =
-    themeSettings?.sections ||
-    template.sections;
+  const sections = themeSettings?.sections || template.sections;
 
   const animationLevel: AnimationLevel =
     themeSettings?.animationLevel ||
-    (
-      themeSettings?.animations === false
-        ? "none"
-        : "subtle"
-    );
+    (themeSettings?.animations === false ? "none" : "subtle");
 
   /*
    * ------------------------------------------------------------------------
@@ -339,30 +307,20 @@ export function StorefrontPreview({
    * ------------------------------------------------------------------------
    */
 
-  const heroTitle =
-    themeSettings?.customHeroTitle ||
-    template.heroTitle;
+  const heroTitle = themeSettings?.customHeroTitle || template.heroTitle;
 
   const heroSubtitle =
-    themeSettings?.customHeroSubtitle ||
-    template.heroSubtitle;
+    themeSettings?.customHeroSubtitle || template.heroSubtitle;
 
-  const aboutText =
-    themeSettings?.customAboutText ||
-    template.aboutDescription;
+  const aboutText = themeSettings?.customAboutText || template.aboutDescription;
 
-  const aboutImageUrl =
-    themeSettings?.aboutImageUrl;
+  const aboutImageUrl = themeSettings?.aboutImageUrl;
 
-  const faqItems =
-    themeSettings?.faqItems;
+  const faqItems = themeSettings?.faqItems;
 
-  const heroLayout =
-    themeSettings?.heroLayout ||
-    "text-left";
+  const heroLayout = themeSettings?.heroLayout || "text-left";
 
-  const heroImageUrl =
-    themeSettings?.heroImageUrl;
+  const heroImageUrl = themeSettings?.heroImageUrl;
 
   /*
    * ------------------------------------------------------------------------
@@ -371,38 +329,25 @@ export function StorefrontPreview({
    */
 
   useEffect(() => {
-    const url = buildGoogleFontsUrl(
-      fonts.heading,
-      fonts.body,
-    );
+    const url = buildGoogleFontsUrl(fonts.heading, fonts.body);
 
-    const linkId =
-      "storefront-google-fonts";
+    const linkId = "storefront-google-fonts";
 
-    let link =
-      document.getElementById(
-        linkId,
-      ) as HTMLLinkElement | null;
+    let link = document.getElementById(linkId) as HTMLLinkElement | null;
 
     if (link) {
       link.href = url;
       return;
     }
 
-    link =
-      document.createElement(
-        "link",
-      );
+    link = document.createElement("link");
 
     link.id = linkId;
     link.rel = "stylesheet";
     link.href = url;
 
     document.head.appendChild(link);
-  }, [
-    fonts.heading,
-    fonts.body,
-  ]);
+  }, [fonts.heading, fonts.body]);
 
   /*
    * ------------------------------------------------------------------------
@@ -410,18 +355,10 @@ export function StorefrontPreview({
    * ------------------------------------------------------------------------
    */
 
-  const isSectionEnabled = (
-    type: SectionConfig["type"],
-  ) => {
-    const section =
-      sections.find(
-        (item) =>
-          item.type === type,
-      );
+  const isSectionEnabled = (type: SectionConfig["type"]) => {
+    const section = sections.find((item) => item.type === type);
 
-    return (
-      section?.enabled !== false
-    );
+    return section?.enabled !== false;
   };
 
   /*
@@ -477,12 +414,9 @@ export function StorefrontPreview({
     section: animClass,
     hero: heroAnim,
     delayBase,
-  } = getAnimClasses(
-    animationLevel,
-  );
+  } = getAnimClasses(animationLevel);
 
-  const noAnim =
-    animationLevel === "none";
+  const noAnim = animationLevel === "none";
 
   /*
    * ------------------------------------------------------------------------
@@ -490,35 +424,24 @@ export function StorefrontPreview({
    * ------------------------------------------------------------------------
    */
 
-  const renderSection = (
-    section: SectionConfig,
-    index: number,
-  ) => {
+  const renderSection = (section: SectionConfig, index: number) => {
     if (!section.enabled) {
       return null;
     }
 
-    const delay =
-      delayBase * (index + 1);
+    const delay = delayBase * (index + 1);
 
     const animStyle = noAnim
       ? {}
       : {
           animationDelay: `${delay}ms`,
-          animationFillMode:
-            "forwards" as const,
+          animationFillMode: "forwards" as const,
           opacity: 0,
         };
 
-    let inner: React.ReactNode =
-      null;
+    let inner: React.ReactNode = null;
 
-    let defaultDir:
-      | "up"
-      | "left"
-      | "right"
-      | "scale" =
-      "up";
+    let defaultDir: "up" | "left" | "right" | "scale" = "up";
 
     /*
      * ----------------------------------------------------------------------
@@ -531,45 +454,26 @@ export function StorefrontPreview({
         inner = (
           <div
             key="hero"
-            className={`${heroAnim} ${
-              is3D
-                ? "storefront-3d-hero"
-                : ""
-            }`}
+            className={`${heroAnim} ${is3D ? "storefront-3d-hero" : ""}`}
             style={
               noAnim
                 ? {}
                 : {
-                    animationDuration:
-                      "0.5s",
+                    animationDuration: "0.5s",
                   }
             }
           >
             <StorefrontHero
               title={heroTitle}
               subtitle={heroSubtitle}
-              tagline={
-                template.heroTagline
-              }
-              primaryColor={
-                primaryColor
-              }
-              secondaryColor={
-                secondaryColor
-              }
-              headingFont={
-                fonts.heading
-              }
-              heroLayout={
-                heroLayout
-              }
-              heroImageUrl={
-                heroImageUrl
-              }
+              tagline={template.heroTagline}
+              primaryColor={primaryColor}
+              secondaryColor={secondaryColor}
+              headingFont={fonts.heading}
+              heroLayout={heroLayout}
+              heroImageUrl={heroImageUrl}
               ctaUrl={
-                boutiqueSlug
-                  ? `/boutique/${boutiqueSlug}/products`
-                  : undefined
+                boutiqueSlug ? `/boutique/${boutiqueSlug}/products` : undefined
               }
             />
           </div>
@@ -591,18 +495,10 @@ export function StorefrontPreview({
         defaultDir = "scale";
 
         inner = (
-          <div
-            key="features"
-            className={animClass}
-            style={animStyle}
-          >
+          <div key="features" className={animClass} style={animStyle}>
             <StorefrontFeatures
-              features={
-                template.features
-              }
-              primaryColor={
-                primaryColor
-              }
+              features={template.features}
+              primaryColor={primaryColor}
             />
           </div>
         );
@@ -626,21 +522,11 @@ export function StorefrontPreview({
             style={animStyle}
           >
             <StorefrontProducts
-              title={
-                template.productsSectionTitle
-              }
-              products={
-                displayProducts
-              }
-              primaryColor={
-                primaryColor
-              }
-              boutiqueSlug={
-                boutiqueSlug
-              }
-              boutiqueId={
-                boutiqueId
-              }
+              title={template.productsSectionTitle}
+              products={displayProducts}
+              primaryColor={primaryColor}
+              boutiqueSlug={boutiqueSlug}
+              boutiqueId={boutiqueId}
               is3D={is3D}
             />
           </div>
@@ -658,31 +544,15 @@ export function StorefrontPreview({
         defaultDir = "left";
 
         inner = (
-          <div
-            key="about"
-            className={animClass}
-            style={animStyle}
-          >
+          <div key="about" className={animClass} style={animStyle}>
             <StorefrontAbout
-              title={
-                template.aboutTitle
-              }
-              description={
-                aboutText
-              }
-              boutiqueName={
-                boutiqueName
-              }
-              primaryColor={
-                primaryColor
-              }
-              aboutImageUrl={
-                aboutImageUrl
-              }
+              title={template.aboutTitle}
+              description={aboutText}
+              boutiqueName={boutiqueName}
+              primaryColor={primaryColor}
+              aboutImageUrl={aboutImageUrl}
               aboutUrl={
-                boutiqueSlug
-                  ? `/boutique/${boutiqueSlug}/about`
-                  : undefined
+                boutiqueSlug ? `/boutique/${boutiqueSlug}/about` : undefined
               }
             />
           </div>
@@ -702,9 +572,7 @@ export function StorefrontPreview({
         inner = (
           <StorefrontTestimonials
             key="testimonials"
-            primaryColor={
-              primaryColor
-            }
+            primaryColor={primaryColor}
           />
         );
 
@@ -722,13 +590,9 @@ export function StorefrontPreview({
         inner = (
           <StorefrontVideo
             key="video"
-            primaryColor={
-              primaryColor
-            }
-            videoUrl={
-              themeSettings?.videoUrl
-            }
-            title="Découvrez notre univers"
+            primaryColor={primaryColor}
+            videoUrl={themeSettings?.videoUrl}
+            title={translateUi("Découvrez notre univers")}
           />
         );
 
@@ -744,9 +608,7 @@ export function StorefrontPreview({
         inner = (
           <StorefrontFAQ
             key="faq"
-            primaryColor={
-              primaryColor
-            }
+            primaryColor={primaryColor}
             items={faqItems}
           />
         );
@@ -763,12 +625,8 @@ export function StorefrontPreview({
         inner = (
           <StorefrontNewsletter
             key="newsletter"
-            primaryColor={
-              primaryColor
-            }
-            boutiqueName={
-              boutiqueName
-            }
+            primaryColor={primaryColor}
+            boutiqueName={boutiqueName}
           />
         );
 
@@ -795,25 +653,12 @@ export function StorefrontPreview({
         defaultDir = "up";
 
         inner = (
-          <div
-            key="countdown"
-            className={animClass}
-            style={animStyle}
-          >
+          <div key="countdown" className={animClass} style={animStyle}>
             <StorefrontCountdown
-              title={
-                section.data?.title
-              }
-              endsInHours={
-                section.data
-                  ?.endsInHours
-              }
-              primaryColor={
-                primaryColor
-              }
-              secondaryColor={
-                secondaryColor
-              }
+              title={section.data?.title}
+              endsInHours={section.data?.endsInHours}
+              primaryColor={primaryColor}
+              secondaryColor={secondaryColor}
             />
           </div>
         );
@@ -830,30 +675,14 @@ export function StorefrontPreview({
         defaultDir = "up";
 
         inner = (
-          <div
-            key="comparison"
-            className={animClass}
-            style={animStyle}
-          >
+          <div key="comparison" className={animClass} style={animStyle}>
             <StorefrontComparison
-              title={
-                section.data?.title
-              }
-              us={
-                section.data?.us
-              }
-              them={
-                section.data?.them
-              }
-              rows={
-                section.data?.rows
-              }
-              primaryColor={
-                primaryColor
-              }
-              secondaryColor={
-                secondaryColor
-              }
+              title={section.data?.title}
+              us={section.data?.us}
+              them={section.data?.them}
+              rows={section.data?.rows}
+              primaryColor={primaryColor}
+              secondaryColor={secondaryColor}
             />
           </div>
         );
@@ -870,39 +699,17 @@ export function StorefrontPreview({
         defaultDir = "scale";
 
         inner = (
-          <div
-            key="bundle"
-            className={animClass}
-            style={animStyle}
-          >
+          <div key="bundle" className={animClass} style={animStyle}>
             <StorefrontBundle
-              title={
-                section.data?.title
-              }
-              subtitle={
-                section.data?.subtitle
-              }
-              items={
-                section.data?.items
-              }
-              originalPrice={
-                section.data
-                  ?.originalPrice
-              }
-              bundlePrice={
-                section.data
-                  ?.bundlePrice
-              }
-              primaryColor={
-                primaryColor
-              }
-              secondaryColor={
-                secondaryColor
-              }
+              title={section.data?.title}
+              subtitle={section.data?.subtitle}
+              items={section.data?.items}
+              originalPrice={section.data?.originalPrice}
+              bundlePrice={section.data?.bundlePrice}
+              primaryColor={primaryColor}
+              secondaryColor={secondaryColor}
               ctaUrl={
-                boutiqueSlug
-                  ? `/boutique/${boutiqueSlug}/products`
-                  : undefined
+                boutiqueSlug ? `/boutique/${boutiqueSlug}/products` : undefined
               }
             />
           </div>
@@ -920,21 +727,11 @@ export function StorefrontPreview({
         defaultDir = "up";
 
         inner = (
-          <div
-            key="lookbook"
-            className={animClass}
-            style={animStyle}
-          >
+          <div key="lookbook" className={animClass} style={animStyle}>
             <StorefrontLookbook
-              title={
-                section.data?.title
-              }
-              images={
-                section.data?.images
-              }
-              primaryColor={
-                primaryColor
-              }
+              title={section.data?.title}
+              images={section.data?.images}
+              primaryColor={primaryColor}
             />
           </div>
         );
@@ -951,33 +748,15 @@ export function StorefrontPreview({
         defaultDir = "up";
 
         inner = (
-          <div
-            key="banner-cta"
-            className={animClass}
-            style={animStyle}
-          >
+          <div key="banner-cta" className={animClass} style={animStyle}>
             <StorefrontBannerCTA
-              title={
-                section.data?.title
-              }
-              subtitle={
-                section.data?.subtitle
-              }
-              ctaLabel={
-                section.data?.ctaLabel
-              }
-              ctaHref={
-                section.data?.ctaHref
-              }
-              align={
-                section.data?.align
-              }
-              primaryColor={
-                primaryColor
-              }
-              secondaryColor={
-                secondaryColor
-              }
+              title={section.data?.title}
+              subtitle={section.data?.subtitle}
+              ctaLabel={section.data?.ctaLabel}
+              ctaHref={section.data?.ctaHref}
+              align={section.data?.align}
+              primaryColor={primaryColor}
+              secondaryColor={secondaryColor}
             />
           </div>
         );
@@ -994,21 +773,11 @@ export function StorefrontPreview({
         defaultDir = "up";
 
         inner = (
-          <div
-            key="image-gallery"
-            className={animClass}
-            style={animStyle}
-          >
+          <div key="image-gallery" className={animClass} style={animStyle}>
             <StorefrontImageGallery
-              images={
-                section.data?.images
-              }
-              columns={
-                section.data?.columns
-              }
-              effect={
-                section.data?.effect
-              }
+              images={section.data?.images}
+              columns={section.data?.columns}
+              effect={section.data?.effect}
             />
           </div>
         );
@@ -1025,21 +794,11 @@ export function StorefrontPreview({
         defaultDir = "up";
 
         inner = (
-          <div
-            key="video-gallery"
-            className={animClass}
-            style={animStyle}
-          >
+          <div key="video-gallery" className={animClass} style={animStyle}>
             <StorefrontVideoGallery
-              videos={
-                section.data?.videos
-              }
-              columns={
-                section.data?.columns
-              }
-              effect={
-                section.data?.effect
-              }
+              videos={section.data?.videos}
+              columns={section.data?.columns}
+              effect={section.data?.effect}
             />
           </div>
         );
@@ -1067,12 +826,9 @@ export function StorefrontPreview({
      * ----------------------------------------------------------------------
      */
 
-    const effect =
-      section.effect;
+    const effect = section.effect;
 
-    const intensity =
-      section.effectIntensity ||
-      "medium";
+    const intensity = section.effectIntensity || "medium";
 
     const speedMap = {
       low: 0.08,
@@ -1086,59 +842,31 @@ export function StorefrontPreview({
       high: 14,
     };
 
-    let result: React.ReactNode =
-      inner;
+    let result: React.ReactNode = inner;
 
-    if (
-      effect &&
-      effect !== "none"
-    ) {
-      const reveal =
-        effectToReveal(
-          effect,
-        );
+    if (effect && effect !== "none") {
+      const reveal = effectToReveal(effect);
 
-      let wrapped: React.ReactNode =
-        inner;
+      let wrapped: React.ReactNode = inner;
 
-      if (
-        effect === "tilt"
-      ) {
+      if (effect === "tilt") {
         wrapped = (
-          <TiltCard
-            key={`tilt-${section.type}`}
-            intensity={
-              tiltMap[intensity]
-            }
-          >
+          <TiltCard key={`tilt-${section.type}`} intensity={tiltMap[intensity]}>
             {inner}
           </TiltCard>
         );
-      } else if (
-        effect === "parallax"
-      ) {
+      } else if (effect === "parallax") {
         wrapped = (
           <ParallaxSection
             key={`px-${section.type}`}
-            speed={
-              speedMap[intensity]
-            }
+            speed={speedMap[intensity]}
           >
             {inner}
           </ParallaxSection>
         );
-      } else if (
-        effectClassMap[effect]
-      ) {
+      } else if (effectClassMap[effect]) {
         wrapped = (
-          <div
-            key={`fx-${section.type}`}
-            className={
-              effectClassMap[
-                effect
-              ]
-            }
-          >
+          <div key={`fx-${section.type}`} className={effectClassMap[effect]}>
             {inner}
           </div>
         );
@@ -1146,10 +874,7 @@ export function StorefrontPreview({
 
       if (reveal) {
         result = (
-          <ScrollReveal
-            key={`r-${section.type}`}
-            direction={reveal}
-          >
+          <ScrollReveal key={`r-${section.type}`} direction={reveal}>
             {wrapped}
           </ScrollReveal>
         );
@@ -1163,13 +888,8 @@ export function StorefrontPreview({
        */
 
       result = (
-        <ScrollReveal
-          key={`r-${section.type}`}
-          direction={defaultDir}
-        >
-          <ParallaxSection speed={0.15}>
-            {inner}
-          </ParallaxSection>
+        <ScrollReveal key={`r-${section.type}`} direction={defaultDir}>
+          <ParallaxSection speed={0.15}>{inner}</ParallaxSection>
         </ScrollReveal>
       );
     }
@@ -1181,24 +901,15 @@ export function StorefrontPreview({
      */
 
     const layoutCls = [
-      widthClass(
-        section.width,
-      ),
-      spacingClass(
-        section.spacing,
-      ),
-      alignClass(
-        section.align,
-      ),
+      widthClass(section.width),
+      spacingClass(section.spacing),
+      alignClass(section.align),
     ]
       .filter(Boolean)
       .join(" ");
 
     return (
-      <div
-        key={`layout-${section.type}`}
-        className={layoutCls}
-      >
+      <div key={`layout-${section.type}`} className={layoutCls}>
         {result}
       </div>
     );
@@ -1221,22 +932,14 @@ export function StorefrontPreview({
 
   return (
     <StorefrontProvider
-      boutiqueId={
-        boutiqueId ?? ""
-      }
-      boutiqueName={
-        boutiqueName
-      }
-      boutiqueSlug={
-        boutiqueSlug
-      }
+      boutiqueId={boutiqueId ?? ""}
+      boutiqueName={boutiqueName}
+      boutiqueSlug={boutiqueSlug}
     >
       <CartProvider>
         <div
           className={`min-h-screen bg-white ${
-            isPreview
-              ? "pointer-events-none"
-              : ""
+            isPreview ? "pointer-events-none" : ""
           }`}
           style={{
             fontFamily: `'${fonts.body}', sans-serif`,
@@ -1252,13 +955,9 @@ export function StorefrontPreview({
            */}
 
           {(() => {
-            const announcement =
-              sections.find(
-                (section) =>
-                  section.type ===
-                    "announcement" &&
-                  section.enabled,
-              );
+            const announcement = sections.find(
+              (section) => section.type === "announcement" && section.enabled,
+            );
 
             if (!announcement) {
               return null;
@@ -1266,17 +965,9 @@ export function StorefrontPreview({
 
             return (
               <StorefrontAnnouncement
-                message={
-                  announcement.data
-                    ?.message
-                }
-                emoji={
-                  announcement.data
-                    ?.emoji
-                }
-                primaryColor={
-                  primaryColor
-                }
+                message={announcement.data?.message}
+                emoji={announcement.data?.emoji}
+                primaryColor={primaryColor}
               />
             );
           })()}
@@ -1288,15 +979,9 @@ export function StorefrontPreview({
            */}
 
           <StorefrontHeader
-            boutiqueName={
-              boutiqueName
-            }
-            primaryColor={
-              primaryColor
-            }
-            boutiqueSlug={
-              boutiqueSlug
-            }
+            boutiqueName={boutiqueName}
+            primaryColor={primaryColor}
+            boutiqueSlug={boutiqueSlug}
           />
 
           {/*
@@ -1308,16 +993,7 @@ export function StorefrontPreview({
            * ----------------------------------------------------------------
            */}
 
-          {sections.map(
-            (
-              section,
-              index,
-            ) =>
-              renderSection(
-                section,
-                index,
-              ),
-          )}
+          {sections.map((section, index) => renderSection(section, index))}
 
           {/*
            * ----------------------------------------------------------------
@@ -1331,15 +1007,9 @@ export function StorefrontPreview({
 
           {boutiqueId && (
             <CartDrawer
-              primaryColor={
-                primaryColor
-              }
-              boutiqueId={
-                boutiqueId
-              }
-              boutiqueName={
-                boutiqueName
-              }
+              primaryColor={primaryColor}
+              boutiqueId={boutiqueId}
+              boutiqueName={boutiqueName}
             />
           )}
 
@@ -1349,11 +1019,7 @@ export function StorefrontPreview({
            * ----------------------------------------------------------------
            */}
 
-          <StorefrontFooter
-            primaryColor={
-              primaryColor
-            }
-          />
+          <StorefrontFooter primaryColor={primaryColor} />
 
           {/*
            * ----------------------------------------------------------------
@@ -1365,36 +1031,20 @@ export function StorefrontPreview({
            */}
 
           {(() => {
-            const cta =
-              sections.find(
-                (section) =>
-                  section.type ===
-                    "sticky-cta" &&
-                  section.enabled,
-              );
+            const cta = sections.find(
+              (section) => section.type === "sticky-cta" && section.enabled,
+            );
 
-            if (
-              !cta ||
-              isPreview
-            ) {
+            if (!cta || isPreview) {
               return null;
             }
 
             return (
               <StorefrontStickyCTA
-                label={
-                  cta.data?.label
-                }
-                anchor={
-                  cta.data?.anchor ||
-                  "products"
-                }
-                primaryColor={
-                  primaryColor
-                }
-                secondaryColor={
-                  secondaryColor
-                }
+                label={cta.data?.label}
+                anchor={cta.data?.anchor || "products"}
+                primaryColor={primaryColor}
+                secondaryColor={secondaryColor}
               />
             );
           })()}

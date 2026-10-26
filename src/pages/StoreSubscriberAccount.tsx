@@ -1,3 +1,5 @@
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -21,6 +23,7 @@ import {
 const BIB_SUBSCRIBER_PRICE = 4.99;
 
 export default function StoreSubscriberAccount() {
+  useLanguage();
   const { user, profile, loading: authLoading } = useAuth();
 
   const {
@@ -31,16 +34,12 @@ export default function StoreSubscriberAccount() {
 
   const billingPortal = useOpenBillingPortal();
 
-  const loading =
-    authLoading || subscriptionLoading;
+  const loading = authLoading || subscriptionLoading;
 
   const fullName =
-    profile?.full_name ||
-    user?.user_metadata?.full_name ||
-    "Votre compte";
+    profile?.full_name || user?.user_metadata?.full_name || "Votre compte";
 
-  const email =
-    user?.email || "—";
+  const email = user?.email || "—";
 
   const subscriptionStatus =
     subscription?.status === "trialing"
@@ -49,21 +48,17 @@ export default function StoreSubscriberAccount() {
         ? "Actif"
         : "Inactif";
 
-  const subscriptionPrice =
-    BIB_SUBSCRIBER_PRICE.toFixed(2).replace(".", ",");
+  const subscriptionPrice = BIB_SUBSCRIBER_PRICE.toFixed(2).replace(".", ",");
 
-  const memberSince =
-    subscription?.created_at
-      ? formatDate(subscription.created_at)
-      : "—";
+  const memberSince = subscription?.created_at
+    ? formatDate(subscription.created_at)
+    : "—";
 
-  const nextBillingDate =
-    subscription?.current_period_end
-      ? formatDate(subscription.current_period_end)
-      : null;
+  const nextBillingDate = subscription?.current_period_end
+    ? formatDate(subscription.current_period_end)
+    : null;
 
-  const cancelAtPeriodEnd =
-    subscription?.cancel_at_period_end === true;
+  const cancelAtPeriodEnd = subscription?.cancel_at_period_end === true;
 
   const handleBillingPortal = () => {
     billingPortal.mutate();
@@ -101,19 +96,20 @@ export default function StoreSubscriberAccount() {
             </div>
 
             <h1 className="mt-5 text-2xl font-semibold">
-              Connectez-vous à votre compte
+              {translateUi("Connectez-vous à votre compte")}
             </h1>
 
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Votre espace abonné est accessible uniquement
-              après connexion.
+              {translateUi(
+                "Votre espace abonné est accessible uniquement après connexion.",
+              )}
             </p>
 
             <Link
               to="/store/login?next=%2Fstore%2Faccount"
               className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
             >
-              Se connecter
+              {translateUi("Se connecter")}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -136,41 +132,38 @@ export default function StoreSubscriberAccount() {
             </p>
 
             <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-              Activez BIB Abonné
+              {translateUi("Activez BIB Abonné")}
             </h1>
 
             <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-              Votre compte Store existe, mais aucun abonnement
-              BIB Abonné actif n'est actuellement associé à ce compte.
+              {translateUi(
+                "Votre compte Store existe, mais aucun abonnement BIB Abonné actif n'est actuellement associé à ce compte.",
+              )}
             </p>
 
             <div className="mt-6 rounded-2xl border bg-muted/30 p-5 text-left">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="font-semibold">
-                    BIB Abonné
-                  </h2>
+                  <h2 className="font-semibold">{translateUi("BIB Abonné")}</h2>
 
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Accédez aux fonctionnalités réservées aux abonnés.
+                    {translateUi(
+                      "Accédez aux fonctionnalités réservées aux abonnés.",
+                    )}
                   </p>
                 </div>
 
                 <div className="shrink-0 text-right">
-                  <p className="text-xl font-semibold">
-                    {subscriptionPrice} €
-                  </p>
+                  <p className="text-xl font-semibold">{subscriptionPrice} €</p>
 
-                  <p className="text-xs text-muted-foreground">
-                    / mois
-                  </p>
+                  <p className="text-xs text-muted-foreground">/ mois</p>
                 </div>
               </div>
 
               <div className="mt-5 grid gap-2 sm:grid-cols-2">
-                <FeatureItem label="Favoris" />
-                <FeatureItem label="Commandes" />
-                <FeatureItem label="Suivi des commandes" />
+                <FeatureItem label={translateUi("Favoris")} />
+                <FeatureItem label={translateUi("Commandes")} />
+                <FeatureItem label={translateUi("Suivi des commandes")} />
               </div>
             </div>
 
@@ -178,7 +171,7 @@ export default function StoreSubscriberAccount() {
               to="/store/subscribe"
               className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
             >
-              Activer BIB Abonné
+              {translateUi("Activer BIB Abonné")}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -192,17 +185,16 @@ export default function StoreSubscriberAccount() {
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <p className="text-sm font-medium text-muted-foreground">
-            BIB Store
-          </p>
+          <p className="text-sm font-medium text-muted-foreground">BIB Store</p>
 
           <h1 className="mt-1 text-3xl font-semibold tracking-tight">
-            Mon compte
+            {translateUi("Mon compte")}
           </h1>
 
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Gérez votre espace abonné, votre abonnement et
-            vos fonctionnalités BIB Store.
+            {translateUi(
+              "Gérez votre espace abonné, votre abonnement et vos fonctionnalités BIB Store.",
+            )}
           </p>
         </div>
 
@@ -214,11 +206,13 @@ export default function StoreSubscriberAccount() {
               <div className="flex items-center justify-between border-b px-5 py-5">
                 <div>
                   <h2 className="font-semibold">
-                    Informations personnelles
+                    {translateUi("Informations personnelles")}
                   </h2>
 
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Les informations associées à votre compte BIB.
+                    {translateUi(
+                      "Les informations associées à votre compte BIB.",
+                    )}
                   </p>
                 </div>
 
@@ -228,23 +222,20 @@ export default function StoreSubscriberAccount() {
               </div>
 
               <div className="grid gap-5 p-5 sm:grid-cols-2">
-                <InfoField
-                  label="Nom"
-                  value={fullName}
-                />
+                <InfoField label={translateUi("Nom")} value={fullName} />
 
                 <InfoField
-                  label="Adresse e-mail"
+                  label={translateUi("Adresse e-mail")}
                   value={email}
                 />
 
                 <InfoField
-                  label="Membre depuis"
+                  label={translateUi("Membre depuis")}
                   value={memberSince}
                 />
 
                 <InfoField
-                  label="Statut"
+                  label={translateUi("Statut")}
                   value="Compte abonné"
                   status
                 />
@@ -252,8 +243,9 @@ export default function StoreSubscriberAccount() {
 
               <div className="border-t px-5 py-4">
                 <p className="text-xs leading-5 text-muted-foreground">
-                  La gestion des informations de compte est
-                  effectuée depuis votre compte BIB.
+                  {translateUi(
+                    "La gestion des informations de compte est effectuée depuis votre compte BIB.",
+                  )}
                 </p>
               </div>
             </section>
@@ -263,11 +255,13 @@ export default function StoreSubscriberAccount() {
               <div className="flex items-center justify-between border-b px-5 py-5">
                 <div>
                   <h2 className="font-semibold">
-                    Mon abonnement
+                    {translateUi("Mon abonnement")}
                   </h2>
 
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Votre accès aux fonctionnalités réservées aux abonnés.
+                    {translateUi(
+                      "Votre accès aux fonctionnalités réservées aux abonnés.",
+                    )}
                   </p>
                 </div>
 
@@ -280,7 +274,7 @@ export default function StoreSubscriberAccount() {
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-semibold">
-                          BIB Abonné
+                          {translateUi("BIB Abonné")}
                         </h3>
 
                         <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
@@ -290,20 +284,21 @@ export default function StoreSubscriberAccount() {
                       </div>
 
                       <p className="mt-2 text-sm text-muted-foreground">
-                        Accès aux fonctionnalités de l'espace
-                        abonné BIB Store.
+                        {translateUi(
+                          "Accès aux fonctionnalités de l'espace abonné BIB Store.",
+                        )}
                       </p>
 
                       {cancelAtPeriodEnd && nextBillingDate && (
                         <p className="mt-3 text-sm text-amber-600">
-                          Votre abonnement prendra fin le{" "}
+                          {translateUi("Votre abonnement prendra fin le")}{" "}
                           <strong>{nextBillingDate}</strong>.
                         </p>
                       )}
 
                       {!cancelAtPeriodEnd && nextBillingDate && (
                         <p className="mt-3 text-sm text-muted-foreground">
-                          Prochaine échéance :{" "}
+                          {translateUi("Prochaine échéance :")}{" "}
                           <strong>{nextBillingDate}</strong>
                         </p>
                       )}
@@ -314,16 +309,14 @@ export default function StoreSubscriberAccount() {
                         {subscriptionPrice} €
                       </p>
 
-                      <p className="text-xs text-muted-foreground">
-                        / mois
-                      </p>
+                      <p className="text-xs text-muted-foreground">/ mois</p>
                     </div>
                   </div>
 
                   <div className="mt-5 grid gap-2 sm:grid-cols-2">
-                    <FeatureItem label="Favoris" />
-                    <FeatureItem label="Commandes" />
-                    <FeatureItem label="Suivi des commandes" />
+                    <FeatureItem label={translateUi("Favoris")} />
+                    <FeatureItem label={translateUi("Commandes")} />
+                    <FeatureItem label={translateUi("Suivi des commandes")} />
                   </div>
                 </div>
 
@@ -337,23 +330,24 @@ export default function StoreSubscriberAccount() {
                     <CreditCard className="h-4 w-4" />
 
                     {billingPortal.isPending
-                      ? "Ouverture..."
-                      : "Gérer l'abonnement"}
+                      ? translateUi("Ouverture...")
+                      : translateUi("Gérer l'abonnement")}
                   </button>
 
                   <Link
                     to="/store/orders"
                     className="inline-flex h-10 items-center justify-center gap-2 rounded-full px-5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    Mes commandes
+                    {translateUi("Mes commandes")}
                     <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
 
                 {billingPortal.isError && (
                   <p className="mt-3 text-sm text-destructive">
-                    Impossible d'ouvrir le portail de facturation.
-                    Veuillez réessayer.
+                    {translateUi(
+                      "Impossible d'ouvrir le portail de facturation. Veuillez réessayer.",
+                    )}
                   </p>
                 )}
               </div>
@@ -364,11 +358,13 @@ export default function StoreSubscriberAccount() {
               <div className="flex items-center justify-between border-b px-5 py-5">
                 <div>
                   <h2 className="font-semibold">
-                    Mon espace BIB
+                    {translateUi("Mon espace BIB")}
                   </h2>
 
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Retrouvez vos fonctionnalités réservées aux abonnés.
+                    {translateUi(
+                      "Retrouvez vos fonctionnalités réservées aux abonnés.",
+                    )}
                   </p>
                 </div>
 
@@ -379,29 +375,37 @@ export default function StoreSubscriberAccount() {
                 <AccountCard
                   to="/store/favorites"
                   icon={<Heart className="h-5 w-5" />}
-                  title="Mes favoris"
-                  description="Retrouvez les produits et boutiques que vous avez enregistrés."
+                  title={translateUi("Mes favoris")}
+                  description={translateUi(
+                    "Retrouvez les produits et boutiques que vous avez enregistrés.",
+                  )}
                 />
 
                 <AccountCard
                   to="/store/orders"
                   icon={<Package className="h-5 w-5" />}
-                  title="Mes commandes"
-                  description="Consultez vos commandes et leur suivi."
+                  title={translateUi("Mes commandes")}
+                  description={translateUi(
+                    "Consultez vos commandes et leur suivi.",
+                  )}
                 />
 
                 <AccountCard
                   to="/store/cart"
                   icon={<ShoppingBag className="h-5 w-5" />}
-                  title="Mon panier"
-                  description="Retrouvez les produits préparés avant de continuer chez les boutiques."
+                  title={translateUi("Mon panier")}
+                  description={translateUi(
+                    "Retrouvez les produits préparés avant de continuer chez les boutiques.",
+                  )}
                 />
 
                 <AccountCard
                   to="/store/account"
                   icon={<Settings className="h-5 w-5" />}
-                  title="Mon compte"
-                  description="Gérez votre espace et votre abonnement BIB."
+                  title={translateUi("Mon compte")}
+                  description={translateUi(
+                    "Gérez votre espace et votre abonnement BIB.",
+                  )}
                 />
               </div>
             </section>
@@ -412,37 +416,38 @@ export default function StoreSubscriberAccount() {
             <div className="rounded-2xl border bg-card">
               <div className="border-b p-5">
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  BIB Abonné
+                  {translateUi("BIB Abonné")}
                 </p>
 
                 <h2 className="mt-2 text-xl font-semibold">
-                  Votre espace personnel
+                  {translateUi("Votre espace personnel")}
                 </h2>
 
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Retrouvez vos produits, boutiques et commandes
-                  au même endroit.
+                  {translateUi(
+                    "Retrouvez vos produits, boutiques et commandes au même endroit.",
+                  )}
                 </p>
               </div>
 
               <div className="space-y-3 p-5">
                 <SidebarLink
-                  label="Mes favoris"
+                  label={translateUi("Mes favoris")}
                   to="/store/favorites"
                 />
 
                 <SidebarLink
-                  label="Mes commandes"
+                  label={translateUi("Mes commandes")}
                   to="/store/orders"
                 />
 
                 <SidebarLink
-                  label="Mon panier"
+                  label={translateUi("Mon panier")}
                   to="/store/cart"
                 />
 
                 <SidebarLink
-                  label="Gérer mon abonnement"
+                  label={translateUi("Gérer mon abonnement")}
                   to="/store/account"
                 />
               </div>
@@ -454,23 +459,18 @@ export default function StoreSubscriberAccount() {
   );
 }
 
-function formatDate(
-  value: string,
-): string {
+function formatDate(value: string): string {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
     return "—";
   }
 
-  return new Intl.DateTimeFormat(
-    "fr-FR",
-    {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    },
-  ).format(date);
+  return new Intl.DateTimeFormat(getUiLocale(), {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
 }
 
 function InfoField({
@@ -482,6 +482,7 @@ function InfoField({
   value: string;
   status?: boolean;
 }) {
+  useLanguage();
   return (
     <div>
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -502,11 +503,8 @@ function InfoField({
   );
 }
 
-function FeatureItem({
-  label,
-}: {
-  label: string;
-}) {
+function FeatureItem({ label }: { label: string }) {
+  useLanguage();
   return (
     <div className="flex items-center gap-2 text-sm">
       <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10">
@@ -529,6 +527,7 @@ function AccountCard({
   title: string;
   description: string;
 }) {
+  useLanguage();
   return (
     <Link
       to={to}
@@ -541,9 +540,7 @@ function AccountCard({
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-sm font-medium">
-              {title}
-            </p>
+            <p className="text-sm font-medium">{title}</p>
 
             <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
           </div>
@@ -557,21 +554,14 @@ function AccountCard({
   );
 }
 
-function SidebarLink({
-  label,
-  to,
-}: {
-  label: string;
-  to: string;
-}) {
+function SidebarLink({ label, to }: { label: string; to: string }) {
+  useLanguage();
   return (
     <Link
       to={to}
       className="flex items-center justify-between rounded-xl border px-4 py-3 transition-colors hover:bg-muted/40"
     >
-      <span className="text-sm text-muted-foreground">
-        {label}
-      </span>
+      <span className="text-sm text-muted-foreground">{label}</span>
 
       <ChevronRight className="h-4 w-4 text-muted-foreground" />
     </Link>

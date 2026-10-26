@@ -1,3 +1,5 @@
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,10 +11,7 @@ import {
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Settings2,
   Euro,
@@ -64,12 +63,37 @@ const PERIOD_LABEL: Record<StatsPeriod, string> = {
 
 const KPI_META: Record<
   KpiKey,
-  { label: string; icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>; tone: "primary" | "gold" | "muted" }
+  {
+    label: string;
+    icon: React.ComponentType<{
+      className?: string;
+      style?: React.CSSProperties;
+    }>;
+    tone: "primary" | "gold" | "muted";
+  }
 > = {
-  revenue: { label: "Chiffre d'affaires", icon: Euro, tone: "gold" },
-  orders: { label: "Commandes", icon: ShoppingCart, tone: "primary" },
+  revenue: {
+    get label() {
+      return translateUi("Chiffre d'affaires");
+    },
+    icon: Euro,
+    tone: "gold",
+  },
+  orders: {
+    get label() {
+      return translateUi("Commandes");
+    },
+    icon: ShoppingCart,
+    tone: "primary",
+  },
   stock: { label: "Stock", icon: Boxes, tone: "muted" },
-  alerts: { label: "Alertes", icon: AlertTriangle, tone: "muted" },
+  alerts: {
+    get label() {
+      return translateUi("Alertes");
+    },
+    icon: AlertTriangle,
+    tone: "muted",
+  },
 };
 
 /* -------------------------------------------------------------------------- */
@@ -87,6 +111,7 @@ function Sparkline({
   height?: number;
   stroke?: string;
 }) {
+  useLanguage();
   if (values.length < 2) {
     return (
       <svg width={width} height={height} aria-hidden>
@@ -137,18 +162,24 @@ function Sparkline({
 /* -------------------------------------------------------------------------- */
 
 function ActiveSessionsTile() {
+  useLanguage();
   const { count, history } = useActiveSessions();
   return (
     <div className="flex items-center justify-between p-3 rounded-lg bg-background/60 border border-border/40">
       <div className="flex items-center gap-3">
         <div
           className="w-9 h-9 rounded-full flex items-center justify-center"
-          style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}
+          style={{
+            background: "hsl(var(--primary) / 0.1)",
+            color: "hsl(var(--primary))",
+          }}
         >
           <Users className="w-4 h-4" />
         </div>
         <div>
-          <p className="text-xs text-muted-foreground">Sessions actives</p>
+          <p className="text-xs text-muted-foreground">
+            {translateUi("Sessions actives")}
+          </p>
           <p className="text-xl font-bold text-foreground leading-none mt-0.5">
             {count}
           </p>
@@ -157,7 +188,7 @@ function ActiveSessionsTile() {
       <div className="flex items-center gap-2">
         <Sparkline values={history} />
         <Badge variant="outline" className="gap-1 text-[10px]">
-          <Activity className="w-3 h-3" /> Live
+          <Activity className="w-3 h-3" /> {translateUi("Live")}
         </Badge>
       </div>
     </div>
@@ -168,215 +199,193 @@ function ActiveSessionsTile() {
 /* Main panel                                                                 */
 /* -------------------------------------------------------------------------- */
 
-export function KPIConfigPanel() {const [config, setConfig] = useState<KPIConfig>(() => loadConfig());
+export function KPIConfigPanel() {
+  useLanguage();
+  const [config, setConfig] = useState<KPIConfig>(() => loadConfig());
 
-useEffect(() => {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-  } catch {
-    /* Ignore localStorage errors */
-  }
-}, [config]);
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    } catch {
+      /* Ignore localStorage errors */
+    }
+  }, [config]);
 
-const { data: orderStats } = useOrderStats(config.period);
-const { data: productStats } = useProductStats();
-const { data: products } = useProducts();
+  const { data: orderStats } = useOrderStats(config.period);
+  const { data: productStats } = useProductStats();
+  const { data: products } = useProducts();
 
-// Derive stock and alerts from products joined to supplier_products.
-const stockSummary = useMemo(() => {
-  const items = (products || [])
-    .map((product: any) => {
-      const supplierProduct = product.supplier_products;
+  // Derive stock and alerts from products joined to supplier_products.
+  const stockSummary = useMemo(() => {
+    const items = (products || [])
+      .map((product: any) => {
+        const supplierProduct = product.supplier_products;
 
-      if (!supplierProduct) {
-        return null;
-      }
+        if (!supplierProduct) {
+          return null;
+        }
 
-      const stock = supplierProduct.stock ?? 0;
-      const moq = supplierProduct.moq ?? 1;
-      const ratio = stock / Math.max(moq, 1);
+        const stock = supplierProduct.stock ?? 0;
+        const moq = supplierProduct.moq ?? 1;
+        const ratio = stock / Math.max(moq, 1);
 
-      return {
-        stock,
-        ratio,
-      };
-    })
-    .filter(Boolean) as {
+        return {
+          stock,
+          ratio,
+        };
+      })
+      .filter(Boolean) as {
       stock: number;
       ratio: number;
     }[];
 
-  const totalUnits = items.reduce(
-    (sum, item) => sum + item.stock,
-    0,
+    const totalUnits = items.reduce((sum, item) => sum + item.stock, 0);
+
+    const critical = items.filter((item) => item.ratio <= 0.1).length;
+
+    const low = items.filter(
+      (item) => item.ratio > 0.1 && item.ratio <= 0.3,
+    ).length;
+
+    return {
+      totalUnits,
+      critical,
+      low,
+      alerts: critical + low,
+    };
+  }, [products]);
+
+  const visibleKeys = (Object.keys(config.visible) as KpiKey[]).filter(
+    (key) => config.visible[key],
   );
 
-  const critical = items.filter(
-    (item) => item.ratio <= 0.1,
-  ).length;
+  const valueFor = (
+    key: KpiKey,
+  ): {
+    value: string;
+    sub?: string;
+  } => {
+    switch (key) {
+      case "revenue":
+        return {
+          value: `€${(orderStats?.revenue || 0).toLocaleString(getUiLocale())}`,
+          sub: PERIOD_LABEL[config.period],
+        };
 
-  const low = items.filter(
-    (item) => item.ratio > 0.1 && item.ratio <= 0.3,
-  ).length;
+      case "orders":
+        return {
+          value: String(orderStats?.total || 0),
+          sub: `${orderStats?.pending || 0} en attente`,
+        };
 
-  return {
-    totalUnits,
-    critical,
-    low,
-    alerts: critical + low,
+      case "stock":
+        return {
+          value: String(stockSummary.totalUnits),
+          sub: `${productStats?.active || 0} produits actifs`,
+        };
+
+      case "alerts":
+        return {
+          value: String(stockSummary.alerts),
+          sub: `${stockSummary.critical} critique(s)`,
+        };
+    }
   };
-}, [products]);
 
-const visibleKeys = (
-  Object.keys(config.visible) as KpiKey[]
-).filter((key) => config.visible[key]);
+  return (
+    <Card className="bg-card border-border/50 overflow-hidden">
+      <CardContent className="p-5">
+        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+          <div>
+            <h3 className="font-semibold text-foreground">
+              {translateUi("Mes indicateurs")}
+            </h3>
 
-const valueFor = (
-  key: KpiKey,
-): {
-  value: string;
-  sub?: string;
-} => {
-  switch (key) {
-    case "revenue":
-      return {
-        value: `€${(
-          orderStats?.revenue || 0
-        ).toLocaleString("fr-FR")}`,
-        sub: PERIOD_LABEL[config.period],
-      };
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {translateUi("Personnalisez les KPI affichés et la période.")}
+            </p>
+          </div>
 
-    case "orders":
-      return {
-        value: String(orderStats?.total || 0),
-        sub: `${orderStats?.pending || 0} en attente`,
-      };
+          <div className="flex items-center gap-2">
+            <ToggleGroup
+              type="single"
+              size="sm"
+              value={config.period}
+              onValueChange={(value) => {
+                if (!value) return;
 
-    case "stock":
-      return {
-        value: String(stockSummary.totalUnits),
-        sub: `${productStats?.active || 0} produits actifs`,
-      };
-
-    case "alerts":
-      return {
-        value: String(stockSummary.alerts),
-        sub: `${stockSummary.critical} critique(s)`,
-      };
-  }
-};
-
-return (
-  <Card className="bg-card border-border/50 overflow-hidden">
-    <CardContent className="p-5">
-      <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-        <div>
-          <h3 className="font-semibold text-foreground">
-            Mes indicateurs
-          </h3>
-
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Personnalisez les KPI affichés et la période.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <ToggleGroup
-            type="single"
-            size="sm"
-            value={config.period}
-            onValueChange={(value) => {
-              if (!value) return;
-
-              setConfig((current) => ({
-                ...current,
-                period: value as StatsPeriod,
-              }));
-            }}
-            className="hidden sm:flex"
-          >
-            <ToggleGroupItem
-              value="day"
-              className="text-xs px-2.5"
+                setConfig((current) => ({
+                  ...current,
+                  period: value as StatsPeriod,
+                }));
+              }}
+              className="hidden sm:flex"
             >
-              Jour
-            </ToggleGroupItem>
+              <ToggleGroupItem value="day" className="text-xs px-2.5">
+                {translateUi("Jour")}
+              </ToggleGroupItem>
 
-            <ToggleGroupItem
-              value="week"
-              className="text-xs px-2.5"
-            >
-              Semaine
-            </ToggleGroupItem>
+              <ToggleGroupItem value="week" className="text-xs px-2.5">
+                {translateUi("Semaine")}
+              </ToggleGroupItem>
 
-            <ToggleGroupItem
-              value="month"
-              className="text-xs px-2.5"
-            >
-              Mois
-            </ToggleGroupItem>
-          </ToggleGroup>
+              <ToggleGroupItem value="month" className="text-xs px-2.5">
+                {translateUi("Mois")}
+              </ToggleGroupItem>
+            </ToggleGroup>
 
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5"
-              >
-                <Settings2 className="w-3.5 h-3.5" />
-                Configurer
-              </Button>
-            </PopoverTrigger>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <Settings2 className="w-3.5 h-3.5" />
+                  {translateUi("Configurer")}
+                </Button>
+              </PopoverTrigger>
 
-            <PopoverContent
-              align="end"
-              className="w-72"
-            >
-              <div className="space-y-4">
-                {/* Period */}
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                    Période
-                  </p>
+              <PopoverContent align="end" className="w-72">
+                <div className="space-y-4">
+                  {/* Period */}
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                      {translateUi("Période")}
+                    </p>
 
-                  <ToggleGroup
-                    type="single"
-                    size="sm"
-                    value={config.period}
-                    onValueChange={(value) => {
-                      if (!value) return;
+                    <ToggleGroup
+                      type="single"
+                      size="sm"
+                      value={config.period}
+                      onValueChange={(value) => {
+                        if (!value) return;
 
-                      setConfig((current) => ({
-                        ...current,
-                        period: value as StatsPeriod,
-                      }));
-                    }}
-                    className="w-full grid grid-cols-3"
-                  >
-                    <ToggleGroupItem value="day">
-                      Jour
-                    </ToggleGroupItem>
+                        setConfig((current) => ({
+                          ...current,
+                          period: value as StatsPeriod,
+                        }));
+                      }}
+                      className="w-full grid grid-cols-3"
+                    >
+                      <ToggleGroupItem value="day">
+                        {translateUi("Jour")}
+                      </ToggleGroupItem>
 
-                    <ToggleGroupItem value="week">
-                      Semaine
-                    </ToggleGroupItem>
+                      <ToggleGroupItem value="week">
+                        {translateUi("Semaine")}
+                      </ToggleGroupItem>
 
-                    <ToggleGroupItem value="month">
-                      Mois
-                    </ToggleGroupItem>
-                  </ToggleGroup>
-                </div>
+                      <ToggleGroupItem value="month">
+                        {translateUi("Mois")}
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
 
-                {/* Visible KPIs */}
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                    KPI affichés
-                  </p>
+                  {/* Visible KPIs */}
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                      {translateUi("KPI affichés")}
+                    </p>
 
-                  <div className="space-y-2">
-                    {(Object.keys(KPI_META) as KpiKey[]).map(
-                      (key) => {
+                    <div className="space-y-2">
+                      {(Object.keys(KPI_META) as KpiKey[]).map((key) => {
                         const Icon = KPI_META[key].icon;
 
                         return (
@@ -408,82 +417,80 @@ return (
                             />
                           </div>
                         );
-                      },
-                    )}
+                      })}
+                    </div>
                   </div>
-                </div>
 
-                {/* Reset */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full"
-                  onClick={() =>
-                    setConfig(DEFAULT_CONFIG)
-                  }
+                  {/* Reset */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setConfig(DEFAULT_CONFIG)}
+                  >
+                    {translateUi("Réinitialiser")}
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+
+        {/* KPI tiles */}
+        {visibleKeys.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-6">
+            {translateUi(
+              "Aucun KPI sélectionné. Ouvrez « Configurer » pour en activer.",
+            )}
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+            {visibleKeys.map((key) => {
+              const { value, sub } = valueFor(key);
+              const Icon = KPI_META[key].icon;
+              const tone = KPI_META[key].tone;
+
+              const iconColor =
+                tone === "gold"
+                  ? "hsl(var(--secondary))"
+                  : tone === "primary"
+                    ? "hsl(var(--primary))"
+                    : "hsl(var(--muted-foreground))";
+
+              return (
+                <div
+                  key={key}
+                  className="p-3 rounded-lg bg-background/60 border border-border/40"
                 >
-                  Réinitialiser
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
-      </div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+                      {KPI_META[key].label}
+                    </span>
 
-      {/* KPI tiles */}
-      {visibleKeys.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-6">
-          Aucun KPI sélectionné. Ouvrez « Configurer » pour en
-          activer.
-        </p>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-          {visibleKeys.map((key) => {
-            const { value, sub } = valueFor(key);
-            const Icon = KPI_META[key].icon;
-            const tone = KPI_META[key].tone;
+                    <Icon
+                      className="w-3.5 h-3.5"
+                      style={{ color: iconColor }}
+                    />
+                  </div>
 
-            const iconColor =
-              tone === "gold"
-                ? "hsl(var(--secondary))"
-                : tone === "primary"
-                  ? "hsl(var(--primary))"
-                  : "hsl(var(--muted-foreground))";
-
-            return (
-              <div
-                key={key}
-                className="p-3 rounded-lg bg-background/60 border border-border/40"
-              >
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-                    {KPI_META[key].label}
-                  </span>
-
-                  <Icon
-                    className="w-3.5 h-3.5"
-                    style={{ color: iconColor }}
-                  />
-                </div>
-
-                <p className="text-2xl font-bold text-foreground leading-tight">
-                  {value}
-                </p>
-
-                {sub && (
-                  <p className="text-[10px] text-muted-foreground mt-1 truncate">
-                    {sub}
+                  <p className="text-2xl font-bold text-foreground leading-tight">
+                    {value}
                   </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
 
-      {/* Active sessions */}
-      <ActiveSessionsTile />
-    </CardContent>
-  </Card>
-);
+                  {sub && (
+                    <p className="text-[10px] text-muted-foreground mt-1 truncate">
+                      {sub}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Active sessions */}
+        <ActiveSessionsTile />
+      </CardContent>
+    </Card>
+  );
 }
