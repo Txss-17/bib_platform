@@ -11,6 +11,7 @@ import {
   Search, ExternalLink, Copy, Check, Globe,
 } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
   PageHeader,
@@ -59,9 +60,9 @@ const faqItems = [
 ];
 
 const resources = [
-  { label: "Guide de démarrage", desc: "Configurez votre première boutique en 10 minutes" },
-  { label: "Optimiser vos ventes", desc: "Conseils pour augmenter votre chiffre d'affaires" },
-  { label: "Politique de retours", desc: "Comprendre la gestion des retours clients" },
+  { label: "Guide de démarrage", desc: "Configurez votre première boutique en 10 minutes", to: "/centre-aide/guide" },
+  { label: "Optimiser vos ventes", desc: "Conseils pour augmenter votre chiffre d'affaires", to: "/centre-aide" },
+  { label: "Politique de retours", desc: "Comprendre la gestion des retours clients", to: "/centre-aide" },
 ];
 
 export default function Aide() {
@@ -270,8 +271,9 @@ export default function Aide() {
           >
             <div className="space-y-2">
               {resources.map((resource) => (
-                <button
+                <Link
                   key={resource.label}
+                  to={resource.to}
                   className="w-full flex items-center justify-between gap-3 p-3 rounded-xl bg-muted/40 hover:bg-muted/60 transition-colors text-left"
                 >
                   <div className="min-w-0">
@@ -283,7 +285,7 @@ export default function Aide() {
                     </p>
                   </div>
                   <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
-                </button>
+                </Link>
               ))}
             </div>
           </SectionCard>
