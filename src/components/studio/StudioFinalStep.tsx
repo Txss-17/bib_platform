@@ -1,4 +1,3 @@
-// src/components/studio/StudioFinalStep.tsx
 import React from 'react';
 import { useGenerateBrandDNA } from '../../hooks/useGenerateBrandDNA';
 
