@@ -162,6 +162,13 @@
       "when": 1792998000000,
       "tag": "0022_customization_workflow",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1793095200000,
+      "tag": "0023_stock_restock_review",
+      "breakpoints": true
     }
   ]
 }
