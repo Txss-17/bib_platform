@@ -374,6 +374,39 @@ describe("Partner Ops portal", () => {
 });
 
 describe("Bridge export", () => {
+  it("exports the owner identity in complete merchant and boutique snapshots", async () => {
+    const boutique = { id: other, user_id: id, name: "Ma boutique", status: "draft", intranet_status: null };
+    for (let i = 0; i < 12; i++)
+      mocks.results.push(ok(i === 0 ? [boutique] : []));
+    mocks.results.push(
+      ok([{ user_id: id, plan_tier: "starter" }]),
+      ok([{ user_id: id, full_name: "Marchand", business_name: "Mon entreprise" }]),
+      ok([]),
+    );
+    mocks.createClient.mockReturnValue({
+      from, rpc: mocks.rpc,
+      auth: { admin: { listUsers: vi.fn().mockResolvedValue(ok({ users: [{ id, email: "merchant@example.test" }] })) } },
+    });
+    await load("intranet-export");
+    const response = await handler(request({}));
+    expect(response.status).toBe(200);
+    const data = await response.json();
+    expect(data.merchants_complete).toBe(true);
+    expect(data.boutiques_complete).toBe(true);
+    expect(data.boutiques[0]).toMatchObject({ id: other, user_id: id });
+    expect(data.merchants[0]).toMatchObject({ id, company_name: "Mon entreprise" });
+    expect(data.boutiques[0]).not.toHaveProperty("intranet_status");
+  });
+  it("refuses an orphan boutique instead of exporting an incomplete owner snapshot", async () => {
+    for (let i = 0; i < 12; i++)
+      mocks.results.push(ok(i === 0 ? [{ id: other, user_id: id, name: "Orphan" }] : []));
+    mocks.results.push(ok([]), ok([]));
+    await load("intranet-export");
+    const response = await handler(request({}));
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: "merchant_owner_profile_missing" });
+  });
+
   it("exports order changes by updated_at, including orders created before the requested window", async () => {
     for (let i = 0; i < 12; i++)
       mocks.results.push(
