@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - master
+      - 'codex/**'
   pull_request:
     branches:
       - main
@@ -26,10 +27,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -53,17 +54,17 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout Platform
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: bib_platform
       - name: Checkout compatible Intranet
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: Txss-17/bib_intranet
-          ref: 6f98a85a66290cd194463ca4dabe29dba0609c94
+          ref: e6827102c9141dd50ff56f047c8acc8869899931
           path: bib_intranet
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
