@@ -46,3 +46,34 @@ jobs:
 
       - name: Build application
         run: npm run build
+
+  bridge:
+    name: Platform and Intranet contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Platform
+        uses: actions/checkout@v4
+        with:
+          path: bib_platform
+      - name: Checkout compatible Intranet
+        uses: actions/checkout@v4
+        with:
+          repository: Txss-17/bib_intranet
+          ref: codex/restock-review-workflow
+          path: bib_intranet
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: bib_platform/package-lock.json
+      - name: Install Platform dependencies
+        working-directory: bib_platform
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
+      - name: Test bridge contracts and database rules
+        working-directory: bib_platform
+        run: npm run test:bridge
+      - name: Check bridge types
+        working-directory: bib_platform
+        run: npm run check:bridge

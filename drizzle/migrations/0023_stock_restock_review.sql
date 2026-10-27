@@ -18,7 +18,8 @@ DECLARE
   request public.stock_restock_requests%ROWTYPE;
   current_moq integer;
   catalog_active boolean;
-  comment_text text := nullif(btrim(p_comment), '');
+  -- Match JavaScript String.trim for both API and database callers.
+  comment_text text := nullif(btrim(p_comment, U&'\0009\000A\000B\000C\000D\0020\00A0\1680\2000\2001\2002\2003\2004\2005\2006\2007\2008\2009\200A\2028\2029\202F\205F\3000\FEFF'), '');
 BEGIN
   IF p_version IS NULL OR p_version < 1 OR p_status IS NULL
      OR p_status NOT IN ('approved', 'rejected')
@@ -34,7 +35,7 @@ BEGIN
   END IF;
 
   -- A lost response may be retried with the original version and exact decision.
-  IF request.version = p_version + 1 AND request.status = p_status
+  IF request.version::bigint = p_version::bigint + 1 AND request.status = p_status
      AND request.review_comment IS NOT DISTINCT FROM comment_text THEN
     RETURN to_jsonb(request);
   END IF;

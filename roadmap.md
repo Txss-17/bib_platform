@@ -1,5 +1,14 @@
 # Roadmap
 
+## Réassort Platform–Intranet — 27 octobre 2026
+
+- [x] Relier les demandes marchandes à une file de revue BIB par référence catalogue.
+- [x] Préparer les approbations et refus motivés avec contrôle de version et reprise sans doublon.
+- [x] Afficher le retour BIB et les erreurs de suivi au marchand.
+- [x] Ajouter les tests des droits, du MOQ, des contrats et de l’absence de crédit de stock.
+- [ ] Appliquer les migrations coordonnées, déployer les fonctions et vérifier le parcours sur les services distants.
+- Détails : `docs/stock-restock-review.md`.
+
 ## Bridge Platform–Intranet — correctif préparé le 25 octobre 2026
 
 - [x] Corriger les contrats produits et statuts, les répétitions et les identifiants catalogue/boutiques.
