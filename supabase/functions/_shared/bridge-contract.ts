@@ -82,7 +82,7 @@ export const BridgeBody = z.discriminatedUnion("type", [
     type: z.literal("restock_review"),
     data: z.object({
       request_id: z.string().uuid(),
-      version: z.number().int().min(1),
+      version: z.number().int().min(1).max(2147483647),
       status: z.enum(["approved", "rejected"]),
       comment: z.string().max(2000).nullable().optional(),
     }).refine((data) => data.status !== "rejected" || !!data.comment?.trim(), {

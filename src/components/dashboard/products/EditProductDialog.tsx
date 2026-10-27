@@ -35,6 +35,7 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { useUpdateProduct } from "@/hooks/useProducts";
+import { useRestockRequests } from "@/hooks/useRestockRequests";
 import { supabase } from "@/integrations/supabase/client";
 
 interface EditProductDialogProps {
@@ -148,7 +149,8 @@ export function EditProductDialog({
   const [threshold, setThreshold] = useState("");
   const [restockQuantity, setRestockQuantity] = useState("");
   const [restockPending, setRestockPending] = useState(false);
-  const [restockRequests, setRestockRequests] = useState<any[]>([]);
+  const restock = useRestockRequests(product.id, open);
+  const restockRequests = restock.data ?? [];
 
   const [promotionEnabled, setPromotionEnabled] = useState(false);
   const [salePrice, setSalePrice] = useState("");
@@ -160,12 +162,7 @@ export function EditProductDialog({
     if (!open) return;
     setMargin(String(product.applied_margin ?? ""));
     setThreshold(String(product.low_stock_threshold ?? 5));
-    void supabase
-      .from("stock_restock_requests" as any)
-      .select("id,requested_quantity,status,created_at")
-      .eq("product_id", product.id)
-      .order("created_at", { ascending: false })
-      .then(({ data }: any) => setRestockRequests(data ?? []));
+    setRestockQuantity("");
 
     const existingSalePrice =
       product.sale_price != null && Number(product.sale_price) > 0
@@ -199,28 +196,25 @@ export function EditProductDialog({
       return;
     }
     setRestockPending(true);
-    const { error } = await supabase
-      .from("stock_restock_requests" as any)
-      .insert({
-        product_id: product.id,
-        supplier_product_id: product.supplier_product_id,
-        boutique_id: product.boutique_id,
-        requested_quantity: quantity,
-        catalog_moq: Number(moq ?? 1),
-      });
-    setRestockPending(false);
-    if (error) {
+    try {
+      const { error } = await supabase
+        .from("stock_restock_requests" as never)
+        .insert({
+          product_id: product.id,
+          supplier_product_id: product.supplier_product_id,
+          boutique_id: product.boutique_id,
+          requested_quantity: quantity,
+          catalog_moq: Number(moq ?? 1),
+        } as never);
+      if (error) throw error;
+      setRestockQuantity("");
+      toast.success(translateUi("Demande de réassort envoyée à BIB."));
+      await restock.refetch();
+    } catch {
       toast.error(translateUi("Impossible d’envoyer la demande de réassort."));
-      return;
+    } finally {
+      setRestockPending(false);
     }
-    setRestockQuantity("");
-    toast.success(translateUi("Demande de réassort envoyée à BIB."));
-    const { data: requests } = await supabase
-      .from("stock_restock_requests" as any)
-      .select("id,requested_quantity,status,created_at")
-      .eq("product_id", product.id)
-      .order("created_at", { ascending: false });
-    setRestockRequests(requests ?? []);
   };
   const preview = useMemo(() => {
     const calculatedPrice = publicPrice;
@@ -693,11 +687,41 @@ export function EditProductDialog({
                   : translateUi("Demander le réassort")}
               </Button>
             </div>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm font-medium">
+                {getUiLocale().startsWith("en")
+                  ? "Latest 50 restock requests"
+                  : "50 dernières demandes de réassort"}
+              </p>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={restock.isFetching}
+                onClick={() => void restock.refetch()}
+              >
+                {getUiLocale().startsWith("en") ? "Refresh" : "Actualiser"}
+              </Button>
+            </div>
+            {restock.isLoading && (
+              <p role="status" className="text-xs text-muted-foreground">
+                {getUiLocale().startsWith("en") ? "Loading requests…" : "Chargement des demandes…"}
+              </p>
+            )}
+            {restock.isError && (
+              <p role="alert" className="text-xs text-destructive">
+                {getUiLocale().startsWith("en")
+                  ? "The request history could not be refreshed. Please retry."
+                  : "Le suivi des demandes n’a pas pu être actualisé. Réessayez."}
+              </p>
+            )}
+            {!restock.isLoading && !restock.isError && restockRequests.length === 0 && (
+              <p className="text-xs text-muted-foreground">
+                {getUiLocale().startsWith("en") ? "No restock requests yet." : "Aucune demande de réassort pour le moment."}
+              </p>
+            )}
             {restockRequests.length > 0 && (
               <div className="space-y-2 rounded-lg border p-3">
-                <p className="text-sm font-medium">
-                  {translateUi("Suivi des demandes")}
-                </p>
                 {restockRequests.map((request) => (
                   <div
                     key={request.id}
@@ -725,6 +749,11 @@ export function EditProductDialog({
                                   ? translateUi("Annulée")
                                   : request.status}
                     </Badge>
+                    {request.review_comment && (
+                      <p className="w-full whitespace-pre-wrap rounded-md bg-muted/40 p-2 text-muted-foreground">
+                        {request.review_comment}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -753,7 +782,7 @@ export function EditProductDialog({
               variant="outline"
               className="w-full justify-start"
               onClick={() => {
-                window.location.assign(
+                navigate(
                   `/dashboard/personnalisation?productId=${encodeURIComponent(product.id)}`,
                 );
               }}
