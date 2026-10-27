@@ -1,5 +1,13 @@
 # Roadmap
 
+## Rattachement marchand des boutiques Platform — 27 octobre 2026
+
+- [x] Rétablir l’identité du propriétaire dans l’export des boutiques.
+- [x] Vérifier la complétude des snapshots et préserver les liens existants en cas d’échec de synchronisation.
+- [x] Tester les handlers des deux dépôts, les reprises et les snapshots concurrents ou anciens.
+- [ ] Déployer l’export puis le bridge Intranet et vérifier les rattachements après synchronisation complète.
+- Détails : `docs/merchant-shop-sync.md`.
+
 ## Réassort Platform–Intranet — 27 octobre 2026
 
 - [x] Relier les demandes marchandes à une file de revue BIB par référence catalogue.
