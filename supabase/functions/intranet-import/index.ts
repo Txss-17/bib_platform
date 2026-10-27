@@ -113,6 +113,24 @@ Deno.serve(async (req) => {
   if (!parsed.success) return json({ error: parsed.error.flatten() }, 400);
   const sb = adminClient();
 
+  if (parsed.data.type === "restock_review") {
+    const input = parsed.data.data;
+    const { data, error } = await sb.rpc("apply_stock_restock_review", {
+      p_request_id: input.request_id,
+      p_version: input.version,
+      p_status: input.status,
+      p_comment: input.comment ?? null,
+    });
+    if (error?.code === "40001")
+      return json({ error: "restock_version_conflict" }, 409);
+    if (error?.code === "22023")
+      return json({ error: "invalid_restock_review" }, 400);
+    if (error?.code === "P0002")
+      return json({ error: "restock_request_not_found" }, 404);
+    if (error) return json({ error: "restock_review_failed" }, 503);
+    return json({ request: data });
+  }
+
   if (parsed.data.type === "customization_review") {
     const input = parsed.data.data;
     const { data, error } = await sb.rpc("apply_product_customization_review", {

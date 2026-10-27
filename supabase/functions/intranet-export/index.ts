@@ -68,6 +68,7 @@ Deno.serve(async (req) => {
     boutiqueFavorites,
     products,
     customizationRows,
+    restockRows,
   ] = await Promise.all([
     // Full reference snapshots keep ownership and commission joins valid for incremental orders.
     readAll(() =>
@@ -160,12 +161,23 @@ Deno.serve(async (req) => {
         .lte("updated_at", snapshotAt)
         .order("id"),
     ),
+    readAll(() =>
+      sb
+        .from("stock_restock_requests")
+        .select(
+          "id, product_id, supplier_product_id, boutique_id, requested_quantity, catalog_moq, status, note, review_comment, version, created_at, updated_at, boutiques (name), supplier_products (intranet_id, name)",
+        )
+        .gte("updated_at", since)
+        .lte("updated_at", snapshotAt)
+        .order("id"),
+    ),
   ]);
 
   // An unavailable required source is an export failure, never an empty snapshot.
   const appsData = apps.data ?? [];
 
   const err =
+    restockRows.error ||
     customizationRows.error ||
     apps.error ||
     b.error ||
@@ -705,6 +717,31 @@ Deno.serve(async (req) => {
     protocol_version: 1,
     snapshot_at: snapshotAt,
     favorites_complete: true,
+    restock_requests: (restockRows.data ?? []).map((request) => {
+      const supplier = Array.isArray(request.supplier_products)
+        ? request.supplier_products[0]
+        : request.supplier_products;
+      const boutique = Array.isArray(request.boutiques)
+        ? request.boutiques[0]
+        : request.boutiques;
+      return {
+        id: request.id,
+        product_id: request.product_id,
+        supplier_product_id: request.supplier_product_id,
+        intranet_product_id: supplier?.intranet_id ?? null,
+        boutique_id: request.boutique_id,
+        boutique_name: boutique?.name ?? null,
+        product_name: supplier?.name ?? null,
+        requested_quantity: request.requested_quantity,
+        catalog_moq: request.catalog_moq,
+        status: request.status,
+        note: request.note,
+        review_comment: request.review_comment,
+        version: request.version,
+        created_at: request.created_at,
+        updated_at: request.updated_at,
+      };
+    }),
     customization_requests: (customizationRows.data ?? []).map((dossier) => {
       const product = Array.isArray(dossier.products)
         ? dossier.products[0]
