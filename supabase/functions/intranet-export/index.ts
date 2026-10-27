@@ -320,6 +320,12 @@ Deno.serve(async (req) => {
     );
   }
 
+  // A boutique owner must be represented in the complete merchant snapshot.
+  // Missing profiles are an export error, never permission to detach a shop.
+  const merchantIds = new Set(profs.map((profile) => profile.user_id));
+  if (ownerIds.some((ownerId) => !ownerId || !merchantIds.has(ownerId)))
+    return json({ error: "merchant_owner_profile_missing" }, 503);
+
   // Merchants : email via l'API admin.
   const emailsByUser: Record<string, string | null> = {};
 
@@ -717,6 +723,8 @@ Deno.serve(async (req) => {
     protocol_version: 1,
     snapshot_at: snapshotAt,
     favorites_complete: true,
+    merchants_complete: true,
+    boutiques_complete: true,
     restock_requests: (restockRows.data ?? []).map((request) => {
       const supplier = Array.isArray(request.supplier_products)
         ? request.supplier_products[0]
@@ -763,6 +771,7 @@ Deno.serve(async (req) => {
     }),
     boutiques: (b.data ?? []).map(({ user_id, intranet_status, ...rest }) => ({
       ...rest,
+      user_id,
       status: intranet_status ?? rest.status,
       publication_status: rest.status,
       subscription_plan: plans[user_id] ?? null,
