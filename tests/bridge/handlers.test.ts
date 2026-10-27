@@ -195,6 +195,17 @@ describe("Privileged bridge import", () => {
     expect((await handler(request(product()))).status).toBe(200);
     expect(mocks.calls.filter((c) => c.action === "insert")).toHaveLength(1);
   });
+  it("returns the customization review wrapper consumed by Intranet", async () => {
+    const review = { product_id: id, version: 1, supplier_status: "approved", updated_at: version };
+    mocks.rpc.mockResolvedValue(ok(review));
+    await load("intranet-import");
+    const response = await handler(request({
+      type: "customization_review",
+      data: { product_id: id, version: 1, status: "approved", comment: null },
+    }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ id: review, review });
+  });
   it("applies the intranet status through the server-only RPC", async () => {
     await load("intranet-import");
     expect(

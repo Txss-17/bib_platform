@@ -709,7 +709,7 @@ export function EditProductDialog({
               </p>
             )}
             {restock.isError && (
-              <p role="alert" className="text-xs text-destructive">
+              <p role="alert" className="text-xs text-destructive-ink">
                 {getUiLocale().startsWith("en")
                   ? "The request history could not be refreshed. Please retry."
                   : "Le suivi des demandes n’a pas pu être actualisé. Réessayez."}

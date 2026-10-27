@@ -144,7 +144,7 @@ Deno.serve(async (req) => {
     if (error?.code === "22023")
       return json({ error: "invalid_customization_review" }, 400);
     if (error) return json({ error: "customization_review_failed" }, 503);
-    return json({ id: data });
+    return json({ id: data, review: data });
   }
 
   if (parsed.data.type === "shipment_assignment") {

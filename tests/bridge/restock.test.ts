@@ -101,6 +101,7 @@ describe("Restock review bridge contract", () => {
   it.each([
     { version: 0 },
     { version: 1.5 },
+    { version: 2147483648 },
     { request_id: "not-a-uuid" },
     { status: "received" },
     { status: "ordered" },
@@ -199,7 +200,7 @@ describe("Atomic BIB restock decisions", () => {
       .toMatchObject({ status: "rejected", version: 2, review_comment: "Référence indisponible" });
     expect((await db.query("SELECT stock_quantity FROM products")).rows[0].stock_quantity).toBe(0);
   });
-  it.each([null, "", "   "])("requires an actual rejection reason %j", async (comment) => {
+  it.each([null, "", "   ", "\t\n", "\u00a0"])("requires an actual rejection reason %j", async (comment) => {
     await expect(review(1, "rejected", comment)).rejects.toMatchObject({ code: "22023" });
     expect(await stored()).toMatchObject({ status: "requested", version: 1 });
   });
@@ -251,6 +252,16 @@ describe("Atomic BIB restock decisions", () => {
     expect(first.review_comment).toBe("Validé");
     await review(1, "approved", "Validé");
     expect(await stored()).toEqual(first);
+  });
+  it("normalizes Unicode whitespace consistently with the bridge", async () => {
+    await review(1, "approved", "\u00a0\tValidé\n\ufeff");
+    const first = await stored();
+    expect(first.review_comment).toBe("Validé");
+    await review(1, "approved", "Validé");
+    expect(await stored()).toEqual(first);
+  });
+  it("reports an extreme stale version as a conflict without arithmetic overflow", async () => {
+    await expect(review(2147483647)).rejects.toMatchObject({ code: "40001" });
   });
   it("rejects a different comment on a repeated decision", async () => {
     await review();
