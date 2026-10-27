@@ -231,6 +231,60 @@ describe("Privileged bridge import", () => {
   });
 });
 
+
+describe("Restock review bridge import", () => {
+  const body = {
+    type: "restock_review",
+    data: {
+      request_id: id,
+      version: 1,
+      status: "approved",
+      comment: "Commande validée",
+    },
+  };
+  it("uses the service-only restock RPC and preserves the review version", async () => {
+    const authoritative = { id, version: 2, status: "approved", review_comment: "Commande validée" };
+    mocks.rpc.mockResolvedValue(ok(authoritative));
+    await load("intranet-import");
+    const response = await handler(request(body));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ request: authoritative });
+    expect(mocks.rpc).toHaveBeenCalledWith("apply_stock_restock_review", {
+      p_request_id: id,
+      p_version: 1,
+      p_status: "approved",
+      p_comment: "Commande validée",
+    });
+    expect(mocks.rpc).not.toHaveBeenCalledWith(
+      "receive_product_stock",
+      expect.anything(),
+    );
+  });
+  it.each([
+    ["40001", 409],
+    ["22023", 400],
+    ["P0002", 404],
+    ["XX000", 503],
+  ])("maps restock RPC failure %s to HTTP %s", async (code, status) => {
+    mocks.rpc.mockResolvedValue({ data: null, error: { code } });
+    await load("intranet-import");
+    expect((await handler(request(body))).status).toBe(status);
+  });
+  it("rejects unauthorized review before creating a privileged client", async () => {
+    await load("intranet-import");
+    expect((await handler(request(body, null))).status).toBe(401);
+    expect(mocks.createClient).not.toHaveBeenCalled();
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+  it("does not accept receipt or purchase statuses as review actions", async () => {
+    await load("intranet-import");
+    expect(
+      (await handler(request({ ...body, data: { ...body.data, status: "received" } }))).status,
+    ).toBe(400);
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+});
+
 describe("Partner Ops portal", () => {
   const ops = (action: string, extra = {}) =>
     request({
@@ -310,7 +364,7 @@ describe("Partner Ops portal", () => {
 
 describe("Bridge export", () => {
   it("exports order changes by updated_at, including orders created before the requested window", async () => {
-    for (let i = 0; i < 11; i++)
+    for (let i = 0; i < 12; i++)
       mocks.results.push(
         ok(
           i === 1
@@ -338,7 +392,7 @@ describe("Bridge export", () => {
     ).toContainEqual(["gte", "updated_at", "2026-10-25T00:00:00.000Z"]);
   });
   it("never returns a successful empty snapshot after a supplier export failure", async () => {
-    for (let i = 0; i < 11; i++)
+    for (let i = 0; i < 12; i++)
       mocks.results.push(
         i === 3
           ? { data: null, error: { message: "missing required table" } }
@@ -347,4 +401,69 @@ describe("Bridge export", () => {
     await load("intranet-export");
     expect((await handler(request({}))).status).toBe(500);
   });
+
+  it("fails the export when restock requests are unavailable", async () => {
+    for (let i = 0; i < 12; i++) {
+      mocks.results.push(
+        i === 11
+          ? { data: null, error: { message: "restock requests unavailable" } }
+          : ok([]),
+      );
+    }
+    await load("intranet-export");
+    expect((await handler(request({}))).status).toBe(500);
+  });
+
+
+  it.each([false, true])("exports catalogue identity and the authoritative restock state (array joins: %s)", async (arrayJoins) => {
+    const since = "2026-10-25T00:00:00.000Z";
+    const supplier = { intranet_id: other, name: "Produit BIB" };
+    const boutique = { name: "Ma boutique" };
+    const row = {
+      id,
+      product_id: "20000000-0000-4000-8000-000000000001",
+      supplier_product_id: "30000000-0000-4000-8000-000000000001",
+      boutique_id: "40000000-0000-4000-8000-000000000001",
+      requested_quantity: 30,
+      catalog_moq: 20,
+      status: "approved",
+      note: "Réassort de novembre",
+      review_comment: "Validé par BIB",
+      version: 2,
+      created_at: "2026-10-24T12:00:00Z",
+      updated_at: version,
+      supplier_products: arrayJoins ? [supplier] : supplier,
+      boutiques: arrayJoins ? [boutique] : boutique,
+      private_internal_notes: "Do not export",
+    };
+    for (let i = 0; i < 12; i++) mocks.results.push(ok(i === 11 ? [row] : []));
+    mocks.results.push(ok([]));
+    await load("intranet-export");
+    const response = await handler(request({ since }));
+    expect(response.status).toBe(200);
+    const data = await response.json();
+    expect(data.restock_requests).toEqual([{
+      id: row.id,
+      product_id: row.product_id,
+      supplier_product_id: row.supplier_product_id,
+      intranet_product_id: other,
+      boutique_id: row.boutique_id,
+      boutique_name: "Ma boutique",
+      product_name: "Produit BIB",
+      requested_quantity: 30,
+      catalog_moq: 20,
+      status: "approved",
+      note: row.note,
+      review_comment: row.review_comment,
+      version: 2,
+      created_at: row.created_at,
+      updated_at: version,
+    }]);
+    expect(mocks.calls.find((call) => call.table === "stock_restock_requests").filters)
+      .toEqual(expect.arrayContaining([
+        ["gte", "updated_at", since],
+        ["lte", "updated_at", data.snapshot_at],
+      ]));
+  });
+
 });
