@@ -6,7 +6,7 @@ Une approbation ne crée pas un achat fournisseur et ne modifie aucun stock. Les
 
 ## Mise en service coordonnée
 
-1. Appliquer les migrations Drizzle antérieures manquantes, puis Platform `0023_stock_restock_review.sql` et Intranet `0030_platform_stock_restock_requests.sql`. Ne pas rejouer les migrations Supabase historiques.
+1. Appliquer les migrations Drizzle antérieures manquantes, puis Platform `0023_stock_restock_review.sql` et Intranet `0030_platform_restock_review.sql`. Ne pas rejouer les migrations Supabase historiques.
 2. Vérifier les correspondances catalogue : `supplier_products.intranet_id` Platform doit contenir le UUID du produit catalogue `products.id` Intranet. Ce UUID ne désigne pas le produit marchand.
 3. Déployer Platform `intranet-export` et `intranet-import`, puis Intranet `platform-bridge`, avec la même clé privée de liaison. Déployer les interfaces des deux projets.
 4. Effectuer une synchronisation complète (sans date de départ) pour reprendre les demandes existantes. Une table indisponible ou une demande sans référence catalogue valide fait échouer la synchronisation ; aucun point de reprise réussi ne doit être enregistré.

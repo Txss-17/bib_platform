@@ -60,7 +60,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Txss-17/bib_intranet
-          ref: codex/restock-review-workflow
+          ref: 9e7a962c6b0dcc5ba0a80f52f4fbed2dad30c2fb
           path: bib_intranet
       - name: Set up Node.js
         uses: actions/setup-node@v4
