@@ -613,7 +613,7 @@ export default function Dashboard() {
 
                         <div className="mt-4 flex gap-2">
                           <Link
-                            to={`/dashboard/boutiques/edit/${boutique.id}`}
+                            to={`/dashboard/boutiques/${boutique.id}/edit`}
                             className="min-w-0 flex-1"
                           >
                             <Button
