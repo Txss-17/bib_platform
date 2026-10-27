@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useMemo, useState } from "react";
 import {
   Dialog,
@@ -9,7 +11,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Sparkles, Check, Trash2, Star, GripVertical } from "lucide-react";
+import {
+  Loader2,
+  Sparkles,
+  Check,
+  Trash2,
+  Star,
+  GripVertical,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   useProductMedia,
@@ -59,6 +68,7 @@ export function ProductMediaDialog({
   productName,
   defaultPrompt,
 }: Props) {
+  useLanguage();
   const [prompt, setPrompt] = useState(
     defaultPrompt ||
       `Mise en scène premium du produit « ${productName} », sans texte, ambiance lifestyle.`,
@@ -72,10 +82,15 @@ export function ProductMediaDialog({
   const setPrimary = useSetPrimaryProductMedia();
 
   const selected = useMemo(() => media.filter((m) => m.is_selected), [media]);
-  const unselected = useMemo(() => media.filter((m) => !m.is_selected), [media]);
+  const unselected = useMemo(
+    () => media.filter((m) => !m.is_selected),
+    [media],
+  );
   const selectedCount = selected.length;
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+  );
 
   const handleDragEnd = (e: DragEndEvent) => {
     const { active, over } = e;
@@ -89,7 +104,7 @@ export function ProductMediaDialog({
 
   const handleGenerate = async () => {
     if (prompt.trim().length < 6) {
-      toast.error("Décrivez la scène souhaitée en quelques mots.");
+      toast.error(translateUi("Décrivez la scène souhaitée en quelques mots."));
       return;
     }
     try {
@@ -99,13 +114,19 @@ export function ProductMediaDialog({
         prompt: prompt.trim(),
         count: 4,
       });
-      toast.success(`${created.length} variantes générées — choisissez celles à publier.`);
+      toast.success(
+        translateUi("{v0} variantes générées — choisissez celles à publier.", {
+          v0: created.length,
+        }),
+      );
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Génération impossible";
       if (msg.includes("rate_limited")) {
-        toast.error("Trop de demandes — réessayez dans quelques instants.");
+        toast.error(
+          translateUi("Trop de demandes — réessayez dans quelques instants."),
+        );
       } else if (msg.includes("credits_exhausted")) {
-        toast.error("Crédits IA épuisés sur votre espace.");
+        toast.error(translateUi("Crédits IA épuisés sur votre espace."));
       } else {
         toast.error(msg);
       }
@@ -118,28 +139,36 @@ export function ProductMediaDialog({
         <DialogHeader>
           <DialogTitle className="text-base flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-bib-gold" />
-            Studio visuels — {productName}
+            {translateUi("Studio visuels —") + " "}
+            {productName}
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Générez jusqu'à 4 visuels cohérents avec votre marque, puis sélectionnez
-            ceux à afficher sur la fiche produit.
+            {translateUi(
+              "Générez jusqu'à 4 visuels cohérents avec votre marque, puis sélectionnez ceux à afficher sur la fiche produit.",
+            )}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Prompt + generate */}
           <div className="space-y-2">
-            <label className="text-xs font-medium text-foreground">Brief créatif</label>
+            <label className="text-xs font-medium text-foreground">
+              {translateUi("Brief créatif")}
+            </label>
             <Textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               rows={3}
-              placeholder="Ex: Le produit posé sur du marbre, lumière dorée du matin, décor minimaliste"
+              placeholder={translateUi(
+                "Ex: Le produit posé sur du marbre, lumière dorée du matin, décor minimaliste",
+              )}
               className="text-sm"
             />
             <div className="flex items-center justify-between">
               <p className="text-[11px] text-muted-foreground">
-                L'IA respecte automatiquement votre identité (palette, ton, ambiance).
+                {translateUi(
+                  "L'IA respecte automatiquement votre identité (palette, ton, ambiance).",
+                )}
               </p>
               <Button
                 size="sm"
@@ -149,11 +178,13 @@ export function ProductMediaDialog({
               >
                 {generate.isPending ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Génération…
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />{" "}
+                    {translateUi("Génération…")}
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-3.5 h-3.5" /> Générer 4 variantes
+                    <Sparkles className="w-3.5 h-3.5" />{" "}
+                    {translateUi("Générer 4 variantes")}
                   </>
                 )}
               </Button>
@@ -164,22 +195,28 @@ export function ProductMediaDialog({
           <div>
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-xs font-medium text-foreground">
-                Bibliothèque ({media.length})
+                {translateUi("Bibliothèque (")}
+                {media.length})
               </h4>
               {selectedCount > 0 && (
                 <Badge variant="secondary" className="text-[10px]">
-                  {selectedCount} sélectionné{selectedCount > 1 ? "s" : ""} sur la fiche
+                  {selectedCount} {translateUi("sélectionné")}
+                  {selectedCount > 1 ? "s" : ""} {translateUi("sur la fiche")}
                 </Badge>
               )}
             </div>
 
             {isLoading ? (
-              <p className="text-xs text-muted-foreground">Chargement…</p>
+              <p className="text-xs text-muted-foreground">
+                {translateUi("Chargement…")}
+              </p>
             ) : media.length === 0 ? (
               <div className="rounded-lg border border-dashed border-border p-6 text-center">
                 <Sparkles className="w-8 h-8 mx-auto text-muted-foreground/40 mb-2" />
                 <p className="text-xs text-muted-foreground">
-                  Aucun visuel pour l'instant. Générez votre première série pour démarrer.
+                  {translateUi(
+                    "Aucun visuel pour l'instant. Générez votre première série pour démarrer.",
+                  )}
                 </p>
               </div>
             ) : (
@@ -188,10 +225,10 @@ export function ProductMediaDialog({
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                        Sur la fiche · glissez pour réordonner
+                        {translateUi("Sur la fiche · glissez pour réordonner")}
                       </p>
                       <p className="text-[11px] text-muted-foreground">
-                        Le 1ᵉʳ visuel = image principale
+                        {translateUi("Le 1ᵉʳ visuel = image principale")}
                       </p>
                     </div>
                     <DndContext
@@ -225,7 +262,10 @@ export function ProductMediaDialog({
                                 })
                               }
                               onDelete={() => {
-                                if (!confirm("Supprimer ce visuel ?")) return;
+                                if (
+                                  !confirm(translateUi("Supprimer ce visuel ?"))
+                                )
+                                  return;
                                 remove.mutate({ mediaId: m.id, productId });
                               }}
                             />
@@ -239,7 +279,8 @@ export function ProductMediaDialog({
                 {unselected.length > 0 && (
                   <div>
                     <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-2">
-                      Bibliothèque ({unselected.length})
+                      {translateUi("Bibliothèque (")}
+                      {unselected.length})
                     </p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                       {unselected.map((m) => (
@@ -257,7 +298,7 @@ export function ProductMediaDialog({
                               })
                             }
                             className="block w-full aspect-[4/5] bg-muted"
-                            title="Ajouter à la fiche"
+                            title={translateUi("Ajouter à la fiche")}
                           >
                             <img
                               src={m.url}
@@ -269,12 +310,15 @@ export function ProductMediaDialog({
                           <button
                             type="button"
                             onClick={() => {
-                              if (!confirm("Supprimer ce visuel ?")) return;
+                              if (
+                                !confirm(translateUi("Supprimer ce visuel ?"))
+                              )
+                                return;
                               remove.mutate({ mediaId: m.id, productId });
                             }}
                             className="absolute top-1.5 right-1.5 bg-background/90 backdrop-blur rounded-full p-1 opacity-0 group-hover:opacity-100 transition hover:text-destructive"
-                            title="Supprimer"
-                            aria-label="Supprimer ce visuel"
+                            title={translateUi("Supprimer")}
+                            aria-label={translateUi("Supprimer ce visuel")}
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>
@@ -309,8 +353,15 @@ function SortableMediaCard({
   onSetPrimary,
   onDelete,
 }: SortableCardProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: media.id });
+  useLanguage();
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: media.id });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -327,7 +378,12 @@ function SortableMediaCard({
       }`}
     >
       <div className="aspect-[4/5] bg-muted">
-        <img src={media.url} alt="" className="w-full h-full object-cover" loading="lazy" />
+        <img
+          src={media.url}
+          alt=""
+          className="w-full h-full object-cover"
+          loading="lazy"
+        />
       </div>
 
       {/* Order index */}
@@ -336,7 +392,10 @@ function SortableMediaCard({
           #{index + 1}
         </span>
         {isPrimary && (
-          <span className="bg-bib-gold text-bib-marine rounded-full p-1 shadow" title="Image principale">
+          <span
+            className="bg-bib-gold text-foreground rounded-full p-1 shadow"
+            title={translateUi("Image principale")}
+          >
             <Star className="w-3 h-3 fill-current" />
           </span>
         )}
@@ -348,8 +407,8 @@ function SortableMediaCard({
         {...attributes}
         {...listeners}
         className="absolute bottom-1.5 left-1.5 bg-background/90 backdrop-blur rounded-full p-1 cursor-grab active:cursor-grabbing shadow"
-        title="Glisser pour réordonner"
-        aria-label="Glisser pour réordonner"
+        title={translateUi("Glisser pour réordonner")}
+        aria-label={translateUi("Glisser pour réordonner")}
       >
         <GripVertical className="w-3 h-3" />
       </button>
@@ -361,8 +420,8 @@ function SortableMediaCard({
             type="button"
             onClick={onSetPrimary}
             className="bg-background/90 backdrop-blur rounded-full p-1 hover:text-bib-gold shadow"
-            title="Définir comme principale"
-            aria-label="Définir comme principale"
+            title={translateUi("Définir comme principale")}
+            aria-label={translateUi("Définir comme principale")}
           >
             <Star className="w-3 h-3" />
           </button>
@@ -371,8 +430,8 @@ function SortableMediaCard({
           type="button"
           onClick={onToggle}
           className="bg-background/90 backdrop-blur rounded-full p-1 hover:text-foreground shadow"
-          title="Retirer de la fiche"
-          aria-label="Retirer de la fiche"
+          title={translateUi("Retirer de la fiche")}
+          aria-label={translateUi("Retirer de la fiche")}
         >
           <Check className="w-3 h-3" />
         </button>
@@ -380,8 +439,8 @@ function SortableMediaCard({
           type="button"
           onClick={onDelete}
           className="bg-background/90 backdrop-blur rounded-full p-1 hover:text-destructive shadow"
-          title="Supprimer"
-          aria-label="Supprimer ce visuel"
+          title={translateUi("Supprimer")}
+          aria-label={translateUi("Supprimer ce visuel")}
         >
           <Trash2 className="w-3 h-3" />
         </button>

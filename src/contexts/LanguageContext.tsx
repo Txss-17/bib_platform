@@ -1,4 +1,15 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  getUiLanguage,
+  setUiLanguage,
+  subscribeUiLanguage,
+} from "@/lib/uiLanguage";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useSyncExternalStore,
+  ReactNode,
+} from "react";
 
 type Lang = "fr" | "en";
 
@@ -27,7 +38,8 @@ const translations: Record<Lang, Record<string, string>> = {
     "hero.badge": "Approuvé par 10 000+ entrepreneurs",
     "hero.title1": "Bâtissez votre empire.",
     "hero.title2": "Évoluez en confiance.",
-    "hero.desc": "Brand-In-A-Box est la plateforme de commerce intelligente qui vous permet de lancer, gérer et développer votre activité en ligne — avec une transparence totale, des insights intelligents et une protection intégrée.",
+    "hero.desc":
+      "Brand-In-A-Box est la plateforme de commerce intelligente qui vous permet de lancer, gérer et développer votre activité en ligne — avec une transparence totale, des insights intelligents et une protection intégrée.",
     "hero.cta": "Lancer votre activité",
     "hero.demo": "Voir la démo",
     "hero.nocard": "Sans carte bancaire",
@@ -49,68 +61,89 @@ const translations: Record<Lang, Record<string, string>> = {
     "features.badge": "Fonctionnalités",
     "features.title1": "Tout ce qu'il vous faut pour",
     "features.title2": "réussir",
-    "features.desc": "Brand-In-A-Box est bien plus qu'une marketplace — c'est un système complet conçu pour lancer, développer et protéger votre activité en ligne.",
+    "features.desc":
+      "Brand-In-A-Box est bien plus qu'une marketplace — c'est un système complet conçu pour lancer, développer et protéger votre activité en ligne.",
     "features.multiboutique.title": "Gestion multi-boutiques",
-    "features.multiboutique.desc": "Créez et gérez plusieurs boutiques avec une identité personnalisée et des analyses par boutique.",
+    "features.multiboutique.desc":
+      "Créez et gérez plusieurs boutiques avec une identité personnalisée et des analyses par boutique.",
     "features.intelligence.title": "Intelligence produit",
-    "features.intelligence.desc": "Recommandations IA explicables : demande du marché, niveaux de concurrence et impact environnemental — aucune boîte noire.",
+    "features.intelligence.desc":
+      "Recommandations IA explicables : demande du marché, niveaux de concurrence et impact environnemental — aucune boîte noire.",
     "features.trust.title": "Confiance & Conformité",
-    "features.trust.desc": "Conformité intégrée, vérification d'âge, audits fournisseurs et intégration Trustpilot transparente. Votre réputation, protégée.",
+    "features.trust.desc":
+      "Conformité intégrée, vérification d'âge, audits fournisseurs et intégration Trustpilot transparente. Votre réputation, protégée.",
     "features.recycling.title": "Recyclage & Fidélité",
-    "features.recycling.desc": "Les clients scannent les emballages pour gagner des points. Impact environnemental visible et système de récompenses durable.",
+    "features.recycling.desc":
+      "Les clients scannent les emballages pour gagner des points. Impact environnemental visible et système de récompenses durable.",
     "features.multimarket.title": "Multi-marchés",
-    "features.multimarket.desc": "Lancez-vous en UE, EAU, Afrique et au-delà. Multi-devises, multilingue, avec conformité locale intégrée.",
+    "features.multimarket.desc":
+      "Lancez-vous en UE, EAU, Afrique et au-delà. Multi-devises, multilingue, avec conformité locale intégrée.",
     "features.support.title": "Support Pôle 12",
-    "features.support.desc": "Support intégré avec alertes contextuelles, recommandations personnalisées et emails de prévention pour risques, stocks et conformité.",
+    "features.support.desc":
+      "Support intégré avec alertes contextuelles, recommandations personnalisées et emails de prévention pour risques, stocks et conformité.",
 
     // How it works
     "how.badge": "Démarrage",
     "how.title1": "Votre parcours vers le",
     "how.title2": "succès",
-    "how.desc": "De la création de compte au développement de votre activité — Brand-In-A-Box vous guide à chaque étape avec transparence et support.",
+    "how.desc":
+      "De la création de compte au développement de votre activité — Brand-In-A-Box vous guide à chaque étape avec transparence et support.",
     "how.step1.title": "Créez votre compte",
-    "how.step1.desc": "Inscrivez-vous avec vérification email et confirmation d'âge (18+). Choisissez votre profil et vos marchés cibles.",
+    "how.step1.desc":
+      "Inscrivez-vous avec vérification email et confirmation d'âge (18+). Choisissez votre profil et vos marchés cibles.",
     "how.step2.title": "Lancez votre boutique",
-    "how.step2.desc": "Créez votre première boutique, personnalisez son identité et choisissez votre catégorie.",
+    "how.step2.desc":
+      "Créez votre première boutique, personnalisez son identité et choisissez votre catégorie.",
     "how.step3.title": "Sélectionnez vos produits",
-    "how.step3.desc": "Parcourez les produits validés par Brand-In-A-Box avec indicateurs de demande, notes fournisseurs et visibilité des marges.",
+    "how.step3.desc":
+      "Parcourez les produits validés par Brand-In-A-Box avec indicateurs de demande, notes fournisseurs et visibilité des marges.",
     "how.step4.title": "Évoluez en confiance",
-    "how.step4.desc": "Suivez vos performances dans le tableau de bord, exploitez l'intelligence produit et grandissez avec conformité et support intégrés.",
+    "how.step4.desc":
+      "Suivez vos performances dans le tableau de bord, exploitez l'intelligence produit et grandissez avec conformité et support intégrés.",
 
     // Trust
     "trust.badge": "Confiance & Sécurité",
     "trust.title1": "Protégé.",
     "trust.title2": "Autonomisé.",
-    "trust.desc": "Brand-In-A-Box repose sur la transparence et la confiance. Chaque fonctionnalité protège votre activité, guide vos décisions et responsabilise tout le monde — y compris nous.",
+    "trust.desc":
+      "Brand-In-A-Box repose sur la transparence et la confiance. Chaque fonctionnalité protège votre activité, guide vos décisions et responsabilise tout le monde — y compris nous.",
     "trust.uptime": "Disponibilité",
     "trust.encryption": "Chiffrement",
     "trust.monitoring": "Surveillance",
     "trust.supplier.title": "Validation fournisseurs",
-    "trust.supplier.desc": "Chaque fournisseur passe des audits rigoureux avec statut de validation visible et badges d'audit.",
+    "trust.supplier.desc":
+      "Chaque fournisseur passe des audits rigoureux avec statut de validation visible et badges d'audit.",
     "trust.transparency.title": "Transparence totale",
-    "trust.transparency.desc": "Voyez les indicateurs de demande, niveaux de concurrence et impact environnemental — aucun algorithme caché.",
+    "trust.transparency.desc":
+      "Voyez les indicateurs de demande, niveaux de concurrence et impact environnemental — aucun algorithme caché.",
     "trust.data.title": "Protection des données",
-    "trust.data.desc": "Conforme RGPD avec sécurité de niveau entreprise. Vos données sont chiffrées et protégées.",
+    "trust.data.desc":
+      "Conforme RGPD avec sécurité de niveau entreprise. Vos données sont chiffrées et protégées.",
     "trust.compliance.title": "Conformité intégrée",
-    "trust.compliance.desc": "Exigences légales par marché, règles d'emballage et responsabilités vendeur — toujours visibles.",
+    "trust.compliance.desc":
+      "Exigences légales par marché, règles d'emballage et responsabilités vendeur — toujours visibles.",
     "trust.trustpilot.title": "Intégration Trustpilot",
-    "trust.trustpilot.desc": "Avis clients transparents affichés et utilisés pour l'analytique. Construisez une vraie réputation.",
+    "trust.trustpilot.desc":
+      "Avis clients transparents affichés et utilisés pour l'analytique. Construisez une vraie réputation.",
     "trust.fair.title": "Juste & Responsable",
-    "trust.fair.desc": "Conditions claires, frais visibles, aucun coût caché. Brand-In-A-Box grandit avec vous, pas à vos dépens.",
+    "trust.fair.desc":
+      "Conditions claires, frais visibles, aucun coût caché. Brand-In-A-Box grandit avec vous, pas à vos dépens.",
 
     // CTA
     "cta.badge": "Commencez aujourd'hui",
     "cta.title": "Prêt à bâtir votre empire commercial ?",
-    "cta.desc": "Rejoignez des milliers d'entrepreneurs qui font confiance à Brand-In-A-Box pour lancer, développer et protéger leur activité. Sans carte bancaire.",
+    "cta.desc":
+      "Rejoignez des milliers d'entrepreneurs qui font confiance à Brand-In-A-Box pour lancer, développer et protéger leur activité. Sans carte bancaire.",
     "cta.button": "Créer un compte gratuit",
     "cta.sales": "Contacter les ventes",
-    "cta.free": "âœ“ Gratuit pour commencer",
-    "cta.nofees": "âœ“ Aucun frais caché",
-    "cta.cancel": "âœ“ Annulation à tout moment",
-    "cta.age": "âœ“ 18+ uniquement",
+    "cta.free": "✓ Gratuit pour commencer",
+    "cta.nofees": "✓ Aucun frais caché",
+    "cta.cancel": "✓ Annulation à tout moment",
+    "cta.age": "✓ 18+ uniquement",
 
     // Footer
-    "footer.desc": "La plateforme de commerce intelligente qui permet aux entrepreneurs de créer, développer et sécuriser leur activité en ligne.",
+    "footer.desc":
+      "La plateforme de commerce intelligente qui permet aux entrepreneurs de créer, développer et sécuriser leur activité en ligne.",
     "footer.product": "Produit",
     "footer.features": "Fonctionnalités",
     "footer.dashboard": "Tableau de bord",
@@ -154,7 +187,8 @@ const translations: Record<Lang, Record<string, string>> = {
     "login.branding.3": "Gérez plusieurs boutiques depuis un seul endroit",
     "login.branding.4": "Plateforme sécurisée et conforme",
     "login.security.title": "Sécurité de niveau entreprise",
-    "login.security.desc": "Vos données sont protégées par un chiffrement de pointe",
+    "login.security.desc":
+      "Vos données sont protégées par un chiffrement de pointe",
 
     // Signup
     "signup.title": "Créez votre compte",
@@ -175,14 +209,18 @@ const translations: Record<Lang, Record<string, string>> = {
     "signup.cgvLink": "Conditions Générales de Vente",
     "signup.acknowledgePrivacy": "Je reconnais avoir pris connaissance de la",
     "signup.privacyLink": "Politique de confidentialité",
-    "signup.cookiesNotice": "Le choix des cookies facultatifs est séparé et ne conditionne pas la création du compte.",
+    "signup.cookiesNotice":
+      "Le choix des cookies facultatifs est séparé et ne conditionne pas la création du compte.",
     "signup.cookiesLink": "Politique cookies",
-    "signup.acceptlegal": "Vous devez accepter les CGU et les CGV, et confirmer avoir pris connaissance de la politique de confidentialité.",
+    "signup.acceptlegal":
+      "Vous devez accepter les CGU et les CGV, et confirmer avoir pris connaissance de la politique de confidentialité.",
     "signup.submit": "Créer un compte",
     "signup.hasaccount": "Vous avez déjà un compte ?",
     "signup.signin": "Se connecter",
-    "signup.branding.title": "Commencez à vendre avec Brand-In-A-Box dès aujourd'hui",
-    "signup.branding.desc": "Rejoignez des milliers d'entrepreneurs qui font confiance à Brand-In-A-Box pour développer leur activité.",
+    "signup.branding.title":
+      "Commencez à vendre avec Brand-In-A-Box dès aujourd'hui",
+    "signup.branding.desc":
+      "Rejoignez des milliers d'entrepreneurs qui font confiance à Brand-In-A-Box pour développer leur activité.",
     "signup.multiboutique": "Multi-Boutique",
     "signup.multiboutique.desc": "Gérez plusieurs boutiques",
     "signup.analytics": "Analytique",
@@ -193,13 +231,15 @@ const translations: Record<Lang, Record<string, string>> = {
     "signup.sustainable.desc": "Plateforme éco-responsable",
     "signup.social": "vendeurs font déjà confiance à Brand-In-A-Box",
     "signup.passwordmismatch": "Les mots de passe ne correspondent pas",
-    "signup.passwordshort": "Le mot de passe doit contenir au moins 8 caractères",
+    "signup.passwordshort":
+      "Le mot de passe doit contenir au moins 8 caractères",
     "signup.acceptterms": "Vous devez accepter les conditions d'utilisation",
     "signup.ageconfirm": "Vous devez avoir 18 ans ou plus pour créer un compte",
 
     // Forgot Password
     "forgot.title": "Mot de passe oublié",
-    "forgot.desc": "Entrez votre email pour recevoir un lien de réinitialisation",
+    "forgot.desc":
+      "Entrez votre email pour recevoir un lien de réinitialisation",
     "forgot.sent": "Email envoyé !",
     "forgot.sentdesc": "Si un compte existe avec l'adresse",
     "forgot.sentdesc2": ", vous recevrez un lien de réinitialisation.",
@@ -216,10 +256,12 @@ const translations: Record<Lang, Record<string, string>> = {
     "reset.redirect": "Vous allez être redirigé vers la connexion...",
     "reset.errorMin": "Le mot de passe doit contenir au moins 6 caractères",
     "reset.errorMatch": "Les mots de passe ne correspondent pas",
-    "reset.notoken": "Ce lien semble invalide ou expiré. Veuillez demander un nouveau lien de réinitialisation.",
+    "reset.notoken":
+      "Ce lien semble invalide ou expiré. Veuillez demander un nouveau lien de réinitialisation.",
 
     // Auth errors
-    "auth.error.network": "Erreur de connexion réseau. Vérifiez votre connexion internet et réessayez.",
+    "auth.error.network":
+      "Erreur de connexion réseau. Vérifiez votre connexion internet et réessayez.",
     "auth.error.invalid": "Email ou mot de passe incorrect",
     "auth.error.generic": "Une erreur est survenue. Veuillez réessayer.",
   },
@@ -241,7 +283,8 @@ const translations: Record<Lang, Record<string, string>> = {
     "hero.badge": "Trusted by 10,000+ entrepreneurs",
     "hero.title1": "Build Your Empire.",
     "hero.title2": "Scale with Confidence.",
-    "hero.desc": "Brand-In-A-Box is the intelligent commerce platform that empowers you to launch, manage, and grow your online business—with complete transparency, smart insights, and built-in protection.",
+    "hero.desc":
+      "Brand-In-A-Box is the intelligent commerce platform that empowers you to launch, manage, and grow your online business—with complete transparency, smart insights, and built-in protection.",
     "hero.cta": "Start Your Business",
     "hero.demo": "Watch Demo",
     "hero.nocard": "No credit card required",
@@ -263,68 +306,89 @@ const translations: Record<Lang, Record<string, string>> = {
     "features.badge": "Platform Features",
     "features.title1": "Everything You Need to",
     "features.title2": "Succeed",
-    "features.desc": "Brand-In-A-Box is more than a marketplace—it's a complete business operating system designed to help you launch, scale, and protect your online business.",
+    "features.desc":
+      "Brand-In-A-Box is more than a marketplace—it's a complete business operating system designed to help you launch, scale, and protect your online business.",
     "features.multiboutique.title": "Multi-Boutique Management",
-    "features.multiboutique.desc": "Create and manage multiple boutiques with custom branding and analytics for each store.",
+    "features.multiboutique.desc":
+      "Create and manage multiple boutiques with custom branding and analytics for each store.",
     "features.intelligence.title": "Product Intelligence",
-    "features.intelligence.desc": "Explainable AI recommendations with clear reasoning: market demand, competition levels, and environmental impact—no black-box scoring.",
+    "features.intelligence.desc":
+      "Explainable AI recommendations with clear reasoning: market demand, competition levels, and environmental impact—no black-box scoring.",
     "features.trust.title": "Trust & Compliance",
-    "features.trust.desc": "Built-in compliance visibility, age verification, supplier audits, and transparent Trustpilot integration. Your reputation, protected.",
+    "features.trust.desc":
+      "Built-in compliance visibility, age verification, supplier audits, and transparent Trustpilot integration. Your reputation, protected.",
     "features.recycling.title": "Recycling & Loyalty",
-    "features.recycling.desc": "Customers scan packaging to earn points. Visible environmental impact stats and rewards system that builds lasting loyalty.",
+    "features.recycling.desc":
+      "Customers scan packaging to earn points. Visible environmental impact stats and rewards system that builds lasting loyalty.",
     "features.multimarket.title": "Multi-Market Ready",
-    "features.multimarket.desc": "Launch across EU, UAE, Africa and beyond. Multi-currency, multi-language, with market-specific compliance built in.",
+    "features.multimarket.desc":
+      "Launch across EU, UAE, Africa and beyond. Multi-currency, multi-language, with market-specific compliance built in.",
     "features.support.title": "Pôle 12 Support",
-    "features.support.desc": "Integrated support with contextual alerts, personalized recommendations, and prevention emails for risks, stock, and compliance.",
+    "features.support.desc":
+      "Integrated support with contextual alerts, personalized recommendations, and prevention emails for risks, stock, and compliance.",
 
     // How it works
     "how.badge": "Getting Started",
     "how.title1": "Your Journey to",
     "how.title2": "Success",
-    "how.desc": "From account creation to scaling your business—Brand-In-A-Box guides you every step of the way with transparency and support.",
+    "how.desc":
+      "From account creation to scaling your business—Brand-In-A-Box guides you every step of the way with transparency and support.",
     "how.step1.title": "Create Your Account",
-    "how.step1.desc": "Sign up with email verification and age confirmation (18+). Choose your business profile type and select your target markets.",
+    "how.step1.desc":
+      "Sign up with email verification and age confirmation (18+). Choose your business profile type and select your target markets.",
     "how.step2.title": "Launch Your Boutique",
-    "how.step2.desc": "Create your first boutique, customize its identity, and choose your category.",
+    "how.step2.desc":
+      "Create your first boutique, customize its identity, and choose your category.",
     "how.step3.title": "Select & Configure Products",
-    "how.step3.desc": "Browse Brand-In-A-Box-validated products with transparent demand indicators, supplier ratings, and margin visibility. Add video content for authenticity.",
+    "how.step3.desc":
+      "Browse Brand-In-A-Box-validated products with transparent demand indicators, supplier ratings, and margin visibility. Add video content for authenticity.",
     "how.step4.title": "Scale with Confidence",
-    "how.step4.desc": "Track performance in your dashboard, leverage product intelligence, and grow with compliance and support built-in from day one.",
+    "how.step4.desc":
+      "Track performance in your dashboard, leverage product intelligence, and grow with compliance and support built-in from day one.",
 
     // Trust
     "trust.badge": "Trust & Security",
     "trust.title1": "Protected.",
     "trust.title2": "Empowered.",
-    "trust.desc": "Brand-In-A-Box is built on transparency and trust. Every feature is designed to protect your business, guide your decisions, and hold everyone—including us—accountable.",
+    "trust.desc":
+      "Brand-In-A-Box is built on transparency and trust. Every feature is designed to protect your business, guide your decisions, and hold everyone—including us—accountable.",
     "trust.uptime": "Uptime SLA",
     "trust.encryption": "Encryption",
     "trust.monitoring": "Monitoring",
     "trust.supplier.title": "Supplier Validation",
-    "trust.supplier.desc": "Every supplier undergoes rigorous audits with visible validation status and audit badges.",
+    "trust.supplier.desc":
+      "Every supplier undergoes rigorous audits with visible validation status and audit badges.",
     "trust.transparency.title": "Full Transparency",
-    "trust.transparency.desc": "See demand indicators, competition levels, and environmental impact—no hidden algorithms.",
+    "trust.transparency.desc":
+      "See demand indicators, competition levels, and environmental impact—no hidden algorithms.",
     "trust.data.title": "Data Protection",
-    "trust.data.desc": "GDPR compliant with enterprise-grade security. Your business data is encrypted and protected.",
+    "trust.data.desc":
+      "GDPR compliant with enterprise-grade security. Your business data is encrypted and protected.",
     "trust.compliance.title": "Compliance Built-In",
-    "trust.compliance.desc": "Market-specific legal requirements, packaging rules, and seller responsibilities—always visible.",
+    "trust.compliance.desc":
+      "Market-specific legal requirements, packaging rules, and seller responsibilities—always visible.",
     "trust.trustpilot.title": "Trustpilot Integration",
-    "trust.trustpilot.desc": "Transparent customer reviews displayed and used for analytics. Build real reputation.",
+    "trust.trustpilot.desc":
+      "Transparent customer reviews displayed and used for analytics. Build real reputation.",
     "trust.fair.title": "Fair & Accountable",
-    "trust.fair.desc": "Clear terms, visible fees, and no hidden costs. Brand-In-A-Box grows with you, not on your back.",
+    "trust.fair.desc":
+      "Clear terms, visible fees, and no hidden costs. Brand-In-A-Box grows with you, not on your back.",
 
     // CTA
     "cta.badge": "Start your journey today",
     "cta.title": "Ready to Build Your Business Empire?",
-    "cta.desc": "Join thousands of entrepreneurs who trust Brand-In-A-Box to launch, scale, and protect their online business. No credit card required.",
+    "cta.desc":
+      "Join thousands of entrepreneurs who trust Brand-In-A-Box to launch, scale, and protect their online business. No credit card required.",
     "cta.button": "Create Free Account",
     "cta.sales": "Talk to Sales",
-    "cta.free": "âœ“ Free to start",
-    "cta.nofees": "âœ“ No hidden fees",
-    "cta.cancel": "âœ“ Cancel anytime",
-    "cta.age": "âœ“ 18+ only",
+    "cta.free": "✓ Free to start",
+    "cta.nofees": "✓ No hidden fees",
+    "cta.cancel": "✓ Cancel anytime",
+    "cta.age": "✓ 18+ only",
 
     // Footer
-    "footer.desc": "The intelligent commerce platform that empowers entrepreneurs to build, scale, and secure their online business.",
+    "footer.desc":
+      "The intelligent commerce platform that empowers entrepreneurs to build, scale, and secure their online business.",
     "footer.product": "Product",
     "footer.features": "Features",
     "footer.dashboard": "Dashboard",
@@ -368,7 +432,8 @@ const translations: Record<Lang, Record<string, string>> = {
     "login.branding.3": "Manage multiple boutiques from one place",
     "login.branding.4": "Secure and compliant platform",
     "login.security.title": "Enterprise-grade security",
-    "login.security.desc": "Your data is protected with industry-leading encryption",
+    "login.security.desc":
+      "Your data is protected with industry-leading encryption",
 
     // Signup
     "signup.title": "Create your account",
@@ -389,14 +454,17 @@ const translations: Record<Lang, Record<string, string>> = {
     "signup.cgvLink": "Terms and Conditions of Sale",
     "signup.acknowledgePrivacy": "I acknowledge that I have read the",
     "signup.privacyLink": "Privacy Policy",
-    "signup.cookiesNotice": "Optional cookie choices are separate and are not required to create an account.",
+    "signup.cookiesNotice":
+      "Optional cookie choices are separate and are not required to create an account.",
     "signup.cookiesLink": "Cookie Policy",
-    "signup.acceptlegal": "You must accept the Terms of Use and Terms and Conditions of Sale and acknowledge the Privacy Policy.",
+    "signup.acceptlegal":
+      "You must accept the Terms of Use and Terms and Conditions of Sale and acknowledge the Privacy Policy.",
     "signup.submit": "Create Account",
     "signup.hasaccount": "Already have an account?",
     "signup.signin": "Sign in",
     "signup.branding.title": "Start selling with Brand-In-A-Box today",
-    "signup.branding.desc": "Join thousands of entrepreneurs who trust Brand-In-A-Box to grow their online business.",
+    "signup.branding.desc":
+      "Join thousands of entrepreneurs who trust Brand-In-A-Box to grow their online business.",
     "signup.multiboutique": "Multi-Boutique",
     "signup.multiboutique.desc": "Manage multiple stores",
     "signup.analytics": "Analytics",
@@ -430,34 +498,28 @@ const translations: Record<Lang, Record<string, string>> = {
     "reset.redirect": "You will be redirected to login...",
     "reset.errorMin": "Password must be at least 6 characters",
     "reset.errorMatch": "Passwords do not match",
-    "reset.notoken": "This link seems invalid or expired. Please request a new reset link.",
+    "reset.notoken":
+      "This link seems invalid or expired. Please request a new reset link.",
 
     // Auth errors
-    "auth.error.network": "Network connection error. Check your internet connection and try again.",
+    "auth.error.network":
+      "Network connection error. Check your internet connection and try again.",
     "auth.error.invalid": "Incorrect email or password",
     "auth.error.generic": "An error occurred. Please try again.",
   },
 };
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+const LanguageContext = createContext<LanguageContextType | undefined>(
+  undefined,
+);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>(() => {
-    try {
-      return localStorage.getItem("linksy-lang") === "en" ? "en" : "fr";
-    } catch {
-      return "fr";
-    }
-  });
-
-  const changeLang = (newLang: Lang) => {
-    setLang(newLang);
-    try {
-      localStorage.setItem("linksy-lang", newLang);
-    } catch {
-      // Language switching still works when browser storage is unavailable.
-    }
-  };
+  const lang = useSyncExternalStore(
+    subscribeUiLanguage,
+    getUiLanguage,
+    () => "fr" as const,
+  );
+  const changeLang = setUiLanguage;
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -474,6 +536,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
 export function useLanguage() {
   const context = useContext(LanguageContext);
-  if (!context) throw new Error("useLanguage must be used within LanguageProvider");
+  if (!context)
+    throw new Error("useLanguage must be used within LanguageProvider");
   return context;
 }

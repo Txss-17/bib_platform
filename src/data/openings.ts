@@ -1,3 +1,4 @@
+import { translateUi } from "@/lib/uiTranslation";
 export interface Opening {
   title: string;
   team: string;
@@ -8,7 +9,9 @@ export interface Opening {
 
 export const openings: Opening[] = [
   {
-    title: "Développement & architecture",
+    get title() {
+      return translateUi("Développement & architecture");
+    },
     team: "Tech",
     location: "À distance",
     type: "Contribution",
@@ -16,7 +19,9 @@ export const openings: Opening[] = [
       "Contribuer à la conception de la plateforme BIB, de ses interfaces, de ses services et de ses fondations techniques.",
   },
   {
-    title: "Produit & expérimentation",
+    get title() {
+      return translateUi("Produit & expérimentation");
+    },
     team: "R&D / Product",
     location: "À distance",
     type: "Contribution",
@@ -24,7 +29,9 @@ export const openings: Opening[] = [
       "Explorer les usages, challenger les concepts, prototyper des solutions et contribuer à l'évolution des produits et services BIB.",
   },
   {
-    title: "Identité & communication",
+    get title() {
+      return translateUi("Identité & communication");
+    },
     team: "Communication",
     location: "À distance",
     type: "Contribution",
@@ -32,7 +39,9 @@ export const openings: Opening[] = [
       "Participer à la construction de l'identité BIB, de ses contenus, de son storytelling et de sa présence digitale.",
   },
   {
-    title: "Opérations & structuration",
+    get title() {
+      return translateUi("Opérations & structuration");
+    },
     team: "Opérations",
     location: "À distance",
     type: "Contribution",
@@ -40,7 +49,9 @@ export const openings: Opening[] = [
       "Contribuer à la définition des processus, à la structuration opérationnelle, à la qualité et à la coordination des différents acteurs.",
   },
   {
-    title: "Qualité, audit & conformité",
+    get title() {
+      return translateUi("Qualité, audit & conformité");
+    },
     team: "Opérations",
     location: "À distance",
     type: "Contribution",

@@ -1,3 +1,4 @@
+import { translateUi } from "@/lib/uiTranslation";
 /**
  * SEO settings — locale/market configuration used to drive hreflang alternates,
  * x-default and the canonical URL. Persisted in localStorage so non-tech users
@@ -16,12 +17,46 @@ export interface SeoSettings {
   publicOrigin?: string;
 }
 
-export const ALL_LOCALES: { value: SeoLocale; label: string; market: string }[] = [
-  { value: "fr", label: "Français", market: "FR / BE / CH" },
-  { value: "en", label: "English", market: "UK / US / INTL" },
-  { value: "es", label: "Español", market: "ES / LATAM" },
-  { value: "de", label: "Deutsch", market: "DE / AT" },
-  { value: "it", label: "Italiano", market: "IT" },
+export const ALL_LOCALES: {
+  value: SeoLocale;
+  label: string;
+  market: string;
+}[] = [
+  {
+    value: "fr",
+    get label() {
+      return translateUi("Français");
+    },
+    market: "FR / BE / CH",
+  },
+  {
+    value: "en",
+    get label() {
+      return translateUi("English");
+    },
+    market: "UK / US / INTL",
+  },
+  {
+    value: "es",
+    get label() {
+      return translateUi("Español");
+    },
+    market: "ES / LATAM",
+  },
+  {
+    value: "de",
+    get label() {
+      return translateUi("Deutsch");
+    },
+    market: "DE / AT",
+  },
+  {
+    value: "it",
+    get label() {
+      return translateUi("Italiano");
+    },
+    market: "IT",
+  },
 ];
 
 const STORAGE_KEY = "bib.seo.settings.v1";
@@ -43,7 +78,8 @@ export function readSeoSettings(): SeoSettings {
           ? (parsed.activeLocales as SeoLocale[])
           : DEFAULT_SEO_SETTINGS.activeLocales,
       defaultLocale:
-        (parsed.defaultLocale as SeoLocale) || DEFAULT_SEO_SETTINGS.defaultLocale,
+        (parsed.defaultLocale as SeoLocale) ||
+        DEFAULT_SEO_SETTINGS.defaultLocale,
       publicOrigin: parsed.publicOrigin || undefined,
     };
   } catch {
@@ -62,7 +98,9 @@ export function writeSeoSettings(next: SeoSettings) {
  * from anywhere in the app or another tab.
  */
 export function useSeoSettings() {
-  const [settings, setSettings] = useState<SeoSettings>(() => readSeoSettings());
+  const [settings, setSettings] = useState<SeoSettings>(() =>
+    readSeoSettings(),
+  );
 
   useEffect(() => {
     const sync = () => setSettings(readSeoSettings());

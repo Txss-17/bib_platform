@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 
@@ -12,6 +14,7 @@ interface Props {
  * visitor clicks the floating speaker. Mute state is remembered per session.
  */
 export function StorefrontAmbientAudio({ src, volume = 0.4 }: Props) {
+  useLanguage();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
 
@@ -44,10 +47,18 @@ export function StorefrontAmbientAudio({ src, volume = 0.4 }: Props) {
       <button
         type="button"
         onClick={toggle}
-        aria-label={playing ? "Couper l'ambiance sonore" : "Activer l'ambiance sonore"}
+        aria-label={
+          playing
+            ? translateUi("Couper l'ambiance sonore")
+            : translateUi("Activer l'ambiance sonore")
+        }
         className="fixed bottom-4 right-4 z-40 h-11 w-11 rounded-full bg-background/90 backdrop-blur border border-border shadow-md flex items-center justify-center text-foreground hover:bg-background transition"
       >
-        {playing ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4 opacity-60" />}
+        {playing ? (
+          <Volume2 className="h-4 w-4" />
+        ) : (
+          <VolumeX className="h-4 w-4 opacity-60" />
+        )}
       </button>
     </>
   );

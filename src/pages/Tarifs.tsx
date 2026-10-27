@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -29,7 +31,10 @@ import {
 } from "@/components/ui/dialog";
 import { usePlans, type PlanTier } from "@/hooks/usePlans";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserSubscriptions, subscriptionCategory } from "@/hooks/useSubscriptions";
+import {
+  useUserSubscriptions,
+  subscriptionCategory,
+} from "@/hooks/useSubscriptions";
 import { StripeEmbeddedCheckout } from "@/components/payments/StripeEmbeddedCheckout";
 import { PaymentTestModeBanner } from "@/components/payments/PaymentTestModeBanner";
 import { useSEO } from "@/hooks/useSEO";
@@ -39,6 +44,7 @@ const carouselClass =
 const cardSnapClass =
   "snap-center md:snap-align-none shrink-0 md:shrink min-w-[86%] sm:min-w-[62%] md:min-w-0";
 export default function Tarifs() {
+  useLanguage();
   const { data: plans, isLoading } = usePlans();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -46,12 +52,15 @@ export default function Tarifs() {
   const [checkoutPriceId, setCheckoutPriceId] = useState<string | null>(null);
   const { data: userSubs = [] } = useUserSubscriptions();
   const hasPlanSubscription = userSubs.some(
-    (s) => ["active", "trialing", "past_due"].includes(s.status) && subscriptionCategory(s) === "plan",
+    (s) =>
+      ["active", "trialing", "past_due"].includes(s.status) &&
+      subscriptionCategory(s) === "plan",
   );
   useSEO({
-    title: "Tarifs BIB — Plans transparents pour vendre en ligne",
-    description:
+    title: translateUi("Tarifs BIB — Plans transparents pour vendre en ligne"),
+    description: translateUi(
       "Plans Starter (79€), Growth (149€) et Pro (299€). Commission dégressive 8-15%, livraison EU incluse, add-ons et assurance.",
+    ),
   });
   const sorted = (plans || [])
     .slice()
@@ -61,9 +70,7 @@ export default function Tarifs() {
     const priceId = `${priceIdBase}_${cycle}`;
     if (!user) {
       navigate(
-        `/signup?plan=${priceIdBase}&cycle=${
-          annual ? "annual" : "monthly"
-        }`,
+        `/signup?plan=${priceIdBase}&cycle=${annual ? "annual" : "monthly"}`,
       );
       return;
     }
@@ -82,20 +89,18 @@ export default function Tarifs() {
         {/* HERO */}
         <section className="container mx-auto px-4 pb-12 pt-12 md:pb-16 md:pt-16">
           <div className="mx-auto max-w-3xl text-center">
-            <Badge
-              variant="outline"
-              className="mb-5 rounded-full px-4 py-1.5"
-            >
-              Grille v1.0 — Avril 2026
+            <Badge variant="outline" className="mb-5 rounded-full px-4 py-1.5">
+              {translateUi("Grille v1.0 — Avril 2026")}
             </Badge>
             <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
-              Une tarification transparente.
+              {translateUi("Une tarification transparente.")}
               <br className="hidden sm:block" />
-              Aucune surprise.
+              {translateUi("Aucune surprise.")}
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
-              Boutique prête à l'emploi, livraison EU incluse, audits
-              produits, et commission dégressive selon votre volume.
+              {translateUi(
+                "Boutique prête à l'emploi, livraison EU incluse, audits produits, et commission dégressive selon votre volume.",
+              )}
             </p>
             <div className="mt-8 flex items-center justify-center gap-3">
               <span
@@ -106,12 +111,12 @@ export default function Tarifs() {
                     : "text-muted-foreground",
                 )}
               >
-                Mensuel
+                {translateUi("Mensuel")}
               </span>
               <Switch
                 checked={annual}
                 onCheckedChange={setAnnual}
-                aria-label="Facturation annuelle"
+                aria-label={translateUi("Facturation annuelle")}
               />
               <span
                 className={cn(
@@ -121,7 +126,7 @@ export default function Tarifs() {
                     : "text-muted-foreground",
                 )}
               >
-                Annuel
+                {translateUi("Annuel")}
               </span>
               {annual && (
                 <Badge variant="secondary" className="rounded-full">
@@ -135,11 +140,11 @@ export default function Tarifs() {
         <section className="container mx-auto px-4">
           <div className="mx-auto max-w-6xl">
             <div className="mb-3 text-center text-xs text-muted-foreground md:hidden">
-              Glissez pour voir les autres offres
+              {translateUi("Glissez pour voir les autres offres")}
             </div>
             {isLoading ? (
               <div className="py-12 text-center text-sm text-muted-foreground">
-                Chargement des plans…
+                {translateUi("Chargement des plans…")}
               </div>
             ) : (
               <div className={carouselClass}>
@@ -149,22 +154,17 @@ export default function Tarifs() {
                     ? plan.annual_monthly_price_eur
                     : plan.monthly_price_eur;
                   return (
-                    <div
-                      key={plan.tier}
-                      className={cardSnapClass}
-                    >
+                    <div key={plan.tier} className={cardSnapClass}>
                       <article
                         className={cn(
                           "relative flex h-full flex-col rounded-2xl border bg-card p-5 shadow-sm md:p-6",
-                          featured
-                            ? "border-foreground/30"
-                            : "border-border",
+                          featured ? "border-foreground/30" : "border-border",
                         )}
                       >
                         {featured && (
                           <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
                             <Badge className="whitespace-nowrap rounded-full px-3 py-1 text-xs">
-                              ★ Recommandé
+                              {translateUi("★ Recommandé")}
                             </Badge>
                           </div>
                         )}
@@ -172,10 +172,10 @@ export default function Tarifs() {
                         <div>
                           <p className="text-xs font-medium text-muted-foreground">
                             {plan.tier === "starter"
-                              ? "Micro-entrepreneurs & TPE"
+                              ? translateUi("Micro-entrepreneurs & TPE")
                               : plan.tier === "growth"
-                                ? "Entrepreneurs & marques actives"
-                                : "PME & marques établies"}
+                                ? translateUi("Entrepreneurs & marques actives")
+                                : translateUi("PME & marques établies")}
                           </p>
                           <h2 className="mt-1 text-2xl font-semibold">
                             {plan.name}
@@ -193,7 +193,9 @@ export default function Tarifs() {
                           </div>
                           {annual && (
                             <p className="mt-1 text-xs text-muted-foreground">
-                              Tarif mensuel équivalent, facturé annuellement
+                              {translateUi(
+                                "Tarif mensuel équivalent, facturé annuellement",
+                              )}
                             </p>
                           )}
                         </div>
@@ -209,7 +211,7 @@ export default function Tarifs() {
                         {/* FEATURES */}
                         <div className="mt-5 flex-1">
                           <p className="mb-3 text-sm font-medium">
-                            Inclus dans votre offre
+                            {translateUi("Inclus dans votre offre")}
                           </p>
                           <ul className="space-y-2.5">
                             {(plan.features || []).map(
@@ -229,11 +231,10 @@ export default function Tarifs() {
                         <Button
                           className="mt-6 w-full"
                           variant={featured ? "default" : "outline"}
-                          onClick={() =>
-                            handleSubscribe(`plan_${plan.tier}`)
-                          }
+                          onClick={() => handleSubscribe(`plan_${plan.tier}`)}
                         >
-                          Démarrer avec {plan.name}
+                          {translateUi("Démarrer avec") + " "}
+                          {plan.name}
                           <ChevronRight className="ml-1 h-4 w-4" />
                         </Button>
                       </article>
@@ -250,11 +251,12 @@ export default function Tarifs() {
             <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
               <div>
                 <Badge variant="secondary" className="mb-2 rounded-full">
-                  Offre bêta
+                  {translateUi("Offre bêta")}
                 </Badge>
                 <h2 className="text-lg font-semibold md:text-xl">
-                  Les 10 premiers marchands bénéficient de −50%
-                  sur les 3 premiers mois.
+                  {translateUi(
+                    "Les 10 premiers marchands bénéficient de −50% sur les 3 premiers mois.",
+                  )}
                 </h2>
               </div>
               <div className="grid grid-cols-3 gap-4 text-center text-sm">
@@ -278,34 +280,26 @@ export default function Tarifs() {
         <section className="border-y border-border bg-muted/20">
           <div className="container mx-auto px-4 py-14 md:py-16">
             <div className="mx-auto max-w-3xl text-center">
-              <Badge
-                variant="outline"
-                className="rounded-full"
-              >
-                Add-on · à partir de 25€/mois
+              <Badge variant="outline" className="rounded-full">
+                {translateUi("Add-on · à partir de 25€/mois")}
               </Badge>
               <h2 className="mt-4 text-2xl font-semibold md:text-3xl">
-                Assurance vendeur
+                {translateUi("Assurance vendeur")}
               </h2>
               <p className="mt-3 text-sm leading-6 text-muted-foreground md:text-base">
-                Une protection complémentaire pour les litiges clients :
-                produit endommagé ou perdu, retour contesté et situations
-                couvertes selon le niveau choisi.
+                {translateUi(
+                  "Une protection complémentaire pour les litiges clients : produit endommagé ou perdu, retour contesté et situations couvertes selon le niveau choisi.",
+                )}
               </p>
             </div>
             <div className="mx-auto mt-8 max-w-6xl">
               <div className={carouselClass}>
                 {sorted.map((plan) => {
-                  const monthly =
-                    plan.insurance_addon_price_eur;
+                  const monthly = plan.insurance_addon_price_eur;
                   if (monthly == null) return null;
-                  const price = annual
-                    ? Math.round(monthly * 0.8)
-                    : monthly;
-                  const cap =
-                    plan.insurance_per_dispute_cap_eur;
-                  const maxDisputes =
-                    plan.insurance_max_disputes_per_month;
+                  const price = annual ? Math.round(monthly * 0.8) : monthly;
+                  const cap = plan.insurance_per_dispute_cap_eur;
+                  const maxDisputes = plan.insurance_max_disputes_per_month;
                   return (
                     <div
                       key={`insurance-${plan.tier}`}
@@ -315,7 +309,7 @@ export default function Tarifs() {
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-xs text-muted-foreground">
-                              Niveau
+                              {translateUi("Niveau")}
                             </p>
                             <h3 className="mt-1 text-lg font-semibold">
                               {plan.name}
@@ -335,32 +329,36 @@ export default function Tarifs() {
                           <li className="flex items-start gap-2.5">
                             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
                             <span>
-                              Jusqu'à {cap}€ par litige
+                              {translateUi("Jusqu'à") + " "}
+                              {cap}
+                              {translateUi("€ par litige")}
                             </span>
                           </li>
                           <li className="flex items-start gap-2.5">
                             <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
                             <span>
                               {maxDisputes
-                                ? `${maxDisputes} litiges maximum par mois`
-                                : "Litiges sans plafond mensuel"}
+                                ? translateUi("{v0} litiges maximum par mois", {
+                                    v0: maxDisputes,
+                                  })
+                                : translateUi("Litiges sans plafond mensuel")}
                             </span>
                           </li>
                           <li className="flex items-start gap-2.5">
                             <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
-                            <span>Médiation prioritaire 24h</span>
+                            <span>
+                              {translateUi("Médiation prioritaire 24h")}
+                            </span>
                           </li>
                         </ul>
                         <Button
                           variant="outline"
                           className="mt-6 w-full"
                           onClick={() =>
-                            handleSubscribe(
-                              `insurance_${plan.tier}`,
-                            )
+                            handleSubscribe(`insurance_${plan.tier}`)
                           }
                         >
-                          Activer
+                          {translateUi("Activer")}
                         </Button>
                       </article>
                     </div>
@@ -369,8 +367,9 @@ export default function Tarifs() {
               </div>
             </div>
             <p className="mx-auto mt-6 max-w-3xl text-center text-xs leading-5 text-muted-foreground">
-              L'assurance est indépendante du plan marchand. Un marchand
-              Starter peut choisir l'Assurance Pro et inversement.
+              {translateUi(
+                "L'assurance est indépendante du plan marchand. Un marchand Starter peut choisir l'Assurance Pro et inversement.",
+              )}
             </p>
           </div>
         </section>
@@ -383,15 +382,17 @@ export default function Tarifs() {
               </div>
               <div>
                 <h2 className="text-xl font-semibold">
-                  Livraison EU incluse
+                  {translateUi("Livraison EU incluse")}
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Aucune surprise au checkout : la provision logistique
-                  est intégrée au prix affiché à l'acheteur.
+                  {translateUi(
+                    "Aucune surprise au checkout : la provision logistique est intégrée au prix affiché à l'acheteur.",
+                  )}
                 </p>
                 <p className="mt-3 text-sm text-muted-foreground">
-                  Exemple : un article affiché à 39€ peut inclure environ
-                  6€ de livraison standard EU.
+                  {translateUi(
+                    "Exemple : un article affiché à 39€ peut inclure environ 6€ de livraison standard EU.",
+                  )}
                 </p>
               </div>
             </div>
@@ -403,34 +404,32 @@ export default function Tarifs() {
             <div className="rounded-2xl border bg-card p-5">
               <div className="flex items-center gap-3">
                 <ShieldCheck className="h-5 w-5" />
-                <h3 className="font-medium">
-                  Médiation 48h
-                </h3>
+                <h3 className="font-medium">{translateUi("Médiation 48h")}</h3>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
-                Litige client géré par la plateforme.
+                {translateUi("Litige client géré par la plateforme.")}
               </p>
             </div>
             <div className="rounded-2xl border bg-card p-5">
               <div className="flex items-center gap-3">
                 <Award className="h-5 w-5" />
                 <h3 className="font-medium">
-                  Produits audités
+                  {translateUi("Produits audités")}
                 </h3>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
-                Catalogue pré-validé par nos équipes.
+                {translateUi("Catalogue pré-validé par nos équipes.")}
               </p>
             </div>
             <div className="rounded-2xl border bg-card p-5">
               <div className="flex items-center gap-3">
                 <Check className="h-5 w-5" />
                 <h3 className="font-medium">
-                  Sans engagement
+                  {translateUi("Sans engagement")}
                 </h3>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
-                Annulation à tout moment, données exportables.
+                {translateUi("Annulation à tout moment, données exportables.")}
               </p>
             </div>
           </div>
@@ -440,59 +439,65 @@ export default function Tarifs() {
           <div className="container mx-auto max-w-3xl px-4 py-14 md:py-16">
             <div className="mb-8 text-center">
               <h2 className="text-2xl font-semibold md:text-3xl">
-                Questions fréquentes
+                {translateUi("Questions fréquentes")}
               </h2>
               <p className="mt-3 text-sm text-muted-foreground">
-                Tout ce qu'il faut savoir sur les offres marchands.
+                {translateUi(
+                  "Tout ce qu'il faut savoir sur les offres marchands.",
+                )}
               </p>
             </div>
             <Accordion type="single" collapsible>
               <AccordionItem value="change-plan">
                 <AccordionTrigger>
-                  Puis-je changer de plan à tout moment ?
+                  {translateUi("Puis-je changer de plan à tout moment ?")}
                 </AccordionTrigger>
                 <AccordionContent>
-                  Oui. Vous pouvez passer de Starter à Growth ou Pro,
-                  ou inversement. Le changement est pris en compte
-                  selon les conditions applicables à votre abonnement.
+                  {translateUi(
+                    "Oui. Vous pouvez passer de Starter à Growth ou Pro, ou inversement. Le changement est pris en compte selon les conditions applicables à votre abonnement.",
+                  )}
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="commission">
                 <AccordionTrigger>
-                  La commission est-elle prélevée en plus de l'abonnement ?
+                  {translateUi(
+                    "La commission est-elle prélevée en plus de l'abonnement ?",
+                  )}
                 </AccordionTrigger>
                 <AccordionContent>
-                  Oui. L'abonnement couvre la plateforme. Une commission
-                  est ensuite appliquée sur chaque vente selon votre offre :
-                  15% pour Starter, 10% pour Growth et 8% pour Pro.
+                  {translateUi(
+                    "Oui. L'abonnement couvre la plateforme. Une commission est ensuite appliquée sur chaque vente selon votre offre : 15% pour Starter, 10% pour Growth et 8% pour Pro.",
+                  )}
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="addons">
                 <AccordionTrigger>
-                  Les add-ons sont-ils liés au plan ?
+                  {translateUi("Les add-ons sont-ils liés au plan ?")}
                 </AccordionTrigger>
                 <AccordionContent>
-                  Non. L'Assurance vendeur est indépendante de l'offre
-                  marchande choisie.
+                  {translateUi(
+                    "Non. L'Assurance vendeur est indépendante de l'offre marchande choisie.",
+                  )}
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="disputes">
                 <AccordionTrigger>
-                  Comment se passent les litiges clients ?
+                  {translateUi("Comment se passent les litiges clients ?")}
                 </AccordionTrigger>
                 <AccordionContent>
-                  BIB assure une médiation sous 48h. L'assurance peut
-                  compléter cette protection selon le niveau souscrit
-                  et les plafonds associés.
+                  {translateUi(
+                    "BIB assure une médiation sous 48h. L'assurance peut compléter cette protection selon le niveau souscrit et les plafonds associés.",
+                  )}
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="commitment">
                 <AccordionTrigger>
-                  Y a-t-il un engagement ?
+                  {translateUi("Y a-t-il un engagement ?")}
                 </AccordionTrigger>
                 <AccordionContent>
-                  Non. Vous pouvez annuler à tout moment et exporter
-                  vos données selon les conditions applicables.
+                  {translateUi(
+                    "Non. Vous pouvez annuler à tout moment et exporter vos données selon les conditions applicables.",
+                  )}
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -503,14 +508,12 @@ export default function Tarifs() {
       {/* STRIPE CHECKOUT */}
       <Dialog
         open={!!checkoutPriceId}
-        onOpenChange={(open) =>
-          !open && setCheckoutPriceId(null)
-        }
+        onOpenChange={(open) => !open && setCheckoutPriceId(null)}
       >
         <DialogContent className="max-w-2xl overflow-hidden p-0">
           <DialogHeader className="px-6 pb-2 pt-5">
             <DialogTitle>
-              Finaliser votre abonnement
+              {translateUi("Finaliser votre abonnement")}
             </DialogTitle>
           </DialogHeader>
           {checkoutPriceId && user && (

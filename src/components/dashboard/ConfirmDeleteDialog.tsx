@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,9 +23,12 @@ export function ConfirmDeleteDialog({
   open,
   onOpenChange,
   onConfirm,
-  title = "Confirmer la suppression",
-  description = "Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible.",
+  title = translateUi("Confirmer la suppression"),
+  description = translateUi(
+    "Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible.",
+  ),
 }: ConfirmDeleteDialogProps) {
+  useLanguage();
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -32,12 +37,12 @@ export function ConfirmDeleteDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Annuler</AlertDialogCancel>
+          <AlertDialogCancel>{translateUi("Annuler")}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            Supprimer
+            {translateUi("Supprimer")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

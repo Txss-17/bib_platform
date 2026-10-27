@@ -1,8 +1,24 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Upload, Trash2, CheckCircle, Clock, XCircle, Loader2 } from "lucide-react";
+import {
+  FileText,
+  Upload,
+  Trash2,
+  CheckCircle,
+  Clock,
+  XCircle,
+  Loader2,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -18,21 +34,77 @@ interface BusinessDocument {
 }
 
 const DOCUMENT_TYPES = [
-  { value: "kbis", label: "Extrait KBIS" },
-  { value: "siret", label: "Certificat SIRET / SIREN" },
-  { value: "id_card", label: "Carte d'identité" },
-  { value: "id_passport", label: "Passeport" },
-  { value: "proof_of_address", label: "Justificatif de domicile" },
-  { value: "other", label: "Autre document" },
+  {
+    value: "kbis",
+    get label() {
+      return translateUi("Extrait KBIS");
+    },
+  },
+  {
+    value: "siret",
+    get label() {
+      return translateUi("Certificat SIRET / SIREN");
+    },
+  },
+  {
+    value: "id_card",
+    get label() {
+      return translateUi("Carte d'identité");
+    },
+  },
+  {
+    value: "id_passport",
+    get label() {
+      return translateUi("Passeport");
+    },
+  },
+  {
+    value: "proof_of_address",
+    get label() {
+      return translateUi("Justificatif de domicile");
+    },
+  },
+  {
+    value: "other",
+    get label() {
+      return translateUi("Autre document");
+    },
+  },
 ];
 
-const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "destructive"; icon: typeof Clock }> = {
-  pending: { label: "En attente de vérification", variant: "secondary", icon: Clock },
-  verified: { label: "Vérifié", variant: "default", icon: CheckCircle },
-  rejected: { label: "Rejeté", variant: "destructive", icon: XCircle },
+const STATUS_CONFIG: Record<
+  string,
+  {
+    label: string;
+    variant: "default" | "secondary" | "destructive";
+    icon: typeof Clock;
+  }
+> = {
+  pending: {
+    get label() {
+      return translateUi("En attente de vérification");
+    },
+    variant: "secondary",
+    icon: Clock,
+  },
+  verified: {
+    get label() {
+      return translateUi("Vérifié");
+    },
+    variant: "default",
+    icon: CheckCircle,
+  },
+  rejected: {
+    get label() {
+      return translateUi("Rejeté");
+    },
+    variant: "destructive",
+    icon: XCircle,
+  },
 };
 
 export function BusinessDocuments() {
+  useLanguage();
   const { user } = useAuth();
   const [documents, setDocuments] = useState<BusinessDocument[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,7 +141,7 @@ export function BusinessDocuments() {
       if (!file) return;
 
       if (file.size > 10 * 1024 * 1024) {
-        toast.error("Le fichier ne doit pas dépasser 10 Mo");
+        toast.error(translateUi("Le fichier ne doit pas dépasser 10 Mo"));
         return;
       }
 
@@ -83,7 +155,7 @@ export function BusinessDocuments() {
         .upload(filePath, file);
 
       if (uploadError) {
-        toast.error("Erreur lors de l'upload du fichier");
+        toast.error(translateUi("Erreur lors de l'upload du fichier"));
         console.error(uploadError);
         setUploading(null);
         return;
@@ -103,10 +175,10 @@ export function BusinessDocuments() {
         } as any);
 
       if (insertError) {
-        toast.error("Erreur lors de l'enregistrement du document");
+        toast.error(translateUi("Erreur lors de l'enregistrement du document"));
         console.error(insertError);
       } else {
-        toast.success("Document envoyé pour vérification");
+        toast.success(translateUi("Document envoyé pour vérification"));
         await fetchDocuments();
       }
       setUploading(null);
@@ -121,10 +193,10 @@ export function BusinessDocuments() {
       .eq("id", doc.id);
 
     if (error) {
-      toast.error("Erreur lors de la suppression");
+      toast.error(translateUi("Erreur lors de la suppression"));
       console.error(error);
     } else {
-      toast.success("Document supprimé");
+      toast.success(translateUi("Document supprimé"));
       await fetchDocuments();
     }
   };
@@ -147,10 +219,12 @@ export function BusinessDocuments() {
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <FileText className="w-5 h-5" />
-          Documents de vérification
+          {translateUi("Documents de vérification")}
         </CardTitle>
         <CardDescription>
-          Envoyez vos documents d'entreprise pour vérification. Les documents acceptés : PDF, JPG, PNG (max 10 Mo).
+          {translateUi(
+            "Envoyez vos documents d'entreprise pour vérification. Les documents acceptés : PDF, JPG, PNG (max 10 Mo).",
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -174,18 +248,25 @@ export function BusinessDocuments() {
                     </p>
                     <div className="flex items-center gap-1.5">
                       {StatusIcon && <StatusIcon className="w-3.5 h-3.5" />}
-                      <Badge variant={statusInfo?.variant} className="text-[10px] px-1.5 py-0">
+                      <Badge
+                        variant={statusInfo?.variant}
+                        className="text-[10px] px-1.5 py-0"
+                      >
                         {statusInfo?.label}
                       </Badge>
                     </div>
-                    {existing.status === "rejected" && existing.rejection_reason && (
-                      <p className="text-xs text-destructive mt-1">
-                        Motif : {existing.rejection_reason}
-                      </p>
-                    )}
+                    {existing.status === "rejected" &&
+                      existing.rejection_reason && (
+                        <p className="text-xs text-destructive mt-1">
+                          {translateUi("Motif :") + " "}
+                          {existing.rejection_reason}
+                        </p>
+                      )}
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground mt-0.5">Non envoyé</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {translateUi("Non envoyé")}
+                  </p>
                 )}
               </div>
 
@@ -212,7 +293,9 @@ export function BusinessDocuments() {
                     ) : (
                       <Upload className="w-4 h-4 mr-1.5" />
                     )}
-                    {existing ? "Renvoyer" : "Envoyer"}
+                    {existing
+                      ? translateUi("Renvoyer")
+                      : translateUi("Envoyer")}
                   </Button>
                 )}
               </div>

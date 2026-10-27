@@ -1,3 +1,4 @@
+import { translateUi, getUiLanguage } from "@/lib/uiTranslation";
 import { useMemo } from "react";
 import { useBoutiqueStats } from "./useBoutiques";
 import { useProductStats, useProducts } from "./useProducts";
@@ -41,8 +42,9 @@ export function useBoutiqueHealth(): BoutiqueHealth {
     const publishRatio = totalB > 0 ? published / totalB : 0;
     signals.push({
       key: "publish",
-      label: "Boutiques publiées",
-      status: published === 0 ? "critical" : publishRatio < 0.5 ? "warning" : "ok",
+      label: translateUi("Boutiques publiées"),
+      status:
+        published === 0 ? "critical" : publishRatio < 0.5 ? "warning" : "ok",
       hint:
         published === 0
           ? "Publiez au moins une boutique pour vendre"
@@ -54,7 +56,7 @@ export function useBoutiqueHealth(): BoutiqueHealth {
     const totalP = productStats?.total || 0;
     signals.push({
       key: "products",
-      label: "Produits actifs",
+      label: translateUi("Produits actifs"),
       status: active === 0 ? "critical" : active < 3 ? "warning" : "ok",
       hint:
         active === 0
@@ -69,7 +71,7 @@ export function useBoutiqueHealth(): BoutiqueHealth {
     const fulfillment = totalO > 0 ? delivered / totalO : 1;
     signals.push({
       key: "fulfillment",
-      label: "Taux de livraison",
+      label: translateUi("Taux de livraison"),
       status:
         totalO === 0
           ? "warning"
@@ -103,7 +105,7 @@ export function useBoutiqueHealth(): BoutiqueHealth {
     });
     signals.push({
       key: "stock",
-      label: "Stock fournisseur",
+      label: translateUi("Stock fournisseur"),
       status: critical > 0 ? "critical" : low > 0 ? "warning" : "ok",
       hint:
         monitored === 0
@@ -137,5 +139,13 @@ export function useBoutiqueHealth(): BoutiqueHealth {
             : "poor";
 
     return { score, level, signals, loading };
-  }, [boutiqueStats, productStats, orderStats, products, supplierProducts, loading]);
+  }, [
+    boutiqueStats,
+    productStats,
+    orderStats,
+    products,
+    supplierProducts,
+    loading,
+    getUiLanguage(),
+  ]);
 }

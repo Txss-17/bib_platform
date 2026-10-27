@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { forwardRef, useEffect, useState } from "react";
 import { Loader2, Check, AlertTriangle } from "lucide-react";
 import { Button, type ButtonProps } from "@/components/ui/button";
@@ -37,6 +39,7 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
     },
     ref,
   ) {
+    useLanguage();
     // Local "echo" state so success/error flash even after the parent mutation
     // resolves and switches back to idle synchronously.
     const [echo, setEcho] = useState<ActionState>(state);
@@ -59,24 +62,28 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
         onClick={onClick}
         className={cn(
           "transition-colors",
-          isSuccess && "!bg-success !text-success-foreground hover:!bg-success/90",
-          isError && "!bg-destructive !text-destructive-foreground hover:!bg-destructive/90",
+          isSuccess &&
+            "!bg-success !text-success-foreground hover:!bg-success/90",
+          isError &&
+            "!bg-destructive !text-destructive-foreground hover:!bg-destructive/90",
           className,
         )}
         aria-busy={isLoading || undefined}
         data-state={echo}
         {...rest}
       >
-        {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden />}
+        {isLoading && (
+          <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden />
+        )}
         {isSuccess && <Check className="w-4 h-4 mr-2" aria-hidden />}
         {isError && <AlertTriangle className="w-4 h-4 mr-2" aria-hidden />}
         <span>
           {isLoading
-            ? (loadingLabel ?? "Chargement…")
+            ? (loadingLabel ?? translateUi("Chargement…"))
             : isSuccess
               ? (successLabel ?? "OK")
               : isError
-                ? (errorLabel ?? "Erreur")
+                ? (errorLabel ?? translateUi("Erreur"))
                 : children}
         </span>
       </Button>

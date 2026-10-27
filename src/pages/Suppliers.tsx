@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -22,46 +24,100 @@ import {
 const compatibility = [
   {
     icon: ClipboardCheck,
-    title: "Référencement contrôlé",
-    text: "BIB étudie votre entreprise, vos documents et vos produits avant toute intégration au catalogue.",
+    get title() {
+      return translateUi("Référencement contrôlé");
+    },
+    get text() {
+      return translateUi(
+        "BIB étudie votre entreprise, vos documents et vos produits avant toute intégration au catalogue.",
+      );
+    },
   },
   {
     icon: PackageCheck,
-    title: "Produits pré-validés",
-    text: "Seuls les produits répondant aux critères BIB peuvent être proposés aux boutiques du réseau.",
+    get title() {
+      return translateUi("Produits pré-validés");
+    },
+    get text() {
+      return translateUi(
+        "Seuls les produits répondant aux critères BIB peuvent être proposés aux boutiques du réseau.",
+      );
+    },
   },
   {
     icon: Truck,
-    title: "Logistique coordonnée",
-    text: "Les flux de stock, de préparation et d'expédition sont coordonnés avec les partenaires logistiques retenus par BIB.",
+    get title() {
+      return translateUi("Logistique coordonnée");
+    },
+    get text() {
+      return translateUi(
+        "Les flux de stock, de préparation et d'expédition sont coordonnés avec les partenaires logistiques retenus par BIB.",
+      );
+    },
   },
   {
     icon: ShieldCheck,
-    title: "Conformité & traçabilité",
-    text: "Les documents, la qualité, la traçabilité et les exigences de commercialisation sont examinés dans le parcours BIB.",
+    get title() {
+      return translateUi("Conformité & traçabilité");
+    },
+    get text() {
+      return translateUi(
+        "Les documents, la qualité, la traçabilité et les exigences de commercialisation sont examinés dans le parcours BIB.",
+      );
+    },
   },
 ];
 
 const steps = [
   {
-    title: "Candidature",
-    text: "Présentez votre entreprise, vos capacités de production et les catégories de produits que vous souhaitez proposer.",
+    get title() {
+      return translateUi("Candidature");
+    },
+    get text() {
+      return translateUi(
+        "Présentez votre entreprise, vos capacités de production et les catégories de produits que vous souhaitez proposer.",
+      );
+    },
   },
   {
-    title: "Étude du dossier",
-    text: "BIB étudie la compatibilité de votre activité avec les exigences du réseau et les zones couvertes.",
+    get title() {
+      return translateUi("Étude du dossier");
+    },
+    get text() {
+      return translateUi(
+        "BIB étudie la compatibilité de votre activité avec les exigences du réseau et les zones couvertes.",
+      );
+    },
   },
   {
-    title: "Contrôles",
-    text: "Les documents, produits, capacités opérationnelles et éléments de conformité sont examinés.",
+    get title() {
+      return translateUi("Contrôles");
+    },
+    get text() {
+      return translateUi(
+        "Les documents, produits, capacités opérationnelles et éléments de conformité sont examinés.",
+      );
+    },
   },
   {
-    title: "Validation",
-    text: "Après validation, les références retenues peuvent être intégrées au catalogue BIB.",
+    get title() {
+      return translateUi("Validation");
+    },
+    get text() {
+      return translateUi(
+        "Après validation, les références retenues peuvent être intégrées au catalogue BIB.",
+      );
+    },
   },
   {
-    title: "Opérations",
-    text: "Les flux de stock, de préparation et de livraison sont ensuite coordonnés avec BIB et ses partenaires opérationnels.",
+    get title() {
+      return translateUi("Opérations");
+    },
+    get text() {
+      return translateUi(
+        "Les flux de stock, de préparation et de livraison sont ensuite coordonnés avec BIB et ses partenaires opérationnels.",
+      );
+    },
   },
 ];
 
@@ -88,26 +144,46 @@ const constraints = [
 const principles = [
   {
     icon: ShieldCheck,
-    title: "Un réseau de confiance",
-    text: "BIB ne fonctionne pas comme un catalogue ouvert. L'accès au réseau repose sur une sélection, des contrôles et une validation préalable.",
+    get title() {
+      return translateUi("Un réseau de confiance");
+    },
+    get text() {
+      return translateUi(
+        "BIB ne fonctionne pas comme un catalogue ouvert. L'accès au réseau repose sur une sélection, des contrôles et une validation préalable.",
+      );
+    },
   },
   {
     icon: Globe2,
-    title: "Une ouverture progressive",
-    text: "Les zones de commercialisation et d'expédition sont définies selon les capacités opérationnelles, réglementaires et logistiques.",
+    get title() {
+      return translateUi("Une ouverture progressive");
+    },
+    get text() {
+      return translateUi(
+        "Les zones de commercialisation et d'expédition sont définies selon les capacités opérationnelles, réglementaires et logistiques.",
+      );
+    },
   },
   {
     icon: Workflow,
-    title: "Un intermédiaire opérationnel",
-    text: "BIB coordonne le parcours entre fournisseurs, catalogue, boutiques et partenaires opérationnels, sans créer de relation directe non encadrée avec les boutiques.",
+    get title() {
+      return translateUi("Un intermédiaire opérationnel");
+    },
+    get text() {
+      return translateUi(
+        "BIB coordonne le parcours entre fournisseurs, catalogue, boutiques et partenaires opérationnels, sans créer de relation directe non encadrée avec les boutiques.",
+      );
+    },
   },
 ];
 
 export default function Suppliers() {
+  useLanguage();
   useSEO({
-    title: "Fournisseurs — Brand-In-A-Box",
-    description:
+    title: translateUi("Fournisseurs — Brand-In-A-Box"),
+    description: translateUi(
       "Rejoignez le réseau de fournisseurs Brand-In-A-Box. Faites étudier vos produits dans le cadre d'un référencement contrôlé et accessible aux boutiques du réseau BIB.",
+    ),
   });
 
   const location = useLocation();
@@ -132,24 +208,24 @@ export default function Suppliers() {
         <div className="container mx-auto px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
           <div className="max-w-4xl">
             <Badge variant="secondary" className="mb-5">
-              Réseau fournisseurs BIB
+              {translateUi("Réseau fournisseurs BIB")}
             </Badge>
 
             <h1 className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
-              Référencez vos produits dans le réseau
+              {translateUi("Référencez vos produits dans le réseau")}
               <span className="text-primary"> Brand-In-A-Box.</span>
             </h1>
 
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-              BIB sélectionne des fournisseurs et leurs produits afin de
-              construire un catalogue contrôlé, exploitable par les boutiques
-              du réseau et coordonné avec ses partenaires opérationnels.
+              {translateUi(
+                "BIB sélectionne des fournisseurs et leurs produits afin de construire un catalogue contrôlé, exploitable par les boutiques du réseau et coordonné avec ses partenaires opérationnels.",
+              )}
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="gap-2">
                 <Link to="/suppliers/apply">
-                  Candidater comme fournisseur
+                  {translateUi("Candidater comme fournisseur")}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -158,29 +234,33 @@ export default function Suppliers() {
                 href="#fonctionnement"
                 className="text-sm font-medium text-muted-foreground underline-offset-4 hover:underline"
               >
-                Comprendre le fonctionnement
+                {translateUi("Comprendre le fonctionnement")}
               </a>
             </div>
 
             <div className="mt-8 grid max-w-3xl grid-cols-1 gap-3 sm:grid-cols-3">
               <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
-                <p className="text-xs text-muted-foreground">Accès</p>
+                <p className="text-xs text-muted-foreground">
+                  {translateUi("Accès")}
+                </p>
                 <p className="mt-0.5 text-sm font-semibold">
-                  Sur candidature
+                  {translateUi("Sur candidature")}
                 </p>
               </div>
 
               <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
                 <p className="text-xs text-muted-foreground">Catalogue</p>
                 <p className="mt-0.5 text-sm font-semibold">
-                  Contrôlé par BIB
+                  {translateUi("Contrôlé par BIB")}
                 </p>
               </div>
 
               <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
-                <p className="text-xs text-muted-foreground">Opérations</p>
+                <p className="text-xs text-muted-foreground">
+                  {translateUi("Opérations")}
+                </p>
                 <p className="mt-0.5 text-sm font-semibold">
-                  Coordonnées par BIB
+                  {translateUi("Coordonnées par BIB")}
                 </p>
               </div>
             </div>
@@ -195,18 +275,17 @@ export default function Suppliers() {
       >
         <div className="mb-8 max-w-2xl">
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-secondary">
-            Le modèle BIB
+            {translateUi("Le modèle BIB")}
           </p>
 
           <h2 className="font-display text-2xl font-bold sm:text-3xl">
-            Un réseau sélectionné, pas un catalogue ouvert
+            {translateUi("Un réseau sélectionné, pas un catalogue ouvert")}
           </h2>
 
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-            BIB agit comme intermédiaire entre les fournisseurs, les produits,
-            les boutiques et les opérations. Une référence n'est pas
-            automatiquement accessible au réseau : elle doit d'abord répondre
-            aux critères de référencement BIB.
+            {translateUi(
+              "BIB agit comme intermédiaire entre les fournisseurs, les produits, les boutiques et les opérations. Une référence n'est pas automatiquement accessible au réseau : elle doit d'abord répondre aux critères de référencement BIB.",
+            )}
           </p>
         </div>
 
@@ -236,11 +315,11 @@ export default function Suppliers() {
         <div className="container mx-auto px-4 py-14 sm:px-6 lg:px-8 lg:py-18">
           <div className="mb-8 max-w-2xl">
             <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-secondary">
-              Notre fonctionnement
+              {translateUi("Notre fonctionnement")}
             </p>
 
             <h2 className="font-display text-2xl font-bold sm:text-3xl">
-              Ce que signifie travailler avec BIB
+              {translateUi("Ce que signifie travailler avec BIB")}
             </h2>
           </div>
 
@@ -273,26 +352,24 @@ export default function Suppliers() {
       >
         <div className="mb-7 max-w-2xl">
           <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-secondary">
-            Avant de candidater
+            {translateUi("Avant de candidater")}
           </p>
 
           <h2 className="font-display text-2xl font-bold sm:text-3xl">
-            Critères de compatibilité
+            {translateUi("Critères de compatibilité")}
           </h2>
 
           <p className="mt-2 text-sm text-muted-foreground">
-            Ces éléments permettent de déterminer si votre entreprise et vos
-            produits peuvent entrer dans le parcours de référencement BIB.
+            {translateUi(
+              "Ces éléments permettent de déterminer si votre entreprise et vos produits peuvent entrer dans le parcours de référencement BIB.",
+            )}
           </p>
         </div>
 
         <Card className="p-6 sm:p-8">
           <ul className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
             {minimumCriteria.map((criterion) => (
-              <li
-                key={criterion}
-                className="flex items-start gap-3 text-sm"
-              >
+              <li key={criterion} className="flex items-start gap-3 text-sm">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-success/10 text-success">
                   <Check className="h-3.5 w-3.5" />
                 </span>
@@ -317,22 +394,20 @@ export default function Suppliers() {
 
             <div>
               <h2 className="font-display text-xl font-bold sm:text-2xl">
-                Exigences du réseau
+                {translateUi("Exigences du réseau")}
               </h2>
 
               <p className="mt-1 text-sm text-muted-foreground">
-                Le référencement BIB implique un cadre opérationnel commun à
-                l'ensemble des fournisseurs.
+                {translateUi(
+                  "Le référencement BIB implique un cadre opérationnel commun à l'ensemble des fournisseurs.",
+                )}
               </p>
             </div>
           </div>
 
           <ul className="grid grid-cols-1 gap-x-8 gap-y-3 md:grid-cols-2">
             {constraints.map((constraint) => (
-              <li
-                key={constraint}
-                className="flex items-start gap-2.5 text-sm"
-              >
+              <li key={constraint} className="flex items-start gap-2.5 text-sm">
                 <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-warning" />
 
                 <span className="leading-relaxed">{constraint}</span>
@@ -350,11 +425,11 @@ export default function Suppliers() {
         <div className="container mx-auto px-4 py-14 sm:px-6 lg:px-8 lg:py-18">
           <div className="mb-8 max-w-2xl">
             <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-secondary">
-              Parcours fournisseur
+              {translateUi("Parcours fournisseur")}
             </p>
 
             <h2 className="font-display text-2xl font-bold sm:text-3xl">
-              De la candidature au catalogue BIB
+              {translateUi("De la candidature au catalogue BIB")}
             </h2>
           </div>
 
@@ -394,24 +469,21 @@ export default function Suppliers() {
             </div>
 
             <h2 className="font-display text-2xl font-bold sm:text-3xl">
-              Votre entreprise peut-elle rejoindre le réseau BIB ?
+              {translateUi(
+                "Votre entreprise peut-elle rejoindre le réseau BIB ?",
+              )}
             </h2>
 
             <p className="mt-3 text-sm leading-relaxed text-primary-foreground/80 sm:text-base">
-              Déposez votre candidature. L'équipe BIB étudiera votre activité,
-              vos produits et vos capacités opérationnelles avant de vous
-              indiquer la suite du parcours.
+              {translateUi(
+                "Déposez votre candidature. L'équipe BIB étudiera votre activité, vos produits et vos capacités opérationnelles avant de vous indiquer la suite du parcours.",
+              )}
             </p>
 
             <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Button
-                asChild
-                size="lg"
-                variant="secondary"
-                className="gap-2"
-              >
+              <Button asChild size="lg" variant="secondary" className="gap-2">
                 <Link to="/suppliers/apply">
-                  Déposer une candidature
+                  {translateUi("Déposer une candidature")}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -424,7 +496,7 @@ export default function Suppliers() {
               >
                 <a href="mailto:suppliers@brand-in-a-box.space">
                   <Mail className="h-4 w-4" />
-                  Nous écrire
+                  {translateUi("Nous écrire")}
                 </a>
               </Button>
             </div>

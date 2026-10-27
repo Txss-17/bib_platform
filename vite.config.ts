@@ -10,12 +10,15 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     proxy: {
       "/__l5e/assets-v1": {
-        target: "https://id-preview--1aa1b209-5f17-4dd2-aaca-54cdffc202fc.lovable.app",
+        target:
+          "https://id-preview--1aa1b209-5f17-4dd2-aaca-54cdffc202fc.lovable.app",
         changeOrigin: true,
       },
     },
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  plugins: [react(), mode === "development" && componentTagger()].filter(
+    Boolean,
+  ),
   build: {
     rollupOptions: {
       output: {
@@ -42,6 +45,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   resolve: {
+    extensions: [".mjs", ".ts", ".tsx", ".mts", ".js", ".jsx", ".json"],
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },

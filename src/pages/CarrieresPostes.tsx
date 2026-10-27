@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
@@ -6,20 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useSEO } from "@/hooks/useSEO";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Briefcase,
-  MapPin,
-  Search,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Briefcase, MapPin, Search } from "lucide-react";
 import { openings } from "@/data/openings";
 
 const CarrieresPostes = () => {
+  useLanguage();
   useSEO({
-    title: "Opportunités | Carrières | Brand-in-a-box",
-    description:
+    title: translateUi("Opportunités | Carrières | Brand-in-a-box"),
+    description: translateUi(
       "Découvrez les domaines et opportunités actuellement identifiés pour contribuer à la construction de Brand-in-a-box.",
+    ),
   });
 
   const [query, setQuery] = useState("");
@@ -27,7 +25,7 @@ const CarrieresPostes = () => {
 
   const teams = useMemo(
     () => Array.from(new Set(openings.map((opening) => opening.team))),
-    []
+    [],
   );
 
   const filtered = useMemo(() => {
@@ -59,7 +57,7 @@ const CarrieresPostes = () => {
               className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               <ArrowLeft className="h-4 w-4" />
-              Retour aux carrières
+              {translateUi("Retour aux carrières")}
             </Link>
 
             <div className="max-w-3xl">
@@ -68,17 +66,17 @@ const CarrieresPostes = () => {
               </div>
 
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
-                Opportunités
+                {translateUi("Opportunités")}
               </p>
 
               <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
-                Les sujets sur lesquels BIB se construit.
+                {translateUi("Les sujets sur lesquels BIB se construit.")}
               </h1>
 
               <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-                Retrouvez ici les domaines et besoins actuellement identifiés
-                dans le cadre de la construction de Brand-in-a-box. Cette liste
-                évoluera avec le projet.
+                {translateUi(
+                  "Retrouvez ici les domaines et besoins actuellement identifiés dans le cadre de la construction de Brand-in-a-box. Cette liste évoluera avec le projet.",
+                )}
               </p>
             </div>
           </div>
@@ -97,9 +95,11 @@ const CarrieresPostes = () => {
                 <Input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Rechercher un domaine ou une contribution…"
+                  placeholder={translateUi(
+                    "Rechercher un domaine ou une contribution…",
+                  )}
                   className="pl-9"
-                  aria-label="Rechercher une opportunité"
+                  aria-label={translateUi("Rechercher une opportunité")}
                 />
               </div>
 
@@ -109,7 +109,7 @@ const CarrieresPostes = () => {
                   size="sm"
                   onClick={() => setTeam(null)}
                 >
-                  Tous les domaines
+                  {translateUi("Tous les domaines")}
                 </Button>
 
                 {teams.map((currentTeam) => (
@@ -133,11 +133,13 @@ const CarrieresPostes = () => {
             {filtered.length === 0 ? (
               <div className="rounded-2xl border border-border bg-muted/20 px-6 py-14 text-center">
                 <h2 className="text-xl font-semibold">
-                  Aucun résultat
+                  {translateUi("Aucun résultat")}
                 </h2>
 
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Aucun domaine ou sujet ne correspond à votre recherche.
+                  {translateUi(
+                    "Aucun domaine ou sujet ne correspond à votre recherche.",
+                  )}
                 </p>
 
                 <Button
@@ -148,7 +150,7 @@ const CarrieresPostes = () => {
                     setTeam(null);
                   }}
                 >
-                  Réinitialiser
+                  {translateUi("Réinitialiser")}
                 </Button>
               </div>
             ) : (
@@ -161,13 +163,9 @@ const CarrieresPostes = () => {
                     <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                       <div className="min-w-0 flex-1">
                         <div className="mb-3 flex flex-wrap items-center gap-2">
-                          <Badge variant="outline">
-                            {opening.team}
-                          </Badge>
+                          <Badge variant="outline">{opening.team}</Badge>
 
-                          <Badge variant="outline">
-                            {opening.type}
-                          </Badge>
+                          <Badge variant="outline">{opening.type}</Badge>
                         </div>
 
                         <h2 className="text-xl font-semibold sm:text-2xl">
@@ -185,9 +183,13 @@ const CarrieresPostes = () => {
                       </div>
 
                       <div className="lg:shrink-0">
-                        <Button asChild variant="outline" className="w-full sm:w-auto">
+                        <Button
+                          asChild
+                          variant="outline"
+                          className="w-full sm:w-auto"
+                        >
                           <Link to="/carrieres/talent">
-                            Découvrir BIB Talent
+                            {translateUi("Découvrir BIB Talent")}
                             <ArrowRight className="ml-2 h-4 w-4" />
                           </Link>
                         </Button>
@@ -206,19 +208,18 @@ const CarrieresPostes = () => {
                 </p>
 
                 <h2 className="mt-4 text-3xl font-semibold tracking-tight md:text-4xl">
-                  Une autre manière de contribuer ?
+                  {translateUi("Une autre manière de contribuer ?")}
                 </h2>
 
                 <p className="mt-4 text-base leading-7 text-muted-foreground">
-                  Les sujets affichés ici ne représentent pas nécessairement
-                  tous les besoins futurs de BIB. Si vous souhaitez découvrir
-                  la phase de préfiguration et les possibilités de contribuer,
-                  rendez-vous sur BIB Talent.
+                  {translateUi(
+                    "Les sujets affichés ici ne représentent pas nécessairement tous les besoins futurs de BIB. Si vous souhaitez découvrir la phase de préfiguration et les possibilités de contribuer, rendez-vous sur BIB Talent.",
+                  )}
                 </p>
 
                 <Button asChild className="mt-7">
                   <Link to="/carrieres/talent">
-                    Découvrir BIB Talent
+                    {translateUi("Découvrir BIB Talent")}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
@@ -226,10 +227,9 @@ const CarrieresPostes = () => {
             </div>
 
             <p className="mx-auto mt-10 max-w-3xl text-center text-xs leading-5 text-muted-foreground">
-              Les éléments présentés sur cette page décrivent les domaines et
-              besoins actuellement identifiés par BIB. Ils ne constituent pas
-              nécessairement des offres d'emploi ouvertes et ne valent pas
-              promesse d'embauche ou de collaboration.
+              {translateUi(
+                "Les éléments présentés sur cette page décrivent les domaines et besoins actuellement identifiés par BIB. Ils ne constituent pas nécessairement des offres d'emploi ouvertes et ne valent pas promesse d'embauche ou de collaboration.",
+              )}
             </p>
           </div>
         </section>

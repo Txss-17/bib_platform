@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { findSceneDefinition } from "@/lib/studioScenes";
 import { Label } from "@/components/ui/label";
 import {
@@ -27,6 +29,7 @@ export function SceneVariantPicker({
   onChange,
   disabled = false,
 }: SceneVariantPickerProps) {
+  useLanguage();
   const definition = findSceneDefinition(sceneType);
   const variants = definition?.variants ?? [];
 
@@ -38,15 +41,11 @@ export function SceneVariantPicker({
 
   return (
     <div className="space-y-2">
-      <Label>Variante</Label>
+      <Label>{translateUi("Variante")}</Label>
 
-      <Select
-        value={currentValue}
-        onValueChange={onChange}
-        disabled={disabled}
-      >
+      <Select value={currentValue} onValueChange={onChange} disabled={disabled}>
         <SelectTrigger>
-          <SelectValue placeholder="Choisir une variante" />
+          <SelectValue placeholder={translateUi("Choisir une variante")} />
         </SelectTrigger>
 
         <SelectContent>

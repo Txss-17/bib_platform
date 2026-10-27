@@ -1,10 +1,5 @@
-﻿import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { translateUi } from "@/lib/uiTranslation";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -47,7 +42,11 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-import { useIsMutating, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useIsMutating,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -64,12 +63,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import {
   AlertDialog,
@@ -82,10 +76,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-import {
-  ActionButton,
-  stateFromMutation,
-} from "./ActionButton";
+import { ActionButton, stateFromMutation } from "./ActionButton";
 import { SceneInspectorPro } from "./SceneInspectorPro";
 import { StoriesManager } from "./StoriesManager";
 
@@ -136,17 +127,20 @@ import {
   type PageTemplate,
 } from "@/lib/pageTemplates";
 
-import {
-  ALL_FONTS,
-  loadGoogleFont,
-} from "@/lib/googleFonts";
+import { ALL_FONTS, loadGoogleFont } from "@/lib/googleFonts";
 
 import { StudioSceneRenderer } from "@/components/storefront/StudioSceneRenderer";
 import { supabase } from "@/integrations/supabase/client";
 import { validateMarkdownLinks } from "@/lib/safeMarkdown";
 import { ImageField } from "./SceneInspectorPro";
-import { fetchBoutiquePublicationData, useBoutiquePublication } from "@/hooks/useBoutiquePublication";
-import { validateBoutiquePublication, type PublicationScene } from "@/lib/boutiquePublication";
+import {
+  fetchBoutiquePublicationData,
+  useBoutiquePublication,
+} from "@/hooks/useBoutiquePublication";
+import {
+  validateBoutiquePublication,
+  type PublicationScene,
+} from "@/lib/boutiquePublication";
 
 interface Props {
   boutiqueId: string;
@@ -175,14 +169,43 @@ interface Props {
 }
 
 const normalizeStudioPageTitle = (title: string) =>
-  title.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("fr");
+  title
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("fr");
 
 const SUPPORTED_SEO_LOCALES = [
-  { code: "fr", label: "Français" },
-  { code: "en", label: "Anglais" },
-  { code: "es", label: "Espagnol" },
-  { code: "de", label: "Allemand" },
-  { code: "it", label: "Italien" },
+  {
+    code: "fr",
+    get label() {
+      return translateUi("Français");
+    },
+  },
+  {
+    code: "en",
+    get label() {
+      return translateUi("Anglais");
+    },
+  },
+  {
+    code: "es",
+    get label() {
+      return translateUi("Espagnol");
+    },
+  },
+  {
+    code: "de",
+    get label() {
+      return translateUi("Allemand");
+    },
+  },
+  {
+    code: "it",
+    get label() {
+      return translateUi("Italien");
+    },
+  },
 ] as const;
 
 interface PageLike {
@@ -216,9 +239,7 @@ function hslToHex(hsl?: string | null): string {
 
   const match = hsl
     .trim()
-    .match(
-      /^(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)%\s+(-?\d+(?:\.\d+)?)%$/,
-    );
+    .match(/^(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)%\s+(-?\d+(?:\.\d+)?)%$/);
 
   if (!match) {
     return "#000000";
@@ -232,13 +253,7 @@ function hslToHex(hsl?: string | null): string {
 
   const channel = (n: number) => {
     const k = (n + h * 12) % 12;
-    const c =
-      l -
-      a *
-        Math.max(
-          -1,
-          Math.min(k - 3, 9 - k, 1),
-        );
+    const c = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
 
     return Math.round(c * 255)
       .toString(16)
@@ -270,37 +285,26 @@ function hexToHsl(hex: string): string {
   if (max !== min) {
     const d = max - min;
 
-    s =
-      l > 0.5
-        ? d / (2 - max - min)
-        : d / (max + min);
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
 
     switch (max) {
       case r:
-        h =
-          (g - b) / d +
-          (g < b ? 6 : 0);
+        h = (g - b) / d + (g < b ? 6 : 0);
         break;
 
       case g:
-        h =
-          (b - r) / d +
-          2;
+        h = (b - r) / d + 2;
         break;
 
       default:
-        h =
-          (r - g) / d +
-          4;
+        h = (r - g) / d + 4;
         break;
     }
 
     h *= 60;
   }
 
-  return `${Math.round(h)} ${Math.round(
-    s * 100,
-  )}% ${Math.round(l * 100)}%`;
+  return `${Math.round(h)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
 }
 
 const PALETTE_PRESETS = [
@@ -358,6 +362,7 @@ function PreviewFrame({
   device: "desktop" | "tablet" | "mobile";
   children: ReactNode;
 }) {
+  useLanguage();
   return <DevicePreviewFrame device={device}>{children}</DevicePreviewFrame>;
 }
 
@@ -368,9 +373,26 @@ function DevicePreviewFrame({
   device: "desktop" | "tablet" | "mobile";
   children: ReactNode;
 }) {
+  useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const [previewBody, setPreviewBody] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!previewBody) return;
+    const sync = () => {
+      const frameRoot = previewBody.ownerDocument.documentElement;
+      frameRoot.className = document.documentElement.className;
+      frameRoot.style.colorScheme = document.documentElement.style.colorScheme;
+    };
+    sync();
+    const observer = new MutationObserver(sync);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class", "style"],
+    });
+    return () => observer.disconnect();
+  }, [previewBody]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -383,18 +405,23 @@ function DevicePreviewFrame({
     return () => observer.disconnect();
   }, []);
 
-  const viewportWidth = device === "mobile" ? 375 : device === "tablet" ? 768 : 1280;
+  const viewportWidth =
+    device === "mobile" ? 375 : device === "tablet" ? 768 : 1280;
   const viewportHeight = device === "mobile" ? 780 : 900;
-  const scale = containerWidth > 0 ? Math.min(1, containerWidth / viewportWidth) : 1;
+  const scale =
+    containerWidth > 0 ? Math.min(1, containerWidth / viewportWidth) : 1;
 
   return (
-    <div ref={containerRef} className="w-full overflow-hidden bg-muted/30 p-2 sm:p-4">
+    <div
+      ref={containerRef}
+      className="w-full overflow-hidden bg-muted/30 p-2 sm:p-4"
+    >
       <div
         className="mx-auto"
         style={{ width: viewportWidth * scale, height: viewportHeight * scale }}
       >
         <iframe
-          title={`${device} storefront preview`}
+          title={translateUi("{v0} storefront preview", { v0: device })}
           srcDoc="<!doctype html><html><head><meta charset='utf-8'></head><body></body></html>"
           onLoad={(event) => {
             const frameDocument = event.currentTarget.contentDocument;
@@ -411,8 +438,14 @@ function DevicePreviewFrame({
               document.head.querySelectorAll('style, link[rel="stylesheet"]'),
             ).map((node) => node.cloneNode(true));
 
-            frameDocument.head.replaceChildren(charset, viewport, base, ...appStyles);
-            frameDocument.documentElement.className = document.documentElement.className;
+            frameDocument.head.replaceChildren(
+              charset,
+              viewport,
+              base,
+              ...appStyles,
+            );
+            frameDocument.documentElement.className =
+              document.documentElement.className;
             frameDocument.body.className = document.body.className;
             frameDocument.documentElement.style.margin = "0";
             frameDocument.body.style.margin = "0";
@@ -452,21 +485,17 @@ function SortableSceneRow({
     id: scene.id,
   });
 
-  const definition = findSceneDefinition(
-    scene.scene_type,
-  );
+  const definition = findSceneDefinition(scene.scene_type);
 
   const { lang } = useLanguage();
   const english = lang === "en";
-  const tx = (fr: string, en: string) => english ? en : fr;
+  const tx = (fr: string, en: string) => (english ? en : fr);
 
   return (
     <div
       ref={setNodeRef}
       style={{
-        transform: CSS.Transform.toString(
-          transform,
-        ),
+        transform: CSS.Transform.toString(transform),
         transition,
         opacity: isDragging ? 0.55 : 1,
       }}
@@ -482,9 +511,7 @@ function SortableSceneRow({
         type="button"
         {...attributes}
         {...listeners}
-        onClick={(event) =>
-          event.stopPropagation()
-        }
+        onClick={(event) => event.stopPropagation()}
         className="mt-0.5 shrink-0 cursor-grab touch-none rounded p-1 opacity-40 hover:bg-muted hover:opacity-100 active:cursor-grabbing"
         aria-label={english ? "Reorder scene" : "Réorganiser la scène"}
       >
@@ -494,23 +521,16 @@ function SortableSceneRow({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate text-sm font-medium">
-            {definition?.name ??
-              scene.scene_type}
+            {definition?.name ?? scene.scene_type}
           </span>
 
-          <Badge
-            variant="outline"
-            className="text-[10px]"
-          >
+          <Badge variant="outline" className="text-[10px]">
             {scene.role}
           </Badge>
 
           {!scene.is_visible && (
-            <Badge
-              variant="secondary"
-              className="text-[10px]"
-            >
-              Masquée
+            <Badge variant="secondary" className="text-[10px]">
+              {translateUi("Masquée")}
             </Badge>
           )}
         </div>
@@ -522,9 +542,7 @@ function SortableSceneRow({
 
       <div
         className="flex items-center gap-1"
-        onClick={(event) =>
-          event.stopPropagation()
-        }
+        onClick={(event) => event.stopPropagation()}
       >
         <Switch
           checked={scene.is_visible}
@@ -563,40 +581,29 @@ function PageMetadata({
   page: PageLike;
   boutiqueId: string;
   boutiqueSlug?: string;
-  onPatch: (
-    patch: Partial<PageLike>,
-  ) => void;
+  onPatch: (patch: Partial<PageLike>) => void;
 }) {
-  const [open, setOpen] =
-    useState(false);
+  const [open, setOpen] = useState(false);
 
-  const [title, setTitle] =
-    useState(page.title);
+  const [title, setTitle] = useState(page.title);
 
-  const [slug, setSlug] =
-    useState(page.slug);
+  const [slug, setSlug] = useState(page.slug);
 
-  const [seoTitle, setSeoTitle] =
-    useState(page.seo_title ?? "");
+  const [seoTitle, setSeoTitle] = useState(page.seo_title ?? "");
 
-  const [seoDescription, setSeoDescription] =
-    useState(
-      page.seo_description ?? "",
-    );
+  const [seoDescription, setSeoDescription] = useState(
+    page.seo_description ?? "",
+  );
 
-  const [content, setContent] =
-    useState(page.content ?? "");
+  const [content, setContent] = useState(page.content ?? "");
 
-  const generateSeo =
-    useGeneratePageSeo();
+  const generateSeo = useGeneratePageSeo();
 
   useEffect(() => {
     setTitle(page.title);
     setSlug(page.slug);
     setSeoTitle(page.seo_title ?? "");
-    setSeoDescription(
-      page.seo_description ?? "",
-    );
+    setSeoDescription(page.seo_description ?? "");
     setContent(page.content ?? "");
   }, [
     page.id,
@@ -607,16 +614,11 @@ function PageMetadata({
     page.content,
   ]);
 
-  const linkErrors = useMemo(
-    () =>
-      validateMarkdownLinks(content),
-    [content],
-  );
+  const linkErrors = useMemo(() => validateMarkdownLinks(content), [content]);
 
-  const publicUrl =
-    boutiqueSlug
-      ? `${window.location.origin}/boutique/${boutiqueSlug}/p/${slug}`
-      : `/boutique/…/p/${slug}`;
+  const publicUrl = boutiqueSlug
+    ? `${window.location.origin}/boutique/${boutiqueSlug}/p/${slug}`
+    : `/boutique/…/p/${slug}`;
 
   const slugify = (value: string) =>
     value
@@ -629,7 +631,7 @@ function PageMetadata({
 
   const { lang } = useLanguage();
   const english = lang === "en";
-  const tx = (fr: string, en: string) => english ? en : fr;
+  const tx = (fr: string, en: string) => (english ? en : fr);
 
   return (
     <div className="border-t bg-muted/20 px-4 py-3">
@@ -655,7 +657,7 @@ function PageMetadata({
               })
             }
           />
-          Page publique
+          {translateUi("Page publique")}
         </label>
 
         <div className="flex overflow-hidden rounded-lg border text-xs">
@@ -673,7 +675,7 @@ function PageMetadata({
                 : "text-muted-foreground",
             ].join(" ")}
           >
-            Rich
+            {translateUi("Rich")}
           </button>
 
           <button
@@ -698,9 +700,7 @@ function PageMetadata({
       <button
         type="button"
         className="mt-3 flex w-full items-center justify-between text-xs uppercase tracking-wide text-muted-foreground"
-        onClick={() =>
-          setOpen((value) => !value)
-        }
+        onClick={() => setOpen((value) => !value)}
       >
         <span>{tx("Métadonnées de la page", "Page metadata")}</span>
         {open ? (
@@ -713,22 +713,14 @@ function PageMetadata({
       {open && (
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <div>
-            <Label className="text-xs">
-              Titre
-            </Label>
+            <Label className="text-xs">{translateUi("Titre")}</Label>
             <Input
               value={title}
-              onChange={(event) =>
-                setTitle(event.target.value)
-              }
+              onChange={(event) => setTitle(event.target.value)}
               onBlur={() => {
-                const value =
-                  title.trim();
+                const value = title.trim();
 
-                if (
-                  value &&
-                  value !== page.title
-                ) {
+                if (value && value !== page.title) {
                   onPatch({
                     title: value,
                   });
@@ -744,15 +736,11 @@ function PageMetadata({
                 type="button"
                 className="text-primary hover:underline"
                 onClick={() => {
-                  const value =
-                    slugify(title);
+                  const value = slugify(title);
 
                   setSlug(value);
 
-                  if (
-                    value &&
-                    value !== page.slug
-                  ) {
+                  if (value && value !== page.slug) {
                     onPatch({
                       slug: value,
                     });
@@ -765,18 +753,9 @@ function PageMetadata({
 
             <Input
               value={slug}
-              onChange={(event) =>
-                setSlug(
-                  slugify(
-                    event.target.value,
-                  ),
-                )
-              }
+              onChange={(event) => setSlug(slugify(event.target.value))}
               onBlur={() => {
-                if (
-                  slug &&
-                  slug !== page.slug
-                ) {
+                if (slug && slug !== page.slug) {
                   onPatch({
                     slug,
                   });
@@ -787,28 +766,18 @@ function PageMetadata({
           </div>
 
           <div className="md:col-span-2">
-            <Label className="text-xs">
-              URL publique
-            </Label>
+            <Label className="text-xs">{translateUi("URL publique")}</Label>
 
             <div className="flex gap-2">
-              <Input
-                value={publicUrl}
-                readOnly
-                className="font-mono text-xs"
-              />
+              <Input value={publicUrl} readOnly className="font-mono text-xs" />
 
               <Button
                 type="button"
                 variant="outline"
                 size="icon"
                 onClick={() => {
-                  void navigator.clipboard?.writeText(
-                    publicUrl,
-                  );
-                  toast.success(
-                    "Lien copié",
-                  );
+                  void navigator.clipboard?.writeText(publicUrl);
+                  toast.success(translateUi("Lien copié"));
                 }}
               >
                 <Copy className="h-4 w-4" />
@@ -817,45 +786,29 @@ function PageMetadata({
           </div>
 
           <div>
-            <Label className="text-xs">
-              Titre SEO
-            </Label>
+            <Label className="text-xs">{translateUi("Titre SEO")}</Label>
             <Input
               value={seoTitle}
               maxLength={80}
-              onChange={(event) =>
-                setSeoTitle(
-                  event.target.value,
-                )
-              }
+              onChange={(event) => setSeoTitle(event.target.value)}
               onBlur={() => {
                 onPatch({
-                  seo_title:
-                    seoTitle.trim() ||
-                    null,
+                  seo_title: seoTitle.trim() || null,
                 });
               }}
             />
           </div>
 
           <div>
-            <Label className="text-xs">
-              Meta description
-            </Label>
+            <Label className="text-xs">{translateUi("Meta description")}</Label>
             <Textarea
               value={seoDescription}
               maxLength={200}
               rows={2}
-              onChange={(event) =>
-                setSeoDescription(
-                  event.target.value,
-                )
-              }
+              onChange={(event) => setSeoDescription(event.target.value)}
               onBlur={() => {
                 onPatch({
-                  seo_description:
-                    seoDescription.trim() ||
-                    null,
+                  seo_description: seoDescription.trim() || null,
                 });
               }}
             />
@@ -864,42 +817,34 @@ function PageMetadata({
           {page.mode === "simple" && (
             <div className="md:col-span-2">
               <Label className="text-xs">
-                Contenu Markdown
+                {translateUi("Contenu Markdown")}
               </Label>
 
               <Textarea
                 value={content}
                 rows={8}
                 className="font-mono text-xs"
-                onChange={(event) =>
-                  setContent(
-                    event.target.value,
-                  )
-                }
+                onChange={(event) => setContent(event.target.value)}
                 onBlur={() =>
                   onPatch({
-                    content:
-                      content || null,
+                    content: content || null,
                   })
                 }
               />
 
               {linkErrors.length > 0 && (
                 <div className="mt-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
-                  {linkErrors.map(
-                    (error, index) => (
-                      <div
-                        key={index}
-                        className="flex gap-2 text-xs text-destructive"
-                      >
-                        <AlertTriangle className="h-4 w-4 shrink-0" />
-                        <span>
-                          {error.raw} —{" "}
-                          {error.message}
-                        </span>
-                      </div>
-                    ),
-                  )}
+                  {linkErrors.map((error, index) => (
+                    <div
+                      key={index}
+                      className="flex gap-2 text-xs text-destructive"
+                    >
+                      <AlertTriangle className="h-4 w-4 shrink-0" />
+                      <span>
+                        {error.raw} — {error.message}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -907,15 +852,16 @@ function PageMetadata({
 
           <div className="flex items-center justify-between gap-3 md:col-span-2">
             <p className="text-xs text-muted-foreground">
-              {tx("Génération SEO assistée par BIB.", "SEO generation powered by BIB.")}
+              {tx(
+                "Génération SEO assistée par BIB.",
+                "SEO generation powered by BIB.",
+              )}
             </p>
 
             <ActionButton
               size="sm"
               variant="outline"
-              state={stateFromMutation(
-                generateSeo,
-              )}
+              state={stateFromMutation(generateSeo)}
               loadingLabel={english ? "Generating…" : "Génération…"}
               successLabel={english ? "Generated" : "Généré"}
               errorLabel={english ? "Failed" : "Échec"}
@@ -924,50 +870,35 @@ function PageMetadata({
                   {
                     boutiqueId,
                     pageId: page.id,
-                    pageTitle:
-                      page.title,
-                    pageSlug:
-                      page.slug,
+                    pageTitle: page.title,
+                    pageSlug: page.slug,
                     mode: page.mode,
-                    contentSnippet:
-                      page.content,
+                    contentSnippet: page.content,
                   },
                   {
-                    onSuccess: ({
-                      title,
-                      description,
-                    }) => {
-                      setSeoTitle(
-                        title,
-                      );
-                      setSeoDescription(
-                        description,
-                      );
+                    onSuccess: ({ title, description }) => {
+                      setSeoTitle(title);
+                      setSeoDescription(description);
 
                       onPatch({
-                        seo_title:
-                          title,
-                        seo_description:
-                          description,
+                        seo_title: title,
+                        seo_description: description,
                       });
 
-                      toast.success(
-                        "SEO généré",
-                      );
+                      toast.success(translateUi("SEO généré"));
                     },
                     onError: (error) =>
                       toast.error(
-                        error instanceof
-                          Error
+                        error instanceof Error
                           ? error.message
-                          : "Génération impossible",
+                          : translateUi("Génération impossible"),
                       ),
                   },
                 );
               }}
             >
               <Sparkles className="mr-2 h-4 w-4" />
-              Générer le SEO
+              {translateUi("Générer le SEO")}
             </ActionButton>
           </div>
         </div>
@@ -987,42 +918,23 @@ export function StudioEditor({
 }: Props) {
   const { lang } = useLanguage();
   const english = lang === "en";
-  const tx = (fr: string, en: string) => english ? en : fr;
+  const tx = (fr: string, en: string) => (english ? en : fr);
 
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
 
-  const queryClient =
-    useQueryClient();
+  const queryClient = useQueryClient();
 
-  const {
-    data: brandDna,
-  } = useBrandDNA(
-    boutiqueId,
-  );
+  const { data: brandDna } = useBrandDNA(boutiqueId);
 
-  const { data: studioAnswers } =
-    useStudioAnswers(boutiqueId);
+  const { data: studioAnswers } = useStudioAnswers(boutiqueId);
 
-  const {
-    data: pages = [],
-    isLoading: pagesLoading,
-  } = useBoutiquePages(
-    boutiqueId,
-  );
+  const { data: pages = [], isLoading: pagesLoading } =
+    useBoutiquePages(boutiqueId);
 
-  const [
-    activePageId,
-    setActivePageId,
-  ] = useState<string | null>(
-    null,
-  );
+  const [activePageId, setActivePageId] = useState<string | null>(null);
 
   // Scènes de la page actuellement éditée.
-  const {
-    data: scenes = [],
-    isLoading: scenesLoading,
-  } = useBoutiqueScenes(
+  const { data: scenes = [], isLoading: scenesLoading } = useBoutiqueScenes(
     boutiqueId,
     activePageId,
   );
@@ -1034,83 +946,50 @@ export function StudioEditor({
     isFetching: publicationScenesLoading,
     isError: publicationScenesError,
     refetch: refetchPublicationScenes,
-  } = useBoutiqueScenes(
-    boutiqueId,
-    null,
-  );
+  } = useBoutiqueScenes(boutiqueId, null);
 
   const publicationData = useBoutiquePublication(boutiqueId);
   const pendingMutations = useIsMutating();
 
-  const updateScene =
-    useUpdateScene();
+  const updateScene = useUpdateScene();
 
-  const reorderScenes =
-    useReorderScenes();
+  const reorderScenes = useReorderScenes();
 
-  const addScene =
-    useAddScene();
+  const addScene = useAddScene();
 
-  const deleteScene =
-    useDeleteScene();
+  const deleteScene = useDeleteScene();
 
-  const updateBrandDna =
-    useUpdateBrandDNA();
+  const updateBrandDna = useUpdateBrandDNA();
 
-  const regenerateBrandDna =
-    useGenerateBrandDNA();
+  const regenerateBrandDna = useGenerateBrandDNA();
 
-  const reshuffle =
-    useReshuffleStructure();
+  const reshuffle = useReshuffleStructure();
 
-  const remixScene =
-    useRemixScene();
+  const remixScene = useRemixScene();
 
-  const generateSeo =
-    useGenerateSeo();
+  const generateSeo = useGenerateSeo();
 
-  const saveSeo =
-    useSaveSeo();
+  const saveSeo = useSaveSeo();
 
-  const generateBrief =
-    useGenerateContentBrief();
+  const generateBrief = useGenerateContentBrief();
 
-  const generateClusters =
-    useGenerateKeywordClusters();
+  const generateClusters = useGenerateKeywordClusters();
 
-  const createPage =
-    useCreateBoutiquePage();
+  const createPage = useCreateBoutiquePage();
 
-  const updatePage =
-    useUpdateBoutiquePage();
+  const updatePage = useUpdateBoutiquePage();
 
-  const deletePage =
-    useDeleteBoutiquePage();
+  const deletePage = useDeleteBoutiquePage();
 
-  const reorderPages =
-    useReorderBoutiquePages();
+  const reorderPages = useReorderBoutiquePages();
 
-  const generatePageSeo =
-    useGeneratePageSeo();
+  const generatePageSeo = useGeneratePageSeo();
 
-  const [
-    activeSceneId,
-    setActiveSceneId,
-  ] = useState<string | null>(
-    null,
-  );
+  const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
 
-  const [
-    pendingDeleteId,
-    setPendingDeleteId,
-  ] = useState<string | null>(
-    null,
-  );
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
-  const [
-    pendingDeletePageId,
-    setPendingDeletePageId,
-  ] = useState<string | null>(
+  const [pendingDeletePageId, setPendingDeletePageId] = useState<string | null>(
     null,
   );
 
@@ -1118,274 +997,165 @@ export function StudioEditor({
   const sceneMutationLocks = useRef(new Set<string>());
   const [showUnpublishConfirm, setShowUnpublishConfirm] = useState(false);
 
-  const [
-    showAddScene,
-    setShowAddScene,
-  ] = useState(false);
+  const [showAddScene, setShowAddScene] = useState(false);
 
-  const [
-    previewDevice,
-    setPreviewDevice,
-  ] = useState<
+  const [previewDevice, setPreviewDevice] = useState<
     "desktop" | "tablet" | "mobile"
   >("desktop");
 
-  const [
-    seoTitle,
-    setSeoTitle,
-  ] = useState(
-    initialSeo?.title ?? "",
-  );
+  const [seoTitle, setSeoTitle] = useState(initialSeo?.title ?? "");
 
-  const [
-    seoDescription,
-    setSeoDescription,
-  ] = useState(
+  const [seoDescription, setSeoDescription] = useState(
     initialSeo?.description ?? "",
   );
 
-  const [
-    seoH1,
-    setSeoH1,
-  ] = useState(
-    initialSeo?.jsonld?.h1 ?? "",
+  const [seoH1, setSeoH1] = useState(initialSeo?.jsonld?.h1 ?? "");
+
+  const [seoKeywords, setSeoKeywords] = useState(
+    (initialSeo?.jsonld?.keywords ?? []).join(", "),
   );
 
-  const [
-    seoKeywords,
-    setSeoKeywords,
-  ] = useState(
-    (
-      initialSeo?.jsonld
-        ?.keywords ?? []
-    ).join(", "),
+  const [seoJsonld, setSeoJsonld] = useState<Array<Record<string, unknown>>>(
+    initialSeo?.jsonld?.blocks ?? [],
   );
 
-  const [
-    seoJsonld,
-    setSeoJsonld,
-  ] = useState<
-    Array<Record<string, unknown>>
-  >(
-    initialSeo?.jsonld
-      ?.blocks ?? [],
-  );
+  const [seoActiveLocales, setSeoActiveLocales] = useState<string[]>(() => {
+    const activeLocales = initialSeo?.activeLocales?.filter((locale) =>
+      SUPPORTED_SEO_LOCALES.some(
+        (supportedLocale) => supportedLocale.code === locale,
+      ),
+    );
 
-  const [
-    seoActiveLocales,
-    setSeoActiveLocales,
-  ] = useState<string[]>(() => {
-    const activeLocales =
-      initialSeo?.activeLocales?.filter(
-        (locale) =>
-          SUPPORTED_SEO_LOCALES.some(
-            (supportedLocale) =>
-              supportedLocale.code === locale,
-          ),
-      );
-
-    return activeLocales?.length
-      ? activeLocales
-      : ["fr", "en"];
+    return activeLocales?.length ? activeLocales : ["fr", "en"];
   });
 
-  const [
-    seoDefaultLocale,
-    setSeoDefaultLocale,
-  ] = useState(() => {
-    const initialActiveLocales =
-      initialSeo?.activeLocales?.filter(
-        (locale) =>
-          SUPPORTED_SEO_LOCALES.some(
-            (supportedLocale) =>
-              supportedLocale.code === locale,
-          ),
-      );
-    const activeLocales =
-      initialActiveLocales?.length
-        ? initialActiveLocales
-        : ["fr", "en"];
+  const [seoDefaultLocale, setSeoDefaultLocale] = useState(() => {
+    const initialActiveLocales = initialSeo?.activeLocales?.filter((locale) =>
+      SUPPORTED_SEO_LOCALES.some(
+        (supportedLocale) => supportedLocale.code === locale,
+      ),
+    );
+    const activeLocales = initialActiveLocales?.length
+      ? initialActiveLocales
+      : ["fr", "en"];
 
     return initialSeo?.defaultLocale &&
-      activeLocales.includes(
-        initialSeo.defaultLocale,
-      )
+      activeLocales.includes(initialSeo.defaultLocale)
       ? initialSeo.defaultLocale
       : activeLocales[0];
   });
 
-  const [
-    seoPublicOrigin,
-    setSeoPublicOrigin,
-  ] = useState(
+  const [seoPublicOrigin, setSeoPublicOrigin] = useState(
     initialSeo?.publicOrigin ?? "",
   );
 
-  const [
-    seoDirty,
-    setSeoDirty,
-  ] = useState(false);
+  const [seoDirty, setSeoDirty] = useState(false);
 
-  const [
-    brief,
-    setBrief,
-  ] = useState<ContentBrief | null>(
-    null,
-  );
+  const [brief, setBrief] = useState<ContentBrief | null>(null);
 
-  const [
-    clusters,
-    setClusters,
-  ] = useState<KeywordCluster[]>(
-    [],
-  );
+  const [clusters, setClusters] = useState<KeywordCluster[]>([]);
 
   const activePage = useMemo(
-    () =>
-      pages.find(
-        (page) =>
-          page.id ===
-          activePageId,
-      ) ?? null,
-    [
-      pages,
-      activePageId,
-    ],
+    () => pages.find((page) => page.id === activePageId) ?? null,
+    [pages, activePageId],
   );
 
   const activeScene = useMemo(
     () =>
-      scenes.find(
-        (scene) =>
-          scene.id ===
-          activeSceneId,
-      ) ??
-      scenes[0] ??
-      null,
-    [
-      scenes,
-      activeSceneId,
-    ],
+      scenes.find((scene) => scene.id === activeSceneId) ?? scenes[0] ?? null,
+    [scenes, activeSceneId],
   );
 
   useEffect(() => {
-    if (
-      activePageId &&
-      !pages.some(
-        (page) =>
-          page.id ===
-          activePageId,
-      )
-    ) {
+    if (activePageId && !pages.some((page) => page.id === activePageId)) {
       setActivePageId(null);
     }
-  }, [
-    pages,
-    activePageId,
-  ]);
+  }, [pages, activePageId]);
 
   useEffect(() => {
     setActiveSceneId(null);
-  }, [
-    activePageId,
-  ]);
+  }, [activePageId]);
 
   useEffect(() => {
-    setSeoTitle(
-      initialSeo?.title ?? "",
+    setSeoTitle(initialSeo?.title ?? "");
+    setSeoDescription(initialSeo?.description ?? "");
+    setSeoH1(initialSeo?.jsonld?.h1 ?? "");
+    setSeoKeywords((initialSeo?.jsonld?.keywords ?? []).join(", "));
+    setSeoJsonld(initialSeo?.jsonld?.blocks ?? []);
+    const configuredLocales = initialSeo?.activeLocales?.filter((locale) =>
+      SUPPORTED_SEO_LOCALES.some(
+        (supportedLocale) => supportedLocale.code === locale,
+      ),
     );
-    setSeoDescription(
-      initialSeo?.description ??
-        "",
-    );
-    setSeoH1(
-      initialSeo?.jsonld?.h1 ??
-        "",
-    );
-    setSeoKeywords(
-      (
-        initialSeo?.jsonld
-          ?.keywords ?? []
-      ).join(", "),
-    );
-    setSeoJsonld(
-      initialSeo?.jsonld
-        ?.blocks ?? [],
-    );
-    const configuredLocales =
-      initialSeo?.activeLocales?.filter(
-        (locale) =>
-          SUPPORTED_SEO_LOCALES.some(
-            (supportedLocale) =>
-              supportedLocale.code === locale,
-          ),
-      );
-    const activeLocales =
-      configuredLocales?.length
-        ? configuredLocales
-        : ["fr", "en"];
+    const activeLocales = configuredLocales?.length
+      ? configuredLocales
+      : ["fr", "en"];
 
     setSeoActiveLocales(activeLocales);
     setSeoDefaultLocale(
       initialSeo?.defaultLocale &&
-        activeLocales.includes(
-          initialSeo.defaultLocale,
-        )
+        activeLocales.includes(initialSeo.defaultLocale)
         ? initialSeo.defaultLocale
         : activeLocales[0],
     );
-    setSeoPublicOrigin(
-      initialSeo?.publicOrigin ?? "",
-    );
+    setSeoPublicOrigin(initialSeo?.publicOrigin ?? "");
     setSeoDirty(false);
-  }, [
-    boutiqueId,
-    initialSeo,
-  ]);
+  }, [boutiqueId, initialSeo]);
 
-  const validation = useMemo(() => validateBoutiquePublication({
-    studioCompletedAt: publicationData.data?.boutique.studio_completed_at ?? null,
-    scenes: publicationScenes,
-    eligibleProductCount: publicationData.data?.eligibleProductCount ?? 0,
-    seoTitle: seoDirty ? seoTitle : publicationData.data?.boutique.seo_title ?? "",
-    seoDescription: seoDirty ? seoDescription : publicationData.data?.boutique.seo_description ?? "",
-    loading: publicationScenesLoading || publicationData.isFetching || !publicationData.data,
-    failed: publicationScenesError || publicationData.isError,
-    saving: pendingMutations > 0,
-  }), [publicationData.data, publicationData.isFetching, publicationData.isError,
-    publicationScenes, publicationScenesLoading, publicationScenesError,
-    seoDirty, seoTitle, seoDescription, pendingMutations]);
+  const validation = useMemo(
+    () =>
+      validateBoutiquePublication({
+        studioCompletedAt:
+          publicationData.data?.boutique.studio_completed_at ?? null,
+        scenes: publicationScenes,
+        eligibleProductCount: publicationData.data?.eligibleProductCount ?? 0,
+        seoTitle: seoDirty
+          ? seoTitle
+          : (publicationData.data?.boutique.seo_title ?? ""),
+        seoDescription: seoDirty
+          ? seoDescription
+          : (publicationData.data?.boutique.seo_description ?? ""),
+        loading:
+          publicationScenesLoading ||
+          publicationData.isFetching ||
+          !publicationData.data,
+        failed: publicationScenesError || publicationData.isError,
+        saving: pendingMutations > 0,
+      }),
+    [
+      publicationData.data,
+      publicationData.isFetching,
+      publicationData.isError,
+      publicationScenes,
+      publicationScenesLoading,
+      publicationScenesError,
+      seoDirty,
+      seoTitle,
+      seoDescription,
+      pendingMutations,
+    ],
+  );
 
   const publish = useMutation({
     mutationFn: async () => {
       if (!validation.ok) {
-        throw new Error(
-          "validation_failed",
-        );
+        throw new Error("validation_failed");
       }
 
       if (seoDirty) {
         await saveSeo.mutateAsync({
           boutiqueId,
           title: seoTitle.trim(),
-          description:
-            seoDescription.trim(),
-          h1:
-            seoH1.trim() ||
-            undefined,
-          keywords:
-            seoKeywords
-              .split(",")
-              .map(
-                (keyword) =>
-                  keyword.trim(),
-              )
-              .filter(Boolean),
+          description: seoDescription.trim(),
+          h1: seoH1.trim() || undefined,
+          keywords: seoKeywords
+            .split(",")
+            .map((keyword) => keyword.trim())
+            .filter(Boolean),
           jsonld: seoJsonld,
           activeLocales: seoActiveLocales,
           defaultLocale: seoDefaultLocale,
-          publicOrigin:
-            seoPublicOrigin.trim() || null,
+          publicOrigin: seoPublicOrigin.trim() || null,
         });
       }
 
@@ -1396,9 +1166,11 @@ export function StudioEditor({
       try {
         [freshData, freshScenes] = await Promise.all([
           fetchBoutiquePublicationData(boutiqueId),
-          supabase.from("boutique_scenes")
+          supabase
+            .from("boutique_scenes")
             .select("page_id, position, is_visible, role, variant, content")
-            .eq("boutique_id", boutiqueId).is("page_id", null)
+            .eq("boutique_id", boutiqueId)
+            .is("page_id", null)
             .order("position", { ascending: true }),
         ]);
       } catch {
@@ -1415,14 +1187,16 @@ export function StudioEditor({
         seoDescription: freshData.boutique.seo_description ?? "",
       });
       if (!freshValidation.ok) {
-        await Promise.all([publicationData.refetch(), refetchPublicationScenes()]);
-        throw new Error(`publication_blocked:${freshValidation.errors.join(" ")}`);
+        await Promise.all([
+          publicationData.refetch(),
+          refetchPublicationScenes(),
+        ]);
+        throw new Error(
+          `publication_blocked:${freshValidation.errors.join(" ")}`,
+        );
       }
 
-      const {
-        data,
-        error,
-      } = await supabase
+      const { data, error } = await supabase
         .from("boutiques")
         .update({
           status: "published",
@@ -1436,56 +1210,36 @@ export function StudioEditor({
       }
 
       if (!data) {
-        throw new Error(
-          "Publication refusée ou boutique introuvable.",
-        );
+        throw new Error("Publication refusée ou boutique introuvable.");
       }
     },
 
     onSuccess: () => {
       setSeoDirty(false);
 
-      toast.success(
-        "Boutique publiée.",
-      );
+      toast.success(translateUi("Boutique publiée."));
 
-      queryClient.invalidateQueries(
-        {
-          queryKey: [
-            "boutique-edit",
-            boutiqueId,
-          ],
-        },
-      );
+      queryClient.invalidateQueries({
+        queryKey: ["boutique-edit", boutiqueId],
+      });
 
-      queryClient.invalidateQueries(
-        {
-          queryKey: [
-            "boutiques",
-          ],
-        },
-      );
+      queryClient.invalidateQueries({
+        queryKey: ["boutiques"],
+      });
 
-      queryClient.invalidateQueries(
-        {
-          queryKey: [
-            "public-boutique",
-          ],
-        },
-      );
+      queryClient.invalidateQueries({
+        queryKey: ["public-boutique"],
+      });
     },
 
     onError: (error) => {
-      if (
-        error instanceof Error &&
-        error.message === "validation_failed"
-      ) {
+      if (error instanceof Error && error.message === "validation_failed") {
         const firstIssue = validation.errors[0];
 
         toast.error(
           firstIssue
             ? `Publication bloquée : ${firstIssue}`
-            : "La boutique doit être corrigée avant publication.",
+            : translateUi("La boutique doit être corrigée avant publication."),
         );
 
         return;
@@ -1494,20 +1248,24 @@ export function StudioEditor({
       // Ne pas exposer les détails techniques de Supabase
       // ou de PostgreSQL dans l'interface marchand.
       const rawMessage =
-        error &&
-        typeof error === "object" &&
-        "message" in error
-          ? String(
-              (error as { message?: unknown }).message ?? "",
-            )
+        error && typeof error === "object" && "message" in error
+          ? String((error as { message?: unknown }).message ?? "")
           : "";
 
       if (rawMessage.startsWith("publication_blocked:")) {
-        toast.error(`Publication bloquée : ${rawMessage.slice("publication_blocked:".length)}`);
+        toast.error(
+          translateUi("Publication bloquée : {v0}", {
+            v0: rawMessage.slice("publication_blocked:".length),
+          }),
+        );
         return;
       }
       if (rawMessage === "publication_read_failed") {
-        toast.error("Publication bloquée : impossible de vérifier les données enregistrées. Réessayez le chargement avant de publier.");
+        toast.error(
+          translateUi(
+            "Publication bloquée : impossible de vérifier les données enregistrées. Réessayez le chargement avant de publier.",
+          ),
+        );
         return;
       }
 
@@ -1542,19 +1300,17 @@ export function StudioEditor({
         ],
       ];
 
-      const normalizedMessage =
-        rawMessage.toLocaleLowerCase("fr");
+      const normalizedMessage = rawMessage.toLocaleLowerCase("fr");
 
-      const matchedMessage = publicationMessages.find(
-        ([needle]) =>
-          normalizedMessage.includes(
-            needle.toLocaleLowerCase("fr"),
-          ),
+      const matchedMessage = publicationMessages.find(([needle]) =>
+        normalizedMessage.includes(needle.toLocaleLowerCase("fr")),
       )?.[1];
 
       toast.error(
         matchedMessage ??
-          "Publication impossible. Vérifiez les éléments requis et réessayez. Si le problème persiste, contactez le support BIB.",
+          translateUi(
+            "Publication impossible. Vérifiez les éléments requis et réessayez. Si le problème persiste, contactez le support BIB.",
+          ),
       );
     },
   });
@@ -1568,20 +1324,32 @@ export function StudioEditor({
         .select("id")
         .maybeSingle();
       if (error) throw error;
-      if (!data) throw new Error("Boutique introuvable ou dépublication refusée.");
+      if (!data)
+        throw new Error("Boutique introuvable ou dépublication refusée.");
     },
     onSuccess: () => {
       setShowUnpublishConfirm(false);
-      toast.success(tx("Boutique mise hors ligne.", "Store unpublished."));
+      toast.success(
+        tx(
+          translateUi("Boutique mise hors ligne."),
+          translateUi("Store unpublished."),
+        ),
+      );
       void queryClient.invalidateQueries({ queryKey: ["boutiques"] });
-      void queryClient.invalidateQueries({ queryKey: ["boutique-edit", boutiqueId] });
+      void queryClient.invalidateQueries({
+        queryKey: ["boutique-edit", boutiqueId],
+      });
       void queryClient.invalidateQueries({ queryKey: ["public-boutique"] });
     },
-    onError: () => toast.error(tx("Dépublication impossible. Réessayez.", "Could not unpublish the store. Try again.")),
+    onError: () =>
+      toast.error(
+        tx(
+          translateUi("Dépublication impossible. Réessayez."),
+          translateUi("Could not unpublish the store. Try again."),
+        ),
+      ),
   });
-  const handlePatchPage = (
-    patch: Partial<PageLike>,
-  ) => {
+  const handlePatchPage = (patch: Partial<PageLike>) => {
     if (!activePage) {
       return;
     }
@@ -1593,485 +1361,319 @@ export function StudioEditor({
     });
   };
 
-  const handleCreatePage =
-    async (
-      template: PageTemplate,
-    ) => {
-      const titleKey = normalizeStudioPageTitle(template.defaultTitle);
-      const lockKey = `page-creation:${boutiqueId}`;
-      if (pageCreationLocks.current.has(lockKey)) return;
-      const existingPage = pages.find((page) => normalizeStudioPageTitle(page.title) === titleKey);
-      if (existingPage) {
-        setActivePageId(existingPage.id);
-        toast.info(tx("Cette page existe déjà ; elle a été ouverte.", "This page already exists and has been opened."));
-        return;
-      }
-      pageCreationLocks.current.add(lockKey);
-      try {
-        const page =
-          await createPage.mutateAsync(
-            {
-              boutiqueId,
-              title:
-                template.defaultTitle,
-              mode: "rich",
-            },
-          );
-
-        if (
-          template.seoTitle ||
-          template.seoDescription
-        ) {
-          await updatePage.mutateAsync(
-            {
-              pageId: page.id,
-              boutiqueId,
-              patch: {
-                seo_title:
-                  template.seoTitle ??
-                  null,
-                seo_description:
-                  template.seoDescription ??
-                  null,
-              },
-            },
-          );
-        }
-
-        for (
-          let index = 0;
-          index <
-          template.scenes.length;
-          index++
-        ) {
-          const scene =
-            template.scenes[
-              index
-            ];
-
-          const definition =
-            findSceneDefinition(
-              scene.sceneType,
-            );
-
-          if (!definition) {
-            continue;
-          }
-
-          await addScene.mutateAsync(
-            {
-              boutiqueId,
-              sceneType:
-                scene.sceneType,
-              position: index,
-              variant:
-                scene.variant,
-              content: {
-                ...definition.defaultContent,
-                ...(scene.contentPatch ??
-                  {}),
-              },
-              pageId: page.id,
-            },
-          );
-        }
-
-        setActivePageId(
-          page.id,
-        );
-
-        toast.success(
-          `Page « ${template.defaultTitle} » créée.`,
-        );
-      } catch (error) {
-        toast.error(
-          error instanceof Error
-            ? error.message
-            : "Création impossible.",
-        );
-      } finally {
-        pageCreationLocks.current.delete(lockKey);
-      }
-    };
-
-  const handleOpenProductTemplate =
-    async () => {
-      const lockKey = `page-creation:${boutiqueId}`;
-      if (pageCreationLocks.current.has(lockKey)) return;
-      const existing =
-        pages.find(
-          (page) =>
-            page.slug ===
-            PRODUCT_PAGE_SLUG,
-        );
-
-      if (existing) {
-        setActivePageId(
-          existing.id,
-        );
-        return;
-      }
-
-      pageCreationLocks.current.add(lockKey);
-      try {
-        const page =
-          await createPage.mutateAsync(
-            {
-              boutiqueId,
-              title:
-                "Modèle fiche produit",
-              mode: "rich",
-              slug:
-                PRODUCT_PAGE_SLUG,
-              showInNav: false,
-            },
-          );
-
-        for (
-          let index = 0;
-          index <
-          PRODUCT_PAGE_SCENES.length;
-          index++
-        ) {
-          const scene =
-            PRODUCT_PAGE_SCENES[
-              index
-            ];
-
-          const definition =
-            findSceneDefinition(
-              scene.sceneType,
-            );
-
-          if (!definition) {
-            continue;
-          }
-
-          await addScene.mutateAsync(
-            {
-              boutiqueId,
-              sceneType:
-                scene.sceneType,
-              position: index,
-              variant:
-                scene.variant,
-              content: {
-                ...definition.defaultContent,
-                ...(scene.contentPatch ??
-                  {}),
-              },
-              pageId: page.id,
-            },
-          );
-        }
-
-        setActivePageId(
-          page.id,
-        );
-
-        toast.success(
-          "Modèle de page produit créé.",
-        );
-      } catch (error) {
-        toast.error(
-          error instanceof Error
-            ? error.message
-            : "Création impossible.",
-        );
-      } finally {
-        pageCreationLocks.current.delete(lockKey);
-      }
-    };
-
-  const handleAddScene =
-    (sceneType: string) => {
-      const definition =
-        findSceneDefinition(
-          sceneType,
-        );
-
-      if (!definition) {
-        return;
-      }
-      const lockKey = `${activePageId ?? "home"}:scene-add`;
-      if (sceneMutationLocks.current.has(lockKey)) return;
-      sceneMutationLocks.current.add(lockKey);
-
-      addScene.mutate(
-        {
-          boutiqueId,
-          sceneType,
-          position:
-            scenes.length,
-          pageId:
-            activePageId,
-          variant:
-            definition.variants[0],
-          content:
-            definition.defaultContent,
-        },
-        {
-          onSuccess: () => {
-            setShowAddScene(false);
-            toast.success(
-              "Scène ajoutée.",
-            );
-          },
-          onError: (error) =>
-            toast.error(
-              error instanceof Error
-                ? error.message
-                : "Ajout impossible.",
-            ),
-          onSettled: () => sceneMutationLocks.current.delete(lockKey),
-        },
+  const handleCreatePage = async (template: PageTemplate) => {
+    const titleKey = normalizeStudioPageTitle(template.defaultTitle);
+    const lockKey = `page-creation:${boutiqueId}`;
+    if (pageCreationLocks.current.has(lockKey)) return;
+    const existingPage = pages.find(
+      (page) => normalizeStudioPageTitle(page.title) === titleKey,
+    );
+    if (existingPage) {
+      setActivePageId(existingPage.id);
+      toast.info(
+        tx(
+          translateUi("Cette page existe déjà ; elle a été ouverte."),
+          translateUi("This page already exists and has been opened."),
+        ),
       );
-    };
-
-  const handleDuplicateScene =
-    (scene: SceneRecord) => {
-      const lockKey = `${activePageId ?? "home"}:scene-add`;
-      if (sceneMutationLocks.current.has(lockKey)) return;
-      sceneMutationLocks.current.add(lockKey);
-      addScene.mutate(
-        {
-          boutiqueId,
-          sceneType:
-            scene.scene_type,
-          position:
-            scenes.length,
-          variant:
-            scene.variant,
-          content:
-            scene.content,
-          pageId:
-            activePageId,
-        },
-        {
-          onSuccess: () =>
-            toast.success(
-              "Scène dupliquée.",
-            ),
-          onError: () =>
-            toast.error(
-              "Duplication impossible.",
-            ),
-          onSettled: () => sceneMutationLocks.current.delete(lockKey),
-        },
-      );
-    };
-
-  const handleDeleteScene =
-    async () => {
-      if (!pendingDeleteId) {
-        return;
-      }
-
-      await deleteScene.mutateAsync({
+      return;
+    }
+    pageCreationLocks.current.add(lockKey);
+    try {
+      const page = await createPage.mutateAsync({
         boutiqueId,
-        sceneId:
-          pendingDeleteId,
+        title: template.defaultTitle,
+        mode: "rich",
       });
 
-      if (
-        activeSceneId ===
-        pendingDeleteId
-      ) {
-        setActiveSceneId(null);
+      if (template.seoTitle || template.seoDescription) {
+        await updatePage.mutateAsync({
+          pageId: page.id,
+          boutiqueId,
+          patch: {
+            seo_title: template.seoTitle ?? null,
+            seo_description: template.seoDescription ?? null,
+          },
+        });
       }
 
-      setPendingDeleteId(null);
-    };
+      for (let index = 0; index < template.scenes.length; index++) {
+        const scene = template.scenes[index];
 
-  const handleReorderScenes =
-    (
-      orderedIds: string[],
-    ) => {
-      reorderScenes.mutate(
-        {
+        const definition = findSceneDefinition(scene.sceneType);
+
+        if (!definition) {
+          continue;
+        }
+
+        await addScene.mutateAsync({
           boutiqueId,
-          orderedIds,
-        },
-        {
-          onError: () =>
-            toast.error(
-              "Réorganisation impossible.",
-            ),
-        },
-      );
-    };
-
-  const sensors =
-    useSensors(
-      useSensor(
-        PointerSensor,
-        {
-          activationConstraint: {
-            distance: 5,
+          sceneType: scene.sceneType,
+          position: index,
+          variant: scene.variant,
+          content: {
+            ...definition.defaultContent,
+            ...(scene.contentPatch ?? {}),
           },
-        },
-      ),
-      useSensor(
-        KeyboardSensor,
-        {
-          coordinateGetter:
-            sortableKeyboardCoordinates,
-        },
-      ),
-    );
+          pageId: page.id,
+        });
+      }
 
-  const handleDragEnd = (
-    event: DragEndEvent,
-  ) => {
-    const {
-      active,
-      over,
-    } = event;
+      setActivePageId(page.id);
 
-    if (
-      !over ||
-      active.id === over.id
-    ) {
+      toast.success(
+        translateUi("Page « {v0} » créée.", { v0: template.defaultTitle }),
+      );
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : translateUi("Création impossible."),
+      );
+    } finally {
+      pageCreationLocks.current.delete(lockKey);
+    }
+  };
+
+  const handleOpenProductTemplate = async () => {
+    const lockKey = `page-creation:${boutiqueId}`;
+    if (pageCreationLocks.current.has(lockKey)) return;
+    const existing = pages.find((page) => page.slug === PRODUCT_PAGE_SLUG);
+
+    if (existing) {
+      setActivePageId(existing.id);
       return;
     }
 
-    const oldIndex =
-      scenes.findIndex(
-        (scene) =>
-          scene.id ===
-          active.id,
-      );
+    pageCreationLocks.current.add(lockKey);
+    try {
+      const page = await createPage.mutateAsync({
+        boutiqueId,
+        title: translateUi("Modèle fiche produit"),
+        mode: "rich",
+        slug: PRODUCT_PAGE_SLUG,
+        showInNav: false,
+      });
 
-    const newIndex =
-      scenes.findIndex(
-        (scene) =>
-          scene.id ===
-          over.id,
-      );
+      for (let index = 0; index < PRODUCT_PAGE_SCENES.length; index++) {
+        const scene = PRODUCT_PAGE_SCENES[index];
 
-    if (
-      oldIndex < 0 ||
-      newIndex < 0
-    ) {
+        const definition = findSceneDefinition(scene.sceneType);
+
+        if (!definition) {
+          continue;
+        }
+
+        await addScene.mutateAsync({
+          boutiqueId,
+          sceneType: scene.sceneType,
+          position: index,
+          variant: scene.variant,
+          content: {
+            ...definition.defaultContent,
+            ...(scene.contentPatch ?? {}),
+          },
+          pageId: page.id,
+        });
+      }
+
+      setActivePageId(page.id);
+
+      toast.success(translateUi("Modèle de page produit créé."));
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : translateUi("Création impossible."),
+      );
+    } finally {
+      pageCreationLocks.current.delete(lockKey);
+    }
+  };
+
+  const handleAddScene = (sceneType: string) => {
+    const definition = findSceneDefinition(sceneType);
+
+    if (!definition) {
       return;
     }
+    const lockKey = `${activePageId ?? "home"}:scene-add`;
+    if (sceneMutationLocks.current.has(lockKey)) return;
+    sceneMutationLocks.current.add(lockKey);
 
-    const reordered =
-      arrayMove(
-        scenes,
-        oldIndex,
-        newIndex,
-      );
-
-    handleReorderScenes(
-      reordered.map(
-        (scene) =>
-          scene.id,
-      ),
+    addScene.mutate(
+      {
+        boutiqueId,
+        sceneType,
+        position: scenes.length,
+        pageId: activePageId,
+        variant: definition.variants[0],
+        content: definition.defaultContent,
+      },
+      {
+        onSuccess: () => {
+          setShowAddScene(false);
+          toast.success(translateUi("Scène ajoutée."));
+        },
+        onError: (error) =>
+          toast.error(
+            error instanceof Error
+              ? error.message
+              : translateUi("Ajout impossible."),
+          ),
+        onSettled: () => sceneMutationLocks.current.delete(lockKey),
+      },
     );
   };
 
-  const handleRemixScene =
-    (scene: SceneRecord) => {
-      remixScene.mutate(
-        {
-          boutiqueId,
-          sceneId: scene.id,
-          sceneType:
-            scene.scene_type,
-          variant:
-            scene.variant,
-          content:
-            scene.content,
-          brand:
-            brandDna,
-        },
-        {
-          onSuccess: () =>
-            toast.success(
-              "Scène régénérée.",
-            ),
-          onError: (error) =>
-            toast.error(
-              error instanceof Error
-                ? error.message
-                : "Régénération impossible.",
-            ),
-        },
-      );
-    };
+  const handleDuplicateScene = (scene: SceneRecord) => {
+    const lockKey = `${activePageId ?? "home"}:scene-add`;
+    if (sceneMutationLocks.current.has(lockKey)) return;
+    sceneMutationLocks.current.add(lockKey);
+    addScene.mutate(
+      {
+        boutiqueId,
+        sceneType: scene.scene_type,
+        position: scenes.length,
+        variant: scene.variant,
+        content: scene.content,
+        pageId: activePageId,
+      },
+      {
+        onSuccess: () => toast.success(translateUi("Scène dupliquée.")),
+        onError: () => toast.error(translateUi("Duplication impossible.")),
+        onSettled: () => sceneMutationLocks.current.delete(lockKey),
+      },
+    );
+  };
 
-  const handleSeoGenerate =
-    () => {
-      generateSeo.mutate(
-        {
-          boutiqueId,
-          persist: true,
-          context: {
-            boutiqueName,
-            category,
-            products:
-              products.slice(
-                0,
-                12,
-              ),
-            brand: brandDna,
-          },
-        },
-        {
-          onSuccess: (result) => {
-            setSeoTitle(
-              result.title,
-            );
-            setSeoDescription(
-              result.description,
-            );
-            setSeoH1(result.h1);
-            setSeoKeywords(
-              result.keywords.join(
-                ", ",
-              ),
-            );
-            setSeoJsonld(
-              result.jsonld,
-            );
-            setSeoDirty(false);
+  const handleDeleteScene = async () => {
+    if (!pendingDeleteId) {
+      return;
+    }
 
-            toast.success(
-              "SEO généré.",
-            );
-          },
-          onError: (error) =>
-            toast.error(
-              error instanceof Error
-                ? error.message
-                : "Génération impossible.",
-            ),
-        },
-      );
-    };
-
-  const seoScore =
-    computeSeoScore({
-      title: seoTitle,
-      description:
-        seoDescription,
-      h1: seoH1,
-      keywords:
-        seoKeywords
-          .split(",")
-          .map(
-            (value) =>
-              value.trim(),
-          )
-          .filter(Boolean),
-      jsonldBlocks: 0,
+    await deleteScene.mutateAsync({
+      boutiqueId,
+      sceneId: pendingDeleteId,
     });
 
-  const publicUrl =
-    publicSlug
-      ? `/boutique/${publicSlug}`
-      : "#";
+    if (activeSceneId === pendingDeleteId) {
+      setActiveSceneId(null);
+    }
+
+    setPendingDeleteId(null);
+  };
+
+  const handleReorderScenes = (orderedIds: string[]) => {
+    reorderScenes.mutate(
+      {
+        boutiqueId,
+        orderedIds,
+      },
+      {
+        onError: () => toast.error(translateUi("Réorganisation impossible.")),
+      },
+    );
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = scenes.findIndex((scene) => scene.id === active.id);
+
+    const newIndex = scenes.findIndex((scene) => scene.id === over.id);
+
+    if (oldIndex < 0 || newIndex < 0) {
+      return;
+    }
+
+    const reordered = arrayMove(scenes, oldIndex, newIndex);
+
+    handleReorderScenes(reordered.map((scene) => scene.id));
+  };
+
+  const handleRemixScene = (scene: SceneRecord) => {
+    remixScene.mutate(
+      {
+        boutiqueId,
+        sceneId: scene.id,
+        sceneType: scene.scene_type,
+        variant: scene.variant,
+        content: scene.content,
+        brand: brandDna,
+      },
+      {
+        onSuccess: () => toast.success(translateUi("Scène régénérée.")),
+        onError: (error) =>
+          toast.error(
+            error instanceof Error
+              ? error.message
+              : translateUi("Régénération impossible."),
+          ),
+      },
+    );
+  };
+
+  const handleSeoGenerate = () => {
+    generateSeo.mutate(
+      {
+        boutiqueId,
+        persist: true,
+        context: {
+          boutiqueName,
+          category,
+          products: products.slice(0, 12),
+          brand: brandDna,
+        },
+      },
+      {
+        onSuccess: (result) => {
+          setSeoTitle(result.title);
+          setSeoDescription(result.description);
+          setSeoH1(result.h1);
+          setSeoKeywords(result.keywords.join(", "));
+          setSeoJsonld(result.jsonld);
+          setSeoDirty(false);
+
+          toast.success(translateUi("SEO généré."));
+        },
+        onError: (error) =>
+          toast.error(
+            error instanceof Error
+              ? error.message
+              : translateUi("Génération impossible."),
+          ),
+      },
+    );
+  };
+
+  const seoScore = computeSeoScore({
+    title: seoTitle,
+    description: seoDescription,
+    h1: seoH1,
+    keywords: seoKeywords
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean),
+    jsonldBlocks: 0,
+  });
+
+  const publicUrl = publicSlug ? `/boutique/${publicSlug}` : "#";
 
   if (pagesLoading) {
     return (
@@ -2093,7 +1695,7 @@ export function StudioEditor({
             onClick={() => navigate("/dashboard/boutiques")}
           >
             <ArrowLeft className="h-4 w-4" />
-            Boutiques
+            {translateUi("Boutiques")}
           </Button>
 
           <div className="hidden h-6 w-px bg-border sm:block" />
@@ -2104,16 +1706,8 @@ export function StudioEditor({
                 {boutiqueName}
               </h1>
 
-              <Badge
-                variant={
-                  isPublished
-                    ? "default"
-                    : "secondary"
-                }
-              >
-                {isPublished
-                  ? "Publié"
-                  : "Brouillon"}
+              <Badge variant={isPublished ? "default" : "secondary"}>
+                {isPublished ? translateUi("Publié") : translateUi("Brouillon")}
               </Badge>
             </div>
 
@@ -2138,19 +1732,10 @@ export function StudioEditor({
           )}
 
           {isPublished && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              asChild
-            >
-              <a
-                href={publicUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+            <Button variant="outline" size="sm" className="gap-2" asChild>
+              <a href={publicUrl} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="h-4 w-4" />
-                Voir la boutique
+                {translateUi("Voir la boutique")}
               </a>
             </Button>
           )}
@@ -2158,19 +1743,17 @@ export function StudioEditor({
           <ActionButton
             size="sm"
             disabled={!validation.ok || unpublish.isPending}
-            aria-describedby={!validation.ok ? "publication-validation" : undefined}
-            state={stateFromMutation(
-              publish,
-            )}
+            aria-describedby={
+              !validation.ok ? "publication-validation" : undefined
+            }
+            state={stateFromMutation(publish)}
             loadingLabel="Publication…"
             successLabel="Publié"
             errorLabel={english ? "Failed" : "Échec"}
-            onClick={() =>
-              publish.mutate()
-            }
+            onClick={() => publish.mutate()}
           >
             <CheckCircle2 className="mr-2 h-4 w-4" />
-            Publier
+            {translateUi("Publier")}
           </ActionButton>
         </div>
       </div>
@@ -2183,11 +1766,17 @@ export function StudioEditor({
           className="mt-3 rounded-lg border border-warning/30 bg-warning/5 p-3 text-sm"
         >
           <p className="font-medium">
-            {isPublished ? "Boutique publiée : points à corriger" : "À corriger avant publication"}
+            {isPublished
+              ? translateUi("Boutique publiée : points à corriger")
+              : translateUi("À corriger avant publication")}
           </p>
 
           {isPublished && (
-            <p className="mt-1 text-muted-foreground">La boutique reste publiée. Corrigez ces points pour préserver son accueil et son catalogue.</p>
+            <p className="mt-1 text-muted-foreground">
+              {translateUi(
+                "La boutique reste publiée. Corrigez ces points pour préserver son accueil et son catalogue.",
+              )}
+            </p>
           )}
           <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
             {validation.errors.map((issue) => (
@@ -2195,12 +1784,31 @@ export function StudioEditor({
             ))}
           </ul>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" onClick={() => setActivePageId(null)}>{tx("Accueil", "Home")}</Button>
-            <Button size="sm" variant="outline" onClick={() => navigate("/dashboard/produits")}>Gérer les produits</Button>
-            <Button size="sm" variant="outline" disabled={publicationScenesLoading || publicationData.isFetching} onClick={() => {
-              void publicationData.refetch();
-              void refetchPublicationScenes();
-            }}>Réessayer la vérification</Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setActivePageId(null)}
+            >
+              {tx("Accueil", "Home")}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => navigate("/dashboard/produits")}
+            >
+              {translateUi("Gérer les produits")}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={publicationScenesLoading || publicationData.isFetching}
+              onClick={() => {
+                void publicationData.refetch();
+                void refetchPublicationScenes();
+              }}
+            >
+              {translateUi("Réessayer la vérification")}
+            </Button>
           </div>
         </div>
       )}
@@ -2210,105 +1818,75 @@ export function StudioEditor({
         <div className="flex flex-wrap items-center justify-between gap-3 border-b p-4">
           <div>
             <h2 className="font-semibold">
-              Pages de la boutique
+              {translateUi("Pages de la boutique")}
             </h2>
             <p className="text-xs text-muted-foreground">
-              {tx("Les pages sont persistées dans BIB et ne dépendent pas du navigateur.", "Pages are saved to BIB and are available across browsers.")}
+              {tx(
+                "Les pages sont persistées dans BIB et ne dépendent pas du navigateur.",
+                "Pages are saved to BIB and are available across browsers.",
+              )}
             </p>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {PAGE_TEMPLATES
-              .filter(
-                (template) =>
-                  !pages.some(
-                    (page) =>
-                      normalizeStudioPageTitle(page.title) ===
-                      normalizeStudioPageTitle(template.defaultTitle),
-                  ),
-              )
-              .map(
-                (template) => (
-                  <Button
-                    key={template.key}
-                    size="sm"
-                    variant="outline"
-                    disabled={createPage.isPending}
-                    onClick={() =>
-                      handleCreatePage(
-                        template,
-                      )
-                    }
-                  >
-                    <Plus className="mr-1.5 h-4 w-4" />
-                    {template.defaultTitle}
-                  </Button>
+            {PAGE_TEMPLATES.filter(
+              (template) =>
+                !pages.some(
+                  (page) =>
+                    normalizeStudioPageTitle(page.title) ===
+                    normalizeStudioPageTitle(template.defaultTitle),
                 ),
-              )}
+            ).map((template) => (
+              <Button
+                key={template.key}
+                size="sm"
+                variant="outline"
+                disabled={createPage.isPending}
+                onClick={() => handleCreatePage(template)}
+              >
+                <Plus className="mr-1.5 h-4 w-4" />
+                {template.defaultTitle}
+              </Button>
+            ))}
 
             <Button
               size="sm"
               variant="outline"
               disabled={createPage.isPending}
-              onClick={
-                handleOpenProductTemplate
-              }
+              onClick={handleOpenProductTemplate}
             >
               <Plus className="mr-1.5 h-4 w-4" />
-              Page produit
+              {translateUi("Page produit")}
             </Button>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2 p-4">
           <Button
-            variant={
-              activePageId === null
-                ? "default"
-                : "outline"
-            }
+            variant={activePageId === null ? "default" : "outline"}
             size="sm"
-            onClick={() =>
-              setActivePageId(null)
-            }
+            onClick={() => setActivePageId(null)}
           >
-            Accueil
+            {translateUi("Accueil")}
           </Button>
 
           {pages.map((page) => (
-            <div
-              key={page.id}
-              className="flex items-center"
-            >
+            <div key={page.id} className="flex items-center">
               <Button
-                variant={
-                  activePageId ===
-                  page.id
-                    ? "default"
-                    : "outline"
-                }
+                variant={activePageId === page.id ? "default" : "outline"}
                 size="sm"
-                onClick={() =>
-                  setActivePageId(
-                    page.id,
-                  )
-                }
+                onClick={() => setActivePageId(page.id)}
               >
                 {page.title}
               </Button>
 
-              {page.slug !==
-                PRODUCT_PAGE_SLUG && (
+              {page.slug !== PRODUCT_PAGE_SLUG && (
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-destructive"
-                  onClick={() =>
-                    setPendingDeletePageId(
-                      page.id,
-                    )
-                  }
-                  aria-label={`Supprimer ${page.title}`}
+                  onClick={() => setPendingDeletePageId(page.id)}
+                  aria-label={translateUi("Supprimer {v0}", { v0: page.title })}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
@@ -2320,15 +1898,9 @@ export function StudioEditor({
         {activePage && (
           <PageMetadata
             page={activePage}
-            boutiqueId={
-              boutiqueId
-            }
-            boutiqueSlug={
-              publicSlug
-            }
-            onPatch={
-              handlePatchPage
-            }
+            boutiqueId={boutiqueId}
+            boutiqueSlug={publicSlug}
+            onPatch={handlePatchPage}
           />
         )}
       </Card>
@@ -2337,23 +1909,12 @@ export function StudioEditor({
       <div className="grid min-h-[min(620px,75vh)] min-w-0 gap-4 2xl:grid-cols-[390px_minmax(0,1fr)] 2xl:gap-5">
         {/* Left rail */}
         <Card className="min-w-0 overflow-hidden">
-          <Tabs
-            defaultValue="scenes"
-            className="flex h-full flex-col"
-          >
+          <Tabs defaultValue="scenes" className="flex h-full flex-col">
             <TabsList className="m-3 grid grid-cols-2 sm:grid-cols-4">
-              <TabsTrigger value="scenes">
-                Scènes
-              </TabsTrigger>
-              <TabsTrigger value="brand">
-                Identité
-              </TabsTrigger>
-              <TabsTrigger value="seo">
-                SEO
-              </TabsTrigger>
-              <TabsTrigger value="stories">
-                Stories
-              </TabsTrigger>
+              <TabsTrigger value="scenes">{translateUi("Scènes")}</TabsTrigger>
+              <TabsTrigger value="brand">{translateUi("Identité")}</TabsTrigger>
+              <TabsTrigger value="seo">SEO</TabsTrigger>
+              <TabsTrigger value="stories">Stories</TabsTrigger>
             </TabsList>
 
             <TabsContent
@@ -2363,105 +1924,67 @@ export function StudioEditor({
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold">
-                    {activePage
-                      ? activePage.title
-                      : "Accueil"}
+                    {activePage ? activePage.title : translateUi("Accueil")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {scenes.length} scène
-                    {scenes.length >
-                    1
-                      ? "s"
-                      : ""}
+                    {scenes.length} {translateUi("scène")}
+                    {scenes.length > 1 ? "s" : ""}
                   </p>
                 </div>
 
                 <Button
                   size="sm"
-                  onClick={() =>
-                    setShowAddScene(
-                      (value) =>
-                        !value,
-                    )
-                  }
+                  onClick={() => setShowAddScene((value) => !value)}
                 >
                   <Plus className="mr-1.5 h-4 w-4" />
-                  Ajouter
+                  {translateUi("Ajouter")}
                 </Button>
               </div>
 
               {showAddScene && (
                 <Card className="mb-4 space-y-2 p-3">
                   <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Bibliothèque de scènes
+                    {translateUi("Bibliothèque de scènes")}
                   </p>
 
                   {(() => {
-                    const recommended =
-                      recommendedSceneTypesForPage(
-                        activePage?.title ??
-                          "accueil",
-                        activePage?.slug,
-                      );
-
-                    const recommendedSet =
-                      new Set(
-                        recommended,
-                      );
-
-                    const ordered =
-                      [
-                        ...recommended
-                          .map(
-                            (id) =>
-                              STUDIO_SCENES.find(
-                                (
-                                  scene,
-                                ) =>
-                                  scene.id ===
-                                  id,
-                              ),
-                          )
-                          .filter(Boolean),
-                        ...STUDIO_SCENES.filter(
-                          (scene) =>
-                            !recommendedSet.has(
-                              scene.id,
-                            ),
-                        ),
-                      ];
-
-                    return ordered.map(
-                      (definition) => (
-                        <button
-                          key={
-                            definition!.id
-                          }
-                          type="button"
-                          onClick={() =>
-                            handleAddScene(
-                              definition!.id,
-                            )
-                          }
-                          className="flex w-full items-center justify-between rounded-lg p-2 text-left hover:bg-muted"
-                        >
-                          <span className="min-w-0">
-                            <span className="block truncate text-sm font-medium">
-                              {
-                                definition!.name
-                              }
-                            </span>
-                            <span className="block truncate text-xs text-muted-foreground">
-                              {
-                                definition!.tagline
-                              }
-                            </span>
-                          </span>
-
-                          <Plus className="h-4 w-4 shrink-0" />
-                        </button>
-                      ),
+                    const recommended = recommendedSceneTypesForPage(
+                      activePage?.title ?? "accueil",
+                      activePage?.slug,
                     );
+
+                    const recommendedSet = new Set(recommended);
+
+                    const ordered = [
+                      ...recommended
+                        .map((id) =>
+                          STUDIO_SCENES.find((scene) => scene.id === id),
+                        )
+                        .filter(Boolean),
+                      ...STUDIO_SCENES.filter(
+                        (scene) => !recommendedSet.has(scene.id),
+                      ),
+                    ];
+
+                    return ordered.map((definition) => (
+                      <button
+                        key={definition!.id}
+                        type="button"
+                        onClick={() => handleAddScene(definition!.id)}
+                        className="flex w-full items-center justify-between rounded-lg p-2 text-left hover:bg-muted"
+                      >
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-medium">
+                            {definition!.name}
+                          </span>
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {definition!.tagline}
+                          </span>
+                        </span>
+
+                        <Plus className="h-4 w-4 shrink-0" />
+                      </button>
+                    ));
                   })()}
                 </Card>
               )}
@@ -2470,81 +1993,49 @@ export function StudioEditor({
                 <div className="flex min-h-[240px] items-center justify-center">
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
-              ) : scenes.length ===
-                0 ? (
+              ) : scenes.length === 0 ? (
                 <div className="rounded-xl border border-dashed p-6 text-center">
                   <Sparkles className="mx-auto mb-3 h-7 w-7 text-muted-foreground" />
                   <p className="text-sm font-medium">
-                    Aucune scène
+                    {translateUi("Aucune scène")}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {tx("Ajoutez une scène depuis la bibliothèque.", "Add a scene from the library.")}
+                    {tx(
+                      "Ajoutez une scène depuis la bibliothèque.",
+                      "Add a scene from the library.",
+                    )}
                   </p>
                 </div>
               ) : (
                 <DndContext
                   sensors={sensors}
-                  collisionDetection={
-                    closestCenter
-                  }
-                  onDragEnd={
-                    handleDragEnd
-                  }
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
                 >
                   <SortableContext
-                    items={scenes.map(
-                      (scene) =>
-                        scene.id,
-                    )}
-                    strategy={
-                      verticalListSortingStrategy
-                    }
+                    items={scenes.map((scene) => scene.id)}
+                    strategy={verticalListSortingStrategy}
                   >
                     <div className="space-y-2">
-                      {scenes.map(
-                        (scene) => (
-                          <SortableSceneRow
-                            key={
-                              scene.id
-                            }
-                            scene={
-                              scene
-                            }
-                            active={
-                              activeScene?.id ===
-                              scene.id
-                            }
-                            onSelect={() =>
-                              setActiveSceneId(
-                                scene.id,
-                              )
-                            }
-                            onToggle={() =>
-                              updateScene.mutate(
-                                {
-                                  sceneId:
-                                    scene.id,
-                                  boutiqueId,
-                                  patch: {
-                                    is_visible:
-                                      !scene.is_visible,
-                                  },
-                                },
-                              )
-                            }
-                            onDuplicate={() =>
-                              handleDuplicateScene(
-                                scene,
-                              )
-                            }
-                            onDelete={() =>
-                              setPendingDeleteId(
-                                scene.id,
-                              )
-                            }
-                          />
-                        ),
-                      )}
+                      {scenes.map((scene) => (
+                        <SortableSceneRow
+                          key={scene.id}
+                          scene={scene}
+                          active={activeScene?.id === scene.id}
+                          onSelect={() => setActiveSceneId(scene.id)}
+                          onToggle={() =>
+                            updateScene.mutate({
+                              sceneId: scene.id,
+                              boutiqueId,
+                              patch: {
+                                is_visible: !scene.is_visible,
+                              },
+                            })
+                          }
+                          onDuplicate={() => handleDuplicateScene(scene)}
+                          onDelete={() => setPendingDeleteId(scene.id)}
+                        />
+                      ))}
                     </div>
                   </SortableContext>
                 </DndContext>
@@ -2553,41 +2044,20 @@ export function StudioEditor({
               {activeScene && (
                 <div className="mt-4">
                   <SceneInspectorPro
-                    key={
-                      activeScene.id
-                    }
-                    scene={
-                      activeScene
-                    }
-                    boutiqueId={
-                      boutiqueId
-                    }
+                    key={activeScene.id}
+                    scene={activeScene}
+                    boutiqueId={boutiqueId}
                     products={products}
-                    onPatch={(
-                      patch,
-                    ) =>
-                      updateScene.mutate(
-                        {
-                          sceneId:
-                            activeScene.id,
-                          boutiqueId,
-                          patch,
-                        },
-                      )
+                    onPatch={(patch) =>
+                      updateScene.mutate({
+                        sceneId: activeScene.id,
+                        boutiqueId,
+                        patch,
+                      })
                     }
-                    onDelete={() =>
-                      setPendingDeleteId(
-                        activeScene.id,
-                      )
-                    }
-                    onRemix={() =>
-                      handleRemixScene(
-                        activeScene,
-                      )
-                    }
-                    remixState={stateFromMutation(
-                      remixScene,
-                    )}
+                    onDelete={() => setPendingDeleteId(activeScene.id)}
+                    onRemix={() => handleRemixScene(activeScene)}
+                    remixState={stateFromMutation(remixScene)}
                   />
                 </div>
               )}
@@ -2600,29 +2070,21 @@ export function StudioEditor({
               {!brandDna ? (
                 <div className="rounded-xl border border-dashed p-6 text-center">
                   <p className="text-sm font-medium">
-                    Identité non disponible
+                    {translateUi("Identité non disponible")}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Le Brand Studio doit être complété avant de modifier l'identité.
+                    {translateUi(
+                      "Le Brand Studio doit être complété avant de modifier l'identité.",
+                    )}
                   </p>
                 </div>
               ) : (
                 <BrandPanel
-                  boutiqueId={
-                    boutiqueId
-                  }
-                  brandDna={
-                    brandDna
-                  }
-                  studioAnswers={
-                    studioAnswers
-                  }
-                  updateBrandDna={
-                    updateBrandDna
-                  }
-                  regenerateBrandDna={
-                    regenerateBrandDna
-                  }
+                  boutiqueId={boutiqueId}
+                  brandDna={brandDna}
+                  studioAnswers={studioAnswers}
+                  updateBrandDna={updateBrandDna}
+                  regenerateBrandDna={regenerateBrandDna}
                 />
               )}
             </TabsContent>
@@ -2635,11 +2097,16 @@ export function StudioEditor({
                 <Card className="space-y-4 p-4">
                   <div>
                     <h3 className="text-sm font-semibold">
-                      Référencement international
+                      {translateUi("Référencement international")}
                     </h3>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Configure les langues déclarées pour cette boutique et son origine publique.
-                      {tx("Les traductions du contenu doivent être gérées séparément.", "Content translations must be managed separately.")}
+                      {translateUi(
+                        "Configure les langues déclarées pour cette boutique et son origine publique.",
+                      )}
+                      {tx(
+                        "Les traductions du contenu doivent être gérées séparément.",
+                        "Content translations must be managed separately.",
+                      )}
                     </p>
                   </div>
 
@@ -2647,9 +2114,7 @@ export function StudioEditor({
                     <Label>{tx("Langues actives", "Active languages")}</Label>
                     <div className="mt-2 grid grid-cols-2 gap-3">
                       {SUPPORTED_SEO_LOCALES.map((locale) => {
-                        const checked = seoActiveLocales.includes(
-                          locale.code,
-                        );
+                        const checked = seoActiveLocales.includes(locale.code);
 
                         return (
                           <label
@@ -2668,13 +2133,14 @@ export function StudioEditor({
                                       ]),
                                     ]
                                   : seoActiveLocales.filter(
-                                      (code) =>
-                                        code !== locale.code,
+                                      (code) => code !== locale.code,
                                     );
 
                                 if (next.length === 0) {
                                   toast.error(
-                                    "Sélectionne au moins une langue.",
+                                    translateUi(
+                                      "Sélectionne au moins une langue.",
+                                    ),
                                   );
                                   return;
                                 }
@@ -2702,15 +2168,12 @@ export function StudioEditor({
                   </div>
 
                   <div>
-                    <Label>Langue par défaut</Label>
+                    <Label>{translateUi("Langue par défaut")}</Label>
                     <Select
                       value={seoDefaultLocale}
                       onValueChange={(value) => {
                         if (!seoActiveLocales.includes(value)) {
-                          setSeoActiveLocales((current) => [
-                            ...current,
-                            value,
-                          ]);
+                          setSeoActiveLocales((current) => [...current, value]);
                         }
 
                         setSeoDefaultLocale(value);
@@ -2718,16 +2181,17 @@ export function StudioEditor({
                       }}
                     >
                       <SelectTrigger className="mt-2">
-                        <SelectValue placeholder={english ? "Choose a language" : "Choisir une langue"} />
+                        <SelectValue
+                          placeholder={
+                            english ? "Choose a language" : "Choisir une langue"
+                          }
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {SUPPORTED_SEO_LOCALES.filter((locale) =>
                           seoActiveLocales.includes(locale.code),
                         ).map((locale) => (
-                          <SelectItem
-                            key={locale.code}
-                            value={locale.code}
-                          >
+                          <SelectItem key={locale.code} value={locale.code}>
                             {locale.label}
                           </SelectItem>
                         ))}
@@ -2737,7 +2201,9 @@ export function StudioEditor({
 
                   <div>
                     <Label>
-                      Origine publique personnalisée (facultatif)
+                      {translateUi(
+                        "Origine publique personnalisée (facultatif)",
+                      )}
                     </Label>
                     <Input
                       className="mt-2"
@@ -2750,8 +2216,9 @@ export function StudioEditor({
                       }}
                     />
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Indique uniquement le domaine et le protocole, sans chemin, paramètres
-                      ni fragment. Laisse vide pour utiliser le domaine public de BIB.
+                      {translateUi(
+                        "Indique uniquement le domaine et le protocole, sans chemin, paramètres ni fragment. Laisse vide pour utiliser le domaine public de BIB.",
+                      )}
                     </p>
                   </div>
                 </Card>
@@ -2759,7 +2226,7 @@ export function StudioEditor({
                 <Card className="p-4">
                   <div className="mb-2 flex items-center justify-between">
                     <h3 className="text-sm font-semibold">
-                      Score SEO
+                      {translateUi("Score SEO")}
                     </h3>
 
                     <span className="text-2xl font-bold">
@@ -2780,113 +2247,68 @@ export function StudioEditor({
                   </div>
 
                   <ul className="space-y-1.5">
-                    {seoScore.checks.map(
-                      (check) => (
-                        <li
-                          key={
-                            check.label
-                          }
-                          className="flex items-center gap-2 text-xs"
-                        >
-                          {check.ok ? (
-                            <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
-                          ) : (
-                            <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
-                          )}
-                          {check.label}
-                        </li>
-                      ),
-                    )}
+                    {seoScore.checks.map((check) => (
+                      <li
+                        key={check.label}
+                        className="flex items-center gap-2 text-xs"
+                      >
+                        {check.ok ? (
+                          <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                        ) : (
+                          <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+                        )}
+                        {check.label}
+                      </li>
+                    ))}
                   </ul>
                 </Card>
 
                 <Card className="space-y-3 p-4">
                   <div>
-                    <Label>
-                      Titre SEO
-                    </Label>
+                    <Label>{translateUi("Titre SEO")}</Label>
                     <Input
                       value={seoTitle}
                       maxLength={80}
                       onChange={(event) => {
-                        setSeoTitle(
-                          event.target
-                            .value,
-                        );
-                        setSeoDirty(
-                          true,
-                        );
+                        setSeoTitle(event.target.value);
+                        setSeoDirty(true);
                       }}
                     />
                   </div>
 
                   <div>
-                    <Label>
-                      Meta description
-                    </Label>
+                    <Label>{translateUi("Meta description")}</Label>
                     <Textarea
-                      value={
-                        seoDescription
-                      }
+                      value={seoDescription}
                       maxLength={200}
                       rows={4}
-                      onChange={(
-                        event,
-                      ) => {
-                        setSeoDescription(
-                          event
-                            .target
-                            .value,
-                        );
-                        setSeoDirty(
-                          true,
-                        );
+                      onChange={(event) => {
+                        setSeoDescription(event.target.value);
+                        setSeoDirty(true);
                       }}
                     />
                   </div>
 
                   <div>
-                    <Label>
-                      H1
-                    </Label>
+                    <Label>H1</Label>
                     <Input
                       value={seoH1}
-                      onChange={(
-                        event,
-                      ) => {
-                        setSeoH1(
-                          event
-                            .target
-                            .value,
-                        );
-                        setSeoDirty(
-                          true,
-                        );
+                      onChange={(event) => {
+                        setSeoH1(event.target.value);
+                        setSeoDirty(true);
                       }}
                     />
                   </div>
 
                   <div>
-                    <Label>
-                      Mots-clés
-                    </Label>
+                    <Label>{translateUi("Mots-clés")}</Label>
                     <Textarea
-                      value={
-                        seoKeywords
-                      }
+                      value={seoKeywords}
                       rows={3}
-                      placeholder="boutique, marque, produit..."
-                      onChange={(
-                        event,
-                      ) => {
-                        setSeoKeywords(
-                          event
-                            .target
-                            .value,
-                        );
-                        setSeoDirty(
-                          true,
-                        );
+                      placeholder={translateUi("boutique, marque, produit...")}
+                      onChange={(event) => {
+                        setSeoKeywords(event.target.value);
+                        setSeoDirty(true);
                       }}
                     />
                   </div>
@@ -2895,19 +2317,15 @@ export function StudioEditor({
                     <Button
                       variant="outline"
                       className="flex-1"
-                      onClick={
-                        handleSeoGenerate
-                      }
-                      disabled={
-                        generateSeo.isPending
-                      }
+                      onClick={handleSeoGenerate}
+                      disabled={generateSeo.isPending}
                     >
                       {generateSeo.isPending ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       ) : (
                         <Wand2 className="mr-2 h-4 w-4" />
                       )}
-                      Générer
+                      {translateUi("Générer")}
                     </Button>
 
                     <Button
@@ -2916,76 +2334,47 @@ export function StudioEditor({
                         saveSeo.mutate(
                           {
                             boutiqueId,
-                            title:
-                              seoTitle.trim(),
-                            description:
-                              seoDescription.trim(),
-                            h1:
-                              seoH1.trim() ||
-                              undefined,
-                            keywords:
-                              seoKeywords
-                                .split(
-                                  ",",
-                                )
-                                .map(
-                                  (
-                                    value,
-                                  ) =>
-                                    value.trim(),
-                                )
-                                .filter(
-                                  Boolean,
-                                ),
-                            jsonld:
-                              seoJsonld,
-                            activeLocales:
-                              seoActiveLocales,
-                            defaultLocale:
-                              seoDefaultLocale,
-                            publicOrigin:
-                              seoPublicOrigin.trim() ||
-                              null,
+                            title: seoTitle.trim(),
+                            description: seoDescription.trim(),
+                            h1: seoH1.trim() || undefined,
+                            keywords: seoKeywords
+                              .split(",")
+                              .map((value) => value.trim())
+                              .filter(Boolean),
+                            jsonld: seoJsonld,
+                            activeLocales: seoActiveLocales,
+                            defaultLocale: seoDefaultLocale,
+                            publicOrigin: seoPublicOrigin.trim() || null,
                           },
                           {
-                            onSuccess:
-                              () => {
-                                setSeoDirty(
-                                  false,
-                                );
-                                toast.success(
-                                  "SEO enregistré.",
-                                );
-                              },
+                            onSuccess: () => {
+                              setSeoDirty(false);
+                              toast.success(translateUi("SEO enregistré."));
+                            },
                           },
                         );
                       }}
-                      disabled={
-                        saveSeo.isPending ||
-                        !seoDirty
-                      }
+                      disabled={saveSeo.isPending || !seoDirty}
                     >
                       {saveSeo.isPending ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       ) : (
                         <Save className="mr-2 h-4 w-4" />
                       )}
-                      Enregistrer
+                      {translateUi("Enregistrer")}
                     </Button>
                   </div>
                 </Card>
 
                 <Card className="space-y-3 p-4">
                   <h3 className="text-sm font-semibold">
-                    SEO avancé
+                    {translateUi("SEO avancé")}
                   </h3>
 
                   <ActionButton
                     size="sm"
                     variant="outline"
-                    state={stateFromMutation(
-                      generateBrief,
-                    )}
+                    state={stateFromMutation(generateBrief)}
                     loadingLabel={english ? "Generating…" : "Génération…"}
                     successLabel={english ? "Generated" : "Généré"}
                     errorLabel={english ? "Failed" : "Échec"}
@@ -2996,36 +2385,23 @@ export function StudioEditor({
                           context: {
                             boutiqueName,
                             category,
-                            products:
-                              products.slice(
-                                0,
-                                12,
-                              ),
-                            brand:
-                              brandDna,
+                            products: products.slice(0, 12),
+                            brand: brandDna,
                           },
                         },
                         {
-                          onSuccess:
-                            (
-                              result,
-                            ) =>
-                              setBrief(
-                                result,
-                              ),
+                          onSuccess: (result) => setBrief(result),
                         },
                       );
                     }}
                   >
-                    Générer un brief éditorial
+                    {translateUi("Générer un brief éditorial")}
                   </ActionButton>
 
                   <ActionButton
                     size="sm"
                     variant="outline"
-                    state={stateFromMutation(
-                      generateClusters,
-                    )}
+                    state={stateFromMutation(generateClusters)}
                     loadingLabel={english ? "Generating…" : "Génération…"}
                     successLabel={english ? "Generated" : "Généré"}
                     errorLabel={english ? "Failed" : "Échec"}
@@ -3036,102 +2412,53 @@ export function StudioEditor({
                           context: {
                             boutiqueName,
                             category,
-                            products:
-                              products.slice(
-                                0,
-                                12,
-                              ),
-                            brand:
-                              brandDna,
+                            products: products.slice(0, 12),
+                            brand: brandDna,
                           },
                         },
                         {
-                          onSuccess:
-                            (
-                              result,
-                            ) =>
-                              setClusters(
-                                result,
-                              ),
+                          onSuccess: (result) => setClusters(result),
                         },
                       );
                     }}
                   >
-                    Générer les clusters de mots-clés
+                    {translateUi("Générer les clusters de mots-clés")}
                   </ActionButton>
 
                   {brief && (
                     <div className="rounded-lg border bg-muted/20 p-3 text-xs">
-                      <p className="font-medium">
-                        {brief.recommended_h1}
-                      </p>
+                      <p className="font-medium">{brief.recommended_h1}</p>
                       <p className="mt-1 text-muted-foreground">
-                        Requête cible :{" "}
-                        {
-                          brief.target_query
-                        }
+                        {translateUi("Requête cible :")} {brief.target_query}
                       </p>
 
                       <div className="mt-3 space-y-2">
-                        {brief.outline.map(
-                          (item) => (
-                            <div
-                              key={
-                                item.h2
-                              }
-                            >
-                              <strong>
-                                {
-                                  item.h2
-                                }
-                              </strong>
-                              <ul className="mt-1 list-disc pl-4 text-muted-foreground">
-                                {item.talking_points.map(
-                                  (
-                                    point,
-                                  ) => (
-                                    <li
-                                      key={
-                                        point
-                                      }
-                                    >
-                                      {
-                                        point
-                                      }
-                                    </li>
-                                  ),
-                                )}
-                              </ul>
-                            </div>
-                          ),
-                        )}
+                        {brief.outline.map((item) => (
+                          <div key={item.h2}>
+                            <strong>{item.h2}</strong>
+                            <ul className="mt-1 list-disc pl-4 text-muted-foreground">
+                              {item.talking_points.map((point) => (
+                                <li key={point}>{point}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
 
-                  {clusters.length >
-                    0 && (
+                  {clusters.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
-                      {clusters.flatMap(
-                        (cluster) =>
-                          [
-                            cluster.pillar_keyword,
-                            ...cluster.supporting_keywords,
-                          ],
-                      ).map(
-                        (keyword) => (
-                          <Badge
-                            key={
-                              keyword
-                            }
-                            variant="outline"
-                          >
-                            {
-                              keyword
-                            }
+                      {clusters
+                        .flatMap((cluster) => [
+                          cluster.pillar_keyword,
+                          ...cluster.supporting_keywords,
+                        ])
+                        .map((keyword) => (
+                          <Badge key={keyword} variant="outline">
+                            {keyword}
                           </Badge>
-                        ),
-                      )}
+                        ))}
                     </div>
                   )}
                 </Card>
@@ -3151,65 +2478,39 @@ export function StudioEditor({
         <Card className="min-w-0 overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b p-3">
             <div>
-              <p className="text-sm font-semibold">
-                Aperçu
-              </p>
+              <p className="text-sm font-semibold">{translateUi("Aperçu")}</p>
               <p className="text-xs text-muted-foreground">
-                {tx("Les modifications sont prévisualisées directement.", "Changes are previewed live.")}
+                {tx(
+                  "Les modifications sont prévisualisées directement.",
+                  "Changes are previewed live.",
+                )}
               </p>
             </div>
 
             <div className="flex items-center gap-1 rounded-lg border p-1">
               <Button
                 size="icon"
-                variant={
-                  previewDevice ===
-                  "desktop"
-                    ? "default"
-                    : "ghost"
-                }
+                variant={previewDevice === "desktop" ? "default" : "ghost"}
                 className="h-8 w-8"
-                onClick={() =>
-                  setPreviewDevice(
-                    "desktop",
-                  )
-                }
+                onClick={() => setPreviewDevice("desktop")}
               >
                 <Monitor className="h-4 w-4" />
               </Button>
 
               <Button
                 size="icon"
-                variant={
-                  previewDevice ===
-                  "tablet"
-                    ? "default"
-                    : "ghost"
-                }
+                variant={previewDevice === "tablet" ? "default" : "ghost"}
                 className="h-8 w-8"
-                onClick={() =>
-                  setPreviewDevice(
-                    "tablet",
-                  )
-                }
+                onClick={() => setPreviewDevice("tablet")}
               >
                 <Tablet className="h-4 w-4" />
               </Button>
 
               <Button
                 size="icon"
-                variant={
-                  previewDevice ===
-                  "mobile"
-                    ? "default"
-                    : "ghost"
-                }
+                variant={previewDevice === "mobile" ? "default" : "ghost"}
                 className="h-8 w-8"
-                onClick={() =>
-                  setPreviewDevice(
-                    "mobile",
-                  )
-                }
+                onClick={() => setPreviewDevice("mobile")}
               >
                 <Smartphone className="h-4 w-4" />
               </Button>
@@ -3217,43 +2518,49 @@ export function StudioEditor({
           </div>
 
           <div className="min-h-[min(640px,70vh)] max-h-[80vh] overflow-auto 2xl:min-h-[640px] 2xl:max-h-none">
-            <PreviewFrame
-              device={
-                previewDevice
-              }
-            >
+            <PreviewFrame device={previewDevice}>
               <StudioSceneRenderer
                 scenes={scenes}
-                brandDna={
-                  brandDna ?? null
-                }
-                boutiqueName={
-                  boutiqueName
-                }
-                products={
-                  products
-                }
-                boutiqueSlug={
-                  publicSlug
-                }
+                brandDna={brandDna ?? null}
+                boutiqueName={boutiqueName}
+                products={products}
+                boutiqueSlug={publicSlug}
               />
             </PreviewFrame>
           </div>
         </Card>
       </div>
 
-      <AlertDialog open={showUnpublishConfirm} onOpenChange={setShowUnpublishConfirm}>
+      <AlertDialog
+        open={showUnpublishConfirm}
+        onOpenChange={setShowUnpublishConfirm}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{tx("Mettre la boutique hors ligne ?", "Take the store offline?")}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {tx("Mettre la boutique hors ligne ?", "Take the store offline?")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {tx("La boutique ne sera plus accessible publiquement. Ses pages, scènes et produits seront conservés ; vous pourrez la republier depuis le Studio.", "The store will no longer be publicly accessible. Its pages, scenes, and products will be kept; you can publish it again from Studio.")}
+              {tx(
+                "La boutique ne sera plus accessible publiquement. Ses pages, scènes et produits seront conservés ; vous pourrez la republier depuis le Studio.",
+                "The store will no longer be publicly accessible. Its pages, scenes, and products will be kept; you can publish it again from Studio.",
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={unpublish.isPending}>{tx("Annuler", "Cancel")}</AlertDialogCancel>
-            <AlertDialogAction disabled={unpublish.isPending} onClick={(event) => { event.preventDefault(); unpublish.mutate(); }}>
-              {unpublish.isPending ? tx("Dépublication…", "Unpublishing…") : tx("Confirmer la dépublication", "Confirm unpublishing")}
+            <AlertDialogCancel disabled={unpublish.isPending}>
+              {tx("Annuler", "Cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={unpublish.isPending}
+              onClick={(event) => {
+                event.preventDefault();
+                unpublish.mutate();
+              }}
+            >
+              {unpublish.isPending
+                ? tx("Dépublication…", "Unpublishing…")
+                : tx("Confirmer la dépublication", "Confirm unpublishing")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -3261,41 +2568,34 @@ export function StudioEditor({
 
       {/* Delete scene */}
       <AlertDialog
-        open={
-          !!pendingDeleteId
-        }
-        onOpenChange={(
-          open,
-        ) => {
+        open={!!pendingDeleteId}
+        onOpenChange={(open) => {
           if (!open) {
-            setPendingDeleteId(
-              null,
-            );
+            setPendingDeleteId(null);
           }
         }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Supprimer cette scène ?
+              {translateUi("Supprimer cette scène ?")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {tx("Cette suppression est définitive pour cette boutique.", "This permanently deletes the scene from this boutique.")}
+              {tx(
+                "Cette suppression est définitive pour cette boutique.",
+                "This permanently deletes the scene from this boutique.",
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           <AlertDialogFooter>
-            <AlertDialogCancel>
-              Annuler
-            </AlertDialogCancel>
+            <AlertDialogCancel>{translateUi("Annuler")}</AlertDialogCancel>
 
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() =>
-                void handleDeleteScene()
-              }
+              onClick={() => void handleDeleteScene()}
             >
-              Supprimer
+              {translateUi("Supprimer")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -3303,79 +2603,58 @@ export function StudioEditor({
 
       {/* Delete page */}
       <AlertDialog
-        open={
-          !!pendingDeletePageId
-        }
-        onOpenChange={(
-          open,
-        ) => {
+        open={!!pendingDeletePageId}
+        onOpenChange={(open) => {
           if (!open) {
-            setPendingDeletePageId(
-              null,
-            );
+            setPendingDeletePageId(null);
           }
         }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Supprimer cette page ?
+              {translateUi("Supprimer cette page ?")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Les scènes rattachées à cette page seront également supprimées.
+              {translateUi(
+                "Les scènes rattachées à cette page seront également supprimées.",
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           <AlertDialogFooter>
-            <AlertDialogCancel>
-              Annuler
-            </AlertDialogCancel>
+            <AlertDialogCancel>{translateUi("Annuler")}</AlertDialogCancel>
 
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={async () => {
-                if (
-                  !pendingDeletePageId
-                ) {
+                if (!pendingDeletePageId) {
                   return;
                 }
 
                 try {
-                  await deletePage.mutateAsync(
-                    {
-                      pageId:
-                        pendingDeletePageId,
-                      boutiqueId,
-                    },
-                  );
+                  await deletePage.mutateAsync({
+                    pageId: pendingDeletePageId,
+                    boutiqueId,
+                  });
 
-                  if (
-                    activePageId ===
-                    pendingDeletePageId
-                  ) {
-                    setActivePageId(
-                      null,
-                    );
+                  if (activePageId === pendingDeletePageId) {
+                    setActivePageId(null);
                   }
 
-                  setPendingDeletePageId(
-                    null,
-                  );
+                  setPendingDeletePageId(null);
 
-                  toast.success(
-                    "Page supprimée.",
-                  );
+                  toast.success(translateUi("Page supprimée."));
                 } catch (error) {
                   toast.error(
-                    error instanceof
-                      Error
+                    error instanceof Error
                       ? error.message
-                      : "Suppression impossible.",
+                      : translateUi("Suppression impossible."),
                   );
                 }
               }}
             >
-              Supprimer
+              {translateUi("Supprimer")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -3393,68 +2672,57 @@ function BrandPanel({
 }: {
   boutiqueId: string;
   brandDna: BrandDNA;
-  studioAnswers:
-    | Record<string, unknown>
-    | null
-    | undefined;
-  updateBrandDna: ReturnType<
-    typeof useUpdateBrandDNA
-  >;
-  regenerateBrandDna: ReturnType<
-    typeof useGenerateBrandDNA
-  >;
+  studioAnswers: Record<string, unknown> | null | undefined;
+  updateBrandDna: ReturnType<typeof useUpdateBrandDNA>;
+  regenerateBrandDna: ReturnType<typeof useGenerateBrandDNA>;
 }) {
-  const copy =
-    brandDna.generated_copy ??
-    {};
+  const copy = brandDna.generated_copy ?? {};
 
-  const palette =
-    brandDna.generated_palette ??
-    {};
+  const palette = brandDna.generated_palette ?? {};
 
-  const typography =
-    brandDna.generated_typography ??
-    {};
+  const typography = brandDna.generated_typography ?? {};
 
   const { lang } = useLanguage();
   const english = lang === "en";
-  const tx = (fr: string, en: string) => english ? en : fr;
+  const tx = (fr: string, en: string) => (english ? en : fr);
 
   return (
     <div className="space-y-4">
       <Card className="flex items-center justify-between gap-3 p-4">
         <div>
           <p className="text-sm font-semibold">
-            Identité de marque
+            {translateUi("Identité de marque")}
           </p>
           <p className="text-xs text-muted-foreground">
-            {tx("Modifiez les éléments générés par le Brand Studio.", "Edit the elements generated by Brand Studio.")}
+            {tx(
+              "Modifiez les éléments générés par le Brand Studio.",
+              "Edit the elements generated by Brand Studio.",
+            )}
           </p>
         </div>
 
         <ActionButton
           size="sm"
           variant="outline"
-          state={stateFromMutation(
-            regenerateBrandDna,
-          )}
+          state={stateFromMutation(regenerateBrandDna)}
           loadingLabel="…"
           successLabel="✓"
           errorLabel="!"
           onClick={() => {
-            const answers =
-              studioAnswers as any;
+            const answers = studioAnswers as any;
 
             if (!answers) {
               toast.error(
-                "Les réponses du questionnaire de marque sont introuvables. Vérifie que le Brand Studio a bien été enregistré.",
+                translateUi(
+                  "Les réponses du questionnaire de marque sont introuvables. Vérifie que le Brand Studio a bien été enregistré.",
+                ),
               );
               return;
             }
 
             if (!answers.idealCustomer) {
               toast.error(
-                "Les réponses du Brand Studio sont introuvables.",
+                translateUi("Les réponses du Brand Studio sont introuvables."),
               );
               return;
             }
@@ -3466,9 +2734,7 @@ function BrandPanel({
               },
               {
                 onSuccess: () =>
-                  toast.success(
-                    "Identité régénérée.",
-                  ),
+                  toast.success(translateUi("Identité régénérée.")),
               },
             );
           }}
@@ -3478,208 +2744,149 @@ function BrandPanel({
       </Card>
 
       <div>
-        <Label>Tagline</Label>
+        <Label>{translateUi("Tagline")}</Label>
         <Input
-          value={
-            copy.tagline ?? ""
-          }
+          value={copy.tagline ?? ""}
           onChange={(event) =>
-            updateBrandDna.mutate(
-              {
-                boutiqueId,
-                patch: {
-                  generated_copy: {
-                    ...copy,
-                    tagline:
-                      event.target.value,
-                  },
+            updateBrandDna.mutate({
+              boutiqueId,
+              patch: {
+                generated_copy: {
+                  ...copy,
+                  tagline: event.target.value,
                 },
               },
-            )
+            })
           }
         />
       </div>
 
       <div>
-        <Label>Ambiance</Label>
+        <Label>{translateUi("Ambiance")}</Label>
         <Input
-          value={
-            brandDna.ambiance ??
-            ""
-          }
+          value={brandDna.ambiance ?? ""}
           onChange={(event) =>
-            updateBrandDna.mutate(
-              {
-                boutiqueId,
-                patch: {
-                  ambiance:
-                    event.target.value,
-                },
+            updateBrandDna.mutate({
+              boutiqueId,
+              patch: {
+                ambiance: event.target.value,
               },
-            )
+            })
           }
         />
       </div>
 
       <div>
-        <Label>Ton</Label>
+        <Label>{translateUi("Ton")}</Label>
         <Input
-          value={
-            brandDna.tone ?? ""
-          }
+          value={brandDna.tone ?? ""}
           onChange={(event) =>
-            updateBrandDna.mutate(
-              {
-                boutiqueId,
-                patch: {
-                  tone:
-                    event.target.value,
-                },
+            updateBrandDna.mutate({
+              boutiqueId,
+              patch: {
+                tone: event.target.value,
               },
-            )
+            })
           }
         />
       </div>
 
       <div>
-        <Label>Hero — titre</Label>
+        <Label>{translateUi("Hero — titre")}</Label>
         <Input
-          value={
-            copy.hero_title ??
-            ""
-          }
+          value={copy.hero_title ?? ""}
           onChange={(event) =>
-            updateBrandDna.mutate(
-              {
-                boutiqueId,
-                patch: {
-                  generated_copy: {
-                    ...copy,
-                    hero_title:
-                      event.target.value,
-                  },
+            updateBrandDna.mutate({
+              boutiqueId,
+              patch: {
+                generated_copy: {
+                  ...copy,
+                  hero_title: event.target.value,
                 },
               },
-            )
+            })
           }
         />
       </div>
 
       <div>
-        <Label>Hero — sous-titre</Label>
+        <Label>{translateUi("Hero — sous-titre")}</Label>
         <Textarea
           rows={3}
-          value={
-            copy.hero_subtitle ??
-            ""
-          }
+          value={copy.hero_subtitle ?? ""}
           onChange={(event) =>
-            updateBrandDna.mutate(
-              {
-                boutiqueId,
-                patch: {
-                  generated_copy: {
-                    ...copy,
-                    hero_subtitle:
-                      event.target.value,
-                  },
+            updateBrandDna.mutate({
+              boutiqueId,
+              patch: {
+                generated_copy: {
+                  ...copy,
+                  hero_subtitle: event.target.value,
                 },
               },
-            )
+            })
           }
         />
       </div>
 
       <div>
-        <Label>Typographie</Label>
+        <Label>{translateUi("Typographie")}</Label>
 
         <div className="mt-2 grid gap-2">
           <Select
-            value={
-              typography.display ??
-              ""
-            }
-            onValueChange={(
-              value,
-            ) => {
-              loadGoogleFont(
-                value,
-              );
+            value={typography.display ?? ""}
+            onValueChange={(value) => {
+              loadGoogleFont(value);
 
-              updateBrandDna.mutate(
-                {
-                  boutiqueId,
-                  patch: {
-                    generated_typography:
-                      {
-                        ...typography,
-                        display:
-                          value,
-                      },
+              updateBrandDna.mutate({
+                boutiqueId,
+                patch: {
+                  generated_typography: {
+                    ...typography,
+                    display: value,
                   },
                 },
-              );
+              });
             }}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Police titres" />
+              <SelectValue placeholder={translateUi("Police titres")} />
             </SelectTrigger>
 
             <SelectContent className="max-h-72">
-              {ALL_FONTS.map(
-                (font) => (
-                  <SelectItem
-                    key={font}
-                    value={font}
-                  >
-                    {font}
-                  </SelectItem>
-                ),
-              )}
+              {ALL_FONTS.map((font) => (
+                <SelectItem key={font} value={font}>
+                  {font}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
           <Select
-            value={
-              typography.body ??
-              ""
-            }
-            onValueChange={(
-              value,
-            ) => {
-              loadGoogleFont(
-                value,
-              );
+            value={typography.body ?? ""}
+            onValueChange={(value) => {
+              loadGoogleFont(value);
 
-              updateBrandDna.mutate(
-                {
-                  boutiqueId,
-                  patch: {
-                    generated_typography:
-                      {
-                        ...typography,
-                        body: value,
-                      },
+              updateBrandDna.mutate({
+                boutiqueId,
+                patch: {
+                  generated_typography: {
+                    ...typography,
+                    body: value,
                   },
                 },
-              );
+              });
             }}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Police corps" />
+              <SelectValue placeholder={translateUi("Police corps")} />
             </SelectTrigger>
 
             <SelectContent className="max-h-72">
-              {ALL_FONTS.map(
-                (font) => (
-                  <SelectItem
-                    key={font}
-                    value={font}
-                  >
-                    {font}
-                  </SelectItem>
-                ),
-              )}
+              {ALL_FONTS.map((font) => (
+                <SelectItem key={font} value={font}>
+                  {font}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -3689,56 +2896,30 @@ function BrandPanel({
         <Label>Palette</Label>
 
         <div className="mt-2 grid grid-cols-4 gap-2">
-          {(
-            [
-              "primary",
-              "accent",
-              "surface",
-              "ink",
-            ] as const
-          ).map((key) => {
-            const value =
-              palette[key];
+          {(["primary", "accent", "surface", "ink"] as const).map((key) => {
+            const value = palette[key];
 
             return (
-              <label
-                key={key}
-                className="cursor-pointer"
-              >
+              <label key={key} className="cursor-pointer">
                 <div
                   className="relative h-10 overflow-hidden rounded-lg border"
                   style={{
-                    background:
-                      value
-                        ? `hsl(${value})`
-                        : undefined,
+                    background: value ? `hsl(${value})` : undefined,
                   }}
                 >
                   <input
                     type="color"
-                    value={hslToHex(
-                      value,
-                    )}
-                    onChange={(
-                      event,
-                    ) =>
-                      updateBrandDna.mutate(
-                        {
-                          boutiqueId,
-                          patch: {
-                            generated_palette:
-                              {
-                                ...palette,
-                                [key]:
-                                  hexToHsl(
-                                    event
-                                      .target
-                                      .value,
-                                  ),
-                              },
+                    value={hslToHex(value)}
+                    onChange={(event) =>
+                      updateBrandDna.mutate({
+                        boutiqueId,
+                        patch: {
+                          generated_palette: {
+                            ...palette,
+                            [key]: hexToHsl(event.target.value),
                           },
                         },
-                      )
+                      })
                     }
                     className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                   />
@@ -3753,49 +2934,33 @@ function BrandPanel({
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
-          {PALETTE_PRESETS.map(
-            (preset) => (
-              <button
-                key={
-                  preset.name
-                }
-                type="button"
-                className="flex items-center gap-1 rounded-lg border px-2 py-1 text-[10px] hover:border-primary"
-                onClick={() =>
-                  updateBrandDna.mutate(
-                    {
-                      boutiqueId,
-                      patch: {
-                        generated_palette:
-                          preset.palette,
-                      },
-                    },
-                  )
-                }
-              >
-                {(
-                  [
-                    "primary",
-                    "accent",
-                    "surface",
-                    "ink",
-                  ] as const
-                ).map(
-                  (key) => (
-                    <span
-                      key={key}
-                      className="h-3 w-3 rounded-sm border"
-                      style={{
-                        background: `hsl(${preset.palette[key]})`,
-                      }}
-                    />
-                  ),
-                )}
+          {PALETTE_PRESETS.map((preset) => (
+            <button
+              key={preset.name}
+              type="button"
+              className="flex items-center gap-1 rounded-lg border px-2 py-1 text-[10px] hover:border-primary"
+              onClick={() =>
+                updateBrandDna.mutate({
+                  boutiqueId,
+                  patch: {
+                    generated_palette: preset.palette,
+                  },
+                })
+              }
+            >
+              {(["primary", "accent", "surface", "ink"] as const).map((key) => (
+                <span
+                  key={key}
+                  className="h-3 w-3 rounded-sm border"
+                  style={{
+                    background: `hsl(${preset.palette[key]})`,
+                  }}
+                />
+              ))}
 
-                {preset.name}
-              </button>
-            ),
-          )}
+              {preset.name}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -3803,19 +2968,11 @@ function BrandPanel({
         <Label>{tx("Mots-clés", "Keywords")}</Label>
 
         <div className="mt-2 flex flex-wrap gap-1.5">
-          {(
-            brandDna.keywords ??
-            []
-          ).map(
-            (keyword) => (
-              <Badge
-                key={keyword}
-                variant="outline"
-              >
-                {keyword}
-              </Badge>
-            ),
-          )}
+          {(brandDna.keywords ?? []).map((keyword) => (
+            <Badge key={keyword} variant="outline">
+              {keyword}
+            </Badge>
+          ))}
         </div>
       </div>
     </div>

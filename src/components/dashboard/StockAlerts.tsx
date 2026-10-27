@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, Package, TrendingDown } from "lucide-react";
@@ -15,10 +17,7 @@ interface StockItem {
   status: "critical" | "low" | "ok";
 }
 
-function getStockStatus(
-  stock: number,
-  moq: number
-): "critical" | "low" | "ok" {
+function getStockStatus(stock: number, moq: number): "critical" | "low" | "ok" {
   const ratio = stock / Math.max(moq, 1);
 
   if (ratio <= 0.1) return "critical";
@@ -29,12 +28,16 @@ function getStockStatus(
 
 const statusConfig = {
   critical: {
-    label: "Critique",
+    get label() {
+      return translateUi("Critique");
+    },
     color: "bg-destructive/10 text-destructive border-destructive/20",
     progressColor: "bg-destructive",
   },
   low: {
-    label: "Faible",
+    get label() {
+      return translateUi("Faible");
+    },
     color: "bg-warning/10 text-warning border-warning/30",
     progressColor: "bg-warning",
   },
@@ -46,15 +49,11 @@ const statusConfig = {
 };
 
 export function StockAlerts() {
-  const {
-    data: supplierProducts,
-    isLoading: spLoading,
-  } = useSupplierProducts();
+  useLanguage();
+  const { data: supplierProducts, isLoading: spLoading } =
+    useSupplierProducts();
 
-  const {
-    data: userProducts,
-    isLoading: upLoading,
-  } = useProducts();
+  const { data: userProducts, isLoading: upLoading } = useProducts();
 
   const isLoading = spLoading || upLoading;
 
@@ -95,7 +94,7 @@ export function StockAlerts() {
     alertItems.length > 0 ? alertItems : sortedItems.slice(0, 4);
 
   const criticalCount = alertItems.filter(
-    (item) => item.status === "critical"
+    (item) => item.status === "critical",
   ).length;
 
   return (
@@ -105,7 +104,7 @@ export function StockAlerts() {
           <AlertTriangle className="w-5 h-5 text-warning" />
 
           <CardTitle className="text-lg font-semibold">
-            Alertes Stock
+            {translateUi("Alertes Stock")}
           </CardTitle>
         </div>
 
@@ -117,7 +116,7 @@ export function StockAlerts() {
               : "bg-success/10 text-success border-success/30"
           }
         >
-          {criticalCount} critique(s)
+          {criticalCount} {translateUi("critique(s)")}
         </Badge>
       </CardHeader>
 
@@ -133,7 +132,7 @@ export function StockAlerts() {
             <Package className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
 
             <p className="text-sm text-muted-foreground">
-              Aucun produit à surveiller
+              {translateUi("Aucun produit à surveiller")}
             </p>
           </div>
         ) : (
@@ -143,7 +142,7 @@ export function StockAlerts() {
 
               const percentage = Math.min(
                 (item.stock / Math.max(item.moq, 1)) * 100,
-                100
+                100,
               );
 
               return (
@@ -170,7 +169,7 @@ export function StockAlerts() {
 
                     <div className="text-right shrink-0 ml-2">
                       <p className="text-sm font-semibold text-foreground">
-                        {item.stock} unités
+                        {item.stock} {translateUi("unités")}
                       </p>
 
                       <p className="text-[10px] text-muted-foreground">
@@ -181,15 +180,12 @@ export function StockAlerts() {
 
                   <div className="space-y-1">
                     <div className="flex justify-between text-[10px] text-muted-foreground">
-                      <span>Niveau de stock</span>
+                      <span>{translateUi("Niveau de stock")}</span>
 
                       <span>{percentage.toFixed(0)}%</span>
                     </div>
 
-                    <Progress
-                      value={percentage}
-                      className="h-1.5"
-                    />
+                    <Progress value={percentage} className="h-1.5" />
                   </div>
 
                   {item.status === "critical" && (
@@ -197,7 +193,9 @@ export function StockAlerts() {
                       <TrendingDown className="w-3 h-3" />
 
                       <span>
-                        Réapprovisionnement urgent pour éviter la rupture
+                        {translateUi(
+                          "Réapprovisionnement urgent pour éviter la rupture",
+                        )}
                       </span>
                     </div>
                   )}

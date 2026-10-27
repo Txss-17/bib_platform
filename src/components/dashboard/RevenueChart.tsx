@@ -1,3 +1,6 @@
+import { getUiLocale } from "@/lib/uiLanguage";
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -40,7 +43,10 @@ const yearlyData = [
 ];
 
 export function RevenueChart() {
-  const [period, setPeriod] = useState<"daily" | "monthly" | "yearly">("monthly");
+  useLanguage();
+  const [period, setPeriod] = useState<"daily" | "monthly" | "yearly">(
+    "monthly",
+  );
 
   const getData = () => {
     switch (period) {
@@ -56,12 +62,23 @@ export function RevenueChart() {
   return (
     <Card className="bg-card border-border/50">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg font-semibold">Revenue Overview</CardTitle>
-        <Tabs value={period} onValueChange={(v) => setPeriod(v as typeof period)}>
+        <CardTitle className="text-lg font-semibold">
+          {translateUi("Revenue Overview")}
+        </CardTitle>
+        <Tabs
+          value={period}
+          onValueChange={(v) => setPeriod(v as typeof period)}
+        >
           <TabsList className="bg-muted/50">
-            <TabsTrigger value="daily" className="text-xs">Daily</TabsTrigger>
-            <TabsTrigger value="monthly" className="text-xs">Monthly</TabsTrigger>
-            <TabsTrigger value="yearly" className="text-xs">Yearly</TabsTrigger>
+            <TabsTrigger value="daily" className="text-xs">
+              {translateUi("Daily")}
+            </TabsTrigger>
+            <TabsTrigger value="monthly" className="text-xs">
+              {translateUi("Monthly")}
+            </TabsTrigger>
+            <TabsTrigger value="yearly" className="text-xs">
+              {translateUi("Yearly")}
+            </TabsTrigger>
           </TabsList>
         </Tabs>
       </CardHeader>
@@ -70,21 +87,40 @@ export function RevenueChart() {
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={getData()}>
               <defs>
-                <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                <linearGradient
+                  id="revenueGradient"
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="5%"
+                    stopColor="hsl(var(--primary))"
+                    stopOpacity={0.3}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="hsl(var(--primary))"
+                    stopOpacity={0}
+                  />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis 
-                dataKey="name" 
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="hsl(var(--border))"
+              />
+              <XAxis
+                dataKey="name"
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
               />
-              <YAxis 
+              <YAxis
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
-                tickFormatter={(value) => `€${value >= 1000 ? `${(value / 1000).toFixed(0)}k` : value}`}
+                tickFormatter={(value) =>
+                  `€${value >= 1000 ? `${(value / 1000).toFixed(0)}k` : value}`
+                }
               />
               <Tooltip
                 contentStyle={{
@@ -93,7 +129,10 @@ export function RevenueChart() {
                   borderRadius: "8px",
                 }}
                 labelStyle={{ color: "hsl(var(--foreground))" }}
-                formatter={(value: number) => [`€${value.toLocaleString()}`, "Revenue"]}
+                formatter={(value: number) => [
+                  `€${value.toLocaleString(getUiLocale())}`,
+                  "Revenue",
+                ]}
               />
               <Area
                 type="monotone"

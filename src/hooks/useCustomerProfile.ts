@@ -85,12 +85,14 @@ export function useCustomerOrders() {
       if (!profile) return [];
       const { data, error } = await supabase
         .from("orders")
-        .select(`
+        .select(
+          `
           id, order_number, amount, logistics_status, created_at,
           customer_name, customer_email,
           boutiques ( id, name, slug, logo_url ),
           products ( supplier_products ( name, image_url ) )
-        `)
+        `,
+        )
         .eq("customer_profile_id", profile.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -110,10 +112,12 @@ export function useCustomerGiftCards() {
       if (!profile) return [];
       const { data, error } = await supabase
         .from("gift_cards")
-        .select(`
+        .select(
+          `
           id, balance_cents, updated_at,
           boutiques ( id, name, slug, logo_url, cover_image_url )
-        `)
+        `,
+        )
         .eq("customer_profile_id", profile.id)
         .gt("balance_cents", 0)
         .order("balance_cents", { ascending: false });
@@ -134,10 +138,12 @@ export function useRecyclingHistory() {
       if (!profile) return [];
       const { data, error } = await supabase
         .from("recycling_scans")
-        .select(`
+        .select(
+          `
           id, points, source, created_at,
           boutiques ( id, name, slug, logo_url )
-        `)
+        `,
+        )
         .eq("customer_profile_id", profile.id)
         .order("created_at", { ascending: false })
         .limit(50);
@@ -148,37 +154,16 @@ export function useRecyclingHistory() {
   });
 }
 
-/** Records a recycling scan (trigger automatically credits the gift card). */
+/** The physical recycling workflow is not yet operational. Client scans cannot award credit. */
 export function useRecordRecyclingScan() {
-  const { data: profile } = useCustomerProfile();
-  const qc = useQueryClient();
-
   return useMutation({
-    mutationFn: async (input: {
+    mutationFn: async (_input: {
       boutiqueId: string;
       points: number;
       orderId?: string;
       source?: "qr_scan" | "manual" | "pickup";
-    }) => {
-      if (!profile) throw new Error("Customer profile required");
-      const { data, error } = await supabase
-        .from("recycling_scans")
-        .insert({
-          customer_profile_id: profile.id,
-          boutique_id: input.boutiqueId,
-          points: input.points,
-          order_id: input.orderId ?? null,
-          source: input.source ?? "qr_scan",
-        })
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["customer-profile"] });
-      qc.invalidateQueries({ queryKey: ["customer-gift-cards"] });
-      qc.invalidateQueries({ queryKey: ["customer-recycling"] });
+    }): Promise<never> => {
+      throw new Error("recycling_verification_required");
     },
   });
 }

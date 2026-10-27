@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -44,10 +46,8 @@ import { trackStorefrontEvent } from "@/lib/storefrontTracking";
 // ============================================================
 
 export default function ProductPublic() {
-  const {
-    slug,
-    productId,
-  } = useParams<{
+  useLanguage();
+  const { slug, productId } = useParams<{
     slug: string;
     productId: string;
   }>();
@@ -59,9 +59,7 @@ export default function ProductPublic() {
   // BOUTIQUE
   // ==========================================================
 
-  const {
-    data: boutique,
-  } = useQuery({
+  const { data: boutique } = useQuery({
     queryKey: ["public-boutique", slug],
 
     queryFn: async () => {
@@ -96,7 +94,8 @@ export default function ProductPublic() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select(`
+        .select(
+          `
           id,
           public_price,
           status,
@@ -107,7 +106,8 @@ export default function ProductPublic() {
             description,
             category
           )
-        `)
+        `,
+        )
         .eq("id", productId!)
         .eq("status", "active")
         .single();
@@ -127,31 +127,24 @@ export default function ProductPublic() {
   // ==========================================================
 
   const themeSettings =
-    (boutique?.theme_settings as unknown) as ThemeSettings | null;
+    boutique?.theme_settings as unknown as ThemeSettings | null;
 
-  const primaryColor =
-    themeSettings?.primaryColor || "#3b82f6";
+  const primaryColor = themeSettings?.primaryColor || "#3b82f6";
 
-  const productName =
-    product?.supplier_products?.name || "Produit";
+  const productName = product?.supplier_products?.name || "Produit";
 
-  const productDescription =
-    product?.supplier_products?.description || "";
+  const productDescription = product?.supplier_products?.description || "";
 
-  const productPrice =
-    Number(product?.public_price || 0);
+  const productPrice = Number(product?.public_price || 0);
 
   // ==========================================================
   // PRODUCT MEDIA
   // ==========================================================
 
-  const {
-    data: customMedia = [],
-  } = usePublicProductMedia(product?.id);
+  const { data: customMedia = [] } = usePublicProductMedia(product?.id);
 
   const productImage =
-    customMedia[0]?.url ??
-    product?.supplier_products?.image_url;
+    customMedia[0]?.url ?? product?.supplier_products?.image_url;
 
   const galleryImages =
     customMedia.length > 0
@@ -164,17 +157,10 @@ export default function ProductPublic() {
   // BRAND STUDIO
   // ==========================================================
 
-  const {
-    data: brandDna,
-  } = useBrandDNA(boutique?.id);
+  const { data: brandDna } = useBrandDNA(boutique?.id);
 
-  const {
-    data: productPageScenes = [],
-  } = useQuery({
-    queryKey: [
-      "product-page-template",
-      boutique?.id,
-    ],
+  const { data: productPageScenes = [] } = useQuery({
+    queryKey: ["product-page-template", boutique?.id],
 
     enabled: Boolean(boutique?.id),
 
@@ -186,16 +172,13 @@ export default function ProductPublic() {
         .eq("slug", PRODUCT_PAGE_SLUG)
         .maybeSingle();
 
-      const pageId =
-        (page as any)?.id as string | undefined;
+      const pageId = (page as any)?.id as string | undefined;
 
       if (!pageId) {
         return [] as SceneRecord[];
       }
 
-      const {
-        data: scenes,
-      } = await supabase
+      const { data: scenes } = await supabase
         .from("boutique_scenes")
         .select("*")
         .eq("boutique_id", boutique!.id)
@@ -205,20 +188,15 @@ export default function ProductPublic() {
           ascending: true,
         });
 
-      return (
-        (scenes as unknown as SceneRecord[]) ?? []
-      );
+      return (scenes as unknown as SceneRecord[]) ?? [];
     },
   });
-
 
   // ==========================================================
   // SEO — produit + configuration internationale de la boutique
   // ==========================================================
 
-  const seoOrigin = resolvePublicOrigin(
-    boutique?.seo_public_origin,
-  );
+  const seoOrigin = resolvePublicOrigin(boutique?.seo_public_origin);
 
   const seoPath =
     typeof window !== "undefined"
@@ -226,19 +204,13 @@ export default function ProductPublic() {
       : `/boutique/${slug ?? ""}/product/${productId ?? ""}`;
 
   const seoCanonical =
-    seoOrigin && seoPath
-      ? `${seoOrigin}${seoPath}`
-      : undefined;
+    seoOrigin && seoPath ? `${seoOrigin}${seoPath}` : undefined;
 
-  const seoTitle = boutique
-    ? `${productName} — ${boutique.name}`
-    : productName;
+  const seoTitle = boutique ? `${productName} — ${boutique.name}` : productName;
 
   const seoDescription =
     productDescription ||
-    `Découvrez ${productName} sur ${
-      boutique?.name || "Brand-In-A-Box"
-    }.`;
+    `Découvrez ${productName} sur ${boutique?.name || "Brand-In-A-Box"}.`;
 
   useSEO({
     title: seoTitle,
@@ -340,17 +312,10 @@ export default function ProductPublic() {
       return;
     }
 
-    trackStorefrontEvent(
-      boutique.id,
-      "product_view",
-      {
-        productId: product.id,
-      },
-    );
-  }, [
-    boutique?.id,
-    product?.id,
-  ]);
+    trackStorefrontEvent(boutique.id, "product_view", {
+      productId: product.id,
+    });
+  }, [boutique?.id, product?.id]);
 
   // ==========================================================
   // LOADING
@@ -358,7 +323,7 @@ export default function ProductPublic() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
+      <div className="flex min-h-screen items-center justify-center bg-card">
         <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
       </div>
     );
@@ -370,24 +335,21 @@ export default function ProductPublic() {
 
   if (error || !product) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white px-6">
+      <div className="flex min-h-screen items-center justify-center bg-card px-6">
         <div className="text-center">
           <h1 className="mb-2 text-2xl font-bold text-gray-900">
-            Produit introuvable
+            {translateUi("Produit introuvable")}
           </h1>
 
           <p className="mb-4 text-gray-600">
-            Ce produit n'existe pas ou n'est plus disponible.
+            {translateUi("Ce produit n'existe pas ou n'est plus disponible.")}
           </p>
 
           {slug && (
-            <Button
-              asChild
-              variant="outline"
-            >
+            <Button asChild variant="outline">
               <Link to={`/boutique/${slug}`}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Retour à la boutique
+                {translateUi("Retour à la boutique")}
               </Link>
             </Button>
           )}
@@ -409,13 +371,9 @@ export default function ProductPublic() {
     });
 
     if (boutique?.id) {
-      trackStorefrontEvent(
-        boutique.id,
-        "add_to_cart",
-        {
-          productId: product.id,
-        },
-      );
+      trackStorefrontEvent(boutique.id, "add_to_cart", {
+        productId: product.id,
+      });
     }
   };
 
@@ -429,7 +387,7 @@ export default function ProductPublic() {
       boutiqueName={boutique?.name ?? ""}
       boutiqueSlug={boutique?.slug ?? slug}
     >
-      <div className="flex min-h-screen flex-col bg-white">
+      <div className="flex min-h-screen flex-col bg-card">
         {/* ======================================================
             BOUTIQUE HEADER
         ====================================================== */}
@@ -464,8 +422,7 @@ export default function ProductPublic() {
                   id: product.id,
                   name: productName,
                   price: productPrice,
-                  image_url:
-                    productImage ?? null,
+                  image_url: productImage ?? null,
                 },
               ]}
               boutiqueId={boutique?.id}
@@ -482,7 +439,7 @@ export default function ProductPublic() {
                   className="mb-6 inline-flex items-center gap-1 text-sm text-gray-500 transition-colors hover:text-gray-700"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  Retour à la boutique
+                  {translateUi("Retour à la boutique")}
                 </Link>
               )}
 
@@ -491,10 +448,7 @@ export default function ProductPublic() {
                     IMAGE GALLERY
                 ================================================= */}
 
-                <ProductImageGallery
-                  images={galleryImages}
-                  alt={productName}
-                />
+                <ProductImageGallery images={galleryImages} alt={productName} />
 
                 {/* =================================================
                     PRODUCT DETAILS
@@ -502,10 +456,7 @@ export default function ProductPublic() {
 
                 <div className="flex flex-col">
                   {product.supplier_products?.category && (
-                    <Badge
-                      variant="secondary"
-                      className="mb-3 w-fit"
-                    >
+                    <Badge variant="secondary" className="mb-3 w-fit">
                       {product.supplier_products.category}
                     </Badge>
                   )}
@@ -525,7 +476,7 @@ export default function ProductPublic() {
                     </span>
 
                     <span className="text-sm text-gray-500">
-                      Livraison incluse
+                      {translateUi("Livraison incluse")}
                     </span>
                   </div>
 
@@ -537,11 +488,8 @@ export default function ProductPublic() {
                           color: primaryColor,
                         }}
                       />
-
                       {product.cumulative_sales} vendu
-                      {product.cumulative_sales > 1
-                        ? "s"
-                        : ""}
+                      {product.cumulative_sales > 1 ? "s" : ""}
                     </p>
                   )}
 
@@ -564,7 +512,7 @@ export default function ProductPublic() {
                     onClick={handleAddToCart}
                   >
                     <ShoppingCart className="h-5 w-5" />
-                    Ajouter au panier
+                    {translateUi("Ajouter au panier")}
                   </Button>
 
                   {/* =================================================
@@ -573,27 +521,21 @@ export default function ProductPublic() {
 
                   <div className="mt-auto grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <TrustItem
-                      icon={
-                        <Truck className="h-5 w-5 text-gray-600" />
-                      }
-                      title="Livraison incluse"
-                      description="Offerte sur ce produit"
+                      icon={<Truck className="h-5 w-5 text-gray-600" />}
+                      title={translateUi("Livraison incluse")}
+                      description={translateUi("Offerte sur ce produit")}
                     />
 
                     <TrustItem
-                      icon={
-                        <Shield className="h-5 w-5 text-gray-600" />
-                      }
-                      title="Paiement sécurisé"
-                      description="Transaction protégée"
+                      icon={<Shield className="h-5 w-5 text-gray-600" />}
+                      title={translateUi("Paiement sécurisé")}
+                      description={translateUi("Transaction protégée")}
                     />
 
                     <TrustItem
-                      icon={
-                        <RotateCcw className="h-5 w-5 text-gray-600" />
-                      }
-                      title="Retours faciles"
-                      description="14 jours pour changer d'avis"
+                      icon={<RotateCcw className="h-5 w-5 text-gray-600" />}
+                      title={translateUi("Retours faciles")}
+                      description={translateUi("14 jours pour changer d'avis")}
                     />
                   </div>
                 </div>
@@ -606,37 +548,26 @@ export default function ProductPublic() {
             FOOTER / AMBIENT / SEO
         ====================================================== */}
 
-        <StorefrontFooter
-          primaryColor={primaryColor}
-        />
+        <StorefrontFooter primaryColor={primaryColor} />
 
         <StorefrontAmbientAudio
           src={themeSettings?.backgroundAudioUrl}
-          volume={
-            themeSettings?.backgroundAudioVolume ?? 0.4
-          }
+          volume={themeSettings?.backgroundAudioVolume ?? 0.4}
         />
 
         <PageSeoInspector
-          visible={
-            !!user &&
-            !!boutique &&
-            user.id === boutique.user_id
-          }
+          visible={!!user && !!boutique && user.id === boutique.user_id}
           canonical={seoCanonical}
           activeLocales={boutique?.seo_active_locales}
           defaultLocale={boutique?.seo_default_locale}
           kind="product"
-          title={
-            boutique
-              ? `${productName} — ${boutique.name}`
-              : productName
-          }
+          title={boutique ? `${productName} — ${boutique.name}` : productName}
           description={
             productDescription ||
-            `Découvrez ${productName} sur ${
-              boutique?.name || "Brand-In-A-Box"
-            }.`
+            translateUi("Découvrez {v0} sur {v1}.", {
+              v0: productName,
+              v1: boutique?.name || "Brand-In-A-Box",
+            })
           }
           ogImage={productImage}
         />
@@ -658,18 +589,15 @@ function TrustItem({
   title: string;
   description: string;
 }) {
+  useLanguage();
   return (
     <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-3">
       {icon}
 
       <div>
-        <p className="text-xs font-medium text-gray-900">
-          {title}
-        </p>
+        <p className="text-xs font-medium text-gray-900">{title}</p>
 
-        <p className="text-xs text-gray-500">
-          {description}
-        </p>
+        <p className="text-xs text-gray-500">{description}</p>
       </div>
     </div>
   );
@@ -686,12 +614,10 @@ function ProductImageGallery({
   images: string[];
   alt: string;
 }) {
+  useLanguage();
   const [active, setActive] = useState(0);
 
-  const safeIndex = Math.min(
-    active,
-    Math.max(images.length - 1, 0),
-  );
+  const safeIndex = Math.min(active, Math.max(images.length - 1, 0));
 
   const heroImage = images[safeIndex];
 
@@ -706,9 +632,7 @@ function ProductImageGallery({
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-gray-300">
-            <span className="text-lg">
-              Image du produit
-            </span>
+            <span className="text-lg">{translateUi("Image du produit")}</span>
           </div>
         )}
       </div>
@@ -720,7 +644,7 @@ function ProductImageGallery({
               key={`${url}-${index}`}
               type="button"
               onClick={() => setActive(index)}
-              aria-label={`Visuel ${index + 1}`}
+              aria-label={translateUi("Visuel {v0}", { v0: index + 1 })}
               className={`aspect-square overflow-hidden rounded-lg border-2 transition ${
                 index === safeIndex
                   ? "border-gray-900"

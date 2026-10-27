@@ -1,3 +1,5 @@
+import { translateUi, getUiLanguage } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -92,14 +94,9 @@ function normalizeLocales(
   const active = valid.length > 0 ? valid : ["fr", "en"];
 
   const safeDefault =
-    defaultLocale && active.includes(defaultLocale)
-      ? defaultLocale
-      : active[0];
+    defaultLocale && active.includes(defaultLocale) ? defaultLocale : active[0];
 
-  return [
-    safeDefault,
-    ...active.filter((locale) => locale !== safeDefault),
-  ];
+  return [safeDefault, ...active.filter((locale) => locale !== safeDefault)];
 }
 
 export function PageSeoInspector({
@@ -112,6 +109,7 @@ export function PageSeoInspector({
   defaultLocale,
   kind,
 }: PageSeoInspectorProps) {
+  useLanguage();
   const [open, setOpen] = useState(false);
   const [pathname, setPathname] = useState("");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -138,19 +136,21 @@ export function PageSeoInspector({
   const fields: Field[] = useMemo(
     () => [
       {
-        label: "Title",
+        label: translateUi("Title"),
         value: title || "(vide)",
         status: classifyTitle(title),
-        hint: `${title.length}/65 caractères`,
+        hint: translateUi("{v0}/65 caractères", { v0: title.length }),
       },
       {
-        label: "Meta description",
+        label: translateUi("Meta description"),
         value: description || "(vide)",
         status: classifyDescription(description),
-        hint: `${description?.length ?? 0}/160 caractères`,
+        hint: translateUi("{v0}/160 caractères", {
+          v0: description?.length ?? 0,
+        }),
       },
       {
-        label: "Image Open Graph",
+        label: translateUi("Image Open Graph"),
         value: ogImage || "(absente)",
         status: classifyImage(ogImage),
         hint: ogImage
@@ -160,14 +160,14 @@ export function PageSeoInspector({
         copyValue: ogImage || undefined,
       },
       {
-        label: "Canonique",
+        label: translateUi("Canonique"),
         value: finalCanonical || "(non définie)",
         status: finalCanonical ? "ok" : "warn",
         copyKey: finalCanonical ? "canonical" : undefined,
         copyValue: finalCanonical || undefined,
       },
       {
-        label: "Langues SEO",
+        label: translateUi("Langues SEO"),
         value: locales.join(", "),
         status: locales.length >= 2 ? "ok" : "warn",
         hint:
@@ -176,10 +176,10 @@ export function PageSeoInspector({
             : "Une seule langue est configurée",
       },
       {
-        label: "Langue par défaut",
+        label: translateUi("Langue par défaut"),
         value: effectiveDefaultLocale,
         status: locales.includes(effectiveDefaultLocale) ? "ok" : "error",
-        hint: "Utilisée comme valeur x-default",
+        hint: translateUi("Utilisée comme valeur x-default"),
       },
     ],
     [
@@ -189,26 +189,24 @@ export function PageSeoInspector({
       finalCanonical,
       locales,
       effectiveDefaultLocale,
+      getUiLanguage(),
     ],
   );
 
   const handleCopy = async (value: string, key: string) => {
-    if (
-      typeof navigator === "undefined" ||
-      !navigator.clipboard
-    ) {
-      toast.error("Copie indisponible dans ce navigateur.");
+    if (typeof navigator === "undefined" || !navigator.clipboard) {
+      toast.error(translateUi("Copie indisponible dans ce navigateur."));
       return;
     }
 
     try {
       await navigator.clipboard.writeText(value);
       setCopiedKey(key);
-      toast.success("Copié dans le presse-papiers", {
+      toast.success(translateUi("Copié dans le presse-papiers"), {
         description: value.slice(0, 60),
       });
     } catch {
-      toast.error("Impossible de copier cette valeur.");
+      toast.error(translateUi("Impossible de copier cette valeur."));
     }
   };
 
@@ -222,20 +220,12 @@ export function PageSeoInspector({
     return () => window.clearTimeout(timeout);
   }, [copiedKey]);
 
-  const errorCount = fields.filter(
-    (field) => field.status === "error",
-  ).length;
+  const errorCount = fields.filter((field) => field.status === "error").length;
 
-  const warningCount = fields.filter(
-    (field) => field.status === "warn",
-  ).length;
+  const warningCount = fields.filter((field) => field.status === "warn").length;
 
   const overall: Status =
-    errorCount > 0
-      ? "error"
-      : warningCount > 0
-        ? "warn"
-        : "ok";
+    errorCount > 0 ? "error" : warningCount > 0 ? "warn" : "ok";
 
   if (!visible) return null;
 
@@ -249,7 +239,7 @@ export function PageSeoInspector({
         >
           <span className="flex items-center gap-2">
             <Search className="h-4 w-4" />
-            SEO de cette page
+            {translateUi("SEO de cette page")}
           </span>
 
           <Badge
@@ -264,7 +254,9 @@ export function PageSeoInspector({
           >
             {overall === "ok"
               ? "OK"
-              : `${errorCount + warningCount} à améliorer`}
+              : translateUi("{v0} à améliorer", {
+                  v0: errorCount + warningCount,
+                })}
           </Badge>
         </Button>
       ) : (
@@ -274,7 +266,8 @@ export function PageSeoInspector({
               <Search className="h-4 w-4 shrink-0 text-secondary" />
 
               <p className="truncate text-sm font-display font-semibold text-foreground">
-                SEO · {kind === "boutique" ? "Boutique" : "Produit"}
+                SEO ·{" "}
+                {kind === "boutique" ? "Boutique" : translateUi("Produit")}
               </p>
 
               <Badge
@@ -296,7 +289,7 @@ export function PageSeoInspector({
               size="icon"
               className="h-7 w-7"
               onClick={() => setOpen(false)}
-              aria-label="Réduire le panneau SEO"
+              aria-label={translateUi("Réduire le panneau SEO")}
             >
               <EyeOff className="h-4 w-4" />
             </Button>
@@ -324,7 +317,9 @@ export function PageSeoInspector({
                             handleCopy(field.copyValue!, field.copyKey!)
                           }
                           className="inline-flex items-center gap-0.5 rounded border border-current/30 px-1 py-0.5 transition hover:bg-background/40"
-                          aria-label={`Copier ${field.label}`}
+                          aria-label={translateUi("Copier {v0}", {
+                            v0: field.label,
+                          })}
                         >
                           {copiedKey === field.copyKey ? (
                             <Check className="h-2.5 w-2.5" />
@@ -332,7 +327,9 @@ export function PageSeoInspector({
                             <Copy className="h-2.5 w-2.5" />
                           )}
                           <span>
-                            {copiedKey === field.copyKey ? "Copié" : "Copier"}
+                            {copiedKey === field.copyKey
+                              ? translateUi("Copié")
+                              : translateUi("Copier")}
                           </span>
                         </button>
                       )}
@@ -361,14 +358,14 @@ export function PageSeoInspector({
           <div className="flex items-center justify-between border-t border-border bg-muted/30 px-3 py-2 text-[10px] text-muted-foreground">
             <span className="flex items-center gap-1">
               <Eye className="h-3 w-3" />
-              Visible uniquement par vous
+              {translateUi("Visible uniquement par vous")}
             </span>
 
             <a
               href="/dashboard/seo-analytics"
               className="font-medium text-secondary hover:underline"
             >
-              Ouvrir Analytics →
+              {translateUi("Ouvrir Analytics →")}
             </a>
           </div>
         </div>

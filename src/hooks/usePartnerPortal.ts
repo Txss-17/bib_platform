@@ -1,3 +1,4 @@
+import { translateUi } from "@/lib/uiTranslation";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -54,22 +55,30 @@ export function usePartnerPortal(token: string | undefined) {
 
   const load = useCallback(async () => {
     if (!token) {
-      setError("Lien invalide.");
+      setError(translateUi("Lien invalide."));
       setLoading(false);
       return;
     }
     setLoading(true);
     setError(null);
     const client = supabase as unknown as {
-      rpc: (fn: string, p: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
+      rpc: (
+        fn: string,
+        p: Record<string, unknown>,
+      ) => Promise<{ data: unknown; error: unknown }>;
     };
-    const { data: rows, error: err } = await client.rpc("partner_load_operational_portal", {
-      _access_token: token,
-    });
+    const { data: rows, error: err } = await client.rpc(
+      "partner_load_operational_portal",
+      {
+        _access_token: token,
+      },
+    );
     setLoading(false);
     if (err || !rows || (Array.isArray(rows) && rows.length === 0)) {
       setError(
-        "Dossier introuvable ou pas encore validé. L'accès opérationnel s'ouvre après validation par l'équipe Ops.",
+        translateUi(
+          "Dossier introuvable ou pas encore validé. L'accès opérationnel s'ouvre après validation par l'équipe Ops.",
+        ),
       );
       return;
     }

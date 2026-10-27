@@ -1,8 +1,26 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Package, Truck, CheckCircle, Clock, AlertCircle, RotateCcw, ArrowRight, AlertTriangle, ShieldCheck, Loader2 } from "lucide-react";
+import {
+  Package,
+  Truck,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  RotateCcw,
+  ArrowRight,
+  AlertTriangle,
+  ShieldCheck,
+  Loader2,
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { OrderWithProduct } from "@/hooks/useOrders";
@@ -13,12 +31,45 @@ import { toast } from "sonner";
 
 type LogisticsStatus = Database["public"]["Enums"]["logistics_status"];
 
-const statusConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  pending: { label: "En attente", icon: Clock, color: "text-warning" },
-  processing: { label: "En préparation", icon: Package, color: "text-info" },
-  shipped: { label: "Expédié", icon: Truck, color: "text-accent" },
-  delivered: { label: "Livré", icon: CheckCircle, color: "text-success" },
-  returned: { label: "Retourné", icon: AlertCircle, color: "text-destructive" },
+const statusConfig: Record<
+  string,
+  { label: string; icon: React.ElementType; color: string }
+> = {
+  pending: {
+    get label() {
+      return translateUi("En attente");
+    },
+    icon: Clock,
+    color: "text-warning",
+  },
+  processing: {
+    get label() {
+      return translateUi("En préparation");
+    },
+    icon: Package,
+    color: "text-info",
+  },
+  shipped: {
+    get label() {
+      return translateUi("Expédié");
+    },
+    icon: Truck,
+    color: "text-accent",
+  },
+  delivered: {
+    get label() {
+      return translateUi("Livré");
+    },
+    icon: CheckCircle,
+    color: "text-success",
+  },
+  returned: {
+    get label() {
+      return translateUi("Retourné");
+    },
+    icon: AlertCircle,
+    color: "text-destructive",
+  },
 };
 
 interface StatusHistoryEntry {
@@ -51,21 +102,33 @@ interface OrderDetailDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDialogProps) {
-  const { data: history, isLoading: historyLoading } = useOrderHistory(order?.id || null);
+export function OrderDetailDialog({
+  order,
+  open,
+  onOpenChange,
+}: OrderDetailDialogProps) {
+  useLanguage();
+  const { data: history, isLoading: historyLoading } = useOrderHistory(
+    order?.id || null,
+  );
   const validateOrder = useValidateOrder();
 
   if (!order) return null;
 
   const StatusIcon = statusConfig[order.logistics_status]?.icon || Clock;
-  const isNotValidated = !order.customer_validated && order.logistics_status === "pending";
+  const isNotValidated =
+    !order.customer_validated && order.logistics_status === "pending";
 
   const handleValidate = async () => {
     try {
       await validateOrder.mutateAsync(order.id);
-      toast.success("Commande validée ! Vous pouvez maintenant gérer son statut.");
+      toast.success(
+        translateUi(
+          "Commande validée ! Vous pouvez maintenant gérer son statut.",
+        ),
+      );
     } catch {
-      toast.error("Erreur lors de la validation");
+      toast.error(translateUi("Erreur lors de la validation"));
     }
   };
 
@@ -75,7 +138,8 @@ export function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDial
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg">
             <Package className="w-5 h-5 text-primary" />
-            Commande {order.order_number}
+            {translateUi("Commande") + " "}
+            {order.order_number}
           </DialogTitle>
         </DialogHeader>
 
@@ -83,7 +147,9 @@ export function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDial
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <p className="text-muted-foreground text-xs">Client</p>
+              <p className="text-muted-foreground text-xs">
+                {translateUi("Client")}
+              </p>
               <p className="font-medium">{order.customer_name}</p>
             </div>
             <div>
@@ -91,42 +157,72 @@ export function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDial
               <p className="font-medium truncate">{order.customer_email}</p>
             </div>
             <div>
-              <p className="text-muted-foreground text-xs">Produit</p>
-              <p className="font-medium">{order.products?.supplier_products?.name || "Inconnu"}</p>
+              <p className="text-muted-foreground text-xs">
+                {translateUi("Produit")}
+              </p>
+              <p className="font-medium">
+                {order.products?.supplier_products?.name ||
+                  translateUi("Inconnu")}
+              </p>
             </div>
             <div>
-              <p className="text-muted-foreground text-xs">Montant</p>
-              <p className="font-bold text-primary">{Number(order.amount).toFixed(2)} €</p>
+              <p className="text-muted-foreground text-xs">
+                {translateUi("Montant")}
+              </p>
+              <p className="font-bold text-primary">
+                {Number(order.amount).toFixed(2)} €
+              </p>
             </div>
             <div>
-              <p className="text-muted-foreground text-xs">Marché</p>
+              <p className="text-muted-foreground text-xs">
+                {translateUi("Marché")}
+              </p>
               <Badge variant="secondary">{order.market}</Badge>
             </div>
             <div>
               <p className="text-muted-foreground text-xs">Date</p>
-              <p className="font-medium">{new Date(order.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</p>
+              <p className="font-medium">
+                {new Date(order.created_at).toLocaleDateString(getUiLocale(), {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </p>
             </div>
           </div>
 
           {/* Current status */}
           <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
-            <StatusIcon className={`w-5 h-5 ${statusConfig[order.logistics_status]?.color}`} />
-            <span className="text-sm font-medium">Statut actuel :</span>
-            <Badge>{statusConfig[order.logistics_status]?.label || order.logistics_status}</Badge>
+            <StatusIcon
+              className={`w-5 h-5 ${statusConfig[order.logistics_status]?.color}`}
+            />
+            <span className="text-sm font-medium">
+              {translateUi("Statut actuel :")}
+            </span>
+            <Badge>
+              {statusConfig[order.logistics_status]?.label ||
+                order.logistics_status}
+            </Badge>
           </div>
 
           {/* Validate button */}
           {isNotValidated && (
-            <Button 
-              onClick={handleValidate} 
+            <Button
+              onClick={handleValidate}
               disabled={validateOrder.isPending}
               className="w-full gap-2"
               size="lg"
             >
               {validateOrder.isPending ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Validation en cours...</>
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />{" "}
+                  {translateUi("Validation en cours...")}
+                </>
               ) : (
-                <><ShieldCheck className="w-5 h-5" /> Valider cette commande</>
+                <>
+                  <ShieldCheck className="w-5 h-5" />{" "}
+                  {translateUi("Valider cette commande")}
+                </>
               )}
             </Button>
           )}
@@ -134,22 +230,28 @@ export function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDial
           {order.customer_validated && (
             <div className="flex items-center gap-2 p-2 rounded-lg bg-success/10 border border-success/30 dark:border-success/30">
               <ShieldCheck className="w-4 h-4 text-success" />
-              <span className="text-xs font-medium text-success dark:text-success">Commande validée par le vendeur</span>
+              <span className="text-xs font-medium text-success dark:text-success">
+                {translateUi("Commande validée par le vendeur")}
+              </span>
             </div>
           )}
 
           {/* Status history timeline */}
           <div>
-            <h4 className="text-sm font-semibold mb-3">Historique des statuts</h4>
+            <h4 className="text-sm font-semibold mb-3">
+              {translateUi("Historique des statuts")}
+            </h4>
             {historyLoading ? (
               <div className="space-y-2">
-                {[1, 2, 3].map(i => <Skeleton key={i} className="h-10 w-full" />)}
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
+                ))}
               </div>
             ) : history && history.length > 0 ? (
               <div className="relative space-y-0">
                 {/* Creation entry */}
                 <TimelineEntry
-                  label="Commande créée"
+                  label={translateUi("Commande créée")}
                   status="pending"
                   date={order.created_at}
                   isFirst
@@ -162,9 +264,13 @@ export function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDial
                       key={entry.id}
                       label={
                         <span className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-muted-foreground">{statusConfig[entry.old_status || ""]?.label || "—"}</span>
+                          <span className="text-muted-foreground">
+                            {statusConfig[entry.old_status || ""]?.label || "—"}
+                          </span>
                           <ArrowRight className="w-3 h-3 text-muted-foreground" />
-                          <span className="font-medium">{config?.label || entry.new_status}</span>
+                          <span className="font-medium">
+                            {config?.label || entry.new_status}
+                          </span>
                         </span>
                       }
                       status={entry.new_status}
@@ -175,7 +281,11 @@ export function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDial
                 })}
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground italic">Aucun changement de statut enregistré pour le moment.</p>
+              <p className="text-xs text-muted-foreground italic">
+                {translateUi(
+                  "Aucun changement de statut enregistré pour le moment.",
+                )}
+              </p>
             )}
           </div>
 
@@ -183,7 +293,7 @@ export function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDial
           <div>
             <h4 className="text-sm font-semibold mb-3 flex items-center gap-1.5">
               <AlertTriangle className="w-4 h-4 text-warning" />
-              Signalements
+              {translateUi("Signalements")}
             </h4>
             <OrderIssueSection orderId={order.id} />
           </div>
@@ -193,13 +303,20 @@ export function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDial
   );
 }
 
-function TimelineEntry({ label, status, date, isFirst, isLast }: {
+function TimelineEntry({
+  label,
+  status,
+  date,
+  isFirst,
+  isLast,
+}: {
   label: React.ReactNode;
   status: string;
   date: string;
   isFirst?: boolean;
   isLast?: boolean;
 }) {
+  useLanguage();
   const config = statusConfig[status];
   const Icon = config?.icon || Clock;
   const color = config?.color || "text-muted-foreground";
@@ -207,7 +324,9 @@ function TimelineEntry({ label, status, date, isFirst, isLast }: {
   return (
     <div className="flex gap-3 items-start">
       <div className="flex flex-col items-center">
-        <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center bg-background ${color} border-current`}>
+        <div
+          className={`w-7 h-7 rounded-full border-2 flex items-center justify-center bg-background ${color} border-current`}
+        >
           <Icon className="w-3.5 h-3.5" />
         </div>
         {!isLast && <div className="w-0.5 h-6 bg-border" />}
@@ -215,9 +334,16 @@ function TimelineEntry({ label, status, date, isFirst, isLast }: {
       <div className="pb-4 min-w-0">
         <div className="text-sm">{label}</div>
         <p className="text-[10px] text-muted-foreground">
-          {new Date(date).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
-          {" à "}
-          {new Date(date).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+          {new Date(date).toLocaleDateString(getUiLocale(), {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })}
+          {translateUi(" à ")}
+          {new Date(date).toLocaleTimeString(getUiLocale(), {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
         </p>
       </div>
     </div>

@@ -1,5 +1,11 @@
+import { translateUi } from "@/lib/uiTranslation";
 import { useState } from "react";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
@@ -50,9 +56,7 @@ export default function Login() {
    * by /store/login.
    */
   const from =
-    searchParams.get("next") ||
-    location.state?.from?.pathname ||
-    "/dashboard";
+    searchParams.get("next") || location.state?.from?.pathname || "/dashboard";
 
   /**
    * Prevent the platform login from redirecting into
@@ -137,9 +141,7 @@ export default function Login() {
                 {t("login.title")}
               </CardTitle>
 
-              <CardDescription>
-                {t("login.desc")}
-              </CardDescription>
+              <CardDescription>{t("login.desc")}</CardDescription>
             </CardHeader>
 
             <CardContent>
@@ -152,9 +154,7 @@ export default function Login() {
 
                 {/* Email */}
                 <div className="space-y-2">
-                  <Label htmlFor="email">
-                    {t("login.email")}
-                  </Label>
+                  <Label htmlFor="email">{t("login.email")}</Label>
 
                   <div className="relative">
                     <Mail
@@ -165,7 +165,7 @@ export default function Login() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="vendeur@exemple.com"
+                      placeholder={translateUi("vendeur@exemple.com")}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="pl-10"
@@ -178,9 +178,7 @@ export default function Login() {
                 {/* Password */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password">
-                      {t("login.password")}
-                    </Label>
+                    <Label htmlFor="password">{t("login.password")}</Label>
 
                     <Link
                       to="/forgot-password"
@@ -213,8 +211,8 @@ export default function Login() {
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       aria-label={
                         showPassword
-                          ? "Masquer le mot de passe"
-                          : "Afficher le mot de passe"
+                          ? translateUi("Masquer le mot de passe")
+                          : translateUi("Afficher le mot de passe")
                       }
                     >
                       {showPassword ? (
@@ -268,10 +266,7 @@ export default function Login() {
 
           <div className="space-y-4">
             {["1", "2", "3", "4"].map((item) => (
-              <div
-                key={item}
-                className="flex items-center gap-3"
-              >
+              <div key={item} className="flex items-center gap-3">
                 <div className="p-1 rounded-full bg-success/20">
                   <CheckCircle
                     className="w-4 h-4 text-success"
@@ -288,10 +283,7 @@ export default function Login() {
 
           <div className="mt-8 p-4 rounded-xl bg-card border border-border/50">
             <div className="flex items-center gap-3">
-              <Shield
-                className="w-8 h-8 text-primary"
-                aria-hidden="true"
-              />
+              <Shield className="w-8 h-8 text-primary" aria-hidden="true" />
 
               <div>
                 <p className="font-medium text-foreground">

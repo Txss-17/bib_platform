@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +13,7 @@ import type { ThemeSettings } from "@/lib/boutiqueTemplates";
 import { FloatingSupportButton } from "@/components/support/FloatingSupportButton";
 
 export default function BoutiqueFAQPage() {
+  useLanguage();
   const { slug } = useParams<{ slug: string }>();
 
   const { data: boutique, isLoading } = useQuery({
@@ -40,23 +43,29 @@ export default function BoutiqueFAQPage() {
   if (!boutique) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Page introuvable</p>
+        <p className="text-muted-foreground">
+          {translateUi("Page introuvable")}
+        </p>
       </div>
     );
   }
 
-  const theme = (boutique.theme_settings as unknown) as ThemeSettings | null;
+  const theme = boutique.theme_settings as unknown as ThemeSettings | null;
   const primaryColor = theme?.primaryColor || "#3b82f6";
   const faqItems = theme?.faqItems;
 
   return (
     <CartProvider>
       <div className="bg-background min-h-screen">
-        <StorefrontHeader boutiqueName={boutique.name} primaryColor={primaryColor} boutiqueSlug={slug} />
+        <StorefrontHeader
+          boutiqueName={boutique.name}
+          primaryColor={primaryColor}
+          boutiqueSlug={slug}
+        />
         <div className="max-w-4xl mx-auto px-4 py-8">
           <Link to={`/boutique/${slug}`}>
             <Button variant="ghost" size="sm" className="mb-4 gap-2">
-              <ArrowLeft className="w-4 h-4" /> Retour
+              <ArrowLeft className="w-4 h-4" /> {translateUi("Retour")}
             </Button>
           </Link>
           <StorefrontFAQ primaryColor={primaryColor} items={faqItems} />

@@ -1,10 +1,11 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import type {
+  Tables,
+  TablesInsert,
+  TablesUpdate,
+} from "@/integrations/supabase/types";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -48,13 +49,9 @@ export function getProductCommercialState(
   const promotionStartsAt = product.promotion_starts_at ?? null;
   const promotionEndsAt = product.promotion_ends_at ?? null;
 
-  const startsAt = promotionStartsAt
-    ? new Date(promotionStartsAt)
-    : null;
+  const startsAt = promotionStartsAt ? new Date(promotionStartsAt) : null;
 
-  const endsAt = promotionEndsAt
-    ? new Date(promotionEndsAt)
-    : null;
+  const endsAt = promotionEndsAt ? new Date(promotionEndsAt) : null;
 
   const promotionActive =
     salePrice !== null &&
@@ -63,21 +60,15 @@ export function getProductCommercialState(
     (!startsAt || now >= startsAt) &&
     (!endsAt || now <= endsAt);
 
-  const currentPrice = promotionActive
-    ? salePrice
-    : publicPrice;
+  const currentPrice = promotionActive ? salePrice : publicPrice;
 
   const discountPercent =
     promotionActive && publicPrice > 0
-      ? Math.round(
-          ((publicPrice - currentPrice) / publicPrice) * 100,
-        )
+      ? Math.round(((publicPrice - currentPrice) / publicPrice) * 100)
       : 0;
 
   const stockQuantity = Number(product.stock_quantity ?? 0);
-  const lowStockThreshold = Number(
-    product.low_stock_threshold ?? 0,
-  );
+  const lowStockThreshold = Number(product.low_stock_threshold ?? 0);
 
   return {
     publicPrice,
@@ -101,14 +92,12 @@ export function getProductCommercialState(
 /* -------------------------------------------------------------------------- */
 
 export function useProducts() {
+  const { user: currentUser } = useAuth();
   return useQuery({
-    queryKey: ["products"],
+    queryKey: ["products", currentUser?.id],
+    enabled: !!currentUser,
     queryFn: async (): Promise<ProductWithSupplier[]> => {
-      const {
-        data: {
-          user,
-        },
-      } = await supabase.auth.getUser();
+      const user = currentUser;
 
       if (!user) {
         return [];
@@ -118,19 +107,16 @@ export function useProducts() {
       /* 1. Retrieve the merchant's boutiques                               */
       /* -------------------------------------------------------------------- */
 
-      const { data: boutiques, error: boutiquesError } =
-        await supabase
-          .from("boutiques")
-          .select("id")
-          .eq("user_id", user.id);
+      const { data: boutiques, error: boutiquesError } = await supabase
+        .from("boutiques")
+        .select("id")
+        .eq("user_id", user.id);
 
       if (boutiquesError) {
         throw boutiquesError;
       }
 
-      const boutiqueIds = (boutiques ?? []).map(
-        (boutique) => boutique.id,
-      );
+      const boutiqueIds = (boutiques ?? []).map((boutique) => boutique.id);
 
       if (boutiqueIds.length === 0) {
         return [];
@@ -142,10 +128,12 @@ export function useProducts() {
 
       const { data, error } = await supabase
         .from("products")
-        .select(`
+        .select(
+          `
           *,
           supplier_products (*)
-        `)
+        `,
+        )
         .in("boutique_id", boutiqueIds)
         .order("created_at", {
           ascending: false,
@@ -176,13 +164,11 @@ export function useProductStats() {
   );
 
   const outOfStockProducts = products.filter(
-    (product) =>
-      Number(product.stock_quantity ?? 0) <= 0,
+    (product) => Number(product.stock_quantity ?? 0) <= 0,
   );
 
   const productsOnSale = products.filter(
-    (product) =>
-      getProductCommercialState(product).promotionActive,
+    (product) => getProductCommercialState(product).promotionActive,
   );
 
   return {
@@ -216,10 +202,12 @@ export function useUpdateProduct() {
         .from("products")
         .update(updates)
         .eq("id", id)
-        .select(`
+        .select(
+          `
           *,
           supplier_products (*)
-        `)
+        `,
+        )
         .single();
 
       if (error) {
@@ -282,16 +270,16 @@ export function useCreateProduct() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (
-      product: TablesInsert<"products">,
-    ) => {
+    mutationFn: async (product: TablesInsert<"products">) => {
       const { data, error } = await supabase
         .from("products")
         .insert(product)
-        .select(`
+        .select(
+          `
           *,
           supplier_products (*)
-        `)
+        `,
+        )
         .single();
 
       if (error) {

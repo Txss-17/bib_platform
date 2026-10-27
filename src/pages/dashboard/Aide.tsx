@@ -1,14 +1,29 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import {
-  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
-  HelpCircle, Mail, BookOpen, MessageCircle, Sparkles, Clock, ArrowRight,
-  Search, ExternalLink, Copy, Check, Globe,
+  HelpCircle,
+  Mail,
+  BookOpen,
+  MessageCircle,
+  Sparkles,
+  Clock,
+  ArrowRight,
+  Search,
+  ExternalLink,
+  Copy,
+  Check,
+  Globe,
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -22,7 +37,11 @@ import {
 } from "@/components/dashboard/shared";
 import { Badge } from "@/components/ui/badge";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { useBoutiques } from "@/hooks/useBoutiques";
 import { useProducts } from "@/hooks/useProducts";
@@ -33,39 +52,89 @@ import { PlatformTourLauncher } from "@/components/tour/PlatformTour";
 
 const faqItems = [
   {
-    question: "Comment créer une boutique ?",
-    answer:
-      "Rendez-vous dans Boutiques, cliquez sur « Créer une boutique », choisissez un template et personnalisez-le avec vos produits et votre branding.",
+    get question() {
+      return translateUi("Comment créer une boutique ?");
+    },
+    get answer() {
+      return translateUi(
+        "Rendez-vous dans Boutiques, cliquez sur « Créer une boutique », choisissez un template et personnalisez-le avec vos produits et votre branding.",
+      );
+    },
   },
   {
-    question: "Comment ajouter des produits à ma boutique ?",
-    answer:
-      "Allez dans Catalogue fournisseur, parcourez les références pré-validées et importez celles que vous souhaitez. Vous définissez ensuite votre marge et la boutique cible.",
+    get question() {
+      return translateUi("Comment ajouter des produits à ma boutique ?");
+    },
+    get answer() {
+      return translateUi(
+        "Allez dans Catalogue fournisseur, parcourez les références pré-validées et importez celles que vous souhaitez. Vous définissez ensuite votre marge et la boutique cible.",
+      );
+    },
   },
   {
-    question: "Quand et comment suis-je payé ?",
-    answer:
-      "Les versements sont déclenchés tous les 15 jours sur l'IBAN configuré dans Paramètres > Paiement. Frais logistiques déjà inclus dans vos prix.",
+    get question() {
+      return translateUi("Quand et comment suis-je payé ?");
+    },
+    get answer() {
+      return translateUi(
+        "Les versements sont déclenchés tous les 15 jours sur l'IBAN configuré dans Paramètres > Paiement. Frais logistiques déjà inclus dans vos prix.",
+      );
+    },
   },
   {
-    question: "Comment suivre mes commandes ?",
-    answer:
-      "La section Commandes affiche tout en temps réel (en attente, validées, expédiées, livrées). Une notification sonore retentit à chaque nouvelle vente.",
+    get question() {
+      return translateUi("Comment suivre mes commandes ?");
+    },
+    get answer() {
+      return translateUi(
+        "La section Commandes affiche tout en temps réel (en attente, validées, expédiées, livrées). Une notification sonore retentit à chaque nouvelle vente.",
+      );
+    },
   },
   {
-    question: "Comment modifier mon mot de passe ?",
-    answer:
-      "Paramètres > Sécurité, puis « Modifier » à côté de Mot de passe. Vous recevrez un email pour le réinitialiser.",
+    get question() {
+      return translateUi("Comment modifier mon mot de passe ?");
+    },
+    get answer() {
+      return translateUi(
+        "Paramètres > Sécurité, puis « Modifier » à côté de Mot de passe. Vous recevrez un email pour le réinitialiser.",
+      );
+    },
   },
 ];
 
 const resources = [
-  { label: "Guide de démarrage", desc: "Configurez votre première boutique en 10 minutes", to: "/centre-aide/guide" },
-  { label: "Optimiser vos ventes", desc: "Conseils pour augmenter votre chiffre d'affaires", to: "/centre-aide" },
-  { label: "Politique de retours", desc: "Comprendre la gestion des retours clients", to: "/centre-aide" },
+  {
+    get label() {
+      return translateUi("Guide de démarrage");
+    },
+    get desc() {
+      return translateUi("Configurez votre première boutique en 10 minutes");
+    },
+    to: "/centre-aide/guide",
+  },
+  {
+    get label() {
+      return translateUi("Optimiser vos ventes");
+    },
+    get desc() {
+      return translateUi("Conseils pour augmenter votre chiffre d'affaires");
+    },
+    to: "/centre-aide",
+  },
+  {
+    get label() {
+      return translateUi("Politique de retours");
+    },
+    get desc() {
+      return translateUi("Comprendre la gestion des retours clients");
+    },
+    to: "/centre-aide",
+  },
 ];
 
 export default function Aide() {
+  useLanguage();
   const [contactMessage, setContactMessage] = useState("");
   const [contactSubject, setContactSubject] = useState("");
   const [sending, setSending] = useState(false);
@@ -104,7 +173,7 @@ export default function Aide() {
     for (const b of boutiques.filter((x) => x.status === "published")) {
       opts.push({
         value: buildCanonical(`/boutique/${b.slug}`),
-        label: `Accueil — ${b.name}`,
+        label: translateUi("Accueil — {v0}", { v0: b.name }),
         group: "Boutiques",
         kind: "boutique",
       });
@@ -126,7 +195,9 @@ export default function Aide() {
 
   const handleInspectUrl = () => {
     if (!inspectTarget) {
-      toast.error("Sélectionnez d'abord une boutique ou un produit");
+      toast.error(
+        translateUi("Sélectionnez d'abord une boutique ou un produit"),
+      );
       return;
     }
     const inspectionUrl = `https://search.google.com/search-console/inspect?resource_id=${encodeURIComponent(
@@ -134,10 +205,13 @@ export default function Aide() {
     )}&id=${encodeURIComponent(inspectTarget)}`;
     window.open(inspectionUrl, "_blank", "noopener,noreferrer");
     toast.success(
-      `Inspection ouverte (${selectedOption?.kind === "product" ? "produit" : "boutique"})`,
+      translateUi("Inspection ouverte ({v0})", {
+        v0: selectedOption?.kind === "product" ? "produit" : "boutique",
+      }),
       {
-        description:
+        description: translateUi(
           "URL canonique transmise à Search Console. Cliquez « Demander une indexation ».",
+        ),
       },
     );
   };
@@ -145,42 +219,55 @@ export default function Aide() {
   const copyToClipboard = (value: string, key: string) => {
     navigator.clipboard.writeText(value).then(() => {
       setCopiedKey(key);
-      toast.success("Copié dans le presse-papiers");
+      toast.success(translateUi("Copié dans le presse-papiers"));
       setTimeout(() => setCopiedKey(null), 1500);
     });
   };
 
-  const gscSteps: { title: string; description: string; action?: { label: string; value: string; key: string } }[] = [
+  const gscSteps: {
+    title: string;
+    description: string;
+    action?: { label: string; value: string; key: string };
+  }[] = [
     {
-      title: "1. Créez un compte Google Search Console",
-      description:
+      title: translateUi("1. Créez un compte Google Search Console"),
+      description: translateUi(
         "Rendez-vous sur search.google.com/search-console et connectez-vous avec votre compte Google professionnel.",
+      ),
     },
     {
-      title: "2. Ajoutez votre propriété",
+      title: translateUi("2. Ajoutez votre propriété"),
       description:
         "Choisissez « Préfixe d'URL » puis collez l'adresse publique de votre site (ex : https://votre-domaine.com). Pour une boutique Brand-In-A-Box, utilisez l'URL exacte de votre boutique publiée.",
     },
     {
-      title: "3. Vérifiez la propriété",
-      description:
-        "Choisissez la méthode « Balise HTML » : Google vous donne une balise <meta name=\"google-site-verification\" content=\"…\" />. Contactez le support Brand-In-A-Box pour qu'on l'ajoute dans le <head> du site (ou collez-la dans Paramètres > SEO si dispo).",
+      title: translateUi("3. Vérifiez la propriété"),
+      description: translateUi(
+        'Choisissez la méthode « Balise HTML » : Google vous donne une balise <meta name="google-site-verification" content="…" />. Contactez le support Brand-In-A-Box pour qu\'on l\'ajoute dans le <head> du site (ou collez-la dans Paramètres > SEO si dispo).',
+      ),
     },
     {
-      title: "4. Soumettez votre sitemap",
-      description:
+      title: translateUi("4. Soumettez votre sitemap"),
+      description: translateUi(
         "Dans Search Console > Sitemaps, ajoutez l'URL ci-dessous. Brand-In-A-Box met automatiquement à jour ce fichier dès qu'une boutique ou un produit change.",
-      action: { label: "URL du sitemap", value: sitemapUrl, key: "sitemap" },
+      ),
+      action: {
+        label: translateUi("URL du sitemap"),
+        value: sitemapUrl,
+        key: "sitemap",
+      },
     },
     {
-      title: "5. Vérifiez l'indexation",
-      description:
+      title: translateUi("5. Vérifiez l'indexation"),
+      description: translateUi(
         "Sous « Inspection de l'URL », collez l'URL d'une boutique ou d'un produit. Si la page est valide, cliquez « Demander une indexation ». Le résultat apparaît sous 24–48 h dans Pages > Indexées.",
+      ),
     },
     {
-      title: "6. Activez les rapports clés",
-      description:
+      title: translateUi("6. Activez les rapports clés"),
+      description: translateUi(
         "Surveillez « Performances » (clics, impressions, CTR, position) et « Pages » (indexées vs exclues) au moins une fois par semaine. Corrigez les alertes via le tableau de bord Analytics.",
+      ),
     },
   ];
 
@@ -188,8 +275,8 @@ export default function Aide() {
     e.preventDefault();
     setSending(true);
     setTimeout(() => {
-      toast.success("Message envoyé", {
-        description: "Notre équipe vous répond sous 24h ouvrées.",
+      toast.success(translateUi("Message envoyé"), {
+        description: translateUi("Notre équipe vous répond sous 24h ouvrées."),
       });
       setContactMessage("");
       setContactSubject("");
@@ -200,18 +287,27 @@ export default function Aide() {
   return (
     <DashboardLayout>
       <PageHeader
-        eyebrow="Centre d'aide"
-        title="Aide & Support"
-        subtitle="FAQ, ressources et accès direct à l'équipe Brand-In-A-Box."
-        actions={<PlatformTourLauncher label="Relancer le guide" availablePersonas={["seller"]} />}
+        eyebrow={translateUi("Centre d'aide")}
+        title={translateUi("Aide & Support")}
+        subtitle={translateUi(
+          "FAQ, ressources et accès direct à l'équipe Brand-In-A-Box.",
+        )}
+        actions={
+          <PlatformTourLauncher
+            label={translateUi("Relancer le guide")}
+            availablePersonas={["seller"]}
+          />
+        }
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* FAQ */}
         <SectionCard
           className="lg:col-span-2"
-          title="Questions fréquentes"
-          description="Les réponses rapides aux questions les plus posées"
+          title={translateUi("Questions fréquentes")}
+          description={translateUi(
+            "Les réponses rapides aux questions les plus posées",
+          )}
           icon={<HelpCircle className="w-4 h-4" />}
         >
           <Accordion type="single" collapsible className="w-full">
@@ -231,42 +327,50 @@ export default function Aide() {
         {/* Contact + Resources */}
         <div className="space-y-6">
           <SectionCard
-            title="Nous contacter"
-            description="Réponse sous 24h en jours ouvrés"
+            title={translateUi("Nous contacter")}
+            description={translateUi("Réponse sous 24h en jours ouvrés")}
             icon={<MessageCircle className="w-4 h-4" />}
           >
             <form onSubmit={handleContactSubmit} className="space-y-3">
               <div>
-                <Label htmlFor="subject" className="text-xs">Sujet</Label>
+                <Label htmlFor="subject" className="text-xs">
+                  {translateUi("Sujet")}
+                </Label>
                 <Input
                   id="subject"
                   value={contactSubject}
                   onChange={(e) => setContactSubject(e.target.value)}
-                  placeholder="Ex : Problème avec une commande"
+                  placeholder={translateUi("Ex : Problème avec une commande")}
                   className="mt-1.5"
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="message" className="text-xs">Message</Label>
+                <Label htmlFor="message" className="text-xs">
+                  Message
+                </Label>
                 <Textarea
                   id="message"
                   value={contactMessage}
                   onChange={(e) => setContactMessage(e.target.value)}
-                  placeholder="Décrivez votre problème ou question…"
+                  placeholder={translateUi(
+                    "Décrivez votre problème ou question…",
+                  )}
                   className="mt-1.5 min-h-[110px]"
                   required
                 />
               </div>
               <Button type="submit" className="w-full gap-2" disabled={sending}>
                 <Mail className="w-4 h-4" />
-                {sending ? "Envoi…" : "Envoyer le message"}
+                {sending
+                  ? translateUi("Envoi…")
+                  : translateUi("Envoyer le message")}
               </Button>
             </form>
           </SectionCard>
 
           <SectionCard
-            title="Ressources utiles"
+            title={translateUi("Ressources utiles")}
             icon={<BookOpen className="w-4 h-4" />}
           >
             <div className="space-y-2">
@@ -295,8 +399,10 @@ export default function Aide() {
       {/* Google Search Console step-by-step guide */}
       <SectionCard
         className="mt-6"
-        title="Connecter Google Search Console"
-        description="Faites indexer vos boutiques et fiches produits par Google en 6 étapes."
+        title={translateUi("Connecter Google Search Console")}
+        description={translateUi(
+          "Faites indexer vos boutiques et fiches produits par Google en 6 étapes.",
+        )}
         icon={<Search className="w-4 h-4 text-secondary" />}
         actions={
           <a
@@ -305,7 +411,8 @@ export default function Aide() {
             rel="noreferrer"
           >
             <Button variant="outline" size="sm" className="gap-1.5">
-              Ouvrir Search Console <ExternalLink className="w-3.5 h-3.5" />
+              {translateUi("Ouvrir Search Console") + " "}
+              <ExternalLink className="w-3.5 h-3.5" />
             </Button>
           </a>
         }
@@ -321,7 +428,8 @@ export default function Aide() {
                   variant="outline"
                   className="text-[10px] shrink-0 mt-0.5 border-secondary/40 text-secondary"
                 >
-                  Étape {idx + 1}
+                  {translateUi("Étape") + " "}
+                  {idx + 1}
                 </Badge>
                 <p className="text-sm font-semibold text-foreground leading-tight">
                   {step.title.replace(/^\d+\.\s*/, "")}
@@ -339,11 +447,13 @@ export default function Aide() {
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6 shrink-0"
-                    onClick={() => copyToClipboard(step.action!.value, step.action!.key)}
-                    aria-label="Copier"
+                    onClick={() =>
+                      copyToClipboard(step.action!.value, step.action!.key)
+                    }
+                    aria-label={translateUi("Copier")}
                   >
                     {copiedKey === step.action.key ? (
-                      <Check className="w-3.5 h-3.5 text-success" />
+                      <Check className="w-3.5 h-3.5 text-success-ink" />
                     ) : (
                       <Copy className="w-3.5 h-3.5" />
                     )}
@@ -354,34 +464,42 @@ export default function Aide() {
           ))}
         </div>
         <div className="mt-4 rounded-xl border border-secondary/30 bg-secondary/5 p-3 text-xs text-foreground/80">
-          <strong className="text-secondary">Astuce :</strong> Le sitemap inclut déjà les
-          alternates <code>hreflang</code> FR/EN pour le ciblage international, et est
-          régénéré automatiquement à chaque ajout/édition de boutique ou de produit.
-          Pas besoin de le resoumettre.
+          <strong className="text-secondary">{translateUi("Astuce :")}</strong>{" "}
+          {translateUi("Le sitemap inclut déjà les alternates") + " "}
+          <code>hreflang</code>{" "}
+          {translateUi(
+            "FR/EN pour le ciblage international, et est régénéré automatiquement à chaque ajout/édition de boutique ou de produit. Pas besoin de le resoumettre.",
+          )}
         </div>
       </SectionCard>
 
       {/* Quick URL Inspection launcher */}
       <SectionCard
         className="mt-6"
-        title="Inspection d'URL — accélérer l'indexation"
-        description="Ouvre Search Console pré-rempli avec l'URL choisie et lance la demande d'indexation."
+        title={translateUi("Inspection d'URL — accélérer l'indexation")}
+        description={translateUi(
+          "Ouvre Search Console pré-rempli avec l'URL choisie et lance la demande d'indexation.",
+        )}
         icon={<Globe className="w-4 h-4 text-secondary" />}
       >
         <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-end">
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-foreground">
-              Page à inspecter
+              {translateUi("Page à inspecter")}
             </label>
             <Select value={inspectTarget} onValueChange={setInspectTarget}>
               <SelectTrigger>
-                <SelectValue placeholder="Choisir une boutique ou un produit publié…" />
+                <SelectValue
+                  placeholder={translateUi(
+                    "Choisir une boutique ou un produit publié…",
+                  )}
+                />
               </SelectTrigger>
               <SelectContent>
                 {inspectOptions.length === 0 ? (
                   <EmptyStateInline
                     variant="no-content"
-                    title="Aucune page publiée pour l'instant."
+                    title={translateUi("Aucune page publiée pour l'instant.")}
                   />
                 ) : (
                   inspectOptions.map((opt) => (
@@ -414,13 +532,16 @@ export default function Aide() {
                     ) : (
                       <Package className="w-2.5 h-2.5" />
                     )}
-                    {selectedOption.kind === "boutique" ? "Boutique" : "Produit"}
+                    {selectedOption.kind === "boutique"
+                      ? "Boutique"
+                      : translateUi("Produit")}
                   </Badge>
                   <Badge
                     variant="outline"
                     className="text-[9px] py-0 h-4 border-border text-muted-foreground"
                   >
-                    canonique · x-default → {seoSettings.defaultLocale}
+                    {translateUi("canonique · x-default →") + " "}
+                    {seoSettings.defaultLocale}
                   </Badge>
                 </p>
                 <p className="text-[11px] text-muted-foreground truncate">
@@ -436,19 +557,23 @@ export default function Aide() {
           >
             <Search className="w-4 h-4" />
             {selectedOption?.kind === "product"
-              ? "Inspecter ce produit"
+              ? translateUi("Inspecter ce produit")
               : selectedOption?.kind === "boutique"
-              ? "Inspecter cette boutique"
-              : "Lancer l'inspection"}
+                ? translateUi("Inspecter cette boutique")
+                : translateUi("Lancer l'inspection")}
             <ExternalLink className="w-3.5 h-3.5" />
           </Button>
         </div>
         <div className="mt-3 rounded-lg border border-border/60 bg-muted/30 p-2.5 text-[11px] text-muted-foreground">
-          <strong className="text-foreground">Comment ça marche :</strong>{" "}
-          Brand-In-A-Box transmet l'URL <strong>canonique</strong> (locale x-default
-          « {seoSettings.defaultLocale} ») à Search Console pour éviter les doublons
-          d'indexation entre versions linguistiques. Cliquez ensuite sur
-          « Demander une indexation » dans Google (effet sous 24-48 h).
+          <strong className="text-foreground">
+            {translateUi("Comment ça marche :")}
+          </strong>{" "}
+          {translateUi("Brand-In-A-Box transmet l'URL") + " "}
+          <strong>canonique</strong> {translateUi("(locale x-default «") + " "}
+          {seoSettings.defaultLocale}{" "}
+          {translateUi(
+            "») à Search Console pour éviter les doublons d'indexation entre versions linguistiques. Cliquez ensuite sur « Demander une indexation » dans Google (effet sous 24-48 h).",
+          )}
         </div>
       </SectionCard>
 

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { MemoryRouter } from "react-router-dom";
 import { StorefrontProducts } from "../StorefrontProducts";
 import { EDITOR_ROUTES } from "@/lib/editorRoutes";
@@ -20,22 +21,34 @@ vi.mock("../RecyclingBadge", () => ({
 }));
 
 const products = [
-  { id: "prod-aaa-111", name: "Sérum Vitamine C", price: 24.9, image_url: "https://x/y.jpg" },
-  { id: "prod-bbb-222", name: "Coque iPhone Bio", price: 19.5, image_url: null },
+  {
+    id: "prod-aaa-111",
+    name: "Sérum Vitamine C",
+    price: 24.9,
+    image_url: "https://x/y.jpg",
+  },
+  {
+    id: "prod-bbb-222",
+    name: "Coque iPhone Bio",
+    price: 19.5,
+    image_url: null,
+  },
 ];
 
 describe("StorefrontProducts navigation", () => {
   it("renders product cards as links to /boutique/:slug/product/:id", () => {
     const slug = "ma-boutique";
     render(
-      <MemoryRouter>
-        <StorefrontProducts
-          title="Nos produits"
-          products={products}
-          primaryColor="#000"
-          boutiqueSlug={slug}
-        />
-      </MemoryRouter>,
+      <LanguageProvider>
+        <MemoryRouter>
+          <StorefrontProducts
+            title="Nos produits"
+            products={products}
+            primaryColor="#000"
+            boutiqueSlug={slug}
+          />
+        </MemoryRouter>
+      </LanguageProvider>,
     );
 
     for (const p of products) {
@@ -43,10 +56,16 @@ describe("StorefrontProducts navigation", () => {
       // At least one anchor must point to the canonical product URL.
       const matches = screen
         .getAllByRole("link")
-        .filter((a) => (a as HTMLAnchorElement).getAttribute("href") === expected);
-      expect(matches.length, `link for ${p.id} → ${expected}`).toBeGreaterThan(0);
+        .filter(
+          (a) => (a as HTMLAnchorElement).getAttribute("href") === expected,
+        );
+      expect(matches.length, `link for ${p.id} → ${expected}`).toBeGreaterThan(
+        0,
+      );
       // Every link that exposes the product name must point to its canonical URL.
-      const namedLinks = screen.getAllByRole("link", { name: new RegExp(p.name, "i") });
+      const namedLinks = screen.getAllByRole("link", {
+        name: new RegExp(p.name, "i"),
+      });
       expect(namedLinks.length).toBeGreaterThan(0);
       for (const link of namedLinks) {
         expect(link.getAttribute("href")).toBe(expected);
@@ -56,13 +75,21 @@ describe("StorefrontProducts navigation", () => {
 
   it("does not render product links when boutiqueSlug is missing", () => {
     render(
-      <MemoryRouter>
-        <StorefrontProducts title="Nos produits" products={products} primaryColor="#000" />
-      </MemoryRouter>,
+      <LanguageProvider>
+        <MemoryRouter>
+          <StorefrontProducts
+            title="Nos produits"
+            products={products}
+            primaryColor="#000"
+          />
+        </MemoryRouter>
+      </LanguageProvider>,
     );
     const links = screen
       .queryAllByRole("link")
-      .filter((a) => (a as HTMLAnchorElement).getAttribute("href")?.includes("/product/"));
+      .filter((a) =>
+        (a as HTMLAnchorElement).getAttribute("href")?.includes("/product/"),
+      );
     expect(links).toHaveLength(0);
   });
 

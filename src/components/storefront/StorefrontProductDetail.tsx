@@ -1,3 +1,5 @@
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
@@ -44,14 +46,12 @@ interface ProductRow {
   low_stock_threshold: number | null;
   cumulative_sales: number | null;
   boutique_id: string;
-  supplier_products:
-    | {
-        name: string;
-        description: string | null;
-        image_url: string | null;
-        category: string;
-      }
-    | null;
+  supplier_products: {
+    name: string;
+    description: string | null;
+    image_url: string | null;
+    category: string;
+  } | null;
 }
 
 interface ProductMedia {
@@ -86,14 +86,12 @@ function getPrimaryColor(
     themeSettings.primary_color ??
     themeSettings.primary;
 
-  return typeof primary === "string" && primary.trim()
-    ? primary
-    : "#111827";
+  return typeof primary === "string" && primary.trim() ? primary : "#111827";
 }
 
 function formatPrice(price: number, currency = "EUR") {
   try {
-    return new Intl.NumberFormat("fr-FR", {
+    return new Intl.NumberFormat(getUiLocale(), {
       style: "currency",
       currency,
     }).format(price);
@@ -103,6 +101,7 @@ function formatPrice(price: number, currency = "EUR") {
 }
 
 export function StorefrontProductDetail() {
+  useLanguage();
   const { slug, productId } = useParams<{
     slug: string;
     productId: string;
@@ -125,7 +124,7 @@ export function StorefrontProductDetail() {
 
     async function loadProduct() {
       if (!slug || !productId) {
-        setError("Produit introuvable.");
+        setError(translateUi("Produit introuvable."));
         setLoading(false);
         return;
       }
@@ -134,11 +133,10 @@ export function StorefrontProductDetail() {
       setError(null);
 
       try {
-        const { data: boutiqueData, error: boutiqueError } =
-          await supabase
-            .from("boutiques")
-            .select(
-              `
+        const { data: boutiqueData, error: boutiqueError } = await supabase
+          .from("boutiques")
+          .select(
+            `
                 id,
                 name,
                 slug,
@@ -154,10 +152,10 @@ export function StorefrontProductDetail() {
                 seo_title,
                 seo_description
               `,
-            )
-            .eq("slug", slug)
-            .eq("status", "published")
-            .maybeSingle();
+          )
+          .eq("slug", slug)
+          .eq("status", "published")
+          .maybeSingle();
 
         if (boutiqueError) {
           throw boutiqueError;
@@ -165,18 +163,17 @@ export function StorefrontProductDetail() {
 
         if (!boutiqueData) {
           if (!cancelled) {
-            setError("Cette boutique est introuvable.");
+            setError(translateUi("Cette boutique est introuvable."));
           }
           return;
         }
 
         const typedBoutique = boutiqueData as Boutique;
 
-        const { data: productData, error: productError } =
-          await supabase
-            .from("products")
-            .select(
-              `
+        const { data: productData, error: productError } = await supabase
+          .from("products")
+          .select(
+            `
                 id,
                 public_price,
                 status,
@@ -191,11 +188,11 @@ export function StorefrontProductDetail() {
                   category
                 )
               `,
-            )
-            .eq("id", productId)
-            .eq("boutique_id", typedBoutique.id)
-            .eq("status", "active")
-            .maybeSingle();
+          )
+          .eq("id", productId)
+          .eq("boutique_id", typedBoutique.id)
+          .eq("status", "active")
+          .maybeSingle();
 
         if (productError) {
           throw productError;
@@ -203,7 +200,7 @@ export function StorefrontProductDetail() {
 
         if (!productData) {
           if (!cancelled) {
-            setError("Ce produit n'est plus disponible.");
+            setError(translateUi("Ce produit n'est plus disponible."));
           }
           return;
         }
@@ -224,10 +221,7 @@ export function StorefrontProductDetail() {
 
         const images = media
           .filter((item) => Boolean(item.url))
-          .sort(
-            (a, b) =>
-              (a.position ?? 0) - (b.position ?? 0),
-          )
+          .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
           .map((item) => item.url);
 
         const supplierProduct = typedProductRow.supplier_products;
@@ -238,10 +232,7 @@ export function StorefrontProductDetail() {
           description: supplierProduct?.description ?? null,
           price: Number(typedProductRow.public_price ?? 0),
           category: supplierProduct?.category ?? typedBoutique.category,
-          imageUrl:
-            images[0] ??
-            supplierProduct?.image_url ??
-            null,
+          imageUrl: images[0] ?? supplierProduct?.image_url ?? null,
           images:
             images.length > 0
               ? images
@@ -249,10 +240,8 @@ export function StorefrontProductDetail() {
                 ? [supplierProduct.image_url]
                 : [],
           stockQuantity: typedProductRow.stock_quantity,
-          lowStockThreshold:
-            typedProductRow.low_stock_threshold,
-          cumulativeSales:
-            Number(typedProductRow.cumulative_sales ?? 0),
+          lowStockThreshold: typedProductRow.low_stock_threshold,
+          cumulativeSales: Number(typedProductRow.cumulative_sales ?? 0),
         };
 
         if (!cancelled) {
@@ -261,14 +250,11 @@ export function StorefrontProductDetail() {
           setSelectedImage(0);
         }
       } catch (loadError) {
-        console.error(
-          "Error loading storefront product:",
-          loadError,
-        );
+        console.error("Error loading storefront product:", loadError);
 
         if (!cancelled) {
           setError(
-            "Impossible de charger ce produit pour le moment.",
+            translateUi("Impossible de charger ce produit pour le moment."),
           );
         }
       } finally {
@@ -295,25 +281,20 @@ export function StorefrontProductDetail() {
   const gallery = product?.images ?? [];
 
   const currentImage =
-    gallery[selectedImage] ??
-    product?.imageUrl ??
-    "/placeholder.svg";
+    gallery[selectedImage] ?? product?.imageUrl ?? "/placeholder.svg";
 
   const existingCartItem = product
     ? items.find((item) => item.id === product.id)
     : undefined;
 
-  const effectiveCartQuantity =
-    existingCartItem?.quantity ?? 0;
+  const effectiveCartQuantity = existingCartItem?.quantity ?? 0;
 
   const stockQuantity = product?.stockQuantity;
 
   const hasFiniteStock =
-    typeof stockQuantity === "number" &&
-    Number.isFinite(stockQuantity);
+    typeof stockQuantity === "number" && Number.isFinite(stockQuantity);
 
-  const isOutOfStock =
-    hasFiniteStock && stockQuantity <= 0;
+  const isOutOfStock = hasFiniteStock && stockQuantity <= 0;
 
   const isLowStock =
     hasFiniteStock &&
@@ -343,13 +324,9 @@ export function StorefrontProductDetail() {
       return;
     }
 
-    trackStorefrontEvent(
-      boutique.id,
-      "product_view",
-      {
-        productId: product.id,
-      },
-    );
+    trackStorefrontEvent(boutique.id, "product_view", {
+      productId: product.id,
+    });
   }, [boutique?.id, product?.id]);
 
   const handleDecrease = () => {
@@ -370,10 +347,7 @@ export function StorefrontProductDetail() {
     }
 
     const allowedQuantity = hasFiniteStock
-      ? Math.min(
-          quantity,
-          Math.max(0, stockQuantity - effectiveCartQuantity),
-        )
+      ? Math.min(quantity, Math.max(0, stockQuantity - effectiveCartQuantity))
       : quantity;
 
     if (allowedQuantity <= 0) {
@@ -392,13 +366,9 @@ export function StorefrontProductDetail() {
         });
       }
 
-      trackStorefrontEvent(
-        boutique.id,
-        "add_to_cart",
-        {
-          productId: product.id,
-        },
-      );
+      trackStorefrontEvent(boutique.id, "add_to_cart", {
+        productId: product.id,
+      });
 
       setQuantity(1);
     } finally {
@@ -406,25 +376,17 @@ export function StorefrontProductDetail() {
     }
   };
 
-  const handleCartQuantityChange = (
-    nextQuantity: number,
-  ) => {
+  const handleCartQuantityChange = (nextQuantity: number) => {
     if (!product || !existingCartItem) {
       return;
     }
 
-    if (
-      hasFiniteStock &&
-      nextQuantity > stockQuantity
-    ) {
+    if (hasFiniteStock && nextQuantity > stockQuantity) {
       updateQuantity(product.id, stockQuantity);
       return;
     }
 
-    updateQuantity(
-      product.id,
-      Math.max(0, nextQuantity),
-    );
+    updateQuantity(product.id, Math.max(0, nextQuantity));
   };
 
   const goToPreviousImage = () => {
@@ -433,9 +395,7 @@ export function StorefrontProductDetail() {
     }
 
     setSelectedImage((current) =>
-      current <= 0
-        ? gallery.length - 1
-        : current - 1,
+      current <= 0 ? gallery.length - 1 : current - 1,
     );
   };
 
@@ -445,9 +405,7 @@ export function StorefrontProductDetail() {
     }
 
     setSelectedImage((current) =>
-      current >= gallery.length - 1
-        ? 0
-        : current + 1,
+      current >= gallery.length - 1 ? 0 : current + 1,
     );
   };
 
@@ -484,19 +442,21 @@ export function StorefrontProductDetail() {
           </div>
 
           <h1 className="text-xl font-semibold text-gray-900">
-            Produit indisponible
+            {translateUi("Produit indisponible")}
           </h1>
 
           <p className="mt-2 text-sm text-gray-500">
             {error ??
-              "Ce produit n'est plus disponible dans cette boutique."}
+              translateUi(
+                "Ce produit n'est plus disponible dans cette boutique.",
+              )}
           </p>
 
           <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
             {slug && (
               <Link to={`/boutique/${slug}/products`}>
                 <Button variant="outline">
-                  Voir les produits
+                  {translateUi("Voir les produits")}
                 </Button>
               </Link>
             )}
@@ -508,7 +468,7 @@ export function StorefrontProductDetail() {
                 }}
                 className="text-white"
               >
-                Retour au BIB Store
+                {translateUi("Retour au BIB Store")}
               </Button>
             </Link>
           </div>
@@ -536,14 +496,12 @@ export function StorefrontProductDetail() {
             to={`/boutique/${boutique.slug}/products`}
             className="hover:text-gray-900 transition-colors"
           >
-            Produits
+            {translateUi("Produits")}
           </Link>
 
           <span>/</span>
 
-          <span className="text-gray-900 line-clamp-1">
-            {product.name}
-          </span>
+          <span className="text-gray-900 line-clamp-1">{product.name}</span>
         </div>
       </div>
 
@@ -562,10 +520,9 @@ export function StorefrontProductDetail() {
               <div className="absolute top-4 left-4">
                 <Badge className="bg-white text-gray-900 shadow-sm hover:bg-white">
                   <Check className="w-3.5 h-3.5 mr-1.5" />
-                  Vérifié par BIB
+                  {translateUi("Vérifié par BIB")}
                 </Badge>
               </div>
-
 
               {/* Gallery controls */}
               {gallery.length > 1 && (
@@ -573,7 +530,7 @@ export function StorefrontProductDetail() {
                   <button
                     type="button"
                     onClick={goToPreviousImage}
-                    aria-label="Image précédente"
+                    aria-label={translateUi("Image précédente")}
                     className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 shadow-sm flex items-center justify-center hover:bg-white transition"
                   >
                     <ChevronLeft className="w-5 h-5" />
@@ -582,7 +539,7 @@ export function StorefrontProductDetail() {
                   <button
                     type="button"
                     onClick={goToNextImage}
-                    aria-label="Image suivante"
+                    aria-label={translateUi("Image suivante")}
                     className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 shadow-sm flex items-center justify-center hover:bg-white transition"
                   >
                     <ChevronRight className="w-5 h-5" />
@@ -609,12 +566,11 @@ export function StorefrontProductDetail() {
                         : "border-transparent"
                     }`}
                     style={{
-                      color:
-                        selectedImage === index
-                          ? primaryColor
-                          : undefined,
+                      color: selectedImage === index ? primaryColor : undefined,
                     }}
-                    aria-label={`Afficher l'image ${index + 1}`}
+                    aria-label={translateUi("Afficher l'image {v0}", {
+                      v0: index + 1,
+                    })}
                   >
                     <img
                       src={image}
@@ -660,9 +616,7 @@ export function StorefrontProductDetail() {
 
             {/* Category */}
             <div className="mt-5">
-              <Badge variant="secondary">
-                {product.category}
-              </Badge>
+              <Badge variant="secondary">{product.category}</Badge>
             </div>
 
             {/* Title */}
@@ -680,7 +634,7 @@ export function StorefrontProductDetail() {
               </span>
 
               <span className="ml-2 text-sm text-gray-500">
-                Livraison incluse
+                {translateUi("Livraison incluse")}
               </span>
             </div>
 
@@ -688,17 +642,18 @@ export function StorefrontProductDetail() {
             <div className="mt-4">
               {isOutOfStock ? (
                 <Badge variant="destructive">
-                  Rupture de stock
+                  {translateUi("Rupture de stock")}
                 </Badge>
               ) : isLowStock ? (
                 <span className="text-sm font-medium text-amber-700">
-                  Plus que {stockQuantity} disponible
+                  {translateUi("Plus que") + " "}
+                  {stockQuantity} disponible
                   {stockQuantity > 1 ? "s" : ""}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 text-sm text-green-700">
                   <Check className="w-4 h-4" />
-                  Disponible
+                  {translateUi("Disponible")}
                 </span>
               )}
             </div>
@@ -726,12 +681,13 @@ export function StorefrontProductDetail() {
 
                 <div>
                   <p className="text-sm font-semibold text-gray-900">
-                    Une boutique vérifiée par BIB
+                    {translateUi("Une boutique vérifiée par BIB")}
                   </p>
 
                   <p className="mt-1 text-xs leading-5 text-gray-600">
-                    BIB vérifie les boutiques et les produits
-                    référencés sur son réseau.
+                    {translateUi(
+                      "BIB vérifie les boutiques et les produits référencés sur son réseau.",
+                    )}
                   </p>
                 </div>
               </div>
@@ -746,21 +702,19 @@ export function StorefrontProductDetail() {
                       type="button"
                       onClick={handleDecrease}
                       disabled={quantity <= 1}
-                      aria-label="Diminuer la quantité"
+                      aria-label={translateUi("Diminuer la quantité")}
                       className="w-12 h-full flex items-center justify-center disabled:opacity-40"
                     >
                       <Minus className="w-4 h-4" />
                     </button>
 
-                    <span className="font-medium text-sm">
-                      {quantity}
-                    </span>
+                    <span className="font-medium text-sm">{quantity}</span>
 
                     <button
                       type="button"
                       onClick={handleIncrease}
                       disabled={!canIncreaseQuantity}
-                      aria-label="Augmenter la quantité"
+                      aria-label={translateUi("Augmenter la quantité")}
                       className="w-12 h-full flex items-center justify-center disabled:opacity-40"
                     >
                       <Plus className="w-4 h-4" />
@@ -770,10 +724,7 @@ export function StorefrontProductDetail() {
                   <Button
                     type="button"
                     onClick={handleAddToCart}
-                    disabled={
-                      adding ||
-                      (hasFiniteStock && maxQuantity <= 0)
-                    }
+                    disabled={adding || (hasFiniteStock && maxQuantity <= 0)}
                     className="h-12 flex-1 text-white gap-2"
                     style={{
                       backgroundColor: primaryColor,
@@ -782,8 +733,8 @@ export function StorefrontProductDetail() {
                     <ShoppingCart className="w-4 h-4" />
 
                     {adding
-                      ? "Ajout..."
-                      : "Ajouter au panier"}
+                      ? translateUi("Ajout...")
+                      : translateUi("Ajouter au panier")}
                   </Button>
                 </div>
               </div>
@@ -795,7 +746,7 @@ export function StorefrontProductDetail() {
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-sm font-medium text-gray-900">
-                      Dans votre panier
+                      {translateUi("Dans votre panier")}
                     </p>
 
                     <p className="text-xs text-gray-500 mt-1">
@@ -808,12 +759,10 @@ export function StorefrontProductDetail() {
                     <button
                       type="button"
                       onClick={() =>
-                        handleCartQuantityChange(
-                          existingCartItem.quantity - 1,
-                        )
+                        handleCartQuantityChange(existingCartItem.quantity - 1)
                       }
                       className="w-8 h-8 rounded-md border flex items-center justify-center"
-                      aria-label="Diminuer la quantité du panier"
+                      aria-label={translateUi("Diminuer la quantité du panier")}
                     >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
@@ -825,17 +774,16 @@ export function StorefrontProductDetail() {
                     <button
                       type="button"
                       onClick={() =>
-                        handleCartQuantityChange(
-                          existingCartItem.quantity + 1,
-                        )
+                        handleCartQuantityChange(existingCartItem.quantity + 1)
                       }
                       disabled={
                         hasFiniteStock &&
-                        existingCartItem.quantity >=
-                          stockQuantity
+                        existingCartItem.quantity >= stockQuantity
                       }
                       className="w-8 h-8 rounded-md border flex items-center justify-center disabled:opacity-40"
-                      aria-label="Augmenter la quantité du panier"
+                      aria-label={translateUi(
+                        "Augmenter la quantité du panier",
+                      )}
                     >
                       <Plus className="w-3.5 h-3.5" />
                     </button>
@@ -851,14 +799,14 @@ export function StorefrontProductDetail() {
                 className="font-medium hover:underline"
                 style={{ color: primaryColor }}
               >
-                Voir tous les produits
+                {translateUi("Voir tous les produits")}
               </Link>
 
               <Link
                 to={`/boutique/${boutique.slug}`}
                 className="text-gray-500 hover:text-gray-900 hover:underline"
               >
-                Retour à la boutique
+                {translateUi("Retour à la boutique")}
               </Link>
             </div>
           </div>

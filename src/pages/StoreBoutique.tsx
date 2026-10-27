@@ -1,3 +1,5 @@
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useMemo } from "react";
 import {
   ArrowLeft,
@@ -11,10 +13,7 @@ import {
   ShoppingBag,
   Store,
 } from "lucide-react";
-import {
-  Link,
-  useParams,
-} from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -58,10 +57,7 @@ interface ProductRow {
   status: string;
   stock_quantity: number | null;
   cumulative_sales: number | null;
-  supplier_products:
-    | SupplierProductRow
-    | SupplierProductRow[]
-    | null;
+  supplier_products: SupplierProductRow | SupplierProductRow[] | null;
 }
 
 interface StoreBoutiqueProduct {
@@ -83,19 +79,18 @@ function getSupplierProduct(
     return null;
   }
 
-  return Array.isArray(value)
-    ? value[0] ?? null
-    : value;
+  return Array.isArray(value) ? (value[0] ?? null) : value;
 }
 
 function formatPrice(value: number): string {
-  return new Intl.NumberFormat("fr-FR", {
+  return new Intl.NumberFormat(getUiLocale(), {
     style: "currency",
     currency: "EUR",
   }).format(value);
 }
 
 export default function StoreBoutique() {
+  useLanguage();
   const { slug } = useParams<{
     slug: string;
   }>();
@@ -133,15 +128,10 @@ export default function StoreBoutique() {
 
     queryFn: async () => {
       if (!slug) {
-        throw new Error(
-          "Boutique introuvable.",
-        );
+        throw new Error("Boutique introuvable.");
       }
 
-      const {
-        data,
-        error,
-      } = await supabase
+      const { data, error } = await supabase
         .from("boutiques")
         .select(
           `
@@ -182,14 +172,8 @@ export default function StoreBoutique() {
       return false;
     }
 
-    return isBoutiqueFavorite(
-      boutique.id,
-    );
-  }, [
-    boutique?.id,
-    isBoutiqueFavorite,
-    boutiqueFavorites,
-  ]);
+    return isBoutiqueFavorite(boutique.id);
+  }, [boutique?.id, isBoutiqueFavorite, boutiqueFavorites]);
 
   /*
    * ============================================================
@@ -198,10 +182,7 @@ export default function StoreBoutique() {
    */
 
   const productsQuery = useQuery({
-    queryKey: [
-      "store-boutique-products",
-      boutique?.id,
-    ],
+    queryKey: ["store-boutique-products", boutique?.id],
 
     enabled: Boolean(boutique?.id),
 
@@ -210,10 +191,7 @@ export default function StoreBoutique() {
         return [];
       }
 
-      const {
-        data,
-        error,
-      } = await supabase
+      const { data, error } = await supabase
         .from("products")
         .select(
           `
@@ -233,39 +211,22 @@ export default function StoreBoutique() {
             )
           `,
         )
-        .eq(
-          "boutique_id",
-          boutique.id,
-        )
-        .eq(
-          "status",
-          "active",
-        )
-        .order(
-          "cumulative_sales",
-          {
-            ascending: false,
-          },
-        );
+        .eq("boutique_id", boutique.id)
+        .eq("status", "active")
+        .order("cumulative_sales", {
+          ascending: false,
+        });
 
       if (error) {
         throw error;
       }
 
-      return (
-        data ?? []
-      ) as ProductRow[];
+      return (data ?? []) as ProductRow[];
     },
   });
 
   const productIds = useMemo(
-    () =>
-      (
-        productsQuery.data ?? []
-      ).map(
-        (product) =>
-          product.id,
-      ),
+    () => (productsQuery.data ?? []).map((product) => product.id),
     [productsQuery.data],
   );
 
@@ -276,19 +237,12 @@ export default function StoreBoutique() {
    */
 
   const mediaQuery = useQuery({
-    queryKey: [
-      "store-boutique-product-media",
-      productIds,
-    ],
+    queryKey: ["store-boutique-product-media", productIds],
 
-    enabled:
-      productIds.length > 0,
+    enabled: productIds.length > 0,
 
     queryFn: async () => {
-      const {
-        data,
-        error,
-      } = await supabase
+      const { data, error } = await supabase
         .from("product_media" as any)
         .select(
           `
@@ -298,28 +252,17 @@ export default function StoreBoutique() {
             is_selected
           `,
         )
-        .in(
-          "product_id",
-          productIds,
-        )
-        .eq(
-          "is_selected",
-          true,
-        )
-        .order(
-          "position",
-          {
-            ascending: true,
-          },
-        );
+        .in("product_id", productIds)
+        .eq("is_selected", true)
+        .order("position", {
+          ascending: true,
+        });
 
       if (error) {
         throw error;
       }
 
-      return (
-        data ?? []
-      ) as unknown as ProductMediaRow[];
+      return (data ?? []) as unknown as ProductMediaRow[];
     },
   });
 
@@ -329,120 +272,59 @@ export default function StoreBoutique() {
    * ============================================================
    */
 
-  const products =
-    useMemo<StoreBoutiqueProduct[]>(
-      () => {
-        const mediaByProduct =
-          new Map<
-            string,
-            string[]
-          >();
+  const products = useMemo<StoreBoutiqueProduct[]>(() => {
+    const mediaByProduct = new Map<string, string[]>();
 
-        for (const media of
-          mediaQuery.data ?? []) {
-          const mediaUrl =
-            media.url ??
-            media.media_url ??
-            null;
+    for (const media of mediaQuery.data ?? []) {
+      const mediaUrl = media.url ?? media.media_url ?? null;
 
-          if (!mediaUrl) {
-            continue;
-          }
+      if (!mediaUrl) {
+        continue;
+      }
 
-          const current =
-            mediaByProduct.get(
-              media.product_id,
-            ) ?? [];
+      const current = mediaByProduct.get(media.product_id) ?? [];
 
-          if (
-            !current.includes(
-              mediaUrl,
-            )
-          ) {
-            current.push(
-              mediaUrl,
-            );
-          }
+      if (!current.includes(mediaUrl)) {
+        current.push(mediaUrl);
+      }
 
-          mediaByProduct.set(
-            media.product_id,
-            current,
-          );
+      mediaByProduct.set(media.product_id, current);
+    }
+
+    return (productsQuery.data ?? [])
+      .map((product) => {
+        const supplierProduct = getSupplierProduct(product.supplier_products);
+
+        if (!supplierProduct) {
+          return null;
         }
 
-        return (
-          productsQuery.data ?? []
-        )
-          .map((product) => {
-            const supplierProduct =
-              getSupplierProduct(
-                product.supplier_products,
-              );
+        const images = mediaByProduct.get(product.id) ?? [];
 
-            if (!supplierProduct) {
-              return null;
-            }
+        const fallbackImage = supplierProduct.image_url ?? null;
 
-            const images =
-              mediaByProduct.get(
-                product.id,
-              ) ?? [];
+        return {
+          id: product.id,
 
-            const fallbackImage =
-              supplierProduct.image_url ??
-              null;
+          name: supplierProduct.name,
 
-            return {
-              id: product.id,
+          description: supplierProduct.description,
 
-              name:
-                supplierProduct.name,
+          category: supplierProduct.category ?? boutique?.category ?? null,
 
-              description:
-                supplierProduct.description,
+          price: Number(product.public_price ?? 0),
 
-              category:
-                supplierProduct.category ??
-                boutique?.category ??
-                null,
+          imageUrl: images[0] ?? fallbackImage,
 
-              price: Number(
-                product.public_price ??
-                  0,
-              ),
+          images,
 
-              imageUrl:
-                images[0] ??
-                fallbackImage,
+          stockQuantity: Number(product.stock_quantity ?? 0),
 
-              images,
-
-              stockQuantity:
-                Number(
-                  product.stock_quantity ??
-                    0,
-                ),
-
-              cumulativeSales:
-                Number(
-                  product.cumulative_sales ??
-                    0,
-                ),
-            };
-          })
-          .filter(
-            (
-              product,
-            ): product is StoreBoutiqueProduct =>
-              product !== null,
-          );
-      },
-      [
-        productsQuery.data,
-        mediaQuery.data,
-        boutique?.category,
-      ],
-    );
+          cumulativeSales: Number(product.cumulative_sales ?? 0),
+        };
+      })
+      .filter((product): product is StoreBoutiqueProduct => product !== null);
+  }, [productsQuery.data, mediaQuery.data, boutique?.category]);
 
   /*
    * ============================================================
@@ -451,10 +333,9 @@ export default function StoreBoutique() {
    */
 
   useSEO({
-    title:
-      boutique?.name
-        ? `${boutique.name} — Vérifiée par BIB`
-        : "Boutique — BIB",
+    title: boutique?.name
+      ? `${boutique.name} — Vérifiée par BIB`
+      : "Boutique — BIB",
 
     description:
       boutique?.description ||
@@ -462,10 +343,7 @@ export default function StoreBoutique() {
         ? `Découvrez ${boutique.name} sur BIB et explorez sa sélection de produits vérifiés.`
         : "Découvrez les boutiques vérifiées par BIB."),
 
-    image:
-      boutique?.cover_image_url ||
-      boutique?.logo_url ||
-      undefined,
+    image: boutique?.cover_image_url || boutique?.logo_url || undefined,
 
     type: "store",
 
@@ -485,15 +363,11 @@ export default function StoreBoutique() {
    */
 
   const merchantBoutiqueUrl = boutique
-    ? `/boutique/${encodeURIComponent(
-        boutique.slug,
-      )}`
+    ? `/boutique/${encodeURIComponent(boutique.slug)}`
     : "/store";
 
   const merchantProductsUrl = boutique
-    ? `/boutique/${encodeURIComponent(
-        boutique.slug,
-      )}/products`
+    ? `/boutique/${encodeURIComponent(boutique.slug)}/products`
     : "/store";
 
   /*
@@ -502,16 +376,13 @@ export default function StoreBoutique() {
    * ============================================================
    */
 
-  const handleToggleFavorite =
-    async () => {
-      if (!boutique?.id) {
-        return;
-      }
+  const handleToggleFavorite = async () => {
+    if (!boutique?.id) {
+      return;
+    }
 
-      await toggleBoutiqueFavorite(
-        boutique.id,
-      );
-    };
+    await toggleBoutiqueFavorite(boutique.id);
+  };
 
   /*
    * ============================================================
@@ -521,13 +392,8 @@ export default function StoreBoutique() {
 
   const isLoading =
     boutiqueQuery.isLoading ||
-    (
-      Boolean(boutique?.id) &&
-      (
-        productsQuery.isLoading ||
-        mediaQuery.isLoading
-      )
-    );
+    (Boolean(boutique?.id) &&
+      (productsQuery.isLoading || mediaQuery.isLoading));
 
   if (isLoading) {
     return (
@@ -537,7 +403,7 @@ export default function StoreBoutique() {
             <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin text-muted-foreground" />
 
             <p className="text-sm text-muted-foreground">
-              Chargement de la boutique…
+              {translateUi("Chargement de la boutique…")}
             </p>
           </div>
         </div>
@@ -545,10 +411,7 @@ export default function StoreBoutique() {
     );
   }
 
-  if (
-    boutiqueQuery.isError ||
-    !boutique
-  ) {
+  if (boutiqueQuery.isError || !boutique) {
     return (
       <div className="min-h-screen bg-background">
         <div className="mx-auto flex min-h-screen max-w-2xl items-center justify-center px-6">
@@ -556,13 +419,13 @@ export default function StoreBoutique() {
             <Store className="mx-auto mb-5 h-10 w-10 text-muted-foreground" />
 
             <h1 className="text-2xl font-semibold tracking-tight">
-              Boutique introuvable
+              {translateUi("Boutique introuvable")}
             </h1>
 
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Cette boutique n’est pas
-              disponible ou n’est plus
-              publiée sur BIB.
+              {translateUi(
+                "Cette boutique n’est pas disponible ou n’est plus publiée sur BIB.",
+              )}
             </p>
 
             <Link
@@ -571,7 +434,7 @@ export default function StoreBoutique() {
             >
               <ArrowLeft className="h-4 w-4" />
 
-              Retour au Store
+              {translateUi("Retour au Store")}
             </Link>
           </div>
         </div>
@@ -579,8 +442,7 @@ export default function StoreBoutique() {
     );
   }
 
-  const displayedProducts =
-    products.slice(0, 8);
+  const displayedProducts = products.slice(0, 8);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -597,7 +459,7 @@ export default function StoreBoutique() {
             <ArrowLeft className="h-4 w-4" />
 
             <span className="hidden sm:inline">
-              Retour au Store
+              {translateUi("Retour au Store")}
             </span>
           </Link>
 
@@ -615,34 +477,30 @@ export default function StoreBoutique() {
             )}
 
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold">
-                {boutique.name}
-              </p>
+              <p className="truncate text-sm font-semibold">{boutique.name}</p>
 
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
 
-                Vérifiée par BIB
+                {translateUi("Vérifiée par BIB")}
               </div>
             </div>
           </div>
 
           <button
             type="button"
-            onClick={() =>
-              void handleToggleFavorite()
-            }
+            onClick={() => void handleToggleFavorite()}
             disabled={favoritesLoading}
             aria-label={
               boutiqueIsFavorite
-                ? `Retirer ${boutique.name} des favoris`
-                : `Ajouter ${boutique.name} aux favoris`
+                ? translateUi("Retirer {v0} des favoris", { v0: boutique.name })
+                : translateUi("Ajouter {v0} aux favoris", { v0: boutique.name })
             }
             aria-pressed={boutiqueIsFavorite}
             title={
               boutiqueIsFavorite
-                ? "Retirer des favoris"
-                : "Ajouter aux favoris"
+                ? translateUi("Retirer des favoris")
+                : translateUi("Ajouter aux favoris")
             }
             className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border bg-background transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
           >
@@ -651,11 +509,7 @@ export default function StoreBoutique() {
             ) : (
               <Heart
                 className="h-5 w-5"
-                fill={
-                  boutiqueIsFavorite
-                    ? "currentColor"
-                    : "none"
-                }
+                fill={boutiqueIsFavorite ? "currentColor" : "none"}
                 strokeWidth={1.8}
               />
             )}
@@ -690,7 +544,7 @@ export default function StoreBoutique() {
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
                         <CheckCircle2 className="h-3.5 w-3.5" />
 
-                        Verified by BIB
+                        {translateUi("Verified by BIB")}
                       </span>
 
                       {boutique.category && (
@@ -719,9 +573,7 @@ export default function StoreBoutique() {
                     <div className="mt-5 flex flex-wrap gap-3">
                       <button
                         type="button"
-                        onClick={() =>
-                          void handleToggleFavorite()
-                        }
+                        onClick={() => void handleToggleFavorite()}
                         disabled={favoritesLoading}
                         className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/30 bg-black/20 px-4 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-black/30 disabled:cursor-not-allowed disabled:opacity-60"
                       >
@@ -730,25 +582,20 @@ export default function StoreBoutique() {
                         ) : (
                           <Heart
                             className="h-4 w-4"
-                            fill={
-                              boutiqueIsFavorite
-                                ? "currentColor"
-                                : "none"
-                            }
+                            fill={boutiqueIsFavorite ? "currentColor" : "none"}
                           />
                         )}
 
                         {boutiqueIsFavorite
-                          ? "Dans mes favoris"
-                          : "Ajouter aux favoris"}
+                          ? translateUi("Dans mes favoris")
+                          : translateUi("Ajouter aux favoris")}
                       </button>
 
                       <Link
                         to={merchantBoutiqueUrl}
-                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-card px-4 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90"
                       >
-                        Visiter la boutique
-
+                        {translateUi("Visiter la boutique")}
                         <ExternalLink className="h-4 w-4" />
                       </Link>
                     </div>
@@ -771,14 +618,13 @@ export default function StoreBoutique() {
               </div>
 
               <h2 className="font-semibold">
-                Boutique vérifiée
+                {translateUi("Boutique vérifiée")}
               </h2>
 
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                BIB référence des boutiques
-                sélectionnées et vérifiées
-                avant leur présence dans
-                son réseau.
+                {translateUi(
+                  "BIB référence des boutiques sélectionnées et vérifiées avant leur présence dans son réseau.",
+                )}
               </p>
             </div>
 
@@ -788,14 +634,13 @@ export default function StoreBoutique() {
               </div>
 
               <h2 className="font-semibold">
-                Découvrir avant d’acheter
+                {translateUi("Découvrir avant d’acheter")}
               </h2>
 
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Le Store BIB sert à découvrir
-                les produits et les boutiques.
-                L’achat se poursuit ensuite
-                directement sur la boutique.
+                {translateUi(
+                  "Le Store BIB sert à découvrir les produits et les boutiques. L’achat se poursuit ensuite directement sur la boutique.",
+                )}
               </p>
             </div>
 
@@ -804,15 +649,12 @@ export default function StoreBoutique() {
                 <Leaf className="h-5 w-5" />
               </div>
 
-              <h2 className="font-semibold">
-                Réseau BIB
-              </h2>
+              <h2 className="font-semibold">{translateUi("Réseau BIB")}</h2>
 
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                BIB organise sa sélection
-                autour de la confiance, de
-                la traçabilité et de la
-                visibilité des marchands.
+                {translateUi(
+                  "BIB organise sa sélection autour de la confiance, de la traçabilité et de la visibilité des marchands.",
+                )}
               </p>
             </div>
           </div>
@@ -826,18 +668,17 @@ export default function StoreBoutique() {
           <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">
-                Sélection BIB
+                {translateUi("Sélection BIB")}
               </p>
 
               <h2 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
-                Produits de{" "}
-                {boutique.name}
+                {translateUi("Produits de")} {boutique.name}
               </h2>
 
               <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Découvrez une sélection
-                des produits proposés par
-                cette boutique.
+                {translateUi(
+                  "Découvrez une sélection des produits proposés par cette boutique.",
+                )}
               </p>
             </div>
 
@@ -846,8 +687,7 @@ export default function StoreBoutique() {
                 to={merchantProductsUrl}
                 className="inline-flex items-center gap-2 text-sm font-medium hover:underline"
               >
-                Voir tous les produits
-
+                {translateUi("Voir tous les produits")}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             )}
@@ -855,108 +695,100 @@ export default function StoreBoutique() {
 
           {productsQuery.isError ? (
             <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
-              Impossible de charger les
-              produits de cette boutique.
+              {translateUi(
+                "Impossible de charger les produits de cette boutique.",
+              )}
             </div>
-          ) : displayedProducts.length ===
-            0 ? (
+          ) : displayedProducts.length === 0 ? (
             <div className="rounded-xl border bg-card p-10 text-center">
               <ShoppingBag className="mx-auto mb-4 h-9 w-9 text-muted-foreground" />
 
               <h3 className="font-semibold">
-                Aucun produit disponible
+                {translateUi("Aucun produit disponible")}
               </h3>
 
               <p className="mt-2 text-sm text-muted-foreground">
-                Cette boutique ne possède
-                actuellement aucun produit
-                publié.
+                {translateUi(
+                  "Cette boutique ne possède actuellement aucun produit publié.",
+                )}
               </p>
 
               <Link
                 to={merchantBoutiqueUrl}
                 className="mt-5 inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium hover:bg-muted"
               >
-                Visiter la boutique
-
+                {translateUi("Visiter la boutique")}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
-              {displayedProducts.map(
-                (product) => (
-                  <Link
-                    key={product.id}
-                    to={`/store/product/${product.id}`}
-                    className="group overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-md"
-                  >
-                    <div className="relative aspect-square overflow-hidden bg-muted">
-                      {product.imageUrl ? (
-                        <img
-                          src={product.imageUrl}
-                          alt={product.name}
-                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center">
-                          <ShoppingBag className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                      )}
+              {displayedProducts.map((product) => (
+                <Link
+                  key={product.id}
+                  to={`/store/product/${product.id}`}
+                  className="group overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-md"
+                >
+                  <div className="relative aspect-square overflow-hidden bg-muted">
+                    {product.imageUrl ? (
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <ShoppingBag className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    )}
 
-                      {product.cumulativeSales >
-                        0 && (
-                        <span className="absolute left-2 top-2 rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-medium backdrop-blur">
-                          Populaire
+                    {product.cumulativeSales > 0 && (
+                      <span className="absolute left-2 top-2 rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-medium backdrop-blur">
+                        {translateUi("Populaire")}
+                      </span>
+                    )}
+
+                    {product.stockQuantity > 0 &&
+                      product.stockQuantity <= 5 && (
+                        <span className="absolute bottom-2 left-2 rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-medium backdrop-blur">
+                          {translateUi("Plus que")} {product.stockQuantity}
                         </span>
                       )}
+                  </div>
 
-                      {product.stockQuantity > 0 &&
-                        product.stockQuantity <= 5 && (
-                          <span className="absolute bottom-2 left-2 rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-medium backdrop-blur">
-                            Plus que{" "}
-                            {product.stockQuantity}
-                          </span>
-                        )}
-                    </div>
-
-                    <div className="p-3.5 sm:p-4">
-                      {product.category && (
-                        <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-                          {product.category}
-                        </p>
-                      )}
-
-                      <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-medium leading-5">
-                        {product.name}
-                      </h3>
-
-                      <p className="mt-2 text-sm font-semibold">
-                        {formatPrice(product.price)}
+                  <div className="p-3.5 sm:p-4">
+                    {product.category && (
+                      <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                        {product.category}
                       </p>
+                    )}
 
-                      <div className="mt-3 flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
-                        Découvrir
+                    <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-medium leading-5">
+                      {product.name}
+                    </h3>
 
-                        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-                      </div>
+                    <p className="mt-2 text-sm font-semibold">
+                      {formatPrice(product.price)}
+                    </p>
+
+                    <div className="mt-3 flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
+                      {translateUi("Découvrir")}
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                     </div>
-                  </Link>
-                ),
-              )}
+                  </div>
+                </Link>
+              ))}
             </div>
           )}
 
-          {products.length >
-            displayedProducts.length && (
+          {products.length > displayedProducts.length && (
             <div className="mt-8 text-center">
               <Link
                 to={merchantProductsUrl}
                 className="inline-flex items-center gap-2 rounded-lg border px-5 py-3 text-sm font-medium transition-colors hover:bg-muted"
               >
-                Découvrir tous les produits
-
+                {translateUi("Découvrir tous les produits")}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
@@ -974,23 +806,19 @@ export default function StoreBoutique() {
             </div>
 
             <h2 className="mt-5 text-2xl font-semibold tracking-tight sm:text-3xl">
-              Découvrir{" "}
-              {boutique.name}
+              {translateUi("Découvrir")} {boutique.name}
             </h2>
 
             <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-              Consultez le catalogue complet
-              et poursuivez directement
-              vers la boutique pour vos
-              achats.
+              {translateUi(
+                "Consultez le catalogue complet et poursuivez directement vers la boutique pour vos achats.",
+              )}
             </p>
 
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <button
                 type="button"
-                onClick={() =>
-                  void handleToggleFavorite()
-                }
+                onClick={() => void handleToggleFavorite()}
                 disabled={favoritesLoading}
                 className="inline-flex items-center gap-2 rounded-lg border bg-background px-5 py-3 text-sm font-semibold transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
               >
@@ -999,26 +827,20 @@ export default function StoreBoutique() {
                 ) : (
                   <Heart
                     className="h-4 w-4"
-                    fill={
-                      boutiqueIsFavorite
-                        ? "currentColor"
-                        : "none"
-                    }
+                    fill={boutiqueIsFavorite ? "currentColor" : "none"}
                   />
                 )}
 
                 {boutiqueIsFavorite
-                  ? "Dans mes favoris"
-                  : "Ajouter aux favoris"}
+                  ? translateUi("Dans mes favoris")
+                  : translateUi("Ajouter aux favoris")}
               </button>
 
               <Link
                 to={merchantBoutiqueUrl}
                 className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
-                Visiter{" "}
-                {boutique.name}
-
+                {translateUi("Visiter")} {boutique.name}
                 <ExternalLink className="h-4 w-4" />
               </Link>
             </div>
@@ -1032,10 +854,7 @@ export default function StoreBoutique() {
 
       <footer className="border-t">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <p>
-            © {new Date().getFullYear()} BIB —
-            Brand-in-a-box
-          </p>
+          <p>© {new Date().getFullYear()} BIB — Brand-in-a-box</p>
 
           <div className="flex items-center gap-4">
             <Link
@@ -1049,7 +868,7 @@ export default function StoreBoutique() {
               to="/a-propos"
               className="transition-colors hover:text-foreground"
             >
-              À propos
+              {translateUi("À propos")}
             </Link>
           </div>
         </div>

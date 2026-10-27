@@ -1,5 +1,16 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
-import { Plus, Trash2, Eye, EyeOff, Loader2, FileText, Layout, ExternalLink } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Eye,
+  EyeOff,
+  Loader2,
+  FileText,
+  Layout,
+  ExternalLink,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +48,7 @@ interface Props {
 }
 
 export function PagesManager({ boutiqueId, boutiqueSlug }: Props) {
+  useLanguage();
   const { data: pages = [], isLoading } = useBoutiquePages(boutiqueId);
   const createPage = useCreateBoutiquePage();
   const updatePage = useUpdateBoutiquePage();
@@ -57,12 +69,12 @@ export function PagesManager({ boutiqueId, boutiqueSlug }: Props) {
         title: newTitle.trim(),
         mode: newMode,
       });
-      toast.success("Page créée");
+      toast.success(translateUi("Page créée"));
       setCreating(false);
       setNewTitle("");
       setEditing(page);
     } catch (e: any) {
-      toast.error(e.message || "Création impossible");
+      toast.error(e.message || translateUi("Création impossible"));
     }
   }
 
@@ -81,9 +93,9 @@ export function PagesManager({ boutiqueId, boutiqueSlug }: Props) {
     try {
       const url = await upload.mutateAsync({ boutiqueId, file });
       await saveEditing({ hero_image_url: url });
-      toast.success("Image téléchargée");
+      toast.success(translateUi("Image téléchargée"));
     } catch (e: any) {
-      toast.error(e.message || "Échec de l'upload");
+      toast.error(e.message || translateUi("Échec de l'upload"));
     }
   }
 
@@ -91,14 +103,17 @@ export function PagesManager({ boutiqueId, boutiqueSlug }: Props) {
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-base font-semibold">Pages personnalisées</h3>
+          <h3 className="text-base font-semibold">
+            {translateUi("Pages personnalisées")}
+          </h3>
           <p className="text-xs text-muted-foreground mt-1">
-            Crée des pages enrichies (à propos, lookbook, blog…) qui apparaissent dans
-            le menu de ta boutique.
+            {translateUi(
+              "Crée des pages enrichies (à propos, lookbook, blog…) qui apparaissent dans le menu de ta boutique.",
+            )}
           </p>
         </div>
         <Button size="sm" onClick={() => setCreating(true)} className="gap-1">
-          <Plus className="w-3.5 h-3.5" /> Nouvelle page
+          <Plus className="w-3.5 h-3.5" /> {translateUi("Nouvelle page")}
         </Button>
       </div>
 
@@ -108,7 +123,9 @@ export function PagesManager({ boutiqueId, boutiqueSlug }: Props) {
         </div>
       ) : pages.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          Aucune page personnalisée. Crée une première page pour enrichir ta boutique.
+          {translateUi(
+            "Aucune page personnalisée. Crée une première page pour enrichir ta boutique.",
+          )}
         </div>
       ) : (
         <div className="space-y-2">
@@ -128,22 +145,34 @@ export function PagesManager({ boutiqueId, boutiqueSlug }: Props) {
                 )}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm truncate">{p.title}</span>
+                    <span className="font-medium text-sm truncate">
+                      {p.title}
+                    </span>
                     {!p.is_visible && (
-                      <Badge variant="secondary" className="text-[10px]">Masquée</Badge>
+                      <Badge variant="secondary" className="text-[10px]">
+                        {translateUi("Masquée")}
+                      </Badge>
                     )}
                     {!p.show_in_nav && (
-                      <Badge variant="outline" className="text-[10px]">Hors menu</Badge>
+                      <Badge variant="outline" className="text-[10px]">
+                        {translateUi("Hors menu")}
+                      </Badge>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground truncate">/{p.slug}</p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    /{p.slug}
+                  </p>
                 </div>
               </button>
               <div className="flex items-center gap-1">
                 <button
                   type="button"
                   className="h-7 w-7 inline-flex items-center justify-center rounded hover:bg-muted"
-                  title={p.is_visible ? "Masquer" : "Afficher"}
+                  title={
+                    p.is_visible
+                      ? translateUi("Masquer")
+                      : translateUi("Afficher")
+                  }
                   onClick={() =>
                     updatePage.mutate({
                       pageId: p.id,
@@ -164,7 +193,7 @@ export function PagesManager({ boutiqueId, boutiqueSlug }: Props) {
                     target="_blank"
                     rel="noreferrer"
                     className="h-7 w-7 inline-flex items-center justify-center rounded hover:bg-muted"
-                    title="Voir"
+                    title={translateUi("Voir")}
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
@@ -172,17 +201,28 @@ export function PagesManager({ boutiqueId, boutiqueSlug }: Props) {
                 <button
                   type="button"
                   className="h-7 w-7 inline-flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
-                  title="Supprimer"
+                  title={translateUi("Supprimer")}
                   onClick={() => {
-                    if (confirm(`Supprimer la page « ${p.title} » ?`)) {
+                    if (
+                      confirm(
+                        translateUi("Supprimer la page « {v0} » ?", {
+                          v0: p.title,
+                        }),
+                      )
+                    ) {
                       deletePage.mutate(
                         { pageId: p.id, boutiqueId },
                         {
-                          onSuccess: () => toast.success(`Page « ${p.title} » supprimée`),
+                          onSuccess: () =>
+                            toast.success(
+                              translateUi("Page « {v0} » supprimée", {
+                                v0: p.title,
+                              }),
+                            ),
                           onError: (e: any) =>
                             toast.error(
-                              "Suppression impossible : " +
-                                (e?.message || "erreur inconnue"),
+                              translateUi("Suppression impossible : ") +
+                                (e?.message || translateUi("erreur inconnue")),
                             ),
                         },
                       );
@@ -201,33 +241,39 @@ export function PagesManager({ boutiqueId, boutiqueSlug }: Props) {
       <Dialog open={creating} onOpenChange={setCreating}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nouvelle page</DialogTitle>
+            <DialogTitle>{translateUi("Nouvelle page")}</DialogTitle>
             <DialogDescription>
-              Choisis un mode : simple (titre + image + texte riche) ou riche (scènes
-              drag&drop comme la page d'accueil).
+              {translateUi(
+                "Choisis un mode : simple (titre + image + texte riche) ou riche (scènes drag&drop comme la page d'accueil).",
+              )}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>Titre</Label>
+              <Label>{translateUi("Titre")}</Label>
               <Input
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
-                placeholder="Ex. À propos, Notre engagement, Blog"
+                placeholder={translateUi(
+                  "Ex. À propos, Notre engagement, Blog",
+                )}
               />
             </div>
             <div>
               <Label>Mode</Label>
-              <Select value={newMode} onValueChange={(v) => setNewMode(v as any)}>
+              <Select
+                value={newMode}
+                onValueChange={(v) => setNewMode(v as any)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="simple">
-                    Simple — titre + image + texte
+                    {translateUi("Simple — titre + image + texte")}
                   </SelectItem>
                   <SelectItem value="rich">
-                    Riche — scènes drag&drop comme la home
+                    {translateUi("Riche — scènes drag&drop comme la home")}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -235,13 +281,16 @@ export function PagesManager({ boutiqueId, boutiqueSlug }: Props) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreating(false)}>
-              Annuler
+              {translateUi("Annuler")}
             </Button>
-            <Button onClick={handleCreate} disabled={createPage.isPending || !newTitle.trim()}>
+            <Button
+              onClick={handleCreate}
+              disabled={createPage.isPending || !newTitle.trim()}
+            >
               {createPage.isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
               ) : null}
-              Créer
+              {translateUi("Créer")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -253,17 +302,20 @@ export function PagesManager({ boutiqueId, boutiqueSlug }: Props) {
           {editing && (
             <>
               <DialogHeader>
-                <DialogTitle>Éditer la page</DialogTitle>
+                <DialogTitle>{translateUi("Éditer la page")}</DialogTitle>
                 <DialogDescription>
-                  /{editing.slug} · mode {editing.mode === "rich" ? "riche" : "simple"}
+                  /{editing.slug} · mode{" "}
+                  {editing.mode === "rich" ? "riche" : "simple"}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label>Titre</Label>
+                  <Label>{translateUi("Titre")}</Label>
                   <Input
                     value={editing.title}
-                    onChange={(e) => setEditing({ ...editing, title: e.target.value })}
+                    onChange={(e) =>
+                      setEditing({ ...editing, title: e.target.value })
+                    }
                     onBlur={() => saveEditing({ title: editing.title })}
                   />
                 </div>
@@ -287,7 +339,7 @@ export function PagesManager({ boutiqueId, boutiqueSlug }: Props) {
                 {editing.mode === "simple" && (
                   <>
                     <div>
-                      <Label>Image hero</Label>
+                      <Label>{translateUi("Image hero")}</Label>
                       <div className="mt-1 flex items-center gap-2">
                         {editing.hero_image_url && (
                           <img
@@ -300,7 +352,9 @@ export function PagesManager({ boutiqueId, boutiqueSlug }: Props) {
                           {upload.isPending ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
                           ) : null}
-                          {editing.hero_image_url ? "Remplacer" : "Téléverser"}
+                          {editing.hero_image_url
+                            ? translateUi("Remplacer")
+                            : translateUi("Téléverser")}
                           <input
                             type="file"
                             accept="image/*"
@@ -315,19 +369,23 @@ export function PagesManager({ boutiqueId, boutiqueSlug }: Props) {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => saveEditing({ hero_image_url: null })}
+                            onClick={() =>
+                              saveEditing({ hero_image_url: null })
+                            }
                           >
-                            Retirer
+                            {translateUi("Retirer")}
                           </Button>
                         )}
                       </div>
                     </div>
                     <div>
-                      <Label>Contenu (markdown / texte)</Label>
+                      <Label>{translateUi("Contenu (markdown / texte)")}</Label>
                       <Textarea
                         rows={10}
                         value={editing.content || ""}
-                        onChange={(e) => setEditing({ ...editing, content: e.target.value })}
+                        onChange={(e) =>
+                          setEditing({ ...editing, content: e.target.value })
+                        }
                         onBlur={() => saveEditing({ content: editing.content })}
                         placeholder={`# Mon titre\n\nÉcris ton contenu ici. Tu peux utiliser **gras**, *italique*, et des sauts de ligne.`}
                         className="font-mono text-sm"
@@ -338,17 +396,20 @@ export function PagesManager({ boutiqueId, boutiqueSlug }: Props) {
 
                 {editing.mode === "rich" && (
                   <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
-                    Mode riche : utilise l'éditeur de scènes principal (onglet Scènes)
-                    pour personnaliser cette page. Bientôt : éditeur dédié par page.
+                    {translateUi(
+                      "Mode riche : utilise l'éditeur de scènes principal (onglet Scènes) pour personnaliser cette page. Bientôt : éditeur dédié par page.",
+                    )}
                   </div>
                 )}
 
                 <div className="border-t border-border pt-3 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label className="text-sm">Visible publiquement</Label>
+                      <Label className="text-sm">
+                        {translateUi("Visible publiquement")}
+                      </Label>
                       <p className="text-xs text-muted-foreground">
-                        La page est accessible via son URL.
+                        {translateUi("La page est accessible via son URL.")}
                       </p>
                     </div>
                     <Switch
@@ -358,9 +419,13 @@ export function PagesManager({ boutiqueId, boutiqueSlug }: Props) {
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label className="text-sm">Afficher dans le menu</Label>
+                      <Label className="text-sm">
+                        {translateUi("Afficher dans le menu")}
+                      </Label>
                       <p className="text-xs text-muted-foreground">
-                        Lien visible dans la navigation de la boutique.
+                        {translateUi(
+                          "Lien visible dans la navigation de la boutique.",
+                        )}
                       </p>
                     </div>
                     <Switch
@@ -371,24 +436,37 @@ export function PagesManager({ boutiqueId, boutiqueSlug }: Props) {
                 </div>
 
                 <div className="border-t border-border pt-3 space-y-2">
-                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">SEO</Label>
+                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                    SEO
+                  </Label>
                   <Input
-                    placeholder="Meta title"
+                    placeholder={translateUi("Meta title")}
                     value={editing.seo_title || ""}
-                    onChange={(e) => setEditing({ ...editing, seo_title: e.target.value })}
+                    onChange={(e) =>
+                      setEditing({ ...editing, seo_title: e.target.value })
+                    }
                     onBlur={() => saveEditing({ seo_title: editing.seo_title })}
                   />
                   <Textarea
-                    placeholder="Meta description"
+                    placeholder={translateUi("Meta description")}
                     rows={2}
                     value={editing.seo_description || ""}
-                    onChange={(e) => setEditing({ ...editing, seo_description: e.target.value })}
-                    onBlur={() => saveEditing({ seo_description: editing.seo_description })}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        seo_description: e.target.value,
+                      })
+                    }
+                    onBlur={() =>
+                      saveEditing({ seo_description: editing.seo_description })
+                    }
                   />
                 </div>
               </div>
               <DialogFooter>
-                <Button onClick={() => setEditing(null)}>Fermer</Button>
+                <Button onClick={() => setEditing(null)}>
+                  {translateUi("Fermer")}
+                </Button>
               </DialogFooter>
             </>
           )}

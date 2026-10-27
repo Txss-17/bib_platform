@@ -1,10 +1,7 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
-import {
-  Minus,
-  Plus,
-  ShoppingBag,
-  Trash2,
-} from "lucide-react";
+import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 
 import {
   Sheet,
@@ -31,6 +28,7 @@ export function CartDrawer({
   boutiqueId,
   boutiqueName,
 }: CartDrawerProps) {
+  useLanguage();
   const {
     items,
     isOpen,
@@ -41,11 +39,9 @@ export function CartDrawer({
     totalItems,
   } = useCart();
 
-  const [showCheckout, setShowCheckout] =
-    useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
 
-  const storefront =
-    useStorefrontContext();
+  const storefront = useStorefrontContext();
 
   /*
    * StorefrontContext is the canonical source
@@ -54,34 +50,26 @@ export function CartDrawer({
    * Props remain as a fallback for legacy callers
    * and preview contexts.
    */
-  const currentBoutiqueId =
-    storefront?.boutiqueId || boutiqueId;
+  const currentBoutiqueId = storefront?.boutiqueId || boutiqueId;
 
-  const currentBoutiqueName =
-    storefront?.boutiqueName || boutiqueName;
+  const currentBoutiqueName = storefront?.boutiqueName || boutiqueName;
 
   const handleOpenCheckout = () => {
     if (items.length === 0) {
       return;
     }
 
-    trackStorefrontEvent(
-      currentBoutiqueId,
-      "checkout_start",
-      {
-        metadata: {
-          items: totalItems,
-          total: totalPrice,
-        },
+    trackStorefrontEvent(currentBoutiqueId, "checkout_start", {
+      metadata: {
+        items: totalItems,
+        total: totalPrice,
       },
-    );
+    });
 
     setShowCheckout(true);
   };
 
-  const handleClose = (
-    open: boolean,
-  ) => {
+  const handleClose = (open: boolean) => {
     setIsOpen(open);
 
     if (!open) {
@@ -97,26 +85,17 @@ export function CartDrawer({
 
   if (showCheckout) {
     return (
-      <Sheet
-        open={isOpen}
-        onOpenChange={handleClose}
-      >
-        <SheetContent
-          className="flex w-full flex-col overflow-y-auto sm:max-w-lg"
-        >
+      <Sheet open={isOpen} onOpenChange={handleClose}>
+        <SheetContent className="flex w-full flex-col overflow-y-auto sm:max-w-lg">
           <SheetHeader>
-            <SheetTitle>
-              Finaliser votre commande
-            </SheetTitle>
+            <SheetTitle>{translateUi("Finaliser votre commande")}</SheetTitle>
           </SheetHeader>
 
           <CheckoutForm
             boutiqueId={currentBoutiqueId}
             boutiqueName={currentBoutiqueName}
             primaryColor={primaryColor}
-            onBack={() =>
-              setShowCheckout(false)
-            }
+            onBack={() => setShowCheckout(false)}
           />
         </SheetContent>
       </Sheet>
@@ -130,26 +109,15 @@ export function CartDrawer({
    */
 
   return (
-    <Sheet
-      open={isOpen}
-      onOpenChange={handleClose}
-    >
-      <SheetContent
-        className="flex w-full flex-col sm:max-w-lg"
-      >
+    <Sheet open={isOpen} onOpenChange={handleClose}>
+      <SheetContent className="flex w-full flex-col sm:max-w-lg">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
-            <ShoppingBag
-              className="h-5 w-5"
-              aria-hidden="true"
-            />
+            <ShoppingBag className="h-5 w-5" aria-hidden="true" />
 
-            Panier
-
+            {translateUi("Panier")}
             {totalItems > 0 && (
-              <span className="text-muted-foreground">
-                ({totalItems})
-              </span>
+              <span className="text-muted-foreground">({totalItems})</span>
             )}
           </SheetTitle>
         </SheetHeader>
@@ -163,12 +131,11 @@ export function CartDrawer({
               />
 
               <p className="font-medium">
-                Votre panier est vide
+                {translateUi("Votre panier est vide")}
               </p>
 
               <p className="mt-1 text-sm text-gray-400">
-                Ajoutez des produits pour
-                commencer.
+                {translateUi("Ajoutez des produits pour commencer.")}
               </p>
             </div>
           </div>
@@ -219,23 +186,22 @@ export function CartDrawer({
                       <button
                         type="button"
                         onClick={() =>
-                          updateQuantity(
-                            item.id,
-                            item.quantity - 1,
-                          )
+                          updateQuantity(item.id, item.quantity - 1)
                         }
-                        aria-label={`Diminuer la quantité de ${item.name}`}
+                        aria-label={translateUi(
+                          "Diminuer la quantité de {v0}",
+                          { v0: item.name },
+                        )}
                         className="flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 hover:bg-gray-50"
                       >
-                        <Minus
-                          className="h-3 w-3"
-                          aria-hidden="true"
-                        />
+                        <Minus className="h-3 w-3" aria-hidden="true" />
                       </button>
 
                       <span
                         className="w-6 text-center text-sm font-medium"
-                        aria-label={`Quantité : ${item.quantity}`}
+                        aria-label={translateUi("Quantité : {v0}", {
+                          v0: item.quantity,
+                        })}
                       >
                         {item.quantity}
                       </span>
@@ -243,32 +209,26 @@ export function CartDrawer({
                       <button
                         type="button"
                         onClick={() =>
-                          updateQuantity(
-                            item.id,
-                            item.quantity + 1,
-                          )
+                          updateQuantity(item.id, item.quantity + 1)
                         }
-                        aria-label={`Augmenter la quantité de ${item.name}`}
+                        aria-label={translateUi(
+                          "Augmenter la quantité de {v0}",
+                          { v0: item.name },
+                        )}
                         className="flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 hover:bg-gray-50"
                       >
-                        <Plus
-                          className="h-3 w-3"
-                          aria-hidden="true"
-                        />
+                        <Plus className="h-3 w-3" aria-hidden="true" />
                       </button>
 
                       <button
                         type="button"
-                        onClick={() =>
-                          removeItem(item.id)
-                        }
-                        aria-label={`Supprimer ${item.name} du panier`}
+                        onClick={() => removeItem(item.id)}
+                        aria-label={translateUi("Supprimer {v0} du panier", {
+                          v0: item.name,
+                        })}
                         className="ml-auto flex h-7 w-7 items-center justify-center rounded-md text-red-500 hover:bg-red-50"
                       >
-                        <Trash2
-                          className="h-3.5 w-3.5"
-                          aria-hidden="true"
-                        />
+                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                       </button>
                     </div>
                   </div>
@@ -283,18 +243,16 @@ export function CartDrawer({
             <div className="space-y-3 border-t border-gray-200 pt-4">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">
-                  Livraison
+                  {translateUi("Livraison")}
                 </span>
 
                 <span className="font-medium text-green-600">
-                  Incluse
+                  {translateUi("Incluse")}
                 </span>
               </div>
 
               <div className="flex justify-between">
-                <span className="font-semibold text-gray-900">
-                  Total
-                </span>
+                <span className="font-semibold text-gray-900">Total</span>
 
                 <span
                   className="text-lg font-bold"
@@ -310,22 +268,17 @@ export function CartDrawer({
                 type="button"
                 className="w-full text-white"
                 style={{
-                  backgroundColor:
-                    primaryColor,
+                  backgroundColor: primaryColor,
                 }}
-                onClick={
-                  handleOpenCheckout
-                }
+                onClick={handleOpenCheckout}
               >
-                Finaliser la commande
+                {translateUi("Finaliser la commande")}
               </Button>
 
               <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
-                Vous êtes sur le site de{" "}
-                {currentBoutiqueName}.
+                {translateUi("Vous êtes sur le site de")} {currentBoutiqueName}.
                 <br />
-                Votre commande est traitée
-                par cette boutique.
+                {translateUi("Votre commande est traitée par cette boutique.")}
               </p>
             </div>
           </>

@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,7 +24,10 @@ interface SalesMapProps {
 }
 
 export function SalesMap({ salesByContinent, salesByCountry }: SalesMapProps) {
-  const [selectedContinent, setSelectedContinent] = useState<string | null>(null);
+  useLanguage();
+  const [selectedContinent, setSelectedContinent] = useState<string | null>(
+    null,
+  );
 
   const handleBack = () => setSelectedContinent(null);
 
@@ -30,8 +35,8 @@ export function SalesMap({ salesByContinent, salesByCountry }: SalesMapProps) {
 
   // Filter countries for selected continent
   const filteredCountries = selectedContinent
-    ? salesByCountry.filter(
-        (s) => continents[selectedContinent]?.countries.includes(s.location)
+    ? salesByCountry.filter((s) =>
+        continents[selectedContinent]?.countries.includes(s.location),
       )
     : [];
 
@@ -52,13 +57,13 @@ export function SalesMap({ salesByContinent, salesByCountry }: SalesMapProps) {
             <div>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Globe className="w-5 h-5 text-primary" />
-                Ventes par zone géographique
+                {translateUi("Ventes par zone géographique")}
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">{breadcrumb}</p>
             </div>
           </div>
           <Badge variant="secondary" className="text-xs">
-            Temps réel
+            {translateUi("Temps réel")}
           </Badge>
         </div>
       </CardHeader>
@@ -76,10 +81,7 @@ export function SalesMap({ salesByContinent, salesByCountry }: SalesMapProps) {
         {/* Data Table */}
         <div className="rounded-xl border border-border/50 overflow-hidden">
           {selectedContinent ? (
-            <SalesTable
-              data={filteredCountries}
-              level="country"
-            />
+            <SalesTable data={filteredCountries} level="country" />
           ) : (
             <SalesTable
               data={salesByContinent}

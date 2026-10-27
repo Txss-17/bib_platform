@@ -1,3 +1,4 @@
+import { translateUi } from "@/lib/uiTranslation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,7 +37,11 @@ export function useSampleValidation(productId: string) {
         .maybeSingle();
 
       if (error) throw error;
-      return (data as any as SampleValidation | null) || { status: "none" as SampleStatus };
+      return (
+        (data as any as SampleValidation | null) || {
+          status: "none" as SampleStatus,
+        }
+      );
     },
     enabled: !!user && !!productId,
   });
@@ -54,8 +59,17 @@ export function useSampleValidations() {
         .eq("user_id", user!.id);
 
       if (error) throw error;
-      const result: Record<string, { status: SampleStatus; photo_url?: string; comment?: string; ordered_at?: string; validated_at?: string }> = {};
-      for (const row of (data as any as SampleValidation[])) {
+      const result: Record<
+        string,
+        {
+          status: SampleStatus;
+          photo_url?: string;
+          comment?: string;
+          ordered_at?: string;
+          validated_at?: string;
+        }
+      > = {};
+      for (const row of data as any as SampleValidation[]) {
         result[row.product_id] = {
           status: row.status,
           photo_url: row.photo_url || undefined,
@@ -76,14 +90,15 @@ export function useOrderSample() {
 
   return useMutation({
     mutationFn: async (productId: string) => {
-      const { error } = await supabase
-        .from("sample_validations" as any)
-        .upsert({
+      const { error } = await supabase.from("sample_validations" as any).upsert(
+        {
           product_id: productId,
           user_id: user!.id,
           status: "ordered",
           ordered_at: new Date().toISOString(),
-        } as any, { onConflict: "product_id,user_id" });
+        } as any,
+        { onConflict: "product_id,user_id" },
+      );
 
       if (error) throw error;
     },
@@ -120,7 +135,15 @@ export function useValidateSample() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ productId, comment, photoUrl }: { productId: string; comment?: string; photoUrl?: string }) => {
+    mutationFn: async ({
+      productId,
+      comment,
+      photoUrl,
+    }: {
+      productId: string;
+      comment?: string;
+      photoUrl?: string;
+    }) => {
       const { error: valError } = await supabase
         .from("sample_validations" as any)
         .update({
@@ -170,18 +193,16 @@ export function useReviewSample() {
       status: "to_validate" | "rejected";
       comment?: string;
     }) => {
-      const { error } = await supabase
-        .from("sample_validations" as any)
-        .upsert(
-          {
-            product_id: productId,
-            user_id: user!.id,
-            status,
-            comment: comment ?? null,
-            validated_at: new Date().toISOString(),
-          } as any,
-          { onConflict: "product_id,user_id" },
-        );
+      const { error } = await supabase.from("sample_validations" as any).upsert(
+        {
+          product_id: productId,
+          user_id: user!.id,
+          status,
+          comment: comment ?? null,
+          validated_at: new Date().toISOString(),
+        } as any,
+        { onConflict: "product_id,user_id" },
+      );
       if (error) throw error;
 
       // Rejected products must not stay published.
@@ -202,22 +223,34 @@ export function useReviewSample() {
 
 export function getSampleStatusLabel(status: SampleStatus): string {
   switch (status) {
-    case "none": return "Échantillon requis";
-    case "ordered": return "Échantillon commandé";
-    case "received": return "Échantillon reçu";
-    case "validated": return "Validé ✓";
-    case "to_validate": return "À valider";
-    case "rejected": return "Rejeté";
+    case "none":
+      return "Échantillon requis";
+    case "ordered":
+      return "Échantillon commandé";
+    case "received":
+      return "Échantillon reçu";
+    case "validated":
+      return translateUi("Validé ✓");
+    case "to_validate":
+      return "À valider";
+    case "rejected":
+      return "Rejeté";
   }
 }
 
 export function getSampleStatusColor(status: SampleStatus): string {
   switch (status) {
-    case "none": return "text-orange-600 bg-orange-100 border-orange-200";
-    case "ordered": return "text-blue-600 bg-blue-100 border-blue-200";
-    case "received": return "text-yellow-600 bg-yellow-100 border-yellow-200";
-    case "validated": return "text-green-600 bg-green-100 border-green-200";
-    case "to_validate": return "text-amber-700 bg-amber-100 border-amber-200";
-    case "rejected": return "text-red-700 bg-red-100 border-red-200";
+    case "none":
+      return "text-orange-600 bg-orange-100 border-orange-200";
+    case "ordered":
+      return "text-blue-600 bg-blue-100 border-blue-200";
+    case "received":
+      return "text-yellow-600 bg-yellow-100 border-yellow-200";
+    case "validated":
+      return "text-green-600 bg-green-100 border-green-200";
+    case "to_validate":
+      return "text-amber-700 bg-amber-100 border-amber-200";
+    case "rejected":
+      return "text-red-700 bg-red-100 border-red-200";
   }
 }

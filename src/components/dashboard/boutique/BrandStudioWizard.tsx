@@ -1,12 +1,10 @@
+import { studioOptionLabel } from "@/lib/studioOptionLabels";
+
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  Loader2,
-  Sparkles,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -32,29 +30,59 @@ interface Props {
 
 const STEPS = [
   {
-    title: "Les fondations",
-    shortTitle: "Fondations",
-    description: "Ce que votre marque fait réellement.",
+    get title() {
+      return translateUi("Les fondations");
+    },
+    get shortTitle() {
+      return translateUi("Fondations");
+    },
+    get description() {
+      return translateUi("Ce que votre marque fait réellement.");
+    },
   },
   {
-    title: "Le client & la promesse",
-    shortTitle: "Client",
-    description: "Pour qui vous existez et pourquoi.",
+    get title() {
+      return translateUi("Le client & la promesse");
+    },
+    get shortTitle() {
+      return translateUi("Client");
+    },
+    get description() {
+      return translateUi("Pour qui vous existez et pourquoi.");
+    },
   },
   {
-    title: "Le territoire visuel",
-    shortTitle: "Univers",
-    description: "L'univers dans lequel votre marque doit évoluer.",
+    get title() {
+      return translateUi("Le territoire visuel");
+    },
+    get shortTitle() {
+      return translateUi("Univers");
+    },
+    get description() {
+      return translateUi("L'univers dans lequel votre marque doit évoluer.");
+    },
   },
   {
-    title: "La personnalité & la voix",
-    shortTitle: "Voix",
-    description: "La manière dont votre marque pense et s'exprime.",
+    get title() {
+      return translateUi("La personnalité & la voix");
+    },
+    get shortTitle() {
+      return translateUi("Voix");
+    },
+    get description() {
+      return translateUi("La manière dont votre marque pense et s'exprime.");
+    },
   },
   {
-    title: "La direction",
-    shortTitle: "Validation",
-    description: "Votre brief final avant génération.",
+    get title() {
+      return translateUi("La direction");
+    },
+    get shortTitle() {
+      return "Validation";
+    },
+    get description() {
+      return translateUi("Votre brief final avant génération.");
+    },
   },
 ] as const;
 
@@ -91,33 +119,55 @@ const VALUES = [
 const VISUAL_TERRITORIES = [
   {
     value: "editorial",
-    label: "Éditorial premium",
-    description: "Sobre, sophistiqué, direction artistique forte.",
+    get label() {
+      return translateUi("Éditorial premium");
+    },
+    get description() {
+      return translateUi("Sobre, sophistiqué, direction artistique forte.");
+    },
   },
   {
     value: "natural",
-    label: "Naturel & organique",
-    description: "Matières brutes, douceur, authenticité.",
+    get label() {
+      return translateUi("Naturel & organique");
+    },
+    get description() {
+      return translateUi("Matières brutes, douceur, authenticité.");
+    },
   },
   {
     value: "minimal",
     label: "Minimal & architectural",
-    description: "Clarté, espaces, formes précises.",
+    get description() {
+      return translateUi("Clarté, espaces, formes précises.");
+    },
   },
   {
     value: "bold",
-    label: "Audacieux & expressif",
-    description: "Contrastes, caractère et impact visuel.",
+    get label() {
+      return translateUi("Audacieux & expressif");
+    },
+    get description() {
+      return translateUi("Contrastes, caractère et impact visuel.");
+    },
   },
   {
     value: "craft",
-    label: "Artisanal & humain",
-    description: "Texture, geste, savoir-faire et proximité.",
+    get label() {
+      return translateUi("Artisanal & humain");
+    },
+    get description() {
+      return translateUi("Texture, geste, savoir-faire et proximité.");
+    },
   },
   {
     value: "future",
-    label: "Contemporain & futuriste",
-    description: "Innovation, précision et esthétique digitale.",
+    get label() {
+      return translateUi("Contemporain & futuriste");
+    },
+    get description() {
+      return translateUi("Innovation, précision et esthétique digitale.");
+    },
   },
 ] as const;
 
@@ -125,32 +175,54 @@ const MARKET_POSITIONING = [
   {
     value: "accessible" as const,
     label: "Accessible",
-    description: "Une marque facile à adopter.",
+    get description() {
+      return translateUi("Une marque facile à adopter.");
+    },
   },
   {
     value: "milieu_de_gamme" as const,
-    label: "Milieu de gamme",
-    description: "Un équilibre entre valeur, qualité et accessibilité.",
+    get label() {
+      return translateUi("Milieu de gamme");
+    },
+    get description() {
+      return translateUi(
+        "Un équilibre entre valeur, qualité et accessibilité.",
+      );
+    },
   },
   {
     value: "premium" as const,
     label: "Premium",
-    description: "Une expérience et une qualité supérieures.",
+    get description() {
+      return translateUi("Une expérience et une qualité supérieures.");
+    },
   },
   {
     value: "luxe" as const,
-    label: "Luxe / exclusif",
-    description: "Rareté, exigence et forte valeur perçue.",
+    get label() {
+      return translateUi("Luxe / exclusif");
+    },
+    get description() {
+      return translateUi("Rareté, exigence et forte valeur perçue.");
+    },
   },
   {
     value: "expert" as const,
-    label: "Expert / spécialisé",
-    description: "Une marque choisie pour son expertise.",
+    get label() {
+      return translateUi("Expert / spécialisé");
+    },
+    get description() {
+      return translateUi("Une marque choisie pour son expertise.");
+    },
   },
   {
     value: "niche" as const,
     label: "Niche",
-    description: "Une proposition très ciblée pour un public spécifique.",
+    get description() {
+      return translateUi(
+        "Une proposition très ciblée pour un public spécifique.",
+      );
+    },
   },
 ] as const;
 
@@ -190,11 +262,8 @@ function createInitialAnswers(
 }
 
 function FieldHint({ children }: { children: ReactNode }) {
-  return (
-    <p className="text-xs leading-5 text-muted-foreground">
-      {children}
-    </p>
-  );
+  useLanguage();
+  return <p className="text-xs leading-5 text-muted-foreground">{children}</p>;
 }
 
 function SectionTitle({
@@ -206,6 +275,7 @@ function SectionTitle({
   title: string;
   description: string;
 }) {
+  useLanguage();
   return (
     <div className="max-w-3xl space-y-2">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary">
@@ -223,11 +293,8 @@ function SectionTitle({
   );
 }
 
-export function BrandStudioWizard({
-  boutiqueId,
-  category,
-  onComplete,
-}: Props) {
+export function BrandStudioWizard({ boutiqueId, category, onComplete }: Props) {
+  useLanguage();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<StudioAnswers>(() =>
     createInitialAnswers(category),
@@ -272,7 +339,7 @@ export function BrandStudioWizard({
     restoredAnswersForBoutique.current = boutiqueId;
     setAnswers({
       ...createInitialAnswers(category, boutique?.name),
-      ...(studioAnswers as Partial<StudioAnswers> | null ?? {}),
+      ...((studioAnswers as Partial<StudioAnswers> | null) ?? {}),
     });
   }, [
     boutique?.name,
@@ -289,9 +356,7 @@ export function BrandStudioWizard({
     }
 
     setAnswers((current) =>
-      current.brandName
-        ? current
-        : { ...current, brandName: boutique.name },
+      current.brandName ? current : { ...current, brandName: boutique.name },
     );
   }, [boutique?.name]);
 
@@ -381,9 +446,7 @@ export function BrandStudioWizard({
       return;
     }
 
-    setStep((current) =>
-      Math.min(totalSteps - 1, current + 1),
-    );
+    setStep((current) => Math.min(totalSteps - 1, current + 1));
   };
 
   const handleSubmit = async () => {
@@ -402,7 +465,7 @@ export function BrandStudioWizard({
       });
 
       toast.success(
-        "Identité de marque générée et Studio initialisé.",
+        translateUi("Identité de marque générée et Studio initialisé."),
       );
 
       onComplete?.();
@@ -410,21 +473,18 @@ export function BrandStudioWizard({
       toast.error(
         error instanceof Error
           ? error.message
-          : "Erreur lors de la génération de l'identité.",
+          : translateUi("Erreur lors de la génération de l'identité."),
       );
     }
   };
 
-  const boutiqueName =
-    answers.brandName ||
-    boutique?.name ||
-    "Votre marque";
+  const boutiqueName = answers.brandName || boutique?.name || "Votre marque";
 
   if (studioAnswersLoading) {
     return (
       <Card className="flex min-h-48 items-center justify-center gap-2 p-8 text-sm text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin" />
-        Chargement des réponses du Brand Studio…
+        {translateUi("Chargement des réponses du Brand Studio…")}
       </Card>
     );
   }
@@ -433,14 +493,16 @@ export function BrandStudioWizard({
     return (
       <Card className="space-y-4 p-6">
         <p className="text-sm text-destructive">
-          Impossible de charger les réponses enregistrées du Brand Studio.
+          {translateUi(
+            "Impossible de charger les réponses enregistrées du Brand Studio.",
+          )}
         </p>
         <Button
           type="button"
           variant="outline"
           onClick={() => void refetchStudioAnswers()}
         >
-          Réessayer
+          {translateUi("Réessayer")}
         </Button>
       </Card>
     );
@@ -453,25 +515,21 @@ export function BrandStudioWizard({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary">
-                Brand Studio · Direction de marque
+                {translateUi("Brand Studio · Direction de marque")}
               </p>
 
               <h2 className="mt-2 text-2xl font-semibold leading-tight text-foreground sm:text-3xl md:text-4xl">
-                Construisons une vraie direction de marque.
+                {translateUi("Construisons une vraie direction de marque.")}
               </h2>
 
               <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
-                L'IA ne va pas inventer votre marque à partir
-                de quelques mots-clés. Elle va transformer
-                vos choix en une identité cohérente,
-                exploitable dans votre boutique.
+                {translateUi(
+                  "L'IA ne va pas inventer votre marque à partir de quelques mots-clés. Elle va transformer vos choix en une identité cohérente, exploitable dans votre boutique.",
+                )}
               </p>
             </div>
 
-            <Badge
-              variant="secondary"
-              className="w-fit shrink-0 px-3 py-1.5"
-            >
+            <Badge variant="secondary" className="w-fit shrink-0 px-3 py-1.5">
               {boutiqueName}
             </Badge>
           </div>
@@ -490,7 +548,8 @@ export function BrandStudioWizard({
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-foreground">
-                  Étape {step + 1} · {STEPS[step].title}
+                  {translateUi("Étape") + " "}
+                  {step + 1} · {STEPS[step].title}
                 </p>
 
                 <p className="mt-0.5 hidden text-xs leading-5 text-muted-foreground sm:block">
@@ -510,17 +569,11 @@ export function BrandStudioWizard({
                 key={item.shortTitle}
                 type="button"
                 onClick={() => {
-                  if (
-                    index < step &&
-                    !generate.isPending
-                  ) {
+                  if (index < step && !generate.isPending) {
                     setStep(index);
                   }
                 }}
-                disabled={
-                  index > step ||
-                  generate.isPending
-                }
+                disabled={index > step || generate.isPending}
                 className={[
                   "min-w-0 rounded-lg px-1.5 py-2 text-center text-[10px] font-medium transition-colors sm:px-2 sm:text-xs",
                   index === step
@@ -530,9 +583,7 @@ export function BrandStudioWizard({
                       : "bg-muted text-muted-foreground",
                 ].join(" ")}
               >
-                <span className="block truncate">
-                  {item.shortTitle}
-                </span>
+                <span className="block truncate">{item.shortTitle}</span>
               </button>
             ))}
           </div>
@@ -542,75 +593,68 @@ export function BrandStudioWizard({
           {step === 0 && (
             <div className="space-y-8">
               <SectionTitle
-                eyebrow="01 · Fondations"
-                title="Qu'est-ce que votre marque construit ?"
-                description="On commence par les faits : activité, offre, différence et histoire. L'identité visuelle viendra ensuite."
+                eyebrow={translateUi("01 · Fondations")}
+                title={translateUi("Qu'est-ce que votre marque construit ?")}
+                description={translateUi(
+                  "On commence par les faits : activité, offre, différence et histoire. L'identité visuelle viendra ensuite.",
+                )}
               />
 
               <div className="grid gap-6 md:grid-cols-2">
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="brand-name">
-                    Nom de la marque
+                    {translateUi("Nom de la marque")}
                   </Label>
 
                   <Input
                     id="brand-name"
                     value={answers.brandName}
                     onChange={(event) =>
-                      update(
-                        "brandName",
-                        event.target.value,
-                      )
+                      update("brandName", event.target.value)
                     }
-                    placeholder="Ex. Atelier Noma"
+                    placeholder={translateUi("Ex. Atelier Noma")}
                     className="h-11"
                     autoComplete="organization"
                   />
 
                   <FieldHint>
-                    Le nom de la boutique est prérempli lorsqu'il est disponible.
+                    {translateUi(
+                      "Le nom de la boutique est prérempli lorsqu'il est disponible.",
+                    )}
                   </FieldHint>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="activity">
-                    Activité
-                  </Label>
+                  <Label htmlFor="activity">{translateUi("Activité")}</Label>
 
                   <Textarea
                     id="activity"
                     value={answers.activity}
-                    onChange={(event) =>
-                      update(
-                        "activity",
-                        event.target.value,
-                      )
-                    }
-                    placeholder="Que fait précisément la marque ?"
+                    onChange={(event) => update("activity", event.target.value)}
+                    placeholder={translateUi(
+                      "Que fait précisément la marque ?",
+                    )}
                     rows={5}
                     className="resize-none leading-6"
                   />
 
                   <FieldHint>
-                    Décrivez concrètement votre activité.
+                    {translateUi("Décrivez concrètement votre activité.")}
                   </FieldHint>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="offer">
-                    Offre principale
+                    {translateUi("Offre principale")}
                   </Label>
 
                   <Textarea
                     id="offer"
                     value={answers.offer}
-                    onChange={(event) =>
-                      update(
-                        "offer",
-                        event.target.value,
-                      )
-                    }
-                    placeholder="Quels produits ou services proposez-vous ?"
+                    onChange={(event) => update("offer", event.target.value)}
+                    placeholder={translateUi(
+                      "Quels produits ou services proposez-vous ?",
+                    )}
                     rows={5}
                     className="resize-none leading-6"
                   />
@@ -618,46 +662,44 @@ export function BrandStudioWizard({
 
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="differentiation">
-                    Ce qui vous distingue
+                    {translateUi("Ce qui vous distingue")}
                   </Label>
 
                   <Textarea
                     id="differentiation"
                     value={answers.differentiation}
                     onChange={(event) =>
-                      update(
-                        "differentiation",
-                        event.target.value,
-                      )
+                      update("differentiation", event.target.value)
                     }
-                    placeholder="Pourquoi un client vous choisirait plutôt qu'une autre marque ?"
+                    placeholder={translateUi(
+                      "Pourquoi un client vous choisirait plutôt qu'une autre marque ?",
+                    )}
                     rows={5}
                     className="resize-none leading-6"
                   />
 
                   <FieldHint>
-                    Évitez les formules génériques. Décrivez votre différence réelle.
+                    {translateUi(
+                      "Évitez les formules génériques. Décrivez votre différence réelle.",
+                    )}
                   </FieldHint>
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="story">
-                    Origine / histoire{" "}
+                    {translateUi("Origine / histoire")}{" "}
                     <span className="font-normal text-muted-foreground">
-                      (facultatif)
+                      {translateUi("(facultatif)")}
                     </span>
                   </Label>
 
                   <Textarea
                     id="story"
                     value={answers.story ?? ""}
-                    onChange={(event) =>
-                      update(
-                        "story",
-                        event.target.value,
-                      )
-                    }
-                    placeholder="Pourquoi cette marque existe-t-elle ?"
+                    onChange={(event) => update("story", event.target.value)}
+                    placeholder={translateUi(
+                      "Pourquoi cette marque existe-t-elle ?",
+                    )}
                     rows={4}
                     className="resize-none leading-6"
                   />
@@ -669,27 +711,28 @@ export function BrandStudioWizard({
           {step === 1 && (
             <div className="space-y-8">
               <SectionTitle
-                eyebrow="02 · Client & promesse"
-                title="Pour qui la marque existe-t-elle ?"
-                description="L'objectif est de comprendre le contexte d'achat et le résultat recherché, pas seulement une tranche d'âge."
+                eyebrow={translateUi("02 · Client & promesse")}
+                title={translateUi("Pour qui la marque existe-t-elle ?")}
+                description={translateUi(
+                  "L'objectif est de comprendre le contexte d'achat et le résultat recherché, pas seulement une tranche d'âge.",
+                )}
               />
 
               <div className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="ideal-customer">
-                    Client idéal
+                    {translateUi("Client idéal")}
                   </Label>
 
                   <Textarea
                     id="ideal-customer"
                     value={answers.idealCustomer}
                     onChange={(event) =>
-                      update(
-                        "idealCustomer",
-                        event.target.value,
-                      )
+                      update("idealCustomer", event.target.value)
                     }
-                    placeholder="Qui achète réellement ? Dans quel contexte ? Qu'est-ce qui compte pour cette personne ?"
+                    placeholder={translateUi(
+                      "Qui achète réellement ? Dans quel contexte ? Qu'est-ce qui compte pour cette personne ?",
+                    )}
                     rows={5}
                     className="resize-none leading-6"
                   />
@@ -697,19 +740,18 @@ export function BrandStudioWizard({
 
                 <div className="space-y-2">
                   <Label htmlFor="customer-need">
-                    Besoin / problème
+                    {translateUi("Besoin / problème")}
                   </Label>
 
                   <Textarea
                     id="customer-need"
                     value={answers.customerNeed}
                     onChange={(event) =>
-                      update(
-                        "customerNeed",
-                        event.target.value,
-                      )
+                      update("customerNeed", event.target.value)
                     }
-                    placeholder="Quel besoin concret ou quelle frustration votre offre vient-elle résoudre ?"
+                    placeholder={translateUi(
+                      "Quel besoin concret ou quelle frustration votre offre vient-elle résoudre ?",
+                    )}
                     rows={5}
                     className="resize-none leading-6"
                   />
@@ -717,19 +759,18 @@ export function BrandStudioWizard({
 
                 <div className="space-y-2">
                   <Label htmlFor="customer-result">
-                    Résultat recherché
+                    {translateUi("Résultat recherché")}
                   </Label>
 
                   <Textarea
                     id="customer-result"
                     value={answers.customerResult}
                     onChange={(event) =>
-                      update(
-                        "customerResult",
-                        event.target.value,
-                      )
+                      update("customerResult", event.target.value)
                     }
-                    placeholder="Après l'achat, qu'est-ce que le client doit ressentir, obtenir ou pouvoir faire ?"
+                    placeholder={translateUi(
+                      "Après l'achat, qu'est-ce que le client doit ressentir, obtenir ou pouvoir faire ?",
+                    )}
                     rows={5}
                     className="resize-none leading-6"
                   />
@@ -737,20 +778,18 @@ export function BrandStudioWizard({
 
                 <div className="space-y-3">
                   <div>
-                    <Label>
-                      Positionnement perçu
-                    </Label>
+                    <Label>{translateUi("Positionnement perçu")}</Label>
 
                     <FieldHint>
-                      Choisissez l'intention de positionnement. L'IA affinera ensuite la direction.
+                      {translateUi(
+                        "Choisissez l'intention de positionnement. L'IA affinera ensuite la direction.",
+                      )}
                     </FieldHint>
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {MARKET_POSITIONING.map((item) => {
-                      const selected =
-                        answers.marketPositioning ===
-                        item.value;
+                      const selected = answers.marketPositioning === item.value;
 
                       return (
                         <button
@@ -758,10 +797,7 @@ export function BrandStudioWizard({
                           type="button"
                           aria-pressed={selected}
                           onClick={() =>
-                            update(
-                              "marketPositioning",
-                              item.value,
-                            )
+                            update("marketPositioning", item.value)
                           }
                           className={[
                             "min-h-28 rounded-2xl border-2 p-4 text-left transition-all",
@@ -796,40 +832,37 @@ export function BrandStudioWizard({
           {step === 2 && (
             <div className="space-y-8">
               <SectionTitle
-                eyebrow="03 · Territoire visuel"
-                title="Dans quel univers votre marque doit-elle vivre ?"
-                description="Vous donnez une direction artistique. L'IA choisira ensuite les combinaisons précises de couleurs, typographies et matières."
+                eyebrow={translateUi("03 · Territoire visuel")}
+                title={translateUi(
+                  "Dans quel univers votre marque doit-elle vivre ?",
+                )}
+                description={translateUi(
+                  "Vous donnez une direction artistique. L'IA choisira ensuite les combinaisons précises de couleurs, typographies et matières.",
+                )}
               />
 
               <div className="space-y-7">
                 <div className="space-y-3">
                   <div>
-                    <Label>
-                      Territoire dominant
-                    </Label>
+                    <Label>{translateUi("Territoire dominant")}</Label>
 
                     <FieldHint>
-                      Choisissez l'univers qui se rapproche le plus de votre intention.
+                      {translateUi(
+                        "Choisissez l'univers qui se rapproche le plus de votre intention.",
+                      )}
                     </FieldHint>
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2">
                     {VISUAL_TERRITORIES.map((item) => {
-                      const selected =
-                        answers.visualTerritory ===
-                        item.value;
+                      const selected = answers.visualTerritory === item.value;
 
                       return (
                         <button
                           key={item.value}
                           type="button"
                           aria-pressed={selected}
-                          onClick={() =>
-                            update(
-                              "visualTerritory",
-                              item.value,
-                            )
-                          }
+                          onClick={() => update("visualTerritory", item.value)}
                           className={[
                             "min-h-28 rounded-2xl border-2 p-4 text-left transition-all",
                             "touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
@@ -860,19 +893,18 @@ export function BrandStudioWizard({
                 <div className="grid gap-6 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="materials">
-                      Matières / textures
+                      {translateUi("Matières / textures")}
                     </Label>
 
                     <Textarea
                       id="materials"
                       value={answers.materials}
                       onChange={(event) =>
-                        update(
-                          "materials",
-                          event.target.value,
-                        )
+                        update("materials", event.target.value)
                       }
-                      placeholder="Bois clair, métal brossé, lin, verre, papier texturé…"
+                      placeholder={translateUi(
+                        "Bois clair, métal brossé, lin, verre, papier texturé…",
+                      )}
                       rows={4}
                       className="resize-none leading-6"
                     />
@@ -880,19 +912,18 @@ export function BrandStudioWizard({
 
                   <div className="space-y-2">
                     <Label htmlFor="visual-references">
-                      Références visuelles
+                      {translateUi("Références visuelles")}
                     </Label>
 
                     <Textarea
                       id="visual-references"
                       value={answers.visualReferences}
                       onChange={(event) =>
-                        update(
-                          "visualReferences",
-                          event.target.value,
-                        )
+                        update("visualReferences", event.target.value)
                       }
-                      placeholder="Une marque, un lieu, une architecture, une époque, une photographie…"
+                      placeholder={translateUi(
+                        "Une marque, un lieu, une architecture, une époque, une photographie…",
+                      )}
                       rows={4}
                       className="resize-none leading-6"
                     />
@@ -900,38 +931,34 @@ export function BrandStudioWizard({
 
                   <div className="space-y-2">
                     <Label htmlFor="preferred-colors">
-                      Couleurs souhaitées
+                      {translateUi("Couleurs souhaitées")}
                     </Label>
 
                     <Input
                       id="preferred-colors"
                       value={answers.preferredColors}
                       onChange={(event) =>
-                        update(
-                          "preferredColors",
-                          event.target.value,
-                        )
+                        update("preferredColors", event.target.value)
                       }
-                      placeholder="Ex. ivoire, vert profond, terracotta…"
+                      placeholder={translateUi(
+                        "Ex. ivoire, vert profond, terracotta…",
+                      )}
                       className="h-11"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="forbidden-colors">
-                      Couleurs à éviter
+                      {translateUi("Couleurs à éviter")}
                     </Label>
 
                     <Input
                       id="forbidden-colors"
                       value={answers.forbiddenColors}
                       onChange={(event) =>
-                        update(
-                          "forbiddenColors",
-                          event.target.value,
-                        )
+                        update("forbiddenColors", event.target.value)
                       }
-                      placeholder="Ex. rose vif, violet, néons…"
+                      placeholder={translateUi("Ex. rose vif, violet, néons…")}
                       className="h-11"
                     />
                   </div>
@@ -939,12 +966,11 @@ export function BrandStudioWizard({
 
                 <div className="rounded-2xl border border-secondary/20 bg-secondary/5 p-4 text-xs leading-5 text-muted-foreground">
                   <strong className="text-foreground">
-                    Principe BIB :
+                    {translateUi("Principe BIB :")}
                   </strong>{" "}
-                  vous indiquez une direction. L'IA compose
-                  ensuite une identité spécifique au brief,
-                  plutôt que de recopier une palette ou un
-                  modèle prédéfini.
+                  {translateUi(
+                    "vous indiquez une direction. L'IA compose ensuite une identité spécifique au brief, plutôt que de recopier une palette ou un modèle prédéfini.",
+                  )}
                 </div>
               </div>
             </div>
@@ -953,52 +979,42 @@ export function BrandStudioWizard({
           {step === 3 && (
             <div className="space-y-8">
               <SectionTitle
-                eyebrow="04 · Personnalité & voix"
-                title="Comment votre marque pense-t-elle et s'exprime-t-elle ?"
-                description="Ces choix serviront au copywriting, aux scènes, aux CTA et aux contenus générés."
+                eyebrow={translateUi("04 · Personnalité & voix")}
+                title={translateUi(
+                  "Comment votre marque pense-t-elle et s'exprime-t-elle ?",
+                )}
+                description={translateUi(
+                  "Ces choix serviront au copywriting, aux scènes, aux CTA et aux contenus générés.",
+                )}
               />
 
               <div className="space-y-7">
                 <div className="space-y-3">
                   <div>
-                    <Label>
-                      Traits de personnalité
-                    </Label>
+                    <Label>{translateUi("Traits de personnalité")}</Label>
 
                     <FieldHint>
-                      Sélectionnez 2 à 4 traits.
+                      {translateUi("Sélectionnez 2 à 4 traits.")}
                     </FieldHint>
                   </div>
 
                   <div className="flex flex-wrap gap-2">
                     {PERSONALITIES.map((value) => {
-                      const selected =
-                        answers.personality.includes(
-                          value,
-                        );
+                      const selected = answers.personality.includes(value);
 
                       return (
                         <button
-                          key={value}
+                          key={studioOptionLabel(value, "personality")}
                           type="button"
                           aria-pressed={selected}
-                          onClick={() =>
-                            toggleListValue(
-                              "personality",
-                              value,
-                            )
-                          }
+                          onClick={() => toggleListValue("personality", value)}
                           className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         >
                           <Badge
-                            variant={
-                              selected
-                                ? "default"
-                                : "outline"
-                            }
+                            variant={selected ? "default" : "outline"}
                             className="min-h-10 cursor-pointer px-4 py-2 text-sm"
                           >
-                            {value}
+                            {studioOptionLabel(value, "personality")}
                           </Badge>
                         </button>
                       );
@@ -1008,44 +1024,32 @@ export function BrandStudioWizard({
 
                 <div className="space-y-3">
                   <div>
-                    <Label>
-                      Valeurs prioritaires
-                    </Label>
+                    <Label>{translateUi("Valeurs prioritaires")}</Label>
 
                     <FieldHint>
-                      Sélectionnez 2 à 4 valeurs réellement incarnées par la marque.
+                      {translateUi(
+                        "Sélectionnez 2 à 4 valeurs réellement incarnées par la marque.",
+                      )}
                     </FieldHint>
                   </div>
 
                   <div className="flex flex-wrap gap-2">
                     {VALUES.map((value) => {
-                      const selected =
-                        answers.brandValues.includes(
-                          value,
-                        );
+                      const selected = answers.brandValues.includes(value);
 
                       return (
                         <button
-                          key={value}
+                          key={studioOptionLabel(value, "value")}
                           type="button"
                           aria-pressed={selected}
-                          onClick={() =>
-                            toggleListValue(
-                              "brandValues",
-                              value,
-                            )
-                          }
+                          onClick={() => toggleListValue("brandValues", value)}
                           className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         >
                           <Badge
-                            variant={
-                              selected
-                                ? "default"
-                                : "outline"
-                            }
+                            variant={selected ? "default" : "outline"}
                             className="min-h-10 cursor-pointer px-4 py-2 text-sm"
                           >
-                            {value}
+                            {studioOptionLabel(value, "value")}
                           </Badge>
                         </button>
                       );
@@ -1055,19 +1059,16 @@ export function BrandStudioWizard({
 
                 <div className="space-y-2">
                   <Label htmlFor="voice">
-                    Décrivez la voix de la marque
+                    {translateUi("Décrivez la voix de la marque")}
                   </Label>
 
                   <Textarea
                     id="voice"
                     value={answers.voice}
-                    onChange={(event) =>
-                      update(
-                        "voice",
-                        event.target.value,
-                      )
-                    }
-                    placeholder="Ex. Elle explique simplement sans être infantilisante, reste élégante mais jamais distante…"
+                    onChange={(event) => update("voice", event.target.value)}
+                    placeholder={translateUi(
+                      "Ex. Elle explique simplement sans être infantilisante, reste élégante mais jamais distante…",
+                    )}
                     rows={5}
                     className="resize-none leading-6"
                   />
@@ -1075,19 +1076,18 @@ export function BrandStudioWizard({
 
                 <div className="space-y-2">
                   <Label htmlFor="words-to-avoid">
-                    Mots / expressions à éviter
+                    {translateUi("Mots / expressions à éviter")}
                   </Label>
 
                   <Textarea
                     id="words-to-avoid"
                     value={answers.wordsToAvoid}
                     onChange={(event) =>
-                      update(
-                        "wordsToAvoid",
-                        event.target.value,
-                      )
+                      update("wordsToAvoid", event.target.value)
                     }
-                    placeholder="Ex. révolutionnaire, pas cher, luxe accessible…"
+                    placeholder={translateUi(
+                      "Ex. révolutionnaire, pas cher, luxe accessible…",
+                    )}
                     rows={4}
                     className="resize-none leading-6"
                   />
@@ -1099,99 +1099,91 @@ export function BrandStudioWizard({
           {step === 4 && (
             <div className="space-y-8">
               <SectionTitle
-                eyebrow="05 · Direction de marque"
-                title="Voici le brief que l'IA va transformer."
-                description="Dernière étape : vous vérifiez la direction générale avant que BIB génère l'identité de marque."
+                eyebrow={translateUi("05 · Direction de marque")}
+                title={translateUi("Voici le brief que l'IA va transformer.")}
+                description={translateUi(
+                  "Dernière étape : vous vérifiez la direction générale avant que BIB génère l'identité de marque.",
+                )}
               />
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <Card className="min-w-0 p-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-secondary">
-                    Marque
+                    {translateUi("Marque")}
                   </p>
 
                   <p className="mt-2 break-words text-sm font-semibold">
-                    {answers.brandName ||
-                      "Nom non renseigné"}
+                    {answers.brandName || translateUi("Nom non renseigné")}
                   </p>
 
                   <p className="mt-1 break-words text-xs leading-5 text-muted-foreground">
-                    {answers.activity ||
-                      "Activité non renseignée"}
+                    {answers.activity || translateUi("Activité non renseignée")}
                   </p>
                 </Card>
 
                 <Card className="min-w-0 p-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-secondary">
-                    Offre
+                    {translateUi("Offre")}
                   </p>
 
                   <p className="mt-2 break-words text-sm leading-5 text-muted-foreground">
-                    {answers.offer ||
-                      "Offre non renseignée"}
+                    {answers.offer || translateUi("Offre non renseignée")}
                   </p>
                 </Card>
 
                 <Card className="min-w-0 p-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-secondary">
-                    Différenciation
+                    {translateUi("Différenciation")}
                   </p>
 
                   <p className="mt-2 break-words text-sm leading-5 text-muted-foreground">
-                    {answers.differentiation ||
-                      "Non renseignée"}
+                    {answers.differentiation || translateUi("Non renseignée")}
                   </p>
                 </Card>
 
                 <Card className="min-w-0 p-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-secondary">
-                    Client
+                    {translateUi("Client")}
                   </p>
 
                   <p className="mt-2 break-words text-sm leading-5 text-muted-foreground">
                     {answers.idealCustomer ||
-                      "Client idéal non renseigné"}
+                      translateUi("Client idéal non renseigné")}
                   </p>
                 </Card>
 
                 <Card className="min-w-0 p-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-secondary">
-                    Promesse
+                    {translateUi("Promesse")}
                   </p>
 
                   <p className="mt-2 break-words text-sm leading-5 text-muted-foreground">
                     {answers.customerResult ||
-                      "Résultat non renseigné"}
+                      translateUi("Résultat non renseigné")}
                   </p>
                 </Card>
 
                 <Card className="min-w-0 p-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-secondary">
-                    Positionnement
+                    {translateUi("Positionnement")}
                   </p>
 
                   <p className="mt-2 text-sm font-medium">
                     {MARKET_POSITIONING.find(
-                      (item) =>
-                        item.value ===
-                        answers.marketPositioning,
-                    )?.label ??
-                      "Non renseigné"}
+                      (item) => item.value === answers.marketPositioning,
+                    )?.label ?? translateUi("Non renseigné")}
                   </p>
                 </Card>
 
                 <Card className="min-w-0 p-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-secondary">
-                    Univers visuel
+                    {translateUi("Univers visuel")}
                   </p>
 
                   <p className="mt-2 text-sm font-medium">
                     {VISUAL_TERRITORIES.find(
-                      (item) =>
-                        item.value ===
-                        answers.visualTerritory,
-                    )?.label ??
-                      "Non renseigné"}
+                      (item) => item.value === answers.visualTerritory,
+                    )?.label ?? translateUi("Non renseigné")}
                   </p>
 
                   {answers.materials && (
@@ -1203,31 +1195,25 @@ export function BrandStudioWizard({
 
                 <Card className="min-w-0 p-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-secondary">
-                    Personnalité
+                    {translateUi("Personnalité")}
                   </p>
 
                   <div className="mt-2 flex flex-wrap gap-1.5">
-                    {answers.personality.map(
-                      (value) => (
-                        <Badge
-                          key={value}
-                          variant="secondary"
-                        >
-                          {value}
-                        </Badge>
-                      ),
-                    )}
+                    {answers.personality.map((value) => (
+                      <Badge key={value} variant="secondary">
+                        {value}
+                      </Badge>
+                    ))}
                   </div>
                 </Card>
 
                 <Card className="min-w-0 p-4 sm:col-span-2">
                   <p className="text-xs font-semibold uppercase tracking-wider text-secondary">
-                    Voix
+                    {translateUi("Voix")}
                   </p>
 
                   <p className="mt-2 break-words text-sm leading-6 text-muted-foreground">
-                    {answers.voice ||
-                      "Voix non renseignée"}
+                    {answers.voice || translateUi("Voix non renseignée")}
                   </p>
                 </Card>
               </div>
@@ -1238,15 +1224,13 @@ export function BrandStudioWizard({
 
                   <div className="min-w-0">
                     <p className="font-semibold text-foreground">
-                      Prêt pour la génération
+                      {translateUi("Prêt pour la génération")}
                     </p>
 
                     <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                      BIB va utiliser ce brief pour produire
-                      l'ADN de marque, la palette, les
-                      typographies, le ton rédactionnel, le
-                      tagline, le hero, les CTA et la première
-                      structure visuelle du Studio.
+                      {translateUi(
+                        "BIB va utiliser ce brief pour produire l'ADN de marque, la palette, les typographies, le ton rédactionnel, le tagline, le hero, les CTA et la première structure visuelle du Studio.",
+                      )}
                     </p>
                   </div>
                 </div>
@@ -1256,10 +1240,7 @@ export function BrandStudioWizard({
                     id="confirm-direction"
                     checked={answers.confirmed}
                     onCheckedChange={(checked) =>
-                      update(
-                        "confirmed",
-                        checked === true,
-                      )
+                      update("confirmed", checked === true)
                     }
                     className="mt-0.5"
                   />
@@ -1268,17 +1249,17 @@ export function BrandStudioWizard({
                     htmlFor="confirm-direction"
                     className="cursor-pointer text-sm font-normal leading-6"
                   >
-                    J'ai vérifié les informations ci-dessus
-                    et je confirme cette direction pour la
-                    génération de mon identité de marque.
+                    {translateUi(
+                      "J'ai vérifié les informations ci-dessus et je confirme cette direction pour la génération de mon identité de marque.",
+                    )}
                   </Label>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="direction-note">
-                    Dernière indication pour l'IA{" "}
+                    {translateUi("Dernière indication pour l'IA")}{" "}
                     <span className="font-normal text-muted-foreground">
-                      (facultatif)
+                      {translateUi("(facultatif)")}
                     </span>
                   </Label>
 
@@ -1286,12 +1267,11 @@ export function BrandStudioWizard({
                     id="direction-note"
                     value={answers.directionNote ?? ""}
                     onChange={(event) =>
-                      update(
-                        "directionNote",
-                        event.target.value,
-                      )
+                      update("directionNote", event.target.value)
                     }
-                    placeholder="Une contrainte ou une nuance importante à respecter avant la génération…"
+                    placeholder={translateUi(
+                      "Une contrainte ou une nuance importante à respecter avant la génération…",
+                    )}
                     rows={4}
                     className="resize-none bg-background leading-6"
                   />
@@ -1306,50 +1286,45 @@ export function BrandStudioWizard({
             type="button"
             variant="ghost"
             onClick={goPrevious}
-            disabled={
-              step === 0 || generate.isPending
-            }
+            disabled={step === 0 || generate.isPending}
             className="min-h-11 w-full sm:w-auto"
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
-            Retour
+            {translateUi("Retour")}
           </Button>
 
           <p className="hidden text-center text-xs text-muted-foreground lg:block">
-            Vos réponses restent modifiables jusqu'à la génération.
+            {translateUi(
+              "Vos réponses restent modifiables jusqu'à la génération.",
+            )}
           </p>
 
           {step < totalSteps - 1 ? (
             <Button
               type="button"
               onClick={goNext}
-              disabled={
-                !canNext || generate.isPending
-              }
+              disabled={!canNext || generate.isPending}
               className="min-h-11 w-full sm:w-auto"
             >
-              Continuer
+              {translateUi("Continuer")}
               <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           ) : (
             <Button
               type="button"
               onClick={handleSubmit}
-              disabled={
-                generate.isPending ||
-                !canNext
-              }
+              disabled={generate.isPending || !canNext}
               className="min-h-11 w-full bg-secondary text-secondary-foreground hover:bg-secondary/90 sm:w-auto"
             >
               {generate.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Génération…
+                  {translateUi("Génération…")}
                 </>
               ) : (
                 <>
                   <Sparkles className="mr-2 h-4 w-4" />
-                  Générer mon identité
+                  {translateUi("Générer mon identité")}
                 </>
               )}
             </Button>

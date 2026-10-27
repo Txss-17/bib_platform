@@ -11,6 +11,7 @@ export default defineConfig({
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
   },
   resolve: {
+    extensions: [".mjs", ".ts", ".tsx", ".mts", ".js", ".jsx", ".json"],
     alias: {
       "@": path.resolve(__dirname, "./src"),
       // Resolve the Edge Function's Deno npm specifier for mocked Node tests.

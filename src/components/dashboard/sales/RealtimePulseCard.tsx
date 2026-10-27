@@ -1,12 +1,12 @@
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useMemo, useState } from "react";
+import { Eye, Package, ShoppingCart, CreditCard, Radio } from "lucide-react";
 import {
-  Eye,
-  Package,
-  ShoppingCart,
-  CreditCard,
-  Radio,
-} from "lucide-react";
-import { SectionCard, EmptyState, RealtimeStatusPill } from "@/components/dashboard/shared";
+  SectionCard,
+  EmptyState,
+  RealtimeStatusPill,
+} from "@/components/dashboard/shared";
 import {
   useStorefrontPulse,
   type PulseEvent,
@@ -31,18 +31,71 @@ const items: Array<{
   icon: React.ElementType;
   feedLabel: string;
 }> = [
-  { key: "boutique_view", label: "Vues boutique", icon: Eye, feedLabel: "Boutique vue" },
-  { key: "product_view", label: "Vues produit", icon: Package, feedLabel: "Produit consulté" },
-  { key: "add_to_cart", label: "Ajouts panier", icon: ShoppingCart, feedLabel: "Ajout au panier" },
-  { key: "checkout_start", label: "Checkout", icon: CreditCard, feedLabel: "Checkout démarré" },
+  {
+    key: "boutique_view",
+    get label() {
+      return translateUi("Vues boutique");
+    },
+    icon: Eye,
+    feedLabel: "Boutique vue",
+  },
+  {
+    key: "product_view",
+    get label() {
+      return translateUi("Vues produit");
+    },
+    icon: Package,
+    feedLabel: "Produit consulté",
+  },
+  {
+    key: "add_to_cart",
+    get label() {
+      return translateUi("Ajouts panier");
+    },
+    icon: ShoppingCart,
+    feedLabel: "Ajout au panier",
+  },
+  {
+    key: "checkout_start",
+    get label() {
+      return translateUi("Checkout");
+    },
+    icon: CreditCard,
+    feedLabel: "Checkout démarré",
+  },
 ];
 
 const filterChips: Array<{ key: EventKey; label: string }> = [
-  { key: "all", label: "Tous" },
-  { key: "boutique_view", label: "Vues" },
-  { key: "product_view", label: "Produits" },
-  { key: "add_to_cart", label: "Panier" },
-  { key: "checkout_start", label: "Checkout" },
+  {
+    key: "all",
+    get label() {
+      return translateUi("Tous");
+    },
+  },
+  {
+    key: "boutique_view",
+    get label() {
+      return translateUi("Vues");
+    },
+  },
+  {
+    key: "product_view",
+    get label() {
+      return translateUi("Produits");
+    },
+  },
+  {
+    key: "add_to_cart",
+    get label() {
+      return translateUi("Panier");
+    },
+  },
+  {
+    key: "checkout_start",
+    get label() {
+      return translateUi("Checkout");
+    },
+  },
 ];
 
 interface GroupedEvent {
@@ -87,6 +140,7 @@ function groupConsecutive(events: PulseEvent[]): GroupedEvent[] {
  * offline).
  */
 export function RealtimePulseCard({ boutiqueId = "all" }: Props) {
+  useLanguage();
   const { counters, feed, status, loading, windowMinutes } =
     useStorefrontPulse(boutiqueId);
   const [filter, setFilter] = useState<EventKey>("all");
@@ -95,15 +149,19 @@ export function RealtimePulseCard({ boutiqueId = "all" }: Props) {
     items.find((i) => i.key === (t as never))?.feedLabel ?? t;
 
   const filtered = useMemo(
-    () => (filter === "all" ? feed : feed.filter((e) => e.event_type === filter)),
+    () =>
+      filter === "all" ? feed : feed.filter((e) => e.event_type === filter),
     [feed, filter],
   );
   const grouped = useMemo(() => groupConsecutive(filtered), [filtered]);
 
   return (
     <SectionCard
-      title="Pulse temps réel"
-      description={`Activité boutique sur les ${windowMinutes} dernières minutes`}
+      title={translateUi("Pulse temps réel")}
+      description={translateUi(
+        "Activité boutique sur les {v0} dernières minutes",
+        { v0: windowMinutes },
+      )}
       icon={<Radio className="w-4 h-4" />}
       actions={<RealtimeStatusPill status={status} />}
     >
@@ -131,7 +189,7 @@ export function RealtimePulseCard({ boutiqueId = "all" }: Props) {
               {loading ? (
                 <span className="inline-block w-10 h-7 rounded bg-muted/70 animate-pulse" />
               ) : (
-                counters[key].toLocaleString("fr-FR")
+                counters[key].toLocaleString(getUiLocale())
               )}
             </p>
           </button>
@@ -154,7 +212,8 @@ export function RealtimePulseCard({ boutiqueId = "all" }: Props) {
         ))}
         {filter !== "all" && (
           <span className="text-xs text-muted-foreground ml-1">
-            {filtered.length} événement{filtered.length !== 1 ? "s" : ""}
+            {filtered.length} {translateUi("événement")}
+            {filtered.length !== 1 ? "s" : ""}
           </span>
         )}
       </div>
@@ -162,12 +221,15 @@ export function RealtimePulseCard({ boutiqueId = "all" }: Props) {
       {/* Live feed */}
       <div className="mt-3">
         <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-medium mb-2">
-          Flux en direct
+          {translateUi("Flux en direct")}
         </p>
         {loading ? (
           <div className="space-y-2">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-10 rounded-xl bg-muted/40 animate-pulse" />
+              <div
+                key={i}
+                className="h-10 rounded-xl bg-muted/40 animate-pulse"
+              />
             ))}
           </div>
         ) : grouped.length === 0 ? (
@@ -175,13 +237,17 @@ export function RealtimePulseCard({ boutiqueId = "all" }: Props) {
             icon={<Radio className="w-6 h-6" />}
             title={
               filter === "all"
-                ? "Aucune activité pour l'instant"
-                : "Aucun événement pour ce filtre"
+                ? translateUi("Aucune activité pour l'instant")
+                : translateUi("Aucun événement pour ce filtre")
             }
             description={
               filter === "all"
-                ? "Dès qu'un visiteur ouvre votre boutique, ajoute un produit au panier ou démarre un checkout, l'événement apparaîtra ici en temps réel."
-                : "Essayez un autre filtre ou attendez les prochains événements."
+                ? translateUi(
+                    "Dès qu'un visiteur ouvre votre boutique, ajoute un produit au panier ou démarre un checkout, l'événement apparaîtra ici en temps réel.",
+                  )
+                : translateUi(
+                    "Essayez un autre filtre ou attendez les prochains événements.",
+                  )
             }
           />
         ) : (
@@ -203,7 +269,7 @@ export function RealtimePulseCard({ boutiqueId = "all" }: Props) {
                   )}
                 </div>
                 <span className="text-xs text-muted-foreground shrink-0">
-                  {new Date(g.lastAt).toLocaleTimeString("fr-FR", {
+                  {new Date(g.lastAt).toLocaleTimeString(getUiLocale(), {
                     hour: "2-digit",
                     minute: "2-digit",
                     second: "2-digit",

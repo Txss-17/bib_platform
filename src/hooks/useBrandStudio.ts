@@ -1,9 +1,10 @@
+import { translateUi } from "@/lib/uiTranslation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-defaultStudioBundle,
-SceneRecord,
-findSceneDefinition,
-pickStudioBundle,
+  defaultStudioBundle,
+  SceneRecord,
+  findSceneDefinition,
+  pickStudioBundle,
 } from "@/lib/studioScenes";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
@@ -14,71 +15,58 @@ import type { Json } from "@/integrations/supabase/types";
 * ———————————————————————–– */
 
 async function invokeBoutiqueAi<T = any>(
-body: Record<string, unknown>,
+  body: Record<string, unknown>,
 ): Promise<T> {
-const { data, error } = await supabase.functions.invoke(
-"boutique-ai",
-{
-body,
-},
-);
+  const { data, error } = await supabase.functions.invoke("boutique-ai", {
+    body,
+  });
 
-const code = (data as any)?.error as string | undefined;
+  const code = (data as any)?.error as string | undefined;
 
-if (code === "unauthorized") {
-throw new Error(
-"Session expirée. Reconnecte-toi pour générer ton identité.",
-);
-}
+  if (code === "unauthorized") {
+    throw new Error(
+      "Session expirée. Reconnecte-toi pour générer ton identité.",
+    );
+  }
 
-if (code === "forbidden") {
-throw new Error(
-"Tu n’es pas propriétaire de cette boutique.",
-);
-}
+  if (code === "forbidden") {
+    throw new Error("Tu n’es pas propriétaire de cette boutique.");
+  }
 
-if (code === "rate_limited") {
-throw new Error(
-"Trop de requêtes IA, réessaie dans 1 min.",
-);
-}
+  if (code === "rate_limited") {
+    throw new Error("Trop de requêtes IA, réessaie dans 1 min.");
+  }
 
-if (code === "credits_exhausted") {
-throw new Error(
-"Crédits IA épuisés. Recharge dans Paramètres → Facturation.",
-);
-}
+  if (code === "credits_exhausted") {
+    throw new Error(
+      "Crédits IA épuisés. Recharge dans Paramètres → Facturation.",
+    );
+  }
 
-if (code === "missing_params") {
-throw new Error(
-"Paramètres manquants pour la génération.",
-);
-}
+  if (code === "missing_params") {
+    throw new Error("Paramètres manquants pour la génération.");
+  }
 
-if (
-code === "no_tool_call" ||
-code === "invalid_json" ||
-code === "ai_error"
-) {
-throw new Error(
-"L’IA n’a pas pu produire une réponse valide. Réessaie.",
-);
-}
+  if (
+    code === "no_tool_call" ||
+    code === "invalid_json" ||
+    code === "ai_error"
+  ) {
+    throw new Error("L’IA n’a pas pu produire une réponse valide. Réessaie.");
+  }
 
-if (code) {
-throw new Error(
-`Erreur IA : ${code}`,
-);
-}
+  if (code) {
+    throw new Error(`Erreur IA : ${code}`);
+  }
 
-if (error) {
-throw new Error(
-error.message ||
-"Le service IA est indisponible. Réessaie dans un instant.",
-);
-}
+  if (error) {
+    throw new Error(
+      error.message ||
+        "Le service IA est indisponible. Réessaie dans un instant.",
+    );
+  }
 
-return data as T;
+  return data as T;
 }
 
 /* ––––––––––––––––––––––––––––––––––––––
@@ -87,47 +75,44 @@ return data as T;
 * ———————————————————————–– */
 
 export interface BrandPalette {
-primary?: string;
-accent?: string;
-surface?: string;
-ink?: string;
+  primary?: string;
+  accent?: string;
+  surface?: string;
+  ink?: string;
 }
 
 export interface BrandTypography {
-display?: string;
-body?: string;
+  display?: string;
+  body?: string;
 }
 
 export interface BrandCopy {
-tagline?: string;
-hero_title?: string;
-hero_subtitle?: string;
-about?: string;
-cta_primary?: string;
-nav_links?: string[];
+  tagline?: string;
+  hero_title?: string;
+  hero_subtitle?: string;
+  about?: string;
+  cta_primary?: string;
+  nav_links?: string[];
 }
 
 export interface BrandDNA {
-id: string;
-boutique_id: string;
-seed: string;
-ambiance: string | null;
-tone: string | null;
-target_audience: string | null;
-keywords: string[];
-generated_palette: BrandPalette;
-generated_typography: BrandTypography;
-generated_copy: BrandCopy;
+  id: string;
+  boutique_id: string;
+  seed: string;
+  ambiance: string | null;
+  tone: string | null;
+  target_audience: string | null;
+  keywords: string[];
+  generated_palette: BrandPalette;
+  generated_typography: BrandTypography;
+  generated_copy: BrandCopy;
 }
-
 
 /**
  * Réponses privées du questionnaire Brand Studio.
  * L'accès est contrôlé par les politiques RLS Supabase.
  */
-export function useStudioAnswers(
-  boutiqueId: string | undefined,
-) {
+export function useStudioAnswers(boutiqueId: string | undefined) {
   return useQuery({
     queryKey: ["studio-answers", boutiqueId],
     enabled: Boolean(boutiqueId),
@@ -146,10 +131,7 @@ export function useStudioAnswers(
         throw error;
       }
 
-      return (
-        (data?.answers as Record<string, unknown> | undefined) ??
-        null
-      );
+      return (data?.answers as Record<string, unknown> | undefined) ?? null;
     },
   });
 }
@@ -167,87 +149,87 @@ export function useStudioAnswers(
 * ———————————————————————–– */
 
 export interface StudioAnswers {
-/* –––––––––––––––––––––––––––––––––––––
+  /* –––––––––––––––––––––––––––––––––––––
 
 * Étape 1 — Fondations
 * ———————————————————————– */
 
-brandName: string;
+  brandName: string;
 
-activity: string;
+  activity: string;
 
-offer: string;
+  offer: string;
 
-differentiation: string;
+  differentiation: string;
 
-story?: string;
+  story?: string;
 
-/* –––––––––––––––––––––––––––––––––––––
+  /* –––––––––––––––––––––––––––––––––––––
 
 * Étape 2 — Client & promesse
 * ———————————————————————– */
 
-idealCustomer: string;
+  idealCustomer: string;
 
-customerNeed: string;
+  customerNeed: string;
 
-customerResult: string;
+  customerResult: string;
 
-marketPositioning:
-| "accessible"
-| "milieu_de_gamme"
-| "premium"
-| "luxe"
-| "expert"
-| "niche"
-| "a_definir";
+  marketPositioning:
+    | "accessible"
+    | "milieu_de_gamme"
+    | "premium"
+    | "luxe"
+    | "expert"
+    | "niche"
+    | "a_definir";
 
-/* –––––––––––––––––––––––––––––––––––––
+  /* –––––––––––––––––––––––––––––––––––––
 
 * Étape 3 — Territoire visuel
 * ———————————————————————– */
 
-visualTerritory: string;
+  visualTerritory: string;
 
-materials: string;
+  materials: string;
 
-preferredColors: string;
+  preferredColors: string;
 
-forbiddenColors: string;
+  forbiddenColors: string;
 
-visualReferences: string;
+  visualReferences: string;
 
-/* –––––––––––––––––––––––––––––––––––––
+  /* –––––––––––––––––––––––––––––––––––––
 
 * Étape 4 — Personnalité & voix
 * ———————————————————————– */
 
-personality: string[];
+  personality: string[];
 
-brandValues: string[];
+  brandValues: string[];
 
-voice: string;
+  voice: string;
 
-wordsToAvoid: string;
+  wordsToAvoid: string;
 
-/* –––––––––––––––––––––––––––––––––––––
+  /* –––––––––––––––––––––––––––––––––––––
 
 * Étape 5 — Direction
 * Cette étape est une validation du brief, pas une nouvelle question.
 * ———————————————————————– */
 
-directionNote?: string;
+  directionNote?: string;
 
-confirmed: boolean;
+  confirmed: boolean;
 
-/* –––––––––––––––––––––––––––––––––––––
+  /* –––––––––––––––––––––––––––––––––––––
 
 * Compatibilité / contexte technique
 * ———————————————————————– */
 
-category?: string;
+  category?: string;
 
-productType?: string;
+  productType?: string;
 }
 
 /* ––––––––––––––––––––––––––––––––––––––
@@ -255,21 +237,20 @@ productType?: string;
 * Brand DNA query
 * ———————————————————————–– */
 
-export function useBrandDNA(
-boutiqueId: string | undefined,
-) {
-return useQuery({
-queryKey: ["brand-dna", boutiqueId],
-enabled: Boolean(boutiqueId),
+export function useBrandDNA(boutiqueId: string | undefined) {
+  return useQuery({
+    queryKey: ["brand-dna", boutiqueId],
+    enabled: Boolean(boutiqueId),
 
-queryFn: async (): Promise<BrandDNA | null> => {
-  if (!boutiqueId) {
-    return null;
-  }
+    queryFn: async (): Promise<BrandDNA | null> => {
+      if (!boutiqueId) {
+        return null;
+      }
 
-  const { data, error } = await supabase
-    .from("boutique_brand_dna")
-    .select(`
+      const { data, error } = await supabase
+        .from("boutique_brand_dna")
+        .select(
+          `
       id,
       boutique_id,
       seed,
@@ -280,17 +261,17 @@ queryFn: async (): Promise<BrandDNA | null> => {
       generated_palette,
       generated_typography,
       generated_copy
-    `)
-    .eq("boutique_id", boutiqueId)
-    .maybeSingle();
-  if (error) {
-    throw error;
-  }
+    `,
+        )
+        .eq("boutique_id", boutiqueId)
+        .maybeSingle();
+      if (error) {
+        throw error;
+      }
 
-  return data as BrandDNA | null;
-},
-
-});
+      return data as BrandDNA | null;
+    },
+  });
 }
 
 /* ––––––––––––––––––––––––––––––––––––––
@@ -299,109 +280,73 @@ queryFn: async (): Promise<BrandDNA | null> => {
 * ———————————————————————–– */
 
 export function useUpdateBrandDNA() {
-const qc = useQueryClient();
+  const qc = useQueryClient();
 
-return useMutation({
-mutationFn: async (params: {
-boutiqueId: string;
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
 
-  patch: Partial<
-    Pick<
-      BrandDNA,
-      | "generated_palette"
-      | "generated_typography"
-      | "generated_copy"
-      | "keywords"
-      | "ambiance"
-      | "tone"
-      | "target_audience"
-    >
-  >;
-}) => {
-  const { error } = await supabase
-    .from("boutique_brand_dna")
-    .update(
-      params.patch as never,
-    )
-    .eq(
-      "boutique_id",
-      params.boutiqueId,
-    );
-  if (error) {
-    throw error;
-  }
-},
-onMutate: async (vars) => {
-  const key = [
-    "brand-dna",
-    vars.boutiqueId,
-  ];
-  await qc.cancelQueries({
-    queryKey: key,
+      patch: Partial<
+        Pick<
+          BrandDNA,
+          | "generated_palette"
+          | "generated_typography"
+          | "generated_copy"
+          | "keywords"
+          | "ambiance"
+          | "tone"
+          | "target_audience"
+        >
+      >;
+    }) => {
+      const { error } = await supabase
+        .from("boutique_brand_dna")
+        .update(params.patch as never)
+        .eq("boutique_id", params.boutiqueId);
+      if (error) {
+        throw error;
+      }
+    },
+    onMutate: async (vars) => {
+      const key = ["brand-dna", vars.boutiqueId];
+      await qc.cancelQueries({
+        queryKey: key,
+      });
+      const previous = qc.getQueryData<BrandDNA | null>(key);
+      if (previous) {
+        qc.setQueryData<BrandDNA>(key, {
+          ...previous,
+          ...vars.patch,
+          generated_palette: {
+            ...previous.generated_palette,
+            ...(vars.patch.generated_palette ?? {}),
+          },
+          generated_typography: {
+            ...previous.generated_typography,
+            ...(vars.patch.generated_typography ?? {}),
+          },
+          generated_copy: {
+            ...previous.generated_copy,
+            ...(vars.patch.generated_copy ?? {}),
+          },
+        });
+      }
+      return {
+        previous,
+        key,
+      };
+    },
+    onError: (_error, _vars, context) => {
+      if (context?.previous !== undefined && context.key) {
+        qc.setQueryData(context.key, context.previous);
+      }
+    },
+    onSettled: (_data, _error, vars) => {
+      qc.invalidateQueries({
+        queryKey: ["brand-dna", vars.boutiqueId],
+      });
+    },
   });
-  const previous =
-    qc.getQueryData<BrandDNA | null>(
-      key,
-    );
-  if (previous) {
-    qc.setQueryData<BrandDNA>(
-      key,
-      {
-        ...previous,
-        ...vars.patch,
-        generated_palette: {
-          ...previous.generated_palette,
-          ...(vars.patch.generated_palette ??
-            {}),
-        },
-        generated_typography: {
-          ...previous.generated_typography,
-          ...(vars.patch.generated_typography ??
-            {}),
-        },
-        generated_copy: {
-          ...previous.generated_copy,
-          ...(vars.patch.generated_copy ??
-            {}),
-        },
-      },
-    );
-  }
-  return {
-    previous,
-    key,
-  };
-},
-onError: (
-  _error,
-  _vars,
-  context,
-) => {
-  if (
-    context?.previous !==
-      undefined &&
-    context.key
-  ) {
-    qc.setQueryData(
-      context.key,
-      context.previous,
-    );
-  }
-},
-onSettled: (
-  _data,
-  _error,
-  vars,
-) => {
-  qc.invalidateQueries({
-    queryKey: [
-      "brand-dna",
-      vars.boutiqueId,
-    ],
-  });
-},
-
-});
 }
 
 /* ––––––––––––––––––––––––––––––––––––––
@@ -410,189 +355,137 @@ onSettled: (
 * ———————————————————————–– */
 
 export function useGenerateBrandDNA() {
-const qc = useQueryClient();
+  const qc = useQueryClient();
 
-return useMutation({
-mutationFn: async (params: {
-boutiqueId: string;
-answers: StudioAnswers;
-}) => {
-if (!params.answers.confirmed) {
-throw new Error(
-"Valide la direction de marque avant de lancer la génération.",
-);
-}
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      answers: StudioAnswers;
+    }) => {
+      if (!params.answers.confirmed) {
+        throw new Error(
+          "Valide la direction de marque avant de lancer la génération.",
+        );
+      }
 
-  const data =
-    await invokeBoutiqueAi<any>({
-      action: "generate_brand_dna",
-      boutique_id:
-        params.boutiqueId,
-      payload:
-        params.answers,
-    });
-  /*
-   * L'IA ne devient pas la source de vérité des réponses du fondateur.
-   * Les réponses originales sont persistées telles quelles dans
-   * boutique_studio_answers.
-   */
-
-  const upsertPayload = {
-    boutique_id: params.boutiqueId,
-    seed: data.seed,
-    ambiance: data.ambiance ?? null,
-    tone: data.tone ?? null,
-    target_audience: params.answers.idealCustomer || null,
-    keywords: data.keywords ?? [],
-    generated_palette: data.palette ?? {},
-    generated_typography: data.typography ?? {},
-    generated_copy: data.copy ?? {},
-  };
-  
-  const { error: upsertError } = await supabase
-    .from("boutique_brand_dna")
-    .upsert(upsertPayload as never, {
-      onConflict: "boutique_id",
-    });
-  
-  if (upsertError) {
-    throw upsertError;
-  }
-  
-  const { error: answersError } = await supabase
-    .from("boutique_studio_answers")
-    .upsert(
-      {
+      const data = await invokeBoutiqueAi<any>({
+        action: "generate_brand_dna",
         boutique_id: params.boutiqueId,
-        answers: params.answers as unknown as Json,
-        updated_at: new Date().toISOString(),
-      } as never,
-      {
-        onConflict: "boutique_id",
-      },
-    );
-  
-  if (answersError) {
-    throw new Error(
-      `Impossible d'enregistrer les réponses du Brand Studio : ${answersError.message}`,
-    );
-  }
+        payload: params.answers,
+      });
+      /*
+       * L'IA ne devient pas la source de vérité des réponses du fondateur.
+       * Les réponses originales sont persistées telles quelles dans
+       * boutique_studio_answers.
+       */
 
-  /*
-   * Création du bundle initial de scènes.
-   *
-   * On ne recrée jamais les scènes si la boutique en possède déjà.
-   */
-  const {
-    data: existing,
-  } = await supabase
-    .from("boutique_scenes")
-    .select("id")
-    .eq(
-      "boutique_id",
-      params.boutiqueId,
-    )
-    .limit(1);
-  if (
-    !existing ||
-    existing.length === 0
-  ) {
-    const bundle =
-      defaultStudioBundle(
-        data.seed,
-      ).map((scene) => ({
-        ...scene,
-        boutique_id:
-          params.boutiqueId,
-        content:
-          scene.scene_type ===
-          "hero-cinema"
-            ? {
-                ...scene.content,
-                title:
-                  data.copy
-                    ?.hero_title ??
-                  (scene.content as any)
-                    .title,
-                subtitle:
-                  data.copy
-                    ?.hero_subtitle ??
-                  (scene.content as any)
-                    .subtitle,
-                ctaLabel:
-                  data.copy
-                    ?.cta_primary ??
-                  (scene.content as any)
-                    .ctaLabel,
-              }
-            : scene.content,
-      }));
-    const {
-      error: scenesError,
-    } = await supabase
-      .from(
-        "boutique_scenes",
-      )
-      .insert(
-        bundle as never,
-      );
-    if (scenesError) {
-      throw scenesError;
-    }
-  }
-  /*
-   * Le wizard est considéré comme terminé uniquement après :
-   *
-   * - génération IA réussie ;
-   * - ADN sauvegardé ;
-   * - scènes initiales créées ou déjà présentes.
-   */
-  const {
-    error:
-      completionError,
-  } = await supabase
-    .from("boutiques")
-    .update({
-      studio_completed_at:
-        new Date().toISOString(),
-    })
-    .eq(
-      "id",
-      params.boutiqueId,
-    );
-  if (completionError) {
-    throw completionError;
-  }
-  return data;
-},
-onSuccess: (
-  _data,
-  vars,
-) => {
-  qc.invalidateQueries({
-    queryKey: ["studio-answers", vars.boutiqueId],
-  });
-  qc.invalidateQueries({
-    queryKey: [
-      "brand-dna",
-      vars.boutiqueId,
-    ],
-  });
-  qc.invalidateQueries({
-    queryKey: [
-      "boutique-scenes",
-      vars.boutiqueId,
-    ],
-  });
-  qc.invalidateQueries({
-    queryKey: [
-      "boutique",
-      vars.boutiqueId,
-    ],
-  });
-},
+      const upsertPayload = {
+        boutique_id: params.boutiqueId,
+        seed: data.seed,
+        ambiance: data.ambiance ?? null,
+        tone: data.tone ?? null,
+        target_audience: params.answers.idealCustomer || null,
+        keywords: data.keywords ?? [],
+        generated_palette: data.palette ?? {},
+        generated_typography: data.typography ?? {},
+        generated_copy: data.copy ?? {},
+      };
 
-});
+      const { error: upsertError } = await supabase
+        .from("boutique_brand_dna")
+        .upsert(upsertPayload as never, {
+          onConflict: "boutique_id",
+        });
+
+      if (upsertError) {
+        throw upsertError;
+      }
+
+      const { error: answersError } = await supabase
+        .from("boutique_studio_answers")
+        .upsert(
+          {
+            boutique_id: params.boutiqueId,
+            answers: params.answers as unknown as Json,
+            updated_at: new Date().toISOString(),
+          } as never,
+          {
+            onConflict: "boutique_id",
+          },
+        );
+
+      if (answersError) {
+        throw new Error(
+          `Impossible d'enregistrer les réponses du Brand Studio : ${answersError.message}`,
+        );
+      }
+
+      /*
+       * Création du bundle initial de scènes.
+       *
+       * On ne recrée jamais les scènes si la boutique en possède déjà.
+       */
+      const { data: existing } = await supabase
+        .from("boutique_scenes")
+        .select("id")
+        .eq("boutique_id", params.boutiqueId)
+        .limit(1);
+      if (!existing || existing.length === 0) {
+        const bundle = defaultStudioBundle(data.seed).map((scene) => ({
+          ...scene,
+          boutique_id: params.boutiqueId,
+          content:
+            scene.scene_type === "hero-cinema"
+              ? {
+                  ...scene.content,
+                  title: data.copy?.hero_title ?? (scene.content as any).title,
+                  subtitle:
+                    data.copy?.hero_subtitle ?? (scene.content as any).subtitle,
+                  ctaLabel:
+                    data.copy?.cta_primary ?? (scene.content as any).ctaLabel,
+                }
+              : scene.content,
+        }));
+        const { error: scenesError } = await supabase
+          .from("boutique_scenes")
+          .insert(bundle as never);
+        if (scenesError) {
+          throw scenesError;
+        }
+      }
+      /*
+       * Le wizard est considéré comme terminé uniquement après :
+       *
+       * - génération IA réussie ;
+       * - ADN sauvegardé ;
+       * - scènes initiales créées ou déjà présentes.
+       */
+      const { error: completionError } = await supabase
+        .from("boutiques")
+        .update({
+          studio_completed_at: new Date().toISOString(),
+        })
+        .eq("id", params.boutiqueId);
+      if (completionError) {
+        throw completionError;
+      }
+      return data;
+    },
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({
+        queryKey: ["studio-answers", vars.boutiqueId],
+      });
+      qc.invalidateQueries({
+        queryKey: ["brand-dna", vars.boutiqueId],
+      });
+      qc.invalidateQueries({
+        queryKey: ["boutique-scenes", vars.boutiqueId],
+      });
+      qc.invalidateQueries({
+        queryKey: ["boutique", vars.boutiqueId],
+      });
+    },
+  });
 }
 
 /* ––––––––––––––––––––––––––––––––––––––
@@ -601,54 +494,29 @@ onSuccess: (
 * ———————————————————————–– */
 
 export function useBoutiqueScenes(
-boutiqueId: string | undefined,
-pageId: string | null = null,
+  boutiqueId: string | undefined,
+  pageId: string | null = null,
 ) {
-return useQuery({
-queryKey: [
-"boutique-scenes",
-boutiqueId,
-pageId,
-],
+  return useQuery({
+    queryKey: ["boutique-scenes", boutiqueId, pageId],
 
-enabled: !!boutiqueId,
-queryFn: async () => {
-  let query: any = supabase
-    .from("boutique_scenes")
-    .select("*")
-    .eq(
-      "boutique_id",
-      boutiqueId!,
-    )
-    .order(
-      "position",
-      {
-        ascending: true,
-      },
-    );
-  query = pageId
-    ? query.eq(
-        "page_id",
-        pageId,
-      )
-    : query.is(
-        "page_id",
-        null,
-      );
-  const {
-    data,
-    error,
-  } = await query;
-  if (error) {
-    throw error;
-  }
-  return (
-    (data as SceneRecord[]) ??
-    []
-  );
-},
-
-});
+    enabled: !!boutiqueId,
+    queryFn: async () => {
+      let query: any = supabase
+        .from("boutique_scenes")
+        .select("*")
+        .eq("boutique_id", boutiqueId!)
+        .order("position", {
+          ascending: true,
+        });
+      query = pageId ? query.eq("page_id", pageId) : query.is("page_id", null);
+      const { data, error } = await query;
+      if (error) {
+        throw error;
+      }
+      return (data as SceneRecord[]) ?? [];
+    },
+  });
 }
 
 /* ––––––––––––––––––––––––––––––––––––––
@@ -657,135 +525,60 @@ queryFn: async () => {
 * ———————————————————————–– */
 
 export function useReshuffleStructure() {
-const qc = useQueryClient();
+  const qc = useQueryClient();
 
-return useMutation({
-mutationFn: async (params: {
-boutiqueId: string;
-bundleKey?: string;
-}) => {
-const {
-STUDIO_BUNDLES,
-} = await import(
-"@/lib/studioScenes"
-);
+  return useMutation({
+    mutationFn: async (params: { boutiqueId: string; bundleKey?: string }) => {
+      const { STUDIO_BUNDLES } = await import("@/lib/studioScenes");
 
-  const bundle =
-    STUDIO_BUNDLES.find(
-      (item) =>
-        item.key ===
-        params.bundleKey,
-    ) ??
-    pickStudioBundle(
-      crypto.randomUUID(),
-    );
-  const {
-    data: existing,
-  } = await supabase
-    .from(
-      "boutique_scenes",
-    )
-    .select("*")
-    .eq(
-      "boutique_id",
-      params.boutiqueId,
-    );
-  const byType =
-    new Map<
-      string,
-      SceneRecord
-    >();
-  (
-    (existing as SceneRecord[] | null) ??
-    []
-  ).forEach((scene) => {
-    byType.set(
-      scene.scene_type,
-      scene,
-    );
-  });
-  const {
-    error: deleteError,
-  } = await supabase
-    .from(
-      "boutique_scenes",
-    )
-    .delete()
-    .eq(
-      "boutique_id",
-      params.boutiqueId,
-    );
-  if (deleteError) {
-    throw deleteError;
-  }
-  const rows =
-    bundle.scenes.map(
-      (
-        scene,
-        index,
-      ) => {
-        const definition =
-          findSceneDefinition(
-            scene.id,
-          );
+      const bundle =
+        STUDIO_BUNDLES.find((item) => item.key === params.bundleKey) ??
+        pickStudioBundle(crypto.randomUUID());
+      const { data: existing } = await supabase
+        .from("boutique_scenes")
+        .select("*")
+        .eq("boutique_id", params.boutiqueId);
+      const byType = new Map<string, SceneRecord>();
+      ((existing as SceneRecord[] | null) ?? []).forEach((scene) => {
+        byType.set(scene.scene_type, scene);
+      });
+      const { error: deleteError } = await supabase
+        .from("boutique_scenes")
+        .delete()
+        .eq("boutique_id", params.boutiqueId);
+      if (deleteError) {
+        throw deleteError;
+      }
+      const rows = bundle.scenes.map((scene, index) => {
+        const definition = findSceneDefinition(scene.id);
         if (!definition) {
-          throw new Error(
-            `Définition de scène introuvable : ${scene.id}`,
-          );
+          throw new Error(`Définition de scène introuvable : ${scene.id}`);
         }
-        const previous =
-          byType.get(
-            scene.id,
-          );
+        const previous = byType.get(scene.id);
         return {
-          boutique_id:
-            params.boutiqueId,
-          role:
-            definition.role,
-          scene_type:
-            definition.id,
-          variant:
-            scene.variant ??
-            previous?.variant ??
-            definition
-              .variants[0],
-          content:
-            previous?.content ??
-            definition.defaultContent,
-          position:
-            index,
-          is_visible:
-            true,
+          boutique_id: params.boutiqueId,
+          role: definition.role,
+          scene_type: definition.id,
+          variant: scene.variant ?? previous?.variant ?? definition.variants[0],
+          content: previous?.content ?? definition.defaultContent,
+          position: index,
+          is_visible: true,
         };
-      },
-    );
-  const {
-    error,
-  } = await supabase
-    .from(
-      "boutique_scenes",
-    )
-    .insert(
-      rows as never,
-    );
-  if (error) {
-    throw error;
-  }
-  return bundle.key;
-},
-onSuccess: (
-  _data,
-  vars,
-) => {
-  qc.invalidateQueries({
-    queryKey: [
-      "boutique-scenes",
-      vars.boutiqueId,
-    ],
+      });
+      const { error } = await supabase
+        .from("boutique_scenes")
+        .insert(rows as never);
+      if (error) {
+        throw error;
+      }
+      return bundle.key;
+    },
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({
+        queryKey: ["boutique-scenes", vars.boutiqueId],
+      });
+    },
   });
-},
-
-});
 }
 
 /* ––––––––––––––––––––––––––––––––––––––
@@ -794,57 +587,33 @@ onSuccess: (
 * ———————————————————————–– */
 
 export function useGenerateSceneImage() {
-return useMutation({
-mutationFn: async (params: {
-boutiqueId: string;
-prompt: string;
-aspect?:
-| "1:1"
-| "3:4"
-| "4:3"
-| "16:9"
-| "9:16";
-}): Promise<any> => {
-const {
-data,
-error,
-} = await supabase.functions.invoke(
-"studio-image-gen",
-{
-body: {
-boutique_id:
-params.boutiqueId,
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      prompt: string;
+      aspect?: "1:1" | "3:4" | "4:3" | "16:9" | "9:16";
+    }): Promise<any> => {
+      const { data, error } = await supabase.functions.invoke(
+        "studio-image-gen",
+        {
+          body: {
+            boutique_id: params.boutiqueId,
 
-        prompt:
-          params.prompt,
-        aspect:
-          params.aspect ??
-          "4:3",
-      },
+            prompt: params.prompt,
+            aspect: params.aspect ?? "4:3",
+          },
+        },
+      );
+      if (error) {
+        throw new Error(error.message || "Génération image impossible");
+      }
+      const url = (data as any)?.url as string | undefined;
+      if (!url) {
+        throw new Error((data as any)?.error || "Pas d'image générée");
+      }
+      return url;
     },
-  );
-  if (error) {
-    throw new Error(
-      error.message ||
-        "Génération image impossible",
-    );
-  }
-  const url =
-    (data as any)
-      ?.url as
-      | string
-      | undefined;
-  if (!url) {
-    throw new Error(
-      (data as any)
-        ?.error ||
-        "Pas d'image générée",
-    );
-  }
-  return url;
-},
-
-});
+  });
 }
 
 /* ––––––––––––––––––––––––––––––––––––––
@@ -853,60 +622,32 @@ params.boutiqueId,
 * ———————————————————————–– */
 
 export function useUploadSceneAsset() {
-return useMutation({
-mutationFn: async (params: {
-boutiqueId: string;
-file: File;
-}) => {
-const extension =
-params.file.name
-.split(".")
-.pop()
-?.toLowerCase() ||
-"jpg";
+  return useMutation({
+    mutationFn: async (params: { boutiqueId: string; file: File }) => {
+      const extension =
+        params.file.name.split(".").pop()?.toLowerCase() || "jpg";
 
-  const {
-    data: userData,
-  } =
-    await supabase.auth.getUser();
-  const userId =
-    userData?.user?.id;
-  if (!userId) {
-    throw new Error(
-      "Session expirée",
-    );
-  }
-  const path =
-    `${userId}/scenes/${params.boutiqueId}/${crypto.randomUUID()}.${extension}`;
-  const {
-    error,
-  } = await supabase.storage
-    .from(
-      "boutique-media",
-    )
-    .upload(
-      path,
-      params.file,
-      {
-        contentType:
-          params.file.type,
-        upsert: false,
-      },
-    );
-  if (error) {
-    throw error;
-  }
-  const {
-    data,
-  } = supabase.storage
-    .from(
-      "boutique-media",
-    )
-    .getPublicUrl(path);
-  return data.publicUrl;
-},
-
-});
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id;
+      if (!userId) {
+        throw new Error("Session expirée");
+      }
+      const path = `${userId}/scenes/${params.boutiqueId}/${crypto.randomUUID()}.${extension}`;
+      const { error } = await supabase.storage
+        .from("boutique-media")
+        .upload(path, params.file, {
+          contentType: params.file.type,
+          upsert: false,
+        });
+      if (error) {
+        throw error;
+      }
+      const { data } = supabase.storage
+        .from("boutique-media")
+        .getPublicUrl(path);
+      return data.publicUrl;
+    },
+  });
 }
 
 /* ––––––––––––––––––––––––––––––––––––––
@@ -915,427 +656,228 @@ params.file.name
 * ———————————————————————–– */
 
 export function useUpdateScene() {
-const qc = useQueryClient();
+  const qc = useQueryClient();
 
-return useMutation({
-mutationFn: async (params: {
-sceneId: string;
-boutiqueId: string;
+  return useMutation({
+    mutationFn: async (params: {
+      sceneId: string;
+      boutiqueId: string;
 
-  patch: Partial<
-    Pick<
-      SceneRecord,
-      | "content"
-      | "variant"
-      | "is_visible"
-      | "position"
-      | "style_overrides"
-    >
-  >;
-}) => {
-  const {
-    error,
-  } = await supabase
-    .from(
-      "boutique_scenes",
-    )
-    .update(
-      params.patch as never,
-    )
-    .eq(
-      "id",
-      params.sceneId,
-    );
-  if (error) {
-    throw error;
-  }
-},
-onMutate: async (
-  vars,
-) => {
-  const queries =
-    qc.getQueriesData<
-      SceneRecord[]
-    >({
-      queryKey: [
-        "boutique-scenes",
-        vars.boutiqueId,
-      ],
-    });
-  const snapshots: Array<{
-    key: any;
-    previous: SceneRecord[];
-  }> = [];
-  for (
-    const [key, previous] of queries
-  ) {
-    if (!previous) {
-      continue;
-    }
-    snapshots.push({
-      key,
-      previous,
-    });
-    qc.setQueryData<
-      SceneRecord[]
-    >(
-      key,
-      previous.map(
-        (scene) =>
-          scene.id ===
-          vars.sceneId
-            ? ({
-                ...scene,
-                ...vars.patch,
-              } as SceneRecord)
-            : scene,
-      ),
-    );
-  }
-  return {
-    snapshots,
-  };
-},
-onError: (
-  _error,
-  _vars,
-  context,
-) => {
-  context?.snapshots?.forEach(
-    ({
-      key,
-      previous,
-    }) =>
-      qc.setQueryData(
-        key,
-        previous,
-      ),
-  );
-},
-onSettled: (
-  _data,
-  _error,
-  vars,
-) => {
-  qc.invalidateQueries({
-    queryKey: [
-      "boutique-scenes",
-      vars.boutiqueId,
-    ],
+      patch: Partial<
+        Pick<
+          SceneRecord,
+          "content" | "variant" | "is_visible" | "position" | "style_overrides"
+        >
+      >;
+    }) => {
+      const { error } = await supabase
+        .from("boutique_scenes")
+        .update(params.patch as never)
+        .eq("id", params.sceneId);
+      if (error) {
+        throw error;
+      }
+    },
+    onMutate: async (vars) => {
+      const queries = qc.getQueriesData<SceneRecord[]>({
+        queryKey: ["boutique-scenes", vars.boutiqueId],
+      });
+      const snapshots: Array<{
+        key: any;
+        previous: SceneRecord[];
+      }> = [];
+      for (const [key, previous] of queries) {
+        if (!previous) {
+          continue;
+        }
+        snapshots.push({
+          key,
+          previous,
+        });
+        qc.setQueryData<SceneRecord[]>(
+          key,
+          previous.map((scene) =>
+            scene.id === vars.sceneId
+              ? ({
+                  ...scene,
+                  ...vars.patch,
+                } as SceneRecord)
+              : scene,
+          ),
+        );
+      }
+      return {
+        snapshots,
+      };
+    },
+    onError: (_error, _vars, context) => {
+      context?.snapshots?.forEach(({ key, previous }) =>
+        qc.setQueryData(key, previous),
+      );
+    },
+    onSettled: (_data, _error, vars) => {
+      qc.invalidateQueries({
+        queryKey: ["boutique-scenes", vars.boutiqueId],
+      });
+    },
   });
-},
-
-});
 }
 
 export function useReorderScenes() {
-const qc = useQueryClient();
+  const qc = useQueryClient();
 
-return useMutation({
-mutationFn: async (params: {
-boutiqueId: string;
-orderedIds: string[];
-}) => {
-for (
-let index = 0;
-index <
-params.orderedIds.length;
-index++
-) {
-await supabase
-.from(
-"boutique_scenes",
-)
-.update({
-position:
--1000 -
-index,
-} as never)
-.eq(
-"id",
-params.orderedIds[
-index
-],
-);
-}
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      orderedIds: string[];
+    }) => {
+      for (let index = 0; index < params.orderedIds.length; index++) {
+        await supabase
+          .from("boutique_scenes")
+          .update({
+            position: -1000 - index,
+          } as never)
+          .eq("id", params.orderedIds[index]);
+      }
 
-  for (
-    let index = 0;
-    index <
-    params.orderedIds.length;
-    index++
-  ) {
-    const {
-      error,
-    } = await supabase
-      .from(
-        "boutique_scenes",
-      )
-      .update({
-        position:
-          index,
-      } as never)
-      .eq(
-        "id",
-        params.orderedIds[
-          index
-        ],
-      );
-    if (error) {
-      throw error;
-    }
-  }
-},
-onMutate: async (
-  vars,
-) => {
-  const key = [
-    "boutique-scenes",
-    vars.boutiqueId,
-  ];
-  await qc.cancelQueries({
-    queryKey: key,
-  });
-  const previous =
-    qc.getQueryData<
-      SceneRecord[]
-    >(key) ?? [];
-  const byId =
-    new Map(
-      previous.map(
-        (scene) =>
-          [
-            scene.id,
-            scene,
-          ] as const,
-      ),
-    );
-  const next =
-    vars.orderedIds
-      .map(
-        (id, index) => {
-          const scene =
-            byId.get(id);
+      for (let index = 0; index < params.orderedIds.length; index++) {
+        const { error } = await supabase
+          .from("boutique_scenes")
+          .update({
+            position: index,
+          } as never)
+          .eq("id", params.orderedIds[index]);
+        if (error) {
+          throw error;
+        }
+      }
+    },
+    onMutate: async (vars) => {
+      const key = ["boutique-scenes", vars.boutiqueId];
+      await qc.cancelQueries({
+        queryKey: key,
+      });
+      const previous = qc.getQueryData<SceneRecord[]>(key) ?? [];
+      const byId = new Map(previous.map((scene) => [scene.id, scene] as const));
+      const next = vars.orderedIds
+        .map((id, index) => {
+          const scene = byId.get(id);
           return scene
             ? {
                 ...scene,
-                position:
-                  index,
+                position: index,
               }
             : null;
-        },
-      )
-      .filter(
-        Boolean,
-      ) as SceneRecord[];
-  qc.setQueryData(
-    key,
-    next,
-  );
-  return {
-    previous,
-    key,
-  };
-},
-onError: (
-  _error,
-  _vars,
-  context,
-) => {
-  if (
-    context?.previous &&
-    context.key
-  ) {
-    qc.setQueryData(
-      context.key,
-      context.previous,
-    );
-  }
-},
-onSettled: (
-  _data,
-  _error,
-  vars,
-) => {
-  qc.invalidateQueries({
-    queryKey: [
-      "boutique-scenes",
-      vars.boutiqueId,
-    ],
+        })
+        .filter(Boolean) as SceneRecord[];
+      qc.setQueryData(key, next);
+      return {
+        previous,
+        key,
+      };
+    },
+    onError: (_error, _vars, context) => {
+      if (context?.previous && context.key) {
+        qc.setQueryData(context.key, context.previous);
+      }
+    },
+    onSettled: (_data, _error, vars) => {
+      qc.invalidateQueries({
+        queryKey: ["boutique-scenes", vars.boutiqueId],
+      });
+    },
   });
-},
-
-});
 }
 
 export function useAddScene() {
-const qc = useQueryClient();
+  const qc = useQueryClient();
 
-return useMutation({
-mutationFn: async (params: {
-boutiqueId: string;
-sceneType: string;
-position: number;
-variant?: string;
-content?: Record<
-string,
-unknown
->;
-pageId?: string | null;
-}) => {
-const definition =
-findSceneDefinition(
-params.sceneType,
-);
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      sceneType: string;
+      position: number;
+      variant?: string;
+      content?: Record<string, unknown>;
+      pageId?: string | null;
+    }) => {
+      const definition = findSceneDefinition(params.sceneType);
 
-  if (!definition) {
-    throw new Error(
-      "scene_type inconnu",
-    );
-  }
-  const {
-    error,
-  } = await supabase
-    .from(
-      "boutique_scenes",
-    )
-    .insert({
-      boutique_id:
-        params.boutiqueId,
-      role:
-        definition.role,
-      scene_type:
-        definition.id,
-      variant:
-        params.variant ??
-        definition
-          .variants[0],
-      content:
-        params.content ??
-        definition
-          .defaultContent,
-      position:
-        params.position,
-      is_visible:
-        true,
-      page_id:
-        params.pageId ??
-        null,
-    } as never);
-  if (error) {
-    throw error;
-  }
-},
-onSuccess: (
-  _data,
-  vars,
-) => {
-  qc.invalidateQueries({
-    queryKey: [
-      "boutique-scenes",
-      vars.boutiqueId,
-    ],
+      if (!definition) {
+        throw new Error("scene_type inconnu");
+      }
+      const { error } = await supabase.from("boutique_scenes").insert({
+        boutique_id: params.boutiqueId,
+        role: definition.role,
+        scene_type: definition.id,
+        variant: params.variant ?? definition.variants[0],
+        content: params.content ?? definition.defaultContent,
+        position: params.position,
+        is_visible: true,
+        page_id: params.pageId ?? null,
+      } as never);
+      if (error) {
+        throw error;
+      }
+    },
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({
+        queryKey: ["boutique-scenes", vars.boutiqueId],
+      });
+    },
   });
-},
-
-});
 }
 
 export function useDeleteScene() {
-const qc = useQueryClient();
+  const qc = useQueryClient();
 
-return useMutation({
-mutationFn: async (params: {
-sceneId: string;
-boutiqueId: string;
-}) => {
-const {
-error,
-} = await supabase
-.from(
-"boutique_scenes",
-)
-.delete()
-.eq(
-"id",
-params.sceneId,
-);
+  return useMutation({
+    mutationFn: async (params: { sceneId: string; boutiqueId: string }) => {
+      const { error } = await supabase
+        .from("boutique_scenes")
+        .delete()
+        .eq("id", params.sceneId);
 
-  if (error) {
-    throw error;
-  }
-},
-onMutate: async (
-  vars,
-) => {
-  const queries =
-    qc.getQueriesData<
-      SceneRecord[]
-    >({
-      queryKey: [
-        "boutique-scenes",
-        vars.boutiqueId,
-      ],
-    });
-  const snapshots: Array<{
-    key: any;
-    previous: SceneRecord[];
-  }> = [];
-  for (
-    const [key, previous] of queries
-  ) {
-    if (!previous) {
-      continue;
-    }
-    snapshots.push({
-      key,
-      previous,
-    });
-    qc.setQueryData<
-      SceneRecord[]
-    >(
-      key,
-      previous.filter(
-        (scene) =>
-          scene.id !==
-          vars.sceneId,
-      ),
-    );
-  }
-  return {
-    snapshots,
-  };
-},
-onError: (
-  _error,
-  _vars,
-  context,
-) => {
-  context?.snapshots?.forEach(
-    ({
-      key,
-      previous,
-    }) =>
-      qc.setQueryData(
-        key,
-        previous,
-      ),
-  );
-},
-onSettled: (
-  _data,
-  _error,
-  vars,
-) => {
-  qc.invalidateQueries({
-    queryKey: [
-      "boutique-scenes",
-      vars.boutiqueId,
-    ],
+      if (error) {
+        throw error;
+      }
+    },
+    onMutate: async (vars) => {
+      const queries = qc.getQueriesData<SceneRecord[]>({
+        queryKey: ["boutique-scenes", vars.boutiqueId],
+      });
+      const snapshots: Array<{
+        key: any;
+        previous: SceneRecord[];
+      }> = [];
+      for (const [key, previous] of queries) {
+        if (!previous) {
+          continue;
+        }
+        snapshots.push({
+          key,
+          previous,
+        });
+        qc.setQueryData<SceneRecord[]>(
+          key,
+          previous.filter((scene) => scene.id !== vars.sceneId),
+        );
+      }
+      return {
+        snapshots,
+      };
+    },
+    onError: (_error, _vars, context) => {
+      context?.snapshots?.forEach(({ key, previous }) =>
+        qc.setQueryData(key, previous),
+      );
+    },
+    onSettled: (_data, _error, vars) => {
+      qc.invalidateQueries({
+        queryKey: ["boutique-scenes", vars.boutiqueId],
+      });
+    },
   });
-},
-
-});
 }
 
 /* ––––––––––––––––––––––––––––––––––––––
@@ -1344,85 +886,54 @@ onSettled: (
 * ———————————————————————–– */
 
 export interface SeoCopilotResult {
-title: string;
-description: string;
-h1: string;
-keywords: string[];
-jsonld: Array<
-Record<string, unknown>
->;
+  title: string;
+  description: string;
+  h1: string;
+  keywords: string[];
+  jsonld: Array<Record<string, unknown>>;
 }
 
 export function useGenerateSeo() {
-const qc = useQueryClient();
+  const qc = useQueryClient();
 
-return useMutation({
-mutationFn: async (params: {
-boutiqueId: string;
-context: Record<
-string,
-unknown
->;
-persist?: boolean;
-}): Promise<any> => {
-const data =
-await invokeBoutiqueAi({
-action: "generate_seo",
-boutique_id:
-params.boutiqueId,
-payload:
-params.context,
-});
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      context: Record<string, unknown>;
+      persist?: boolean;
+    }): Promise<any> => {
+      const data = await invokeBoutiqueAi({
+        action: "generate_seo",
+        boutique_id: params.boutiqueId,
+        payload: params.context,
+      });
 
-  if (
-    params.persist !==
-    false
-  ) {
-    await supabase
-      .from("boutiques")
-      .update({
-        seo_title:
-          data.title,
-        seo_description:
-          data.description,
-        seo_jsonld: {
-          blocks:
-            data.jsonld ??
-            [],
-          keywords:
-            data.keywords ??
-            [],
-          h1:
-            data.h1,
-        },
-      } as never)
-      .eq(
-        "id",
-        params.boutiqueId,
-      );
-  }
-  return data as SeoCopilotResult;
-},
-onSuccess: (
-  _data,
-  vars,
-) => {
-  qc.invalidateQueries({
-    queryKey: [
-      "boutique-edit",
-      vars.boutiqueId,
-    ],
+      if (params.persist !== false) {
+        await supabase
+          .from("boutiques")
+          .update({
+            seo_title: data.title,
+            seo_description: data.description,
+            seo_jsonld: {
+              blocks: data.jsonld ?? [],
+              keywords: data.keywords ?? [],
+              h1: data.h1,
+            },
+          } as never)
+          .eq("id", params.boutiqueId);
+      }
+      return data as SeoCopilotResult;
+    },
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({
+        queryKey: ["boutique-edit", vars.boutiqueId],
+      });
+      qc.invalidateQueries({
+        queryKey: ["public-boutique"],
+      });
+    },
   });
-  qc.invalidateQueries({
-    queryKey: [
-      "public-boutique",
-    ],
-  });
-},
-
-});
 }
-
 
 export function useSaveSeo() {
   const qc = useQueryClient();
@@ -1443,8 +954,9 @@ export function useSaveSeo() {
 
       const activeLocales = [
         ...new Set(
-          (params.activeLocales ?? ["fr"])
-            .filter((locale) => supportedLocales.includes(locale)),
+          (params.activeLocales ?? ["fr"]).filter((locale) =>
+            supportedLocales.includes(locale),
+          ),
         ),
       ];
 
@@ -1465,9 +977,7 @@ export function useSaveSeo() {
             try {
               parsed = new URL(params.publicOrigin.trim());
             } catch {
-              throw new Error(
-                "L’origine publique doit être une URL valide.",
-              );
+              throw new Error("L’origine publique doit être une URL valide.");
             }
 
             if (
@@ -1528,116 +1038,64 @@ export function useSaveSeo() {
 * ———————————————————————–– */
 
 export function useRemixScene() {
-const qc = useQueryClient();
+  const qc = useQueryClient();
 
-return useMutation({
-mutationFn: async (params: {
-boutiqueId: string;
-sceneId: string;
-sceneType: string;
-variant: string;
-content: Record<
-string,
-unknown
->;
-brand?: any;
-}) => {
-const data =
-await invokeBoutiqueAi({
-action: "remix_scene",
-boutique_id:
-params.boutiqueId,
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      sceneId: string;
+      sceneType: string;
+      variant: string;
+      content: Record<string, unknown>;
+      brand?: any;
+    }) => {
+      const data = await invokeBoutiqueAi({
+        action: "remix_scene",
+        boutique_id: params.boutiqueId,
 
-      payload: {
-        scene_type:
-          params.sceneType,
-        variant:
-          params.variant,
-        content:
-          params.content,
-        brand: params.brand
-          ? {
-              ambiance:
-                params.brand
-                  .ambiance,
-              tone:
-                params.brand
-                  .tone,
-              target_audience:
-                params.brand
-                  .target_audience,
-              keywords:
-                params.brand
-                  .keywords,
-              copy:
-                params.brand
-                  .generated_copy,
-              palette:
-                params.brand
-                  .generated_palette,
-              typography:
-                params.brand
-                  .generated_typography,
-            }
-          : null,
-      },
-    });
-  const filtered: Record<
-    string,
-    unknown
-  > = {
-    ...params.content,
-  };
-  const incoming =
-    (data.content ??
-      {}) as Record<
-      string,
-      unknown
-    >;
-  for (
-    const key of Object.keys(
-      filtered,
-    )
-  ) {
-    if (
-      key in incoming
-    ) {
-      filtered[key] =
-        incoming[key];
-    }
-  }
-  const {
-    error,
-  } = await supabase
-    .from(
-      "boutique_scenes",
-    )
-    .update({
-      content:
-        filtered,
-    } as never)
-    .eq(
-      "id",
-      params.sceneId,
-    );
-  if (error) {
-    throw error;
-  }
-  return filtered;
-},
-onSuccess: (
-  _data,
-  vars,
-) => {
-  qc.invalidateQueries({
-    queryKey: [
-      "boutique-scenes",
-      vars.boutiqueId,
-    ],
+        payload: {
+          scene_type: params.sceneType,
+          variant: params.variant,
+          content: params.content,
+          brand: params.brand
+            ? {
+                ambiance: params.brand.ambiance,
+                tone: params.brand.tone,
+                target_audience: params.brand.target_audience,
+                keywords: params.brand.keywords,
+                copy: params.brand.generated_copy,
+                palette: params.brand.generated_palette,
+                typography: params.brand.generated_typography,
+              }
+            : null,
+        },
+      });
+      const filtered: Record<string, unknown> = {
+        ...params.content,
+      };
+      const incoming = (data.content ?? {}) as Record<string, unknown>;
+      for (const key of Object.keys(filtered)) {
+        if (key in incoming) {
+          filtered[key] = incoming[key];
+        }
+      }
+      const { error } = await supabase
+        .from("boutique_scenes")
+        .update({
+          content: filtered,
+        } as never)
+        .eq("id", params.sceneId);
+      if (error) {
+        throw error;
+      }
+      return filtered;
+    },
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({
+        queryKey: ["boutique-scenes", vars.boutiqueId],
+      });
+    },
   });
-},
-
-});
 }
 
 /* ––––––––––––––––––––––––––––––––––––––
@@ -1646,81 +1104,61 @@ onSuccess: (
 * ———————————————————————–– */
 
 export interface ContentBrief {
-target_query: string;
-search_intent: string;
-recommended_h1: string;
+  target_query: string;
+  search_intent: string;
+  recommended_h1: string;
 
-outline: Array<{
-h2: string;
-talking_points: string[];
-}>;
+  outline: Array<{
+    h2: string;
+    talking_points: string[];
+  }>;
 
-questions_to_answer: string[];
+  questions_to_answer: string[];
 
-internal_link_suggestions?: string[];
+  internal_link_suggestions?: string[];
 
-target_word_count: number;
+  target_word_count: number;
 }
 
 export interface KeywordCluster {
-theme: string;
-pillar_keyword: string;
-supporting_keywords: string[];
-intent: string;
+  theme: string;
+  pillar_keyword: string;
+  supporting_keywords: string[];
+  intent: string;
 }
 
 export function useGenerateContentBrief() {
-return useMutation({
-mutationFn: async (params: {
-boutiqueId: string;
-context: Record<
-string,
-unknown
->;
-}): Promise<any> => {
-return await invokeBoutiqueAi(
-{
-action: "seo_brief",
-boutique_id:
-params.boutiqueId,
-payload:
-params.context,
-},
-);
-},
-});
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      context: Record<string, unknown>;
+    }): Promise<any> => {
+      return await invokeBoutiqueAi({
+        action: "seo_brief",
+        boutique_id: params.boutiqueId,
+        payload: params.context,
+      });
+    },
+  });
 }
 
 export function useGenerateKeywordClusters() {
-return useMutation({
-mutationFn: async (params: {
-boutiqueId: string;
-context: Record<
-string,
-unknown
->;
-}): Promise<
-KeywordCluster[]
-> => {
-const data =
-await invokeBoutiqueAi<{
-clusters?: KeywordCluster[];
-}>({
-action:
-"keyword_clusters",
+  return useMutation({
+    mutationFn: async (params: {
+      boutiqueId: string;
+      context: Record<string, unknown>;
+    }): Promise<KeywordCluster[]> => {
+      const data = await invokeBoutiqueAi<{
+        clusters?: KeywordCluster[];
+      }>({
+        action: "keyword_clusters",
 
-      boutique_id:
-        params.boutiqueId,
-      payload:
-        params.context,
-    });
-  return (
-    data?.clusters ??
-    []
-  ) as KeywordCluster[];
-},
-
-});
+        boutique_id: params.boutiqueId,
+        payload: params.context,
+      });
+      return (data?.clusters ?? []) as KeywordCluster[];
+    },
+  });
 }
 
 /* ––––––––––––––––––––––––––––––––––––––
@@ -1729,114 +1167,72 @@ action:
 * ———————————————————————–– */
 
 export function computeSeoScore(input: {
-title: string;
-description: string;
-h1?: string;
-keywords: string[];
-jsonldBlocks: number;
+  title: string;
+  description: string;
+  h1?: string;
+  keywords: string[];
+  jsonldBlocks: number;
 }): {
-score: number;
-checks: Array<{
-label: string;
-ok: boolean;
-weight: number;
-}>;
+  score: number;
+  checks: Array<{
+    label: string;
+    ok: boolean;
+    weight: number;
+  }>;
 } {
-const checks = [
-{
-label:
-"Titre 30-60 caractères",
+  const checks = [
+    {
+      label: translateUi("Titre 30-60 caractères"),
 
-  ok:
-    input.title.length >=
-      30 &&
-    input.title.length <=
-      60,
-  weight: 18,
-},
-{
-  label:
-    "Description 80-160 caractères",
-  ok:
-    input.description
-      .length >= 80 &&
-    input.description
-      .length <= 160,
-  weight: 18,
-},
-{
-  label:
-    "H1 défini (≥ 10 car.)",
-  ok:
-    !!input.h1 &&
-    input.h1.trim()
-      .length >= 10,
-  weight: 12,
-},
-{
-  label:
-    "≥ 3 mots-clés",
-  ok:
-    input.keywords.filter(
-      (keyword) =>
-        keyword.trim(),
-    ).length >= 3,
-  weight: 12,
-},
-{
-  label:
-    "Mot-clé principal dans le titre",
-  ok:
-    !!input.keywords[0] &&
-    input.title
-      .toLowerCase()
-      .includes(
-        input.keywords[0]
-          .toLowerCase(),
-      ),
-  weight: 14,
-},
-{
-  label:
-    "Mot-clé principal dans la description",
-  ok:
-    !!input.keywords[0] &&
-    input.description
-      .toLowerCase()
-      .includes(
-        input.keywords[0]
-          .toLowerCase(),
-      ),
-  weight: 14,
-},
-{
-  label:
-    "≥ 2 blocs JSON-LD",
-  ok:
-    input.jsonldBlocks >= 2,
-  weight: 12,
-},
+      ok: input.title.length >= 30 && input.title.length <= 60,
+      weight: 18,
+    },
+    {
+      label: translateUi("Description 80-160 caractères"),
+      ok: input.description.length >= 80 && input.description.length <= 160,
+      weight: 18,
+    },
+    {
+      label: translateUi("H1 défini (≥ 10 car.)"),
+      ok: !!input.h1 && input.h1.trim().length >= 10,
+      weight: 12,
+    },
+    {
+      label: translateUi("≥ 3 mots-clés"),
+      ok: input.keywords.filter((keyword) => keyword.trim()).length >= 3,
+      weight: 12,
+    },
+    {
+      label: translateUi("Mot-clé principal dans le titre"),
+      ok:
+        !!input.keywords[0] &&
+        input.title.toLowerCase().includes(input.keywords[0].toLowerCase()),
+      weight: 14,
+    },
+    {
+      label: translateUi("Mot-clé principal dans la description"),
+      ok:
+        !!input.keywords[0] &&
+        input.description
+          .toLowerCase()
+          .includes(input.keywords[0].toLowerCase()),
+      weight: 14,
+    },
+    {
+      label: translateUi("≥ 2 blocs JSON-LD"),
+      ok: input.jsonldBlocks >= 2,
+      weight: 12,
+    },
+  ];
 
-];
+  const score = Math.round(
+    checks.reduce((total, check) => total + (check.ok ? check.weight : 0), 0),
+  );
 
-const score = Math.round(
-checks.reduce(
-(
-total,
-check,
-) =>
-total +
-(check.ok
-? check.weight
-: 0),
-0,
-),
-);
-
-return {
-score,
-checks,
-};
+  return {
+    score,
+    checks,
+  };
 }
 
 export type { SceneRecord };

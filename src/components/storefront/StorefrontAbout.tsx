@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -11,7 +13,15 @@ interface StorefrontAboutProps {
   aboutUrl?: string;
 }
 
-export function StorefrontAbout({ title, description, boutiqueName, primaryColor, aboutImageUrl, aboutUrl }: StorefrontAboutProps) {
+export function StorefrontAbout({
+  title,
+  description,
+  boutiqueName,
+  primaryColor,
+  aboutImageUrl,
+  aboutUrl,
+}: StorefrontAboutProps) {
+  useLanguage();
   return (
     <section id="about" className="py-12 md:py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -22,13 +32,17 @@ export function StorefrontAbout({ title, description, boutiqueName, primaryColor
               {title}
             </h2>
             <p className="text-gray-600 mb-2">
-              Chez {boutiqueName}, {description.toLowerCase().startsWith('nous') ? description : `nous ${description.toLowerCase()}`}
+              {translateUi("Chez") + " "}
+              {boutiqueName},{" "}
+              {description.toLowerCase().startsWith("nous")
+                ? description
+                : translateUi("nous {v0}", { v0: description.toLowerCase() })}
             </p>
             <p className="text-gray-600 mb-2">
-              Livraison coordonnée par Brand-In-A-Box.
+              {translateUi("Livraison coordonnée par Brand-In-A-Box.")}
             </p>
             <p className="text-gray-600 mb-6">
-              Simple, responsable, sans surprise.
+              {translateUi("Simple, responsable, sans surprise.")}
             </p>
             {aboutUrl ? (
               <Link to={aboutUrl}>
@@ -36,7 +50,7 @@ export function StorefrontAbout({ title, description, boutiqueName, primaryColor
                   variant="outline"
                   className="gap-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white"
                 >
-                  EN SAVOIR PLUS
+                  {translateUi("EN SAVOIR PLUS")}
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </Link>
@@ -45,7 +59,7 @@ export function StorefrontAbout({ title, description, boutiqueName, primaryColor
                 variant="outline"
                 className="gap-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white"
               >
-                EN SAVOIR PLUS
+                {translateUi("EN SAVOIR PLUS")}
                 <ArrowRight className="w-4 h-4" />
               </Button>
             )}
@@ -56,7 +70,7 @@ export function StorefrontAbout({ title, description, boutiqueName, primaryColor
             {aboutImageUrl ? (
               <img
                 src={aboutImageUrl}
-                alt={`Image de ${boutiqueName}`}
+                alt={translateUi("Image de {v0}", { v0: boutiqueName })}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -64,7 +78,9 @@ export function StorefrontAbout({ title, description, boutiqueName, primaryColor
                 className="w-full h-full flex items-center justify-center"
                 style={{ backgroundColor: `${primaryColor}15` }}
               >
-                <span className="text-gray-400 text-sm">Image de la boutique</span>
+                <span className="text-gray-400 text-sm">
+                  {translateUi("Image de la boutique")}
+                </span>
               </div>
             )}
           </div>

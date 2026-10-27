@@ -1,3 +1,5 @@
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import {
@@ -35,7 +37,14 @@ import {
 import { useSalesGeography } from "@/hooks/useSalesGeography";
 import { useBoutiques } from "@/hooks/useBoutiques";
 import { exportToCSV, exportToPDF } from "@/lib/exportUtils";
-import { PageHeader, SectionCard, KpiTile, KpiTileSkeleton, EmptyState, KpiGrid } from "@/components/dashboard/shared";
+import {
+  PageHeader,
+  SectionCard,
+  KpiTile,
+  KpiTileSkeleton,
+  EmptyState,
+  KpiGrid,
+} from "@/components/dashboard/shared";
 import { SalesHeatmap } from "@/components/dashboard/sales/SalesHeatmap";
 import { LiveActivity } from "@/components/dashboard/sales/LiveActivity";
 import { RealtimePulseCard } from "@/components/dashboard/sales/RealtimePulseCard";
@@ -65,20 +74,21 @@ const lowRotationProducts = [
 ];
 
 export default function Ventes() {
+  useLanguage();
   const { data: salesGeo } = useSalesGeography();
   const { data: boutiques = [] } = useBoutiques();
   const [selectedBoutique, setSelectedBoutique] = useState<string>("all");
   const { data: kpis, isLoading: kpisLoading } = useSalesKpis(selectedBoutique);
 
   const fmtEUR = (n: number) =>
-    new Intl.NumberFormat("fr-FR", {
+    new Intl.NumberFormat(getUiLocale(), {
       style: "currency",
       currency: "EUR",
       maximumFractionDigits: 0,
     }).format(n);
 
   const fmtBasket = (n: number) =>
-    new Intl.NumberFormat("fr-FR", {
+    new Intl.NumberFormat(getUiLocale(), {
       style: "currency",
       currency: "EUR",
       minimumFractionDigits: 2,
@@ -91,8 +101,11 @@ export default function Ventes() {
         ? boutiques.find((b) => b.id === selectedBoutique)?.name
         : undefined;
     const cols = [
-      { header: "Mois", accessor: (r: any) => r.month },
-      { header: "Revenu (€)", accessor: (r: any) => String(r.revenue) },
+      { header: translateUi("Mois"), accessor: (r: any) => r.month },
+      {
+        header: translateUi("Revenu (€)"),
+        accessor: (r: any) => String(r.revenue),
+      },
     ];
     if (kind === "csv") {
       exportToCSV(monthlyData, cols, "ventes", {
@@ -108,17 +121,26 @@ export default function Ventes() {
   return (
     <DashboardLayout>
       <PageHeader
-        eyebrow="Sales Cockpit"
-        title="Pilotez vos ventes en temps réel"
-        subtitle="KPIs, géographie, activité live et alertes — tout ce dont vous avez besoin pour décider en moins de 5 secondes."
+        eyebrow={translateUi("Sales Cockpit")}
+        title={translateUi("Pilotez vos ventes en temps réel")}
+        subtitle={translateUi(
+          "KPIs, géographie, activité live et alertes — tout ce dont vous avez besoin pour décider en moins de 5 secondes.",
+        )}
         actions={
           <>
-            <Select value={selectedBoutique} onValueChange={setSelectedBoutique}>
+            <Select
+              value={selectedBoutique}
+              onValueChange={setSelectedBoutique}
+            >
               <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Toutes les boutiques" />
+                <SelectValue
+                  placeholder={translateUi("Toutes les boutiques")}
+                />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Toutes les boutiques</SelectItem>
+                <SelectItem value="all">
+                  {translateUi("Toutes les boutiques")}
+                </SelectItem>
                 {boutiques.map((b) => (
                   <SelectItem key={b.id} value={b.id}>
                     {b.name}
@@ -160,7 +182,7 @@ export default function Ventes() {
         ) : (
           <>
             <KpiTile
-              label="Chiffre d'affaires"
+              label={translateUi("Chiffre d'affaires")}
               value={fmtEUR(kpis.revenue)}
               trend={kpis.revenueTrend ?? undefined}
               trendLabel="vs mois dernier"
@@ -169,7 +191,7 @@ export default function Ventes() {
               sparkline={kpis.sparklines.revenue}
             />
             <KpiTile
-              label="Commandes"
+              label={translateUi("Commandes")}
               value={kpis.orders}
               trend={kpis.ordersTrend ?? undefined}
               trendLabel="vs mois dernier"
@@ -177,7 +199,7 @@ export default function Ventes() {
               sparkline={kpis.sparklines.orders}
             />
             <KpiTile
-              label="Panier moyen"
+              label={translateUi("Panier moyen")}
               value={fmtBasket(kpis.averageBasket)}
               trend={kpis.averageBasketTrend ?? undefined}
               trendLabel="vs mois dernier"
@@ -186,12 +208,16 @@ export default function Ventes() {
             />
             <KpiTile
               label="Conversion"
-              value={`${kpis.conversionRate.toLocaleString("fr-FR")} %`}
+              value={`${kpis.conversionRate.toLocaleString(getUiLocale())} %`}
               trend={kpis.conversionTrend ?? undefined}
               trendLabel="vs mois dernier"
               icon={<Target className="w-5 h-5" />}
               tone="gold"
-              hint={kpis.conversionRate === 0 ? "Aucune donnée" : undefined}
+              hint={
+                kpis.conversionRate === 0
+                  ? translateUi("Aucune donnée")
+                  : undefined
+              }
               sparkline={kpis.sparklines.conversionRate}
             />
           </>
@@ -202,8 +228,8 @@ export default function Ventes() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
         <SectionCard
           className="lg:col-span-2"
-          title="Évolution du chiffre d'affaires"
-          description="6 derniers mois"
+          title={translateUi("Évolution du chiffre d'affaires")}
+          description={translateUi("6 derniers mois")}
           icon={<TrendingUp className="w-4 h-4" />}
         >
           <div className="h-72">
@@ -211,11 +237,22 @@ export default function Ventes() {
               <AreaChart data={monthlyData}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--secondary))" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="hsl(var(--secondary))" stopOpacity={0} />
+                    <stop
+                      offset="5%"
+                      stopColor="hsl(var(--secondary))"
+                      stopOpacity={0.4}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="hsl(var(--secondary))"
+                      stopOpacity={0}
+                    />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="hsl(var(--border))"
+                />
                 <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
                 <YAxis stroke="hsl(var(--muted-foreground))" />
                 <Tooltip
@@ -239,8 +276,8 @@ export default function Ventes() {
         </SectionCard>
 
         <SectionCard
-          title="Activité en direct"
-          description="Dernières commandes"
+          title={translateUi("Activité en direct")}
+          description={translateUi("Dernières commandes")}
           icon={<Activity className="w-4 h-4" />}
         >
           <LiveActivity />
@@ -256,23 +293,30 @@ export default function Ventes() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
         <SectionCard
           className="lg:col-span-2"
-          title="Répartition géographique"
-          description="Top régions par chiffre d'affaires"
+          title={translateUi("Répartition géographique")}
+          description={translateUi("Top régions par chiffre d'affaires")}
           icon={<Globe2 className="w-4 h-4" />}
         >
           <SalesHeatmap data={salesGeo?.byCountry || []} />
         </SectionCard>
 
         <SectionCard
-          title="Produits performants"
-          description="Top ventes du mois"
+          title={translateUi("Produits performants")}
+          description={translateUi("Top ventes du mois")}
           icon={<Sparkles className="w-4 h-4" />}
         >
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={topProducts} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="hsl(var(--border))"
+                />
+                <XAxis
+                  type="number"
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={11}
+                />
                 <YAxis
                   dataKey="name"
                   type="category"
@@ -287,7 +331,11 @@ export default function Ventes() {
                     borderRadius: "12px",
                   }}
                 />
-                <Bar dataKey="sales" fill="hsl(var(--secondary))" radius={[0, 6, 6, 0]} />
+                <Bar
+                  dataKey="sales"
+                  fill="hsl(var(--secondary))"
+                  radius={[0, 6, 6, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -296,15 +344,17 @@ export default function Ventes() {
 
       {/* Low rotation alerts */}
       <SectionCard
-        title="Produits à faible rotation"
-        description="Pensez à les promouvoir ou à ajuster votre stock"
+        title={translateUi("Produits à faible rotation")}
+        description={translateUi(
+          "Pensez à les promouvoir ou à ajuster votre stock",
+        )}
         icon={<AlertTriangle className="w-4 h-4" />}
       >
         {lowRotationProducts.length === 0 ? (
           <EmptyState
             icon={<AlertTriangle className="w-6 h-6" />}
-            title="Aucune alerte"
-            description="Tous vos produits tournent bien."
+            title={translateUi("Aucune alerte")}
+            description={translateUi("Tous vos produits tournent bien.")}
           />
         ) : (
           <div className="space-y-2">
@@ -314,12 +364,17 @@ export default function Ventes() {
                 className="flex items-center justify-between p-3 sm:p-4 rounded-xl bg-muted/40 border border-border/40"
               >
                 <div className="min-w-0">
-                  <p className="font-medium text-foreground truncate">{product.name}</p>
+                  <p className="font-medium text-foreground truncate">
+                    {product.name}
+                  </p>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    Dernière vente il y a {product.daysSinceLastSale} jours · Stock {product.stock}
+                    {translateUi("Dernière vente il y a") + " "}
+                    {product.daysSinceLastSale}{" "}
+                    {translateUi("jours · Stock") + " "}
+                    {product.stock}
                   </p>
                 </div>
-                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-warning/10 text-warning shrink-0">
+                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-warning/10 text-warning-ink shrink-0">
                   Attention
                 </span>
               </div>

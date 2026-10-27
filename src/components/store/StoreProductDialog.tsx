@@ -1,3 +1,5 @@
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -52,34 +54,30 @@ interface StoreProductDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   isFavorite?: boolean;
-  onToggleFavorite?: (
-    product: StoreProductDialogProduct,
-  ) => void;
+  onToggleFavorite?: (product: StoreProductDialogProduct) => void;
 }
 
 function formatPrice(value: number | null | undefined) {
   if (value == null || Number.isNaN(Number(value))) {
-    return "Prix indisponible";
+    return translateUi("Prix indisponible");
   }
 
-  return new Intl.NumberFormat("fr-FR", {
+  return new Intl.NumberFormat(getUiLocale(), {
     style: "currency",
     currency: "EUR",
   }).format(Number(value));
 }
 
-function getRotationLabel(
-  indicator: SupplierProduct["rotation_indicator"],
-) {
+function getRotationLabel(indicator: SupplierProduct["rotation_indicator"]) {
   switch (indicator) {
     case "green":
-      return "Très demandé";
+      return translateUi("Très demandé");
     case "yellow":
-      return "Demande régulière";
+      return translateUi("Demande régulière");
     case "orange":
       return "Demande modérée";
     case "red":
-      return "Produit populaire";
+      return translateUi("Produit populaire");
     default:
       return "Sélection BIB";
   }
@@ -106,12 +104,8 @@ function getRotationClassName(
   }
 }
 
-function getStorefrontPath(
-  product: StoreProductDialogProduct,
-) {
-  const slug =
-    product.boutique_slug ??
-    product.boutique?.slug;
+function getStorefrontPath(product: StoreProductDialogProduct) {
+  const slug = product.boutique_slug ?? product.boutique?.slug;
 
   if (!slug) {
     return null;
@@ -127,6 +121,7 @@ export function StoreProductDialog({
   isFavorite = false,
   onToggleFavorite,
 }: StoreProductDialogProps) {
+  useLanguage();
   const navigate = useNavigate();
 
   const boutiqueName =
@@ -134,31 +129,17 @@ export function StoreProductDialog({
     product.boutique?.name ??
     "Boutique partenaire BIB";
 
-  const boutiqueSlug =
-    product.boutique_slug ??
-    product.boutique?.slug;
+  const boutiqueSlug = product.boutique_slug ?? product.boutique?.slug;
 
-  const boutiqueLogo =
-    product.boutique?.logo_url ?? null;
+  const boutiqueLogo = product.boutique?.logo_url ?? null;
 
-  const storefrontPath = useMemo(
-    () => getStorefrontPath(product),
-    [product],
-  );
+  const storefrontPath = useMemo(() => getStorefrontPath(product), [product]);
 
-  const displayPrice =
-    product.public_price ??
-    product.price ??
-    null;
+  const displayPrice = product.public_price ?? product.price ?? null;
 
-  const rotationLabel = getRotationLabel(
-    product.rotation_indicator,
-  );
+  const rotationLabel = getRotationLabel(product.rotation_indicator);
 
-  const rotationClassName =
-    getRotationClassName(
-      product.rotation_indicator,
-    );
+  const rotationClassName = getRotationClassName(product.rotation_indicator);
 
   const targetMarkets =
     product.boutique?.target_markets ??
@@ -188,10 +169,7 @@ export function StoreProductDialog({
   };
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={onOpenChange}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92vh] w-[calc(100%-1rem)] max-w-5xl overflow-hidden p-0">
         <div className="flex max-h-[92vh] flex-col overflow-hidden">
           {/* Header */}
@@ -201,19 +179,14 @@ export function StoreProductDialog({
                 <div className="mb-2 flex flex-wrap items-center gap-2">
                   <Badge className="gap-1 border-0 bg-emerald-600 text-white">
                     <ShieldCheck className="h-3.5 w-3.5" />
-                    Verified by BIB
+                    {translateUi("Verified by BIB")}
                   </Badge>
 
                   {product.category && (
-                    <Badge variant="outline">
-                      {product.category}
-                    </Badge>
+                    <Badge variant="outline">{product.category}</Badge>
                   )}
 
-                  <Badge
-                    variant="outline"
-                    className={rotationClassName}
-                  >
+                  <Badge variant="outline" className={rotationClassName}>
                     {rotationLabel}
                   </Badge>
                 </div>
@@ -223,8 +196,9 @@ export function StoreProductDialog({
                 </DialogTitle>
 
                 <DialogDescription className="mt-1">
-                  Découvrez ce produit et retrouvez-le directement
-                  dans la boutique qui le commercialise.
+                  {translateUi(
+                    "Découvrez ce produit et retrouvez-le directement dans la boutique qui le commercialise.",
+                  )}
                 </DialogDescription>
               </div>
 
@@ -234,20 +208,16 @@ export function StoreProductDialog({
                   variant="outline"
                   size="icon"
                   className="shrink-0"
-                  onClick={() =>
-                    onToggleFavorite(product)
-                  }
+                  onClick={() => onToggleFavorite(product)}
                   aria-label={
                     isFavorite
-                      ? "Retirer des favoris"
-                      : "Ajouter aux favoris"
+                      ? translateUi("Retirer des favoris")
+                      : translateUi("Ajouter aux favoris")
                   }
                 >
                   <Heart
                     className={`h-5 w-5 ${
-                      isFavorite
-                        ? "fill-current text-red-500"
-                        : ""
+                      isFavorite ? "fill-current text-red-500" : ""
                     }`}
                   />
                 </Button>
@@ -271,7 +241,7 @@ export function StoreProductDialog({
                     <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-muted-foreground">
                       <Package className="h-14 w-14 opacity-40" />
                       <span className="text-sm">
-                        Image produit indisponible
+                        {translateUi("Image produit indisponible")}
                       </span>
                     </div>
                   )}
@@ -279,7 +249,7 @@ export function StoreProductDialog({
                   <div className="absolute left-4 top-4">
                     <Badge className="gap-1 bg-background/95 text-foreground shadow-sm hover:bg-background">
                       <BadgeCheck className="h-3.5 w-3.5 text-emerald-600" />
-                      Sélection BIB
+                      {translateUi("Sélection BIB")}
                     </Badge>
                   </div>
                 </div>
@@ -291,12 +261,13 @@ export function StoreProductDialog({
 
                     <div>
                       <p className="font-medium">
-                        Produit sélectionné par BIB
+                        {translateUi("Produit sélectionné par BIB")}
                       </p>
 
                       <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                        BIB référence des produits et boutiques
-                        sélectionnés au sein de son réseau.
+                        {translateUi(
+                          "BIB référence des produits et boutiques sélectionnés au sein de son réseau.",
+                        )}
                       </p>
                     </div>
                   </div>
@@ -308,7 +279,7 @@ export function StoreProductDialog({
                 {/* Price */}
                 <div className="rounded-2xl border bg-muted/20 p-5">
                   <p className="text-sm text-muted-foreground">
-                    Prix public
+                    {translateUi("Prix public")}
                   </p>
 
                   <div className="mt-1 flex items-end justify-between gap-4">
@@ -316,25 +287,23 @@ export function StoreProductDialog({
                       {formatPrice(displayPrice)}
                     </p>
 
-                    <Badge
-                      variant="outline"
-                      className="gap-1"
-                    >
+                    <Badge variant="outline" className="gap-1">
                       <Check className="h-3.5 w-3.5 text-emerald-600" />
-                      Sélectionné
+                      {translateUi("Sélectionné")}
                     </Badge>
                   </div>
 
                   <p className="mt-2 text-xs text-muted-foreground">
-                    Le prix final est affiché sur la boutique
-                    lors de votre visite.
+                    {translateUi(
+                      "Le prix final est affiché sur la boutique lors de votre visite.",
+                    )}
                   </p>
                 </div>
 
                 {/* Boutique */}
                 <div className="mt-5">
                   <h3 className="mb-3 font-semibold">
-                    Disponible chez
+                    {translateUi("Disponible chez")}
                   </h3>
 
                   <button
@@ -357,15 +326,13 @@ export function StoreProductDialog({
 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="truncate font-medium">
-                          {boutiqueName}
-                        </p>
+                        <p className="truncate font-medium">{boutiqueName}</p>
 
                         <BadgeCheck className="h-4 w-4 shrink-0 text-emerald-600" />
                       </div>
 
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Boutique sélectionnée par BIB
+                        {translateUi("Boutique sélectionnée par BIB")}
                       </p>
                     </div>
 
@@ -378,7 +345,7 @@ export function StoreProductDialog({
                 {/* Product information */}
                 <div className="mt-5">
                   <h3 className="mb-3 font-semibold">
-                    À propos du produit
+                    {translateUi("À propos du produit")}
                   </h3>
 
                   {product.description ? (
@@ -387,9 +354,9 @@ export function StoreProductDialog({
                     </p>
                   ) : (
                     <p className="text-sm leading-6 text-muted-foreground">
-                      Retrouvez les informations détaillées,
-                      caractéristiques et conditions de vente
-                      directement sur la boutique.
+                      {translateUi(
+                        "Retrouvez les informations détaillées, caractéristiques et conditions de vente directement sur la boutique.",
+                      )}
                     </p>
                   )}
                 </div>
@@ -397,38 +364,30 @@ export function StoreProductDialog({
                 {/* Product indicators */}
                 <div className="mt-5">
                   <h3 className="mb-3 font-semibold">
-                    Informations
+                    {translateUi("Informations")}
                   </h3>
 
                   <div className="grid gap-3 sm:grid-cols-2">
                     {product.category && (
                       <div className="rounded-xl border p-4">
                         <p className="text-xs text-muted-foreground">
-                          Catégorie
+                          {translateUi("Catégorie")}
                         </p>
 
-                        <p className="mt-1 font-medium">
-                          {product.category}
-                        </p>
+                        <p className="mt-1 font-medium">{product.category}</p>
                       </div>
                     )}
 
                     <div className="rounded-xl border p-4">
                       <div className="flex gap-3">
-                        <TrendingIcon
-                          indicator={
-                            product.rotation_indicator
-                          }
-                        />
+                        <TrendingIcon indicator={product.rotation_indicator} />
 
                         <div>
                           <p className="text-xs text-muted-foreground">
-                            Popularité
+                            {translateUi("Popularité")}
                           </p>
 
-                          <p className="mt-1 font-medium">
-                            {rotationLabel}
-                          </p>
+                          <p className="mt-1 font-medium">{rotationLabel}</p>
                         </div>
                       </div>
                     </div>
@@ -439,11 +398,11 @@ export function StoreProductDialog({
 
                         <div>
                           <p className="text-xs text-muted-foreground">
-                            Livraison
+                            {translateUi("Livraison")}
                           </p>
 
                           <p className="mt-1 font-medium">
-                            Conditions affichées en boutique
+                            {translateUi("Conditions affichées en boutique")}
                           </p>
                         </div>
                       </div>
@@ -455,11 +414,11 @@ export function StoreProductDialog({
 
                         <div>
                           <p className="text-xs text-muted-foreground">
-                            Achat
+                            {translateUi("Achat")}
                           </p>
 
                           <p className="mt-1 font-medium">
-                            Directement auprès de la boutique
+                            {translateUi("Directement auprès de la boutique")}
                           </p>
                         </div>
                       </div>
@@ -475,20 +434,15 @@ export function StoreProductDialog({
 
                       <div className="min-w-0">
                         <p className="text-xs text-muted-foreground">
-                          Zones disponibles
+                          {translateUi("Zones disponibles")}
                         </p>
 
                         <div className="mt-2 flex flex-wrap gap-2">
-                          {targetMarkets.map(
-                            (market) => (
-                              <Badge
-                                key={market}
-                                variant="secondary"
-                              >
-                                {market}
-                              </Badge>
-                            ),
-                          )}
+                          {targetMarkets.map((market) => (
+                            <Badge key={market} variant="secondary">
+                              {market}
+                            </Badge>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -502,13 +456,15 @@ export function StoreProductDialog({
 
                     <div>
                       <p className="font-medium">
-                        L'expérience d'achat se poursuit sur la boutique
+                        {translateUi(
+                          "L'expérience d'achat se poursuit sur la boutique",
+                        )}
                       </p>
 
                       <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                        BIB vous permet de découvrir le produit.
-                        La commande, le panier et le paiement sont
-                        réalisés directement sur le site de la boutique.
+                        {translateUi(
+                          "BIB vous permet de découvrir le produit. La commande, le panier et le paiement sont réalisés directement sur le site de la boutique.",
+                        )}
                       </p>
                     </div>
                   </div>
@@ -523,7 +479,7 @@ export function StoreProductDialog({
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Store className="h-4 w-4" />
                 <span>
-                  Achat effectué sur la boutique partenaire
+                  {translateUi("Achat effectué sur la boutique partenaire")}
                 </span>
               </div>
 
@@ -531,33 +487,27 @@ export function StoreProductDialog({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() =>
-                    onOpenChange(false)
-                  }
+                  onClick={() => onOpenChange(false)}
                 >
-                  Fermer
+                  {translateUi("Fermer")}
                 </Button>
 
                 {onToggleFavorite && (
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() =>
-                      onToggleFavorite(product)
-                    }
+                    onClick={() => onToggleFavorite(product)}
                     className="gap-2"
                   >
                     <Heart
                       className={`h-4 w-4 ${
-                        isFavorite
-                          ? "fill-current text-red-500"
-                          : ""
+                        isFavorite ? "fill-current text-red-500" : ""
                       }`}
                     />
 
                     {isFavorite
-                      ? "Retirer des favoris"
-                      : "Ajouter aux favoris"}
+                      ? translateUi("Retirer des favoris")
+                      : translateUi("Ajouter aux favoris")}
                   </Button>
                 )}
 
@@ -567,7 +517,7 @@ export function StoreProductDialog({
                   disabled={!storefrontPath}
                   className="gap-2"
                 >
-                  Voir dans la boutique
+                  {translateUi("Voir dans la boutique")}
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -584,6 +534,7 @@ function TrendingIcon({
 }: {
   indicator: SupplierProduct["rotation_indicator"];
 }) {
+  useLanguage();
   return (
     <div className="mt-0.5 flex h-5 w-5 items-center justify-center">
       <span

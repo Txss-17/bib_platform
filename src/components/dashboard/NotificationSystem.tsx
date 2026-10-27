@@ -1,5 +1,16 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
-import { Bell, X, AlertTriangle, CheckCircle, Info, Package, TrendingUp, Shield } from "lucide-react";
+import {
+  Bell,
+  X,
+  AlertTriangle,
+  CheckCircle,
+  Info,
+  Package,
+  TrendingUp,
+  Shield,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -13,59 +24,39 @@ interface Notification {
   icon: React.ReactNode;
 }
 
-const initialNotifications: Notification[] = [
-  {
-    id: "1",
-    type: "alert",
-    title: "Low Stock Alert",
-    message: "Smart Watch Pro is running low (3 units left). Consider reordering soon.",
-    time: "5 min ago",
-    read: false,
-    icon: <Package className="w-4 h-4" />,
-  },
-  {
-    id: "2",
-    type: "success",
-    title: "Order Delivered",
-    message: "Order #ORD-001 has been successfully delivered to Marie L.",
-    time: "2 hours ago",
-    read: false,
-    icon: <CheckCircle className="w-4 h-4" />,
-  },
-  {
-    id: "3",
-    type: "info",
-    title: "New Product Available",
-    message: "A new trending product 'Smart Ring' is now available in your category.",
-    time: "4 hours ago",
-    read: true,
-    icon: <TrendingUp className="w-4 h-4" />,
-  },
-  {
-    id: "4",
-    type: "warning",
-    title: "Compliance Review Due",
-    message: "Your quarterly compliance review is due in 5 days. Please complete the checklist.",
-    time: "1 day ago",
-    read: true,
-    icon: <Shield className="w-4 h-4" />,
-  },
-];
+const initialNotifications: Notification[] = [];
 
 const typeConfig = {
-  alert: { bg: "bg-destructive/10", text: "text-destructive", border: "border-destructive/20" },
-  success: { bg: "bg-success/10", text: "text-success", border: "border-success/20" },
-  info: { bg: "bg-primary/10", text: "text-primary", border: "border-primary/20" },
-  warning: { bg: "bg-warning/10", text: "text-warning", border: "border-warning/20" },
+  alert: {
+    bg: "bg-destructive/10",
+    text: "text-destructive",
+    border: "border-destructive/20",
+  },
+  success: {
+    bg: "bg-success/10",
+    text: "text-success",
+    border: "border-success/20",
+  },
+  info: {
+    bg: "bg-primary/10",
+    text: "text-primary",
+    border: "border-primary/20",
+  },
+  warning: {
+    bg: "bg-warning/10",
+    text: "text-warning",
+    border: "border-warning/20",
+  },
 };
 
 export function NotificationSystem() {
+  useLanguage();
   const [notifications, setNotifications] = useState(initialNotifications);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAsRead = (id: string) => {
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
     );
   };
 
@@ -96,7 +87,7 @@ export function NotificationSystem() {
             onClick={markAllAsRead}
             className="text-sm text-primary hover:underline"
           >
-            Mark all as read
+            {translateUi("Mark all as read")}
           </button>
         )}
       </CardHeader>
@@ -105,7 +96,7 @@ export function NotificationSystem() {
           {notifications.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p>No notifications</p>
+              <p>{translateUi("No notifications")}</p>
             </div>
           ) : (
             notifications.map((notification) => {
@@ -121,12 +112,16 @@ export function NotificationSystem() {
                   onClick={() => markAsRead(notification.id)}
                 >
                   <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-lg ${config.bg} ${config.text}`}>
+                    <div
+                      className={`p-2 rounded-lg ${config.bg} ${config.text}`}
+                    >
                       {notification.icon}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <h4 className={`font-medium text-sm ${notification.read ? "text-muted-foreground" : "text-foreground"}`}>
+                        <h4
+                          className={`font-medium text-sm ${notification.read ? "text-muted-foreground" : "text-foreground"}`}
+                        >
                           {notification.title}
                         </h4>
                         <button
@@ -139,16 +134,23 @@ export function NotificationSystem() {
                           <X className="w-3 h-3 text-muted-foreground" />
                         </button>
                       </div>
-                      <p className={`text-sm mt-1 ${notification.read ? "text-muted-foreground/70" : "text-muted-foreground"}`}>
+                      <p
+                        className={`text-sm mt-1 ${notification.read ? "text-muted-foreground/70" : "text-muted-foreground"}`}
+                      >
                         {notification.message}
                       </p>
-                      <p className="text-xs text-muted-foreground/50 mt-2">{notification.time}</p>
+                      <p className="text-xs text-muted-foreground/50 mt-2">
+                        {notification.time}
+                      </p>
                     </div>
                   </div>
                   {!notification.read && (
                     <div className="mt-2 flex justify-end">
-                      <Badge variant="outline" className={`${config.bg} ${config.text} ${config.border} text-xs`}>
-                        New
+                      <Badge
+                        variant="outline"
+                        className={`${config.bg} ${config.text} ${config.border} text-xs`}
+                      >
+                        {translateUi("New")}
                       </Badge>
                     </div>
                   )}

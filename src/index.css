@@ -4,9 +4,10 @@
 
 @layer base {
   :root {
+    color-scheme: light;
     /* Brand-In-A-Box — Premium Marine + Gold */
-    --background: 40 30% 98%;          /* Ivory */
-    --foreground: 215 45% 12%;          /* Deep marine ink */
+    --background: 40 30% 98%; /* Ivory */
+    --foreground: 215 45% 12%; /* Deep marine ink */
 
     --card: 0 0% 100%;
     --card-foreground: 215 45% 12%;
@@ -30,12 +31,17 @@
     --accent-foreground: 215 55% 14%;
 
     --destructive: 0 72% 51%;
+    --destructive-ink: 0 72% 38%;
     --destructive-foreground: 0 0% 100%;
 
     /* Semantic status tokens — used across dashboard for stock, orders, validation,
        SEO, and any pass/warn/fail state. Always pair with -foreground for text on
        solid backgrounds; use the bare token at /10 or /15 opacity for soft surfaces. */
     --success: 152 55% 38%;
+    --success-ink: 152 65% 25%;
+    --warning-ink: 32 80% 28%;
+    --info-ink: 215 75% 36%;
+    --accent-ink: 41 65% 30%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 48%;
     --warning-foreground: 215 55% 14%;
@@ -51,9 +57,9 @@
     /* Brand tokens (legacy class names kept, new premium values) */
     --linksy-navy: 215 55% 14%;
     --linksy-navy-light: 215 45% 22%;
-    --linksy-teal: 41 55% 52%;          /* now Gold */
+    --linksy-teal: 41 55% 52%; /* now Gold */
     --linksy-teal-light: 41 65% 65%;
-    --linksy-coral: 14 75% 55%;          /* warm copper accent */
+    --linksy-coral: 14 75% 55%; /* warm copper accent */
     --linksy-coral-light: 14 75% 68%;
     --linksy-success: 152 55% 42%;
     --linksy-warning: 38 92% 50%;
@@ -61,25 +67,57 @@
     --bib-gold-light: 41 65% 65%;
     --bib-marine: 215 55% 14%;
     --bib-ivory: 40 30% 98%;
-    
+
     /* Brand-In-A-Box uses ONLY solid colors — white, marine, gold.
        The legacy gradient tokens below are intentionally flat (single-hue
        within each family) so any old `bg-gradient-*` class still resolves
        to a clean, on-brand surface — never a marine→gold blend. */
-    --gradient-hero: linear-gradient(180deg, hsl(215 55% 14%) 0%, hsl(215 55% 14%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(40 30% 98%) 100%);
-    --gradient-accent: linear-gradient(180deg, hsl(41 55% 52%) 0%, hsl(41 55% 52%) 100%);
-    --gradient-trust: linear-gradient(180deg, hsl(41 55% 52%) 0%, hsl(41 55% 52%) 100%);
-    --gradient-premium: linear-gradient(180deg, hsl(215 55% 14%) 0%, hsl(215 55% 14%) 100%);
-    --gradient-gold: linear-gradient(180deg, hsl(41 55% 52%) 0%, hsl(41 55% 52%) 100%);
-    
+    --gradient-hero: linear-gradient(
+      180deg,
+      hsl(215 55% 14%) 0%,
+      hsl(215 55% 14%) 100%
+    );
+    --gradient-card: linear-gradient(
+      180deg,
+      hsl(0 0% 100%) 0%,
+      hsl(40 30% 98%) 100%
+    );
+    --gradient-accent: linear-gradient(
+      180deg,
+      hsl(41 55% 52%) 0%,
+      hsl(41 55% 52%) 100%
+    );
+    --gradient-trust: linear-gradient(
+      180deg,
+      hsl(41 55% 52%) 0%,
+      hsl(41 55% 52%) 100%
+    );
+    --gradient-premium: linear-gradient(
+      180deg,
+      hsl(215 55% 14%) 0%,
+      hsl(215 55% 14%) 100%
+    );
+    --gradient-gold: linear-gradient(
+      180deg,
+      hsl(41 55% 52%) 0%,
+      hsl(41 55% 52%) 100%
+    );
+
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 hsl(215 45% 12% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(215 45% 12% / 0.08), 0 2px 4px -2px hsl(215 45% 12% / 0.05);
-    --shadow-lg: 0 10px 15px -3px hsl(215 45% 12% / 0.08), 0 4px 6px -4px hsl(215 45% 12% / 0.05);
-    --shadow-xl: 0 20px 25px -5px hsl(215 45% 12% / 0.12), 0 8px 10px -6px hsl(215 45% 12% / 0.05);
+    --shadow-md:
+      0 4px 6px -1px hsl(215 45% 12% / 0.08),
+      0 2px 4px -2px hsl(215 45% 12% / 0.05);
+    --shadow-lg:
+      0 10px 15px -3px hsl(215 45% 12% / 0.08),
+      0 4px 6px -4px hsl(215 45% 12% / 0.05);
+    --shadow-xl:
+      0 20px 25px -5px hsl(215 45% 12% / 0.12),
+      0 8px 10px -6px hsl(215 45% 12% / 0.05);
     --shadow-glow: 0 0 40px -10px hsl(41 55% 52% / 0.45);
-    --shadow-premium: 0 20px 60px -20px hsl(215 55% 14% / 0.35), 0 0 0 1px hsl(41 55% 52% / 0.15);
+    --shadow-premium:
+      0 20px 60px -20px hsl(215 55% 14% / 0.35),
+      0 0 0 1px hsl(41 55% 52% / 0.15);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -91,11 +129,10 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
-
   .dark {
     color-scheme: dark;
 
-    /* BIB ? th?me sombre domin? par le bleu marine */
+    /* BIB — thème sombre dominé par le bleu marine */
     --background: 216 58% 10%;
     --foreground: 40 25% 95%;
 
@@ -105,8 +142,8 @@
     --popover: 216 48% 15%;
     --popover-foreground: 40 25% 95%;
 
-    --primary: 215 48% 34%;
-    --primary-foreground: 40 30% 98%;
+    --primary: 41 65% 62%;
+    --primary-foreground: 216 58% 10%;
 
     --secondary: 216 38% 21%;
     --secondary-foreground: 40 25% 95%;
@@ -118,9 +155,14 @@
     --accent-foreground: 216 58% 10%;
 
     --destructive: 0 65% 55%;
+    --destructive-ink: 0 90% 80%;
     --destructive-foreground: 0 0% 100%;
 
     --success: 152 55% 50%;
+    --success-ink: 152 60% 70%;
+    --warning-ink: 38 95% 72%;
+    --info-ink: 205 70% 78%;
+    --accent-ink: 41 65% 72%;
     --success-foreground: 216 58% 10%;
 
     --warning: 38 92% 58%;
@@ -147,9 +189,21 @@
     --bib-marine: 215 52% 62%;
     --bib-ivory: 40 25% 95%;
 
-    --gradient-hero: linear-gradient(180deg, hsl(216 58% 10%) 0%, hsl(216 58% 10%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(216 48% 14%) 0%, hsl(216 48% 14%) 100%);
-    --gradient-accent: linear-gradient(180deg, hsl(41 65% 62%) 0%, hsl(41 65% 62%) 100%);
+    --gradient-hero: linear-gradient(
+      180deg,
+      hsl(216 58% 10%) 0%,
+      hsl(216 58% 10%) 100%
+    );
+    --gradient-card: linear-gradient(
+      180deg,
+      hsl(216 48% 14%) 0%,
+      hsl(216 48% 14%) 100%
+    );
+    --gradient-accent: linear-gradient(
+      180deg,
+      hsl(41 65% 62%) 0%,
+      hsl(41 65% 62%) 100%
+    );
     --gradient-trust: var(--gradient-accent);
     --gradient-premium: var(--gradient-hero);
     --gradient-gold: var(--gradient-accent);
@@ -159,7 +213,8 @@
     --shadow-lg: 0 10px 20px -5px hsl(0 0% 0% / 0.32);
     --shadow-xl: 0 20px 30px -8px hsl(0 0% 0% / 0.38);
     --shadow-glow: 0 0 30px -10px hsl(41 65% 62% / 0.25);
-    --shadow-premium: 0 20px 60px -20px hsl(0 0% 0% / 0.5), 0 0 0 1px hsl(41 65% 62% / 0.15);
+    --shadow-premium:
+      0 20px 60px -20px hsl(0 0% 0% / 0.5), 0 0 0 1px hsl(41 65% 62% / 0.15);
 
     --sidebar-background: 216 62% 8%;
     --sidebar-foreground: 40 25% 91%;
@@ -179,21 +234,32 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Figtree', 'Inter', system-ui, sans-serif;
+    font-family: "Figtree", "Inter", system-ui, sans-serif;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-semibold tracking-tight;
-    font-family: 'Outfit', 'Figtree', system-ui, sans-serif;
+    font-family: "Outfit", "Figtree", system-ui, sans-serif;
     letter-spacing: -0.02em;
   }
 }
 
 @layer utilities {
   /* Brand rule: no gradient text. These helpers render as flat brand color. */
-  .text-gradient-hero  { color: hsl(var(--bib-marine)); }
-  .text-gradient-trust { color: hsl(var(--bib-gold)); }
-  .text-gradient-gold  { color: hsl(var(--bib-gold)); }
+  .text-gradient-hero {
+    color: hsl(var(--bib-marine));
+  }
+  .text-gradient-trust {
+    color: hsl(var(--bib-gold));
+  }
+  .text-gradient-gold {
+    color: hsl(var(--bib-gold));
+  }
 
   .bg-gradient-hero {
     background: var(--gradient-hero);
@@ -228,7 +294,7 @@
   }
 
   .font-display {
-    font-family: 'Outfit', 'Figtree', system-ui, sans-serif;
+    font-family: "Outfit", "Figtree", system-ui, sans-serif;
     letter-spacing: -0.025em;
   }
 
@@ -254,7 +320,8 @@
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -305,12 +372,21 @@
 }
 
 /* Delay utilities for staggered animations */
-.delay-100 { animation-delay: 100ms; }
-.delay-200 { animation-delay: 200ms; }
-.delay-300 { animation-delay: 300ms; }
-.delay-400 { animation-delay: 400ms; }
-.delay-500 { animation-delay: 500ms; }
-
+.delay-100 {
+  animation-delay: 100ms;
+}
+.delay-200 {
+  animation-delay: 200ms;
+}
+.delay-300 {
+  animation-delay: 300ms;
+}
+.delay-400 {
+  animation-delay: 400ms;
+}
+.delay-500 {
+  animation-delay: 500ms;
+}
 
 /* =========================================================
    BIB PLATFORM — FINITIONS DU THÈME DU DASHBOARD
@@ -326,47 +402,35 @@
     color 160ms ease;
 }
 
-.dashboard-theme :is(
-  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
-  textarea,
-  select
-) {
+.dashboard-theme
+  :is(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    textarea,
+    select
+  ) {
   color: hsl(var(--foreground));
   background-color: hsl(var(--card));
   border-color: hsl(var(--input));
 }
 
-.dashboard-theme :is(
-  input,
-  textarea,
-  select
-)::placeholder {
+.dashboard-theme :is(input, textarea, select)::placeholder {
   color: hsl(var(--muted-foreground));
   opacity: 1;
 }
 
-.dashboard-theme :is(
-  input,
-  textarea,
-  select,
-  button,
-  a
-):focus-visible {
+.dashboard-theme :is(input, textarea, select, button, a):focus-visible {
   outline-color: hsl(var(--ring));
 }
 
-.dashboard-theme.dark {
+.dark .dashboard-theme {
   color-scheme: dark;
 }
 
-.dashboard-theme.dark :is(
-  table th,
-  table td
-) {
+.dark .dashboard-theme :is(table th, table td) {
   border-color: hsl(var(--border));
 }
 
-.dashboard-theme.dark hr {
+.dark .dashboard-theme hr {
   border-color: hsl(var(--border));
 }
 
@@ -434,11 +498,13 @@
   text-decoration: underline;
   text-decoration-color: hsl(var(--bib-gold) / 0.45);
   text-underline-offset: 3px;
-  transition: color 150ms ease, text-decoration-color 150ms ease;
+  transition:
+    color 150ms ease,
+    text-decoration-color 150ms ease;
 }
 
 .legal-content a:hover {
-  color: hsl(var(--bib-marine));
+  color: hsl(var(--foreground));
   text-decoration-color: currentColor;
 }
 
@@ -465,7 +531,7 @@
 }
 
 .legal-content th {
-  background: hsl(var(--bib-marine));
+  background: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
   font-weight: 600;
   text-align: left;

@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import logoImg from "@/assets/brand-in-a-box-logo.png";
 
@@ -24,6 +26,7 @@ export interface BrandIconProps {
  * every size (36px on mobile, 72px on desktop, anything in between).
  */
 export function BrandIcon({ size = 36, className = "" }: BrandIconProps) {
+  useLanguage();
   // Width derived from displayed aspect ratio so the crop stays pixel-true.
   const width = Math.round(size * ICON_CROP.ratio);
   return (
@@ -72,8 +75,9 @@ export function Logo({
   to = "/",
   iconSize = 36,
 }: LogoProps) {
-  const wordmarkColor = onLight ? "text-foreground" : "text-primary-foreground";
-  const taglineColor = onLight ? "text-muted-foreground" : "text-primary-foreground/70";
+  useLanguage();
+  const wordmarkColor = onLight ? "text-foreground" : "text-bib-ivory";
+  const taglineColor = onLight ? "text-muted-foreground" : "text-bib-ivory/70";
 
   const Mark = <BrandIcon size={iconSize} />;
 
@@ -82,12 +86,16 @@ export function Logo({
       {Mark}
       {variant !== "icon" && (
         <span className="flex flex-col leading-none">
-          <span className={`font-display font-bold text-base sm:text-lg tracking-tight ${wordmarkColor}`}>
+          <span
+            className={`font-display font-bold text-base sm:text-lg tracking-tight ${wordmarkColor}`}
+          >
             Brand<span className="text-bib-gold">-In-A-</span>Box
           </span>
           {variant === "full" && (
-            <span className={`text-[10px] uppercase tracking-[0.18em] mt-0.5 ${taglineColor}`}>
-              Your brand. Ready to launch.
+            <span
+              className={`text-[10px] uppercase tracking-[0.18em] mt-0.5 ${taglineColor}`}
+            >
+              {translateUi("Your brand. Ready to launch.")}
             </span>
           )}
         </span>
@@ -96,12 +104,24 @@ export function Logo({
   );
 
   if (!asLink) return content;
-  return <Link to={to} aria-label="Brand-In-A-Box">{content}</Link>;
+  return (
+    <Link to={to} aria-label="Brand-In-A-Box">
+      {content}
+    </Link>
+  );
 }
 
 /** Raw logo image (uploaded reference asset). Use for splash / login side panels. */
 export function LogoImage({ className = "" }: { className?: string }) {
-  return <img src={logoImg} alt="Brand-In-A-Box" className={className} loading="lazy" />;
+  useLanguage();
+  return (
+    <img
+      src={logoImg}
+      alt="Brand-In-A-Box"
+      className={className}
+      loading="lazy"
+    />
+  );
 }
 
 export default Logo;

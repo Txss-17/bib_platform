@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Check, ChevronDown, ShoppingCart } from "lucide-react";
@@ -37,6 +39,7 @@ export function StorefrontProducts({
   boutiqueId,
   is3D = false,
 }: StorefrontProductsProps) {
+  useLanguage();
   const { addItem } = useCart();
   const ctx = useStorefrontContext();
 
@@ -63,13 +66,9 @@ export function StorefrontProducts({
     });
 
     if (trackedBoutiqueId) {
-      trackStorefrontEvent(
-        trackedBoutiqueId,
-        "add_to_cart",
-        {
-          productId: product.id,
-        },
-      );
+      trackStorefrontEvent(trackedBoutiqueId, "add_to_cart", {
+        productId: product.id,
+      });
     }
   };
 
@@ -111,7 +110,7 @@ export function StorefrontProducts({
             style={{ backgroundColor: primaryColor }}
           >
             <Check className="w-3 h-3 mr-1" />
-            Populaire
+            {translateUi("Populaire")}
           </Badge>
         )}
 
@@ -125,7 +124,6 @@ export function StorefrontProducts({
             ))}
           </div>
         )}
-
       </div>
     );
 
@@ -136,7 +134,7 @@ export function StorefrontProducts({
     return (
       <Link
         to={`/boutique/${boutiqueSlug}/product/${product.id}`}
-        aria-label={`Voir ${product.name}`}
+        aria-label={translateUi("Voir {v0}", { v0: product.name })}
       >
         {media}
       </Link>
@@ -170,7 +168,7 @@ export function StorefrontProducts({
           </span>
 
           <span className="text-xs text-gray-500">
-            Livraison incluse
+            {translateUi("Livraison incluse")}
           </span>
         </div>
 
@@ -180,17 +178,14 @@ export function StorefrontProducts({
           onClick={() => handleAddToCart(product)}
         >
           <ShoppingCart className="w-3.5 h-3.5" />
-          Ajouter
+          {translateUi("Ajouter")}
         </Button>
       </>
     );
   };
 
   return (
-    <section
-      id="products"
-      className="py-12 md:py-16 bg-white"
-    >
+    <section id="products" className="py-12 md:py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section title */}
         <div className="flex items-center gap-4 mb-10">
@@ -206,15 +201,12 @@ export function StorefrontProducts({
         {/* Products grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {products.map((product, index) => {
-            const isHiddenOnMobile =
-              !showAll && index >= mobileLimit;
+            const isHiddenOnMobile = !showAll && index >= mobileLimit;
 
             return (
               <div
                 key={product.id}
-                className={`group ${
-                  isHiddenOnMobile ? "hidden md:block" : ""
-                }`}
+                className={`group ${isHiddenOnMobile ? "hidden md:block" : ""}`}
               >
                 {is3D ? (
                   <TiltCard
@@ -246,7 +238,7 @@ export function StorefrontProducts({
                     color: primaryColor,
                   }}
                 >
-                  Voir tous les produits
+                  {translateUi("Voir tous les produits")}
                   <ChevronDown className="w-4 h-4" />
                 </Button>
               </Link>
@@ -260,7 +252,7 @@ export function StorefrontProducts({
                   color: primaryColor,
                 }}
               >
-                Voir plus
+                {translateUi("Voir plus")}
                 <ChevronDown className="w-4 h-4" />
               </Button>
             )}
@@ -278,7 +270,7 @@ export function StorefrontProducts({
                   color: primaryColor,
                 }}
               >
-                Voir tous les produits →
+                {translateUi("Voir tous les produits →")}
               </Button>
             </Link>
           </div>
@@ -287,7 +279,7 @@ export function StorefrontProducts({
         {/* Empty state */}
         {products.length === 0 && (
           <div className="text-center py-12 text-gray-500">
-            <p>Aucun produit disponible pour le moment.</p>
+            <p>{translateUi("Aucun produit disponible pour le moment.")}</p>
           </div>
         )}
       </div>

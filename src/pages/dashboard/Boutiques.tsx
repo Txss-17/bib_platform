@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -29,10 +31,7 @@ import {
 import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  useBoutiques,
-  useDeleteBoutique,
-} from "@/hooks/useBoutiques";
+import { useBoutiques, useDeleteBoutique } from "@/hooks/useBoutiques";
 import {
   usePerBoutiqueHealth,
   type PerBoutiqueHealth,
@@ -50,10 +49,10 @@ const HEALTH_LABELS: Record<PerBoutiqueHealth["level"], string> = {
 };
 
 const HEALTH_STYLES: Record<PerBoutiqueHealth["level"], string> = {
-  excellent: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  good: "border-green-200 bg-green-50 text-green-700",
-  fair: "border-amber-200 bg-amber-50 text-amber-800",
-  poor: "border-red-200 bg-red-50 text-red-700",
+  excellent: "border-success/30 bg-success/10 text-success-ink",
+  good: "border-success/30 bg-success/10 text-success-ink",
+  fair: "border-warning/30 bg-warning/10 text-warning-ink",
+  poor: "border-destructive/30 bg-destructive/10 text-destructive-ink",
 };
 
 type SignalStatus = "ok" | "warning" | "critical";
@@ -69,16 +68,17 @@ function Signal({
   icon: typeof Globe;
   detail: string;
 }) {
+  useLanguage();
   const styles: Record<SignalStatus, string> = {
-    ok: "bg-emerald-50 text-emerald-700",
-    warning: "bg-amber-50 text-amber-800",
-    critical: "bg-red-50 text-red-700",
+    ok: "bg-success/10 text-success-ink",
+    warning: "bg-warning/10 text-warning-ink",
+    critical: "bg-destructive/10 text-destructive-ink",
   };
 
   const dotStyles: Record<SignalStatus, string> = {
-    ok: "bg-emerald-500",
-    warning: "bg-amber-500",
-    critical: "bg-red-500",
+    ok: "bg-success",
+    warning: "bg-warning",
+    critical: "bg-destructive",
   };
 
   return (
@@ -89,16 +89,22 @@ function Signal({
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", dotStyles[status])} />
-          <p className="text-xs font-semibold text-slate-800">{label}</p>
+          <span
+            className={cn(
+              "h-1.5 w-1.5 shrink-0 rounded-full",
+              dotStyles[status],
+            )}
+          />
+          <p className="text-xs font-semibold text-foreground">{label}</p>
         </div>
-        <p className="mt-1 text-xs leading-5 text-slate-500">{detail}</p>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail}</p>
       </div>
     </div>
   );
 }
 
 function PublicationBadge({ status }: { status: string | null }) {
+  useLanguage();
   const published = status === "published";
 
   return (
@@ -107,42 +113,33 @@ function PublicationBadge({ status }: { status: string | null }) {
       className={cn(
         "shrink-0 gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium",
         published
-          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-          : "border-slate-200 bg-slate-50 text-slate-600",
+          ? "border-success/30 bg-success/10 text-success-ink"
+          : "border-border bg-muted text-muted-foreground",
       )}
     >
       <span
         className={cn(
           "h-1.5 w-1.5 rounded-full",
-          published ? "bg-emerald-500" : "bg-slate-400",
+          published ? "bg-success" : "bg-muted",
         )}
       />
-      {published ? "En ligne" : "Brouillon"}
+      {published ? translateUi("En ligne") : translateUi("Brouillon")}
     </Badge>
   );
 }
 
-function BoutiqueHealth({
-  health,
-}: {
-  health?: PerBoutiqueHealth;
-}) {
+function BoutiqueHealth({ health }: { health?: PerBoutiqueHealth }) {
+  useLanguage();
   if (!health) {
     return (
-      <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-3">
-        <HealthRing
-          score={0}
-          level="fair"
-          size={52}
-          strokeWidth={6}
-          loading
-        />
+      <div className="flex items-center gap-3 rounded-xl bg-muted p-3">
+        <HealthRing score={0} level="fair" size={52} strokeWidth={6} loading />
         <div>
-          <p className="text-xs font-semibold text-slate-800">
-            Santé opérationnelle
+          <p className="text-xs font-semibold text-foreground">
+            {translateUi("Santé opérationnelle")}
           </p>
-          <p className="mt-1 text-xs text-slate-500">
-            Analyse en cours…
+          <p className="mt-1 text-xs text-muted-foreground">
+            {translateUi("Analyse en cours…")}
           </p>
         </div>
       </div>
@@ -150,7 +147,7 @@ function BoutiqueHealth({
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/80 p-3">
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/80 p-3">
       <div className="flex min-w-0 items-center gap-3">
         <HealthRing
           score={health.score}
@@ -159,21 +156,18 @@ function BoutiqueHealth({
           strokeWidth={6}
         />
         <div className="min-w-0">
-          <p className="text-xs font-semibold text-slate-800">
-            Santé opérationnelle
+          <p className="text-xs font-semibold text-foreground">
+            {translateUi("Santé opérationnelle")}
           </p>
-          <p className="mt-1 text-xs text-slate-500">
-            Score global de la boutique
+          <p className="mt-1 text-xs text-muted-foreground">
+            {translateUi("Score global de la boutique")}
           </p>
         </div>
       </div>
 
       <Badge
         variant="outline"
-        className={cn(
-          "shrink-0 text-[10px]",
-          HEALTH_STYLES[health.level],
-        )}
+        className={cn("shrink-0 text-[10px]", HEALTH_STYLES[health.level])}
       >
         {HEALTH_LABELS[health.level]}
       </Badge>
@@ -190,6 +184,7 @@ function BoutiqueCard({
   health?: PerBoutiqueHealth;
   onDelete: (id: string) => void;
 }) {
+  useLanguage();
   const isPublished = boutique.status === "published";
   const activeProducts = health?.metrics.activeProducts ?? 0;
   const pendingOrders = health?.metrics.pendingOrders ?? 0;
@@ -198,20 +193,16 @@ function BoutiqueCard({
   const editPath = `/dashboard/boutiques/${boutique.id}/edit`;
   const analyticsPath = `/dashboard/boutiques/${boutique.id}/analytics`;
 
-  const publicationStatus: SignalStatus =
-    isPublished ? "ok" : "warning";
+  const publicationStatus: SignalStatus = isPublished ? "ok" : "warning";
 
-  const productStatus: SignalStatus =
-    activeProducts > 0 ? "ok" : "warning";
+  const productStatus: SignalStatus = activeProducts > 0 ? "ok" : "warning";
 
-  const fulfillmentStatus: SignalStatus =
-    pendingOrders > 0 ? "warning" : "ok";
+  const fulfillmentStatus: SignalStatus = pendingOrders > 0 ? "warning" : "ok";
 
-  const stockStatus: SignalStatus =
-    health?.signals.stock ?? "warning";
+  const stockStatus: SignalStatus = health?.signals.stock ?? "warning";
 
   return (
-    <article className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-950/5">
+    <article className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-info/30 hover:shadow-lg hover:shadow-blue-950/5">
       <div className="h-1 bg-gradient-to-r from-[#0A2B65] via-blue-600 to-amber-300" />
 
       <div className="space-y-5 p-4 sm:p-5">
@@ -223,12 +214,12 @@ function BoutiqueCard({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div className="min-w-0">
-                <h2 className="break-words text-base font-semibold tracking-tight text-slate-950">
+                <h2 className="break-words text-base font-semibold tracking-tight text-foreground">
                   {boutique.name}
                 </h2>
 
                 {boutique.category && (
-                  <p className="mt-1 truncate text-xs text-slate-500">
+                  <p className="mt-1 truncate text-xs text-muted-foreground">
                     {boutique.category}
                   </p>
                 )}
@@ -246,100 +237,105 @@ function BoutiqueCard({
             status={publicationStatus}
             label="Publication"
             icon={Globe}
-            detail={isPublished ? "Boutique publiée" : "Publication à préparer"}
+            detail={
+              isPublished
+                ? translateUi("Boutique publiée")
+                : translateUi("Publication à préparer")
+            }
           />
 
           <Signal
             status={productStatus}
             label="Catalogue"
             icon={Package}
-            detail={`${activeProducts} produit${activeProducts > 1 ? "s" : ""} actif${activeProducts > 1 ? "s" : ""}`}
+            detail={translateUi("{v0} produit{v1} actif{v2}", {
+              v0: activeProducts,
+              v1: activeProducts > 1 ? "s" : "",
+              v2: activeProducts > 1 ? "s" : "",
+            })}
           />
 
           <Signal
             status={fulfillmentStatus}
-            label="Commandes"
+            label={translateUi("Commandes")}
             icon={Truck}
             detail={
               pendingOrders > 0
-                ? `${pendingOrders} à traiter`
-                : "Aucune commande en attente signalée"
+                ? translateUi("{v0} à traiter", { v0: pendingOrders })
+                : translateUi("Aucune commande en attente signalée")
             }
           />
 
           <Signal
             status={stockStatus}
-            label="Disponibilité"
+            label={translateUi("Disponibilité")}
             icon={stockStatus === "ok" ? CheckCircle2 : AlertTriangle}
             detail={
               stockStatus === "ok"
-                ? "Aucune alerte de stock signalée"
+                ? translateUi("Aucune alerte de stock signalée")
                 : stockStatus === "warning"
-                  ? "Vérification du stock recommandée"
-                  : "Une action sur le stock est requise"
+                  ? translateUi("Vérification du stock recommandée")
+                  : translateUi("Une action sur le stock est requise")
             }
           />
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
+        <div className="rounded-xl border border-border bg-muted/70 p-3">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-              Adresse de la boutique
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              {translateUi("Adresse de la boutique")}
             </p>
             {isPublished && (
-              <span className="flex shrink-0 items-center gap-1 text-[10px] font-medium text-emerald-700">
+              <span className="flex shrink-0 items-center gap-1 text-[10px] font-medium text-success-ink">
                 <CheckCircle2 className="h-3 w-3" />
-                Publique
+                {translateUi("Publique")}
               </span>
             )}
           </div>
 
-          <p className="mt-1.5 truncate font-mono text-xs text-blue-800">
+          <p className="mt-1.5 truncate font-mono text-xs text-info-ink">
             {publicPath}
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          <Button
-            asChild
-            className="bg-blue-700 text-white hover:bg-blue-800"
-          >
+          <Button asChild className="bg-blue-700 text-white hover:bg-blue-800">
             <Link to={editPath}>
               <Settings2 className="mr-2 h-4 w-4" />
-              Gérer
+              {translateUi("Gérer")}
             </Link>
           </Button>
 
           <Button
             asChild
             variant="outline"
-            className="border-slate-200 text-slate-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-800"
+            className="border-border text-foreground hover:border-info/30 hover:bg-info/10 hover:text-info-ink"
           >
             <Link to={analyticsPath}>
-              Voir les analyses
+              {translateUi("Voir les analyses")}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
         </div>
 
-        <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+        <div className="flex items-center justify-between border-t border-border pt-3">
           {isPublished ? (
             <a
               href={publicPath}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-700 hover:text-blue-900"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-info-ink hover:text-info-ink"
             >
               <ExternalLink className="h-3.5 w-3.5" />
-              Voir la boutique publique
+              {translateUi("Voir la boutique publique")}
             </a>
           ) : (
             <Link
               to={editPath}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-blue-800"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-info-ink"
             >
               <Settings2 className="h-3.5 w-3.5" />
-              Préparer la publication
+              {translateUi("Préparer la publication")}
             </Link>
           )}
 
@@ -347,10 +343,12 @@ function BoutiqueCard({
             type="button"
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-slate-400 hover:bg-red-50 hover:text-red-600"
+            className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive-ink"
             onClick={() => onDelete(boutique.id)}
-            aria-label={`Supprimer la boutique ${boutique.name}`}
-            title="Supprimer la boutique"
+            aria-label={translateUi("Supprimer la boutique {v0}", {
+              v0: boutique.name,
+            })}
+            title={translateUi("Supprimer la boutique")}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -361,37 +359,35 @@ function BoutiqueCard({
 }
 
 function BoutiqueCardSkeleton() {
+  useLanguage();
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      <div className="h-1 bg-slate-100" />
+    <div className="overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="h-1 bg-muted" />
       <div className="animate-pulse space-y-5 p-5">
         <div className="flex gap-3">
-          <div className="h-12 w-12 rounded-xl bg-slate-100" />
+          <div className="h-12 w-12 rounded-xl bg-muted" />
           <div className="flex-1 space-y-2 pt-1">
-            <div className="h-4 w-2/3 rounded bg-slate-100" />
-            <div className="h-3 w-1/3 rounded bg-slate-100" />
+            <div className="h-4 w-2/3 rounded bg-muted" />
+            <div className="h-3 w-1/3 rounded bg-muted" />
           </div>
         </div>
-        <div className="h-[76px] rounded-xl bg-slate-100" />
+        <div className="h-[76px] rounded-xl bg-muted" />
         <div className="grid grid-cols-2 gap-4">
-          <div className="h-12 rounded-lg bg-slate-100" />
-          <div className="h-12 rounded-lg bg-slate-100" />
-          <div className="h-12 rounded-lg bg-slate-100" />
-          <div className="h-12 rounded-lg bg-slate-100" />
+          <div className="h-12 rounded-lg bg-muted" />
+          <div className="h-12 rounded-lg bg-muted" />
+          <div className="h-12 rounded-lg bg-muted" />
+          <div className="h-12 rounded-lg bg-muted" />
         </div>
-        <div className="h-10 rounded-lg bg-slate-100" />
-        <div className="h-9 rounded-lg bg-slate-100" />
+        <div className="h-10 rounded-lg bg-muted" />
+        <div className="h-9 rounded-lg bg-muted" />
       </div>
     </div>
   );
 }
 
 export default function Boutiques() {
-  const {
-    data: boutiques,
-    isLoading,
-    error,
-  } = useBoutiques();
+  useLanguage();
+  const { data: boutiques, isLoading, error } = useBoutiques();
 
   const { data: healthMap } = usePerBoutiqueHealth();
   const deleteBoutique = useDeleteBoutique();
@@ -447,10 +443,10 @@ export default function Boutiques() {
 
     try {
       await deleteBoutique.mutateAsync(deleteId);
-      toast.success("Boutique supprimée.");
+      toast.success(translateUi("Boutique supprimée."));
     } catch (err) {
       console.error("Erreur lors de la suppression de la boutique :", err);
-      toast.error("Impossible de supprimer cette boutique.");
+      toast.error(translateUi("Impossible de supprimer cette boutique."));
     } finally {
       setDeleteId(null);
     }
@@ -465,53 +461,62 @@ export default function Boutiques() {
       <div className="space-y-6 pb-8">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#071D49] via-[#103B82] to-[#1764C0] p-5 text-white shadow-lg shadow-blue-950/10 sm:p-8">
           <div className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full border border-white/10" />
-          <div className="pointer-events-none absolute -right-2 -top-12 h-48 w-48 rounded-full border border-amber-300/20" />
+          <div className="pointer-events-none absolute -right-2 -top-12 h-48 w-48 rounded-full border border-warning/30" />
 
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
               <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-medium text-blue-50">
-                <Store className="h-3.5 w-3.5 text-amber-300" />
-                Espace marchand · Portefeuille
+                <Store className="h-3.5 w-3.5 text-warning-ink" />
+                {translateUi("Espace marchand · Portefeuille")}
               </div>
 
               <h1 className="text-2xl font-semibold tracking-tight sm:text-4xl">
-                Vos boutiques, un seul cockpit.
+                {translateUi("Vos boutiques, un seul cockpit.")}
               </h1>
 
               <p className="mt-3 max-w-xl text-sm leading-6 text-blue-100 sm:text-base">
-                Suivez la publication, la disponibilité des produits et les
-                opérations de chaque boutique depuis un espace centralisé.
+                {translateUi(
+                  "Suivez la publication, la disponibilité des produits et les opérations de chaque boutique depuis un espace centralisé.",
+                )}
               </p>
             </div>
 
             <Button
               asChild
-              className="w-full shrink-0 bg-amber-300 text-blue-950 hover:bg-amber-200 sm:w-auto"
+              className="w-full shrink-0 bg-warning/20 text-info-ink hover:bg-warning/10 sm:w-auto"
             >
               <Link to="/dashboard/boutiques/create">
                 <Plus className="mr-2 h-4 w-4" />
-                Créer une boutique
+                {translateUi("Créer une boutique")}
               </Link>
             </Button>
           </div>
 
           <div className="relative mt-7 grid grid-cols-2 gap-4 border-t border-white/15 pt-5 sm:grid-cols-4">
             <div>
-              <p className="text-xs text-blue-200">Boutiques</p>
+              <p className="text-xs text-blue-200">
+                {translateUi("Boutiques")}
+              </p>
               <p className="mt-1 text-2xl font-semibold">{portfolio.total}</p>
             </div>
             <div>
-              <p className="text-xs text-blue-200">En ligne</p>
-              <p className="mt-1 text-2xl font-semibold">{portfolio.published}</p>
+              <p className="text-xs text-blue-200">{translateUi("En ligne")}</p>
+              <p className="mt-1 text-2xl font-semibold">
+                {portfolio.published}
+              </p>
             </div>
             <div>
-              <p className="text-xs text-blue-200">Produits actifs</p>
+              <p className="text-xs text-blue-200">
+                {translateUi("Produits actifs")}
+              </p>
               <p className="mt-1 text-2xl font-semibold">
                 {portfolio.totalActiveProducts}
               </p>
             </div>
             <div>
-              <p className="text-xs text-blue-200">Commandes à traiter</p>
+              <p className="text-xs text-blue-200">
+                {translateUi("Commandes à traiter")}
+              </p>
               <p className="mt-1 text-2xl font-semibold">
                 {portfolio.totalPendingOrders}
               </p>
@@ -520,18 +525,16 @@ export default function Boutiques() {
         </div>
 
         <PageHeader
-          eyebrow="Pilotage opérationnel"
-          title="Mes boutiques"
-          subtitle="Accédez aux paramètres, consultez l’état opérationnel et ouvrez chaque boutique publique."
+          eyebrow={translateUi("Pilotage opérationnel")}
+          title={translateUi("Mes boutiques")}
+          subtitle={translateUi(
+            "Accédez aux paramètres, consultez l’état opérationnel et ouvrez chaque boutique publique.",
+          )}
           actions={
-            <Button
-              asChild
-              variant="outline"
-              className="border-slate-200 bg-white"
-            >
+            <Button asChild variant="outline" className="border-border bg-card">
               <Link to="/dashboard/boutiques/create">
                 <Plus className="mr-2 h-4 w-4" />
-                Nouvelle boutique
+                {translateUi("Nouvelle boutique")}
               </Link>
             </Button>
           }
@@ -546,20 +549,28 @@ export default function Boutiques() {
           ) : (
             <>
               <KpiTile
-                label="État du portefeuille"
+                label={translateUi("État du portefeuille")}
                 value={`${portfolio.averageHealth}/100`}
                 hint={
                   portfolio.total === 0
-                    ? "Aucune boutique à analyser"
-                    : "Score moyen des boutiques analysées"
+                    ? translateUi("Aucune boutique à analyser")
+                    : translateUi("Score moyen des boutiques analysées")
                 }
                 icon={<CheckCircle2 className="h-4 w-4" />}
               />
               <KpiTile
-                label="Actions à surveiller"
+                label={translateUi("Actions à surveiller")}
                 value={portfolio.attentionCount}
                 tone="gold"
-                hint={`${portfolio.drafts} brouillon${portfolio.drafts > 1 ? "s" : ""} · ${portfolio.totalPendingOrders} commande${portfolio.totalPendingOrders > 1 ? "s" : ""} en attente`}
+                hint={translateUi(
+                  "{v0} brouillon{v1} · {v2} commande{v3} en attente",
+                  {
+                    v0: portfolio.drafts,
+                    v1: portfolio.drafts > 1 ? "s" : "",
+                    v2: portfolio.totalPendingOrders,
+                    v3: portfolio.totalPendingOrders > 1 ? "s" : "",
+                  },
+                )}
                 icon={<AlertTriangle className="h-4 w-4" />}
               />
             </>
@@ -567,28 +578,31 @@ export default function Boutiques() {
         </KpiGrid>
 
         {!isLoading && !error && portfolio.totalPendingOrders > 0 && (
-          <SectionCard className="border-amber-200 bg-amber-50/60">
+          <SectionCard className="border-warning/30 bg-warning/10">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning-ink">
                 <Truck className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <p className="font-semibold text-slate-900">
-                  Des commandes nécessitent votre attention
+                <p className="font-semibold text-foreground">
+                  {translateUi("Des commandes nécessitent votre attention")}
                 </p>
-                <p className="mt-1 text-sm leading-5 text-slate-600">
+                <p className="mt-1 text-sm leading-5 text-muted-foreground">
                   {portfolio.totalPendingOrders} commande
-                  {portfolio.totalPendingOrders > 1 ? "s sont" : " est"} signalée
-                  {portfolio.totalPendingOrders > 1 ? "s" : ""} comme à traiter
-                  dans votre portefeuille.
+                  {portfolio.totalPendingOrders > 1
+                    ? translateUi("s sont")
+                    : translateUi(" est")}{" "}
+                  {translateUi("signalée")}
+                  {portfolio.totalPendingOrders > 1 ? "s" : ""}{" "}
+                  {translateUi("comme à traiter dans votre portefeuille.")}
                 </p>
                 <Button
                   asChild
                   variant="link"
-                  className="mt-1 h-auto p-0 text-amber-900"
+                  className="mt-1 h-auto p-0 text-warning-ink"
                 >
                   <Link to="/dashboard/commandes">
-                    Consulter les commandes
+                    {translateUi("Consulter les commandes")}
                     <ArrowRight className="ml-1.5 h-4 w-4" />
                   </Link>
                 </Button>
@@ -602,12 +616,13 @@ export default function Boutiques() {
             <div className="flex items-start gap-3">
               <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
               <div>
-                <p className="font-semibold text-slate-900">
-                  Impossible de charger les boutiques
+                <p className="font-semibold text-foreground">
+                  {translateUi("Impossible de charger les boutiques")}
                 </p>
-                <p className="mt-1 text-sm leading-5 text-slate-500">
-                  Une erreur est survenue lors de la récupération des données.
-                  Vérifiez votre connexion puis réessayez.
+                <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                  {translateUi(
+                    "Une erreur est survenue lors de la récupération des données. Vérifiez votre connexion puis réessayez.",
+                  )}
                 </p>
               </div>
             </div>
@@ -626,13 +641,19 @@ export default function Boutiques() {
           <SectionCard>
             <EmptyState
               icon={<Store className="h-7 w-7" />}
-              title="Créez votre première boutique"
-              description="Définissez votre boutique, préparez son identité et sélectionnez les produits autorisés que vous souhaitez proposer."
+              title={translateUi("Créez votre première boutique")}
+              description={translateUi(
+                "Définissez votre boutique, préparez son identité et sélectionnez les produits autorisés que vous souhaitez proposer.",
+              )}
               action={
-                <Button asChild size="lg" className="gap-2 bg-blue-700 hover:bg-blue-800">
+                <Button
+                  asChild
+                  size="lg"
+                  className="gap-2 bg-blue-700 hover:bg-blue-800"
+                >
                   <Link to="/dashboard/boutiques/create">
                     <Plus className="h-5 w-5" />
-                    Créer ma boutique
+                    {translateUi("Créer ma boutique")}
                   </Link>
                 </Button>
               }
@@ -642,22 +663,33 @@ export default function Boutiques() {
 
         {!isLoading && !error && portfolio.total > 0 && (
           <SectionCard
-            title="Portefeuille de boutiques"
-            description={`${portfolio.total} boutique${portfolio.total > 1 ? "s" : ""} · ${portfolio.published} en ligne · ${portfolio.drafts} brouillon${portfolio.drafts > 1 ? "s" : ""}`}
+            title={translateUi("Portefeuille de boutiques")}
+            description={translateUi(
+              "{v0} boutique{v1} · {v2} en ligne · {v3} brouillon{v4}",
+              {
+                v0: portfolio.total,
+                v1: portfolio.total > 1 ? "s" : "",
+                v2: portfolio.published,
+                v3: portfolio.drafts,
+                v4: portfolio.drafts > 1 ? "s" : "",
+              },
+            )}
           >
-            <div className="mb-5 flex flex-col gap-2 rounded-xl border border-blue-100 bg-blue-50/60 p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mb-5 flex flex-col gap-2 rounded-xl border border-info/30 bg-info/10 p-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-2.5">
-                <Globe className="mt-0.5 h-4 w-4 shrink-0 text-blue-700" />
-                <p className="text-xs leading-5 text-blue-950">
-                  Seules les boutiques publiées sont proposées comme boutiques publiques.
-                  Les brouillons restent accessibles pour leur préparation.
+                <Globe className="mt-0.5 h-4 w-4 shrink-0 text-info-ink" />
+                <p className="text-xs leading-5 text-info-ink">
+                  {translateUi(
+                    "Seules les boutiques publiées sont proposées comme boutiques publiques. Les brouillons restent accessibles pour leur préparation.",
+                  )}
                 </p>
               </div>
               <Badge
                 variant="outline"
-                className="w-fit shrink-0 border-blue-200 bg-white text-blue-800"
+                className="w-fit shrink-0 border-info/30 bg-card text-info-ink"
               >
-                {portfolio.published} publiée{portfolio.published > 1 ? "s" : ""}
+                {portfolio.published} {translateUi("publiée")}
+                {portfolio.published > 1 ? "s" : ""}
               </Badge>
             </div>
 
@@ -674,16 +706,16 @@ export default function Boutiques() {
           </SectionCard>
         )}
 
-        <div className="flex items-start gap-3 rounded-2xl border border-blue-100 bg-blue-50/70 p-4">
-          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-blue-700" />
+        <div className="flex items-start gap-3 rounded-2xl border border-info/30 bg-info/10 p-4">
+          <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-info-ink" />
           <div>
-            <p className="text-sm font-semibold text-blue-950">
-              Un pilotage par boutique
+            <p className="text-sm font-semibold text-info-ink">
+              {translateUi("Un pilotage par boutique")}
             </p>
-            <p className="mt-1 text-sm leading-5 text-blue-900/80">
-              Chaque boutique conserve son propre catalogue et ses commandes.
-              Les indicateurs affichés ici servent à surveiller le portefeuille ;
-              ils ne fusionnent pas les commandes entre boutiques.
+            <p className="mt-1 text-sm leading-5 text-info-ink/80">
+              {translateUi(
+                "Chaque boutique conserve son propre catalogue et ses commandes. Les indicateurs affichés ici servent à surveiller le portefeuille ; ils ne fusionnent pas les commandes entre boutiques.",
+              )}
             </p>
           </div>
         </div>
@@ -695,11 +727,16 @@ export default function Boutiques() {
           if (!open) setDeleteId(null);
         }}
         onConfirm={handleDelete}
-        title="Supprimer cette boutique ?"
+        title={translateUi("Supprimer cette boutique ?")}
         description={
           selectedBoutique
-            ? `Vous allez demander la suppression de « ${selectedBoutique.name} ». Cette action est irréversible et peut être soumise aux contraintes de la base de données.`
-            : "Cette action est irréversible et peut être soumise aux contraintes de la base de données."
+            ? translateUi(
+                "Vous allez demander la suppression de « {v0} ». Cette action est irréversible et peut être soumise aux contraintes de la base de données.",
+                { v0: selectedBoutique.name },
+              )
+            : translateUi(
+                "Cette action est irréversible et peut être soumise aux contraintes de la base de données.",
+              )
         }
       />
     </DashboardLayout>

@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useRef, useState, useCallback } from "react";
 import {
   Dialog,
@@ -10,7 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, ZoomIn, AlertTriangle, CheckCircle2, FileWarning } from "lucide-react";
+import {
+  Loader2,
+  ZoomIn,
+  AlertTriangle,
+  CheckCircle2,
+  FileWarning,
+} from "lucide-react";
 
 /**
  * OG image cropper dialog: drag to reposition, slider to zoom, exports a
@@ -38,13 +46,24 @@ type Props = {
   onConfirm: (blob: Blob) => Promise<void> | void;
 };
 
-export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) {
+export function OgImageCropperDialog({
+  open,
+  file,
+  onClose,
+  onConfirm,
+}: Props) {
+  useLanguage();
   const [src, setSrc] = useState<string | null>(null);
   const [img, setImg] = useState<HTMLImageElement | null>(null);
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
-  const dragStart = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
+  const dragStart = useRef<{
+    x: number;
+    y: number;
+    ox: number;
+    oy: number;
+  } | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [busy, setBusy] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -55,12 +74,19 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
 
   // Load file -> image
   useEffect(() => {
-    if (!file) { setSrc(null); setImg(null); setLoadError(null); return; }
+    if (!file) {
+      setSrc(null);
+      setImg(null);
+      setLoadError(null);
+      return;
+    }
     setLoadError(null);
     // Strict MIME whitelist (defense in depth — picker already filters)
     if (!ACCEPTED_MIMES.includes(file.type)) {
       setLoadError(
-        `Format non supporté (${file.type || "inconnu"}). Utilisez JPG, PNG ou WebP.`
+        translateUi("Format non supporté ({v0}). Utilisez JPG, PNG ou WebP.", {
+          v0: file.type || "inconnu",
+        }),
       );
       setImg(null);
       return;
@@ -75,7 +101,9 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
     };
     i.onerror = () => {
       setLoadError(
-        "Impossible de décoder l'image — fichier probablement corrompu ou tronqué."
+        translateUi(
+          "Impossible de décoder l'image — fichier probablement corrompu ou tronqué.",
+        ),
       );
       setImg(null);
     };
@@ -112,7 +140,10 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
   // Compute base scale so the image "covers" the preview at zoom=1
   const baseScale = useCallback(() => {
     if (!img) return 1;
-    return Math.max(PREVIEW_W / img.naturalWidth, PREVIEW_H / img.naturalHeight);
+    return Math.max(
+      PREVIEW_W / img.naturalWidth,
+      PREVIEW_H / img.naturalHeight,
+    );
   }, [img]);
 
   /**
@@ -135,7 +166,7 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
         y: Math.max(-maxY, Math.min(maxY, raw.y)),
       };
     },
-    [img, baseScale, zoom]
+    [img, baseScale, zoom],
   );
 
   // Re-clamp whenever zoom changes (zooming out can leave offset out of bounds)
@@ -167,17 +198,27 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
 
   const onPointerDown = (e: React.PointerEvent) => {
     setDragging(true);
-    dragStart.current = { x: e.clientX, y: e.clientY, ox: offset.x, oy: offset.y };
+    dragStart.current = {
+      x: e.clientX,
+      y: e.clientY,
+      ox: offset.x,
+      oy: offset.y,
+    };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
   const onPointerMove = (e: React.PointerEvent) => {
     if (!dragging || !dragStart.current) return;
-    setOffset(clampOffset({
-      x: dragStart.current.ox + (e.clientX - dragStart.current.x),
-      y: dragStart.current.oy + (e.clientY - dragStart.current.y),
-    }));
+    setOffset(
+      clampOffset({
+        x: dragStart.current.ox + (e.clientX - dragStart.current.x),
+        y: dragStart.current.oy + (e.clientY - dragStart.current.y),
+      }),
+    );
   };
-  const onPointerUp = () => { setDragging(false); dragStart.current = null; };
+  const onPointerUp = () => {
+    setDragging(false);
+    dragStart.current = null;
+  };
 
   const handleConfirm = async () => {
     if (!img) return;
@@ -201,8 +242,8 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
         out.toBlob(
           (b) => (b ? resolve(b) : reject(new Error("Export échoué"))),
           "image/jpeg",
-          0.9
-        )
+          0.9,
+        ),
       );
       await onConfirm(blob);
     } finally {
@@ -214,10 +255,12 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Recadrer l'image OG</DialogTitle>
+          <DialogTitle>{translateUi("Recadrer l'image OG")}</DialogTitle>
           <DialogDescription>
-            Glissez pour repositionner, ajustez le zoom puis enregistrez. La sortie
-            sera exportée en {TARGET_W}×{TARGET_H} (ratio 1.91:1).
+            {translateUi(
+              "Glissez pour repositionner, ajustez le zoom puis enregistrez. La sortie sera exportée en",
+            ) + " "}
+            {TARGET_W}×{TARGET_H} (ratio 1.91:1).
           </DialogDescription>
         </DialogHeader>
 
@@ -233,43 +276,57 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
         {validation && (
           <Alert
             className={
-              validation.tooSmall || validation.offRatio || validation.overCompressed
+              validation.tooSmall ||
+              validation.offRatio ||
+              validation.overCompressed
                 ? "border-warning/30/40 bg-warning/10/40"
                 : "border-success/30/40 bg-success/10/40"
             }
           >
-            {validation.tooSmall || validation.offRatio || validation.overCompressed ? (
+            {validation.tooSmall ||
+            validation.offRatio ||
+            validation.overCompressed ? (
               <AlertTriangle className="h-4 w-4 text-warning" />
             ) : (
               <CheckCircle2 className="h-4 w-4 text-success" />
             )}
             <AlertDescription className="text-xs space-y-0.5">
               <p>
-                Source : {validation.width}×{validation.height}px (ratio{" "}
-                {validation.ratio.toFixed(2)}, cible 1.91)
+                {translateUi("Source :") + " "}
+                {validation.width}×{validation.height}px (ratio{" "}
+                {validation.ratio.toFixed(2)}
+                {translateUi(", cible 1.91)")}
               </p>
               {validation.tooSmall && (
                 <p>
-                  Image plus petite que {TARGET_W}×{TARGET_H} — qualité dégradée
-                  après recadrage.
+                  {translateUi("Image plus petite que") + " "}
+                  {TARGET_W}×{TARGET_H}{" "}
+                  {translateUi("— qualité dégradée après recadrage.")}
                 </p>
               )}
               {validation.offRatio && (
                 <p>
-                  Ratio décalé de {(validation.ratioDiff * 100).toFixed(0)}% par
-                  rapport à 1.91:1 — des bandes peuvent être rognées.
+                  {translateUi("Ratio décalé de") + " "}
+                  {(validation.ratioDiff * 100).toFixed(0)}
+                  {translateUi(
+                    "% par rapport à 1.91:1 — des bandes peuvent être rognées.",
+                  )}
                 </p>
               )}
               {validation.overCompressed && (
                 <p>
-                  Image fortement compressée ({validation.bpp.toFixed(3)} bpp) —
-                  artefacts visibles probables. Ré-exportez la source en haute
-                  qualité.
+                  {translateUi("Image fortement compressée (")}
+                  {validation.bpp.toFixed(3)}{" "}
+                  {translateUi(
+                    "bpp) — artefacts visibles probables. Ré-exportez la source en haute qualité.",
+                  )}
                 </p>
               )}
-              {!validation.tooSmall && !validation.offRatio && !validation.overCompressed && (
-                <p>Image conforme à la cible Open Graph.</p>
-              )}
+              {!validation.tooSmall &&
+                !validation.offRatio &&
+                !validation.overCompressed && (
+                  <p>{translateUi("Image conforme à la cible Open Graph.")}</p>
+                )}
             </AlertDescription>
           </Alert>
         )}
@@ -301,11 +358,14 @@ export function OgImageCropperDialog({ open, file, onClose, onConfirm }: Props) 
 
         <DialogFooter>
           <Button variant="ghost" onClick={onClose} disabled={busy}>
-            Annuler
+            {translateUi("Annuler")}
           </Button>
-          <Button onClick={handleConfirm} disabled={!img || busy || !!loadError}>
+          <Button
+            onClick={handleConfirm}
+            disabled={!img || busy || !!loadError}
+          >
             {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-            Recadrer & enregistrer
+            {translateUi("Recadrer & enregistrer")}
           </Button>
         </DialogFooter>
       </DialogContent>

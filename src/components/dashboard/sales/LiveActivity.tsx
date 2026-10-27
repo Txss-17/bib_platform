@@ -1,3 +1,5 @@
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,6 +21,7 @@ interface LiveOrder {
  * Subscribes to the `orders` table and prepends new ones.
  */
 export function LiveActivity() {
+  useLanguage();
   const { user } = useAuth();
   const [orders, setOrders] = useState<LiveOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,11 +43,13 @@ export function LiveActivity() {
 
       const { data } = await supabase
         .from("orders")
-        .select("id, order_number, amount, market, customer_name, logistics_status, created_at")
+        .select(
+          "id, order_number, amount, market, customer_name, logistics_status, created_at",
+        )
         .in("boutique_id", ids)
         .order("created_at", { ascending: false })
         .limit(8);
-      setOrders(((data as unknown) as LiveOrder[]) || []);
+      setOrders((data as unknown as LiveOrder[]) || []);
       setLoading(false);
 
       channel = supabase
@@ -81,8 +86,10 @@ export function LiveActivity() {
     return (
       <EmptyState
         icon={<Activity className="w-6 h-6" />}
-        title="Aucune activité récente"
-        description="Les nouvelles commandes apparaîtront ici en temps réel."
+        title={translateUi("Aucune activité récente")}
+        description={translateUi(
+          "Les nouvelles commandes apparaîtront ici en temps réel.",
+        )}
       />
     );
   }
@@ -98,11 +105,12 @@ export function LiveActivity() {
             <span className="w-2 h-2 rounded-full bg-success animate-pulse shrink-0" />
             <div className="min-w-0">
               <p className="text-sm font-medium text-foreground truncate">
-                {o.customer_name || "Client"} · {o.order_number || o.id.slice(0, 8)}
+                {o.customer_name || translateUi("Client")} ·{" "}
+                {o.order_number || o.id.slice(0, 8)}
               </p>
               <p className="text-xs text-muted-foreground">
                 {o.market || "—"} ·{" "}
-                {new Date(o.created_at).toLocaleTimeString("fr-FR", {
+                {new Date(o.created_at).toLocaleTimeString(getUiLocale(), {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
@@ -111,7 +119,7 @@ export function LiveActivity() {
           </div>
           <div className="text-right shrink-0">
             <p className="text-sm font-semibold text-foreground font-display">
-              {Number(o.amount).toLocaleString("fr-FR")} €
+              {Number(o.amount).toLocaleString(getUiLocale())} €
             </p>
             <p className="text-[11px] text-muted-foreground capitalize">
               {o.logistics_status || "—"}

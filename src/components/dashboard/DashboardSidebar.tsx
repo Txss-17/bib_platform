@@ -1,3 +1,4 @@
+import { translateUi } from "@/lib/uiTranslation";
 
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -28,11 +29,7 @@ import {
 
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useIsMobile } from "@/hooks/use-mobile";
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useAuth } from "@/contexts/AuthContext";
 import { Logo } from "@/components/Logo";
@@ -50,31 +47,57 @@ interface DashboardSidebarProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-const englishLabels: Record<string, string> = { "Mon profil": "My profile", "Catalogue BIB": "BIB catalog", "Paramètres": "Settings", "Mes tickets": "My tickets", "Aide et support": "Help and support", "Mes boutiques": "My stores", "Produits de mes boutiques": "My store products", "Commandes": "Orders", "Clients": "Customers", "Ventes": "Sales", "Paiements": "Payments", "Statistiques": "Analytics", "Marketing": "Marketing", "Ventes privées": "Private sales", "Équipe": "Team" };
+const englishLabels: Record<string, string> = {
+  "Mon profil": "My profile",
+  "Catalogue BIB": "BIB catalog",
+  Paramètres: "Settings",
+  "Mes tickets": "My tickets",
+  "Aide et support": "Help and support",
+  "Mes boutiques": "My stores",
+  "Produits de mes boutiques": "My store products",
+  Commandes: "Orders",
+  Clients: "Customers",
+  Ventes: "Sales",
+  Paiements: "Payments",
+  Statistiques: "Analytics",
+  Marketing: "Marketing",
+  "Ventes privées": "Private sales",
+  Équipe: "Team",
+};
 
 const personalNavItems = [
   {
-    title: "Mon profil",
+    get title() {
+      return translateUi("Mon profil");
+    },
     url: "/dashboard/profil",
     icon: UserRound,
   },
   {
-    title: "Catalogue BIB",
+    get title() {
+      return translateUi("Catalogue BIB");
+    },
     url: "/dashboard/produits-fournisseurs",
     icon: Truck,
   },
   {
-    title: "Paramètres",
+    get title() {
+      return translateUi("Paramètres");
+    },
     url: "/dashboard/parametres",
     icon: SlidersHorizontal,
   },
   {
-    title: "Mes tickets",
+    get title() {
+      return translateUi("Mes tickets");
+    },
     url: "/dashboard/tickets",
     icon: LifeBuoy,
   },
   {
-    title: "Aide et support",
+    get title() {
+      return translateUi("Aide et support");
+    },
     url: "/dashboard/aide",
     icon: HelpCircle,
   },
@@ -82,43 +105,57 @@ const personalNavItems = [
 
 const boutiqueNavItems = [
   {
-    title: "Mes boutiques",
+    get title() {
+      return translateUi("Mes boutiques");
+    },
     url: "/dashboard/boutiques",
     icon: Store,
     module: "boutiques",
   },
   {
-    title: "Produits de mes boutiques",
+    get title() {
+      return translateUi("Produits de mes boutiques");
+    },
     url: "/dashboard/produits",
     icon: Package,
     module: "produits",
   },
   {
-    title: "Commandes",
+    get title() {
+      return translateUi("Commandes");
+    },
     url: "/dashboard/commandes",
     icon: ShoppingCart,
     module: "commandes",
   },
   {
-    title: "Clients",
+    get title() {
+      return translateUi("Clients");
+    },
     url: "/dashboard/clients",
     icon: UserCircle2,
     module: "commandes",
   },
   {
-    title: "Ventes",
+    get title() {
+      return translateUi("Ventes");
+    },
     url: "/dashboard/ventes",
     icon: TrendingUp,
     module: "ventes",
   },
   {
-    title: "Paiements",
+    get title() {
+      return translateUi("Paiements");
+    },
     url: "/dashboard/paiements",
     icon: CreditCard,
     module: "paiements",
   },
   {
-    title: "Statistiques",
+    get title() {
+      return translateUi("Statistiques");
+    },
     url: "/dashboard/seo-analytics",
     icon: BarChart3,
     module: "analytics",
@@ -130,13 +167,17 @@ const boutiqueNavItems = [
     module: "boutiques",
   },
   {
-    title: "Ventes privées",
+    get title() {
+      return translateUi("Ventes privées");
+    },
     url: "/dashboard/ventes-privees",
     icon: Crown,
     module: "boutiques",
   },
   {
-    title: "Équipe",
+    get title() {
+      return translateUi("Équipe");
+    },
     url: "/dashboard/equipe",
     icon: Users,
     module: "equipe",
@@ -165,16 +206,14 @@ function SidebarLink({
       onClick={onNavigate}
     >
       <Icon className="w-4 h-4 shrink-0" />
-      <span className="font-medium">{lang === "en" ? (englishLabels[item.title] ?? item.title) : item.title}</span>
+      <span className="font-medium">
+        {lang === "en" ? (englishLabels[item.title] ?? item.title) : item.title}
+      </span>
     </NavLink>
   );
 }
 
-function SidebarContent({
-  onNavigate,
-}: {
-  onNavigate?: () => void;
-}) {
+function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { profile, signOut } = useAuth();
   const { lang } = useLanguage();
   const english = lang === "en";
@@ -203,9 +242,7 @@ function SidebarContent({
   });
 
   const visibleBoutiqueItems = isMemberOnly
-    ? boutiqueNavItems.filter((item) =>
-        allowedModules.has(item.module),
-      )
+    ? boutiqueNavItems.filter((item) => allowedModules.has(item.module))
     : boutiqueNavItems;
 
   const primaryRole = memberRoles[0];
@@ -260,15 +297,12 @@ function SidebarContent({
             {isMemberOnly && primaryRole ? (
               <Badge className="bg-info/15 text-info border-0 text-[10px] mt-0.5 gap-1">
                 <Users className="w-2.5 h-2.5" />
-                {
-                  ROLE_LABELS[
-                    primaryRole as keyof typeof ROLE_LABELS
-                  ]
-                }
+                {ROLE_LABELS[primaryRole as keyof typeof ROLE_LABELS]}
               </Badge>
             ) : (
               <p className="text-xs text-muted-foreground truncate">
-                {profile?.business_type || (english ? "BIB account" : "Compte BIB")}
+                {profile?.business_type ||
+                  (english ? "BIB account" : "Compte BIB")}
               </p>
             )}
           </div>
@@ -278,9 +312,7 @@ function SidebarContent({
           <p className="text-[10px] text-muted-foreground mt-2 truncate">
             {english ? "Member of:" : "Membre de :"}{" "}
             <span className="font-medium text-foreground">
-              {memberBoutiques
-                .map((boutique) => boutique.name)
-                .join(", ")}
+              {memberBoutiques.map((boutique) => boutique.name).join(", ")}
             </span>
           </p>
         )}
@@ -302,7 +334,9 @@ function SidebarContent({
             onClick={onNavigate}
           >
             <LayoutDashboard className="w-4 h-4 shrink-0" />
-            <span className="font-medium">{english ? "Dashboard" : "Tableau de bord"}</span>
+            <span className="font-medium">
+              {english ? "Dashboard" : "Tableau de bord"}
+            </span>
           </NavLink>
         </div>
 
@@ -313,11 +347,7 @@ function SidebarContent({
           </p>
 
           {personalNavItems.map((item) => (
-            <SidebarLink
-              key={item.title}
-              item={item}
-              onNavigate={onNavigate}
-            />
+            <SidebarLink key={item.title} item={item} onNavigate={onNavigate} />
           ))}
         </div>
 
@@ -358,7 +388,11 @@ function SidebarContent({
                   onClick={onNavigate}
                 >
                   <item.icon className="w-4 h-4 shrink-0" />
-                  <span className="font-medium">{lang === "en" ? (englishLabels[item.title] ?? item.title) : item.title}</span>
+                  <span className="font-medium">
+                    {lang === "en"
+                      ? (englishLabels[item.title] ?? item.title)
+                      : item.title}
+                  </span>
                 </NavLink>
               ))}
             </div>
@@ -380,7 +414,9 @@ function SidebarContent({
             onClick={onNavigate}
           >
             <ShieldCheck className="w-4 h-4 shrink-0" />
-            <span className="font-medium">{english ? "Document verification" : "Vérification des documents"}</span>
+            <span className="font-medium">
+              {english ? "Document verification" : "Vérification des documents"}
+            </span>
           </NavLink>
         </div>
       )}
@@ -393,7 +429,9 @@ function SidebarContent({
           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors text-[13px]"
         >
           <LogOut className="w-4 h-4 shrink-0" />
-          <span className="font-medium">{english ? "Sign out" : "Déconnexion"}</span>
+          <span className="font-medium">
+            {english ? "Sign out" : "Déconnexion"}
+          </span>
         </button>
       </div>
     </>
@@ -404,6 +442,7 @@ export function DashboardSidebar({
   open,
   onOpenChange,
 }: DashboardSidebarProps) {
+  useLanguage();
   const isMobile = useIsMobile();
 
   if (isMobile) {
@@ -411,12 +450,10 @@ export function DashboardSidebar({
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="left" className="p-0 w-64 flex flex-col">
           <VisuallyHidden>
-            <SheetTitle>Navigation BIB</SheetTitle>
+            <SheetTitle>{translateUi("Navigation BIB")}</SheetTitle>
           </VisuallyHidden>
 
-          <SidebarContent
-            onNavigate={() => onOpenChange?.(false)}
-          />
+          <SidebarContent onNavigate={() => onOpenChange?.(false)} />
         </SheetContent>
       </Sheet>
     );

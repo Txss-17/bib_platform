@@ -1,25 +1,28 @@
+import { translateUi } from "@/lib/uiTranslation";
 import { NavLink, Outlet } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import {
-  Heart,
-  Package,
-  Settings,
-} from "lucide-react";
+import { Heart, Package, Settings } from "lucide-react";
 
 const navigation = [
   {
     to: "/store/favorites",
-    label: "Favorites",
+    get label() {
+      return translateUi("Favorites");
+    },
     icon: Heart,
   },
   {
     to: "/store/orders",
-    label: "Orders",
+    get label() {
+      return translateUi("Orders");
+    },
     icon: Package,
   },
   {
     to: "/store/account",
-    label: "Account",
+    get label() {
+      return translateUi("Account");
+    },
     icon: Settings,
   },
 ];
@@ -52,7 +55,7 @@ export default function StoreSubscriberLayout() {
                   }
                 >
                   <Icon className="h-4 w-4" />
-                  {english ? item.label : ({ Favorites: "Favoris", Orders: "Commandes", Account: "Compte" }[item.label] ?? item.label)}
+                  {item.label}
                 </NavLink>
               );
             })}

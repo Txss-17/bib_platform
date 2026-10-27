@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Link, useParams } from "react-router-dom";
 
 interface StorefrontFooterProps {
@@ -5,20 +7,21 @@ interface StorefrontFooterProps {
 }
 
 export function StorefrontFooter({ primaryColor }: StorefrontFooterProps) {
+  useLanguage();
   const { slug } = useParams<{ slug: string }>();
 
   const footerLinks = slug
     ? [
-        { label: "À propos", href: `/boutique/${slug}/about` },
+        { label: translateUi("À propos"), href: `/boutique/${slug}/about` },
         { label: "FAQ", href: `/boutique/${slug}/faq` },
         { label: "CGV", href: `/boutique/${slug}/cgv` },
         { label: "CGU", href: `/boutique/${slug}/cgu` },
       ]
     : [
-        { label: "About", href: "#about" },
+        { label: translateUi("About"), href: "#about" },
         { label: "FAQ", href: "#faq" },
         { label: "CGV", href: "#cgv" },
-        { label: "Mentions Légales", href: "#legal" },
+        { label: translateUi("Mentions Légales"), href: "#legal" },
       ];
 
   return (
@@ -26,7 +29,9 @@ export function StorefrontFooter({ primaryColor }: StorefrontFooterProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Powered by</span>
+            <span className="text-sm text-gray-500">
+              {translateUi("Powered by")}
+            </span>
             <span className="font-bold text-gray-900">Brand-In-A-Box</span>
           </div>
 
@@ -48,7 +53,7 @@ export function StorefrontFooter({ primaryColor }: StorefrontFooterProps) {
                 >
                   {link.label}
                 </a>
-              )
+              ),
             )}
           </nav>
         </div>

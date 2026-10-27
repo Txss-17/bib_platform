@@ -1,4 +1,5 @@
-﻿import { useMemo } from "react";
+import { translateUi } from "@/lib/uiTranslation";
+import { useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   ArrowLeft,
@@ -11,42 +12,25 @@ import {
   ShoppingBag,
   Store,
 } from "lucide-react";
-import {
-  Link,
-  useParams,
-} from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
-import {
-  useStoreProduct,
-} from "@/hooks/useStore";
-import {
-  useFavorites,
-} from "@/hooks/useFavorites";
-import {
-  useSEO,
-} from "@/hooks/useSEO";
+import { useStoreProduct } from "@/hooks/useStore";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useSEO } from "@/hooks/useSEO";
 import { useStoreCart } from "@/contexts/StoreCartContext";
 
-function formatPrice(
-  value: number,
-  lang: "fr" | "en",
-): string {
-  return new Intl.NumberFormat(
-    lang === "en" ? "en-IE" : "fr-FR",
-    {
-      style: "currency",
-      currency: "EUR",
-    },
-  ).format(value);
+function formatPrice(value: number, lang: "fr" | "en"): string {
+  return new Intl.NumberFormat(lang === "en" ? "en-IE" : "fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  }).format(value);
 }
 
 export default function StoreProduct() {
   const { lang } = useLanguage();
   const english = lang === "en";
-  const tx = (fr: string, en: string) => english ? en : fr;
-  const {
-    productId,
-  } = useParams<{
+  const tx = (fr: string, en: string) => (english ? en : fr);
+  const { productId } = useParams<{
     productId: string;
   }>();
 
@@ -55,28 +39,19 @@ export default function StoreProduct() {
     isLoading,
     isError,
     refetch,
-  } = useStoreProduct(
-    productId,
-  );
+  } = useStoreProduct(productId);
 
   const {
     isFavorite,
     toggleFavorite,
-    isLoading:
-      favoritesLoading,
+    isLoading: favoritesLoading,
   } = useFavorites();
 
   const { addItem: addStoreCartItem } = useStoreCart();
 
   const favorite = useMemo(
-    () =>
-      product
-        ? isFavorite(product.id)
-        : false,
-    [
-      product,
-      isFavorite,
-    ],
+    () => (product ? isFavorite(product.id) : false),
+    [product, isFavorite],
   );
 
   useSEO({
@@ -90,9 +65,7 @@ export default function StoreProduct() {
         ? `Découvrez ${product.name} proposé par ${product.boutique_name}, boutique vérifiée par BIB.`
         : "Découvrez les produits des boutiques vérifiées par BIB."),
 
-    image:
-      product?.image_url ||
-      undefined,
+    image: product?.image_url || undefined,
 
     type: "store",
 
@@ -133,10 +106,7 @@ export default function StoreProduct() {
    * ============================================================
    */
 
-  if (
-    isError ||
-    !product
-  ) {
+  if (isError || !product) {
     return (
       <div className="min-h-screen bg-background">
         <div className="mx-auto flex min-h-[70vh] max-w-2xl items-center justify-center px-6">
@@ -148,9 +118,9 @@ export default function StoreProduct() {
             </h1>
 
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Ce produit n'est pas
-              disponible dans le Store BIB
-              ou n'est plus publié.
+              {translateUi(
+                "Ce produit n'est pas disponible dans le Store BIB ou n'est plus publié.",
+              )}
             </p>
 
             <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -165,9 +135,7 @@ export default function StoreProduct() {
 
               <button
                 type="button"
-                onClick={() =>
-                  void refetch()
-                }
+                onClick={() => void refetch()}
                 className="inline-flex items-center gap-2 rounded-lg border px-5 py-3 text-sm font-semibold transition-colors hover:bg-muted"
               >
                 {english ? "Try again" : "Réessayer"}
@@ -185,20 +153,17 @@ export default function StoreProduct() {
    * ============================================================
    */
 
-  const boutiqueStoreUrl =
-    `/store/boutique/${encodeURIComponent(
-      product.boutique_slug,
-    )}`;
+  const boutiqueStoreUrl = `/store/boutique/${encodeURIComponent(
+    product.boutique_slug,
+  )}`;
 
-  const merchantProductUrl =
-    `/boutique/${encodeURIComponent(
-      product.boutique_slug,
-    )}/product/${product.id}`;
+  const merchantProductUrl = `/boutique/${encodeURIComponent(
+    product.boutique_slug,
+  )}/product/${product.id}`;
 
-  const merchantProductsUrl =
-    `/boutique/${encodeURIComponent(
-      product.boutique_slug,
-    )}/products`;
+  const merchantProductsUrl = `/boutique/${encodeURIComponent(
+    product.boutique_slug,
+  )}/products`;
 
   /*
    * ============================================================
@@ -224,9 +189,7 @@ export default function StoreProduct() {
               {english ? "Back to products" : "Retour aux produits"}
             </span>
 
-            <span className="sm:hidden">
-              Retour
-            </span>
+            <span className="sm:hidden">{translateUi("Retour")}</span>
           </Link>
 
           <Link
@@ -301,22 +264,18 @@ export default function StoreProduct() {
 
                   <button
                     type="button"
-                    onClick={() =>
-                      void toggleFavorite(
-                        product.id,
-                      )
-                    }
-                    disabled={
-                      favoritesLoading
-                    }
+                    onClick={() => void toggleFavorite(product.id)}
+                    disabled={favoritesLoading}
                     aria-label={
                       favorite
-                        ? `Retirer ${product.name} des favoris`
-                        : `Ajouter ${product.name} aux favoris`
+                        ? translateUi("Retirer {v0} des favoris", {
+                            v0: product.name,
+                          })
+                        : translateUi("Ajouter {v0} aux favoris", {
+                            v0: product.name,
+                          })
                     }
-                    aria-pressed={
-                      favorite
-                    }
+                    aria-pressed={favorite}
                     className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border bg-background transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {favoritesLoading ? (
@@ -324,14 +283,8 @@ export default function StoreProduct() {
                     ) : (
                       <Heart
                         className="h-5 w-5"
-                        fill={
-                          favorite
-                            ? "currentColor"
-                            : "none"
-                        }
-                        strokeWidth={
-                          1.8
-                        }
+                        fill={favorite ? "currentColor" : "none"}
+                        strokeWidth={1.8}
                       />
                     )}
                   </button>
@@ -344,9 +297,7 @@ export default function StoreProduct() {
 
                   {product.boutique_category && (
                     <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
-                      {
-                        product.boutique_category
-                      }
+                      {product.boutique_category}
                     </span>
                   )}
                 </div>
@@ -354,13 +305,12 @@ export default function StoreProduct() {
                 {product.description && (
                   <div className="mt-7 border-t pt-6">
                     <h2 className="text-sm font-semibold">
-                      {english ? "About" : "À propos"} du produit
+                      {english ? "About" : "À propos"}{" "}
+                      {translateUi("du produit")}
                     </h2>
 
                     <p className="mt-3 whitespace-pre-line text-sm leading-7 text-muted-foreground">
-                      {
-                        product.description
-                      }
+                      {product.description}
                     </p>
                   </div>
                 )}
@@ -377,14 +327,15 @@ export default function StoreProduct() {
 
                     <div>
                       <h2 className="font-semibold">
-                        {english ? "Product listed by BIB" : "Produit référencé par BIB"}
+                        {english
+                          ? "Product listed by BIB"
+                          : "Produit référencé par BIB"}
                       </h2>
 
                       <p className="mt-1.5 text-sm leading-6 text-muted-foreground">
-                        La boutique reste le vendeur.
-                        BIB coordonne le parcours de
-                        commande et le paiement est
-                        séparé pour chaque boutique.
+                        {translateUi(
+                          "La boutique reste le vendeur. BIB coordonne le parcours de commande et le paiement est séparé pour chaque boutique.",
+                        )}
                       </p>
                     </div>
                   </div>
@@ -427,14 +378,18 @@ export default function StoreProduct() {
                     to={merchantProductsUrl}
                     className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border bg-background px-6 text-sm font-medium transition-colors hover:bg-muted"
                   >
-                    {english ? "View other products" : "Voir les autres produits"}
+                    {english
+                      ? "View other products"
+                      : "Voir les autres produits"}
 
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </div>
 
                 <p className="mt-4 text-center text-xs leading-5 text-muted-foreground">
-                  Les commandes de boutiques différentes sont payées séparément.
+                  {translateUi(
+                    "Les commandes de boutiques différentes sont payées séparément.",
+                  )}
                 </p>
               </div>
             </div>
@@ -463,8 +418,9 @@ export default function StoreProduct() {
                   </h2>
 
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Découvrez l'ensemble de
-                    sa sélection sur BIB.
+                    {translateUi(
+                      "Découvrez l'ensemble de sa sélection sur BIB.",
+                    )}
                   </p>
                 </div>
               </div>
@@ -492,12 +448,15 @@ export default function StoreProduct() {
             </div>
 
             <h2 className="mt-5 text-2xl font-semibold tracking-tight">
-              {english ? "Discover and shop on BIB" : "Découvrez et commandez sur BIB"}
+              {english
+                ? "Discover and shop on BIB"
+                : "Découvrez et commandez sur BIB"}
             </h2>
 
             <p className="mt-3 text-sm leading-7 text-muted-foreground">
-              Ajoutez des produits de plusieurs boutiques à votre panier.
-              Chaque boutique donne lieu à une commande et un paiement distincts.
+              {translateUi(
+                "Ajoutez des produits de plusieurs boutiques à votre panier. Chaque boutique donne lieu à une commande et un paiement distincts.",
+              )}
             </p>
           </div>
         </section>
@@ -509,10 +468,7 @@ export default function StoreProduct() {
 
       <footer className="border-t">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-          <p>
-            © {new Date().getFullYear()} BIB —
-            Brand-in-a-box
-          </p>
+          <p>© {new Date().getFullYear()} BIB — Brand-in-a-box</p>
 
           <div className="flex flex-wrap items-center gap-4">
             <Link

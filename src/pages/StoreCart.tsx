@@ -1,4 +1,5 @@
-﻿import { useState } from "react";
+import { translateUi } from "@/lib/uiTranslation";
+import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
 import {
@@ -11,12 +12,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { CheckoutForm } from "@/components/storefront/CheckoutForm";
 import {
@@ -36,9 +32,7 @@ function formatPrice(price: number, lang: "fr" | "en") {
   }).format(price);
 }
 
-function getBoutiqueDestination(
-  group: StoreCartBoutiqueGroup,
-) {
+function getBoutiqueDestination(group: StoreCartBoutiqueGroup) {
   if (group.boutiqueUrl) {
     return group.boutiqueUrl;
   }
@@ -67,7 +61,7 @@ function StoreCartItemRow({
 }) {
   const { lang } = useLanguage();
   const english = lang === "en";
-  const tx = (fr: string, en: string) => english ? en : fr;
+  const tx = (fr: string, en: string) => (english ? en : fr);
   const isAtMaximumQuantity = item.quantity >= 99;
 
   return (
@@ -91,19 +85,17 @@ function StoreCartItemRow({
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <h3 className="truncate font-medium">
-              {item.productName}
-            </h3>
+            <h3 className="truncate font-medium">{item.productName}</h3>
 
             <p className="mt-1 text-sm text-muted-foreground">
-              {formatPrice(item.price, lang)} l’unité
+              {formatPrice(item.price, lang)} {translateUi("l’unité")}
             </p>
           </div>
 
           <button
             type="button"
             onClick={onRemove}
-            aria-label={`Supprimer ${item.productName}`}
+            aria-label={translateUi("Supprimer {v0}", { v0: item.productName })}
             className="shrink-0 text-muted-foreground transition-colors hover:text-destructive"
           >
             <Trash2 className="h-4 w-4" />
@@ -114,12 +106,16 @@ function StoreCartItemRow({
           {/* Quantity */}
           <div
             className="flex items-center rounded-lg border"
-            aria-label={`Quantité de ${item.productName}`}
+            aria-label={translateUi("Quantité de {v0}", {
+              v0: item.productName,
+            })}
           >
             <button
               type="button"
               onClick={onDecrease}
-              aria-label={`Diminuer la quantité de ${item.productName}`}
+              aria-label={translateUi("Diminuer la quantité de {v0}", {
+                v0: item.productName,
+              })}
               className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
               disabled={item.quantity <= 1}
             >
@@ -133,7 +129,9 @@ function StoreCartItemRow({
             <button
               type="button"
               onClick={onIncrease}
-              aria-label={`Augmenter la quantité de ${item.productName}`}
+              aria-label={translateUi("Augmenter la quantité de {v0}", {
+                v0: item.productName,
+              })}
               className="flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
               disabled={isAtMaximumQuantity}
             >
@@ -172,7 +170,7 @@ function BoutiqueCartGroup({
 }) {
   const { lang } = useLanguage();
   const english = lang === "en";
-  const tx = (fr: string, en: string) => english ? en : fr;
+  const tx = (fr: string, en: string) => (english ? en : fr);
   const destination = getBoutiqueDestination(group);
   const isExternal = Boolean(group.boutiqueUrl);
 
@@ -181,28 +179,19 @@ function BoutiqueCartGroup({
       <CardHeader className="pb-3">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <CardTitle className="text-base">
-              {group.boutiqueName}
-            </CardTitle>
+            <CardTitle className="text-base">{group.boutiqueName}</CardTitle>
 
             <p className="mt-1 text-sm text-muted-foreground">
               {group.totalItems}{" "}
-              {group.totalItems > 1 ? tx("articles", "items") : tx("article", "item")}
+              {group.totalItems > 1
+                ? tx("articles", "items")
+                : tx("article", "item")}
             </p>
           </div>
 
-          <Button
-            asChild
-            variant="outline"
-            size="sm"
-            className="shrink-0"
-          >
+          <Button asChild variant="outline" size="sm" className="shrink-0">
             {isExternal ? (
-              <a
-                href={destination}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href={destination} target="_blank" rel="noopener noreferrer">
                 {tx("Continuer chez", "Continue at")} {group.boutiqueName}
                 <ExternalLink className="ml-2 h-3.5 w-3.5" />
               </a>
@@ -272,16 +261,12 @@ function BoutiqueCartGroup({
 function EmptyStoreCart() {
   const { lang } = useLanguage();
   const english = lang === "en";
-  const tx = (fr: string, en: string) => english ? en : fr;
+  const tx = (fr: string, en: string) => (english ? en : fr);
   return (
     <main className="min-h-screen bg-background">
       <div className="border-b">
         <div className="mx-auto flex max-w-7xl items-center px-4 py-5 sm:px-6 lg:px-8">
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-          >
+          <Button asChild variant="ghost" size="sm">
             <Link to="/store">
               <ArrowLeft className="mr-2 h-4 w-4" />
               {tx("Retour au Store", "Back to BIB Store")}
@@ -304,8 +289,14 @@ function EmptyStoreCart() {
         </h1>
 
         <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-          {tx("Ajoutez des produits depuis les boutiques présentes", "Add products from the boutiques available")}
-          {tx("dans BIB Store pour les retrouver ici.", "in BIB Store to see them here.")}
+          {tx(
+            "Ajoutez des produits depuis les boutiques présentes",
+            "Add products from the boutiques available",
+          )}
+          {tx(
+            "dans BIB Store pour les retrouver ici.",
+            "in BIB Store to see them here.",
+          )}
         </p>
 
         <Button asChild className="mt-6">
@@ -325,7 +316,7 @@ function EmptyStoreCart() {
 export default function StoreCart() {
   const { lang } = useLanguage();
   const english = lang === "en";
-  const tx = (fr: string, en: string) => english ? en : fr;
+  const tx = (fr: string, en: string) => (english ? en : fr);
   const [checkoutGroup, setCheckoutGroup] =
     useState<StoreCartBoutiqueGroup | null>(null);
   const {
@@ -347,7 +338,11 @@ export default function StoreCart() {
     return (
       <main className="min-h-screen bg-background">
         <div className="border-b px-4 py-5">
-          <Button type="button" variant="ghost" onClick={() => setCheckoutGroup(null)}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => setCheckoutGroup(null)}
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             {tx("Retour au panier", "Back to cart")}
           </Button>
@@ -384,11 +379,7 @@ export default function StoreCart() {
       return;
     }
 
-    updateQuantity(
-      item.productId,
-      item.boutiqueId,
-      item.quantity + 1,
-    );
+    updateQuantity(item.productId, item.boutiqueId, item.quantity + 1);
   };
 
   const handleDecrease = (item: StoreCartItem) => {
@@ -396,18 +387,11 @@ export default function StoreCart() {
       return;
     }
 
-    updateQuantity(
-      item.productId,
-      item.boutiqueId,
-      item.quantity - 1,
-    );
+    updateQuantity(item.productId, item.boutiqueId, item.quantity - 1);
   };
 
   const handleRemove = (item: StoreCartItem) => {
-    removeItem(
-      item.productId,
-      item.boutiqueId,
-    );
+    removeItem(item.productId, item.boutiqueId);
   };
 
   return (
@@ -415,11 +399,7 @@ export default function StoreCart() {
       {/* Header */}
       <div className="border-b">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5 sm:px-6 lg:px-8">
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-          >
+          <Button asChild variant="ghost" size="sm">
             <Link to="/store">
               <ArrowLeft className="mr-2 h-4 w-4" />
               {tx("Continuer mes recherches", "Continue browsing")}
@@ -458,7 +438,8 @@ export default function StoreCart() {
             {tx("dans", "across")} {boutiqueGroups.length}{" "}
             {boutiqueGroups.length > 1
               ? tx("boutiques", "stores")
-              : tx("boutique", "store")}.
+              : tx("boutique", "store")}
+            .
           </p>
         </div>
 
@@ -472,9 +453,7 @@ export default function StoreCart() {
                 onIncrease={handleIncrease}
                 onDecrease={handleDecrease}
                 onRemove={handleRemove}
-                onClear={() =>
-                  clearBoutique(group.boutiqueId)
-                }
+                onClear={() => clearBoutique(group.boutiqueId)}
                 onCheckout={() => setCheckoutGroup(group)}
               />
             ))}
@@ -510,18 +489,22 @@ export default function StoreCart() {
                   <Separator />
 
                   <div className="flex justify-between gap-4 text-base font-semibold">
-                    <span>Total indicatif</span>
+                    <span>{translateUi("Total indicatif")}</span>
 
-                    <span>
-                      {formatPrice(totalPrice, lang)}
-                    </span>
+                    <span>{formatPrice(totalPrice, lang)}</span>
                   </div>
                 </div>
 
                 <div className="mt-6 rounded-xl bg-muted/50 p-4">
                   <p className="text-xs leading-5 text-muted-foreground">
-                    {tx("Les articles sont regroupés par boutique. Chaque", "Items are grouped by boutique. Each")}
-                    {tx("boutique fait l''objet de sa propre commande et de", "boutique has its own order and")}
+                    {tx(
+                      "Les articles sont regroupés par boutique. Chaque",
+                      "Items are grouped by boutique. Each",
+                    )}
+                    {tx(
+                      "boutique fait l''objet de sa propre commande et de",
+                      "boutique has its own order and",
+                    )}
                     {tx("son propre paiement.", "payment.")}
                   </p>
                 </div>

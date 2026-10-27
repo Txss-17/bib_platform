@@ -1,3 +1,4 @@
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -68,25 +69,30 @@ export function usePaymentsRealtime(boutiqueIds: string[] | undefined) {
         (payload) => {
           const row = payload.new as any;
           const amount = Number(row?.amount || 0);
-          queryClient.invalidateQueries({ queryKey: ["order-revenue", user.id] });
+          queryClient.invalidateQueries({
+            queryKey: ["order-revenue", user.id],
+          });
           queryClient.invalidateQueries({ queryKey: ["order-stats", user.id] });
 
           pushEvent({
             id: `sale-${row?.id || crypto.randomUUID()}`,
             kind: "sale",
             amount,
-            label: "Nouvelle vente",
+            label: translateUi("Nouvelle vente"),
             description: row?.customer_name
               ? `${row.customer_name} · ${row.order_number ?? ""}`
-              : row?.order_number ?? undefined,
+              : (row?.order_number ?? undefined),
             boutique_id: row?.boutique_id ?? null,
             reference: row?.order_number ?? null,
             created_at: row?.created_at ?? new Date().toISOString(),
           });
 
           if (Date.now() - initRef.current > 1500) {
-            toast.success("Nouvelle vente comptabilisée", {
-              description: `+${amount.toFixed(2)} € ajoutés au prochain versement`,
+            toast.success(translateUi("Nouvelle vente comptabilisée"), {
+              description: translateUi(
+                "+{v0} € ajoutés au prochain versement",
+                { v0: amount.toFixed(2) },
+              ),
             });
           }
         },
@@ -105,21 +111,24 @@ export function usePaymentsRealtime(boutiqueIds: string[] | undefined) {
           queryClient.invalidateQueries({ queryKey: ["payments", user.id] });
 
           const amount = Number(next?.amount || prev?.amount || 0);
-          const ts = next?.payout_date || next?.created_at || new Date().toISOString();
+          const ts =
+            next?.payout_date || next?.created_at || new Date().toISOString();
 
           if (payload.eventType === "INSERT") {
             pushEvent({
               id: `payout-new-${next?.id}`,
               kind: "payout_scheduled",
               amount,
-              label: "Versement programmé",
-              description: "En attente de transfert",
+              label: translateUi("Versement programmé"),
+              description: translateUi("En attente de transfert"),
               boutique_id: next?.boutique_id ?? null,
               created_at: ts,
             });
             if (Date.now() - initRef.current > 1500) {
               toast("Nouveau versement programmé", {
-                description: `${amount.toFixed(2)} € en attente`,
+                description: translateUi("{v0} € en attente", {
+                  v0: amount.toFixed(2),
+                }),
               });
             }
           } else if (payload.eventType === "UPDATE") {
@@ -133,16 +142,18 @@ export function usePaymentsRealtime(boutiqueIds: string[] | undefined) {
                 id: `payout-done-${next?.id}-${ts}`,
                 kind: "payout_completed",
                 amount,
-                label: "Versement effectué",
+                label: translateUi("Versement effectué"),
                 description: next?.payout_date
-                  ? `Transféré le ${new Date(next.payout_date).toLocaleDateString("fr-FR")}`
+                  ? `Transféré le ${new Date(next.payout_date).toLocaleDateString(getUiLocale())}`
                   : "Transféré",
                 boutique_id: next?.boutique_id ?? null,
                 created_at: ts,
               });
               if (Date.now() - initRef.current > 1500) {
-                toast.success("Versement effectué", {
-                  description: `${amount.toFixed(2)} € transférés`,
+                toast.success(translateUi("Versement effectué"), {
+                  description: translateUi("{v0} € transférés", {
+                    v0: amount.toFixed(2),
+                  }),
                 });
               }
             } else if (becameFailed) {
@@ -150,14 +161,16 @@ export function usePaymentsRealtime(boutiqueIds: string[] | undefined) {
                 id: `payout-failed-${next?.id}-${ts}`,
                 kind: "payout_failed",
                 amount,
-                label: "Versement en échec",
-                description: "Action requise",
+                label: translateUi("Versement en échec"),
+                description: translateUi("Action requise"),
                 boutique_id: next?.boutique_id ?? null,
                 created_at: ts,
               });
               if (Date.now() - initRef.current > 1500) {
-                toast.error("Versement en échec", {
-                  description: `${amount.toFixed(2)} € à vérifier`,
+                toast.error(translateUi("Versement en échec"), {
+                  description: translateUi("{v0} € à vérifier", {
+                    v0: amount.toFixed(2),
+                  }),
                 });
               }
             } else {
@@ -165,8 +178,8 @@ export function usePaymentsRealtime(boutiqueIds: string[] | undefined) {
                 id: `payout-upd-${next?.id}-${ts}`,
                 kind: "payout_updated",
                 amount,
-                label: "Versement mis à jour",
-                description: `Statut : ${next?.status}`,
+                label: translateUi("Versement mis à jour"),
+                description: translateUi("Statut : {v0}", { v0: next?.status }),
                 boutique_id: next?.boutique_id ?? null,
                 created_at: ts,
               });
@@ -176,7 +189,8 @@ export function usePaymentsRealtime(boutiqueIds: string[] | undefined) {
       )
       .subscribe((s) => {
         if (s === "SUBSCRIBED") setStatus("live");
-        else if (s === "CHANNEL_ERROR" || s === "TIMED_OUT") setStatus("reconnecting");
+        else if (s === "CHANNEL_ERROR" || s === "TIMED_OUT")
+          setStatus("reconnecting");
         else if (s === "CLOSED") setStatus("offline");
       });
 

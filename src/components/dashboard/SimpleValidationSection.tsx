@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
 import {
   AlertTriangle,
@@ -27,11 +29,7 @@ interface SimpleValidationSectionProps {
   compact?: boolean;
 }
 
-type SampleValidationStatus =
-  | "none"
-  | "ordered"
-  | "received"
-  | "validated";
+type SampleValidationStatus = "none" | "ordered" | "received" | "validated";
 
 interface ValidationRecord {
   status?: SampleValidationStatus;
@@ -47,17 +45,23 @@ interface ValidationStep {
 const steps: ValidationStep[] = [
   {
     key: "ordered",
-    label: "Commandé",
+    get label() {
+      return translateUi("Commandé");
+    },
     icon: ShoppingBag,
   },
   {
     key: "received",
-    label: "Reçu",
+    get label() {
+      return translateUi("Reçu");
+    },
     icon: Package,
   },
   {
     key: "validated",
-    label: "Validé",
+    get label() {
+      return translateUi("Validé");
+    },
     icon: CheckCircle2,
   },
 ];
@@ -84,7 +88,7 @@ function getSampleStatusLabel(status: SampleValidationStatus): string {
     case "validated":
       return "Produit validé";
     default:
-      return "Échantillon non commandé";
+      return translateUi("Échantillon non commandé");
   }
 }
 
@@ -106,8 +110,8 @@ export function SimpleValidationSection({
   productName,
   compact = false,
 }: SimpleValidationSectionProps) {
-  const { data: validation, isLoading } =
-    useSampleValidation(productId);
+  useLanguage();
+  const { data: validation, isLoading } = useSampleValidation(productId);
 
   const orderSample = useOrderSample();
   const receiveSample = useReceiveSample();
@@ -122,8 +126,7 @@ export function SimpleValidationSection({
 
   const validationRecord = validation as ValidationRecord | null | undefined;
 
-  const status: SampleValidationStatus =
-    validationRecord?.status ?? "none";
+  const status: SampleValidationStatus = validationRecord?.status ?? "none";
 
   const currentStep = getStepIndex(status);
 
@@ -131,12 +134,15 @@ export function SimpleValidationSection({
     try {
       await orderSample.mutateAsync(productId);
 
-      toast.success("Échantillon commandé", {
-        description: `Votre échantillon de "${productName}" a été commandé. Vous serez notifié à sa réception.`,
+      toast.success(translateUi("Échantillon commandé"), {
+        description: translateUi(
+          'Votre échantillon de "{v0}" a été commandé. Vous serez notifié à sa réception.',
+          { v0: productName },
+        ),
         duration: 5000,
       });
     } catch {
-      toast.error("Erreur lors de la commande");
+      toast.error(translateUi("Erreur lors de la commande"));
     }
   };
 
@@ -144,12 +150,17 @@ export function SimpleValidationSection({
     try {
       await receiveSample.mutateAsync(productId);
 
-      toast.success("Échantillon reçu", {
-        description: `"${productName}" est maintenant marqué comme reçu. Testez-le avant de valider son activation.`,
+      toast.success(translateUi("Échantillon reçu"), {
+        description: translateUi(
+          '"{v0}" est maintenant marqué comme reçu. Testez-le avant de valider son activation.',
+          { v0: productName },
+        ),
         duration: 5000,
       });
     } catch {
-      toast.error("Erreur lors de l'enregistrement de la réception");
+      toast.error(
+        translateUi("Erreur lors de l'enregistrement de la réception"),
+      );
     }
   };
 
@@ -158,7 +169,9 @@ export function SimpleValidationSection({
 
     if (!trimmedComment) {
       toast.error(
-        "Veuillez ajouter un commentaire sur votre retour d'expérience",
+        translateUi(
+          "Veuillez ajouter un commentaire sur votre retour d'expérience",
+        ),
       );
       return;
     }
@@ -169,15 +182,18 @@ export function SimpleValidationSection({
         comment: trimmedComment,
       });
 
-      toast.success("Produit validé et activé", {
-        description: `"${productName}" est maintenant visible et disponible à la vente dans votre boutique.`,
+      toast.success(translateUi("Produit validé et activé"), {
+        description: translateUi(
+          '"{v0}" est maintenant visible et disponible à la vente dans votre boutique.',
+          { v0: productName },
+        ),
         duration: 6000,
       });
 
       setComment("");
       setShowValidateForm(false);
     } catch {
-      toast.error("Erreur lors de la validation");
+      toast.error(translateUi("Erreur lors de la validation"));
     }
   };
 
@@ -185,16 +201,14 @@ export function SimpleValidationSection({
     return (
       <Badge className="text-[10px] bg-success/15 text-success border-success/30">
         <CheckCircle2 className="w-3 h-3 mr-1" />
-        Validé
+        {translateUi("Validé")}
       </Badge>
     );
   }
 
   if (compact) {
     return (
-      <Badge
-        className={`text-[10px] border ${getSampleStatusColor(status)}`}
-      >
+      <Badge className={`text-[10px] border ${getSampleStatusColor(status)}`}>
         {getSampleStatusLabel(status)}
       </Badge>
     );
@@ -209,7 +223,7 @@ export function SimpleValidationSection({
             <Package className="w-4 h-4 text-primary shrink-0" />
 
             <h4 className="text-sm font-semibold">
-              Validation de l’échantillon
+              {translateUi("Validation de l’échantillon")}
             </h4>
           </div>
 
@@ -228,8 +242,9 @@ export function SimpleValidationSection({
             <AlertTriangle className="w-4 h-4 text-warning mt-0.5 shrink-0" />
 
             <p className="text-xs text-warning">
-              Vous devez tester cet échantillon avant d'activer le
-              produit à la vente dans votre boutique.
+              {translateUi(
+                "Vous devez tester cet échantillon avant d'activer le produit à la vente dans votre boutique.",
+              )}
             </p>
           </div>
         )}
@@ -239,8 +254,7 @@ export function SimpleValidationSection({
           {steps.map((step, index) => {
             const done = currentStep >= index;
             const active =
-              currentStep === index - 1 ||
-              (currentStep === -1 && index === 0);
+              currentStep === index - 1 || (currentStep === -1 && index === 0);
 
             const StepIcon = step.icon;
 
@@ -268,9 +282,7 @@ export function SimpleValidationSection({
                 {index < steps.length - 1 && (
                   <ArrowRight
                     className={`w-3 h-3 shrink-0 ${
-                      done
-                        ? "text-success"
-                        : "text-muted-foreground/30"
+                      done ? "text-success" : "text-muted-foreground/30"
                     }`}
                   />
                 )}
@@ -293,7 +305,7 @@ export function SimpleValidationSection({
               <ShoppingBag className="w-4 h-4" />
             )}
 
-            Commander un échantillon
+            {translateUi("Commander un échantillon")}
           </Button>
         )}
 
@@ -312,7 +324,7 @@ export function SimpleValidationSection({
               <Package className="w-4 h-4" />
             )}
 
-            J'ai reçu mon échantillon
+            {translateUi("J'ai reçu mon échantillon")}
           </Button>
         )}
 
@@ -325,7 +337,7 @@ export function SimpleValidationSection({
           >
             <CheckCircle2 className="w-4 h-4" />
 
-            Valider mon échantillon
+            {translateUi("Valider mon échantillon")}
           </Button>
         )}
 
@@ -334,19 +346,22 @@ export function SimpleValidationSection({
           <div className="space-y-3 p-3 rounded-lg bg-muted/50">
             <div>
               <p className="text-xs font-medium">
-                Votre retour d'expérience
+                {translateUi("Votre retour d'expérience")}
               </p>
 
               <p className="text-[11px] text-muted-foreground mt-1">
-                Décrivez brièvement la qualité et votre expérience
-                avec le produit.
+                {translateUi(
+                  "Décrivez brièvement la qualité et votre expérience avec le produit.",
+                )}
               </p>
             </div>
 
             <Textarea
               value={comment}
               onChange={(event) => setComment(event.target.value)}
-              placeholder="Qualité, texture, rendu, conformité..."
+              placeholder={translateUi(
+                "Qualité, texture, rendu, conformité...",
+              )}
               className="text-sm min-h-[80px]"
             />
 
@@ -360,15 +375,13 @@ export function SimpleValidationSection({
                 }}
                 className="flex-1"
               >
-                Annuler
+                {translateUi("Annuler")}
               </Button>
 
               <Button
                 size="sm"
                 onClick={handleValidate}
-                disabled={
-                  validateSample.isPending || !comment.trim()
-                }
+                disabled={validateSample.isPending || !comment.trim()}
                 className="flex-1 gap-2"
               >
                 {validateSample.isPending ? (
@@ -377,7 +390,7 @@ export function SimpleValidationSection({
                   <CheckCircle2 className="w-4 h-4" />
                 )}
 
-                Valider
+                {translateUi("Valider")}
               </Button>
             </div>
           </div>
@@ -390,7 +403,7 @@ export function SimpleValidationSection({
 
             <div className="min-w-0">
               <p className="text-xs font-medium text-success">
-                Produit validé et actif
+                {translateUi("Produit validé et actif")}
               </p>
 
               {validationRecord?.comment && (

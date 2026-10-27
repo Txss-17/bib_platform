@@ -1,3 +1,4 @@
+import { translateUi } from "@/lib/uiTranslation";
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,9 +36,7 @@ export default function Signup() {
   // Customer signup is handled separately by /store/signup.
   const next = searchParams.get("next") || "/dashboard";
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState(
-    searchParams.get("email") || ""
-  );
+  const [email, setEmail] = useState(searchParams.get("email") || "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -143,9 +142,7 @@ export default function Signup() {
                   className="p-4 rounded-xl bg-card border border-border/50"
                 >
                   <Icon className="w-6 h-6 text-primary mb-2" />
-                  <p className="font-medium text-foreground">
-                    {feature.title}
-                  </p>
+                  <p className="font-medium text-foreground">{feature.title}</p>
                   <p className="text-sm text-muted-foreground">
                     {feature.desc}
                   </p>
@@ -158,11 +155,12 @@ export default function Signup() {
               <Shield className="w-8 h-8 text-primary" />
               <div>
                 <p className="font-medium text-foreground">
-                  Plateforme BIB
+                  {translateUi("Plateforme BIB")}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Gérez votre activité au sein de l’écosystème
-                  Brand-In-A-Box.
+                  {translateUi(
+                    "Gérez votre activité au sein de l’écosystème Brand-In-A-Box.",
+                  )}
                 </p>
               </div>
             </div>
@@ -195,9 +193,7 @@ export default function Signup() {
               <CardTitle className="text-2xl font-bold">
                 {t("signup.title")}
               </CardTitle>
-              <CardDescription>
-                {t("signup.desc")}
-              </CardDescription>
+              <CardDescription>{t("signup.desc")}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -208,9 +204,7 @@ export default function Signup() {
                 )}
                 {/* Full name */}
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">
-                    {t("signup.fullname")}
-                  </Label>
+                  <Label htmlFor="fullName">{t("signup.fullname")}</Label>
                   <div className="relative">
                     <User
                       className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
@@ -219,7 +213,7 @@ export default function Signup() {
                     <Input
                       id="fullName"
                       type="text"
-                      placeholder="Jean Dupont"
+                      placeholder={translateUi("Jean Dupont")}
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       className="pl-10"
@@ -230,9 +224,7 @@ export default function Signup() {
                 </div>
                 {/* Email */}
                 <div className="space-y-2">
-                  <Label htmlFor="email">
-                    {t("signup.email")}
-                  </Label>
+                  <Label htmlFor="email">{t("signup.email")}</Label>
                   <div className="relative">
                     <Mail
                       className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
@@ -241,7 +233,7 @@ export default function Signup() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="vendeur@exemple.com"
+                      placeholder={translateUi("vendeur@exemple.com")}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="pl-10"
@@ -252,9 +244,7 @@ export default function Signup() {
                 </div>
                 {/* Password */}
                 <div className="space-y-2">
-                  <Label htmlFor="password">
-                    {t("signup.password")}
-                  </Label>
+                  <Label htmlFor="password">{t("signup.password")}</Label>
                   <div className="relative">
                     <Lock
                       className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
@@ -272,14 +262,12 @@ export default function Signup() {
                     />
                     <button
                       type="button"
-                      onClick={() =>
-                        setShowPassword((current) => !current)
-                      }
+                      onClick={() => setShowPassword((current) => !current)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       aria-label={
                         showPassword
-                          ? "Masquer le mot de passe"
-                          : "Afficher le mot de passe"
+                          ? translateUi("Masquer le mot de passe")
+                          : translateUi("Afficher le mot de passe")
                       }
                     >
                       {showPassword ? (
@@ -295,9 +283,7 @@ export default function Signup() {
                 </div>
                 {/* Confirm password */}
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">
-                    {t("signup.confirm")}
-                  </Label>
+                  <Label htmlFor="confirmPassword">{t("signup.confirm")}</Label>
                   <div className="relative">
                     <Lock
                       className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
@@ -305,16 +291,10 @@ export default function Signup() {
                     />
                     <Input
                       id="confirmPassword"
-                      type={
-                        showConfirmPassword
-                          ? "text"
-                          : "password"
-                      }
+                      type={showConfirmPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={confirmPassword}
-                      onChange={(e) =>
-                        setConfirmPassword(e.target.value)
-                      }
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                       className="pl-10 pr-10"
                       autoComplete="new-password"
                       required
@@ -322,15 +302,13 @@ export default function Signup() {
                     <button
                       type="button"
                       onClick={() =>
-                        setShowConfirmPassword(
-                          (current) => !current
-                        )
+                        setShowConfirmPassword((current) => !current)
                       }
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       aria-label={
                         showConfirmPassword
-                          ? "Masquer le mot de passe"
-                          : "Afficher le mot de passe"
+                          ? translateUi("Masquer le mot de passe")
+                          : translateUi("Afficher le mot de passe")
                       }
                     >
                       {showConfirmPassword ? (
@@ -371,10 +349,7 @@ export default function Signup() {
                       className="text-sm text-muted-foreground leading-tight"
                     >
                       {t("signup.acceptCgu")}{" "}
-                      <Link
-                        to="/cgu"
-                        className="text-primary hover:underline"
-                      >
+                      <Link to="/cgu" className="text-primary hover:underline">
                         {t("signup.cguLink")}
                       </Link>{" "}
                     </Label>
@@ -392,10 +367,7 @@ export default function Signup() {
                       className="text-sm text-muted-foreground leading-tight"
                     >
                       {t("signup.acceptCgv")}{" "}
-                      <Link
-                        to="/cgv"
-                        className="text-primary hover:underline"
-                      >
+                      <Link to="/cgv" className="text-primary hover:underline">
                         {t("signup.cgvLink")}
                       </Link>
                     </Label>
@@ -463,7 +435,7 @@ export default function Signup() {
                   to="/store/signup"
                   className="text-xs text-muted-foreground hover:text-foreground hover:underline"
                 >
-                  Créer un compte client BIB
+                  {translateUi("Créer un compte client BIB")}
                 </Link>
               </div>
             </CardFooter>

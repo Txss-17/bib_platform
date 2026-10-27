@@ -1,4 +1,13 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { countries } from "@/lib/salesGeoData";
 
 interface SalesData {
@@ -24,6 +33,7 @@ const continentNames: Record<string, { name: string; emoji: string }> = {
 };
 
 export function SalesTable({ data, level, onRowClick }: SalesTableProps) {
+  useLanguage();
   const sorted = [...data].sort((a, b) => b.revenue - a.revenue);
   const totalRevenue = data.reduce((s, d) => s + d.revenue, 0);
 
@@ -40,11 +50,17 @@ export function SalesTable({ data, level, onRowClick }: SalesTableProps) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>{level === "continent" ? "Continent" : "Pays"}</TableHead>
-          <TableHead className="text-right">Ventes</TableHead>
-          <TableHead className="text-right">Commandes</TableHead>
+          <TableHead>
+            {level === "continent" ? "Continent" : translateUi("Pays")}
+          </TableHead>
+          <TableHead className="text-right">{translateUi("Ventes")}</TableHead>
+          <TableHead className="text-right">
+            {translateUi("Commandes")}
+          </TableHead>
           <TableHead className="text-right">CA</TableHead>
-          <TableHead className="text-right">% du total</TableHead>
+          <TableHead className="text-right">
+            {translateUi("% du total")}
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -54,19 +70,29 @@ export function SalesTable({ data, level, onRowClick }: SalesTableProps) {
             onClick={() => onRowClick?.(row.location)}
             className={onRowClick ? "cursor-pointer hover:bg-muted/50" : ""}
           >
-            <TableCell className="font-medium">{getLabel(row.location)}</TableCell>
+            <TableCell className="font-medium">
+              {getLabel(row.location)}
+            </TableCell>
             <TableCell className="text-right">{row.sales}</TableCell>
             <TableCell className="text-right">{row.orders}</TableCell>
-            <TableCell className="text-right font-semibold">{row.revenue.toFixed(0)}€</TableCell>
+            <TableCell className="text-right font-semibold">
+              {row.revenue.toFixed(0)}€
+            </TableCell>
             <TableCell className="text-right text-muted-foreground">
-              {totalRevenue > 0 ? ((row.revenue / totalRevenue) * 100).toFixed(1) : 0}%
+              {totalRevenue > 0
+                ? ((row.revenue / totalRevenue) * 100).toFixed(1)
+                : 0}
+              %
             </TableCell>
           </TableRow>
         ))}
         {sorted.length === 0 && (
           <TableRow>
-            <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-              Aucune donnée disponible
+            <TableCell
+              colSpan={5}
+              className="text-center text-muted-foreground py-8"
+            >
+              {translateUi("Aucune donnée disponible")}
             </TableCell>
           </TableRow>
         )}

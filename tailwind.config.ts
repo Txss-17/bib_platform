@@ -2,7 +2,12 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -14,6 +19,7 @@ export default {
     },
     extend: {
       colors: {
+        "brand-marine": "hsl(215 55% 14%)",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -28,6 +34,7 @@ export default {
           foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
+          ink: "hsl(var(--destructive-ink))",
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
@@ -35,14 +42,17 @@ export default {
         // Use `bg-success`, `text-success-foreground`, `bg-success/10` for soft
         // surfaces, etc. Avoid raw `bg-green-*` / `text-amber-*` in app code.
         success: {
+          ink: "hsl(var(--success-ink))",
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
         },
         warning: {
+          ink: "hsl(var(--warning-ink))",
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
         info: {
+          ink: "hsl(var(--info-ink))",
           DEFAULT: "hsl(var(--info))",
           foreground: "hsl(var(--info-foreground))",
         },
@@ -51,6 +61,7 @@ export default {
           foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
+          ink: "hsl(var(--accent-ink))",
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
@@ -96,16 +107,16 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ['Figtree', 'Inter', 'system-ui', 'sans-serif'],
-        display: ['Outfit', '"Playfair Display"', 'Georgia', 'sans-serif'],
+        sans: ["Figtree", "Inter", "system-ui", "sans-serif"],
+        display: ["Outfit", '"Playfair Display"', "Georgia", "sans-serif"],
       },
       boxShadow: {
-        'sm': 'var(--shadow-sm)',
-        'md': 'var(--shadow-md)',
-        'lg': 'var(--shadow-lg)',
-        'xl': 'var(--shadow-xl)',
-        'glow': 'var(--shadow-glow)',
-        'premium': 'var(--shadow-premium)',
+        sm: "var(--shadow-sm)",
+        md: "var(--shadow-md)",
+        lg: "var(--shadow-lg)",
+        xl: "var(--shadow-xl)",
+        glow: "var(--shadow-glow)",
+        premium: "var(--shadow-premium)",
       },
       keyframes: {
         "accordion-down": {
@@ -116,12 +127,14 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        "float": {
+        float: {
           "0%, 100%": { transform: "translateY(0px)" },
           "50%": { transform: "translateY(-20px)" },
         },
         "pulse-glow": {
-          "0%, 100%": { boxShadow: "0 0 20px -5px hsl(var(--linksy-teal) / 0.3)" },
+          "0%, 100%": {
+            boxShadow: "0 0 20px -5px hsl(var(--linksy-teal) / 0.3)",
+          },
           "50%": { boxShadow: "0 0 40px -5px hsl(var(--linksy-teal) / 0.5)" },
         },
         "fade-in": {
@@ -140,7 +153,7 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "float": "float 6s ease-in-out infinite",
+        float: "float 6s ease-in-out infinite",
         "pulse-glow": "pulse-glow 3s ease-in-out infinite",
         "fade-in": "fade-in 0.4s ease-out forwards",
         "fade-up": "fade-up 0.5s ease-out forwards",

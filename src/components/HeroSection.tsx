@@ -1,3 +1,4 @@
+import { translateUi } from "@/lib/uiTranslation";
 import { Link } from "react-router-dom";
 import { ArrowRight, Check, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,19 +8,19 @@ import founderImg from "@/assets/landing-founder0.jpg";
 
 const HeroSection = () => {
   const { lang } = useLanguage();
-  const text = (fr: string, en: string) => lang === "fr" ? fr : en;
+  const text = (fr: string, en: string) => (lang === "fr" ? fr : en);
   return (
-    <section className="relative overflow-hidden bg-bib-ivory pt-24 sm:pt-28 lg:pt-[7.5rem]">
+    <section className="relative overflow-hidden bg-background pt-24 sm:pt-28 lg:pt-[7.5rem]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid min-h-[680px] items-center gap-12 py-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16 lg:py-16">
           {/* Copy */}
           <div className="relative z-10 max-w-xl">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-bib-marine/10 bg-white/70 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-bib-marine backdrop-blur-sm">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-bib-marine/10 bg-white/70 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground backdrop-blur-sm">
               <ShieldCheck className="h-3.5 w-3.5 text-bib-gold" />
               {text("Réseau vérifié BIB", "Verified BIB network")}
             </div>
 
-            <h1 className="font-display text-[3.5rem] font-bold leading-[0.94] tracking-[-0.045em] text-bib-marine sm:text-6xl lg:text-[5.25rem]">
+            <h1 className="font-display text-[3.5rem] font-bold leading-[0.94] tracking-[-0.045em] text-foreground sm:text-6xl lg:text-[5.25rem]">
               {text("Votre marque.", "Your brand.")}
               <br />
               <span className="text-bib-gold">
@@ -29,8 +30,11 @@ const HeroSection = () => {
               {text("sa place.", "its place.")}
             </h1>
 
-            <p className="mt-7 max-w-lg text-base leading-7 text-bib-marine/65 sm:text-lg sm:leading-8">
-              {text("BIB réunit boutique, produits sélectionnés et réseau vérifié pour permettre aux marques de se développer dans un environnement structuré.", "BIB brings together a storefront, selected products, and a verified network to help brands grow in a structured environment.")}
+            <p className="mt-7 max-w-lg text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
+              {text(
+                "BIB réunit boutique, produits sélectionnés et réseau vérifié pour permettre aux marques de se développer dans un environnement structuré.",
+                "BIB brings together a storefront, selected products, and a verified network to help brands grow in a structured environment.",
+              )}
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -50,7 +54,7 @@ const HeroSection = () => {
                 asChild
                 variant="outline"
                 size="lg"
-                className="h-12 rounded-full border-bib-marine/15 bg-white/60 px-6 text-bib-marine hover:bg-bib-marine hover:text-white"
+                className="h-12 rounded-full border-bib-marine/15 bg-white/60 px-6 text-foreground hover:bg-brand-marine hover:text-white"
               >
                 <Link to="/store">
                   {text("Découvrir les boutiques", "Explore stores")}
@@ -60,8 +64,15 @@ const HeroSection = () => {
 
             <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3">
               <TrustPoint text={text("Réseau vérifié", "Verified network")} />
-              <TrustPoint text={text("Produits sélectionnés", "Selected products")} />
-              <TrustPoint text={text("Infrastructure intégrée", "Integrated infrastructure")} />
+              <TrustPoint
+                text={text("Produits sélectionnés", "Selected products")}
+              />
+              <TrustPoint
+                text={text(
+                  "Infrastructure intégrée",
+                  "Integrated infrastructure",
+                )}
+              />
             </div>
           </div>
 
@@ -72,11 +83,14 @@ const HeroSection = () => {
               className="absolute -inset-3 rounded-[2.5rem] border border-bib-marine/8 sm:-inset-5"
             />
 
-            <div className="relative overflow-hidden rounded-[2rem] bg-bib-marine shadow-[0_30px_80px_rgba(20,35,55,0.16)]">
+            <div className="relative overflow-hidden rounded-[2rem] bg-brand-marine shadow-[0_30px_80px_rgba(20,35,55,0.16)]">
               <div className="aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5]">
                 <img
                   src={founderImg}
-                  alt={text("Fondatrice présentant sa marque", "Founder presenting her brand")}
+                  alt={text(
+                    "Fondatrice présentant sa marque",
+                    "Founder presenting her brand",
+                  )}
                   className="h-full w-full object-cover"
                 />
               </div>
@@ -85,11 +99,14 @@ const HeroSection = () => {
                 <div className="flex items-end justify-between gap-5">
                   <div>
                     <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/55">
-                      BIB Network
+                      {translateUi("BIB Network")}
                     </p>
 
                     <p className="mt-1.5 max-w-sm font-display text-xl font-semibold leading-tight text-white sm:text-2xl">
-                      {text("Une infrastructure pensée pour les marques.", "Infrastructure built for brands.")}
+                      {text(
+                        "Une infrastructure pensée pour les marques.",
+                        "Infrastructure built for brands.",
+                      )}
                     </p>
                   </div>
 
@@ -102,17 +119,17 @@ const HeroSection = () => {
             </div>
 
             {/* Floating trust badge */}
-            <div className="absolute -bottom-5 left-4 flex items-center gap-3 rounded-2xl border border-bib-marine/8 bg-white px-4 py-3 shadow-xl sm:bottom-6 sm:-left-7">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-bib-marine/5">
-                <ShieldCheck className="h-4 w-4 text-bib-marine" />
+            <div className="absolute -bottom-5 left-4 flex items-center gap-3 rounded-2xl border border-bib-marine/8 bg-card px-4 py-3 shadow-xl sm:bottom-6 sm:-left-7">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/5">
+                <ShieldCheck className="h-4 w-4 text-foreground" />
               </div>
 
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-bib-marine/40">
-                  BIB Verified
+                <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                  {translateUi("BIB Verified")}
                 </p>
 
-                <p className="mt-0.5 text-xs font-medium text-bib-marine">
+                <p className="mt-0.5 text-xs font-medium text-foreground">
                   {text("Réseau de confiance", "A trusted network")}
                 </p>
               </div>
@@ -131,13 +148,11 @@ const HeroSection = () => {
 };
 
 function TrustPoint({ text }: { text: string }) {
+  useLanguage();
   return (
-    <div className="flex items-center gap-2 text-sm text-bib-marine/60">
-      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-bib-marine/8">
-        <Check
-          className="h-3 w-3 text-bib-marine"
-          strokeWidth={2.5}
-        />
+    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/8">
+        <Check className="h-3 w-3 text-foreground" strokeWidth={2.5} />
       </span>
 
       {text}

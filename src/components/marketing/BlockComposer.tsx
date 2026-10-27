@@ -1,14 +1,36 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useMemo, useEffect } from "react";
 import {
-  DndContext, closestCenter, PointerSensor, useSensor, useSensors, type DragEndEvent,
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
 } from "@dnd-kit/core";
 import {
-  SortableContext, arrayMove, useSortable, verticalListSortingStrategy,
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
-  Heading1, Type, Image as ImageIcon, MousePointerClick, Tag, Package,
-  Minus as MinusIcon, Space, Trash2, GripVertical, ChevronUp, ChevronDown, Eye, Pencil,
+  Heading1,
+  Type,
+  Image as ImageIcon,
+  MousePointerClick,
+  Tag,
+  Package,
+  Minus as MinusIcon,
+  Space,
+  Trash2,
+  GripVertical,
+  ChevronUp,
+  ChevronDown,
+  Eye,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,15 +39,29 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { useProducts } from "@/hooks/useProducts";
 import {
-  BLOCK_LIBRARY, newBlock, renderBlocksToHtml, type MarketingBlock,
+  BLOCK_LIBRARY,
+  newBlock,
+  renderBlocksToHtml,
+  type MarketingBlock,
 } from "@/lib/marketingBlocks";
 
 const ICONS: Record<string, any> = {
-  Heading1, Text: Type, Image: ImageIcon, MousePointerClick, Tag, Package, Minus: MinusIcon, Space,
+  Heading1,
+  Text: Type,
+  Image: ImageIcon,
+  MousePointerClick,
+  Tag,
+  Package,
+  Minus: MinusIcon,
+  Space,
 };
 
 interface Props {
@@ -40,11 +76,23 @@ interface Props {
 }
 
 export function BlockComposer({
-  boutiqueId, blocks, onChange, signature, footerLinks, boutiqueName, boutiqueSlug, promoCode,
+  boutiqueId,
+  blocks,
+  onChange,
+  signature,
+  footerLinks,
+  boutiqueName,
+  boutiqueSlug,
+  promoCode,
 }: Props) {
-  const [selectedId, setSelectedId] = useState<string | null>(blocks[0]?.id ?? null);
+  useLanguage();
+  const [selectedId, setSelectedId] = useState<string | null>(
+    blocks[0]?.id ?? null,
+  );
   const [view, setView] = useState<"edit" | "preview">("edit");
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+  );
 
   useEffect(() => {
     if (!selectedId && blocks.length) setSelectedId(blocks[0].id);
@@ -58,7 +106,11 @@ export function BlockComposer({
     setSelectedId(b.id);
   };
   const updateBlock = (id: string, patch: Partial<MarketingBlock>) =>
-    onChange(blocks.map((b) => (b.id === id ? { ...b, ...patch } as MarketingBlock : b)));
+    onChange(
+      blocks.map((b) =>
+        b.id === id ? ({ ...b, ...patch } as MarketingBlock) : b,
+      ),
+    );
   const removeBlock = (id: string) => {
     const next = blocks.filter((b) => b.id !== id);
     onChange(next);
@@ -81,7 +133,12 @@ export function BlockComposer({
   };
 
   const previewHtml = useMemo(
-    () => renderBlocksToHtml(blocks, { signature, footerLinks, boutiqueName }).replace(/\{\{promo_code\}\}/g, promoCode || "VOTRECODE"),
+    () =>
+      renderBlocksToHtml(blocks, {
+        signature,
+        footerLinks,
+        boutiqueName,
+      }).replace(/\{\{promo_code\}\}/g, promoCode || "VOTRECODE"),
     [blocks, signature, footerLinks, boutiqueName, promoCode],
   );
 
@@ -89,7 +146,9 @@ export function BlockComposer({
     <div className="space-y-3">
       {/* Toolbar: add buttons + view toggle */}
       <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg bg-muted/40 border border-border/50">
-        <span className="text-xs text-muted-foreground mr-1">Ajouter :</span>
+        <span className="text-xs text-muted-foreground mr-1">
+          {translateUi("Ajouter :")}
+        </span>
         {BLOCK_LIBRARY.map((b) => {
           const Icon = ICONS[b.icon] ?? Type;
           return (
@@ -108,18 +167,20 @@ export function BlockComposer({
         })}
         <div className="ml-auto flex gap-1">
           <Button
-            type="button" size="sm"
+            type="button"
+            size="sm"
             variant={view === "edit" ? "default" : "outline"}
             onClick={() => setView("edit")}
           >
-            <Pencil className="w-3.5 h-3.5 mr-1.5" /> Éditer
+            <Pencil className="w-3.5 h-3.5 mr-1.5" /> {translateUi("Éditer")}
           </Button>
           <Button
-            type="button" size="sm"
+            type="button"
+            size="sm"
             variant={view === "preview" ? "default" : "outline"}
             onClick={() => setView("preview")}
           >
-            <Eye className="w-3.5 h-3.5 mr-1.5" /> Aperçu
+            <Eye className="w-3.5 h-3.5 mr-1.5" /> {translateUi("Aperçu")}
           </Button>
         </div>
       </div>
@@ -127,9 +188,9 @@ export function BlockComposer({
       {view === "preview" ? (
         <div className="border border-border rounded-lg overflow-hidden bg-muted/30">
           <iframe
-            title="Aperçu email"
+            title={translateUi("Aperçu email")}
             srcDoc={previewHtml}
-            className="w-full h-[600px] bg-white"
+            className="w-full h-[600px] bg-card"
             sandbox=""
           />
         </div>
@@ -140,11 +201,20 @@ export function BlockComposer({
             <CardContent className="p-3 min-h-[400px]">
               {blocks.length === 0 ? (
                 <div className="py-16 text-center text-sm text-muted-foreground">
-                  Cliquez un bouton ci-dessus pour ajouter votre premier bloc.
+                  {translateUi(
+                    "Cliquez un bouton ci-dessus pour ajouter votre premier bloc.",
+                  )}
                 </div>
               ) : (
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                  <SortableContext items={blocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={blocks.map((b) => b.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
                     <ul className="space-y-2">
                       {blocks.map((b, i) => (
                         <SortableRow
@@ -154,7 +224,11 @@ export function BlockComposer({
                           onSelect={() => setSelectedId(b.id)}
                           onDelete={() => removeBlock(b.id)}
                           onUp={i > 0 ? () => moveBlock(b.id, -1) : undefined}
-                          onDown={i < blocks.length - 1 ? () => moveBlock(b.id, 1) : undefined}
+                          onDown={
+                            i < blocks.length - 1
+                              ? () => moveBlock(b.id, 1)
+                              : undefined
+                          }
                         />
                       ))}
                     </ul>
@@ -175,7 +249,7 @@ export function BlockComposer({
                 />
               ) : (
                 <div className="text-xs text-muted-foreground py-4 text-center">
-                  Sélectionnez un bloc pour le modifier.
+                  {translateUi("Sélectionnez un bloc pour le modifier.")}
                 </div>
               )}
             </CardContent>
@@ -185,9 +259,16 @@ export function BlockComposer({
 
       {/* Available variables hint */}
       <div className="text-[11px] text-muted-foreground px-1">
-        Variables (insérables dans les textes) :{" "}
-        {["{{first_name}}", "{{full_name}}", "{{boutique_name}}", "{{promo_code}}"].map((v) => (
-          <code key={v} className="px-1.5 py-0.5 mx-0.5 bg-muted rounded">{v}</code>
+        {translateUi("Variables (insérables dans les textes) :")}{" "}
+        {[
+          "{{first_name}}",
+          "{{full_name}}",
+          "{{boutique_name}}",
+          "{{promo_code}}",
+        ].map((v) => (
+          <code key={v} className="px-1.5 py-0.5 mx-0.5 bg-muted rounded">
+            {v}
+          </code>
         ))}
       </div>
     </div>
@@ -195,38 +276,101 @@ export function BlockComposer({
 }
 
 function SortableRow({
-  block, isSelected, onSelect, onDelete, onUp, onDown,
+  block,
+  isSelected,
+  onSelect,
+  onDelete,
+  onUp,
+  onDown,
 }: {
-  block: MarketingBlock; isSelected: boolean; onSelect: () => void; onDelete: () => void;
-  onUp?: () => void; onDown?: () => void;
+  block: MarketingBlock;
+  isSelected: boolean;
+  onSelect: () => void;
+  onDelete: () => void;
+  onUp?: () => void;
+  onDown?: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id });
-  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 };
+  useLanguage();
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: block.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
   return (
     <li
       ref={setNodeRef}
       style={style}
       className={`flex items-center gap-2 p-2 rounded-md border ${
-        isSelected ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+        isSelected
+          ? "border-primary bg-primary/5"
+          : "border-border hover:border-primary/40"
       }`}
       onClick={onSelect}
     >
       <button
         type="button"
         className="cursor-grab active:cursor-grabbing touch-none p-1 text-muted-foreground"
-        {...attributes} {...listeners}
-        aria-label="Réordonner"
+        {...attributes}
+        {...listeners}
+        aria-label={translateUi("Réordonner")}
       >
         <GripVertical className="w-4 h-4" />
       </button>
       <div className="flex-1 min-w-0">
-        <div className="text-xs text-muted-foreground uppercase tracking-wide">{labelFor(block.type)}</div>
-        <div className="text-sm text-foreground truncate">{summaryFor(block)}</div>
+        <div className="text-xs text-muted-foreground uppercase tracking-wide">
+          {labelFor(block.type)}
+        </div>
+        <div className="text-sm text-foreground truncate">
+          {summaryFor(block)}
+        </div>
       </div>
       <div className="flex items-center gap-0.5">
-        {onUp && <Button type="button" size="icon" variant="ghost" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); onUp(); }}><ChevronUp className="w-3.5 h-3.5" /></Button>}
-        {onDown && <Button type="button" size="icon" variant="ghost" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); onDown(); }}><ChevronDown className="w-3.5 h-3.5" /></Button>}
-        <Button type="button" size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={(e) => { e.stopPropagation(); onDelete(); }}>
+        {onUp && (
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7"
+            onClick={(e) => {
+              e.stopPropagation();
+              onUp();
+            }}
+          >
+            <ChevronUp className="w-3.5 h-3.5" />
+          </Button>
+        )}
+        {onDown && (
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDown();
+            }}
+          >
+            <ChevronDown className="w-3.5 h-3.5" />
+          </Button>
+        )}
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="h-7 w-7 text-destructive"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
+        >
           <Trash2 className="w-3.5 h-3.5" />
         </Button>
       </div>
@@ -236,42 +380,71 @@ function SortableRow({
 
 function labelFor(t: MarketingBlock["type"]): string {
   const m: Record<string, string> = {
-    heading: "Titre", text: "Paragraphe", image: "Image", button: "Bouton",
-    promo_code: "Code promo", product_grid: "Produits", divider: "Séparateur", spacer: "Espace",
+    heading: "Titre",
+    text: "Paragraphe",
+    image: "Image",
+    button: "Bouton",
+    promo_code: "Code promo",
+    product_grid: "Produits",
+    divider: "Séparateur",
+    spacer: "Espace",
   };
   return m[t] ?? t;
 }
 function summaryFor(b: MarketingBlock): string {
   switch (b.type) {
-    case "heading": case "text": return b.text || "(vide)";
-    case "image": return b.url ? "Image définie" : "(à configurer)";
-    case "button": return `${b.label || "(libellé)"} → ${b.href || "(URL)"}`;
-    case "promo_code": return "Encart code promo personnalisé";
-    case "product_grid": return `${b.product_ids?.length ?? 0} produit(s)`;
-    case "divider": return "Ligne de séparation";
-    case "spacer": return `Espace ${b.size}`;
+    case "heading":
+    case "text":
+      return b.text || "(vide)";
+    case "image":
+      return b.url ? "Image définie" : "(à configurer)";
+    case "button":
+      return `${b.label || "(libellé)"} → ${b.href || "(URL)"}`;
+    case "promo_code":
+      return translateUi("Encart code promo personnalisé");
+    case "product_grid":
+      return translateUi("{v0} produit(s)", { v0: b.product_ids?.length ?? 0 });
+    case "divider":
+      return translateUi("Ligne de séparation");
+    case "spacer":
+      return translateUi("Espace {v0}", { v0: b.size });
   }
 }
 
 function BlockEditor({
-  block, onChange, boutiqueId,
+  block,
+  onChange,
+  boutiqueId,
 }: {
-  block: MarketingBlock; onChange: (patch: Partial<MarketingBlock>) => void; boutiqueId: string;
+  block: MarketingBlock;
+  onChange: (patch: Partial<MarketingBlock>) => void;
+  boutiqueId: string;
 }) {
+  useLanguage();
   if (block.type === "heading") {
     return (
       <div className="space-y-2">
         <div>
-          <Label className="text-xs">Texte du titre</Label>
-          <Input value={block.text} onChange={(e) => onChange({ text: e.target.value })} />
+          <Label className="text-xs">{translateUi("Texte du titre")}</Label>
+          <Input
+            value={block.text}
+            onChange={(e) => onChange({ text: e.target.value })}
+          />
         </div>
         <div>
-          <Label className="text-xs">Niveau</Label>
-          <Select value={String(block.level)} onValueChange={(v) => onChange({ level: Number(v) as 1 | 2 })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+          <Label className="text-xs">{translateUi("Niveau")}</Label>
+          <Select
+            value={String(block.level)}
+            onValueChange={(v) => onChange({ level: Number(v) as 1 | 2 })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
-              <SelectItem value="1">H1 — Très grand</SelectItem>
-              <SelectItem value="2">H2 — Grand</SelectItem>
+              <SelectItem value="1">
+                {translateUi("H1 — Très grand")}
+              </SelectItem>
+              <SelectItem value="2">{translateUi("H2 — Grand")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -281,9 +454,15 @@ function BlockEditor({
   if (block.type === "text") {
     return (
       <div>
-        <Label className="text-xs">Texte</Label>
-        <Textarea rows={8} value={block.text} onChange={(e) => onChange({ text: e.target.value })} />
-        <p className="text-[10px] text-muted-foreground mt-1">Astuce : Entrée crée un saut de ligne.</p>
+        <Label className="text-xs">{translateUi("Texte")}</Label>
+        <Textarea
+          rows={8}
+          value={block.text}
+          onChange={(e) => onChange({ text: e.target.value })}
+        />
+        <p className="text-[10px] text-muted-foreground mt-1">
+          {translateUi("Astuce : Entrée crée un saut de ligne.")}
+        </p>
       </div>
     );
   }
@@ -291,16 +470,30 @@ function BlockEditor({
     return (
       <div className="space-y-2">
         <div>
-          <Label className="text-xs">URL de l'image</Label>
-          <Input placeholder="https://…" value={block.url} onChange={(e) => onChange({ url: e.target.value })} />
+          <Label className="text-xs">{translateUi("URL de l'image")}</Label>
+          <Input
+            placeholder="https://…"
+            value={block.url}
+            onChange={(e) => onChange({ url: e.target.value })}
+          />
         </div>
         <div>
-          <Label className="text-xs">Texte alternatif</Label>
-          <Input value={block.alt ?? ""} onChange={(e) => onChange({ alt: e.target.value })} placeholder="Description courte" />
+          <Label className="text-xs">{translateUi("Texte alternatif")}</Label>
+          <Input
+            value={block.alt ?? ""}
+            onChange={(e) => onChange({ alt: e.target.value })}
+            placeholder={translateUi("Description courte")}
+          />
         </div>
         <div>
-          <Label className="text-xs">Lien au clic (optionnel)</Label>
-          <Input value={block.href ?? ""} onChange={(e) => onChange({ href: e.target.value })} placeholder="https://…" />
+          <Label className="text-xs">
+            {translateUi("Lien au clic (optionnel)")}
+          </Label>
+          <Input
+            value={block.href ?? ""}
+            onChange={(e) => onChange({ href: e.target.value })}
+            placeholder="https://…"
+          />
         </div>
       </div>
     );
@@ -309,12 +502,19 @@ function BlockEditor({
     return (
       <div className="space-y-2">
         <div>
-          <Label className="text-xs">Libellé</Label>
-          <Input value={block.label} onChange={(e) => onChange({ label: e.target.value })} />
+          <Label className="text-xs">{translateUi("Libellé")}</Label>
+          <Input
+            value={block.label}
+            onChange={(e) => onChange({ label: e.target.value })}
+          />
         </div>
         <div>
-          <Label className="text-xs">Lien (URL)</Label>
-          <Input value={block.href} onChange={(e) => onChange({ href: e.target.value })} placeholder="https://…" />
+          <Label className="text-xs">{translateUi("Lien (URL)")}</Label>
+          <Input
+            value={block.href}
+            onChange={(e) => onChange({ href: e.target.value })}
+            placeholder="https://…"
+          />
         </div>
       </div>
     );
@@ -322,45 +522,69 @@ function BlockEditor({
   if (block.type === "promo_code") {
     return (
       <div>
-        <Label className="text-xs">Étiquette (au-dessus du code)</Label>
-        <Input value={block.label ?? ""} onChange={(e) => onChange({ label: e.target.value })} />
+        <Label className="text-xs">
+          {translateUi("Étiquette (au-dessus du code)")}
+        </Label>
+        <Input
+          value={block.label ?? ""}
+          onChange={(e) => onChange({ label: e.target.value })}
+        />
         <p className="text-[10px] text-muted-foreground mt-1">
-          Le code <code>{`{{promo_code}}`}</code> est inséré automatiquement à l'envoi.
+          {translateUi("Le code") + " "}
+          <code>{`{{promo_code}}`}</code>{" "}
+          {translateUi("est inséré automatiquement à l'envoi.")}
         </p>
       </div>
     );
   }
   if (block.type === "product_grid") {
-    return <ProductGridEditor block={block} onChange={onChange} boutiqueId={boutiqueId} />;
+    return (
+      <ProductGridEditor
+        block={block}
+        onChange={onChange}
+        boutiqueId={boutiqueId}
+      />
+    );
   }
   if (block.type === "spacer") {
     return (
       <div>
-        <Label className="text-xs">Taille</Label>
-        <Select value={block.size} onValueChange={(v) => onChange({ size: v as any })}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
+        <Label className="text-xs">{translateUi("Taille")}</Label>
+        <Select
+          value={block.size}
+          onValueChange={(v) => onChange({ size: v as any })}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
-            <SelectItem value="sm">Petit</SelectItem>
-            <SelectItem value="md">Moyen</SelectItem>
-            <SelectItem value="lg">Grand</SelectItem>
+            <SelectItem value="sm">{translateUi("Petit")}</SelectItem>
+            <SelectItem value="md">{translateUi("Moyen")}</SelectItem>
+            <SelectItem value="lg">{translateUi("Grand")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
     );
   }
   if (block.type === "divider") {
-    return <p className="text-xs text-muted-foreground">Aucun réglage. Ligne fine entre deux sections.</p>;
+    return (
+      <p className="text-xs text-muted-foreground">
+        {translateUi("Aucun réglage. Ligne fine entre deux sections.")}
+      </p>
+    );
   }
   return null;
 }
 
 function ProductGridEditor({
-  block, onChange,
+  block,
+  onChange,
 }: {
   block: Extract<MarketingBlock, { type: "product_grid" }>;
   onChange: (patch: Partial<MarketingBlock>) => void;
   boutiqueId: string;
 }) {
+  useLanguage();
   const { data: products = [] } = useProducts();
   const selected = new Set(block.product_ids);
   const toggle = (id: string) => {
@@ -371,10 +595,12 @@ function ProductGridEditor({
   };
   return (
     <div className="space-y-2">
-      <Label className="text-xs">Produits (max 4)</Label>
+      <Label className="text-xs">{translateUi("Produits (max 4)")}</Label>
       <div className="max-h-72 overflow-auto space-y-1 border border-border rounded-md p-2">
         {products.length === 0 && (
-          <p className="text-xs text-muted-foreground py-2 text-center">Aucun produit dans cette boutique.</p>
+          <p className="text-xs text-muted-foreground py-2 text-center">
+            {translateUi("Aucun produit dans cette boutique.")}
+          </p>
         )}
         {products.map((p: any) => (
           <label
@@ -389,8 +615,12 @@ function ProductGridEditor({
               onChange={() => toggle(p.id)}
               disabled={!selected.has(p.id) && selected.size >= 4}
             />
-            <span className="flex-1 truncate">{p.supplier_products?.name ?? "Produit"}</span>
-            <Badge variant="outline" className="text-[10px]">{Number(p.public_price ?? 0).toFixed(2)}€</Badge>
+            <span className="flex-1 truncate">
+              {p.supplier_products?.name ?? translateUi("Produit")}
+            </span>
+            <Badge variant="outline" className="text-[10px]">
+              {Number(p.public_price ?? 0).toFixed(2)}€
+            </Badge>
           </label>
         ))}
       </div>

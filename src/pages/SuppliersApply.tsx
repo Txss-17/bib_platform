@@ -1,4 +1,5 @@
-﻿import { Link } from "react-router-dom";
+import { translateUi } from "@/lib/uiTranslation";
+import { Link } from "react-router-dom";
 import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
 import {
   PartnerQualificationForm,
@@ -16,139 +17,278 @@ const fields: QualSelectField[] = [
   {
     type: "select",
     id: "country",
-    label: "Pays de production",
+    get label() {
+      return translateUi("Pays de production");
+    },
     required: true,
     options: [
       { value: "fr", label: "🇫🇷 France" },
       {
         value: "eu-south",
-        label: "🇪🇺 Italie / Espagne / Portugal",
+        get label() {
+          return translateUi("🇪🇺 Italie / Espagne / Portugal");
+        },
       },
       {
         value: "eu-central-east",
-        label: "🇪🇺 Allemagne / Pologne / Europe centrale",
+        get label() {
+          return translateUi("🇪🇺 Allemagne / Pologne / Europe centrale");
+        },
       },
       {
         value: "maghreb",
-        label: "🌍 Maroc / Tunisie / Maghreb",
+        get label() {
+          return translateUi("🌍 Maroc / Tunisie / Maghreb");
+        },
       },
-      { value: "tr", label: "🇹🇷 Turquie" },
-      { value: "cn", label: "🇨🇳 Chine" },
+      {
+        value: "tr",
+        get label() {
+          return translateUi("🇹🇷 Turquie");
+        },
+      },
+      {
+        value: "cn",
+        get label() {
+          return translateUi("🇨🇳 Chine");
+        },
+      },
       {
         value: "asia",
-        label: "🌏 Inde / Bangladesh / Vietnam / Asie",
+        get label() {
+          return translateUi("🌏 Inde / Bangladesh / Vietnam / Asie");
+        },
       },
-      { value: "other", label: "🌍 Autre pays" },
+      {
+        value: "other",
+        get label() {
+          return translateUi("🌍 Autre pays");
+        },
+      },
     ],
   },
   {
     type: "select",
     id: "structure",
-    label: "Type de structure",
+    get label() {
+      return translateUi("Type de structure");
+    },
     required: true,
     options: [
       {
         value: "fab",
-        label: "🏭 Fabricant / Usine directe",
+        get label() {
+          return translateUi("🏭 Fabricant / Usine directe");
+        },
       },
       {
         value: "art",
-        label: "🧵 Atelier artisanal",
+        get label() {
+          return translateUi("🧵 Atelier artisanal");
+        },
       },
       {
         value: "sub",
-        label: "🔧 Sous-traitant / Façonnier",
+        get label() {
+          return translateUi("🔧 Sous-traitant / Façonnier");
+        },
       },
       {
         value: "gro",
-        label: "📦 Grossiste / Distributeur",
+        get label() {
+          return translateUi("📦 Grossiste / Distributeur");
+        },
       },
     ],
   },
   {
     type: "select",
     id: "moq",
-    label: "MOQ minimum par référence",
+    get label() {
+      return translateUi("MOQ minimum par référence");
+    },
     required: true,
-    hint: "Quantité minimale généralement demandée pour une référence",
+    get hint() {
+      return translateUi(
+        "Quantité minimale généralement demandée pour une référence",
+      );
+    },
     options: [
-      { value: "lt50", label: "Moins de 50 unités" },
-      { value: "50-100", label: "50 – 100 unités" },
-      { value: "100-300", label: "100 – 300 unités" },
-      { value: "300-1000", label: "300 – 1 000 unités" },
-      { value: "gt1000", label: "Plus de 1 000 unités" },
+      {
+        value: "lt50",
+        get label() {
+          return translateUi("Moins de 50 unités");
+        },
+      },
+      {
+        value: "50-100",
+        get label() {
+          return translateUi("50 – 100 unités");
+        },
+      },
+      {
+        value: "100-300",
+        get label() {
+          return translateUi("100 – 300 unités");
+        },
+      },
+      {
+        value: "300-1000",
+        get label() {
+          return translateUi("300 – 1 000 unités");
+        },
+      },
+      {
+        value: "gt1000",
+        get label() {
+          return translateUi("Plus de 1 000 unités");
+        },
+      },
     ],
   },
   {
     type: "select",
     id: "capacity",
-    label: "Capacité mensuelle disponible",
+    get label() {
+      return translateUi("Capacité mensuelle disponible");
+    },
     required: true,
     options: [
       {
         value: "lt1k",
-        label: "Moins de 1 000 unités / mois",
+        get label() {
+          return translateUi("Moins de 1 000 unités / mois");
+        },
       },
       {
         value: "1k-5k",
-        label: "1 000 – 5 000 unités / mois",
+        get label() {
+          return translateUi("1 000 – 5 000 unités / mois");
+        },
       },
       {
         value: "5k-20k",
-        label: "5 000 – 20 000 unités / mois",
+        get label() {
+          return translateUi("5 000 – 20 000 unités / mois");
+        },
       },
       {
         value: "gt20k",
-        label: "Plus de 20 000 unités / mois",
+        get label() {
+          return translateUi("Plus de 20 000 unités / mois");
+        },
       },
     ],
   },
   {
     type: "select",
     id: "leadtime",
-    label: "Délai moyen de production",
+    get label() {
+      return translateUi("Délai moyen de production");
+    },
     required: true,
-    hint:
-      "De la validation de la commande à la mise à disposition pour expédition",
+    get hint() {
+      return translateUi(
+        "De la validation de la commande à la mise à disposition pour expédition",
+      );
+    },
     options: [
-      { value: "lt10", label: "Moins de 10 jours" },
-      { value: "10-20", label: "10 – 20 jours" },
-      { value: "20-45", label: "20 – 45 jours" },
-      { value: "45-90", label: "45 – 90 jours" },
-      { value: "gt90", label: "Plus de 90 jours" },
+      {
+        value: "lt10",
+        get label() {
+          return translateUi("Moins de 10 jours");
+        },
+      },
+      {
+        value: "10-20",
+        get label() {
+          return translateUi("10 – 20 jours");
+        },
+      },
+      {
+        value: "20-45",
+        get label() {
+          return translateUi("20 – 45 jours");
+        },
+      },
+      {
+        value: "45-90",
+        get label() {
+          return translateUi("45 – 90 jours");
+        },
+      },
+      {
+        value: "gt90",
+        get label() {
+          return translateUi("Plus de 90 jours");
+        },
+      },
     ],
   },
   {
     type: "select",
     id: "eu_shipping",
-    label: "Délai habituel d'expédition vers l'UE",
+    get label() {
+      return translateUi("Délai habituel d'expédition vers l'UE");
+    },
     required: true,
-    hint:
-      "Délai de transport ou de mise à disposition après production",
+    get hint() {
+      return translateUi(
+        "Délai de transport ou de mise à disposition après production",
+      );
+    },
     options: [
-      { value: "lt7", label: "Moins de 7 jours" },
-      { value: "7-14", label: "7 – 14 jours" },
-      { value: "14-30", label: "14 – 30 jours" },
-      { value: "gt30", label: "Plus de 30 jours" },
+      {
+        value: "lt7",
+        get label() {
+          return translateUi("Moins de 7 jours");
+        },
+      },
+      {
+        value: "7-14",
+        get label() {
+          return translateUi("7 – 14 jours");
+        },
+      },
+      {
+        value: "14-30",
+        get label() {
+          return translateUi("14 – 30 jours");
+        },
+      },
+      {
+        value: "gt30",
+        get label() {
+          return translateUi("Plus de 30 jours");
+        },
+      },
     ],
   },
   {
     type: "select",
     id: "tracking",
-    label: "Traçabilité des expéditions",
+    get label() {
+      return translateUi("Traçabilité des expéditions");
+    },
     required: true,
     options: [
       {
         value: "full",
-        label: "Oui, avec suivi complet",
+        get label() {
+          return translateUi("Oui, avec suivi complet");
+        },
       },
       {
         value: "part",
-        label: "Partielle selon le transporteur",
+        get label() {
+          return translateUi("Partielle selon le transporteur");
+        },
       },
       {
         value: "no",
-        label: "Non disponible actuellement",
+        get label() {
+          return translateUi("Non disponible actuellement");
+        },
       },
     ],
   },
@@ -157,38 +297,59 @@ const fields: QualSelectField[] = [
 const blockers: QualBlocker[] = [
   {
     id: "audit",
-    title: "Acceptation du processus de contrôle",
-    text:
-      "Les fournisseurs présélectionnés doivent accepter les contrôles nécessaires avant leur référencement définitif. Selon le pays, le profil du fournisseur et les produits concernés, ces contrôles peuvent être réalisés sur site ou selon un dispositif adapté.",
+    get title() {
+      return translateUi("Acceptation du processus de contrôle");
+    },
+    get text() {
+      return translateUi(
+        "Les fournisseurs présélectionnés doivent accepter les contrôles nécessaires avant leur référencement définitif. Selon le pays, le profil du fournisseur et les produits concernés, ces contrôles peuvent être réalisés sur site ou selon un dispositif adapté.",
+      );
+    },
   },
   {
     id: "traceability",
-    title: "Traçabilité des produits et des commandes",
-    text:
-      "Le fournisseur doit pouvoir transmettre les informations nécessaires au suivi des références, des lots, des quantités et des expéditions lorsque ces données sont requises. Les modalités sont précisées lors de l'intégration.",
+    get title() {
+      return translateUi("Traçabilité des produits et des commandes");
+    },
+    get text() {
+      return translateUi(
+        "Le fournisseur doit pouvoir transmettre les informations nécessaires au suivi des références, des lots, des quantités et des expéditions lorsque ces données sont requises. Les modalités sont précisées lors de l'intégration.",
+      );
+    },
   },
   {
     id: "compliance",
-    title: "Conformité documentaire",
-    text:
-      "L'entreprise, ses coordonnées, ses capacités et les documents nécessaires à la qualification doivent pouvoir être vérifiés. Des justificatifs complémentaires peuvent être demandés au cours du processus.",
+    get title() {
+      return translateUi("Conformité documentaire");
+    },
+    get text() {
+      return translateUi(
+        "L'entreprise, ses coordonnées, ses capacités et les documents nécessaires à la qualification doivent pouvoir être vérifiés. Des justificatifs complémentaires peuvent être demandés au cours du processus.",
+      );
+    },
   },
   {
     id: "logistics",
-    title: "Compatibilité avec le schéma logistique BIB",
-    text:
-      "Les flux sont organisés selon les zones, les produits et les capacités disponibles, avec les partenaires logistiques retenus par BIB. Le fournisseur doit pouvoir préparer et remettre les marchandises conformément aux modalités convenues.",
+    get title() {
+      return translateUi("Compatibilité avec le schéma logistique BIB");
+    },
+    get text() {
+      return translateUi(
+        "Les flux sont organisés selon les zones, les produits et les capacités disponibles, avec les partenaires logistiques retenus par BIB. Le fournisseur doit pouvoir préparer et remettre les marchandises conformément aux modalités convenues.",
+      );
+    },
   },
 ];
 
 export default function SuppliersApply() {
   const { lang } = useLanguage();
   const english = lang === "en";
-  const tx = (fr: string, en: string) => english ? en : fr;
+  const tx = (fr: string, en: string) => (english ? en : fr);
   useSEO({
-    title: "Candidature fournisseur — BIB",
-    description:
+    title: translateUi("Candidature fournisseur — BIB"),
+    description: translateUi(
       "Soumettez votre profil fournisseur à BIB. Qualification des capacités de production, minimums de commande, délais, traçabilité et aptitude à intégrer le réseau.",
+    ),
   });
 
   return (
@@ -210,19 +371,31 @@ export default function SuppliersApply() {
         {/* ------------------------------------------------------------------ */}
 
         <Badge variant="secondary" className="mb-3">
-          {tx("Candidature fournisseur · Qualification", "Supplier application · Qualification")}
+          {tx(
+            "Candidature fournisseur · Qualification",
+            "Supplier application · Qualification",
+          )}
         </Badge>
 
         <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-          {tx("Rejoindre le réseau fournisseurs BIB", "Join the BIB supplier network")}
+          {tx(
+            "Rejoindre le réseau fournisseurs BIB",
+            "Join the BIB supplier network",
+          )}
         </h1>
 
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-          {tx("Cette première étape permet à BIB d'évaluer votre entreprise, vos capacités de production, vos minimums de commande, vos délais et votre aptitude à intégrer le schéma opérationnel du réseau.", "This first step allows BIB to assess your company, production capacity, minimum order quantities, lead times and ability to join the network’s operating model.")}
+          {tx(
+            "Cette première étape permet à BIB d'évaluer votre entreprise, vos capacités de production, vos minimums de commande, vos délais et votre aptitude à intégrer le schéma opérationnel du réseau.",
+            "This first step allows BIB to assess your company, production capacity, minimum order quantities, lead times and ability to join the network’s operating model.",
+          )}
         </p>
 
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-          {tx("Le dépôt de cette candidature ne constitue pas une validation de référencement. Les fournisseurs présélectionnés poursuivent ensuite un processus de vérification et de contrôle avant toute intégration.", "Submitting this application does not guarantee approval for listing. Preselected suppliers continue through a verification and review process before onboarding.")}
+          {tx(
+            "Le dépôt de cette candidature ne constitue pas une validation de référencement. Les fournisseurs présélectionnés poursuivent ensuite un processus de vérification et de contrôle avant toute intégration.",
+            "Submitting this application does not guarantee approval for listing. Preselected suppliers continue through a verification and review process before onboarding.",
+          )}
         </p>
 
         {/* ------------------------------------------------------------------ */}
@@ -236,10 +409,15 @@ export default function SuppliersApply() {
             </div>
 
             <div>
-              <p className="font-medium">{tx("Qualification initiale", "Initial qualification")}</p>
+              <p className="font-medium">
+                {tx("Qualification initiale", "Initial qualification")}
+              </p>
 
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                {tx("BIB étudie les informations transmises et peut demander des éléments complémentaires afin d'évaluer la compatibilité du fournisseur avec le réseau.", "BIB reviews the information provided and may request additional details to assess the supplier’s fit with the network.")}
+                {tx(
+                  "BIB étudie les informations transmises et peut demander des éléments complémentaires afin d'évaluer la compatibilité du fournisseur avec le réseau.",
+                  "BIB reviews the information provided and may request additional details to assess the supplier’s fit with the network.",
+                )}
               </p>
             </div>
           </div>
@@ -256,11 +434,17 @@ export default function SuppliersApply() {
 
             <div>
               <p className="font-medium">
-                {tx("Vérification et référencement", "Verification and listing")}
+                {tx(
+                  "Vérification et référencement",
+                  "Verification and listing",
+                )}
               </p>
 
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                {tx("Les profils retenus peuvent faire l'objet de contrôles documentaires, qualité, conformité ou opérationnels avant la validation des références concernées.", "Selected applicants may undergo document, quality, compliance or operational checks before the relevant products are approved for listing.")}
+                {tx(
+                  "Les profils retenus peuvent faire l'objet de contrôles documentaires, qualité, conformité ou opérationnels avant la validation des références concernées.",
+                  "Selected applicants may undergo document, quality, compliance or operational checks before the relevant products are approved for listing.",
+                )}
               </p>
             </div>
           </div>
@@ -281,7 +465,10 @@ export default function SuppliersApply() {
               </p>
 
               <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                {tx("Après validation, les références retenues sont intégrées selon les procédures BIB et le schéma logistique applicable.", "Once approved, selected products are integrated according to BIB procedures and the applicable logistics model.")}
+                {tx(
+                  "Après validation, les références retenues sont intégrées selon les procédures BIB et le schéma logistique applicable.",
+                  "Once approved, selected products are integrated according to BIB procedures and the applicable logistics model.",
+                )}
               </p>
             </div>
           </div>
@@ -318,7 +505,10 @@ export default function SuppliersApply() {
             </h2>
 
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {tx("BIB recherche des partenaires capables de s'inscrire dans un réseau sélectionné, traçable et organisé selon les exigences applicables aux produits et aux marchés concernés.", "BIB seeks partners who can operate within a selected, traceable network organized around the requirements for the relevant products and markets.")}
+              {tx(
+                "BIB recherche des partenaires capables de s'inscrire dans un réseau sélectionné, traçable et organisé selon les exigences applicables aux produits et aux marchés concernés.",
+                "BIB seeks partners who can operate within a selected, traceable network organized around the requirements for the relevant products and markets.",
+              )}
             </p>
           </div>
 
@@ -355,19 +545,31 @@ export default function SuppliersApply() {
 
         <section className="mt-10 rounded-xl border bg-muted/20 p-5 sm:p-6">
           <h2 className="font-display text-lg font-semibold">
-            {tx("Comment BIB utilise ces informations", "How BIB uses this information")}
+            {tx(
+              "Comment BIB utilise ces informations",
+              "How BIB uses this information",
+            )}
           </h2>
 
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            {tx("Les réponses permettent d'évaluer l'adéquation de votre structure avec les catégories de produits, les volumes, les zones de commercialisation et les flux opérationnels du réseau BIB.", "Your answers help assess how your organization fits the product categories, volumes, sales regions and operational flows of the BIB network.")}
+            {tx(
+              "Les réponses permettent d'évaluer l'adéquation de votre structure avec les catégories de produits, les volumes, les zones de commercialisation et les flux opérationnels du réseau BIB.",
+              "Your answers help assess how your organization fits the product categories, volumes, sales regions and operational flows of the BIB network.",
+            )}
           </p>
 
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            {tx("Une candidature peut être poursuivie, mise en attente, refusée ou orientée vers une qualification complémentaire. Le dépôt d'une candidature ne garantit donc pas l'accès au réseau.", "An application may proceed, be put on hold, be declined or be referred for further qualification. Applying does not guarantee access to the network.")}
+            {tx(
+              "Une candidature peut être poursuivie, mise en attente, refusée ou orientée vers une qualification complémentaire. Le dépôt d'une candidature ne garantit donc pas l'accès au réseau.",
+              "An application may proceed, be put on hold, be declined or be referred for further qualification. Applying does not guarantee access to the network.",
+            )}
           </p>
 
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            {tx("De même, la validation d'un fournisseur ne signifie pas que l'ensemble de son catalogue sera référencé. Les produits et références sont évalués selon les critères BIB applicables à leur catégorie et à leur marché de destination.", "Supplier approval does not mean the entire catalogue will be listed. Products are assessed against BIB criteria for their category and destination market.")}
+            {tx(
+              "De même, la validation d'un fournisseur ne signifie pas que l'ensemble de son catalogue sera référencé. Les produits et références sont évalués selon les critères BIB applicables à leur catégorie et à leur marché de destination.",
+              "Supplier approval does not mean the entire catalogue will be listed. Products are assessed against BIB criteria for their category and destination market.",
+            )}
           </p>
         </section>
 
@@ -377,7 +579,10 @@ export default function SuppliersApply() {
 
         <div className="mt-8 border-t border-border/50 pt-6">
           <p className="text-xs leading-relaxed text-muted-foreground">
-            {tx("Les informations communiquées dans ce formulaire servent à la qualification initiale du fournisseur. Des informations ou justificatifs complémentaires peuvent être demandés lors des étapes suivantes du parcours BIB.", "Information provided in this form is used for the supplier’s initial qualification. Additional information or supporting documents may be requested in later BIB process steps.")}
+            {tx(
+              "Les informations communiquées dans ce formulaire servent à la qualification initiale du fournisseur. Des informations ou justificatifs complémentaires peuvent être demandés lors des étapes suivantes du parcours BIB.",
+              "Information provided in this form is used for the supplier’s initial qualification. Additional information or supporting documents may be requested in later BIB process steps.",
+            )}
           </p>
         </div>
       </section>

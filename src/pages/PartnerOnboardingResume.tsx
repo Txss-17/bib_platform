@@ -1,4 +1,5 @@
-﻿import { useState } from "react";
+import { translateUi } from "@/lib/uiTranslation";
+import { useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ import {
 export default function PartnerOnboardingResume() {
   const { lang } = useLanguage();
   const english = lang === "en";
-  const tx = (fr: string, en: string) => english ? en : fr;
+  const tx = (fr: string, en: string) => (english ? en : fr);
   const [params] = useSearchParams();
 
   const portalParam = params.get("portal");
@@ -34,7 +35,10 @@ export default function PartnerOnboardingResume() {
   const portal: "suppliers" | "ops" =
     portalParam === "ops" ? "ops" : "suppliers";
 
-  const portalLabel = portal === "suppliers" ? tx("Fournisseurs", "Suppliers") : tx("Logistique", "Logistics");
+  const portalLabel =
+    portal === "suppliers"
+      ? tx("Fournisseurs", "Suppliers")
+      : tx("Logistique", "Logistics");
 
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -49,30 +53,41 @@ export default function PartnerOnboardingResume() {
   const [error, setError] = useState<string | null>(null);
 
   useSEO({
-    title: (english ? "Resume my onboarding " : "Reprendre mon onboarding ") + portalLabel + " — Brand-In-A-Box",
-    description: tx("Reprenez et modifiez votre dossier d'onboarding avant sa validation finale.", "Resume and update your onboarding file before final approval."),
+    title:
+      (english ? "Resume my onboarding " : "Reprendre mon onboarding ") +
+      portalLabel +
+      " — Brand-In-A-Box",
+    description: tx(
+      "Reprenez et modifiez votre dossier d'onboarding avant sa validation finale.",
+      "Resume and update your onboarding file before final approval.",
+    ),
   });
 
   async function sendCode() {
     const normalizedEmail = email.trim().toLowerCase();
 
-    if (
-      !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(normalizedEmail)
-    ) {
-      setError(tx("Veuillez saisir une adresse email valide.", "Enter a valid email address."));
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(normalizedEmail)) {
+      setError(
+        tx(
+          translateUi("Veuillez saisir une adresse email valide."),
+          translateUi("Enter a valid email address."),
+        ),
+      );
       return;
     }
 
     setSending(true);
     setError(null);
 
-    const { data, error: invokeError } =
-      await supabase.functions.invoke("partner-otp-request", {
+    const { data, error: invokeError } = await supabase.functions.invoke(
+      "partner-otp-request",
+      {
         body: {
           email: normalizedEmail,
           portal,
         },
-      });
+      },
+    );
 
     setSending(false);
 
@@ -84,8 +99,18 @@ export default function PartnerOnboardingResume() {
     if (invokeError || !response?.ok) {
       setError(
         response?.error === "rate_limited"
-          ? tx("Trop de demandes. Veuillez patienter avant de réessayer.", "Too many requests. Please wait before trying again.")
-           : tx("Impossible d'envoyer le code. Veuillez réessayer.", "The code could not be sent. Please try again.")
+          ? tx(
+              translateUi(
+                "Trop de demandes. Veuillez patienter avant de réessayer.",
+              ),
+              translateUi(
+                "Too many requests. Please wait before trying again.",
+              ),
+            )
+          : tx(
+              translateUi("Impossible d'envoyer le code. Veuillez réessayer."),
+              translateUi("The code could not be sent. Please try again."),
+            ),
       );
 
       return;
@@ -94,8 +119,13 @@ export default function PartnerOnboardingResume() {
     setSent(true);
 
     toast({
-      title: (english ? "Resume my onboarding " : "Reprendre mon onboarding ") + portalLabel + " — Brand-In-A-Box",
-      description: english ? "Check your inbox at " + normalizedEmail + "." : "Vérifiez votre boîte email " + normalizedEmail + ".",
+      title:
+        (english ? "Resume my onboarding " : "Reprendre mon onboarding ") +
+        portalLabel +
+        " — Brand-In-A-Box",
+      description: english
+        ? "Check your inbox at " + normalizedEmail + "."
+        : "Vérifiez votre boîte email " + normalizedEmail + ".",
     });
   }
 
@@ -103,21 +133,28 @@ export default function PartnerOnboardingResume() {
     const normalizedEmail = email.trim().toLowerCase();
 
     if (!/^\d{6}$/.test(code)) {
-      setError(tx("Veuillez saisir les 6 chiffres du code.", "Enter the 6-digit code."));
+      setError(
+        tx(
+          translateUi("Veuillez saisir les 6 chiffres du code."),
+          translateUi("Enter the 6-digit code."),
+        ),
+      );
       return;
     }
 
     setVerifying(true);
     setError(null);
 
-    const { data, error: invokeError } =
-      await supabase.functions.invoke("partner-otp-verify", {
+    const { data, error: invokeError } = await supabase.functions.invoke(
+      "partner-otp-verify",
+      {
         body: {
           email: normalizedEmail,
           portal,
           code,
         },
-      });
+      },
+    );
 
     setVerifying(false);
 
@@ -130,19 +167,33 @@ export default function PartnerOnboardingResume() {
     if (invokeError || !response?.ok) {
       setError(
         response?.error === "invalid_code"
-          ? tx("Code incorrect.", "Incorrect code.")
+          ? tx(translateUi("Code incorrect."), translateUi("Incorrect code."))
           : response?.error === "expired"
-            ? tx("Code expiré. Demandez un nouveau code.", "Code expired. Request a new code.")
+            ? tx(
+                translateUi("Code expiré. Demandez un nouveau code."),
+                translateUi("Code expired. Request a new code."),
+              )
             : response?.error === "too_many_attempts"
-              ? tx("Trop de tentatives. Demandez un nouveau code.", "Too many attempts. Request a new code.")
-               : tx("Impossible de vérifier le code.", "The code could not be verified.")
+              ? tx(
+                  translateUi("Trop de tentatives. Demandez un nouveau code."),
+                  translateUi("Too many attempts. Request a new code."),
+                )
+              : tx(
+                  translateUi("Impossible de vérifier le code."),
+                  translateUi("The code could not be verified."),
+                ),
       );
 
       return;
     }
 
     if (!response.access_token) {
-      setError(tx("Accès au dossier impossible. Veuillez réessayer.", "Could not access the file. Please try again."));
+      setError(
+        tx(
+          translateUi("Accès au dossier impossible. Veuillez réessayer."),
+          translateUi("Could not access the file. Please try again."),
+        ),
+      );
       return;
     }
 
@@ -151,7 +202,7 @@ export default function PartnerOnboardingResume() {
 
   return (
     <StandaloneLayout
-      portal={portal === "suppliers" ? "Suppliers" : "Ops"}
+      portal={portal === "suppliers" ? translateUi("Suppliers") : "Ops"}
       accent={portal === "suppliers" ? "primary" : "accent"}
     >
       <section className="container mx-auto max-w-xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
@@ -159,19 +210,8 @@ export default function PartnerOnboardingResume() {
         {/* RETOUR                                                              */}
         {/* ------------------------------------------------------------------ */}
 
-        <Button
-          asChild
-          variant="ghost"
-          size="sm"
-          className="mb-4 -ml-2"
-        >
-          <Link
-            to={
-              portal === "suppliers"
-                ? "/suppliers"
-                : "/ops"
-            }
-          >
+        <Button asChild variant="ghost" size="sm" className="mb-4 -ml-2">
+          <Link to={portal === "suppliers" ? "/suppliers" : "/ops"}>
             <ArrowLeft className="mr-1.5 h-4 w-4" />
             {tx("Retour", "Back")}
           </Link>
@@ -190,9 +230,18 @@ export default function PartnerOnboardingResume() {
         </h1>
 
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-          {tx("Utilisez l'adresse email associée à votre dossier. BIB vous", "Use the email address linked to your file. BIB will send you")}
-          {tx("enverra un code à 6 chiffres permettant d'accéder à votre", "a 6-digit code to access your file and")}
-          {tx("dossier et de le modifier lorsque cela est encore possible.", "update it if the file is still editable.")}
+          {tx(
+            "Utilisez l'adresse email associée à votre dossier. BIB vous",
+            "Use the email address linked to your file. BIB will send you",
+          )}
+          {tx(
+            "enverra un code à 6 chiffres permettant d'accéder à votre",
+            "a 6-digit code to access your file and",
+          )}
+          {tx(
+            "dossier et de le modifier lorsque cela est encore possible.",
+            "update it if the file is still editable.",
+          )}
         </p>
 
         {/* ------------------------------------------------------------------ */}
@@ -213,7 +262,7 @@ export default function PartnerOnboardingResume() {
                 setEmail(event.target.value);
                 setError(null);
               }}
-              placeholder="vous@societe.com"
+              placeholder={translateUi("vous@societe.com")}
               maxLength={255}
               autoComplete="email"
               disabled={sending || verifying}
@@ -253,10 +302,7 @@ export default function PartnerOnboardingResume() {
                   >
                     <InputOTPGroup>
                       {[0, 1, 2, 3, 4, 5].map((index) => (
-                        <InputOTPSlot
-                          key={index}
-                          index={index}
-                        />
+                        <InputOTPSlot key={index} index={index} />
                       ))}
                     </InputOTPGroup>
                   </InputOTP>
@@ -267,10 +313,7 @@ export default function PartnerOnboardingResume() {
                 <Button
                   size="sm"
                   onClick={verifyCode}
-                  disabled={
-                    verifying ||
-                    code.length !== 6
-                  }
+                  disabled={verifying || code.length !== 6}
                 >
                   {verifying ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -287,9 +330,7 @@ export default function PartnerOnboardingResume() {
                   onClick={sendCode}
                   disabled={sending}
                 >
-                  {sending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                  {sending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
 
                   {tx("Renvoyer le code", "Resend code")}
                 </Button>
@@ -317,16 +358,15 @@ export default function PartnerOnboardingResume() {
 
           <div className="border-t border-border/50 pt-4">
             <p className="text-[11px] leading-relaxed text-muted-foreground">
-              {tx("Vous n'avez pas encore déposé de candidature ?", "Haven't applied yet?")}
+              {tx(
+                "Vous n'avez pas encore déposé de candidature ?",
+                "Haven't applied yet?",
+              )}
             </p>
 
             <Link
               className="mt-1 inline-block text-xs font-medium underline underline-offset-4"
-              to={
-                portal === "suppliers"
-                  ? "/suppliers/apply"
-                  : "/ops/apply"
-              }
+              to={portal === "suppliers" ? "/suppliers/apply" : "/ops/apply"}
             >
               {tx("Déposer une candidature", "Submit an application")}
             </Link>
@@ -339,9 +379,18 @@ export default function PartnerOnboardingResume() {
 
         <div className="mt-6 rounded-lg border bg-muted/20 p-4">
           <p className="text-xs leading-relaxed text-muted-foreground">
-            {tx("Le code est envoyé uniquement à l'adresse email utilisée", "The code is sent only to the email address used")}
-            {tx("lors de la candidature. Il permet d'accéder au dossier", "when applying. It lets you access the file")}
-            {tx("correspondant au portail sélectionné.", "for the selected portal.")}
+            {tx(
+              "Le code est envoyé uniquement à l'adresse email utilisée",
+              "The code is sent only to the email address used",
+            )}
+            {tx(
+              "lors de la candidature. Il permet d'accéder au dossier",
+              "when applying. It lets you access the file",
+            )}
+            {tx(
+              "correspondant au portail sélectionné.",
+              "for the selected portal.",
+            )}
           </p>
         </div>
       </section>

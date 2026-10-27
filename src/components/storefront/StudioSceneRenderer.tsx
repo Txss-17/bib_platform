@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useSceneAnalytics, trackCtaClick } from "@/hooks/useSceneAnalytics";
@@ -39,6 +41,7 @@ export function StudioSceneRenderer({
   boutiqueSlug,
   disableTracking,
 }: Props) {
+  useLanguage();
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -53,11 +56,9 @@ export function StudioSceneRenderer({
     if (p.ink) el.style.setProperty("--studio-ink", p.ink);
   }, [brandDna]);
 
-  const display =
-    brandDna?.generated_typography?.display ?? "Playfair Display";
+  const display = brandDna?.generated_typography?.display ?? "Playfair Display";
 
-  const body =
-    brandDna?.generated_typography?.body ?? "Inter";
+  const body = brandDna?.generated_typography?.body ?? "Inter";
 
   useEffect(() => {
     loadGoogleFont(display);
@@ -122,10 +123,7 @@ export function StudioSceneRenderer({
 }
 
 /** Returns the heading font effective for a scene (override > inherited). */
-function resolveDisplay(
-  scene: SceneRecord,
-  fallback: string,
-): string {
+function resolveDisplay(scene: SceneRecord, fallback: string): string {
   return scene.style_overrides?.fonts?.display || fallback;
 }
 
@@ -140,6 +138,7 @@ function SceneStyleScope({
   scene: SceneRecord;
   children: React.ReactNode;
 }) {
+  useLanguage();
   const ov = scene.style_overrides ?? null;
   const ref = useRef<HTMLDivElement>(null);
 
@@ -199,12 +198,10 @@ function SceneStyleScope({
 
   const hasRadii = !!(
     radii &&
-    (
-      radii.tl != null ||
+    (radii.tl != null ||
       radii.tr != null ||
       radii.br != null ||
-      radii.bl != null
-    )
+      radii.bl != null)
   );
 
   if (
@@ -252,8 +249,7 @@ function SceneStyleScope({
       "0 50px 110px -30px hsl(var(--studio-ink) / 0.55), 0 12px 30px -12px hsl(var(--studio-ink) / 0.25)",
     ];
 
-    (style as any)["--studio-shadow"] =
-      map[layout.shadow] ?? map[0];
+    (style as any)["--studio-shadow"] = map[layout.shadow] ?? map[0];
   }
 
   if (btn?.shape) {
@@ -302,8 +298,7 @@ function SceneStyleScope({
   }
 
   if (bg?.overlayOpacity != null) {
-    (style as any)["--studio-bg-overlay"] =
-      String(bg.overlayOpacity);
+    (style as any)["--studio-bg-overlay"] = String(bg.overlayOpacity);
   }
 
   // Trigger entry animation when in viewport
@@ -343,11 +338,7 @@ function SceneStyleScope({
   }, [ov?.fonts?.display, ov?.fonts?.body]);
 
   return (
-    <div
-      ref={ref}
-      className={classes.join(" ")}
-      style={style}
-    >
+    <div ref={ref} className={classes.join(" ")} style={style}>
       {bg?.imageUrl && (
         <div
           className="studio-bg-layer"
@@ -368,9 +359,7 @@ function SceneStyleScope({
         />
       )}
 
-      {hasBgMedia && (
-        <div className="studio-bg-overlay" />
-      )}
+      {hasBgMedia && <div className="studio-bg-overlay" />}
 
       {children}
     </div>
@@ -392,6 +381,7 @@ function TrackedScene({
   boutiqueId: string;
   children: React.ReactNode;
 }) {
+  useLanguage();
   const ref = useRef<HTMLDivElement>(null);
 
   useSceneAnalytics({
@@ -413,10 +403,7 @@ function TrackedScene({
     const obs = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
-          if (
-            e.isIntersecting &&
-            e.intersectionRatio >= 0.5
-          ) {
+          if (e.isIntersecting && e.intersectionRatio >= 0.5) {
             try {
               window.sessionStorage.setItem(
                 "bib_last_scene",
@@ -440,23 +427,17 @@ function TrackedScene({
     return () => obs.disconnect();
   }, [enabled, scene.id, scene.scene_type]);
 
-  const onClickCapture = (
-    e: React.MouseEvent<HTMLDivElement>,
-  ) => {
+  const onClickCapture = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!enabled) return;
 
-    const target = (
-      e.target as HTMLElement
-    ).closest("a,button");
+    const target = (e.target as HTMLElement).closest("a,button");
 
     if (!target) return;
 
     const label =
       target.getAttribute("data-cta") ||
       target.getAttribute("aria-label") ||
-      (target.textContent ?? "")
-        .trim()
-        .slice(0, 60);
+      (target.textContent ?? "").trim().slice(0, 60);
 
     trackCtaClick({
       boutiqueId,
@@ -467,11 +448,7 @@ function TrackedScene({
   };
 
   return (
-    <div
-      ref={ref}
-      onClickCapture={onClickCapture}
-      data-scene-id={scene.id}
-    >
+    <div ref={ref} onClickCapture={onClickCapture} data-scene-id={scene.id}>
       {children}
     </div>
   );
@@ -498,6 +475,7 @@ function SceneSwitch({
   displayFont: string;
   boutiqueSlug?: string;
 }) {
+  useLanguage();
   const content = {
     ...scene.content,
     variant: scene.variant,
@@ -505,20 +483,10 @@ function SceneSwitch({
 
   switch (scene.scene_type) {
     case "hero-cinema":
-      return (
-        <HeroCinemaScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <HeroCinemaScene content={content} displayFont={displayFont} />;
 
     case "story-scrolly":
-      return (
-        <StoryScrollyScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <StoryScrollyScene content={content} displayFont={displayFont} />;
 
     case "lookbook-parallax":
       return (
@@ -540,107 +508,45 @@ function SceneSwitch({
       );
 
     case "trust-wall":
-      return (
-        <TrustWallScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <TrustWallScene content={content} displayFont={displayFont} />;
 
     case "cta-sticky":
-      return (
-        <CtaStickyScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <CtaStickyScene content={content} displayFont={displayFont} />;
 
     case "faq-accordion":
-      return (
-        <FaqScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <FaqScene content={content} displayFont={displayFont} />;
 
     case "newsletter-editorial":
-      return (
-        <NewsletterScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <NewsletterScene content={content} displayFont={displayFont} />;
 
     case "press-strip":
-      return (
-        <PressStripScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <PressStripScene content={content} displayFont={displayFont} />;
 
     case "comparison-table":
-      return (
-        <ComparisonScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <ComparisonScene content={content} displayFont={displayFont} />;
 
     case "founder-letter":
-      return (
-        <FounderScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <FounderScene content={content} displayFont={displayFont} />;
 
     case "manifesto-typographic":
-      return (
-        <ManifestoScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <ManifestoScene content={content} displayFont={displayFont} />;
 
     case "marquee-strip":
-      return (
-        <MarqueeScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <MarqueeScene content={content} displayFont={displayFont} />;
 
     case "gallery-mosaic":
-      return (
-        <GalleryMosaicScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <GalleryMosaicScene content={content} displayFont={displayFont} />;
 
     case "stats-counter":
-      return (
-        <StatsCounterScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <StatsCounterScene content={content} displayFont={displayFont} />;
 
     case "video-fullscreen":
       return (
-        <VideoFullscreenScene
-          content={content}
-          displayFont={displayFont}
-        />
+        <VideoFullscreenScene content={content} displayFont={displayFont} />
       );
 
     case "banner-promo":
-      return (
-        <BannerPromoScene
-          content={content}
-        />
-      );
+      return <BannerPromoScene content={content} />;
 
     case "products-grid":
       return (
@@ -663,36 +569,16 @@ function SceneSwitch({
       );
 
     case "blog-list":
-      return (
-        <BlogListScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <BlogListScene content={content} displayFont={displayFont} />;
 
     case "cart-summary":
-      return (
-        <CartSummaryScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <CartSummaryScene content={content} displayFont={displayFont} />;
 
     case "contact-form":
-      return (
-        <ContactFormScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <ContactFormScene content={content} displayFont={displayFont} />;
 
     case "team-grid":
-      return (
-        <TeamGridScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <TeamGridScene content={content} displayFont={displayFont} />;
 
     case "pricing-table":
       return (
@@ -705,27 +591,14 @@ function SceneSwitch({
 
     case "image-text-split":
       return (
-        <ImageTextSplitScene
-          content={content}
-          displayFont={displayFont}
-        />
+        <ImageTextSplitScene content={content} displayFont={displayFont} />
       );
 
     case "timeline":
-      return (
-        <TimelineScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <TimelineScene content={content} displayFont={displayFont} />;
 
     case "map-location":
-      return (
-        <MapLocationScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <MapLocationScene content={content} displayFont={displayFont} />;
 
     case "product-hero":
       return (
@@ -738,19 +611,11 @@ function SceneSwitch({
 
     case "product-description":
       return (
-        <ProductDescriptionScene
-          content={content}
-          displayFont={displayFont}
-        />
+        <ProductDescriptionScene content={content} displayFont={displayFont} />
       );
 
     case "product-specs":
-      return (
-        <ProductSpecsScene
-          content={content}
-          displayFont={displayFont}
-        />
-      );
+      return <ProductSpecsScene content={content} displayFont={displayFont} />;
 
     case "product-related":
       return (
@@ -780,22 +645,16 @@ function ProductLink({
   className?: string;
   children: React.ReactNode;
 }) {
+  useLanguage();
   if (slug) {
     return (
-      <Link
-        to={`/boutique/${slug}/product/${productId}`}
-        className={className}
-      >
+      <Link to={`/boutique/${slug}/product/${productId}`} className={className}>
         {children}
       </Link>
     );
   }
 
-  return (
-    <article className={className}>
-      {children}
-    </article>
-  );
+  return <article className={className}>{children}</article>;
 }
 
 function HeroCinemaScene({
@@ -805,14 +664,12 @@ function HeroCinemaScene({
   content: any;
   displayFont: string;
 }) {
-  const variant =
-    content.variant || "fullscreen";
+  useLanguage();
+  const variant = content.variant || "fullscreen";
 
-  const fullPage =
-    !!content.fullPageBackground;
+  const fullPage = !!content.fullPageBackground;
 
-  const overlayOpacity =
-    content.overlayOpacity ?? 0.45;
+  const overlayOpacity = content.overlayOpacity ?? 0.45;
 
   const align =
     content.textAlign === "left"
@@ -826,10 +683,8 @@ function HeroCinemaScene({
       href={content.ctaUrl || "#shop"}
       className="inline-block rounded-full px-8 py-3 text-sm font-medium tracking-wide"
       style={{
-        background:
-          "hsl(var(--studio-accent))",
-        color:
-          "hsl(var(--studio-ink))",
+        background: "hsl(var(--studio-accent))",
+        color: "hsl(var(--studio-ink))",
       }}
     >
       {content.ctaLabel}
@@ -837,9 +692,7 @@ function HeroCinemaScene({
   ) : null;
 
   const textContent = (
-    <div
-      className={`max-w-3xl flex flex-col ${align}`}
-    >
+    <div className={`max-w-3xl flex flex-col ${align}`}>
       {content.eyebrow && (
         <p className="text-xs uppercase tracking-[0.25em] opacity-70 mb-5">
           {content.eyebrow}
@@ -849,8 +702,7 @@ function HeroCinemaScene({
       <h1
         className="text-4xl md:text-6xl lg:text-7xl leading-[1.02] mb-6"
         style={{
-          fontFamily:
-            `${displayFont}, serif`,
+          fontFamily: `${displayFont}, serif`,
         }}
       >
         {content.title}
@@ -875,26 +727,21 @@ function HeroCinemaScene({
           muted
           loop
           playsInline
-          poster={
-            content.backgroundImage ||
-            undefined
-          }
+          poster={content.backgroundImage || undefined}
           className="absolute inset-0 w-full h-full object-cover"
         />
       ) : content.backgroundImage ? (
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage:
-              `url(${content.backgroundImage})`,
+            backgroundImage: `url(${content.backgroundImage})`,
           }}
         />
       ) : (
         <div
           className="absolute inset-0"
           style={{
-            background:
-              `linear-gradient(
+            background: `linear-gradient(
                 135deg,
                 hsl(var(--studio-primary)),
                 hsl(var(--studio-accent))
@@ -906,8 +753,7 @@ function HeroCinemaScene({
       <div
         className="absolute inset-0"
         style={{
-          background:
-            `hsl(var(--studio-ink) / ${overlayOpacity})`,
+          background: `hsl(var(--studio-ink) / ${overlayOpacity})`,
         }}
       />
     </>
@@ -926,8 +772,7 @@ function HeroCinemaScene({
           <h1
             className="text-5xl md:text-7xl lg:text-[7rem] leading-[0.9]"
             style={{
-              fontFamily:
-                `${displayFont}, serif`,
+              fontFamily: `${displayFont}, serif`,
             }}
           >
             {content.title}
@@ -969,9 +814,7 @@ function HeroCinemaScene({
     >
       {media}
 
-      <div className="relative z-10 px-6 text-white">
-        {textContent}
-      </div>
+      <div className="relative z-10 px-6 text-white">{textContent}</div>
     </section>
   );
 }
@@ -983,32 +826,27 @@ function StoryScrollyScene({
   content: any;
   displayFont: string;
 }) {
-  const chapters =
-    (content.chapters ?? []) as Array<{
-      eyebrow?: string;
-      title: string;
-      body: string;
-      image?: string | null;
-    }>;
+  useLanguage();
+  const chapters = (content.chapters ?? []) as Array<{
+    eyebrow?: string;
+    title: string;
+    body: string;
+    image?: string | null;
+  }>;
 
-  const variant =
-    content.variant || "alternating";
+  const variant = content.variant || "alternating";
 
   if (variant === "centered") {
     return (
       <section className="py-20 md:py-28">
         <div className="max-w-3xl mx-auto px-6 space-y-24">
           {chapters.map((chapter, i) => (
-            <article
-              key={i}
-              className="text-center"
-            >
+            <article key={i} className="text-center">
               {chapter.image && (
                 <div
                   className="aspect-[16/9] rounded-2xl overflow-hidden mb-9 bg-cover bg-center"
                   style={{
-                    backgroundImage:
-                      `url(${chapter.image})`,
+                    backgroundImage: `url(${chapter.image})`,
                   }}
                 />
               )}
@@ -1022,8 +860,7 @@ function StoryScrollyScene({
               <h2
                 className="text-3xl md:text-5xl mt-3 mb-5"
                 style={{
-                  fontFamily:
-                    `${displayFont}, serif`,
+                  fontFamily: `${displayFont}, serif`,
                 }}
               >
                 {chapter.title}
@@ -1053,11 +890,10 @@ function StoryScrollyScene({
             <h2
               className="text-4xl md:text-6xl mt-3 leading-tight"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
-              {content.title || "Notre histoire"}
+              {content.title || translateUi("Notre histoire")}
             </h2>
           </div>
 
@@ -1068,8 +904,7 @@ function StoryScrollyScene({
                   <div
                     className="aspect-[16/10] rounded-2xl overflow-hidden mb-7 bg-cover bg-center"
                     style={{
-                      backgroundImage:
-                        `url(${chapter.image})`,
+                      backgroundImage: `url(${chapter.image})`,
                     }}
                   />
                 )}
@@ -1083,16 +918,13 @@ function StoryScrollyScene({
                 <h3
                   className="text-2xl md:text-4xl mt-2 mb-4"
                   style={{
-                    fontFamily:
-                      `${displayFont}, serif`,
+                    fontFamily: `${displayFont}, serif`,
                   }}
                 >
                   {chapter.title}
                 </h3>
 
-                <p className="opacity-80 leading-relaxed">
-                  {chapter.body}
-                </p>
+                <p className="opacity-80 leading-relaxed">{chapter.body}</p>
               </article>
             ))}
           </div>
@@ -1112,13 +944,7 @@ function StoryScrollyScene({
               key={i}
               className="grid md:grid-cols-2 gap-10 md:gap-16 items-center"
             >
-              <div
-                className={
-                  imageFirst
-                    ? "md:order-1"
-                    : "md:order-2"
-                }
-              >
+              <div className={imageFirst ? "md:order-1" : "md:order-2"}>
                 {chapter.eyebrow && (
                   <span className="text-xs uppercase tracking-[0.2em] opacity-50">
                     {chapter.eyebrow}
@@ -1128,8 +954,7 @@ function StoryScrollyScene({
                 <h2
                   className="text-3xl md:text-5xl mt-3 mb-5"
                   style={{
-                    fontFamily:
-                      `${displayFont}, serif`,
+                    fontFamily: `${displayFont}, serif`,
                   }}
                 >
                   {chapter.title}
@@ -1140,13 +965,7 @@ function StoryScrollyScene({
                 </p>
               </div>
 
-              <div
-                className={
-                  imageFirst
-                    ? "md:order-2"
-                    : "md:order-1"
-                }
-              >
+              <div className={imageFirst ? "md:order-2" : "md:order-1"}>
                 <div
                   className="aspect-[4/5] rounded-2xl overflow-hidden bg-cover bg-center"
                   style={{
@@ -1177,18 +996,16 @@ function LookbookScene({
   displayFont: string;
   products: Product[];
 }) {
+  useLanguage();
   const pool = (
     content.images?.length
       ? content.images
-      : products
-          .map((product) => product.image_url)
-          .filter(Boolean)
+      : products.map((product) => product.image_url).filter(Boolean)
   ) as string[];
 
   const items = pool.slice(0, 8);
 
-  const variant =
-    content.variant || "asymmetric";
+  const variant = content.variant || "asymmetric";
 
   const heading = (
     <div className="text-center mb-12">
@@ -1201,17 +1018,14 @@ function LookbookScene({
       <h2
         className="text-3xl md:text-5xl"
         style={{
-          fontFamily:
-            `${displayFont}, serif`,
+          fontFamily: `${displayFont}, serif`,
         }}
       >
         {content.title}
       </h2>
 
       {content.subtitle && (
-        <p className="opacity-70 mt-3 max-w-2xl mx-auto">
-          {content.subtitle}
-        </p>
+        <p className="opacity-70 mt-3 max-w-2xl mx-auto">{content.subtitle}</p>
       )}
     </div>
   );
@@ -1231,8 +1045,7 @@ function LookbookScene({
       <section
         className="py-20"
         style={{
-          background:
-            "hsl(var(--studio-ink))",
+          background: "hsl(var(--studio-ink))",
           color: "white",
         }}
       >
@@ -1258,8 +1071,7 @@ function LookbookScene({
       <section
         className="py-20"
         style={{
-          background:
-            "hsl(var(--studio-ink))",
+          background: "hsl(var(--studio-ink))",
           color: "white",
         }}
       >
@@ -1272,37 +1084,23 @@ function LookbookScene({
                 key={i}
                 className="grid md:grid-cols-2 gap-8 md:gap-14 items-center"
               >
-                <div
-                  className={
-                    i % 2 === 0
-                      ? "md:order-1"
-                      : "md:order-2"
-                  }
-                >
+                <div className={i % 2 === 0 ? "md:order-1" : "md:order-2"}>
                   <div
                     className="aspect-[4/3] rounded-xl overflow-hidden bg-cover bg-center"
                     style={imageStyle(src)}
                   />
                 </div>
 
-                <div
-                  className={
-                    i % 2 === 0
-                      ? "md:order-2"
-                      : "md:order-1"
-                  }
-                >
+                <div className={i % 2 === 0 ? "md:order-2" : "md:order-1"}>
                   <span className="text-xs uppercase tracking-[0.2em] opacity-50">
-                    Look{" "}
-                    {String(i + 1).padStart(2, "0")}
+                    Look {String(i + 1).padStart(2, "0")}
                   </span>
 
                   {content.lookTitles?.[i] && (
                     <h3
                       className="text-2xl md:text-4xl mt-3"
                       style={{
-                        fontFamily:
-                          `${displayFont}, serif`,
+                        fontFamily: `${displayFont}, serif`,
                       }}
                     >
                       {content.lookTitles[i]}
@@ -1321,8 +1119,7 @@ function LookbookScene({
     <section
       className="py-20"
       style={{
-        background:
-          "hsl(var(--studio-ink))",
+        background: "hsl(var(--studio-ink))",
         color: "white",
       }}
     >
@@ -1358,70 +1155,43 @@ function ShowcaseScene({
   displayFont: string;
   boutiqueSlug?: string;
 }) {
-  const variant =
-    content.variant ||
-    content.layout ||
-    "3-up";
+  useLanguage();
+  const variant = content.variant || content.layout || "3-up";
 
-  const selectedProductIds =
-    Array.isArray(content.productIds)
-      ? (content.productIds as string[])
-      : [];
+  const selectedProductIds = Array.isArray(content.productIds)
+    ? (content.productIds as string[])
+    : [];
 
   const selectedProducts =
     selectedProductIds.length > 0
       ? selectedProductIds
-          .map((id) =>
-            products.find(
-              (product) =>
-                product.id === id,
-            ),
-          )
-          .filter(
-            (
-              product,
-            ): product is Product =>
-              Boolean(product),
-          )
+          .map((id) => products.find((product) => product.id === id))
+          .filter((product): product is Product => Boolean(product))
       : products;
 
-  const shapeMap: Record<
-    string,
-    string
-  > = {
+  const shapeMap: Record<string, string> = {
     square: "rounded-none",
     rounded: "rounded-md",
     "rounded-xl": "rounded-2xl",
-    circle:
-      "rounded-full aspect-square",
+    circle: "rounded-full aspect-square",
     arch: "rounded-t-full",
   };
 
-  const shapeClass =
-    shapeMap[content.cardShape] ??
-    "rounded-md";
+  const shapeClass = shapeMap[content.cardShape] ?? "rounded-md";
 
-  const isCircle =
-    content.cardShape === "circle";
+  const isCircle = content.cardShape === "circle";
 
-  const cardStyle =
-    content.cardStyle || "minimal";
+  const cardStyle = content.cardStyle || "minimal";
 
   const cardClass = [
     "group block",
-    cardStyle === "card"
-      ? "p-3 bg-white shadow-sm rounded-xl"
-      : "",
-    cardStyle === "bordered"
-      ? "p-3 border border-border rounded-xl"
-      : "",
+    cardStyle === "card" ? "p-3 bg-white shadow-sm rounded-xl" : "",
+    cardStyle === "bordered" ? "p-3 border border-border rounded-xl" : "",
   ]
     .filter(Boolean)
     .join(" ");
 
-  const renderCard = (
-    product: Product,
-  ) => (
+  const renderCard = (product: Product) => (
     <ProductLink
       slug={boutiqueSlug}
       productId={product.id}
@@ -1430,19 +1200,16 @@ function ShowcaseScene({
     >
       <div
         className={[
-          isCircle
-            ? ""
-            : "aspect-[4/5]",
+          isCircle ? "" : "aspect-[4/5]",
           shapeClass,
           "mb-3 overflow-hidden bg-cover bg-center transition-transform duration-300 group-hover:scale-[1.015]",
         ]
           .filter(Boolean)
           .join(" ")}
         style={{
-          background:
-            product.image_url
-              ? `url(${product.image_url}) center/cover`
-              : `linear-gradient(
+          background: product.image_url
+            ? `url(${product.image_url}) center/cover`
+            : `linear-gradient(
                   135deg,
                   hsl(var(--studio-primary) / 0.2),
                   hsl(var(--studio-accent) / 0.2)
@@ -1454,13 +1221,9 @@ function ShowcaseScene({
         Signature
       </span>
 
-      <h3 className="text-base mt-1">
-        {product.name}
-      </h3>
+      <h3 className="text-base mt-1">{product.name}</h3>
 
-      <p className="text-sm opacity-70">
-        {product.price.toFixed(2)} €
-      </p>
+      <p className="text-sm opacity-70">{product.price.toFixed(2)} €</p>
     </ProductLink>
   );
 
@@ -1469,17 +1232,14 @@ function ShowcaseScene({
       <h2
         className="text-3xl md:text-5xl"
         style={{
-          fontFamily:
-            `${displayFont}, serif`,
+          fontFamily: `${displayFont}, serif`,
         }}
       >
         {content.title}
       </h2>
 
       {content.subtitle && (
-        <p className="opacity-70 mt-3 max-w-2xl mx-auto">
-          {content.subtitle}
-        </p>
+        <p className="opacity-70 mt-3 max-w-2xl mx-auto">{content.subtitle}</p>
       )}
     </div>
   );
@@ -1490,24 +1250,21 @@ function ShowcaseScene({
         id="shop"
         className="py-20"
         style={{
-          background:
-            "hsl(var(--studio-surface))",
+          background: "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-6xl mx-auto px-6">
           {heading}
 
           <div className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-5">
-            {selectedProducts
-              .slice(0, 8)
-              .map((product) => (
-                <div
-                  key={product.id}
-                  className="min-w-[78%] sm:min-w-[46%] lg:min-w-[30%] snap-start"
-                >
-                  {renderCard(product)}
-                </div>
-              ))}
+            {selectedProducts.slice(0, 8).map((product) => (
+              <div
+                key={product.id}
+                className="min-w-[78%] sm:min-w-[46%] lg:min-w-[30%] snap-start"
+              >
+                {renderCard(product)}
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -1520,17 +1277,14 @@ function ShowcaseScene({
         id="shop"
         className="py-20"
         style={{
-          background:
-            "hsl(var(--studio-surface))",
+          background: "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-6xl mx-auto px-6">
           {heading}
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {selectedProducts
-              .slice(0, 4)
-              .map(renderCard)}
+            {selectedProducts.slice(0, 4).map(renderCard)}
           </div>
         </div>
       </section>
@@ -1542,17 +1296,14 @@ function ShowcaseScene({
       id="shop"
       className="py-20"
       style={{
-        background:
-          "hsl(var(--studio-surface))",
+        background: "hsl(var(--studio-surface))",
       }}
     >
       <div className="max-w-6xl mx-auto px-6">
         {heading}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {selectedProducts
-            .slice(0, 3)
-            .map(renderCard)}
+          {selectedProducts.slice(0, 3).map(renderCard)}
         </div>
       </div>
     </section>
@@ -1566,47 +1317,38 @@ function TrustWallScene({
   content: any;
   displayFont: string;
 }) {
-  const variant =
-    content.variant || "press-first";
+  useLanguage();
+  const variant = content.variant || "press-first";
 
-  const reviews =
-    (content.reviews ?? []) as Array<{
-      quote: string;
-      author: string;
-    }>;
+  const reviews = (content.reviews ?? []) as Array<{
+    quote: string;
+    author: string;
+  }>;
 
-  const badges =
-    (content.badges ?? []) as string[];
+  const badges = (content.badges ?? []) as string[];
 
-  const press =
-    (content.press ??
-      content.pressLogos ??
-      content.logos ??
-      []) as Array<
-      | string
-      | {
-          name: string;
-          url?: string | null;
-        }
-    >;
+  const press = (content.press ??
+    content.pressLogos ??
+    content.logos ??
+    []) as Array<
+    | string
+    | {
+        name: string;
+        url?: string | null;
+      }
+  >;
 
   const renderPress = () => (
     <div>
       <p className="text-[11px] uppercase tracking-[0.25em] opacity-50 mb-7 text-center">
-        {content.pressLabel || "Vu dans"}
+        {content.pressLabel || translateUi("Vu dans")}
       </p>
 
       <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
         {press.map((item, i) => {
-          const name =
-            typeof item === "string"
-              ? item
-              : item.name;
+          const name = typeof item === "string" ? item : item.name;
 
-          const url =
-            typeof item === "string"
-              ? null
-              : item.url;
+          const url = typeof item === "string" ? null : item.url;
 
           return url ? (
             <img
@@ -1620,8 +1362,7 @@ function TrustWallScene({
               key={i}
               className="text-sm tracking-[0.14em] opacity-70"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {name.toUpperCase()}
@@ -1634,31 +1375,26 @@ function TrustWallScene({
 
   const renderReviews = () => (
     <div className="grid md:grid-cols-2 gap-5">
-      {reviews.map(
-        (review, i) => (
-          <blockquote
-            key={i}
-            className="rounded-xl p-6 md:p-8 border border-border/30"
+      {reviews.map((review, i) => (
+        <blockquote
+          key={i}
+          className="rounded-xl p-6 md:p-8 border border-border/30"
+          style={{
+            background: "white",
+          }}
+        >
+          <p
+            className="text-lg md:text-xl leading-relaxed"
             style={{
-              background: "white",
+              fontFamily: `${displayFont}, serif`,
             }}
           >
-            <p
-              className="text-lg md:text-xl leading-relaxed"
-              style={{
-                fontFamily:
-                  `${displayFont}, serif`,
-              }}
-            >
-              “{review.quote}”
-            </p>
+            “{review.quote}”
+          </p>
 
-            <footer className="text-sm opacity-60 mt-5">
-              — {review.author}
-            </footer>
-          </blockquote>
-        ),
-      )}
+          <footer className="text-sm opacity-60 mt-5">— {review.author}</footer>
+        </blockquote>
+      ))}
     </div>
   );
 
@@ -1669,12 +1405,9 @@ function TrustWallScene({
           key={badge}
           className="px-5 py-2.5 rounded-full text-xs font-medium border"
           style={{
-            background:
-              "hsl(var(--studio-primary) / 0.06)",
-            borderColor:
-              "hsl(var(--studio-primary) / 0.12)",
-            color:
-              "hsl(var(--studio-primary))",
+            background: "hsl(var(--studio-primary) / 0.06)",
+            borderColor: "hsl(var(--studio-primary) / 0.12)",
+            color: "hsl(var(--studio-primary))",
           }}
         >
           {badge}
@@ -1687,8 +1420,7 @@ function TrustWallScene({
     <section
       className="py-20 md:py-24"
       style={{
-        background:
-          "hsl(var(--studio-surface))",
+        background: "hsl(var(--studio-surface))",
       }}
     >
       <div className="max-w-5xl mx-auto px-6">
@@ -1702,8 +1434,7 @@ function TrustWallScene({
           <h2
             className="text-3xl md:text-5xl"
             style={{
-              fontFamily:
-                `${displayFont}, serif`,
+              fontFamily: `${displayFont}, serif`,
             }}
           >
             {content.title}
@@ -1718,14 +1449,11 @@ function TrustWallScene({
 
         {variant === "reviews-first" && (
           <div className="space-y-14">
-            {reviews.length > 0 &&
-              renderReviews()}
+            {reviews.length > 0 && renderReviews()}
 
-            {badges.length > 0 &&
-              renderBadges()}
+            {badges.length > 0 && renderBadges()}
 
-            {press.length > 0 &&
-              renderPress()}
+            {press.length > 0 && renderPress()}
           </div>
         )}
 
@@ -1737,11 +1465,9 @@ function TrustWallScene({
               </div>
             )}
 
-            {press.length > 0 &&
-              renderPress()}
+            {press.length > 0 && renderPress()}
 
-            {reviews.length > 0 &&
-              renderReviews()}
+            {reviews.length > 0 && renderReviews()}
           </div>
         )}
 
@@ -1753,11 +1479,9 @@ function TrustWallScene({
               </div>
             )}
 
-            {reviews.length > 0 &&
-              renderReviews()}
+            {reviews.length > 0 && renderReviews()}
 
-            {badges.length > 0 &&
-              renderBadges()}
+            {badges.length > 0 && renderBadges()}
           </div>
         )}
       </div>
@@ -1772,26 +1496,20 @@ function CtaStickyScene({
   content: any;
   displayFont: string;
 }) {
-  const variant =
-    content.variant || "centered";
+  useLanguage();
+  const variant = content.variant || "centered";
 
-  const stickyEnabled =
-    content.stickyEnabled !== false;
+  const stickyEnabled = content.stickyEnabled !== false;
 
   const buttons = (
     <div className="flex flex-wrap gap-3 justify-center">
       {content.ctaLabel && (
         <a
-          href={
-            content.ctaUrl ||
-            "#shop"
-          }
+          href={content.ctaUrl || "#shop"}
           className="rounded-full px-7 py-3 text-sm font-medium"
           style={{
-            background:
-              "hsl(var(--studio-accent))",
-            color:
-              "hsl(var(--studio-ink))",
+            background: "hsl(var(--studio-accent))",
+            color: "hsl(var(--studio-ink))",
           }}
         >
           {content.ctaLabel}
@@ -1800,10 +1518,7 @@ function CtaStickyScene({
 
       {content.ctaSecondaryLabel && (
         <a
-          href={
-            content.ctaSecondaryUrl ||
-            "#newsletter"
-          }
+          href={content.ctaSecondaryUrl || "#newsletter"}
           className="rounded-full px-7 py-3 text-sm font-medium border border-white/40"
         >
           {content.ctaSecondaryLabel}
@@ -1823,17 +1538,14 @@ function CtaStickyScene({
       <h2
         className="text-3xl md:text-5xl mb-4"
         style={{
-          fontFamily:
-            `${displayFont}, serif`,
+          fontFamily: `${displayFont}, serif`,
         }}
       >
         {content.title}
       </h2>
 
       {content.subtitle && (
-        <p className="opacity-80 mb-8">
-          {content.subtitle}
-        </p>
+        <p className="opacity-80 mb-8">{content.subtitle}</p>
       )}
 
       {buttons}
@@ -1845,24 +1557,19 @@ function CtaStickyScene({
       <section
         className="py-16 md:py-24"
         style={{
-          background:
-            "hsl(var(--studio-primary))",
+          background: "hsl(var(--studio-primary))",
           color: "white",
         }}
       >
         <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
-          <div>
-            {contentBlock}
-          </div>
+          <div>{contentBlock}</div>
 
           <div
             id="newsletter"
             className="rounded-2xl p-7 md:p-9"
             style={{
-              background:
-                "hsl(var(--studio-surface))",
-              color:
-                "hsl(var(--studio-ink))",
+              background: "hsl(var(--studio-surface))",
+              color: "hsl(var(--studio-ink))",
             }}
           >
             {content.newsletterEyebrow && (
@@ -1874,31 +1581,28 @@ function CtaStickyScene({
             <h3
               className="text-2xl md:text-3xl mb-3"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
-              {content.newsletterTitle ||
-                "Restez informé"}
+              {content.newsletterTitle || translateUi("Restez informé")}
             </h3>
 
             <p className="opacity-70 mb-6">
               {content.newsletterSubtitle ||
-                "Recevez nos nouveautés directement dans votre boîte mail."}
+                translateUi(
+                  "Recevez nos nouveautés directement dans votre boîte mail.",
+                )}
             </p>
 
             <form
-              onSubmit={(e) =>
-                e.preventDefault()
-              }
+              onSubmit={(e) => e.preventDefault()}
               className="flex flex-col sm:flex-row gap-2"
             >
               <input
                 type="email"
                 required
                 placeholder={
-                  content.newsletterPlaceholder ||
-                  "Votre email"
+                  content.newsletterPlaceholder || translateUi("Votre email")
                 }
                 className="flex-1 rounded-full px-5 py-3 text-sm bg-white border border-border/40"
               />
@@ -1907,14 +1611,11 @@ function CtaStickyScene({
                 type="submit"
                 className="rounded-full px-6 py-3 text-sm font-medium whitespace-nowrap"
                 style={{
-                  background:
-                    "hsl(var(--studio-accent))",
-                  color:
-                    "hsl(var(--studio-ink))",
+                  background: "hsl(var(--studio-accent))",
+                  color: "hsl(var(--studio-ink))",
                 }}
               >
-                {content.newsletterCtaLabel ||
-                  "S'inscrire"}
+                {content.newsletterCtaLabel || translateUi("S'inscrire")}
               </button>
             </form>
           </div>
@@ -1929,8 +1630,7 @@ function CtaStickyScene({
         <section
           className="py-16 md:py-24"
           style={{
-            background:
-              "hsl(var(--studio-surface))",
+            background: "hsl(var(--studio-surface))",
           }}
         >
           <div className="max-w-3xl mx-auto px-6 text-center">
@@ -1943,17 +1643,14 @@ function CtaStickyScene({
             <h2
               className="text-3xl md:text-5xl mb-4"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {content.title}
             </h2>
 
             {content.subtitle && (
-              <p className="opacity-70 max-w-xl mx-auto">
-                {content.subtitle}
-              </p>
+              <p className="opacity-70 max-w-xl mx-auto">{content.subtitle}</p>
             )}
           </div>
         </section>
@@ -1962,15 +1659,13 @@ function CtaStickyScene({
           <div
             className="fixed bottom-0 inset-x-0 z-40 flex items-center justify-between gap-4 px-4 md:px-8 py-3 backdrop-blur"
             style={{
-              background:
-                "hsl(var(--studio-primary) / 0.96)",
+              background: "hsl(var(--studio-primary) / 0.96)",
               color: "white",
             }}
           >
             <div className="min-w-0">
               <p className="text-sm font-medium truncate">
-                {content.stickyLabel ||
-                  content.title}
+                {content.stickyLabel || content.title}
               </p>
 
               {content.stickySubtitle && (
@@ -1982,16 +1677,11 @@ function CtaStickyScene({
 
             {content.ctaLabel && (
               <a
-                href={
-                  content.ctaUrl ||
-                  "#shop"
-                }
+                href={content.ctaUrl || "#shop"}
                 className="rounded-full px-5 py-2.5 text-xs font-medium whitespace-nowrap"
                 style={{
-                  background:
-                    "hsl(var(--studio-accent))",
-                  color:
-                    "hsl(var(--studio-ink))",
+                  background: "hsl(var(--studio-accent))",
+                  color: "hsl(var(--studio-ink))",
                 }}
               >
                 {content.ctaLabel}
@@ -2007,14 +1697,11 @@ function CtaStickyScene({
     <section
       className="py-16 md:py-24 text-center"
       style={{
-        background:
-          "hsl(var(--studio-primary))",
+        background: "hsl(var(--studio-primary))",
         color: "white",
       }}
     >
-      <div className="max-w-2xl mx-auto px-6">
-        {contentBlock}
-      </div>
+      <div className="max-w-2xl mx-auto px-6">{contentBlock}</div>
     </section>
   );
 }
@@ -2028,14 +1715,13 @@ function FaqScene({
   content: any;
   displayFont: string;
 }) {
-  const items =
-    (content.items ?? []) as Array<{
-      q: string;
-      a: string;
-    }>;
+  useLanguage();
+  const items = (content.items ?? []) as Array<{
+    q: string;
+    a: string;
+  }>;
 
-  const variant =
-    content.variant || "accordion";
+  const variant = content.variant || "accordion";
 
   const renderItem = (
     item: {
@@ -2044,14 +1730,9 @@ function FaqScene({
     },
     i: number,
   ) => (
-    <details
-      key={i}
-      className="group border-b border-border/40 py-5"
-    >
+    <details key={i} className="group border-b border-border/40 py-5">
       <summary className="flex items-center justify-between gap-6 cursor-pointer list-none">
-        <span className="font-medium">
-          {item.q}
-        </span>
+        <span className="font-medium">{item.q}</span>
 
         <span
           aria-hidden="true"
@@ -2061,28 +1742,22 @@ function FaqScene({
         </span>
       </summary>
 
-      <p className="mt-4 opacity-75 leading-relaxed pr-10">
-        {item.a}
-      </p>
+      <p className="mt-4 opacity-75 leading-relaxed pr-10">{item.a}</p>
     </details>
   );
 
   if (variant === "two-column") {
-    const midpoint =
-      Math.ceil(items.length / 2);
+    const midpoint = Math.ceil(items.length / 2);
 
-    const left =
-      items.slice(0, midpoint);
+    const left = items.slice(0, midpoint);
 
-    const right =
-      items.slice(midpoint);
+    const right = items.slice(midpoint);
 
     return (
       <section
         className="py-20"
         style={{
-          background:
-            "hsl(var(--studio-surface))",
+          background: "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-6xl mx-auto px-6">
@@ -2090,8 +1765,7 @@ function FaqScene({
             <h2
               className="text-3xl md:text-5xl"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {content.title}
@@ -2105,20 +1779,9 @@ function FaqScene({
           </div>
 
           <div className="grid md:grid-cols-2 gap-x-12">
-            <div>
-              {left.map((item, i) =>
-                renderItem(item, i),
-              )}
-            </div>
+            <div>{left.map((item, i) => renderItem(item, i))}</div>
 
-            <div>
-              {right.map((item, i) =>
-                renderItem(
-                  item,
-                  i + midpoint,
-                ),
-              )}
-            </div>
+            <div>{right.map((item, i) => renderItem(item, i + midpoint))}</div>
           </div>
         </div>
       </section>
@@ -2133,17 +1796,14 @@ function FaqScene({
             <h2
               className="text-3xl md:text-5xl"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {content.title}
             </h2>
 
             {content.subtitle && (
-              <p className="opacity-70 mt-3 max-w-2xl">
-                {content.subtitle}
-              </p>
+              <p className="opacity-70 mt-3 max-w-2xl">{content.subtitle}</p>
             )}
           </div>
 
@@ -2154,26 +1814,20 @@ function FaqScene({
                 className="grid md:grid-cols-[80px_1fr] gap-4 border-t border-border/40 pt-7"
               >
                 <span className="text-xs uppercase tracking-[0.2em] opacity-40">
-                  {String(i + 1).padStart(
-                    2,
-                    "0",
-                  )}
+                  {String(i + 1).padStart(2, "0")}
                 </span>
 
                 <div>
                   <h3
                     className="text-xl md:text-2xl mb-3"
                     style={{
-                      fontFamily:
-                        `${displayFont}, serif`,
+                      fontFamily: `${displayFont}, serif`,
                     }}
                   >
                     {item.q}
                   </h3>
 
-                  <p className="opacity-75 leading-relaxed">
-                    {item.a}
-                  </p>
+                  <p className="opacity-75 leading-relaxed">{item.a}</p>
                 </div>
               </article>
             ))}
@@ -2187,8 +1841,7 @@ function FaqScene({
     <section
       className="py-20"
       style={{
-        background:
-          "hsl(var(--studio-surface))",
+        background: "hsl(var(--studio-surface))",
       }}
     >
       <div className="max-w-3xl mx-auto px-6">
@@ -2196,24 +1849,19 @@ function FaqScene({
           <h2
             className="text-3xl md:text-5xl"
             style={{
-              fontFamily:
-                `${displayFont}, serif`,
+              fontFamily: `${displayFont}, serif`,
             }}
           >
             {content.title}
           </h2>
 
           {content.subtitle && (
-            <p className="opacity-70 mt-3">
-              {content.subtitle}
-            </p>
+            <p className="opacity-70 mt-3">{content.subtitle}</p>
           )}
         </div>
 
         <div className="border-y border-border/40">
-          {items.map((item, i) =>
-            renderItem(item, i),
-          )}
+          {items.map((item, i) => renderItem(item, i))}
         </div>
       </div>
     </section>
@@ -2227,26 +1875,20 @@ function NewsletterScene({
   content: any;
   displayFont: string;
 }) {
-  const variant =
-    content.variant || "centered";
+  useLanguage();
+  const variant = content.variant || "centered";
 
-  const isLight =
-    variant === "minimal";
+  const isLight = variant === "minimal";
 
   const form = (
     <form
-      onSubmit={(e) =>
-        e.preventDefault()
-      }
+      onSubmit={(e) => e.preventDefault()}
       className="flex flex-col sm:flex-row gap-2"
     >
       <input
         type="email"
         required
-        placeholder={
-          content.placeholder ||
-          "Votre email"
-        }
+        placeholder={content.placeholder || translateUi("Votre email")}
         className={
           isLight
             ? "flex-1 rounded-full px-5 py-3 text-sm bg-white border border-border/50"
@@ -2258,38 +1900,26 @@ function NewsletterScene({
         type="submit"
         className="rounded-full px-6 py-3 text-sm font-medium whitespace-nowrap"
         style={{
-          background:
-            "hsl(var(--studio-accent))",
-          color:
-            "hsl(var(--studio-ink))",
+          background: "hsl(var(--studio-accent))",
+          color: "hsl(var(--studio-ink))",
         }}
       >
-        {content.ctaLabel ||
-          "S'inscrire"}
+        {content.ctaLabel || translateUi("S'inscrire")}
       </button>
     </form>
   );
 
-  const benefits =
-    (content.benefits ?? []) as string[];
+  const benefits = (content.benefits ?? []) as string[];
 
-  const renderBenefits = (
-    align:
-      | "center"
-      | "left" = "center",
-  ) =>
+  const renderBenefits = (align: "center" | "left" = "center") =>
     benefits.length > 0 ? (
       <ul
         className={`flex flex-wrap gap-3 mt-6 text-xs opacity-70 ${
-          align === "center"
-            ? "justify-center"
-            : "justify-start"
+          align === "center" ? "justify-center" : "justify-start"
         }`}
       >
         {benefits.map((benefit) => (
-          <li key={benefit}>
-            · {benefit}
-          </li>
+          <li key={benefit}>· {benefit}</li>
         ))}
       </ul>
     ) : null;
@@ -2300,8 +1930,7 @@ function NewsletterScene({
         id="newsletter"
         className="grid md:grid-cols-2 min-h-[500px]"
         style={{
-          background:
-            "hsl(var(--studio-ink))",
+          background: "hsl(var(--studio-ink))",
           color: "white",
         }}
       >
@@ -2329,17 +1958,14 @@ function NewsletterScene({
             <h2
               className="text-3xl md:text-5xl mt-3 mb-3"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {content.title}
             </h2>
 
             {content.subtitle && (
-              <p className="opacity-75 mb-6">
-                {content.subtitle}
-              </p>
+              <p className="opacity-75 mb-6">{content.subtitle}</p>
             )}
 
             {form}
@@ -2369,23 +1995,18 @@ function NewsletterScene({
               <h2
                 className="text-2xl md:text-4xl mt-2"
                 style={{
-                  fontFamily:
-                    `${displayFont}, serif`,
+                  fontFamily: `${displayFont}, serif`,
                 }}
               >
                 {content.title}
               </h2>
 
               {content.subtitle && (
-                <p className="opacity-65 mt-2 max-w-xl">
-                  {content.subtitle}
-                </p>
+                <p className="opacity-65 mt-2 max-w-xl">{content.subtitle}</p>
               )}
             </div>
 
-            <div>
-              {form}
-            </div>
+            <div>{form}</div>
           </div>
 
           {renderBenefits("left")}
@@ -2399,8 +2020,7 @@ function NewsletterScene({
       id="newsletter"
       className="py-20 md:py-24"
       style={{
-        background:
-          "hsl(var(--studio-ink))",
+        background: "hsl(var(--studio-ink))",
         color: "white",
       }}
     >
@@ -2414,17 +2034,14 @@ function NewsletterScene({
         <h2
           className="text-3xl md:text-5xl mt-3 mb-3"
           style={{
-            fontFamily:
-              `${displayFont}, serif`,
+            fontFamily: `${displayFont}, serif`,
           }}
         >
           {content.title}
         </h2>
 
         {content.subtitle && (
-          <p className="opacity-75 mb-7">
-            {content.subtitle}
-          </p>
+          <p className="opacity-75 mb-7">{content.subtitle}</p>
         )}
 
         {form}
@@ -2442,14 +2059,13 @@ function PressStripScene({
   content: any;
   displayFont: string;
 }) {
-  const logos =
-    (content.logos ?? []) as Array<{
-      name: string;
-      url?: string | null;
-    }>;
+  useLanguage();
+  const logos = (content.logos ?? []) as Array<{
+    name: string;
+    url?: string | null;
+  }>;
 
-  const variant =
-    content.variant || "scrolling";
+  const variant = content.variant || "scrolling";
 
   const renderLogo = (
     logo: {
@@ -2470,8 +2086,7 @@ function PressStripScene({
         key={key}
         className="text-base tracking-widest whitespace-nowrap opacity-70"
         style={{
-          fontFamily:
-            `${displayFont}, serif`,
+          fontFamily: `${displayFont}, serif`,
         }}
       >
         {logo.name.toUpperCase()}
@@ -2494,10 +2109,7 @@ function PressStripScene({
                 key={i}
                 className="min-h-28 flex items-center justify-center p-6 border-r border-b border-border/30"
               >
-                {renderLogo(
-                  logo,
-                  `grid-${i}`,
-                )}
+                {renderLogo(logo, `grid-${i}`)}
               </div>
             ))}
           </div>
@@ -2511,8 +2123,7 @@ function PressStripScene({
       <section
         className="py-16 md:py-20"
         style={{
-          background:
-            "hsl(var(--studio-surface))",
+          background: "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-4xl mx-auto px-6 text-center">
@@ -2526,8 +2137,7 @@ function PressStripScene({
             <h2
               className="text-2xl md:text-4xl mb-10"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {content.title}
@@ -2535,22 +2145,14 @@ function PressStripScene({
           )}
 
           <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-7">
-            {logos.map((logo, i) =>
-              renderLogo(
-                logo,
-                `center-${i}`,
-              ),
-            )}
+            {logos.map((logo, i) => renderLogo(logo, `center-${i}`))}
           </div>
         </div>
       </section>
     );
   }
 
-  const marqueeItems = [
-    ...logos,
-    ...logos,
-  ];
+  const marqueeItems = [...logos, ...logos];
 
   return (
     <section className="py-6 overflow-hidden border-y border-border/40 bg-white">
@@ -2564,17 +2166,10 @@ function PressStripScene({
         <div
           className="flex w-max items-center gap-14 whitespace-nowrap"
           style={{
-            animation:
-              "bib-press-scroll 28s linear infinite",
+            animation: "bib-press-scroll 28s linear infinite",
           }}
         >
-          {marqueeItems.map(
-            (logo, i) =>
-              renderLogo(
-                logo,
-                `scroll-${i}`,
-              ),
-          )}
+          {marqueeItems.map((logo, i) => renderLogo(logo, `scroll-${i}`))}
         </div>
       </div>
 
@@ -2606,37 +2201,28 @@ function ComparisonScene({
   content: any;
   displayFont: string;
 }) {
-  const rows =
-    (content.rows ?? []) as Array<{
-      label: string;
-      us: boolean;
-      them: boolean;
-    }>;
+  useLanguage();
+  const rows = (content.rows ?? []) as Array<{
+    label: string;
+    us: boolean;
+    them: boolean;
+  }>;
 
-  const variant =
-    content.variant || "check-cross";
+  const variant = content.variant || "check-cross";
 
-  const renderValue = (
-    value: boolean,
-    type: "us" | "them",
-  ) => {
+  const renderValue = (value: boolean, type: "us" | "them") => {
     if (variant === "stars") {
       return value ? (
         <span
           className="text-xl"
           style={{
-            color:
-              type === "us"
-                ? "hsl(var(--studio-accent))"
-                : "currentColor",
+            color: type === "us" ? "hsl(var(--studio-accent))" : "currentColor",
           }}
         >
           ★
         </span>
       ) : (
-        <span className="opacity-20">
-          ☆
-        </span>
+        <span className="opacity-20">☆</span>
       );
     }
 
@@ -2646,17 +2232,13 @@ function ComparisonScene({
           className="text-sm font-medium"
           style={{
             color:
-              type === "us"
-                ? "hsl(var(--studio-primary))"
-                : "currentColor",
+              type === "us" ? "hsl(var(--studio-primary))" : "currentColor",
           }}
         >
-          Oui
+          {translateUi("Oui")}
         </span>
       ) : (
-        <span className="text-sm opacity-40">
-          —
-        </span>
+        <span className="text-sm opacity-40">—</span>
       );
     }
 
@@ -2664,18 +2246,13 @@ function ComparisonScene({
       <span
         className="text-lg font-medium"
         style={{
-          color:
-            type === "us"
-              ? "hsl(var(--studio-primary))"
-              : "currentColor",
+          color: type === "us" ? "hsl(var(--studio-primary))" : "currentColor",
         }}
       >
         ✓
       </span>
     ) : (
-      <span className="opacity-30">
-        ×
-      </span>
+      <span className="opacity-30">×</span>
     );
   };
 
@@ -2683,8 +2260,7 @@ function ComparisonScene({
     <section
       className="py-20"
       style={{
-        background:
-          "hsl(var(--studio-surface))",
+        background: "hsl(var(--studio-surface))",
       }}
     >
       <div
@@ -2704,8 +2280,7 @@ function ComparisonScene({
           <h2
             className="text-3xl md:text-5xl"
             style={{
-              fontFamily:
-                `${displayFont}, serif`,
+              fontFamily: `${displayFont}, serif`,
             }}
           >
             {content.title}
@@ -2738,8 +2313,7 @@ function ComparisonScene({
                   variant === "minimal"
                     ? undefined
                     : "hsl(var(--studio-primary) / 0.08)",
-                color:
-                  "hsl(var(--studio-primary))",
+                color: "hsl(var(--studio-primary))",
               }}
             >
               {content.brand_name}
@@ -2755,9 +2329,7 @@ function ComparisonScene({
               key={i}
               className="grid grid-cols-3 text-sm border-t border-border/30"
             >
-              <div className="p-4">
-                {row.label}
-              </div>
+              <div className="p-4">{row.label}</div>
 
               <div
                 className="p-4 text-center"
@@ -2768,17 +2340,11 @@ function ComparisonScene({
                       : "hsl(var(--studio-primary) / 0.04)",
                 }}
               >
-                {renderValue(
-                  row.us,
-                  "us",
-                )}
+                {renderValue(row.us, "us")}
               </div>
 
               <div className="p-4 text-center opacity-60">
-                {renderValue(
-                  row.them,
-                  "them",
-                )}
+                {renderValue(row.them, "them")}
               </div>
             </div>
           ))}
@@ -2795,8 +2361,8 @@ function FounderScene({
   content: any;
   displayFont: string;
 }) {
-  const variant =
-    content.variant || "letter";
+  useLanguage();
+  const variant = content.variant || "letter";
 
   const portrait = (
     <div
@@ -2828,8 +2394,7 @@ function FounderScene({
       <h2
         className="text-3xl md:text-5xl mt-3 mb-6"
         style={{
-          fontFamily:
-            `${displayFont}, serif`,
+          fontFamily: `${displayFont}, serif`,
         }}
       >
         {content.title}
@@ -2843,8 +2408,7 @@ function FounderScene({
         <p
           className="mt-7 text-sm opacity-60"
           style={{
-            fontFamily:
-              `${displayFont}, serif`,
+            fontFamily: `${displayFont}, serif`,
           }}
         >
           {content.signature}
@@ -2858,8 +2422,7 @@ function FounderScene({
       <section
         className="py-20 md:py-24"
         style={{
-          background:
-            "hsl(var(--studio-surface))",
+          background: "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-5xl mx-auto px-6 grid md:grid-cols-[0.8fr_1.2fr] gap-12 md:gap-16 items-center">
@@ -2875,8 +2438,7 @@ function FounderScene({
       <section
         className="py-20 md:py-24"
         style={{
-          background:
-            "hsl(var(--studio-surface))",
+          background: "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-5xl mx-auto px-6 grid md:grid-cols-[1.2fr_0.8fr] gap-12 md:gap-16 items-center">
@@ -2891,8 +2453,7 @@ function FounderScene({
     <section
       className="py-20 md:py-28"
       style={{
-        background:
-          "hsl(var(--studio-surface))",
+        background: "hsl(var(--studio-surface))",
       }}
     >
       <div className="max-w-3xl mx-auto px-6 text-center">
@@ -2910,19 +2471,17 @@ function ManifestoScene({
   content: any;
   displayFont: string;
 }) {
-  const lines =
-    (content.lines ?? []) as string[];
+  useLanguage();
+  const lines = (content.lines ?? []) as string[];
 
-  const variant =
-    content.variant || "xl";
+  const variant = content.variant || "xl";
 
   if (variant === "stacked") {
     return (
       <section
         className="py-24 md:py-32"
         style={{
-          background:
-            "hsl(var(--studio-primary))",
+          background: "hsl(var(--studio-primary))",
           color: "white",
         }}
       >
@@ -2939,12 +2498,8 @@ function ManifestoScene({
                 key={i}
                 className="text-4xl md:text-6xl lg:text-7xl leading-[0.95]"
                 style={{
-                  fontFamily:
-                    `${displayFont}, serif`,
-                  marginLeft:
-                    i % 2 === 0
-                      ? "0"
-                      : "clamp(2rem, 10vw, 10rem)",
+                  fontFamily: `${displayFont}, serif`,
+                  marginLeft: i % 2 === 0 ? "0" : "clamp(2rem, 10vw, 10rem)",
                 }}
               >
                 {line}
@@ -2967,8 +2522,7 @@ function ManifestoScene({
       <section
         className="py-16 md:py-24 overflow-hidden"
         style={{
-          background:
-            "hsl(var(--studio-primary))",
+          background: "hsl(var(--studio-primary))",
           color: "white",
         }}
       >
@@ -2980,45 +2534,28 @@ function ManifestoScene({
 
         <div className="space-y-4">
           {lines.map((line, i) => (
-            <div
-              key={i}
-              className="overflow-hidden"
-            >
+            <div key={i} className="overflow-hidden">
               <div
                 className="flex w-max whitespace-nowrap"
                 style={{
-                  animation:
-                    `bib-manifesto-${
-                      i % 2
-                        ? "right"
-                        : "left"
-                    } ${
-                      22 + i * 3
-                    }s linear infinite`,
+                  animation: `bib-manifesto-${i % 2 ? "right" : "left"} ${
+                    22 + i * 3
+                  }s linear infinite`,
                 }}
               >
-                {[0, 1, 2, 3].map(
-                  (copy) => (
-                    <span
-                      key={copy}
-                      className="text-5xl md:text-7xl lg:text-8xl leading-none pr-12"
-                      style={{
-                        fontFamily:
-                          `${displayFont}, serif`,
-                        WebkitTextStroke:
-                          i % 2
-                            ? "1px currentColor"
-                            : undefined,
-                        color:
-                          i % 2
-                            ? "transparent"
-                            : "currentColor",
-                      }}
-                    >
-                      {line}
-                    </span>
-                  ),
-                )}
+                {[0, 1, 2, 3].map((copy) => (
+                  <span
+                    key={copy}
+                    className="text-5xl md:text-7xl lg:text-8xl leading-none pr-12"
+                    style={{
+                      fontFamily: `${displayFont}, serif`,
+                      WebkitTextStroke: i % 2 ? "1px currentColor" : undefined,
+                      color: i % 2 ? "transparent" : "currentColor",
+                    }}
+                  >
+                    {line}
+                  </span>
+                ))}
               </div>
             </div>
           ))}
@@ -3059,8 +2596,7 @@ function ManifestoScene({
     <section
       className="py-24 md:py-36"
       style={{
-        background:
-          "hsl(var(--studio-primary))",
+        background: "hsl(var(--studio-primary))",
         color: "white",
       }}
     >
@@ -3076,13 +2612,8 @@ function ManifestoScene({
             key={i}
             className="text-5xl md:text-7xl lg:text-8xl leading-[1.05]"
             style={{
-              fontFamily:
-                `${displayFont}, serif`,
-              opacity:
-                Math.min(
-                  1,
-                  0.6 + i * 0.15,
-                ),
+              fontFamily: `${displayFont}, serif`,
+              opacity: Math.min(1, 0.6 + i * 0.15),
             }}
           >
             {line}
@@ -3107,14 +2638,14 @@ function MarqueeScene({
   content: any;
   displayFont: string;
 }) {
+  useLanguage();
   useEffect(() => {
     if (content.fontFamily) {
       loadGoogleFont(content.fontFamily);
     }
   }, [content.fontFamily]);
 
-  const variant =
-    content.variant || "dark";
+  const variant = content.variant || "dark";
 
   const background =
     variant === "light"
@@ -3139,24 +2670,13 @@ function MarqueeScene({
       ? "hsl(var(--studio-primary))"
       : "hsl(var(--studio-ink) / 0.15)";
 
-  const items = Array.from(
-    { length: 8 },
-    (_, i) => i,
-  );
+  const items = Array.from({ length: 8 }, (_, i) => i);
 
-  const text =
-    (content.text ?? "").toString();
+  const text = (content.text ?? "").toString();
 
-  const separator =
-    content.separator ?? "·";
+  const separator = content.separator ?? "·";
 
-  const speed = Math.max(
-    8,
-    Math.min(
-      120,
-      Number(content.speed) || 30,
-    ),
-  );
+  const speed = Math.max(8, Math.min(120, Number(content.speed) || 30));
 
   return (
     <section
@@ -3170,12 +2690,9 @@ function MarqueeScene({
       <div
         className="flex whitespace-nowrap"
         style={{
-          animation:
-            `bib-marquee ${speed}s linear infinite`,
+          animation: `bib-marquee ${speed}s linear infinite`,
           animationDirection:
-            content.direction === "right"
-              ? "reverse"
-              : "normal",
+            content.direction === "right" ? "reverse" : "normal",
         }}
       >
         {items.map((i) => (
@@ -3183,30 +2700,16 @@ function MarqueeScene({
             key={i}
             className="px-7 inline-flex items-center"
             style={{
-              fontFamily:
-                `${content.fontFamily || displayFont}, serif`,
-              fontSize:
-                `${content.fontSize ?? 18}px`,
-              textTransform:
-                content.uppercase
-                  ? "uppercase"
-                  : "none",
-              letterSpacing:
-                content.uppercase
-                  ? "0.15em"
-                  : "normal",
-              fontWeight:
-                variant === "outline"
-                  ? 600
-                  : undefined,
+              fontFamily: `${content.fontFamily || displayFont}, serif`,
+              fontSize: `${content.fontSize ?? 18}px`,
+              textTransform: content.uppercase ? "uppercase" : "none",
+              letterSpacing: content.uppercase ? "0.15em" : "normal",
+              fontWeight: variant === "outline" ? 600 : undefined,
             }}
           >
             {text}
 
-            <span
-              className="mx-4 opacity-50"
-              aria-hidden="true"
-            >
+            <span className="mx-4 opacity-50" aria-hidden="true">
               {separator}
             </span>
           </span>
@@ -3235,25 +2738,17 @@ function GalleryMosaicScene({
   content: any;
   displayFont: string;
 }) {
-  const images =
-    (content.images ?? []) as string[];
+  useLanguage();
+  const images = (content.images ?? []) as string[];
 
-  const variant =
-    content.variant || "mosaic";
+  const variant = content.variant || "mosaic";
 
   const heading = content.title ? (
-    <div
-      className={
-        variant === "masonry"
-          ? "mb-10"
-          : "text-center mb-10"
-      }
-    >
+    <div className={variant === "masonry" ? "mb-10" : "text-center mb-10"}>
       <h2
         className="text-3xl md:text-5xl"
         style={{
-          fontFamily:
-            `${displayFont}, serif`,
+          fontFamily: `${displayFont}, serif`,
         }}
       >
         {content.title}
@@ -3278,26 +2773,22 @@ function GalleryMosaicScene({
       <section
         className="py-20"
         style={{
-          background:
-            "hsl(var(--studio-surface))",
+          background: "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-6xl mx-auto px-6">
           {heading}
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {images
-              .slice(0, 12)
-              .map((src, i) => (
-                <div
-                  key={i}
-                  className="aspect-square rounded-lg overflow-hidden bg-cover bg-center"
-                  style={{
-                    backgroundImage:
-                      `url(${src})`,
-                  }}
-                />
-              ))}
+            {images.slice(0, 12).map((src, i) => (
+              <div
+                key={i}
+                className="aspect-square rounded-lg overflow-hidden bg-cover bg-center"
+                style={{
+                  backgroundImage: `url(${src})`,
+                }}
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -3309,34 +2800,30 @@ function GalleryMosaicScene({
       <section
         className="py-20"
         style={{
-          background:
-            "hsl(var(--studio-surface))",
+          background: "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-6xl mx-auto px-6">
           {heading}
 
           <div className="columns-2 md:columns-3 lg:columns-4 gap-4">
-            {images
-              .slice(0, 12)
-              .map((src, i) => (
-                <div
-                  key={i}
-                  className="break-inside-avoid mb-4 overflow-hidden rounded-lg bg-cover bg-center"
-                  style={{
-                    aspectRatio:
-                      i % 4 === 0
-                        ? "3 / 4"
-                        : i % 4 === 1
-                          ? "4 / 5"
-                          : i % 4 === 2
-                            ? "1 / 1"
-                            : "4 / 5",
-                    backgroundImage:
-                      `url(${src})`,
-                  }}
-                />
-              ))}
+            {images.slice(0, 12).map((src, i) => (
+              <div
+                key={i}
+                className="break-inside-avoid mb-4 overflow-hidden rounded-lg bg-cover bg-center"
+                style={{
+                  aspectRatio:
+                    i % 4 === 0
+                      ? "3 / 4"
+                      : i % 4 === 1
+                        ? "4 / 5"
+                        : i % 4 === 2
+                          ? "1 / 1"
+                          : "4 / 5",
+                  backgroundImage: `url(${src})`,
+                }}
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -3347,30 +2834,26 @@ function GalleryMosaicScene({
     <section
       className="py-20"
       style={{
-        background:
-          "hsl(var(--studio-surface))",
+        background: "hsl(var(--studio-surface))",
       }}
     >
       <div className="max-w-6xl mx-auto px-6">
         {heading}
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          {images
-            .slice(0, 12)
-            .map((src, i) => (
-              <div
-                key={i}
-                className={
-                  i % 5 === 0
-                    ? "overflow-hidden rounded-lg row-span-2 aspect-[3/5] bg-cover bg-center"
-                    : "overflow-hidden rounded-lg aspect-square bg-cover bg-center"
-                }
-                style={{
-                  backgroundImage:
-                    `url(${src})`,
-                }}
-              />
-            ))}
+          {images.slice(0, 12).map((src, i) => (
+            <div
+              key={i}
+              className={
+                i % 5 === 0
+                  ? "overflow-hidden rounded-lg row-span-2 aspect-[3/5] bg-cover bg-center"
+                  : "overflow-hidden rounded-lg aspect-square bg-cover bg-center"
+              }
+              style={{
+                backgroundImage: `url(${src})`,
+              }}
+            />
+          ))}
         </div>
       </div>
     </section>
@@ -3384,11 +2867,11 @@ function StatsCounterScene({
   content: any;
   displayFont: string;
 }) {
-  const stats =
-    (content.stats ?? []) as Array<{
-      value: string;
-      label: string;
-    }>;
+  useLanguage();
+  const stats = (content.stats ?? []) as Array<{
+    value: string;
+    label: string;
+  }>;
 
   const variant = content.variant || "centered";
 
@@ -3397,8 +2880,7 @@ function StatsCounterScene({
       <section
         className="py-20"
         style={{
-          background:
-            "hsl(var(--studio-primary))",
+          background: "hsl(var(--studio-primary))",
           color: "white",
         }}
       >
@@ -3414,8 +2896,7 @@ function StatsCounterScene({
               <h2
                 className="text-3xl md:text-5xl"
                 style={{
-                  fontFamily:
-                    `${displayFont}, serif`,
+                  fontFamily: `${displayFont}, serif`,
                 }}
               >
                 {content.title}
@@ -3431,17 +2912,12 @@ function StatsCounterScene({
 
           <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg bg-white/15">
             {stats.map((stat, i) => (
-              <div
-                key={i}
-                className="p-6 md:p-8 bg-black/10"
-              >
+              <div key={i} className="p-6 md:p-8 bg-black/10">
                 <div
                   className="text-4xl md:text-5xl mb-2"
                   style={{
-                    fontFamily:
-                      `${displayFont}, serif`,
-                    color:
-                      "hsl(var(--studio-accent))",
+                    fontFamily: `${displayFont}, serif`,
+                    color: "hsl(var(--studio-accent))",
                   }}
                 >
                   {stat.value}
@@ -3467,17 +2943,14 @@ function StatsCounterScene({
               <h2
                 className="text-2xl md:text-3xl"
                 style={{
-                  fontFamily:
-                    `${displayFont}, serif`,
+                  fontFamily: `${displayFont}, serif`,
                 }}
               >
                 {content.title}
               </h2>
 
               {content.subtitle && (
-                <p className="opacity-60 mt-2">
-                  {content.subtitle}
-                </p>
+                <p className="opacity-60 mt-2">{content.subtitle}</p>
               )}
             </div>
           )}
@@ -3488,8 +2961,7 @@ function StatsCounterScene({
                 <div
                   className="text-3xl md:text-4xl"
                   style={{
-                    fontFamily:
-                      `${displayFont}, serif`,
+                    fontFamily: `${displayFont}, serif`,
                   }}
                 >
                   {stat.value}
@@ -3510,8 +2982,7 @@ function StatsCounterScene({
     <section
       className="py-16"
       style={{
-        background:
-          "hsl(var(--studio-primary))",
+        background: "hsl(var(--studio-primary))",
         color: "white",
       }}
     >
@@ -3520,8 +2991,7 @@ function StatsCounterScene({
           <h2
             className="text-2xl md:text-3xl mb-10"
             style={{
-              fontFamily:
-                `${displayFont}, serif`,
+              fontFamily: `${displayFont}, serif`,
             }}
           >
             {content.title}
@@ -3534,10 +3004,8 @@ function StatsCounterScene({
               <div
                 className="text-4xl md:text-5xl mb-1"
                 style={{
-                  fontFamily:
-                    `${displayFont}, serif`,
-                  color:
-                    "hsl(var(--studio-accent))",
+                  fontFamily: `${displayFont}, serif`,
+                  color: "hsl(var(--studio-accent))",
                 }}
               >
                 {stat.value}
@@ -3561,6 +3029,7 @@ function VideoFullscreenScene({
   content: any;
   displayFont: string;
 }) {
+  useLanguage();
   const variant = content.variant || "fullscreen";
 
   const video = content.videoUrl ? (
@@ -3587,8 +3056,7 @@ function VideoFullscreenScene({
     <div
       className="absolute inset-0"
       style={{
-        background:
-          `hsl(var(--studio-ink) / ${content.overlayOpacity ?? 0.4})`,
+        background: `hsl(var(--studio-ink) / ${content.overlayOpacity ?? 0.4})`,
       }}
     />
   );
@@ -3604,17 +3072,14 @@ function VideoFullscreenScene({
       <h2
         className="text-3xl md:text-5xl mb-4"
         style={{
-          fontFamily:
-            `${displayFont}, serif`,
+          fontFamily: `${displayFont}, serif`,
         }}
       >
         {content.title}
       </h2>
 
       {content.subtitle && (
-        <p className="opacity-90 mb-6">
-          {content.subtitle}
-        </p>
+        <p className="opacity-90 mb-6">{content.subtitle}</p>
       )}
 
       {content.ctaLabel && (
@@ -3622,10 +3087,8 @@ function VideoFullscreenScene({
           href={content.ctaUrl || "#shop"}
           className="inline-block rounded-full px-7 py-3 text-sm font-medium"
           style={{
-            background:
-              "hsl(var(--studio-accent))",
-            color:
-              "hsl(var(--studio-ink))",
+            background: "hsl(var(--studio-accent))",
+            color: "hsl(var(--studio-ink))",
           }}
         >
           {content.ctaLabel}
@@ -3653,8 +3116,7 @@ function VideoFullscreenScene({
       <section
         className="py-16"
         style={{
-          background:
-            "hsl(var(--studio-surface))",
+          background: "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
@@ -3673,8 +3135,7 @@ function VideoFullscreenScene({
             <h2
               className="text-3xl md:text-5xl mb-4"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {content.title}
@@ -3691,10 +3152,8 @@ function VideoFullscreenScene({
                 href={content.ctaUrl || "#shop"}
                 className="inline-block rounded-full px-7 py-3 text-sm font-medium"
                 style={{
-                  background:
-                    "hsl(var(--studio-accent))",
-                  color:
-                    "hsl(var(--studio-ink))",
+                  background: "hsl(var(--studio-accent))",
+                  color: "hsl(var(--studio-ink))",
                 }}
               >
                 {content.ctaLabel}
@@ -3715,11 +3174,8 @@ function VideoFullscreenScene({
   );
 }
 
-function BannerPromoScene({
-  content,
-}: {
-  content: any;
-}) {
+function BannerPromoScene({ content }: { content: any }) {
+  useLanguage();
   const variant = content.variant || "solid";
 
   const bg =
@@ -3730,17 +3186,14 @@ function BannerPromoScene({
         : "hsl(var(--studio-primary))";
 
   const color =
-    content.bgColor === "accent"
-      ? "hsl(var(--studio-ink))"
-      : "white";
+    content.bgColor === "accent" ? "hsl(var(--studio-ink))" : "white";
 
   if (variant === "gradient") {
     return (
       <div
         className="px-6 py-4 text-center"
         style={{
-          background:
-            `linear-gradient(
+          background: `linear-gradient(
               90deg,
               hsl(var(--studio-primary)),
               hsl(var(--studio-accent))
@@ -3749,25 +3202,20 @@ function BannerPromoScene({
         }}
       >
         <div className="max-w-6xl mx-auto flex items-center justify-center gap-4 flex-wrap">
-          <span className="text-sm font-medium">
-            {content.text}
-          </span>
+          <span className="text-sm font-medium">{content.text}</span>
 
-          {content.ctaLabel &&
-            content.ctaUrl && (
-              <a
-                href={content.ctaUrl}
-                className="rounded-full px-4 py-1.5 text-xs font-medium"
-                style={{
-                  background:
-                    "white",
-                  color:
-                    "hsl(var(--studio-ink))",
-                }}
-              >
-                {content.ctaLabel}
-              </a>
-            )}
+          {content.ctaLabel && content.ctaUrl && (
+            <a
+              href={content.ctaUrl}
+              className="rounded-full px-4 py-1.5 text-xs font-medium"
+              style={{
+                background: "white",
+                color: "hsl(var(--studio-ink))",
+              }}
+            >
+              {content.ctaLabel}
+            </a>
+          )}
         </div>
       </div>
     );
@@ -3778,32 +3226,25 @@ function BannerPromoScene({
       <div
         className="px-4 py-3 border-y"
         style={{
-          borderColor:
-            "hsl(var(--studio-primary) / 0.25)",
-          background:
-            "hsl(var(--studio-surface))",
-          color:
-            "hsl(var(--studio-ink))",
+          borderColor: "hsl(var(--studio-primary) / 0.25)",
+          background: "hsl(var(--studio-surface))",
+          color: "hsl(var(--studio-ink))",
         }}
       >
         <div className="max-w-6xl mx-auto flex items-center justify-center gap-3 flex-wrap">
-          <span className="text-sm">
-            {content.text}
-          </span>
+          <span className="text-sm">{content.text}</span>
 
-          {content.ctaLabel &&
-            content.ctaUrl && (
-              <a
-                href={content.ctaUrl}
-                className="underline underline-offset-4 text-sm font-medium"
-                style={{
-                  color:
-                    "hsl(var(--studio-primary))",
-                }}
-              >
-                {content.ctaLabel}
-              </a>
-            )}
+          {content.ctaLabel && content.ctaUrl && (
+            <a
+              href={content.ctaUrl}
+              className="underline underline-offset-4 text-sm font-medium"
+              style={{
+                color: "hsl(var(--studio-primary))",
+              }}
+            >
+              {content.ctaLabel}
+            </a>
+          )}
         </div>
       </div>
     );
@@ -3819,15 +3260,11 @@ function BannerPromoScene({
     >
       <span>{content.text}</span>
 
-      {content.ctaLabel &&
-        content.ctaUrl && (
-          <a
-            href={content.ctaUrl}
-            className="underline font-medium"
-          >
-            {content.ctaLabel}
-          </a>
-        )}
+      {content.ctaLabel && content.ctaUrl && (
+        <a href={content.ctaUrl} className="underline font-medium">
+          {content.ctaLabel}
+        </a>
+      )}
     </div>
   );
 }
@@ -3845,10 +3282,8 @@ function ProductsGridScene({
   displayFont: string;
   boutiqueSlug?: string;
 }) {
-  const variant =
-    content.variant ||
-    content.layout ||
-    "3-up";
+  useLanguage();
+  const variant = content.variant || content.layout || "3-up";
 
   const shapeMap: Record<string, string> = {
     square: "rounded-none",
@@ -3858,22 +3293,14 @@ function ProductsGridScene({
     arch: "rounded-t-full",
   };
 
-  const shapeClass =
-    shapeMap[content.cardShape] ??
-    "rounded-md";
+  const shapeClass = shapeMap[content.cardShape] ?? "rounded-md";
 
-  const ids =
-    (content.productIds ?? []) as string[];
+  const ids = (content.productIds ?? []) as string[];
 
   const filtered =
-    ids.length > 0
-      ? products.filter((p) =>
-          ids.includes(p.id),
-        )
-      : products;
+    ids.length > 0 ? products.filter((p) => ids.includes(p.id)) : products;
 
-  const hover =
-    (content.hoverEffect ?? "zoom") as string;
+  const hover = (content.hoverEffect ?? "zoom") as string;
 
   const hoverImg =
     hover === "zoom"
@@ -3908,18 +3335,12 @@ function ProductsGridScene({
               )`,
         }}
       >
-        <div
-          className={`w-full h-full ${hoverImg}`}
-        />
+        <div className={`w-full h-full ${hoverImg}`} />
       </div>
 
-      <h3 className="text-base">
-        {p.name}
-      </h3>
+      <h3 className="text-base">{p.name}</h3>
 
-      <p className="text-sm opacity-70">
-        {p.price.toFixed(2)} €
-      </p>
+      <p className="text-sm opacity-70">{p.price.toFixed(2)} €</p>
     </ProductLink>
   );
 
@@ -3929,8 +3350,7 @@ function ProductsGridScene({
         id="shop"
         className="py-12"
         style={{
-          background:
-            "hsl(var(--studio-surface))",
+          background: "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-6xl mx-auto px-6">
@@ -3939,29 +3359,26 @@ function ProductsGridScene({
               <h2
                 className="text-2xl md:text-3xl"
                 style={{
-                  fontFamily:
-                    `${displayFont}, serif`,
+                  fontFamily: `${displayFont}, serif`,
                 }}
               >
                 {content.title}
               </h2>
 
               {content.subtitle && (
-                <p className="opacity-60 mt-1 text-sm">
-                  {content.subtitle}
-                </p>
+                <p className="opacity-60 mt-1 text-sm">{content.subtitle}</p>
               )}
             </div>
 
             <span className="hidden sm:block text-xs uppercase tracking-[0.2em] opacity-40">
-              {filtered.length} produit
+              {filtered.length} {translateUi("produit")}
               {filtered.length > 1 ? "s" : ""}
             </span>
           </div>
 
           {filtered.length === 0 ? (
             <p className="text-center opacity-60 italic">
-              Aucun produit pour le moment.
+              {translateUi("Aucun produit pour le moment.")}
             </p>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-4 gap-y-8">
@@ -3979,8 +3396,7 @@ function ProductsGridScene({
         id="shop"
         className="py-16"
         style={{
-          background:
-            "hsl(var(--studio-surface))",
+          background: "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-6xl mx-auto px-6">
@@ -3988,23 +3404,20 @@ function ProductsGridScene({
             <h2
               className="text-3xl md:text-4xl"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {content.title}
             </h2>
 
             {content.subtitle && (
-              <p className="opacity-70 mt-2">
-                {content.subtitle}
-              </p>
+              <p className="opacity-70 mt-2">{content.subtitle}</p>
             )}
           </div>
 
           {filtered.length === 0 ? (
             <p className="text-center opacity-60 italic">
-              Aucun produit pour le moment.
+              {translateUi("Aucun produit pour le moment.")}
             </p>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -4021,8 +3434,7 @@ function ProductsGridScene({
       id="shop"
       className="py-16"
       style={{
-        background:
-          "hsl(var(--studio-surface))",
+        background: "hsl(var(--studio-surface))",
       }}
     >
       <div className="max-w-6xl mx-auto px-6">
@@ -4030,23 +3442,20 @@ function ProductsGridScene({
           <h2
             className="text-3xl md:text-4xl"
             style={{
-              fontFamily:
-                `${displayFont}, serif`,
+              fontFamily: `${displayFont}, serif`,
             }}
           >
             {content.title}
           </h2>
 
           {content.subtitle && (
-            <p className="opacity-70 mt-2">
-              {content.subtitle}
-            </p>
+            <p className="opacity-70 mt-2">{content.subtitle}</p>
           )}
         </div>
 
         {filtered.length === 0 ? (
           <p className="text-center opacity-60 italic">
-            Aucun produit pour le moment.
+            {translateUi("Aucun produit pour le moment.")}
           </p>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -4069,14 +3478,14 @@ function ProductHeroScene({
   products: Product[];
   displayFont: string;
 }) {
+  useLanguage();
   const p = products[0];
 
   return (
     <section
       className="py-12 md:py-20"
       style={{
-        background:
-          `hsl(var(--studio-surface))`,
+        background: `hsl(var(--studio-surface))`,
       }}
     >
       <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
@@ -4093,37 +3502,30 @@ function ProductHeroScene({
           <h1
             className="text-3xl md:text-5xl mb-4"
             style={{
-              fontFamily:
-                `${displayFont}, serif`,
+              fontFamily: `${displayFont}, serif`,
             }}
           >
-            {p?.name ?? "Aperçu produit"}
+            {p?.name ?? translateUi("Aperçu produit")}
           </h1>
 
           <p
             className="text-2xl mb-6"
             style={{
-              color:
-                `hsl(var(--studio-primary))`,
+              color: `hsl(var(--studio-primary))`,
             }}
           >
-            {p
-              ? `${p.price.toFixed(2)} €`
-              : "—"}
+            {p ? translateUi("{v0} €", { v0: p.price.toFixed(2) }) : "—"}
           </p>
 
           <a
             href="#shop"
             className="inline-block rounded-full px-7 py-3 text-sm font-medium"
             style={{
-              background:
-                `hsl(var(--studio-accent))`,
-              color:
-                `hsl(var(--studio-ink))`,
+              background: `hsl(var(--studio-accent))`,
+              color: `hsl(var(--studio-ink))`,
             }}
           >
-            {content.ctaLabel ??
-              "Ajouter au panier"}
+            {content.ctaLabel ?? translateUi("Ajouter au panier")}
           </a>
         </div>
       </div>
@@ -4138,21 +3540,17 @@ function ProductDescriptionScene({
   content: any;
   displayFont: string;
 }) {
-  const variant =
-    content.variant || "centered";
+  useLanguage();
+  const variant = content.variant || "centered";
 
-  const body =
-    content.fallbackBody ||
-    content.body ||
-    "";
+  const body = content.fallbackBody || content.body || "";
 
   if (variant === "two-column") {
     return (
       <section
         className="py-20"
         style={{
-          background:
-            "hsl(var(--studio-surface))",
+          background: "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-[0.8fr_1.2fr] gap-12 md:gap-20 items-start">
@@ -4166,8 +3564,7 @@ function ProductDescriptionScene({
             <h2
               className="text-3xl md:text-5xl leading-tight"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {content.title}
@@ -4196,16 +3593,13 @@ function ProductDescriptionScene({
         <h2
           className="text-3xl md:text-5xl mb-7"
           style={{
-            fontFamily:
-              `${displayFont}, serif`,
+            fontFamily: `${displayFont}, serif`,
           }}
         >
           {content.title}
         </h2>
 
-        <p className="opacity-80 leading-[1.9] whitespace-pre-line">
-          {body}
-        </p>
+        <p className="opacity-80 leading-[1.9] whitespace-pre-line">{body}</p>
       </div>
     </section>
   );
@@ -4217,14 +3611,13 @@ function ProductSpecsScene({
   content: any;
   displayFont: string;
 }) {
-  const rows =
-    (content.rows ?? []) as Array<{
-      label: string;
-      value: string;
-    }>;
+  useLanguage();
+  const rows = (content.rows ?? []) as Array<{
+    label: string;
+    value: string;
+  }>;
 
-  const variant =
-    content.variant || "table";
+  const variant = content.variant || "table";
 
   if (variant === "list") {
     return (
@@ -4234,8 +3627,7 @@ function ProductSpecsScene({
             <h2
               className="text-3xl md:text-5xl"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {content.title}
@@ -4252,9 +3644,7 @@ function ProductSpecsScene({
                   {row.label}
                 </div>
 
-                <div className="font-medium">
-                  {row.value}
-                </div>
+                <div className="font-medium">{row.value}</div>
               </div>
             ))}
           </div>
@@ -4267,16 +3657,14 @@ function ProductSpecsScene({
     <section
       className="py-20"
       style={{
-        background:
-          "hsl(var(--studio-surface))",
+        background: "hsl(var(--studio-surface))",
       }}
     >
       <div className="max-w-4xl mx-auto px-6">
         <h2
           className="text-3xl md:text-5xl mb-10 text-center"
           style={{
-            fontFamily:
-              `${displayFont}, serif`,
+            fontFamily: `${displayFont}, serif`,
           }}
         >
           {content.title}
@@ -4293,13 +3681,9 @@ function ProductSpecsScene({
               key={i}
               className="grid grid-cols-2 text-sm border-t first:border-t-0 border-border/30"
             >
-              <div className="p-4 opacity-60">
-                {row.label}
-              </div>
+              <div className="p-4 opacity-60">{row.label}</div>
 
-              <div className="p-4 font-medium">
-                {row.value}
-              </div>
+              <div className="p-4 font-medium">{row.value}</div>
             </div>
           ))}
         </div>
@@ -4319,18 +3703,12 @@ function ProductRelatedScene({
   displayFont: string;
   boutiqueSlug?: string;
 }) {
-  const limit = Math.max(
-    2,
-    Math.min(
-      12,
-      Number(content.limit) || 4,
-    ),
-  );
+  useLanguage();
+  const limit = Math.max(2, Math.min(12, Number(content.limit) || 4));
 
   const list = products.slice(0, limit);
 
-  const variant =
-    content.variant || "3-up";
+  const variant = content.variant || "3-up";
 
   if (variant === "carousel") {
     return (
@@ -4340,8 +3718,7 @@ function ProductRelatedScene({
             <h2
               className="text-3xl md:text-5xl"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {content.title}
@@ -4359,10 +3736,9 @@ function ProductRelatedScene({
                 <div
                   className="aspect-[4/5] rounded-xl overflow-hidden mb-3"
                   style={{
-                    background:
-                      product.image_url
-                        ? `url(${product.image_url}) center/cover`
-                        : `linear-gradient(
+                    background: product.image_url
+                      ? `url(${product.image_url}) center/cover`
+                      : `linear-gradient(
                             135deg,
                             hsl(var(--studio-primary) / 0.2),
                             hsl(var(--studio-accent) / 0.2)
@@ -4370,9 +3746,7 @@ function ProductRelatedScene({
                   }}
                 />
 
-                <h3 className="text-sm font-medium">
-                  {product.name}
-                </h3>
+                <h3 className="text-sm font-medium">{product.name}</h3>
 
                 <p className="text-sm opacity-70 mt-1">
                   {product.price.toFixed(2)} €
@@ -4397,8 +3771,7 @@ function ProductRelatedScene({
           <h2
             className="text-3xl md:text-5xl"
             style={{
-              fontFamily:
-                `${displayFont}, serif`,
+              fontFamily: `${displayFont}, serif`,
             }}
           >
             {content.title}
@@ -4422,10 +3795,9 @@ function ProductRelatedScene({
               <div
                 className="aspect-[4/5] rounded-xl overflow-hidden mb-3 transition-transform duration-300 group-hover:scale-[1.015]"
                 style={{
-                  background:
-                    product.image_url
-                      ? `url(${product.image_url}) center/cover`
-                      : `linear-gradient(
+                  background: product.image_url
+                    ? `url(${product.image_url}) center/cover`
+                    : `linear-gradient(
                           135deg,
                           hsl(var(--studio-primary) / 0.2),
                           hsl(var(--studio-accent) / 0.2)
@@ -4433,9 +3805,7 @@ function ProductRelatedScene({
                 }}
               />
 
-              <h3 className="text-sm font-medium">
-                {product.name}
-              </h3>
+              <h3 className="text-sm font-medium">{product.name}</h3>
 
               <p className="text-sm opacity-70 mt-1">
                 {product.price.toFixed(2)} €
@@ -4458,13 +3828,11 @@ function ProductSpotlightScene({
   displayFont: string;
   boutiqueSlug?: string;
 }) {
+  useLanguage();
   const product =
-    products.find(
-      (p) => p.id === content.productId,
-    ) ?? products[0];
+    products.find((p) => p.id === content.productId) ?? products[0];
 
-  const variant =
-    content.variant || "image-left";
+  const variant = content.variant || "image-left";
 
   const image = (
     <div
@@ -4475,8 +3843,7 @@ function ProductSpotlightScene({
       }
       style={{
         background:
-          (product?.image_url &&
-            `url(${product.image_url}) center/cover`) ||
+          (product?.image_url && `url(${product.image_url}) center/cover`) ||
           (content.backgroundImage &&
             `url(${content.backgroundImage}) center/cover`) ||
           `linear-gradient(
@@ -4499,26 +3866,21 @@ function ProductSpotlightScene({
       <h2
         className="text-3xl md:text-5xl mb-3"
         style={{
-          fontFamily:
-            `${displayFont}, serif`,
+          fontFamily: `${displayFont}, serif`,
         }}
       >
-        {content.title ||
-          product?.name}
+        {content.title || product?.name}
       </h2>
 
       {content.subtitle && (
-        <p className="opacity-80 mb-6">
-          {content.subtitle}
-        </p>
+        <p className="opacity-80 mb-6">{content.subtitle}</p>
       )}
 
       {product && (
         <p
           className="text-xl mb-6"
           style={{
-            color:
-              "hsl(var(--studio-primary))",
+            color: "hsl(var(--studio-primary))",
           }}
         >
           {product.price.toFixed(2)} €
@@ -4530,10 +3892,8 @@ function ProductSpotlightScene({
           href={content.ctaUrl || "#shop"}
           className="inline-block rounded-full px-7 py-3 text-sm font-medium"
           style={{
-            background:
-              "hsl(var(--studio-accent))",
-            color:
-              "hsl(var(--studio-ink))",
+            background: "hsl(var(--studio-accent))",
+            color: "hsl(var(--studio-ink))",
           }}
         >
           {content.ctaLabel}
@@ -4547,16 +3907,13 @@ function ProductSpotlightScene({
       <section
         className="py-20"
         style={{
-          background:
-            "hsl(var(--studio-surface))",
+          background: "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-5xl mx-auto px-6 text-center">
           {image}
 
-          <div className="max-w-2xl mx-auto mt-10">
-            {text}
-          </div>
+          <div className="max-w-2xl mx-auto mt-10">{text}</div>
         </div>
       </section>
     );
@@ -4567,8 +3924,7 @@ function ProductSpotlightScene({
       <section
         className="py-20"
         style={{
-          background:
-            "hsl(var(--studio-surface))",
+          background: "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
@@ -4583,8 +3939,7 @@ function ProductSpotlightScene({
     <section
       className="py-20"
       style={{
-        background:
-          "hsl(var(--studio-surface))",
+        background: "hsl(var(--studio-surface))",
       }}
     >
       <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
@@ -4602,16 +3957,15 @@ function BlogListScene({
   content: any;
   displayFont: string;
 }) {
-  const articles =
-    (content.articles ?? []) as Array<{
-      title: string;
-      excerpt: string;
-      image?: string | null;
-      url?: string;
-    }>;
+  useLanguage();
+  const articles = (content.articles ?? []) as Array<{
+    title: string;
+    excerpt: string;
+    image?: string | null;
+    url?: string;
+  }>;
 
-  const variant =
-    content.variant || "grid";
+  const variant = content.variant || "grid";
 
   const renderImage = (
     article: {
@@ -4641,17 +3995,14 @@ function BlogListScene({
             <h2
               className="text-3xl md:text-4xl"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {content.title}
             </h2>
 
             {content.subtitle && (
-              <p className="opacity-70 mt-2">
-                {content.subtitle}
-              </p>
+              <p className="opacity-70 mt-2">{content.subtitle}</p>
             )}
           </div>
 
@@ -4675,8 +4026,7 @@ function BlogListScene({
                   <h3
                     className="text-xl md:text-2xl group-hover:underline underline-offset-4"
                     style={{
-                      fontFamily:
-                        `${displayFont}, serif`,
+                      fontFamily: `${displayFont}, serif`,
                     }}
                   >
                     {article.title}
@@ -4705,17 +4055,14 @@ function BlogListScene({
             <h2
               className="text-3xl md:text-4xl"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {content.title}
             </h2>
 
             {content.subtitle && (
-              <p className="opacity-70 mt-2">
-                {content.subtitle}
-              </p>
+              <p className="opacity-70 mt-2">{content.subtitle}</p>
             )}
           </div>
 
@@ -4731,22 +4078,19 @@ function BlogListScene({
 
               <div>
                 <span className="text-[10px] uppercase tracking-[0.25em] opacity-50">
-                  À la une
+                  {translateUi("À la une")}
                 </span>
 
                 <h3
                   className="text-3xl md:text-5xl mt-3 mb-4 group-hover:underline underline-offset-4"
                   style={{
-                    fontFamily:
-                      `${displayFont}, serif`,
+                    fontFamily: `${displayFont}, serif`,
                   }}
                 >
                   {featured.title}
                 </h3>
 
-                <p className="opacity-70 leading-relaxed">
-                  {featured.excerpt}
-                </p>
+                <p className="opacity-70 leading-relaxed">{featured.excerpt}</p>
               </div>
             </a>
           )}
@@ -4754,11 +4098,7 @@ function BlogListScene({
           {remaining.length > 0 && (
             <div className="grid md:grid-cols-3 gap-6">
               {remaining.map((article, i) => (
-                <a
-                  key={i}
-                  href={article.url || undefined}
-                  className="group"
-                >
+                <a key={i} href={article.url || undefined} className="group">
                   {renderImage(
                     article,
                     "aspect-[16/10] rounded-md overflow-hidden mb-4",
@@ -4767,16 +4107,13 @@ function BlogListScene({
                   <h3
                     className="text-lg group-hover:underline underline-offset-4"
                     style={{
-                      fontFamily:
-                        `${displayFont}, serif`,
+                      fontFamily: `${displayFont}, serif`,
                     }}
                   >
                     {article.title}
                   </h3>
 
-                  <p className="text-sm opacity-70 mt-1">
-                    {article.excerpt}
-                  </p>
+                  <p className="text-sm opacity-70 mt-1">{article.excerpt}</p>
                 </a>
               ))}
             </div>
@@ -4793,17 +4130,14 @@ function BlogListScene({
           <h2
             className="text-3xl md:text-4xl"
             style={{
-              fontFamily:
-                `${displayFont}, serif`,
+              fontFamily: `${displayFont}, serif`,
             }}
           >
             {content.title}
           </h2>
 
           {content.subtitle && (
-            <p className="opacity-70 mt-2">
-              {content.subtitle}
-            </p>
+            <p className="opacity-70 mt-2">{content.subtitle}</p>
           )}
         </div>
 
@@ -4814,25 +4148,19 @@ function BlogListScene({
               href={article.url || undefined}
               className="group rounded-lg overflow-hidden border border-border/40 bg-white hover:shadow-md transition"
             >
-              {renderImage(
-                article,
-                "aspect-[16/10]",
-              )}
+              {renderImage(article, "aspect-[16/10]")}
 
               <div className="p-4">
                 <h3
                   className="font-medium group-hover:underline underline-offset-4"
                   style={{
-                    fontFamily:
-                      `${displayFont}, serif`,
+                    fontFamily: `${displayFont}, serif`,
                   }}
                 >
                   {article.title}
                 </h3>
 
-                <p className="text-sm opacity-70 mt-1">
-                  {article.excerpt}
-                </p>
+                <p className="text-sm opacity-70 mt-1">{article.excerpt}</p>
               </div>
             </a>
           ))}
@@ -4849,16 +4177,15 @@ function CartSummaryScene({
   content: any;
   displayFont: string;
 }) {
-  const variant =
-    content.variant || "full";
+  useLanguage();
+  const variant = content.variant || "full";
 
   if (variant === "compact") {
     return (
       <section
         className="py-12"
         style={{
-          background:
-            "hsl(var(--studio-surface))",
+          background: "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-xl mx-auto px-6">
@@ -4867,26 +4194,21 @@ function CartSummaryScene({
               <h2
                 className="text-xl md:text-2xl"
                 style={{
-                  fontFamily:
-                    `${displayFont}, serif`,
+                  fontFamily: `${displayFont}, serif`,
                 }}
               >
                 {content.title}
               </h2>
 
-              <p className="text-sm opacity-60 mt-1">
-                {content.emptyText}
-              </p>
+              <p className="text-sm opacity-60 mt-1">{content.emptyText}</p>
             </div>
 
             <a
               href="#shop"
               className="shrink-0 rounded-full px-5 py-2.5 text-sm font-medium"
               style={{
-                background:
-                  "hsl(var(--studio-accent))",
-                color:
-                  "hsl(var(--studio-ink))",
+                background: "hsl(var(--studio-accent))",
+                color: "hsl(var(--studio-ink))",
               }}
             >
               {content.ctaLabel}
@@ -4901,8 +4223,7 @@ function CartSummaryScene({
     <section
       className="py-20"
       style={{
-        background:
-          "hsl(var(--studio-surface))",
+        background: "hsl(var(--studio-surface))",
       }}
     >
       <div className="max-w-2xl mx-auto px-6 text-center">
@@ -4915,8 +4236,7 @@ function CartSummaryScene({
         <h2
           className="text-3xl md:text-4xl mb-6"
           style={{
-            fontFamily:
-              `${displayFont}, serif`,
+            fontFamily: `${displayFont}, serif`,
           }}
         >
           {content.title}
@@ -4926,29 +4246,21 @@ function CartSummaryScene({
           <div
             className="mx-auto mb-6 w-14 h-14 rounded-full flex items-center justify-center"
             style={{
-              background:
-                "hsl(var(--studio-primary) / 0.08)",
-              color:
-                "hsl(var(--studio-primary))",
+              background: "hsl(var(--studio-primary) / 0.08)",
+              color: "hsl(var(--studio-primary))",
             }}
           >
-            <span className="text-xl">
-              —
-            </span>
+            <span className="text-xl">—</span>
           </div>
 
-          <p className="opacity-70 mb-7">
-            {content.emptyText}
-          </p>
+          <p className="opacity-70 mb-7">{content.emptyText}</p>
 
           <a
             href="#shop"
             className="inline-block rounded-full px-7 py-3 text-sm font-medium"
             style={{
-              background:
-                "hsl(var(--studio-accent))",
-              color:
-                "hsl(var(--studio-ink))",
+              background: "hsl(var(--studio-accent))",
+              color: "hsl(var(--studio-ink))",
             }}
           >
             {content.ctaLabel}
@@ -4966,38 +4278,34 @@ function ContactFormScene({
   content: any;
   displayFont: string;
 }) {
+  useLanguage();
   const variant = content.variant || "centered";
 
   const form = (
-    <form
-      onSubmit={(e) => e.preventDefault()}
-      className="grid gap-3"
-    >
+    <form onSubmit={(e) => e.preventDefault()} className="grid gap-3">
       <input
         className="w-full rounded-md border border-border/60 px-4 py-3 text-sm bg-white"
-        placeholder="Votre nom"
+        placeholder={translateUi("Votre nom")}
       />
 
       <input
         type="email"
         className="w-full rounded-md border border-border/60 px-4 py-3 text-sm bg-white"
-        placeholder="Votre email"
+        placeholder={translateUi("Votre email")}
       />
 
       <textarea
         rows={6}
         className="w-full rounded-md border border-border/60 px-4 py-3 text-sm bg-white resize-none"
-        placeholder="Votre message"
+        placeholder={translateUi("Votre message")}
       />
 
       <button
         type="submit"
         className="rounded-full px-7 py-3 text-sm font-medium w-fit"
         style={{
-          background:
-            "hsl(var(--studio-accent))",
-          color:
-            "hsl(var(--studio-ink))",
+          background: "hsl(var(--studio-accent))",
+          color: "hsl(var(--studio-ink))",
         }}
       >
         {content.ctaLabel}
@@ -5007,11 +4315,9 @@ function ContactFormScene({
 
   const contactDetails = (
     <>
-      {(
-        content.contactEmail ||
+      {(content.contactEmail ||
         content.contactPhone ||
-        content.contactAddress
-      ) && (
+        content.contactAddress) && (
         <div className="grid sm:grid-cols-3 gap-4 text-sm opacity-80">
           {content.contactEmail && (
             <div>
@@ -5025,7 +4331,7 @@ function ContactFormScene({
           {content.contactPhone && (
             <div>
               <p className="text-[10px] uppercase tracking-[0.2em] opacity-50 mb-1">
-                Téléphone
+                {translateUi("Téléphone")}
               </p>
               <p>{content.contactPhone}</p>
             </div>
@@ -5034,7 +4340,7 @@ function ContactFormScene({
           {content.contactAddress && (
             <div>
               <p className="text-[10px] uppercase tracking-[0.2em] opacity-50 mb-1">
-                Adresse
+                {translateUi("Adresse")}
               </p>
               <p>{content.contactAddress}</p>
             </div>
@@ -5050,8 +4356,7 @@ function ContactFormScene({
         id="contact"
         className="py-20"
         style={{
-          background:
-            "hsl(var(--studio-surface))",
+          background: "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-start">
@@ -5065,8 +4370,7 @@ function ContactFormScene({
             <h2
               className="text-4xl md:text-5xl leading-tight mb-4"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {content.title}
@@ -5094,8 +4398,7 @@ function ContactFormScene({
       id="contact"
       className="py-20"
       style={{
-        background:
-          "hsl(var(--studio-surface))",
+        background: "hsl(var(--studio-surface))",
       }}
     >
       <div className="max-w-3xl mx-auto px-6">
@@ -5109,8 +4412,7 @@ function ContactFormScene({
           <h2
             className="text-3xl md:text-5xl"
             style={{
-              fontFamily:
-                `${displayFont}, serif`,
+              fontFamily: `${displayFont}, serif`,
             }}
           >
             {content.title}
@@ -5127,9 +4429,7 @@ function ContactFormScene({
           {form}
         </div>
 
-        <div className="mt-8 text-center">
-          {contactDetails}
-        </div>
+        <div className="mt-8 text-center">{contactDetails}</div>
       </div>
     </section>
   );
@@ -5142,16 +4442,15 @@ function TeamGridScene({
   content: any;
   displayFont: string;
 }) {
-  const members =
-    (content.members ?? []) as Array<{
-      name: string;
-      role: string;
-      photo?: string | null;
-      bio?: string;
-    }>;
+  useLanguage();
+  const members = (content.members ?? []) as Array<{
+    name: string;
+    role: string;
+    photo?: string | null;
+    bio?: string;
+  }>;
 
-  const variant =
-    content.variant || "3-up";
+  const variant = content.variant || "3-up";
 
   const renderMember = (
     member: {
@@ -5162,16 +4461,13 @@ function TeamGridScene({
     },
     index: number,
   ) => {
-    const isCircle =
-      variant === "circle";
+    const isCircle = variant === "circle";
 
     return (
       <article
         key={index}
         className={`text-center ${
-          isCircle
-            ? "flex flex-col items-center"
-            : ""
+          isCircle ? "flex flex-col items-center" : ""
         }`}
       >
         <div
@@ -5194,8 +4490,7 @@ function TeamGridScene({
         <h3
           className="text-lg"
           style={{
-            fontFamily:
-              `${displayFont}, serif`,
+            fontFamily: `${displayFont}, serif`,
           }}
         >
           {member.name}
@@ -5219,8 +4514,7 @@ function TeamGridScene({
       <section
         className="py-16"
         style={{
-          background:
-            "hsl(var(--studio-surface))",
+          background: "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-6xl mx-auto px-6">
@@ -5228,8 +4522,7 @@ function TeamGridScene({
             <h2
               className="text-3xl md:text-4xl"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {content.title}
@@ -5258,8 +4551,7 @@ function TeamGridScene({
             <h2
               className="text-3xl md:text-5xl"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {content.title}
@@ -5284,8 +4576,7 @@ function TeamGridScene({
     <section
       className="py-16"
       style={{
-        background:
-          "hsl(var(--studio-surface))",
+        background: "hsl(var(--studio-surface))",
       }}
     >
       <div className="max-w-6xl mx-auto px-6">
@@ -5293,8 +4584,7 @@ function TeamGridScene({
           <h2
             className="text-3xl md:text-4xl"
             style={{
-              fontFamily:
-                `${displayFont}, serif`,
+              fontFamily: `${displayFont}, serif`,
             }}
           >
             {content.title}
@@ -5324,18 +4614,17 @@ function PricingTableScene({
   displayFont: string;
   boutiqueSlug?: string;
 }) {
-  const plans =
-    (content.plans ?? []) as Array<{
-      name: string;
-      price: string;
-      period?: string;
-      features: string[];
-      cta?: string;
-      featured?: boolean;
-    }>;
+  useLanguage();
+  const plans = (content.plans ?? []) as Array<{
+    name: string;
+    price: string;
+    period?: string;
+    features: string[];
+    cta?: string;
+    featured?: boolean;
+  }>;
 
-  const variant =
-    content.variant || "3-cols";
+  const variant = content.variant || "3-cols";
 
   const renderPlan = (
     plan: {
@@ -5351,91 +4640,70 @@ function PricingTableScene({
     <article
       key={index}
       className={`rounded-xl border p-6 md:p-7 flex flex-col ${
-        plan.featured
-          ? "ring-2"
-          : ""
+        plan.featured ? "ring-2" : ""
       }`}
       style={{
         background: "white",
         borderColor: plan.featured
           ? "hsl(var(--studio-accent))"
           : "hsl(var(--studio-ink) / 0.1)",
-        ["--tw-ring-color" as any]:
-          "hsl(var(--studio-accent))",
+        ["--tw-ring-color" as any]: "hsl(var(--studio-accent))",
       }}
     >
       {plan.featured && (
         <p
           className="text-[10px] uppercase tracking-[0.2em] mb-3"
           style={{
-            color:
-              "hsl(var(--studio-primary))",
+            color: "hsl(var(--studio-primary))",
           }}
         >
-          Recommandé
+          {translateUi("Recommandé")}
         </p>
       )}
 
       <h3
         className="text-xl md:text-2xl mb-2"
         style={{
-          fontFamily:
-            `${displayFont}, serif`,
+          fontFamily: `${displayFont}, serif`,
         }}
       >
         {plan.name}
       </h3>
 
       <div className="mb-6">
-        <span className="text-3xl md:text-4xl font-semibold">
-          {plan.price}
-        </span>
+        <span className="text-3xl md:text-4xl font-semibold">{plan.price}</span>
 
         {plan.period && (
-          <span className="opacity-60 text-sm ml-1">
-            {plan.period}
-          </span>
+          <span className="opacity-60 text-sm ml-1">{plan.period}</span>
         )}
       </div>
 
       <ul className="space-y-2 text-sm flex-1">
-        {plan.features.map(
-          (feature, featureIndex) => (
-            <li
-              key={featureIndex}
-              className="flex gap-2"
+        {plan.features.map((feature, featureIndex) => (
+          <li key={featureIndex} className="flex gap-2">
+            <span
+              aria-hidden="true"
+              style={{
+                color: "hsl(var(--studio-primary))",
+              }}
             >
-              <span
-                aria-hidden="true"
-                style={{
-                  color:
-                    "hsl(var(--studio-primary))",
-                }}
-              >
-                ✓
-              </span>
+              ✓
+            </span>
 
-              <span>{feature}</span>
-            </li>
-          ),
-        )}
+            <span>{feature}</span>
+          </li>
+        ))}
       </ul>
 
       {plan.cta && (
         <a
-          href={
-            boutiqueSlug
-              ? `/boutique/${boutiqueSlug}/products`
-              : "/store"
-          }
+          href={boutiqueSlug ? `/boutique/${boutiqueSlug}/products` : "/store"}
           className="mt-7 rounded-full px-5 py-3 text-sm font-medium text-center"
           style={{
             background: plan.featured
               ? "hsl(var(--studio-accent))"
               : "hsl(var(--studio-primary))",
-            color: plan.featured
-              ? "hsl(var(--studio-ink))"
-              : "white",
+            color: plan.featured ? "hsl(var(--studio-ink))" : "white",
           }}
         >
           {plan.cta}
@@ -5452,8 +4720,7 @@ function PricingTableScene({
             <h2
               className="text-3xl md:text-5xl"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {content.title}
@@ -5482,8 +4749,7 @@ function PricingTableScene({
             <h2
               className="text-3xl md:text-4xl"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {content.title}
@@ -5511,8 +4777,7 @@ function PricingTableScene({
           <h2
             className="text-3xl md:text-5xl"
             style={{
-              fontFamily:
-                `${displayFont}, serif`,
+              fontFamily: `${displayFont}, serif`,
             }}
           >
             {content.title}
@@ -5540,15 +4805,13 @@ function ImageTextSplitScene({
   content: any;
   displayFont: string;
 }) {
-  const variant =
-    content.variant || "image-left";
+  useLanguage();
+  const variant = content.variant || "image-left";
 
   const image = (
     <div
       className={`overflow-hidden rounded-lg ${
-        variant === "image-top"
-          ? "aspect-[16/9]"
-          : "aspect-[4/5]"
+        variant === "image-top" ? "aspect-[16/9]" : "aspect-[4/5]"
       }`}
       style={{
         background: content.image
@@ -5573,8 +4836,7 @@ function ImageTextSplitScene({
       <h2
         className="text-3xl md:text-5xl leading-tight mb-4"
         style={{
-          fontFamily:
-            `${displayFont}, serif`,
+          fontFamily: `${displayFont}, serif`,
         }}
       >
         {content.title}
@@ -5591,10 +4853,8 @@ function ImageTextSplitScene({
           href={content.ctaUrl}
           className="inline-block rounded-full px-6 py-2.5 text-sm font-medium"
           style={{
-            background:
-              "hsl(var(--studio-accent))",
-            color:
-              "hsl(var(--studio-ink))",
+            background: "hsl(var(--studio-accent))",
+            color: "hsl(var(--studio-ink))",
           }}
         >
           {content.ctaLabel}
@@ -5609,9 +4869,7 @@ function ImageTextSplitScene({
         <div className="max-w-5xl mx-auto px-6">
           {image}
 
-          <div className="max-w-3xl mx-auto text-center mt-10">
-            {text}
-          </div>
+          <div className="max-w-3xl mx-auto text-center mt-10">{text}</div>
         </div>
       </section>
     );
@@ -5645,23 +4903,21 @@ function TimelineScene({
   content: any;
   displayFont: string;
 }) {
-  const events =
-    (content.events ?? []) as Array<{
-      year: string;
-      title: string;
-      body: string;
-    }>;
+  useLanguage();
+  const events = (content.events ?? []) as Array<{
+    year: string;
+    title: string;
+    body: string;
+  }>;
 
-  const variant =
-    content.variant || "vertical";
+  const variant = content.variant || "vertical";
 
   if (variant === "horizontal") {
     return (
       <section
         className="py-20 overflow-hidden"
         style={{
-          background:
-            "hsl(var(--studio-surface))",
+          background: "hsl(var(--studio-surface))",
         }}
       >
         <div className="max-w-6xl mx-auto px-6">
@@ -5669,8 +4925,7 @@ function TimelineScene({
             <h2
               className="text-3xl md:text-5xl"
               style={{
-                fontFamily:
-                  `${displayFont}, serif`,
+                fontFamily: `${displayFont}, serif`,
               }}
             >
               {content.title}
@@ -5688,8 +4943,7 @@ function TimelineScene({
                     <span
                       className="w-4 h-4 rounded-full shrink-0 relative z-10"
                       style={{
-                        background:
-                          "hsl(var(--studio-accent))",
+                        background: "hsl(var(--studio-accent))",
                       }}
                     />
 
@@ -5697,8 +4951,7 @@ function TimelineScene({
                       <div
                         className="h-px flex-1"
                         style={{
-                          background:
-                            "hsl(var(--studio-accent) / 0.45)",
+                          background: "hsl(var(--studio-accent) / 0.45)",
                         }}
                       />
                     )}
@@ -5711,8 +4964,7 @@ function TimelineScene({
                   <h3
                     className="text-xl md:text-2xl mb-2"
                     style={{
-                      fontFamily:
-                        `${displayFont}, serif`,
+                      fontFamily: `${displayFont}, serif`,
                     }}
                   >
                     {event.title}
@@ -5734,8 +4986,7 @@ function TimelineScene({
     <section
       className="py-20"
       style={{
-        background:
-          "hsl(var(--studio-surface))",
+        background: "hsl(var(--studio-surface))",
       }}
     >
       <div className="max-w-3xl mx-auto px-6">
@@ -5743,8 +4994,7 @@ function TimelineScene({
           <h2
             className="text-3xl md:text-5xl"
             style={{
-              fontFamily:
-                `${displayFont}, serif`,
+              fontFamily: `${displayFont}, serif`,
             }}
           >
             {content.title}
@@ -5754,22 +5004,16 @@ function TimelineScene({
         <ol
           className="relative border-l-2 pl-8 space-y-10"
           style={{
-            borderColor:
-              "hsl(var(--studio-accent))",
+            borderColor: "hsl(var(--studio-accent))",
           }}
         >
           {events.map((event, i) => (
-            <li
-              key={i}
-              className="relative"
-            >
+            <li key={i} className="relative">
               <span
                 className="absolute -left-[41px] top-1 w-5 h-5 rounded-full border-4"
                 style={{
-                  background:
-                    "hsl(var(--studio-accent))",
-                  borderColor:
-                    "hsl(var(--studio-surface))",
+                  background: "hsl(var(--studio-accent))",
+                  borderColor: "hsl(var(--studio-surface))",
                 }}
               />
 
@@ -5780,16 +5024,13 @@ function TimelineScene({
               <h3
                 className="text-xl md:text-2xl mt-1"
                 style={{
-                  fontFamily:
-                    `${displayFont}, serif`,
+                  fontFamily: `${displayFont}, serif`,
                 }}
               >
                 {event.title}
               </h3>
 
-              <p className="opacity-80 mt-2 leading-relaxed">
-                {event.body}
-              </p>
+              <p className="opacity-80 mt-2 leading-relaxed">{event.body}</p>
             </li>
           ))}
         </ol>
@@ -5805,8 +5046,8 @@ function MapLocationScene({
   content: any;
   displayFont: string;
 }) {
-  const variant =
-    content.variant || "split";
+  useLanguage();
+  const variant = content.variant || "split";
 
   const map = (
     <div className="aspect-[4/3] md:aspect-[16/10] rounded-xl overflow-hidden border border-border/40">
@@ -5816,17 +5057,16 @@ function MapLocationScene({
           className="w-full h-full"
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
-          title="Carte"
+          title={translateUi("Carte")}
         />
       ) : (
         <div
           className="w-full h-full flex items-center justify-center text-sm opacity-60"
           style={{
-            background:
-              "hsl(var(--studio-surface))",
+            background: "hsl(var(--studio-surface))",
           }}
         >
-          (Ajoute une URL d'intégration Google Maps)
+          {translateUi("(Ajoute une URL d'intégration Google Maps)")}
         </div>
       )}
     </div>
@@ -5843,21 +5083,18 @@ function MapLocationScene({
       <h2
         className="text-3xl md:text-5xl mb-4"
         style={{
-          fontFamily:
-            `${displayFont}, serif`,
+          fontFamily: `${displayFont}, serif`,
         }}
       >
         {content.title}
       </h2>
 
-      <p className="opacity-80 leading-relaxed">
-        {content.address}
-      </p>
+      <p className="opacity-80 leading-relaxed">{content.address}</p>
 
       {content.hours && (
         <div className="mt-5">
           <p className="text-[10px] uppercase tracking-[0.2em] opacity-50 mb-1">
-            Horaires
+            {translateUi("Horaires")}
           </p>
 
           <p className="opacity-70 text-sm whitespace-pre-line">
@@ -5886,8 +5123,7 @@ function MapLocationScene({
     <section
       className="py-20"
       style={{
-        background:
-          "hsl(var(--studio-surface))",
+        background: "hsl(var(--studio-surface))",
       }}
     >
       <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 md:gap-14 items-center">

@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useMemo, useState } from "react";
 import {
   ListChecks,
@@ -19,7 +21,11 @@ import type { ProductWithSupplier } from "@/hooks/useProducts";
 type Boutique = Tables<"boutiques">;
 
 type Severity = "high" | "medium" | "low";
-type Category = "duplicate-title" | "missing-meta" | "missing-og" | "short-title";
+type Category =
+  | "duplicate-title"
+  | "missing-meta"
+  | "missing-og"
+  | "short-title";
 
 interface SeoIssue {
   id: string;
@@ -36,22 +42,30 @@ const CATEGORY_META: Record<
   { title: string; icon: typeof FileText; tone: "warn" | "error" }
 > = {
   "duplicate-title": {
-    title: "Titres dupliqués",
+    get title() {
+      return translateUi("Titres dupliqués");
+    },
     icon: CopyIcon,
     tone: "error",
   },
   "missing-meta": {
-    title: "Meta description manquante",
+    get title() {
+      return translateUi("Meta description manquante");
+    },
     icon: FileText,
     tone: "warn",
   },
   "missing-og": {
-    title: "Image Open Graph absente",
+    get title() {
+      return translateUi("Image Open Graph absente");
+    },
     icon: ImageIcon,
     tone: "error",
   },
   "short-title": {
-    title: "Titre trop court",
+    get title() {
+      return translateUi("Titre trop court");
+    },
     icon: AlertTriangle,
     tone: "warn",
   },
@@ -96,7 +110,10 @@ function detectIssues(
         category: "duplicate-title",
         severity: "high",
         label: b.name,
-        detail: `Partagé avec ${dupGroup.length - 1} autre(s) boutique(s) — Google ne saura pas laquelle indexer.`,
+        detail: translateUi(
+          "Partagé avec {v0} autre(s) boutique(s) — Google ne saura pas laquelle indexer.",
+          { v0: dupGroup.length - 1 },
+        ),
         fixHref: `/dashboard/boutique/${b.id}`,
         fixLabel: "Renommer la boutique",
       });
@@ -122,7 +139,9 @@ function detectIssues(
         category: "missing-og",
         severity: "high",
         label: b.name,
-        detail: "Aucune image de couverture ni logo — pas d'aperçu social (Facebook, WhatsApp, X).",
+        detail: translateUi(
+          "Aucune image de couverture ni logo — pas d'aperçu social (Facebook, WhatsApp, X).",
+        ),
         fixHref: `/dashboard/boutique/${b.id}`,
         fixLabel: "Ajouter une image",
       });
@@ -134,7 +153,10 @@ function detectIssues(
         category: "short-title",
         severity: "low",
         label: b.name,
-        detail: `Titre court (${b.name.length}/20 min recommandé pour le SEO).`,
+        detail: translateUi(
+          "Titre court ({v0}/20 min recommandé pour le SEO).",
+          { v0: b.name.length },
+        ),
         fixHref: `/dashboard/boutique/${b.id}`,
         fixLabel: "Renommer la boutique",
       });
@@ -153,7 +175,9 @@ function detectIssues(
         category: "missing-og",
         severity: "high",
         label: sp.name || "Produit",
-        detail: "Image produit manquante — bloque l'affichage social et l'aperçu Google Shopping.",
+        detail: translateUi(
+          "Image produit manquante — bloque l'affichage social et l'aperçu Google Shopping.",
+        ),
         fixHref: `/dashboard/catalogue`,
         fixLabel: "Ouvrir le catalogue",
       });
@@ -178,6 +202,7 @@ function detectIssues(
 }
 
 export function SeoFixChecklist({ boutiques, products }: Props) {
+  useLanguage();
   const [activeCategory, setActiveCategory] = useState<Category | "all">("all");
 
   const issues = useMemo(
@@ -204,13 +229,16 @@ export function SeoFixChecklist({ boutiques, products }: Props) {
   return (
     <SectionCard
       className="mt-6"
-      title="Checklist SEO — corriger les alertes"
-      description="Pour chaque alerte, un lien direct vers la page à éditer."
+      title={translateUi("Checklist SEO — corriger les alertes")}
+      description={translateUi(
+        "Pour chaque alerte, un lien direct vers la page à éditer.",
+      )}
       icon={<ListChecks className="w-4 h-4 text-secondary" />}
       actions={
         <Link to="/dashboard/seo-analytics">
           <Button variant="outline" size="sm" className="gap-1.5">
-            Audit complet <ExternalLink className="w-3.5 h-3.5" />
+            {translateUi("Audit complet") + " "}
+            <ExternalLink className="w-3.5 h-3.5" />
           </Button>
         </Link>
       }
@@ -220,10 +248,12 @@ export function SeoFixChecklist({ boutiques, products }: Props) {
           <CheckCircle2 className="w-6 h-6 text-success shrink-0" />
           <div>
             <p className="text-sm font-semibold text-foreground">
-              Tous vos contenus sont conformes 🎉
+              {translateUi("Tous vos contenus sont conformes 🎉")}
             </p>
             <p className="text-xs text-muted-foreground">
-              Aucun titre dupliqué, ni meta ni image OG manquante détectés.
+              {translateUi(
+                "Aucun titre dupliqué, ni meta ni image OG manquante détectés.",
+              )}
             </p>
           </div>
         </div>
@@ -239,7 +269,8 @@ export function SeoFixChecklist({ boutiques, products }: Props) {
                   : "border-border text-muted-foreground hover:bg-muted/50"
               }`}
             >
-              Tout · {issues.length}
+              {translateUi("Tout ·") + " "}
+              {issues.length}
             </button>
             {(Object.keys(CATEGORY_META) as Category[]).map((cat) => {
               const count = grouped[cat].length;
@@ -290,10 +321,10 @@ export function SeoFixChecklist({ boutiques, products }: Props) {
                         className={`text-[9px] py-0 h-4 ${SEVERITY_BADGE[issue.severity]}`}
                       >
                         {issue.severity === "high"
-                          ? "Critique"
+                          ? translateUi("Critique")
                           : issue.severity === "medium"
-                          ? "Modéré"
-                          : "Faible"}
+                            ? translateUi("Modéré")
+                            : translateUi("Faible")}
                       </Badge>
                       <Badge
                         variant="outline"
@@ -322,7 +353,7 @@ export function SeoFixChecklist({ boutiques, products }: Props) {
 
             {visible.length === 0 && (
               <p className="text-xs text-muted-foreground text-center py-6">
-                Aucune alerte dans cette catégorie.
+                {translateUi("Aucune alerte dans cette catégorie.")}
               </p>
             )}
           </div>

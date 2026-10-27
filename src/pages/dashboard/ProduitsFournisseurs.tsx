@@ -1,14 +1,49 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Search, Plus, Calculator, ShieldCheck, Grid3X3, List, LayoutGrid, SlidersHorizontal, X, ChevronDown, ChevronUp, Eye, Heart, Package, Sparkles, TrendingUp } from "lucide-react";
-import { useMemo, useState } from "react";
-import { useSupplierProducts, useSupplierProductsRealtime } from "@/hooks/useSupplierProducts";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Search,
+  Plus,
+  Calculator,
+  ShieldCheck,
+  Grid3X3,
+  List,
+  LayoutGrid,
+  SlidersHorizontal,
+  X,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  Heart,
+  Package,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  useSupplierProducts,
+  useSupplierProductsRealtime,
+} from "@/hooks/useSupplierProducts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { ProductDetailDialog } from "@/components/dashboard/ProductDetailDialog";
@@ -23,21 +58,61 @@ import {
   EmptyState,
   RealtimeStatusPill,
 } from "@/components/dashboard/shared";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 type SupplierProduct = Tables<"supplier_products">;
 type RotationIndicator = "green" | "yellow" | "orange" | "red";
 
-const rotationConfig: Record<RotationIndicator, { label: string; badgeLabel: string; color: string; badgeClass: string }> = {
-  green: { label: "Demande Marché Élevée", badgeLabel: "Demande Élevée", color: "bg-success", badgeClass: "bg-success/15 text-success border-success/30" },
-  yellow: { label: "Demande Marché Modérée", badgeLabel: "Demande Modérée", color: "bg-warning", badgeClass: "bg-warning/15 text-warning border-warning/30" },
-  orange: { label: "Demande Marché Faible", badgeLabel: "Demande Faible", color: "bg-warning", badgeClass: "bg-warning/15 text-warning border-warning/30" },
-  red: { label: "Produit Très Utilisé", badgeLabel: "Très Utilisé", color: "bg-destructive", badgeClass: "bg-info/15 text-info border-info/30" },
+const rotationConfig: Record<
+  RotationIndicator,
+  { label: string; badgeLabel: string; color: string; badgeClass: string }
+> = {
+  green: {
+    get label() {
+      return translateUi("Demande Marché Élevée");
+    },
+    badgeLabel: "Demande Élevée",
+    color: "bg-success",
+    badgeClass: "bg-success/15 text-success-ink border-success/30",
+  },
+  yellow: {
+    get label() {
+      return translateUi("Demande Marché Modérée");
+    },
+    badgeLabel: "Demande Modérée",
+    color: "bg-warning",
+    badgeClass: "bg-warning/15 text-warning-ink border-warning/30",
+  },
+  orange: {
+    get label() {
+      return translateUi("Demande Marché Faible");
+    },
+    badgeLabel: "Demande Faible",
+    color: "bg-warning",
+    badgeClass: "bg-warning/15 text-warning-ink border-warning/30",
+  },
+  red: {
+    get label() {
+      return translateUi("Produit Très Utilisé");
+    },
+    badgeLabel: "Très Utilisé",
+    color: "bg-destructive",
+    badgeClass: "bg-info/15 text-info-ink border-info/30",
+  },
 };
 
-const CATEGORIES = ["Éco", "Maison", "Bien-être", "Santé", "Technologies", "Mode", "Kids"];
+const CATEGORIES = [
+  "Éco",
+  "Maison",
+  "Bien-être",
+  "Santé",
+  "Technologies",
+  "Mode",
+  "Kids",
+];
 
 function MarginSimulator({ product }: { product: SupplierProduct }) {
+  useLanguage();
   const [margin, setMargin] = useState(20);
   const sellingPrice = product.base_price * (1 + margin / 100);
   const profit = sellingPrice - product.base_price;
@@ -47,23 +122,38 @@ function MarginSimulator({ product }: { product: SupplierProduct }) {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1">
           <Calculator className="w-3 h-3" />
-          <span className="hidden sm:inline text-xs">Marge</span>
+          <span className="hidden sm:inline text-xs">
+            {translateUi("Marge")}
+          </span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-[95vw] sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-base">Simulateur de marge</DialogTitle>
-          <DialogDescription className="text-xs">{product.name}</DialogDescription>
+          <DialogTitle className="text-base">
+            {translateUi("Simulateur de marge")}
+          </DialogTitle>
+          <DialogDescription className="text-xs">
+            {product.name}
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-5 py-3">
           <div>
-            <label className="text-xs text-muted-foreground">Prix de base (logistique incluse)</label>
-            <p className="text-xl font-bold">{product.base_price.toFixed(2)} €</p>
+            <label className="text-xs text-muted-foreground">
+              {translateUi("Prix de base (logistique incluse)")}
+            </label>
+            <p className="text-xl font-bold">
+              {product.base_price.toFixed(2)} €
+            </p>
           </div>
           <div>
-            <label className="text-xs text-muted-foreground">Marge appliquée (max {product.max_margin_percent}%)</label>
+            <label className="text-xs text-muted-foreground">
+              {translateUi("Marge appliquée (max") + " "}
+              {product.max_margin_percent}%)
+            </label>
             <Slider
-              min={0} max={product.max_margin_percent} step={1}
+              min={0}
+              max={product.max_margin_percent}
+              step={1}
               value={[margin]}
               onValueChange={([v]) => setMargin(v)}
               className="mt-3"
@@ -72,12 +162,20 @@ function MarginSimulator({ product }: { product: SupplierProduct }) {
           </div>
           <div className="grid grid-cols-2 gap-3 pt-3 border-t">
             <div>
-              <label className="text-xs text-muted-foreground">Prix de vente</label>
-              <p className="text-lg font-bold text-primary">{sellingPrice.toFixed(2)} €</p>
+              <label className="text-xs text-muted-foreground">
+                {translateUi("Prix de vente")}
+              </label>
+              <p className="text-lg font-bold text-primary">
+                {sellingPrice.toFixed(2)} €
+              </p>
             </div>
             <div>
-              <label className="text-xs text-muted-foreground">Profit par unité</label>
-              <p className="text-lg font-bold text-success">+{profit.toFixed(2)} €</p>
+              <label className="text-xs text-muted-foreground">
+                {translateUi("Profit par unité")}
+              </label>
+              <p className="text-lg font-bold text-success-ink">
+                +{profit.toFixed(2)} €
+              </p>
             </div>
           </div>
         </div>
@@ -88,6 +186,7 @@ function MarginSimulator({ product }: { product: SupplierProduct }) {
 
 /* Inline margin calculator for grid cards */
 function InlineMarginCalc({ product }: { product: SupplierProduct }) {
+  useLanguage();
   const [margin, setMargin] = useState(20);
   const sellingPrice = product.base_price * (1 + margin / 100);
   const profit = sellingPrice - product.base_price;
@@ -95,18 +194,32 @@ function InlineMarginCalc({ product }: { product: SupplierProduct }) {
   return (
     <div className="px-3 pb-3 space-y-2 border-t border-border/50 pt-2">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] text-muted-foreground">Marge: {margin}%</span>
-        <span className="text-[10px] font-mono text-success">+{profit.toFixed(2)} €</span>
+        <span className="text-[10px] text-muted-foreground">
+          {translateUi("Marge:") + " "}
+          {margin}%
+        </span>
+        <span className="text-[10px] font-mono text-success-ink">
+          +{profit.toFixed(2)} €
+        </span>
       </div>
       <Slider
-        min={0} max={product.max_margin_percent} step={1}
+        min={0}
+        max={product.max_margin_percent}
+        step={1}
         value={[margin]}
         onValueChange={([v]) => setMargin(v)}
         className="h-1"
       />
       <div className="flex justify-between text-[10px]">
-        <span className="text-muted-foreground">Vente: <span className="font-semibold text-foreground">{sellingPrice.toFixed(2)} €</span></span>
-        <span className="text-muted-foreground">Max {product.max_margin_percent}%</span>
+        <span className="text-muted-foreground">
+          {translateUi("Vente:") + " "}
+          <span className="font-semibold text-foreground">
+            {sellingPrice.toFixed(2)} €
+          </span>
+        </span>
+        <span className="text-muted-foreground">
+          Max {product.max_margin_percent}%
+        </span>
       </div>
     </div>
   );
@@ -115,6 +228,7 @@ function InlineMarginCalc({ product }: { product: SupplierProduct }) {
 type ViewMode = "grid" | "list";
 
 export default function ProduitsFournisseurs() {
+  useLanguage();
   const { data: supplierProducts, isLoading } = useSupplierProducts();
   useSupplierProductsRealtime();
   const { favorites, isFavorite, toggleFavorite } = useFavorites();
@@ -127,22 +241,34 @@ export default function ProduitsFournisseurs() {
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   const toggleCategory = (cat: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+    setSelectedCategories((prev) =>
+      prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat],
     );
   };
 
   const products = supplierProducts || [];
-  const categoryCounts = CATEGORIES.map(cat => ({
+  const [params] = useSearchParams();
+  const reference = params.get("reference");
+  const categoryCounts = CATEGORIES.map((cat) => ({
     name: cat,
-    count: products.filter(p => p.category.toLowerCase() === cat.toLowerCase()).length,
+    count: products.filter(
+      (p) => p.category.toLowerCase() === cat.toLowerCase(),
+    ).length,
   }));
 
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategories.length === 0 ||
-      selectedCategories.some(cat => product.category.toLowerCase() === cat.toLowerCase());
-    const matchesPrice = product.base_price >= priceRange[0] && product.base_price <= priceRange[1];
+  const filteredProducts = products.filter((product) => {
+    if (reference && product.id === reference) return true;
+    const matchesSearch = product.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      selectedCategories.length === 0 ||
+      selectedCategories.some(
+        (cat) => product.category.toLowerCase() === cat.toLowerCase(),
+      );
+    const matchesPrice =
+      product.base_price >= priceRange[0] &&
+      product.base_price <= priceRange[1];
     const matchesFavorite = !showFavoritesOnly || isFavorite(product.id);
     return matchesSearch && matchesCategory && matchesPrice && matchesFavorite;
   });
@@ -151,20 +277,35 @@ export default function ProduitsFournisseurs() {
     if (sortBy === "price-asc") return a.base_price - b.base_price;
     if (sortBy === "price-desc") return b.base_price - a.base_price;
     if (sortBy === "margin") return b.max_margin_percent - a.max_margin_percent;
-    const rotOrder: Record<string, number> = { green: 0, yellow: 1, orange: 2, red: 3 };
-    return (rotOrder[a.rotation_indicator] || 3) - (rotOrder[b.rotation_indicator] || 3);
+    const rotOrder: Record<string, number> = {
+      green: 0,
+      yellow: 1,
+      orange: 2,
+      red: 3,
+    };
+    return (
+      (rotOrder[a.rotation_indicator] || 3) -
+      (rotOrder[b.rotation_indicator] || 3)
+    );
   });
 
-  const activeFilterCount = selectedCategories.length + (priceRange[0] > 0 || priceRange[1] < 100 ? 1 : 0);
+  const activeFilterCount =
+    selectedCategories.length +
+    (priceRange[0] > 0 || priceRange[1] < 100 ? 1 : 0);
 
   // Catalogue KPIs (computed on full list, not on filtered view)
   const catalogueKpis = useMemo(() => {
     const all = products;
     const total = all.length;
-    const highDemand = all.filter((p) => p.rotation_indicator === "green").length;
-    const avgMargin = total > 0
-      ? Math.round(all.reduce((s, p) => s + (p.max_margin_percent || 0), 0) / total)
-      : 0;
+    const highDemand = all.filter(
+      (p) => p.rotation_indicator === "green",
+    ).length;
+    const avgMargin =
+      total > 0
+        ? Math.round(
+            all.reduce((s, p) => s + (p.max_margin_percent || 0), 0) / total,
+          )
+        : 0;
     const favoritesCount = favorites.length;
     return { total, highDemand, avgMargin, favoritesCount };
   }, [products, favorites]);
@@ -172,9 +313,11 @@ export default function ProduitsFournisseurs() {
   return (
     <DashboardLayout>
       <PageHeader
-        eyebrow="Catalogue fournisseur"
-        title="Produits validés"
-        subtitle="Sélectionnez les produits adaptés à votre vision et à la demande du marché."
+        eyebrow={translateUi("Catalogue fournisseur")}
+        title={translateUi("Produits validés")}
+        subtitle={translateUi(
+          "Sélectionnez les produits adaptés à votre vision et à la demande du marché.",
+        )}
         actions={<RealtimeStatusPill status="live" />}
       />
 
@@ -190,24 +333,24 @@ export default function ProduitsFournisseurs() {
         ) : (
           <>
             <KpiTile
-              label="Produits"
+              label={translateUi("Produits")}
               value={catalogueKpis.total}
               icon={<Package className="w-4 h-4" />}
-              hint="Pré-validés"
+              hint={translateUi("Pré-validés")}
             />
             <KpiTile
-              label="Demande élevée"
+              label={translateUi("Demande élevée")}
               value={catalogueKpis.highDemand}
               icon={<TrendingUp className="w-4 h-4" />}
-              hint="Indicateur vert"
+              hint={translateUi("Indicateur vert")}
             />
             <KpiTile
-              label="Marge max moy."
+              label={translateUi("Marge max moy.")}
               value={`${catalogueKpis.avgMargin}%`}
               icon={<Calculator className="w-4 h-4" />}
             />
             <KpiTile
-              label="Favoris"
+              label={translateUi("Favoris")}
               value={catalogueKpis.favoritesCount}
               tone="gold"
               icon={<Heart className="w-4 h-4" />}
@@ -222,16 +365,27 @@ export default function ProduitsFournisseurs() {
           <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-primary mt-0.5 shrink-0" />
           <div>
             <p className="text-xs sm:text-sm text-foreground">
-              <span className="font-semibold">Vos choix impactent vos </span>
-              <span className="font-bold text-primary">résultats.</span>
-              <span className="hidden sm:inline"> Sélectionnez uniquement les produits adaptés à votre vision et à la demande marché.</span>
+              <span className="font-semibold">
+                {translateUi("Vos choix impactent vos") + " "}
+              </span>
+              <span className="font-bold text-primary">
+                {translateUi("résultats.")}
+              </span>
+              <span className="hidden sm:inline">
+                {" "}
+                {translateUi(
+                  "Sélectionnez uniquement les produits adaptés à votre vision et à la demande marché.",
+                )}
+              </span>
             </p>
             <div className="flex items-center gap-3 mt-1.5">
               <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-success" /> Risque faible
+                <span className="w-1.5 h-1.5 rounded-full bg-success" />{" "}
+                {translateUi("Risque faible")}
               </span>
               <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-success" /> Demande élevée
+                <span className="w-1.5 h-1.5 rounded-full bg-success" />{" "}
+                {translateUi("Demande élevée")}
               </span>
             </div>
           </div>
@@ -244,8 +398,9 @@ export default function ProduitsFournisseurs() {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Rechercher un produit..."
-            value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={translateUi("Rechercher un produit...")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 h-9 text-sm"
           />
         </div>
@@ -257,8 +412,10 @@ export default function ProduitsFournisseurs() {
             className="gap-1 h-8 text-xs"
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
           >
-            <Heart className={`w-3.5 h-3.5 ${showFavoritesOnly ? "fill-current" : ""}`} />
-            Favoris
+            <Heart
+              className={`w-3.5 h-3.5 ${showFavoritesOnly ? "fill-current" : ""}`}
+            />
+            {translateUi("Favoris")}
             {favorites.length > 0 && (
               <span className="ml-0.5 w-4 h-4 rounded-full bg-primary/20 text-[10px] flex items-center justify-center font-semibold">
                 {favorites.length}
@@ -267,12 +424,13 @@ export default function ProduitsFournisseurs() {
           </Button>
 
           <Button
-            variant="outline" size="sm"
+            variant="outline"
+            size="sm"
             className="gap-1 h-8 text-xs md:hidden"
             onClick={() => setShowFilters(!showFilters)}
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
-            Filtres
+            {translateUi("Filtres")}
             {activeFilterCount > 0 && (
               <span className="ml-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center">
                 {activeFilterCount}
@@ -280,30 +438,38 @@ export default function ProduitsFournisseurs() {
             )}
           </Button>
 
-          <span className="text-xs text-muted-foreground">{sortedProducts.length} résultats</span>
+          <span className="text-xs text-muted-foreground">
+            {sortedProducts.length} {translateUi("résultats")}
+          </span>
 
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="w-28 sm:w-36 h-8 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="popularity">Popularité</SelectItem>
-              <SelectItem value="price-asc">Prix ↑</SelectItem>
-              <SelectItem value="price-desc">Prix ↓</SelectItem>
-              <SelectItem value="margin">Marge max</SelectItem>
+              <SelectItem value="popularity">
+                {translateUi("Popularité")}
+              </SelectItem>
+              <SelectItem value="price-asc">{translateUi("Prix ↑")}</SelectItem>
+              <SelectItem value="price-desc">
+                {translateUi("Prix ↓")}
+              </SelectItem>
+              <SelectItem value="margin">{translateUi("Marge max")}</SelectItem>
             </SelectContent>
           </Select>
 
           <div className="flex border rounded-lg overflow-hidden">
             <Button
-              variant={viewMode === "grid" ? "default" : "ghost"} size="sm"
+              variant={viewMode === "grid" ? "default" : "ghost"}
+              size="sm"
               className="rounded-none h-8 w-8 p-0"
               onClick={() => setViewMode("grid")}
             >
               <Grid3X3 className="w-3.5 h-3.5" />
             </Button>
             <Button
-              variant={viewMode === "list" ? "default" : "ghost"} size="sm"
+              variant={viewMode === "list" ? "default" : "ghost"}
+              size="sm"
               className="rounded-none h-8 w-8 p-0"
               onClick={() => setViewMode("list")}
             >
@@ -318,18 +484,31 @@ export default function ProduitsFournisseurs() {
         <Card className="mb-4 md:hidden border-border/50">
           <CardContent className="p-3 space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-semibold">Filtres</h4>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => setShowFilters(false)}>
+              <h4 className="text-sm font-semibold">
+                {translateUi("Filtres")}
+              </h4>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0"
+                onClick={() => setShowFilters(false)}
+              >
                 <X className="w-4 h-4" />
               </Button>
             </div>
             <div>
-              <h5 className="text-xs font-medium mb-2">Catégories</h5>
+              <h5 className="text-xs font-medium mb-2">
+                {translateUi("Catégories")}
+              </h5>
               <div className="flex flex-wrap gap-1.5">
-                {categoryCounts.map(cat => (
+                {categoryCounts.map((cat) => (
                   <Button
                     key={cat.name}
-                    variant={selectedCategories.includes(cat.name) ? "default" : "outline"}
+                    variant={
+                      selectedCategories.includes(cat.name)
+                        ? "default"
+                        : "outline"
+                    }
                     size="sm"
                     className="h-7 text-xs px-2.5"
                     onClick={() => toggleCategory(cat.name)}
@@ -340,19 +519,29 @@ export default function ProduitsFournisseurs() {
               </div>
             </div>
             <div>
-              <h5 className="text-xs font-medium mb-2">Prix: {priceRange[0]}€ – {priceRange[1]}€</h5>
+              <h5 className="text-xs font-medium mb-2">
+                {translateUi("Prix:") + " "}
+                {priceRange[0]}€ – {priceRange[1]}€
+              </h5>
               <Slider
-                min={0} max={100} step={1}
+                min={0}
+                max={100}
+                step={1}
                 value={priceRange}
                 onValueChange={setPriceRange}
               />
             </div>
             {activeFilterCount > 0 && (
               <Button
-                variant="ghost" size="sm" className="text-xs w-full"
-                onClick={() => { setSelectedCategories([]); setPriceRange([0, 100]); }}
+                variant="ghost"
+                size="sm"
+                className="text-xs w-full"
+                onClick={() => {
+                  setSelectedCategories([]);
+                  setPriceRange([0, 100]);
+                }}
               >
-                Réinitialiser les filtres
+                {translateUi("Réinitialiser les filtres")}
               </Button>
             )}
           </CardContent>
@@ -363,42 +552,64 @@ export default function ProduitsFournisseurs() {
         {/* Desktop Sidebar Filters */}
         <aside className="w-52 shrink-0 space-y-5 hidden md:block">
           <div>
-            <h4 className="text-xs font-semibold text-foreground mb-2.5">Catégories</h4>
+            <h4 className="text-xs font-semibold text-foreground mb-2.5">
+              {translateUi("Catégories")}
+            </h4>
             <div className="space-y-1.5">
-              {categoryCounts.map(cat => (
-                <label key={cat.name} className="flex items-center gap-2 cursor-pointer">
+              {categoryCounts.map((cat) => (
+                <label
+                  key={cat.name}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
                   <Checkbox
                     checked={selectedCategories.includes(cat.name)}
                     onCheckedChange={() => toggleCategory(cat.name)}
                   />
-                  <span className={`text-xs flex-1 ${selectedCategories.includes(cat.name) ? 'font-semibold text-primary' : 'text-foreground'}`}>
+                  <span
+                    className={`text-xs flex-1 ${selectedCategories.includes(cat.name) ? "font-semibold text-primary" : "text-foreground"}`}
+                  >
                     {cat.name}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">{cat.count}</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {cat.count}
+                  </span>
                 </label>
               ))}
             </div>
           </div>
 
           <div>
-            <h4 className="text-xs font-semibold text-foreground mb-2.5">Prix</h4>
+            <h4 className="text-xs font-semibold text-foreground mb-2.5">
+              {translateUi("Prix")}
+            </h4>
             <Slider
-              min={0} max={100} step={1}
+              min={0}
+              max={100}
+              step={1}
               value={priceRange}
               onValueChange={setPriceRange}
             />
             <div className="flex justify-between mt-1.5">
-              <span className="text-[10px] text-muted-foreground">{priceRange[0]}€</span>
-              <span className="text-[10px] text-muted-foreground">{priceRange[1]}€</span>
+              <span className="text-[10px] text-muted-foreground">
+                {priceRange[0]}€
+              </span>
+              <span className="text-[10px] text-muted-foreground">
+                {priceRange[1]}€
+              </span>
             </div>
           </div>
 
           {activeFilterCount > 0 && (
             <Button
-              variant="ghost" size="sm" className="text-xs w-full"
-              onClick={() => { setSelectedCategories([]); setPriceRange([0, 100]); }}
+              variant="ghost"
+              size="sm"
+              className="text-xs w-full"
+              onClick={() => {
+                setSelectedCategories([]);
+                setPriceRange([0, 100]);
+              }}
             >
-              Réinitialiser
+              {translateUi("Réinitialiser")}
             </Button>
           )}
         </aside>
@@ -407,25 +618,38 @@ export default function ProduitsFournisseurs() {
         <div className="flex-1 min-w-0">
           {isLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {[1,2,3,4,5,6].map(i => (
-                <Card key={i} className="overflow-hidden"><CardContent className="p-0">
-                  <Skeleton className="aspect-square w-full" />
-                  <div className="p-3 space-y-2">
-                    <Skeleton className="h-3 w-3/4" /><Skeleton className="h-3 w-1/2" />
-                  </div>
-                </CardContent></Card>
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Card key={i} className="overflow-hidden">
+                  <CardContent className="p-0">
+                    <Skeleton className="aspect-square w-full" />
+                    <div className="p-3 space-y-2">
+                      <Skeleton className="h-3 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           ) : viewMode === "grid" ? (
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {sortedProducts.map(product => (
-                <ProductGridCard key={product.id} product={product} isFavorite={isFavorite(product.id)} onToggleFavorite={() => toggleFavorite(product.id)} />
+              {sortedProducts.map((product) => (
+                <ProductGridCard
+                  key={product.id}
+                  product={product}
+                  isFavorite={isFavorite(product.id)}
+                  onToggleFavorite={() => toggleFavorite(product.id)}
+                />
               ))}
             </div>
           ) : (
             <div className="space-y-2 sm:space-y-3">
-              {sortedProducts.map(product => (
-                <ProductListCard key={product.id} product={product} isFavorite={isFavorite(product.id)} onToggleFavorite={() => toggleFavorite(product.id)} />
+              {sortedProducts.map((product) => (
+                <ProductListCard
+                  key={product.id}
+                  product={product}
+                  isFavorite={isFavorite(product.id)}
+                  onToggleFavorite={() => toggleFavorite(product.id)}
+                />
               ))}
             </div>
           )}
@@ -433,8 +657,10 @@ export default function ProduitsFournisseurs() {
             <SectionCard>
               <EmptyState
                 icon={<Search className="w-7 h-7" />}
-                title="Aucun produit trouvé"
-                description="Ajustez vos filtres ou réinitialisez-les pour explorer tout le catalogue."
+                title={translateUi("Aucun produit trouvé")}
+                description={translateUi(
+                  "Ajustez vos filtres ou réinitialisez-les pour explorer tout le catalogue.",
+                )}
                 action={
                   activeFilterCount > 0 ? (
                     <Button
@@ -447,7 +673,7 @@ export default function ProduitsFournisseurs() {
                         setShowFavoritesOnly(false);
                       }}
                     >
-                      Réinitialiser les filtres
+                      {translateUi("Réinitialiser les filtres")}
                     </Button>
                   ) : undefined
                 }
@@ -460,24 +686,46 @@ export default function ProduitsFournisseurs() {
   );
 }
 
-function ProductGridCard({ product, isFavorite, onToggleFavorite }: { product: SupplierProduct; isFavorite: boolean; onToggleFavorite: () => void }) {
-  const rotation = rotationConfig[product.rotation_indicator as RotationIndicator];
+function ProductGridCard({
+  product,
+  isFavorite,
+  onToggleFavorite,
+}: {
+  product: SupplierProduct;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
+}) {
+  useLanguage();
+  const rotation =
+    rotationConfig[product.rotation_indicator as RotationIndicator];
   const [showCalc, setShowCalc] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
+  const [referenceParams] = useSearchParams();
+  const requestedReference = referenceParams.get("reference");
+  useEffect(() => {
+    if (requestedReference === product.id) setShowDetail(true);
+  }, [requestedReference, product.id]);
   const [showAddDialog, setShowAddDialog] = useState(false);
 
   const navigate = useNavigate();
 
   const handleCustomize = () => {
-    navigate(`/dashboard/personnalisation?productId=${product.id}`);
+    navigate(`/dashboard/personnalisation?supplierProductId=${product.id}`);
   };
 
   return (
     <>
       <Card className="bg-card border-border/50 overflow-hidden group hover:shadow-md transition-shadow">
-        <div className="aspect-[4/3] sm:aspect-square relative bg-muted cursor-pointer" onClick={() => setShowDetail(true)}>
+        <div
+          className="aspect-[4/3] sm:aspect-square relative bg-muted cursor-pointer"
+          onClick={() => setShowDetail(true)}
+        >
           {product.image_url ? (
-            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+            <img
+              src={product.image_url}
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <LayoutGrid className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
@@ -489,50 +737,82 @@ function ProductGridCard({ product, isFavorite, onToggleFavorite }: { product: S
           {/* Favorite button */}
           <button
             className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
-            onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFavorite();
+            }}
           >
-            <Heart className={`w-3.5 h-3.5 transition-colors ${isFavorite ? "fill-destructive text-destructive" : "text-muted-foreground"}`} />
+            <Heart
+              className={`w-3.5 h-3.5 transition-colors ${isFavorite ? "fill-destructive text-destructive" : "text-muted-foreground"}`}
+            />
           </button>
           {/* Hover overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
             <span className="bg-background/90 backdrop-blur-sm text-foreground text-[10px] font-medium px-3 py-1.5 rounded-full flex items-center gap-1">
-              <Eye className="w-3 h-3" /> Voir détails
+              <Eye className="w-3 h-3" /> {translateUi("Voir détails")}
             </span>
           </div>
         </div>
         <CardContent className="p-2.5 sm:p-3 space-y-1.5">
-          <h3 className="font-semibold text-xs sm:text-sm text-foreground line-clamp-2 leading-tight cursor-pointer hover:text-primary transition-colors" onClick={() => setShowDetail(true)}>{product.name}</h3>
+          <h3
+            className="font-semibold text-xs sm:text-sm text-foreground line-clamp-2 leading-tight cursor-pointer hover:text-primary transition-colors"
+            onClick={() => setShowDetail(true)}
+          >
+            {product.name}
+          </h3>
           <div className="flex items-center gap-1">
-            <span className={`w-1.5 h-1.5 rounded-full ${rotation.color} shrink-0`} />
-            <span className={`text-[9px] sm:text-[10px] ${rotation.badgeClass} px-1.5 py-0.5 rounded-full`}>
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${rotation.color} shrink-0`}
+            />
+            <span
+              className={`text-[9px] sm:text-[10px] ${rotation.badgeClass} px-1.5 py-0.5 rounded-full`}
+            >
               {rotation.badgeLabel}
             </span>
           </div>
           <div className="flex items-end justify-between pt-1">
             <div>
-              <p className="text-sm sm:text-base font-bold text-foreground">€{product.base_price.toFixed(2)}</p>
-              <p className="text-[9px] sm:text-[10px] text-muted-foreground">{product.max_margin_percent}% marge max</p>
+              <p className="text-sm sm:text-base font-bold text-foreground">
+                €{product.base_price.toFixed(2)}
+              </p>
+              <p className="text-[9px] sm:text-[10px] text-muted-foreground">
+                {product.max_margin_percent}
+                {translateUi("% marge max")}
+              </p>
             </div>
             <div className="flex gap-1">
               <Button
-                variant="ghost" size="sm"
+                variant="ghost"
+                size="sm"
                 className="h-7 w-7 p-0"
                 onClick={() => setShowCalc(!showCalc)}
-                title="Calculer marge"
+                title={translateUi("Calculer marge")}
               >
-                {showCalc ? <ChevronUp className="w-3.5 h-3.5" /> : <Calculator className="w-3.5 h-3.5" />}
+                {showCalc ? (
+                  <ChevronUp className="w-3.5 h-3.5" />
+                ) : (
+                  <Calculator className="w-3.5 h-3.5" />
+                )}
               </Button>
-              <Button size="sm" className="h-7 px-2 text-[10px] sm:text-xs gap-0.5" onClick={() => setShowAddDialog(true)}>
+              <Button
+                size="sm"
+                className="h-7 px-2 text-[10px] sm:text-xs gap-0.5"
+                onClick={() => setShowAddDialog(true)}
+              >
                 <Plus className="w-3 h-3" />
-                <span className="hidden sm:inline">Ajouter</span>
+                <span className="hidden sm:inline">
+                  {translateUi("Ajouter")}
+                </span>
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 className="h-7 w-7 p-0 shrink-0"
-                title="Personnaliser ce produit"
-                aria-label={`Personnaliser ${product.name}`}
+                title={translateUi("Personnaliser ce produit")}
+                aria-label={translateUi("Personnaliser {v0}", {
+                  v0: product.name,
+                })}
                 onClick={(event) => {
                   event.stopPropagation();
                   handleCustomize();
@@ -545,26 +825,62 @@ function ProductGridCard({ product, isFavorite, onToggleFavorite }: { product: S
         </CardContent>
         {showCalc && <InlineMarginCalc product={product} />}
       </Card>
-      <ProductDetailDialog product={product} open={showDetail} onOpenChange={setShowDetail} onAdd={() => { setShowDetail(false); setShowAddDialog(true); }} isFavorite={() => isFavorite} onToggleFavorite={onToggleFavorite} />
-      <AddToBoutiqueDialog product={product} open={showAddDialog} onOpenChange={setShowAddDialog} />
+      <ProductDetailDialog
+        product={product}
+        open={showDetail}
+        onOpenChange={setShowDetail}
+        onAdd={() => {
+          setShowDetail(false);
+          setShowAddDialog(true);
+        }}
+        isFavorite={() => isFavorite}
+        onToggleFavorite={onToggleFavorite}
+      />
+      <AddToBoutiqueDialog
+        product={product}
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+      />
     </>
   );
 }
 
-function ProductListCard({ product, isFavorite, onToggleFavorite }: { product: SupplierProduct; isFavorite: boolean; onToggleFavorite: () => void }) {
-  const rotation = rotationConfig[product.rotation_indicator as RotationIndicator];
+function ProductListCard({
+  product,
+  isFavorite,
+  onToggleFavorite,
+}: {
+  product: SupplierProduct;
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
+}) {
+  useLanguage();
+  const rotation =
+    rotationConfig[product.rotation_indicator as RotationIndicator];
   const [showDetail, setShowDetail] = useState(false);
+  const [referenceParams] = useSearchParams();
+  const requestedReference = referenceParams.get("reference");
+  useEffect(() => {
+    if (requestedReference === product.id) setShowDetail(true);
+  }, [requestedReference, product.id]);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const navigate = useNavigate();
 
   return (
     <>
-      <Card className="bg-card border-border/50 cursor-pointer hover:shadow-md transition-shadow" onClick={() => setShowDetail(true)}>
+      <Card
+        className="bg-card border-border/50 cursor-pointer hover:shadow-md transition-shadow"
+        onClick={() => setShowDetail(true)}
+      >
         <CardContent className="p-2.5 sm:p-4">
           <div className="flex gap-2.5 sm:gap-4">
             <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg bg-muted overflow-hidden shrink-0 relative">
               {product.image_url ? (
-                <img src={product.image_url} alt="" className="w-full h-full object-cover" />
+                <img
+                  src={product.image_url}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
@@ -574,26 +890,53 @@ function ProductListCard({ product, isFavorite, onToggleFavorite }: { product: S
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <h3 className="font-semibold text-xs sm:text-sm text-foreground line-clamp-1">{product.name}</h3>
+                  <h3 className="font-semibold text-xs sm:text-sm text-foreground line-clamp-1">
+                    {product.name}
+                  </h3>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="text-[9px] sm:text-[10px] text-muted-foreground">{product.category}</span>
-                    <span className={`w-1.5 h-1.5 rounded-full ${rotation.color}`} />
-                    <span className="text-[9px] sm:text-[10px] text-muted-foreground">{rotation.badgeLabel}</span>
+                    <span className="text-[9px] sm:text-[10px] text-muted-foreground">
+                      {product.category}
+                    </span>
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${rotation.color}`}
+                    />
+                    <span className="text-[9px] sm:text-[10px] text-muted-foreground">
+                      {rotation.badgeLabel}
+                    </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <button onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}>
-                    <Heart className={`w-4 h-4 transition-colors ${isFavorite ? "fill-destructive text-destructive" : "text-muted-foreground hover:text-destructive"}`} />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleFavorite();
+                    }}
+                  >
+                    <Heart
+                      className={`w-4 h-4 transition-colors ${isFavorite ? "fill-destructive text-destructive" : "text-muted-foreground hover:text-destructive"}`}
+                    />
                   </button>
-                  <p className="text-sm sm:text-base font-bold text-foreground">€{product.base_price.toFixed(2)}</p>
+                  <p className="text-sm sm:text-base font-bold text-foreground">
+                    €{product.base_price.toFixed(2)}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center justify-between mt-2">
-                <p className="text-[10px] text-muted-foreground">{product.max_margin_percent}% marge max</p>
-                <div className="flex gap-1.5" onClick={(e) => e.stopPropagation()}>
+                <p className="text-[10px] text-muted-foreground">
+                  {product.max_margin_percent}
+                  {translateUi("% marge max")}
+                </p>
+                <div
+                  className="flex gap-1.5"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <MarginSimulator product={product} />
-                  <Button size="sm" className="h-7 text-[10px] sm:text-xs gap-0.5 px-2" onClick={() => setShowAddDialog(true)}>
-                    <Plus className="w-3 h-3" /> Ajouter
+                  <Button
+                    size="sm"
+                    className="h-7 text-[10px] sm:text-xs gap-0.5 px-2"
+                    onClick={() => setShowAddDialog(true)}
+                  >
+                    <Plus className="w-3 h-3" /> {translateUi("Ajouter")}
                   </Button>
                   <Button
                     type="button"
@@ -602,11 +945,13 @@ function ProductListCard({ product, isFavorite, onToggleFavorite }: { product: S
                     className="h-7 gap-1 px-2 text-[10px] sm:text-xs"
                     onClick={(event) => {
                       event.stopPropagation();
-                      navigate(`/dashboard/personnalisation?productId=${product.id}`);
+                      navigate(
+                        `/dashboard/personnalisation?supplierProductId=${product.id}`,
+                      );
                     }}
                   >
                     <Sparkles className="w-3.5 h-3.5" />
-                    Personnaliser
+                    {translateUi("Personnaliser")}
                   </Button>
                 </div>
               </div>
@@ -614,8 +959,22 @@ function ProductListCard({ product, isFavorite, onToggleFavorite }: { product: S
           </div>
         </CardContent>
       </Card>
-      <ProductDetailDialog product={product} open={showDetail} onOpenChange={setShowDetail} onAdd={() => { setShowDetail(false); setShowAddDialog(true); }} isFavorite={() => isFavorite} onToggleFavorite={onToggleFavorite} />
-      <AddToBoutiqueDialog product={product} open={showAddDialog} onOpenChange={setShowAddDialog} />
+      <ProductDetailDialog
+        product={product}
+        open={showDetail}
+        onOpenChange={setShowDetail}
+        onAdd={() => {
+          setShowDetail(false);
+          setShowAddDialog(true);
+        }}
+        isFavorite={() => isFavorite}
+        onToggleFavorite={onToggleFavorite}
+      />
+      <AddToBoutiqueDialog
+        product={product}
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+      />
     </>
   );
 }

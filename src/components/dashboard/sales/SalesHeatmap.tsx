@@ -1,3 +1,5 @@
+import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +20,7 @@ interface SalesHeatmapProps {
  * Premium, lisible en <5s — remplace l'ancienne carte 3D globale.
  */
 export function SalesHeatmap({ data, title }: SalesHeatmapProps) {
+  useLanguage();
   const sorted = useMemo(
     () => [...data].sort((a, b) => b.revenue - a.revenue).slice(0, 12),
     [data],
@@ -27,7 +30,7 @@ export function SalesHeatmap({ data, title }: SalesHeatmapProps) {
   if (sorted.length === 0) {
     return (
       <div className="text-sm text-muted-foreground text-center py-8">
-        Aucune vente géographique pour le moment.
+        {translateUi("Aucune vente géographique pour le moment.")}
       </div>
     );
   }
@@ -57,7 +60,7 @@ export function SalesHeatmap({ data, title }: SalesHeatmapProps) {
                 {r.location}
               </p>
               <p className="font-display text-lg font-bold text-foreground mt-0.5">
-                {r.revenue.toLocaleString("fr-FR")} €
+                {r.revenue.toLocaleString(getUiLocale())} €
               </p>
               <p className="text-[11px] text-foreground/70 mt-0.5">
                 {r.orders} commande{r.orders > 1 ? "s" : ""}

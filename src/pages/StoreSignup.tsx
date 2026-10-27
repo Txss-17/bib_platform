@@ -1,4 +1,5 @@
-﻿import { useState } from "react";
+import { translateUi } from "@/lib/uiTranslation";
+import { useState } from "react";
 
 import {
   Link,
@@ -23,10 +24,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import {
-  Alert,
-  AlertDescription,
-} from "@/components/ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import {
   ArrowRight,
@@ -44,28 +42,22 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 export default function StoreSignup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] =
-    useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [showPassword, setShowPassword] =
-    useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [error, setError] =
-    useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [confirmationRequired, setConfirmationRequired] =
-    useState(false);
+  const [confirmationRequired, setConfirmationRequired] = useState(false);
 
   const { signUp } = useAuth();
   const { t, lang } = useLanguage();
   const english = lang === "en";
-  const tx = (fr: string, en: string) => english ? en : fr;
+  const tx = (fr: string, en: string) => (english ? en : fr);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -96,18 +88,12 @@ export default function StoreSignup() {
     requestedDestination === "/store" ||
     requestedDestination.startsWith("/store/");
 
-  const destination = isStorePath
-    ? requestedDestination
-    : "/store/subscribe";
+  const destination = isStorePath ? requestedDestination : "/store/subscribe";
 
-  const isSubscriberFlow =
-    destination === "/store/subscribe";
+  const isSubscriberFlow = destination === "/store/subscribe";
 
-  const getErrorMessage = (
-    message: string,
-  ) => {
-    const normalized =
-      message.toLowerCase();
+  const getErrorMessage = (message: string) => {
+    const normalized = message.toLowerCase();
 
     if (
       message === "Load failed" ||
@@ -120,9 +106,7 @@ export default function StoreSignup() {
 
     if (
       normalized.includes("already registered") ||
-      normalized.includes(
-        "user already registered",
-      )
+      normalized.includes("user already registered")
     ) {
       return (
         "Un compte existe déjà avec cette adresse e-mail. " +
@@ -130,58 +114,39 @@ export default function StoreSignup() {
       );
     }
 
-    if (
-      normalized.includes(
-        "password should be at least",
-      )
-    ) {
-      return (
-        "Le mot de passe doit contenir au moins 8 caractères."
-      );
+    if (normalized.includes("password should be at least")) {
+      return "Le mot de passe doit contenir au moins 8 caractères.";
     }
 
-    if (
-      normalized.includes(
-        "invalid email",
-      )
-    ) {
-      return (
-        "Veuillez saisir une adresse e-mail valide."
-      );
+    if (normalized.includes("invalid email")) {
+      return "Veuillez saisir une adresse e-mail valide.";
     }
 
     return message;
   };
 
-  const handleSubmit = async (
-    event: React.FormEvent,
-  ) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     setError(null);
     setConfirmationRequired(false);
 
-    const normalizedEmail =
-      email.trim().toLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
 
     if (!normalizedEmail) {
-      setError(
-        "Veuillez saisir votre adresse e-mail.",
-      );
+      setError(translateUi("Veuillez saisir votre adresse e-mail."));
       return;
     }
 
     if (password.length < 8) {
       setError(
-        "Le mot de passe doit contenir au moins 8 caractères.",
+        translateUi("Le mot de passe doit contenir au moins 8 caractères."),
       );
       return;
     }
 
     if (password !== confirmPassword) {
-      setError(
-        "Les mots de passe ne correspondent pas.",
-      );
+      setError(translateUi("Les mots de passe ne correspondent pas."));
       return;
     }
 
@@ -197,10 +162,7 @@ export default function StoreSignup() {
      * L'abonnement BIB Abonné sera créé ensuite par Stripe
      * et confirmé par le webhook.
      */
-    const {
-      data,
-      error: signUpError,
-    } = await signUp(
+    const { data, error: signUpError } = await signUp(
       normalizedEmail,
       password,
       undefined,
@@ -208,11 +170,7 @@ export default function StoreSignup() {
     );
 
     if (signUpError) {
-      setError(
-        getErrorMessage(
-          signUpError.message,
-        ),
-      );
+      setError(getErrorMessage(signUpError.message));
       setLoading(false);
       return;
     }
@@ -241,10 +199,7 @@ export default function StoreSignup() {
     });
   };
 
-  const loginUrl =
-    `/store/login?next=${encodeURIComponent(
-      destination,
-    )}`;
+  const loginUrl = `/store/login?next=${encodeURIComponent(destination)}`;
 
   return (
     <div className="min-h-screen bg-background">
@@ -268,13 +223,9 @@ export default function StoreSignup() {
                 </div>
 
                 <div>
-                  <div className="text-2xl font-bold leading-none">
-                    BIB
-                  </div>
+                  <div className="text-2xl font-bold leading-none">BIB</div>
 
-                  <div className="text-xs text-muted-foreground">
-                    Store
-                  </div>
+                  <div className="text-xs text-muted-foreground">Store</div>
                 </div>
               </Link>
 
@@ -286,7 +237,7 @@ export default function StoreSignup() {
                 {isSubscriberFlow && (
                   <div className="mb-3 inline-flex w-fit items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
                     <Check className="h-3.5 w-3.5" />
-                    BIB Abonné
+                    {translateUi("BIB Abonné")}
                   </div>
                 )}
 
@@ -298,8 +249,14 @@ export default function StoreSignup() {
 
                 <CardDescription>
                   {isSubscriberFlow
-                    ? tx("Créez votre compte client puis poursuivez immédiatement vers le paiement.", "Create your customer account, then continue straight to payment.")
-                    : tx("Votre compte client BIB vous permet d'accéder à votre espace Store.", "Your BIB customer account gives you access to the Store.")}
+                    ? tx(
+                        "Créez votre compte client puis poursuivez immédiatement vers le paiement.",
+                        "Create your customer account, then continue straight to payment.",
+                      )
+                    : tx(
+                        "Votre compte client BIB vous permet d'accéder à votre espace Store.",
+                        "Your BIB customer account gives you access to the Store.",
+                      )}
                 </CardDescription>
               </CardHeader>
 
@@ -313,7 +270,7 @@ export default function StoreSignup() {
                     <div className="flex items-end justify-between gap-4">
                       <div>
                         <p className="text-sm font-medium">
-                          BIB Abonné
+                          {translateUi("BIB Abonné")}
                         </p>
 
                         <p className="mt-1 text-xs text-muted-foreground">
@@ -322,19 +279,18 @@ export default function StoreSignup() {
                       </div>
 
                       <div className="text-right">
-                        <p className="text-2xl font-semibold">
-                          4,99 €
-                        </p>
+                        <p className="text-2xl font-semibold">4,99 €</p>
 
-                        <p className="text-xs text-muted-foreground">
-                          / mois
-                        </p>
+                        <p className="text-xs text-muted-foreground">/ mois</p>
                       </div>
                     </div>
 
                     <div className="mt-4 grid gap-2">
                       <Benefit>
-                        {tx("Favoris et boutiques suivies", "Favorites and followed boutiques")}
+                        {tx(
+                          "Favoris et boutiques suivies",
+                          "Favorites and followed boutiques",
+                        )}
                       </Benefit>
 
                       <Benefit>
@@ -344,10 +300,9 @@ export default function StoreSignup() {
 
                     <div className="mt-4 border-t pt-4">
                       <p className="text-xs leading-5 text-muted-foreground">
-                        Le compte client est gratuit à
-                        créer. L'accès BIB Abonné devient
-                        actif uniquement après confirmation
-                        du paiement de 4,99 € par mois.
+                        {translateUi(
+                          "Le compte client est gratuit à créer. L'accès BIB Abonné devient actif uniquement après confirmation du paiement de 4,99 € par mois.",
+                        )}
                       </p>
                     </div>
                   </div>
@@ -361,25 +316,18 @@ export default function StoreSignup() {
                   <div className="space-y-5">
                     <Alert>
                       <AlertDescription>
-                        Un e-mail de confirmation vient
-                        d'être envoyé à{" "}
-                        <strong>
-                          {email}
-                        </strong>
-                        . Confirmez votre adresse puis
-                        reconnectez-vous pour poursuivre
-                        votre activation.
+                        {translateUi(
+                          "Un e-mail de confirmation vient d'être envoyé à",
+                        )}{" "}
+                        <strong>{email}</strong>. Confirmez votre adresse puis
+                        reconnectez-vous pour poursuivre votre activation.
                       </AlertDescription>
                     </Alert>
 
-                    <Button
-                      asChild
-                      className="w-full"
-                    >
-                      <Link
-                        to={loginUrl}
-                      >
-                        {tx("Se connecter", "Sign in")} et continuer
+                    <Button asChild className="w-full">
+                      <Link to={loginUrl}>
+                        {tx("Se connecter", "Sign in")}{" "}
+                        {translateUi("et continuer")}
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Link>
                     </Button>
@@ -389,15 +337,10 @@ export default function StoreSignup() {
                      FORMULAIRE DE CRÉATION
                      ================================================= */
 
-                  <form
-                    onSubmit={handleSubmit}
-                    className="space-y-4"
-                  >
+                  <form onSubmit={handleSubmit} className="space-y-4">
                     {error && (
                       <Alert variant="destructive">
-                        <AlertDescription>
-                          {error}
-                        </AlertDescription>
+                        <AlertDescription>{error}</AlertDescription>
                       </Alert>
                     )}
 
@@ -414,13 +357,9 @@ export default function StoreSignup() {
                         <Input
                           id="store-signup-email"
                           type="email"
-                          placeholder="vous@exemple.com"
+                          placeholder={translateUi("vous@exemple.com")}
                           value={email}
-                          onChange={(event) =>
-                            setEmail(
-                              event.target.value,
-                            )
-                          }
+                          onChange={(event) => setEmail(event.target.value)}
                           className="pl-10"
                           autoComplete="email"
                           required
@@ -440,18 +379,10 @@ export default function StoreSignup() {
 
                         <Input
                           id="store-signup-password"
-                          type={
-                            showPassword
-                              ? "text"
-                              : "password"
-                          }
+                          type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
                           value={password}
-                          onChange={(event) =>
-                            setPassword(
-                              event.target.value,
-                            )
-                          }
+                          onChange={(event) => setPassword(event.target.value)}
                           className="pl-10 pr-10"
                           autoComplete="new-password"
                           required
@@ -459,17 +390,16 @@ export default function StoreSignup() {
 
                         <button
                           type="button"
-                          onClick={() =>
-                            setShowPassword(
-                              (current) =>
-                                !current,
-                            )
-                          }
+                          onClick={() => setShowPassword((current) => !current)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                           aria-label={
                             showPassword
-                              ? (english ? "Hide password" : "Masquer le mot de passe")
-                              : (english ? "Show password" : "Afficher le mot de passe")
+                              ? english
+                                ? "Hide password"
+                                : "Masquer le mot de passe"
+                              : english
+                                ? "Show password"
+                                : "Afficher le mot de passe"
                           }
                         >
                           {showPassword ? (
@@ -497,19 +427,11 @@ export default function StoreSignup() {
 
                         <Input
                           id="store-signup-confirm-password"
-                          type={
-                            showConfirmPassword
-                              ? "text"
-                              : "password"
-                          }
+                          type={showConfirmPassword ? "text" : "password"}
                           placeholder="••••••••"
-                          value={
-                            confirmPassword
-                          }
+                          value={confirmPassword}
                           onChange={(event) =>
-                            setConfirmPassword(
-                              event.target.value,
-                            )
+                            setConfirmPassword(event.target.value)
                           }
                           className="pl-10 pr-10"
                           autoComplete="new-password"
@@ -519,16 +441,17 @@ export default function StoreSignup() {
                         <button
                           type="button"
                           onClick={() =>
-                            setShowConfirmPassword(
-                              (current) =>
-                                !current,
-                            )
+                            setShowConfirmPassword((current) => !current)
                           }
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                           aria-label={
                             showConfirmPassword
-                              ? "Masquer la confirmation du mot de passe"
-                              : "Afficher la confirmation du mot de passe"
+                              ? translateUi(
+                                  "Masquer la confirmation du mot de passe",
+                                )
+                              : translateUi(
+                                  "Afficher la confirmation du mot de passe",
+                                )
                           }
                         >
                           {showConfirmPassword ? (
@@ -552,7 +475,10 @@ export default function StoreSignup() {
                       ) : (
                         <>
                           {isSubscriberFlow
-                            ? tx("Créer mon compte et continuer", "Create account and continue")
+                            ? tx(
+                                "Créer mon compte et continuer",
+                                "Create account and continue",
+                              )
                             : tx("Créer mon compte", "Create my account")}
 
                           <ArrowRight className="h-4 w-4" />
@@ -600,27 +526,21 @@ export default function StoreSignup() {
             </h2>
 
             <p className="mt-4 text-muted-foreground">
-              Votre compte constitue votre identité
-              client. L'abonnement BIB Abonné est ensuite
-              activé séparément après paiement.
+              {translateUi(
+                "Votre compte constitue votre identité client. L'abonnement BIB Abonné est ensuite activé séparément après paiement.",
+              )}
             </p>
 
             <div className="mt-8 space-y-5">
-              <Benefit
-                icon={
-                  <Star className="h-5 w-5" />
-                }
-              >
-                {tx("Boutiques et produits favoris", "Favorite boutiques and products")}
+              <Benefit icon={<Star className="h-5 w-5" />}>
+                {tx(
+                  "Boutiques et produits favoris",
+                  "Favorite boutiques and products",
+                )}
               </Benefit>
 
-              <Benefit
-                icon={
-                  <Shield className="h-5 w-5" />
-                }
-              >
-                Un compte client distinct de l'espace
-                marchand
+              <Benefit icon={<Shield className="h-5 w-5" />}>
+                {translateUi("Un compte client distinct de l'espace marchand")}
               </Benefit>
             </div>
           </div>
@@ -641,12 +561,11 @@ function Benefit({
   children: React.ReactNode;
   icon?: React.ReactNode;
 }) {
+  useLanguage();
   return (
     <div className="flex items-center gap-3 text-sm">
       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-        {icon ?? (
-          <Check className="h-3.5 w-3.5" />
-        )}
+        {icon ?? <Check className="h-3.5 w-3.5" />}
       </div>
 
       <span>{children}</span>

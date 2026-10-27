@@ -1,3 +1,5 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Text3D, Center, ContactShadows, Environment } from "@react-three/drei";
@@ -20,6 +22,7 @@ const GOLD = "#c89a3e";
 const IVORY = "#f7f1e5";
 
 function BoxOpen() {
+  useLanguage();
   // Hand-built open box: 4 vertical walls + a floor. We avoid drei's RoundedBox
   // here so the open top reads instantly without a lid.
   const W = 2.4;
@@ -40,7 +43,11 @@ function BoxOpen() {
         <meshStandardMaterial {...mat} />
       </mesh>
       {/* front wall (slightly shorter so we see "into" the box) */}
-      <mesh position={[0, H / 2 - 0.12, D / 2 - T / 2]} castShadow receiveShadow>
+      <mesh
+        position={[0, H / 2 - 0.12, D / 2 - T / 2]}
+        castShadow
+        receiveShadow
+      >
         <boxGeometry args={[W, H - 0.24, T]} />
         <meshStandardMaterial {...mat} />
       </mesh>
@@ -56,7 +63,9 @@ function BoxOpen() {
       </mesh>
       {/* subtle inner gold rim — a quiet brand wink at the top edge */}
       <mesh position={[0, H + 0.005, 0]}>
-        <ringGeometry args={[Math.min(W, D) * 0.4, Math.min(W, D) * 0.42, 48]} />
+        <ringGeometry
+          args={[Math.min(W, D) * 0.4, Math.min(W, D) * 0.42, 48]}
+        />
         <meshBasicMaterial color={GOLD} transparent opacity={0.0} />
       </mesh>
     </group>
@@ -64,6 +73,7 @@ function BoxOpen() {
 }
 
 function FlyingB() {
+  useLanguage();
   const groupRef = useRef<Group>(null);
   const meshRef = useRef<Mesh>(null);
 
@@ -82,7 +92,9 @@ function FlyingB() {
     const insideY = -0.1; // resting inside the box
     const outsideY = 1.9; // peak height above the box
     groupRef.current.position.y =
-      insideY + (outsideY - insideY) * eased + Math.sin(clock.elapsedTime * 1.6) * 0.04;
+      insideY +
+      (outsideY - insideY) * eased +
+      Math.sin(clock.elapsedTime * 1.6) * 0.04;
     groupRef.current.rotation.y = Math.sin(clock.elapsedTime * 0.6) * 0.25;
     groupRef.current.rotation.x = (1 - eased) * 0.12;
   });
@@ -107,7 +119,11 @@ function FlyingB() {
           castShadow
         >
           B
-          <meshStandardMaterial color={GOLD} roughness={0.28} metalness={0.65} />
+          <meshStandardMaterial
+            color={GOLD}
+            roughness={0.28}
+            metalness={0.65}
+          />
         </Text3D>
       </Center>
     </group>
@@ -115,6 +131,7 @@ function FlyingB() {
 }
 
 function Scene() {
+  useLanguage();
   return (
     <>
       {/* Lights — warm key + cool fill for a premium look */}
@@ -127,7 +144,11 @@ function Scene() {
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
       />
-      <directionalLight position={[-3, 2, -2]} intensity={0.5} color="#cfd8e6" />
+      <directionalLight
+        position={[-3, 2, -2]}
+        intensity={0.5}
+        color="#cfd8e6"
+      />
 
       <Suspense fallback={null}>
         <Environment preset="studio" />
@@ -154,12 +175,13 @@ interface Props {
 }
 
 export function BrandBoxLogo3D({ className = "", aspect = "1/1" }: Props) {
+  useLanguage();
   return (
     <div
       className={className}
       style={{ aspectRatio: aspect, width: "100%" }}
       role="img"
-      aria-label="Brand-In-A-Box — animation 3D"
+      aria-label={translateUi("Brand-In-A-Box — animation 3D")}
     >
       <Canvas
         shadows

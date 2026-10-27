@@ -1,10 +1,21 @@
+import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useState } from "react";
 import {
-  ArrowDownToLine, ArrowUpRight, AlertTriangle, Activity, RefreshCw, ShoppingBag,
+  ArrowDownToLine,
+  ArrowUpRight,
+  AlertTriangle,
+  Activity,
+  RefreshCw,
+  ShoppingBag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { EmptyState, SectionCard, RealtimeStatusPill } from "@/components/dashboard/shared";
+import {
+  EmptyState,
+  SectionCard,
+  RealtimeStatusPill,
+} from "@/components/dashboard/shared";
 import type { RealtimeStatus } from "@/components/dashboard/shared/RealtimeStatusPill";
 import type {
   PaymentActivityEvent,
@@ -24,25 +35,50 @@ const VARIANTS: Record<
   PaymentActivityKind,
   { icon: typeof Activity; bg: string; fg: string; sign: "+" | "-" | "" }
 > = {
-  sale: { icon: ShoppingBag, bg: "bg-success/10", fg: "text-success", sign: "+" },
-  payout_scheduled: { icon: ArrowDownToLine, bg: "bg-secondary/15", fg: "text-secondary", sign: "" },
-  payout_updated: { icon: RefreshCw, bg: "bg-muted", fg: "text-muted-foreground", sign: "" },
-  payout_completed: { icon: ArrowUpRight, bg: "bg-primary/10", fg: "text-primary", sign: "-" },
-  payout_failed: { icon: AlertTriangle, bg: "bg-destructive/10", fg: "text-destructive", sign: "" },
+  sale: {
+    icon: ShoppingBag,
+    bg: "bg-success/10",
+    fg: "text-success",
+    sign: "+",
+  },
+  payout_scheduled: {
+    icon: ArrowDownToLine,
+    bg: "bg-secondary/15",
+    fg: "text-secondary",
+    sign: "",
+  },
+  payout_updated: {
+    icon: RefreshCw,
+    bg: "bg-muted",
+    fg: "text-muted-foreground",
+    sign: "",
+  },
+  payout_completed: {
+    icon: ArrowUpRight,
+    bg: "bg-primary/10",
+    fg: "text-primary",
+    sign: "-",
+  },
+  payout_failed: {
+    icon: AlertTriangle,
+    bg: "bg-destructive/10",
+    fg: "text-destructive",
+    sign: "",
+  },
 };
 
 function relativeTime(iso: string, now: number) {
   const t = new Date(iso).getTime();
   const diff = Math.max(0, now - t);
   const s = Math.floor(diff / 1000);
-  if (s < 5) return "à l'instant";
-  if (s < 60) return `il y a ${s}s`;
+  if (s < 5) return translateUi("à l'instant");
+  if (s < 60) return translateUi("il y a {v0}s", { v0: s });
   const m = Math.floor(s / 60);
-  if (m < 60) return `il y a ${m} min`;
+  if (m < 60) return translateUi("il y a {v0} min", { v0: m });
   const h = Math.floor(m / 60);
-  if (h < 24) return `il y a ${h} h`;
+  if (h < 24) return translateUi("il y a {v0} h", { v0: h });
   const d = Math.floor(h / 24);
-  return `il y a ${d} j`;
+  return translateUi("il y a {v0} j", { v0: d });
 }
 
 export function PaymentsActivityFeed({
@@ -52,6 +88,7 @@ export function PaymentsActivityFeed({
   boutiqueLookup,
   className,
 }: Props) {
+  useLanguage();
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 15_000);
@@ -61,15 +98,20 @@ export function PaymentsActivityFeed({
   return (
     <SectionCard
       className={className}
-      title="Activité en direct"
-      description="Ventes et versements diffusés en temps réel"
+      title={translateUi("Activité en direct")}
+      description={translateUi("Ventes et versements diffusés en temps réel")}
       icon={<Activity className="w-4 h-4" />}
       actions={
         <div className="flex items-center gap-2">
           <RealtimeStatusPill status={status} />
           {feed.length > 0 && onClear && (
-            <Button variant="ghost" size="sm" onClick={onClear} className="h-7 text-xs">
-              Vider
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClear}
+              className="h-7 text-xs"
+            >
+              {translateUi("Vider")}
             </Button>
           )}
         </div>
@@ -81,12 +123,14 @@ export function PaymentsActivityFeed({
           icon={<Activity className="w-6 h-6" />}
           title={
             status === "live"
-              ? "En écoute…"
+              ? translateUi("En écoute…")
               : status === "reconnecting"
-                ? "Reconnexion…"
-                : "Aucune activité"
+                ? translateUi("Reconnexion…")
+                : translateUi("Aucune activité")
           }
-          description="Chaque vente ou versement apparaîtra ici instantanément."
+          description={translateUi(
+            "Chaque vente ou versement apparaîtra ici instantanément.",
+          )}
         />
       ) : (
         <ScrollArea className="h-[420px]">
@@ -94,7 +138,9 @@ export function PaymentsActivityFeed({
             {feed.map((e) => {
               const v = VARIANTS[e.kind];
               const Icon = v.icon;
-              const boutiqueName = e.boutique_id ? boutiqueLookup?.[e.boutique_id] : undefined;
+              const boutiqueName = e.boutique_id
+                ? boutiqueLookup?.[e.boutique_id]
+                : undefined;
               return (
                 <li
                   key={e.id}
@@ -126,7 +172,9 @@ export function PaymentsActivityFeed({
                     </div>
                     <div className="flex items-center justify-between gap-2 mt-0.5">
                       <p className="text-xs text-muted-foreground truncate">
-                        {[e.description, boutiqueName].filter(Boolean).join(" · ") || "—"}
+                        {[e.description, boutiqueName]
+                          .filter(Boolean)
+                          .join(" · ") || "—"}
                       </p>
                       <p className="text-[11px] text-muted-foreground shrink-0">
                         {relativeTime(e.created_at, now)}

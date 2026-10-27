@@ -1,3 +1,4 @@
+import { translateUi } from "@/lib/uiTranslation";
 /**
  * Studio Scenes — bibliothèque de scènes premium éditables.
  * Remplace l'ancien système de "sections Lego" drag-and-drop.
@@ -56,26 +57,26 @@ export interface SceneDefinition {
     | "press-strip"
     | "comparison-table"
     | "founder-letter"
-  | "manifesto-typographic"
-  | "marquee-strip"
-  | "gallery-mosaic"
-  | "stats-counter"
-  | "video-fullscreen"
-  | "banner-promo"
-  | "products-grid"
-  | "product-spotlight"
-  | "blog-list"
-  | "cart-summary"
-  | "contact-form"
-  | "team-grid"
-  | "pricing-table"
-  | "image-text-split"
-  | "timeline"
-  | "map-location"
-  | "product-hero"
-  | "product-description"
-  | "product-specs"
-  | "product-related";
+    | "manifesto-typographic"
+    | "marquee-strip"
+    | "gallery-mosaic"
+    | "stats-counter"
+    | "video-fullscreen"
+    | "banner-promo"
+    | "products-grid"
+    | "product-spotlight"
+    | "blog-list"
+    | "cart-summary"
+    | "contact-form"
+    | "team-grid"
+    | "pricing-table"
+    | "image-text-split"
+    | "timeline"
+    | "map-location"
+    | "product-hero"
+    | "product-description"
+    | "product-specs"
+    | "product-related";
 }
 
 export const STUDIO_SCENES: SceneDefinition[] = [
@@ -83,9 +84,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "hero-cinema",
     role: "hero",
     name: "Hero Cinéma",
-    tagline: "Plein écran immersif avec vidéo ou visuel signature",
-    description:
-      "Une ouverture cinématographique : visuel ou vidéo plein écran, titre éditorial, sous-titre étiré, CTA discret. Parfait pour les marques narratives.",
+    get tagline() {
+      return translateUi("Plein écran immersif avec vidéo ou visuel signature");
+    },
+    get description() {
+      return translateUi(
+        "Une ouverture cinématographique : visuel ou vidéo plein écran, titre éditorial, sous-titre étiré, CTA discret. Parfait pour les marques narratives.",
+      );
+    },
     variants: ["fullscreen", "split", "type-only"],
     previewKey: "hero-cinema",
     defaultContent: {
@@ -103,9 +109,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "story-scrolly",
     role: "story",
     name: "Story Scrollytelling",
-    tagline: "Narration verticale chapitre par chapitre",
-    description:
-      "Trois à cinq chapitres qui se révèlent au scroll, alternant texte et visuel. Idéal pour raconter l'origine, le savoir-faire, la mission.",
+    get tagline() {
+      return translateUi("Narration verticale chapitre par chapitre");
+    },
+    get description() {
+      return translateUi(
+        "Trois à cinq chapitres qui se révèlent au scroll, alternant texte et visuel. Idéal pour raconter l'origine, le savoir-faire, la mission.",
+      );
+    },
     variants: ["alternating", "centered", "side-pinned"],
     previewKey: "story-scrolly",
     defaultContent: {
@@ -135,9 +146,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "lookbook-parallax",
     role: "lookbook",
     name: "Lookbook Parallaxe",
-    tagline: "Galerie éditoriale haute couture",
-    description:
-      "Grille asymétrique avec parallaxe et légendes flottantes. Met en avant 4 à 6 visuels icôniques de la saison.",
+    get tagline() {
+      return translateUi("Galerie éditoriale haute couture");
+    },
+    get description() {
+      return translateUi(
+        "Grille asymétrique avec parallaxe et légendes flottantes. Met en avant 4 à 6 visuels icôniques de la saison.",
+      );
+    },
     variants: ["asymmetric", "tiled", "zigzag"],
     previewKey: "lookbook-parallax",
     defaultContent: {
@@ -150,9 +166,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "showcase-magazine",
     role: "showcase",
     name: "Vitrine Magazine",
-    tagline: "Produits mis en scène comme une éditoriale presse",
-    description:
-      "Trois à six produits présentés en vignettes 'magazine' — visuel large, eyebrow, prix discret, CTA inline.",
+    get tagline() {
+      return translateUi("Produits mis en scène comme une éditoriale presse");
+    },
+    get description() {
+      return translateUi(
+        "Trois à six produits présentés en vignettes 'magazine' — visuel large, eyebrow, prix discret, CTA inline.",
+      );
+    },
     variants: ["3-up", "4-up", "carousel"],
     previewKey: "showcase-magazine",
     defaultContent: {
@@ -168,28 +189,50 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "trust-wall",
     role: "trust",
     name: "Mur de Confiance",
-    tagline: "Avis, presse et garanties à fort impact",
-    description:
-      "Composition mêlant logos presse, citations clients, badges qualité. Optimise la conversion à l'étape consideration.",
+    get tagline() {
+      return translateUi("Avis, presse et garanties à fort impact");
+    },
+    get description() {
+      return translateUi(
+        "Composition mêlant logos presse, citations clients, badges qualité. Optimise la conversion à l'étape consideration.",
+      );
+    },
     variants: ["press-first", "reviews-first", "badges-row"],
     previewKey: "trust-wall",
     defaultContent: {
       title: "Ils nous font confiance",
       pressLogos: [],
       reviews: [
-        { author: "Camille L.", quote: "La meilleure pièce de mon dressing.", rating: 5 },
-        { author: "Hugo R.", quote: "Service irréprochable, finition sublime.", rating: 5 },
+        {
+          author: "Camille L.",
+          quote: "La meilleure pièce de mon dressing.",
+          rating: 5,
+        },
+        {
+          author: "Hugo R.",
+          quote: "Service irréprochable, finition sublime.",
+          rating: 5,
+        },
       ],
-      badges: ["Verified by Linksy", "Garantie 2 ans", "Livraison neutre carbone"],
+      badges: [
+        "Verified by Linksy",
+        "Garantie 2 ans",
+        "Livraison neutre carbone",
+      ],
     },
   },
   {
     id: "cta-sticky",
     role: "cta",
     name: "Conversion CTA",
-    tagline: "Appel à l'action final + barre fixe sur mobile",
-    description:
-      "Bloc final hauteur réduite + barre sticky bas-écran sur mobile. Idéal pour pousser l'achat ou l'abonnement newsletter.",
+    get tagline() {
+      return translateUi("Appel à l'action final + barre fixe sur mobile");
+    },
+    get description() {
+      return translateUi(
+        "Bloc final hauteur réduite + barre sticky bas-écran sur mobile. Idéal pour pousser l'achat ou l'abonnement newsletter.",
+      );
+    },
     variants: ["centered", "split-newsletter", "sticky-only"],
     previewKey: "cta-sticky",
     defaultContent: {
@@ -204,17 +247,31 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "faq-accordion",
     role: "faq",
     name: "FAQ Éditoriale",
-    tagline: "Questions/réponses dépliables, pensées SEO",
-    description:
-      "Accordéon élégant qui répond aux objections d'achat. Le JSON-LD FAQPage est généré automatiquement à partir du contenu.",
+    get tagline() {
+      return translateUi("Questions/réponses dépliables, pensées SEO");
+    },
+    get description() {
+      return translateUi(
+        "Accordéon élégant qui répond aux objections d'achat. Le JSON-LD FAQPage est généré automatiquement à partir du contenu.",
+      );
+    },
     variants: ["accordion", "two-column", "list"],
     previewKey: "faq-accordion",
     defaultContent: {
       title: "Vos questions, nos réponses",
       items: [
-        { q: "Quels sont vos délais de livraison ?", a: "48 à 72h en France métropolitaine, 5 à 7 jours en Europe." },
-        { q: "Quelle est votre politique de retour ?", a: "Retours gratuits sous 30 jours, sans condition." },
-        { q: "Vos produits sont-ils garantis ?", a: "Oui, garantie 2 ans incluse sur toute la collection." },
+        {
+          q: "Quels sont vos délais de livraison ?",
+          a: "48 à 72h en France métropolitaine, 5 à 7 jours en Europe.",
+        },
+        {
+          q: "Quelle est votre politique de retour ?",
+          a: "Retours gratuits sous 30 jours, sans condition.",
+        },
+        {
+          q: "Vos produits sont-ils garantis ?",
+          a: "Oui, garantie 2 ans incluse sur toute la collection.",
+        },
       ],
     },
   },
@@ -222,9 +279,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "newsletter-editorial",
     role: "newsletter",
     name: "Newsletter Éditoriale",
-    tagline: "Capture d'email premium au ton magazine",
-    description:
-      "Bloc newsletter avec promesse éditoriale forte, champ email épuré et bénéfices listés. Conçu pour la conversion.",
+    get tagline() {
+      return translateUi("Capture d'email premium au ton magazine");
+    },
+    get description() {
+      return translateUi(
+        "Bloc newsletter avec promesse éditoriale forte, champ email épuré et bénéfices listés. Conçu pour la conversion.",
+      );
+    },
     variants: ["centered", "split-image", "minimal"],
     previewKey: "newsletter-editorial",
     defaultContent: {
@@ -233,16 +295,25 @@ export const STUDIO_SCENES: SceneDefinition[] = [
       subtitle: "Une lettre éditoriale par mois. Pas de spam, jamais.",
       placeholder: "Votre email",
       ctaLabel: "S'abonner",
-      benefits: ["-10% sur la première commande", "Accès anticipé aux drops", "Histoires de la maison"],
+      benefits: [
+        "-10% sur la première commande",
+        "Accès anticipé aux drops",
+        "Histoires de la maison",
+      ],
     },
   },
   {
     id: "press-strip",
     role: "press",
     name: "Bandeau Presse",
-    tagline: "Logos médias en bande défilante",
-    description:
-      "Bande horizontale présentant les logos presse en monochrome. Anime au scroll pour un rendu vivant.",
+    get tagline() {
+      return translateUi("Logos médias en bande défilante");
+    },
+    get description() {
+      return translateUi(
+        "Bande horizontale présentant les logos presse en monochrome. Anime au scroll pour un rendu vivant.",
+      );
+    },
     variants: ["scrolling", "static-grid", "centered"],
     previewKey: "press-strip",
     defaultContent: {
@@ -260,9 +331,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "comparison-table",
     role: "comparison",
     name: "Tableau Comparatif",
-    tagline: "Pourquoi nous choisir vs. la concurrence",
-    description:
-      "Comparaison ligne par ligne pour lever les objections. Très efficace en bas de page produit.",
+    get tagline() {
+      return translateUi("Pourquoi nous choisir vs. la concurrence");
+    },
+    get description() {
+      return translateUi(
+        "Comparaison ligne par ligne pour lever les objections. Très efficace en bas de page produit.",
+      );
+    },
     variants: ["check-cross", "stars", "minimal"],
     previewKey: "comparison-table",
     defaultContent: {
@@ -281,9 +357,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "founder-letter",
     role: "founder",
     name: "Lettre du Fondateur",
-    tagline: "Adresse personnelle signée à la main",
-    description:
-      "Format lettre intime — texte centré, signature manuscrite, photo ronde. Crée un attachement émotionnel fort.",
+    get tagline() {
+      return translateUi("Adresse personnelle signée à la main");
+    },
+    get description() {
+      return translateUi(
+        "Format lettre intime — texte centré, signature manuscrite, photo ronde. Crée un attachement émotionnel fort.",
+      );
+    },
     variants: ["letter", "portrait-left", "portrait-right"],
     previewKey: "founder-letter",
     defaultContent: {
@@ -298,9 +379,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "manifesto-typographic",
     role: "manifesto",
     name: "Manifeste Typographique",
-    tagline: "Statement plein écran, ton manifeste",
-    description:
-      "Typographie monumentale qui affirme la mission. Aucune image, juste la force du verbe.",
+    get tagline() {
+      return translateUi("Statement plein écran, ton manifeste");
+    },
+    get description() {
+      return translateUi(
+        "Typographie monumentale qui affirme la mission. Aucune image, juste la force du verbe.",
+      );
+    },
     variants: ["xl", "stacked", "marquee"],
     previewKey: "manifesto-typographic",
     defaultContent: {
@@ -312,9 +398,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "marquee-strip",
     role: "marquee",
     name: "Bande défilante",
-    tagline: "Texte qui défile en boucle, personnalisable",
-    description:
-      "Bandeau horizontal animé : écris ce que tu veux (slogan, promo, valeurs) avec ta police, ta couleur et ta vitesse.",
+    get tagline() {
+      return translateUi("Texte qui défile en boucle, personnalisable");
+    },
+    get description() {
+      return translateUi(
+        "Bandeau horizontal animé : écris ce que tu veux (slogan, promo, valeurs) avec ta police, ta couleur et ta vitesse.",
+      );
+    },
     variants: ["dark", "light", "accent", "outline"],
     previewKey: "marquee-strip",
     defaultContent: {
@@ -331,9 +422,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "gallery-mosaic",
     role: "gallery",
     name: "Galerie Mosaïque",
-    tagline: "Grille libre de visuels (jusqu'à 12)",
-    description:
-      "Grille mosaïque éditoriale : ajoute jusqu'à 12 visuels, ratios mixtes, hover zoom.",
+    get tagline() {
+      return translateUi("Grille libre de visuels (jusqu'à 12)");
+    },
+    get description() {
+      return translateUi(
+        "Grille mosaïque éditoriale : ajoute jusqu'à 12 visuels, ratios mixtes, hover zoom.",
+      );
+    },
     variants: ["mosaic", "uniform", "masonry"],
     previewKey: "gallery-mosaic",
     defaultContent: {
@@ -343,48 +439,54 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     },
   },
   {
-  id: "stats-counter",
-  role: "stats",
-  name: "Chiffres clés",
-  tagline: "3-4 chiffres clés mis en avant",
-  description:
-    "Bloc de chiffres clés avec valeurs grand format, idéal pour présenter des indicateurs et renforcer la confiance.",
-  variants: [
-    "centered",
-    "split",
-    "minimal",
-  ],
-  previewKey: "stats-counter",
-  defaultContent: {
-    title: "Quelques chiffres",
-    stats: [
-      {
-        value: "10K+",
-        label: "Clients satisfaits",
-      },
-      {
-        value: "98%",
-        label: "Avis 5 étoiles",
-      },
-      {
-        value: "48h",
-        label: "Livraison moyenne",
-      },
-      {
-        value: "2 ans",
-        label: "Garantie",
-      },
-    ],
+    id: "stats-counter",
+    role: "stats",
+    name: "Chiffres clés",
+    get tagline() {
+      return translateUi("3-4 chiffres clés mis en avant");
+    },
+    get description() {
+      return translateUi(
+        "Bloc de chiffres clés avec valeurs grand format, idéal pour présenter des indicateurs et renforcer la confiance.",
+      );
+    },
+    variants: ["centered", "split", "minimal"],
+    previewKey: "stats-counter",
+    defaultContent: {
+      title: "Quelques chiffres",
+      stats: [
+        {
+          value: "10K+",
+          label: "Clients satisfaits",
+        },
+        {
+          value: "98%",
+          label: "Avis 5 étoiles",
+        },
+        {
+          value: "48h",
+          label: "Livraison moyenne",
+        },
+        {
+          value: "2 ans",
+          label: "Garantie",
+        },
+      ],
+    },
   },
-  },
-    
+
   {
     id: "video-fullscreen",
     role: "video",
     name: "Vidéo immersive",
-    tagline: "Vidéo plein écran avec overlay et CTA",
-    description:
-      "Section vidéo plein écran (autoplay muet) avec titre, sous-titre et appel à l'action.",
+    get tagline() {
+      return translateUi("Vidéo plein écran avec overlay et CTA");
+    },
+    get description() {
+      return translateUi(
+        "Section vidéo plein écran (autoplay muet) avec titre, sous-titre et appel à l'action.",
+      );
+    },
     variants: ["fullscreen", "boxed", "split"],
     previewKey: "video-fullscreen",
     defaultContent: {
@@ -400,9 +502,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "banner-promo",
     role: "banner",
     name: "Bandeau promo",
-    tagline: "Bande haute pour annonces, codes promo",
-    description:
-      "Petit bandeau supérieur (annonce, code promo, livraison gratuite). Couleur et texte au choix.",
+    get tagline() {
+      return translateUi("Bande haute pour annonces, codes promo");
+    },
+    get description() {
+      return translateUi(
+        "Petit bandeau supérieur (annonce, code promo, livraison gratuite). Couleur et texte au choix.",
+      );
+    },
     variants: ["solid", "gradient", "outline"],
     previewKey: "banner-promo",
     defaultContent: {
@@ -416,9 +523,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "products-grid",
     role: "products",
     name: "Grille produits",
-    tagline: "Tous tes produits affichés en grille",
-    description:
-      "Affiche tous les produits actifs de la boutique en grille (filtrable par catégorie).",
+    get tagline() {
+      return translateUi("Tous tes produits affichés en grille");
+    },
+    get description() {
+      return translateUi(
+        "Affiche tous les produits actifs de la boutique en grille (filtrable par catégorie).",
+      );
+    },
     variants: ["3-up", "4-up", "compact"],
     previewKey: "products-grid",
     defaultContent: {
@@ -432,8 +544,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "product-spotlight",
     role: "products",
     name: "Produit phare",
-    tagline: "Met un produit à l'honneur",
-    description: "Met en scène un produit unique avec image grand format, descriptif et CTA achat.",
+    get tagline() {
+      return translateUi("Met un produit à l'honneur");
+    },
+    get description() {
+      return translateUi(
+        "Met en scène un produit unique avec image grand format, descriptif et CTA achat.",
+      );
+    },
     variants: ["image-left", "image-right", "centered"],
     previewKey: "product-spotlight",
     defaultContent: {
@@ -448,16 +566,30 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "blog-list",
     role: "blog",
     name: "Articles de blog",
-    tagline: "Liste éditoriale d'articles",
-    description: "Cartes d'articles (titre + image + extrait + lien).",
+    get tagline() {
+      return translateUi("Liste éditoriale d'articles");
+    },
+    get description() {
+      return translateUi("Cartes d'articles (titre + image + extrait + lien).");
+    },
     variants: ["grid", "list", "featured"],
     previewKey: "blog-list",
     defaultContent: {
       title: "Le journal",
       subtitle: "",
       articles: [
-        { title: "Notre engagement éco-responsable", excerpt: "Découvrez nos coulisses…", image: null, url: "#" },
-        { title: "Comment choisir sa pièce signature", excerpt: "Guide en 3 étapes.", image: null, url: "#" },
+        {
+          title: "Notre engagement éco-responsable",
+          excerpt: "Découvrez nos coulisses…",
+          image: null,
+          url: "#",
+        },
+        {
+          title: "Comment choisir sa pièce signature",
+          excerpt: "Guide en 3 étapes.",
+          image: null,
+          url: "#",
+        },
       ],
     },
   },
@@ -465,8 +597,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "cart-summary",
     role: "cart",
     name: "Récap panier",
-    tagline: "Bloc panier stylisé",
-    description: "Affiche le panier de l'utilisateur (utile pour une page panier dédiée).",
+    get tagline() {
+      return translateUi("Bloc panier stylisé");
+    },
+    get description() {
+      return translateUi(
+        "Affiche le panier de l'utilisateur (utile pour une page panier dédiée).",
+      );
+    },
     variants: ["full", "compact"],
     previewKey: "cart-summary",
     defaultContent: {
@@ -479,8 +617,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "contact-form",
     role: "contact",
     name: "Formulaire de contact",
-    tagline: "Nom, email et message",
-    description: "Formulaire de contact générique (envoyé en ticket support).",
+    get tagline() {
+      return translateUi("Nom, email et message");
+    },
+    get description() {
+      return translateUi(
+        "Formulaire de contact générique (envoyé en ticket support).",
+      );
+    },
     variants: ["centered", "split"],
     previewKey: "contact-form",
     defaultContent: {
@@ -496,8 +640,12 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "team-grid",
     role: "team",
     name: "L'équipe",
-    tagline: "Cartes membres avec photo et rôle",
-    description: "Présente les membres de l'équipe ou les artisans.",
+    get tagline() {
+      return translateUi("Cartes membres avec photo et rôle");
+    },
+    get description() {
+      return translateUi("Présente les membres de l'équipe ou les artisans.");
+    },
     variants: ["3-up", "4-up", "circle"],
     previewKey: "team-grid",
     defaultContent: {
@@ -514,17 +662,44 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "pricing-table",
     role: "pricing",
     name: "Tarifs / formules",
-    tagline: "Cartes de tarification",
-    description: "Présente 2 à 4 formules tarifaires avec mise en avant possible.",
+    get tagline() {
+      return translateUi("Cartes de tarification");
+    },
+    get description() {
+      return translateUi(
+        "Présente 2 à 4 formules tarifaires avec mise en avant possible.",
+      );
+    },
     variants: ["2-cols", "3-cols", "4-cols"],
     previewKey: "pricing-table",
     defaultContent: {
       title: "Nos formules",
       subtitle: "",
       plans: [
-        { name: "Starter", price: "29€", period: "/mois", features: ["1 boutique", "Support email"], cta: "Choisir", featured: false },
-        { name: "Pro", price: "79€", period: "/mois", features: ["5 boutiques", "Support prioritaire", "Analytics avancé"], cta: "Choisir", featured: true },
-        { name: "Scale", price: "199€", period: "/mois", features: ["Illimité", "Account manager"], cta: "Contact", featured: false },
+        {
+          name: "Starter",
+          price: "29€",
+          period: "/mois",
+          features: ["1 boutique", "Support email"],
+          cta: "Choisir",
+          featured: false,
+        },
+        {
+          name: "Pro",
+          price: "79€",
+          period: "/mois",
+          features: ["5 boutiques", "Support prioritaire", "Analytics avancé"],
+          cta: "Choisir",
+          featured: true,
+        },
+        {
+          name: "Scale",
+          price: "199€",
+          period: "/mois",
+          features: ["Illimité", "Account manager"],
+          cta: "Contact",
+          featured: false,
+        },
       ],
     },
   },
@@ -532,8 +707,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "image-text-split",
     role: "split",
     name: "Image + Texte 50/50",
-    tagline: "Bloc moitié image, moitié texte",
-    description: "Section divisée : image d'un côté, texte + CTA de l'autre. Inversable.",
+    get tagline() {
+      return translateUi("Bloc moitié image, moitié texte");
+    },
+    get description() {
+      return translateUi(
+        "Section divisée : image d'un côté, texte + CTA de l'autre. Inversable.",
+      );
+    },
     variants: ["image-left", "image-right", "image-top"],
     previewKey: "image-text-split",
     defaultContent: {
@@ -548,16 +729,34 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "timeline",
     role: "timeline",
     name: "Frise chronologique",
-    tagline: "Étapes / dates clés",
-    description: "Frise verticale avec dates et descriptifs (idéal page À propos).",
+    get tagline() {
+      return translateUi("Étapes / dates clés");
+    },
+    get description() {
+      return translateUi(
+        "Frise verticale avec dates et descriptifs (idéal page À propos).",
+      );
+    },
     variants: ["vertical", "horizontal"],
     previewKey: "timeline",
     defaultContent: {
       title: "Notre parcours",
       events: [
-        { year: "2022", title: "La première idée", body: "Tout commence dans un petit atelier." },
-        { year: "2023", title: "Premier produit", body: "Lancement de la collection signature." },
-        { year: "2024", title: "100 clients", body: "Une communauté qui grandit." },
+        {
+          year: "2022",
+          title: "La première idée",
+          body: "Tout commence dans un petit atelier.",
+        },
+        {
+          year: "2023",
+          title: "Premier produit",
+          body: "Lancement de la collection signature.",
+        },
+        {
+          year: "2024",
+          title: "100 clients",
+          body: "Une communauté qui grandit.",
+        },
       ],
     },
   },
@@ -565,8 +764,12 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "map-location",
     role: "map",
     name: "Adresse + carte",
-    tagline: "Localise ta boutique sur une carte",
-    description: "Affiche une carte intégrée et tes infos de contact.",
+    get tagline() {
+      return translateUi("Localise ta boutique sur une carte");
+    },
+    get description() {
+      return translateUi("Affiche une carte intégrée et tes infos de contact.");
+    },
     variants: ["split", "centered"],
     previewKey: "map-location",
     defaultContent: {
@@ -580,9 +783,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "product-hero",
     role: "product",
     name: "Produit — Hero",
-    tagline: "Galerie + prix + CTA panier",
-    description:
-      "Bloc principal d'une page produit : grande image (ou galerie), nom, prix, CTA d'achat.",
+    get tagline() {
+      return translateUi("Galerie + prix + CTA panier");
+    },
+    get description() {
+      return translateUi(
+        "Bloc principal d'une page produit : grande image (ou galerie), nom, prix, CTA d'achat.",
+      );
+    },
     variants: ["image-left", "image-right", "split-tall"],
     previewKey: "product-hero",
     defaultContent: {
@@ -595,8 +803,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "product-description",
     role: "product",
     name: "Produit — Description",
-    tagline: "Texte long et histoire du produit",
-    description: "Section éditoriale détaillant le produit (matières, fabrication, usages).",
+    get tagline() {
+      return translateUi("Texte long et histoire du produit");
+    },
+    get description() {
+      return translateUi(
+        "Section éditoriale détaillant le produit (matières, fabrication, usages).",
+      );
+    },
     variants: ["centered", "two-column"],
     previewKey: "product-description",
     defaultContent: {
@@ -609,8 +823,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "product-specs",
     role: "product",
     name: "Produit — Caractéristiques",
-    tagline: "Liste de spécifications",
-    description: "Tableau de spécifications (matière, dimensions, garantie, etc.).",
+    get tagline() {
+      return translateUi("Liste de spécifications");
+    },
+    get description() {
+      return translateUi(
+        "Tableau de spécifications (matière, dimensions, garantie, etc.).",
+      );
+    },
     variants: ["table", "list"],
     previewKey: "product-specs",
     defaultContent: {
@@ -626,8 +846,14 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     id: "product-related",
     role: "product",
     name: "Produit — Recommandés",
-    tagline: "Autres produits de la boutique",
-    description: "Suggère 3 à 4 autres produits pour augmenter le panier moyen.",
+    get tagline() {
+      return translateUi("Autres produits de la boutique");
+    },
+    get description() {
+      return translateUi(
+        "Suggère 3 à 4 autres produits pour augmenter le panier moyen.",
+      );
+    },
     variants: ["3-up", "4-up", "carousel"],
     previewKey: "product-related",
     defaultContent: {
@@ -651,7 +877,12 @@ export interface SceneRecord {
   page_id?: string | null;
   /** Surcharges de style (palette/typo/tailles) — null = hérite de l'identité. */
   style_overrides?: {
-    palette?: { primary?: string; accent?: string; surface?: string; ink?: string };
+    palette?: {
+      primary?: string;
+      accent?: string;
+      surface?: string;
+      ink?: string;
+    };
     fonts?: { display?: string; body?: string };
     sizes?: { h1?: number; body?: number };
     /** Mode Pro — mise en page de la section. */
@@ -695,10 +926,10 @@ export interface SceneRecord {
     };
     /** Mode Pro — fond personnalisé (image, vidéo, couleur, overlay). */
     background?: {
-      color?: string | null;        // HSL "h s% l%"
-      imageUrl?: string | null;     // URL publique
-      videoUrl?: string | null;     // URL publique (mp4/webm)
-      overlayOpacity?: number;      // 0 → 1
+      color?: string | null; // HSL "h s% l%"
+      imageUrl?: string | null; // URL publique
+      videoUrl?: string | null; // URL publique (mp4/webm)
+      overlayOpacity?: number; // 0 → 1
     };
     /** Mode Pro — apparence des boutons CTA dans la scène. */
     button?: {
@@ -723,7 +954,9 @@ export interface SceneRecord {
   } | null;
 }
 
-export function findSceneDefinition(sceneType: string): SceneDefinition | undefined {
+export function findSceneDefinition(
+  sceneType: string,
+): SceneDefinition | undefined {
   return STUDIO_SCENES.find((s) => s.id === sceneType);
 }
 
@@ -732,7 +965,11 @@ export function findSceneDefinition(sceneType: string): SceneDefinition | undefi
  * une page d'accueil non-identique. Le seed (string) sélectionne un template
  * de manière déterministe pour garantir cohérence si on régénère.
  */
-export const STUDIO_BUNDLES: Array<{ key: string; name: string; scenes: Array<{ id: string; variant?: string }> }> = [
+export const STUDIO_BUNDLES: Array<{
+  key: string;
+  name: string;
+  scenes: Array<{ id: string; variant?: string }>;
+}> = [
   {
     key: "narrative",
     name: "Narratif éditorial",
@@ -815,13 +1052,19 @@ function hashSeed(seed: string): number {
 }
 
 export function pickStudioBundle(seed?: string) {
-  if (!seed) return STUDIO_BUNDLES[Math.floor(Math.random() * STUDIO_BUNDLES.length)];
+  if (!seed)
+    return STUDIO_BUNDLES[Math.floor(Math.random() * STUDIO_BUNDLES.length)];
   return STUDIO_BUNDLES[hashSeed(seed) % STUDIO_BUNDLES.length];
 }
 
 /** Bundle initial — varié selon le seed pour ne PAS produire deux sites identiques. */
-export function defaultStudioBundle(seed?: string): Array<
-  Pick<SceneRecord, "role" | "scene_type" | "variant" | "content" | "position" | "is_visible">
+export function defaultStudioBundle(
+  seed?: string,
+): Array<
+  Pick<
+    SceneRecord,
+    "role" | "scene_type" | "variant" | "content" | "position" | "is_visible"
+  >
 > {
   const bundle = pickStudioBundle(seed);
   // Mini PRNG déterministe (mulberry32) — varie aussi la variante de CHAQUE scène
@@ -830,7 +1073,8 @@ export function defaultStudioBundle(seed?: string): Array<
   const seedNum = hashSeed(seed ?? Math.random().toString(36).slice(2));
   let s = seedNum;
   const rand = () => {
-    s |= 0; s = (s + 0x6D2B79F5) | 0;
+    s |= 0;
+    s = (s + 0x6d2b79f5) | 0;
     let t = Math.imul(s ^ (s >>> 15), 1 | s);
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
@@ -839,9 +1083,10 @@ export function defaultStudioBundle(seed?: string): Array<
   const scenes = bundle.scenes.map((sc) => {
     const def = findSceneDefinition(sc.id)!;
     // 35% chance: choisir une variante aléatoire (toujours déterministe via seed)
-    const variant = rand() < 0.35
-      ? def.variants[Math.floor(rand() * def.variants.length)]
-      : (sc.variant ?? def.variants[0]);
+    const variant =
+      rand() < 0.35
+        ? def.variants[Math.floor(rand() * def.variants.length)]
+        : (sc.variant ?? def.variants[0]);
     return { def, variant };
   });
 
