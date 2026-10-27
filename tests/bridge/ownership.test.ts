@@ -18,6 +18,8 @@ const mocks = vi.hoisted(() => ({
   failMerchantLookup: null as string | null,
   failMerchantWrite: null as string | null,
   failShopLookup: null as string | null,
+  loseMerchantCAS: false,
+  loseShopCAS: false,
   sequence: 0,
 }));
 vi.mock("npm:@supabase/supabase-js@2", () => ({
@@ -68,6 +70,7 @@ function from(table: string) {
           ? mocks.merchants.find((row) => row.platform_id === sourceId) ?? null
           : mocks.merchants.map((row) => ({ id: row.id, platform_id: row.platform_id })));
       }
+      if (call.action === "update" && mocks.loseMerchantCAS) return ok(null);
       const value = call.value as Row;
       if (value?.platform_id === mocks.failMerchantWrite) return failed("merchant write unavailable");
       const existing = mocks.merchants.find((row) => row.id === equal("id"));
@@ -88,6 +91,7 @@ function from(table: string) {
           ? mocks.shops.find((row) => row.platform_id === sourceId) ?? null
           : mocks.shops.map((row) => ({ id: row.id, platform_id: row.platform_id })));
       }
+      if (call.action === "update" && mocks.loseShopCAS) return ok(null);
       const existing = mocks.shops.find((row) => row.id === equal("id"));
       const row = {
         ...(existing ?? {}),
@@ -169,6 +173,8 @@ beforeEach(() => {
   mocks.failMerchantLookup = null;
   mocks.failMerchantWrite = null;
   mocks.failShopLookup = null;
+  mocks.loseMerchantCAS = false;
+  mocks.loseShopCAS = false;
   mocks.sequence = 0;
   vi.stubGlobal("Deno", {
     serve: (fn: typeof handler) => { handler = fn; },
@@ -227,6 +233,9 @@ describe("Platform merchant and shop ownership import", () => {
     expect(mocks.shops[0].id).toBe(localShop);
   });
   it.each([
+    { snapshot_at: undefined },
+    { snapshot_at: null },
+    { snapshot_at: "not-a-timestamp" },
     { merchants_complete: undefined },
     { merchants_complete: false },
     { boutiques_complete: undefined },
@@ -312,6 +321,79 @@ describe("Platform merchant and shop ownership import", () => {
     expect(mocks.shops).toHaveLength(1);
     expect(mocks.shops[0].merchant_id).toBe(localOwner);
   });
+
+  it("stores the source snapshot timestamp on both the merchant and the shop", async () => {
+    mocks.merchants.push({ id: localOwner, platform_id: owner, platform_synced_at: null });
+    mocks.shops.push({ id: localShop, platform_id: shop, merchant_id: null, platform_synced_at: null });
+    const data = snapshot();
+    const { body } = await pull(data);
+    expect(body.status).toBe("success");
+    expect(mocks.merchants[0].platform_synced_at).toBe(data.snapshot_at);
+    expect(mocks.shops[0].platform_synced_at).toBe(data.snapshot_at);
+    for (const call of ownershipWrites()) {
+      expect(call.filters).toContainEqual(["is", "platform_synced_at", null]);
+    }
+  });
+  it.each(["2026-10-27T12:00:00.000Z", "2026-10-28T12:00:00.000Z"])(
+    "preserves equal or newer merchant and shop snapshots (%s)", async (storedAt) => {
+      mocks.merchants.push({
+        id: localOwner, platform_id: owner,
+        company_name: "Existing authoritative company",
+        platform_synced_at: storedAt,
+      });
+      mocks.shops.push({
+        id: localShop, platform_id: shop, merchant_id: localOtherOwner,
+        name: "Existing authoritative shop", platform_synced_at: storedAt,
+      });
+      const before = { merchants: structuredClone(mocks.merchants), shops: structuredClone(mocks.shops) };
+      const { body } = await pull(snapshot());
+      expect(body.status).toBe("success");
+      expect(ownershipWrites()).toEqual([]);
+      expect(mocks.merchants).toEqual(before.merchants);
+      expect(mocks.shops).toEqual(before.shops);
+    },
+  );
+  it("keeps the merchant mapping usable when its identical snapshot is replayed", async () => {
+    mocks.merchants.push({
+      id: localOwner, platform_id: owner,
+      platform_synced_at: snapshot().snapshot_at,
+    });
+    mocks.shops.push({ id: localShop, platform_id: shop, merchant_id: null, platform_synced_at: null });
+    const { body } = await pull(snapshot());
+    expect(body.status).toBe("success");
+    expect(ownershipWrites().filter((call) => call.table === "user_accounts")).toEqual([]);
+    expect(mocks.shops[0].merchant_id).toBe(localOwner);
+  });
+  it("preserves shop ownership and reports partial when a concurrent update wins the timestamp comparison", async () => {
+    const previous = "2026-10-26T12:00:00.000Z";
+    mocks.loseShopCAS = true;
+    mocks.merchants.push({ id: localOwner, platform_id: owner, platform_synced_at: previous });
+    mocks.shops.push({
+      id: localShop, platform_id: shop,
+      merchant_id: localOtherOwner, platform_synced_at: previous,
+    });
+    const { body } = await pull(snapshot());
+    expect(body.status).toBe("partial");
+    expect(mocks.shops[0]).toMatchObject({
+      merchant_id: localOtherOwner, platform_synced_at: previous,
+    });
+    expect(shopWrites()).toHaveLength(1);
+    expect(shopWrites()[0].filters).toContainEqual(["eq", "platform_synced_at", previous]);
+    expect(shopWrites()[0].action).toBe("update");
+  });
+  it("skips the shop when the merchant update loses its timestamp comparison", async () => {
+    mocks.loseMerchantCAS = true;
+    mocks.merchants.push({ id: localOwner, platform_id: owner, platform_synced_at: null });
+    mocks.shops.push({ id: localShop, platform_id: shop, merchant_id: localOtherOwner });
+    const { body } = await pull(snapshot());
+    expect(body.status).toBe("partial");
+    expect(mocks.merchants[0].platform_synced_at).toBeNull();
+    expect(mocks.shops[0].merchant_id).toBe(localOtherOwner);
+    expect(shopWrites()).toEqual([]);
+    const write = ownershipWrites().find((call) => call.table === "user_accounts");
+    expect(write?.filters).toContainEqual(["is", "platform_synced_at", null]);
+  });
+
   it("resolves an owner beyond a 1,000-row REST index limit without a global merchant scan", async () => {
     const rows = Array.from({ length: 1001 }, (_, index) => {
       const suffix = String(index + 1).padStart(12, "0");
