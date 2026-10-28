@@ -1,6 +1,7 @@
 import { translateUi, getUiLocale } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { isStoryActive, normalizeStories } from "@/hooks/useStore";
 import {
   ArrowLeft,
   ArrowRight,
@@ -144,7 +145,8 @@ export default function StoreBoutique() {
             tagline,
             logo_url,
             cover_image_url,
-            target_markets
+            target_markets,
+            highlight_media
           `,
         )
         .eq("slug", slug)
@@ -390,6 +392,24 @@ export default function StoreBoutique() {
    * ============================================================
    */
 
+  const heroStories = useMemo(
+    () =>
+      normalizeStories(
+        (boutiqueQuery.data as { highlight_media?: unknown } | undefined)
+          ?.highlight_media,
+      ).filter((story) => isStoryActive(story)),
+    [boutiqueQuery.data],
+  );
+  const [storyIndex, setStoryIndex] = useState(0);
+  useEffect(() => {
+    if (heroStories.length <= 1) return;
+    const interval = window.setInterval(
+      () => setStoryIndex((i) => (i + 1) % heroStories.length),
+      3_200,
+    );
+    return () => window.clearInterval(interval);
+  }, [heroStories.length]);
+
   const isLoading =
     boutiqueQuery.isLoading ||
     (Boolean(boutique?.id) &&
@@ -443,6 +463,7 @@ export default function StoreBoutique() {
   }
 
   const displayedProducts = products.slice(0, 8);
+  const activeStory = heroStories[storyIndex % Math.max(heroStories.length, 1)];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -526,9 +547,20 @@ export default function StoreBoutique() {
           <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
             <div className="relative overflow-hidden rounded-2xl border bg-muted">
               <div className="relative aspect-[16/7] min-h-[280px] w-full">
-                {boutique.cover_image_url ? (
+                {activeStory?.kind === "video" ? (
+                  <video
+                    key={activeStory.id}
+                    src={activeStory.url}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                  />
+                ) : activeStory || boutique.cover_image_url ? (
                   <img
-                    src={boutique.cover_image_url}
+                    key={activeStory?.id ?? "cover"}
+                    src={activeStory?.url ?? boutique.cover_image_url ?? ""}
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover"
                   />

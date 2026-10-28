@@ -12,6 +12,7 @@ import { StorefrontHeader } from "@/components/storefront/StorefrontHeader";
 import { StorefrontFooter } from "@/components/storefront/StorefrontFooter";
 import { CartDrawer } from "@/components/storefront/CartDrawer";
 import { StorefrontAmbientAudio } from "@/components/storefront/StorefrontAmbientAudio";
+import { OwnerEditButton } from "@/components/storefront/OwnerEditButton";
 import { PageSeoInspector } from "@/components/storefront/PageSeoInspector";
 
 import { CartProvider } from "@/contexts/CartContext";
@@ -462,7 +463,8 @@ export default function BoutiquePublic() {
             primaryColor={primaryColor}
           />
 
-          <PageSeoInspector
+          <OwnerEditButton boutiqueId={boutique.id} visible={Boolean(user) && user.id === boutique.user_id} />
+<PageSeoInspector
             visible={Boolean(user) && user.id === boutique.user_id}
             canonical={seoCanonical}
             activeLocales={boutique?.seo_active_locales}
@@ -505,7 +507,8 @@ export default function BoutiquePublic() {
 
       <StorefrontAmbientAudio src={ambientAudioUrl} volume={ambientVolume} />
 
-      <PageSeoInspector
+      <OwnerEditButton boutiqueId={boutique.id} visible={Boolean(user) && user.id === boutique.user_id} />
+<PageSeoInspector
         visible={Boolean(user) && user.id === boutique.user_id}
         canonical={seoCanonical}
         activeLocales={boutique?.seo_active_locales}

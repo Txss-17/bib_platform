@@ -728,6 +728,16 @@ export default function App() {
                     />
 
                     <Route
+                      path="/boutique/:slug/p/:pageSlug"
+                      element={<BoutiqueCustomPage />}
+                    />
+
+                    <Route
+                      path="/dashboard/boutique/:id"
+                      element={<LegacyBoutiqueEditRedirect />}
+                    />
+
+                    <Route
                       path="/dashboard/profil"
                       element={
                         <ProtectedRoute>
@@ -908,4 +918,9 @@ export default function App() {
       </TooltipProvider>
     </QueryClientProvider>
   );
+}
+
+function LegacyBoutiqueEditRedirect() {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={id ? `/dashboard/boutiques/${id}/edit` : "/dashboard/boutiques"} replace />;
 }

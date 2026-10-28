@@ -114,7 +114,7 @@ function detectIssues(
           "Partagé avec {v0} autre(s) boutique(s) — Google ne saura pas laquelle indexer.",
           { v0: dupGroup.length - 1 },
         ),
-        fixHref: `/dashboard/boutique/${b.id}`,
+        fixHref: `/dashboard/boutiques/${b.id}/edit`,
         fixLabel: "Renommer la boutique",
       });
     }
@@ -128,7 +128,7 @@ function detectIssues(
         detail: !b.description
           ? "Aucune description renseignée."
           : `Description trop courte (${b.description.length}/50 min).`,
-        fixHref: `/dashboard/boutique/${b.id}`,
+        fixHref: `/dashboard/boutiques/${b.id}/edit`,
         fixLabel: "Éditer la description",
       });
     }
@@ -142,7 +142,7 @@ function detectIssues(
         detail: translateUi(
           "Aucune image de couverture ni logo — pas d'aperçu social (Facebook, WhatsApp, X).",
         ),
-        fixHref: `/dashboard/boutique/${b.id}`,
+        fixHref: `/dashboard/boutiques/${b.id}/edit`,
         fixLabel: "Ajouter une image",
       });
     }
@@ -157,7 +157,7 @@ function detectIssues(
           "Titre court ({v0}/20 min recommandé pour le SEO).",
           { v0: b.name.length },
         ),
-        fixHref: `/dashboard/boutique/${b.id}`,
+        fixHref: `/dashboard/boutiques/${b.id}/edit`,
         fixLabel: "Renommer la boutique",
       });
     }

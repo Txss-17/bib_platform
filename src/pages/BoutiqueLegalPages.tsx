@@ -53,7 +53,7 @@ function LegalPageContent({ type }: LegalPageProps) {
   }
 
   const theme = boutique.theme_settings as unknown as ThemeSettings | null;
-  const primaryColor = theme?.primaryColor || "#3b82f6";
+  const primaryColor = theme?.primaryColor || "#102036";
 
   const titles: Record<string, string> = {
     cgv: "Conditions Générales de Vente",

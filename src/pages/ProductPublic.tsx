@@ -129,7 +129,7 @@ export default function ProductPublic() {
   const themeSettings =
     boutique?.theme_settings as unknown as ThemeSettings | null;
 
-  const primaryColor = themeSettings?.primaryColor || "#3b82f6";
+  const primaryColor = themeSettings?.primaryColor || "#102036";
 
   const productName = product?.supplier_products?.name || "Produit";
 

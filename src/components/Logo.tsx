@@ -27,27 +27,16 @@ export interface BrandIconProps {
  */
 export function BrandIcon({ size = 36, className = "" }: BrandIconProps) {
   useLanguage();
-  // Width derived from displayed aspect ratio so the crop stays pixel-true.
-  const width = Math.round(size * ICON_CROP.ratio);
+  // The asset is the standalone icon (≈36×37), shown whole without cropping.
   return (
-    <span
-      className={`relative inline-block overflow-hidden shrink-0 ${className}`}
-      style={{ width, height: size }}
+    <img
+      src={logoImg}
+      alt=""
       aria-hidden
-    >
-      <img
-        src={logoImg}
-        alt=""
-        draggable={false}
-        className="absolute select-none pointer-events-none max-w-none"
-        style={{
-          width: `${100 / ICON_CROP.fracW}%`,
-          height: "auto",
-          left: `${-ICON_CROP.fracX * (100 / ICON_CROP.fracW)}%`,
-          top: `${-ICON_CROP.fracY * (100 / ICON_CROP.fracW) * (629 / 1243)}%`,
-        }}
-      />
-    </span>
+      draggable={false}
+      className={`inline-block shrink-0 select-none object-contain ${className}`}
+      style={{ height: size, width: "auto" }}
+    />
   );
 }
 

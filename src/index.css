@@ -40,12 +40,12 @@
     --success: 152 55% 38%;
     --success-ink: 152 65% 25%;
     --warning-ink: 32 80% 28%;
-    --info-ink: 215 75% 36%;
+    --info-ink: 215 55% 18%;
     --accent-ink: 41 65% 30%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 48%;
     --warning-foreground: 215 55% 14%;
-    --info: 215 75% 48%;
+    --info: 215 55% 20%;
     --info-foreground: 0 0% 100%;
 
     --border: 40 15% 88%;

@@ -371,7 +371,7 @@ function AllProductsContent() {
     enabled: Boolean(boutique?.id),
   });
 
-  const primaryColor = boutique?.theme_settings?.primaryColor ?? "#3b82f6";
+  const primaryColor = boutique?.theme_settings?.primaryColor ?? "#102036";
 
   useSEO({
     title: boutique ? `Tous les produits — ${boutique.name}` : "Produits",

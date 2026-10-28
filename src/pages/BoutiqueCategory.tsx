@@ -450,7 +450,7 @@ function CategoryContent() {
 
   const primaryColor =
     boutique?.theme_settings?.primaryColor ??
-    "#3b82f6";
+    "#102036";
 
   const availableMarkets = useMemo(() => {
     return [

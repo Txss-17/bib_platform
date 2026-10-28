@@ -189,7 +189,7 @@ function ProductEmptyState({
           "Parcourez le catalogue fournisseur autorisé pour sélectionner les produits destinés à vos boutiques.",
         )}
         action={
-          <Button asChild className="gap-2 bg-blue-700 hover:bg-blue-800">
+          <Button asChild className="gap-2 bg-primary hover:bg-primary">
             <Link to="/dashboard/produits-fournisseurs">
               <Plus className="h-4 w-4" />
               {translateUi("Parcourir le catalogue")}
@@ -487,19 +487,19 @@ export default function Produits() {
   return (
     <DashboardLayout>
       <div className="space-y-6 pb-8">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#071D49] via-[#103B82] to-[#1764C0] p-5 text-white shadow-lg shadow-blue-950/10 sm:p-8">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-primary p-5 text-white shadow-lg shadow-primary/10 sm:p-8">
           <div className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full border border-white/10" />
           <div className="pointer-events-none absolute -right-2 -top-10 h-44 w-44 rounded-full border border-warning/30" />
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-medium text-blue-50">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-medium text-primary-foreground">
                 <Package className="h-3.5 w-3.5 text-warning-ink" />
                 {translateUi("Espace marchand · Catalogue produits")}
               </div>
               <h1 className="text-2xl font-semibold tracking-tight sm:text-4xl">
                 {translateUi("Pilotez votre catalogue.")}
               </h1>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-blue-100 sm:text-base">
+              <p className="mt-3 max-w-xl text-sm leading-6 text-primary-foreground sm:text-base">
                 {translateUi(
                   "Suivez vos produits, contrôlez les validations et surveillez les stocks avant qu’ils ne perturbent vos ventes.",
                 )}
@@ -518,7 +518,7 @@ export default function Produits() {
 
           <div className="relative mt-7 grid grid-cols-2 gap-3 border-t border-white/15 pt-5 sm:grid-cols-4">
             <div>
-              <p className="text-xs text-blue-200">
+              <p className="text-xs text-primary-foreground/75">
                 {translateUi("Produits référencés")}
               </p>
               <p className="mt-1 text-2xl font-semibold">
@@ -526,7 +526,7 @@ export default function Produits() {
               </p>
             </div>
             <div>
-              <p className="text-xs text-blue-200">
+              <p className="text-xs text-primary-foreground/75">
                 {translateUi("Produits actifs")}
               </p>
               <p className="mt-1 text-2xl font-semibold">
@@ -534,7 +534,7 @@ export default function Produits() {
               </p>
             </div>
             <div>
-              <p className="text-xs text-blue-200">
+              <p className="text-xs text-primary-foreground/75">
                 {translateUi("Échantillons validés")}
               </p>
               <p className="mt-1 text-2xl font-semibold">
@@ -542,7 +542,7 @@ export default function Produits() {
               </p>
             </div>
             <div>
-              <p className="text-xs text-blue-200">
+              <p className="text-xs text-primary-foreground/75">
                 {translateUi("Ventes cumulées")}
               </p>
               <p className="mt-1 text-2xl font-semibold">
@@ -707,7 +707,7 @@ export default function Produits() {
 
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="inline-block h-2 w-2 rounded-full bg-blue-600" />
+                <span className="inline-block h-2 w-2 rounded-full bg-primary" />
                 <span>
                   {translateUi("Affichage de") + " "}
                   <strong className="text-foreground">
