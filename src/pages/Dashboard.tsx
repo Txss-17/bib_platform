@@ -1,3 +1,4 @@
+import { RandomProductShowcase } from "@/components/shared/RandomProductShowcase";
 import { translateUi, getUiLocale } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -257,7 +258,7 @@ export default function Dashboard() {
   const recommendedProducts =
     supplierProducts
       ?.filter((product) => product.rotation_indicator === "green")
-      .slice(0, 3) ?? [];
+      .slice(0, 12) ?? [];
 
   const revenue = orderStats?.revenue ?? 0;
   const totalOrders = orderStats?.total ?? 0;
@@ -925,39 +926,21 @@ export default function Dashboard() {
                   </Link>
                 </div>
               ) : (
-                <div className="mt-4 space-y-3">
-                  {recommendedProducts.map((product) => (
-                    <article
-                      key={product.id}
-                      className="flex gap-3 rounded-xl border border-border/70 p-3 transition-colors hover:bg-muted/30"
-                    >
-                      <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-muted">
-                        {product.image_url ? (
-                          <img
-                            src={product.image_url}
-                            alt=""
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                            <Package className="h-5 w-5" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="line-clamp-2 text-sm font-semibold text-foreground">
-                          {product.name}
-                        </p>
-                        <p className="mt-1 text-xs font-semibold text-primary">
-                          {euro(Number(product.base_price))}
-                        </p>
-                        <p className="mt-1 text-[11px] text-muted-foreground">
-                          {translateUi("Marge maximale :") + " "}
-                          {product.max_margin_percent}%
-                        </p>
-                      </div>
-                    </article>
-                  ))}
+                <div className="mt-4">
+                  <RandomProductShowcase
+                    items={recommendedProducts.map((product) => ({
+                      id: product.id,
+                      name: product.name,
+                      imageUrl: product.image_url,
+                      priceLabel: euro(Number(product.base_price)),
+                      detail:
+                        translateUi("Marge maximale :") +
+                        " " +
+                        product.max_margin_percent +
+                        "%",
+                      href: "/dashboard/catalogue",
+                    }))}
+                  />
                 </div>
               )}
             </Panel>
