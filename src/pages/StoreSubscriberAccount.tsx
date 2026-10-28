@@ -1,3 +1,5 @@
+import { RandomProductShowcase } from "@/components/shared/RandomProductShowcase";
+import { useStoreProducts } from "@/hooks/useStore";
 import { translateUi, getUiLocale } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link } from "react-router-dom";
@@ -25,6 +27,7 @@ const BIB_SUBSCRIBER_PRICE = 4.99;
 export default function StoreSubscriberAccount() {
   useLanguage();
   const { user, profile, loading: authLoading } = useAuth();
+  const { data: storeProducts = [] } = useStoreProducts();
 
   const {
     subscription,
@@ -412,7 +415,27 @@ export default function StoreSubscriberAccount() {
           </div>
 
           {/* Sidebar */}
-          <aside className="lg:sticky lg:top-6 lg:self-start">
+          <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
+            {storeProducts.length > 0 && (
+              <div className="rounded-2xl border bg-card p-5">
+                <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {translateUi("Recommandé pour vous")}
+                </p>
+                <RandomProductShowcase
+                  items={storeProducts.slice(0, 24).map((product) => ({
+                    id: product.id,
+                    name: product.name,
+                    imageUrl: product.image_url,
+                    priceLabel: new Intl.NumberFormat(getUiLocale(), {
+                      style: "currency",
+                      currency: "EUR",
+                    }).format(product.price),
+                    detail: product.boutique_name,
+                    href: `/store/product/${product.id}`,
+                  }))}
+                />
+              </div>
+            )}
             <div className="rounded-2xl border bg-card">
               <div className="border-b p-5">
                 <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
