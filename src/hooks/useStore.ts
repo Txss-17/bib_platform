@@ -24,6 +24,15 @@ export interface StoreStory {
   ends_at?: string | null;
 }
 
+export function isStoryActive(story: StoreStory, now: number = Date.now()) {
+  if (!story.url || story.enabled === false) return false;
+  const startsAt = story.starts_at ? new Date(story.starts_at).getTime() : null;
+  const endsAt = story.ends_at ? new Date(story.ends_at).getTime() : null;
+  if (startsAt !== null && (Number.isNaN(startsAt) || now < startsAt)) return false;
+  if (endsAt !== null && (Number.isNaN(endsAt) || now >= endsAt)) return false;
+  return true;
+}
+
 export interface StoreBoutique {
   id: string;
   name: string;
@@ -142,7 +151,7 @@ function normalizeText(
   return normalized || fallback;
 }
 
-function normalizeStories(
+export function normalizeStories(
   value: unknown,
 ): StoreStory[] {
   if (!Array.isArray(value)) {
