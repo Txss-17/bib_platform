@@ -1,6 +1,7 @@
 import { translateUi, getUiLocale } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { isStoryActive, normalizeStories } from "@/hooks/useStore";
 import {
   ArrowLeft,
   ArrowRight,
