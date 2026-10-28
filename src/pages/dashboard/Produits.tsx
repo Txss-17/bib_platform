@@ -487,7 +487,7 @@ export default function Produits() {
   return (
     <DashboardLayout>
       <div className="space-y-6 pb-8">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#071D49] via-[#103B82] to-[#1764C0] p-5 text-white shadow-lg shadow-blue-950/10 sm:p-8">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-primary p-5 text-white shadow-lg shadow-primary/10 sm:p-8">
           <div className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full border border-white/10" />
           <div className="pointer-events-none absolute -right-2 -top-10 h-44 w-44 rounded-full border border-warning/30" />
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">

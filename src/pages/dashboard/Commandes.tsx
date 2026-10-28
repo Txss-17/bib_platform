@@ -570,7 +570,7 @@ export default function Commandes() {
     <DashboardLayout>
       <div className="mx-auto w-full max-w-[1500px] space-y-7 pb-10">
         {/* Hero */}
-        <section className="relative isolate overflow-hidden rounded-3xl bg-primary p-5 text-primary-foreground shadow-lg shadow-blue-950/10 sm:p-8 lg:p-9">
+        <section className="relative isolate overflow-hidden rounded-3xl bg-primary p-5 text-primary-foreground shadow-lg shadow-primary/10 sm:p-8 lg:p-9">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full border-[36px] border-white/[0.04]"

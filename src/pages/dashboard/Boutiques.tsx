@@ -202,12 +202,12 @@ function BoutiqueCard({
   const stockStatus: SignalStatus = health?.signals.stock ?? "warning";
 
   return (
-    <article className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-info/30 hover:shadow-lg hover:shadow-blue-950/5">
-      <div className="h-1 bg-gradient-to-r from-[#0A2B65] via-primary to-amber-300" />
+    <article className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-info/30 hover:shadow-lg hover:shadow-primary/5">
+      <div className="h-1 bg-gradient-to-r from-primary via-primary to-amber-300" />
 
       <div className="space-y-5 p-4 sm:p-5">
         <div className="flex items-start gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0A2B65] to-primary text-white shadow-sm shadow-blue-950/15">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary text-white shadow-sm shadow-primary/15">
             <Store className="h-5 w-5" />
           </div>
 
@@ -459,7 +459,7 @@ export default function Boutiques() {
   return (
     <DashboardLayout>
       <div className="space-y-6 pb-8">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#071D49] via-[#103B82] to-[#1764C0] p-5 text-white shadow-lg shadow-blue-950/10 sm:p-8">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-primary p-5 text-white shadow-lg shadow-primary/10 sm:p-8">
           <div className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full border border-white/10" />
           <div className="pointer-events-none absolute -right-2 -top-12 h-48 w-48 rounded-full border border-warning/30" />
 
