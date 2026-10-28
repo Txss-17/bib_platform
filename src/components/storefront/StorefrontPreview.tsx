@@ -281,7 +281,7 @@ export function StorefrontPreview({
    * ------------------------------------------------------------------------
    */
 
-  const primaryColor = themeSettings?.primaryColor || "#3b82f6";
+  const primaryColor = themeSettings?.primaryColor || "#102036";
 
   const secondaryColor = themeSettings?.secondaryColor || "#1e40af";
 
