@@ -938,7 +938,7 @@ export default function Dashboard() {
                         " " +
                         product.max_margin_percent +
                         "%",
-                      href: "/dashboard/catalogue",
+                      href: "/dashboard/produits-fournisseurs",
                     }))}
                   />
                 </div>
