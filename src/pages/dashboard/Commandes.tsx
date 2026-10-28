@@ -80,7 +80,7 @@ const statusConfig: Record<
     },
     icon: Package,
     className: "border-info/30 bg-info/10 text-info-ink",
-    dot: "bg-blue-600",
+    dot: "bg-primary",
   },
   shipped: {
     get label() {
@@ -88,7 +88,7 @@ const statusConfig: Record<
     },
     icon: Truck,
     className: "border-info/30 bg-info/10 text-info-ink",
-    dot: "bg-indigo-500",
+    dot: "bg-primary",
   },
   delivered: {
     get label() {
@@ -577,7 +577,7 @@ export default function Commandes() {
           />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -bottom-32 right-1/4 -z-10 h-64 w-64 rounded-full bg-blue-400/10 blur-3xl"
+            className="pointer-events-none absolute -bottom-32 right-1/4 -z-10 h-64 w-64 rounded-full bg-primary/10/10 blur-3xl"
           />
 
           <div className="flex flex-col justify-between gap-7 lg:flex-row lg:items-end">
@@ -651,7 +651,7 @@ export default function Commandes() {
                 <ShoppingBag className="h-5 w-5 text-primary-foreground/80" />
               </span>
               <div>
-                <p className="text-xs text-blue-200">
+                <p className="text-xs text-primary-foreground/75">
                   {translateUi("Commandes visibles")}
                 </p>
                 <p className="mt-0.5 text-xl font-bold">
@@ -665,7 +665,7 @@ export default function Commandes() {
                 <Clock3 className="h-5 w-5 text-warning-ink" />
               </span>
               <div>
-                <p className="text-xs text-blue-200">
+                <p className="text-xs text-primary-foreground/75">
                   {translateUi("À valider")}
                 </p>
                 <p className="mt-0.5 text-xl font-bold">
@@ -679,7 +679,7 @@ export default function Commandes() {
                 <Radio className="h-5 w-5 text-success-ink" />
               </span>
               <div>
-                <p className="text-xs text-blue-200">
+                <p className="text-xs text-primary-foreground/75">
                   {translateUi("Flux de commandes")}
                 </p>
                 <p className="mt-0.5 text-sm font-semibold">
@@ -940,7 +940,7 @@ export default function Commandes() {
                   >
                     <span
                       className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
-                        event.kind === "new" ? "bg-warning" : "bg-blue-600"
+                        event.kind === "new" ? "bg-warning" : "bg-primary"
                       }`}
                     />
                     <div className="min-w-0 flex-1">

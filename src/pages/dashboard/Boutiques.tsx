@@ -203,11 +203,11 @@ function BoutiqueCard({
 
   return (
     <article className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-info/30 hover:shadow-lg hover:shadow-blue-950/5">
-      <div className="h-1 bg-gradient-to-r from-[#0A2B65] via-blue-600 to-amber-300" />
+      <div className="h-1 bg-gradient-to-r from-[#0A2B65] via-primary to-amber-300" />
 
       <div className="space-y-5 p-4 sm:p-5">
         <div className="flex items-start gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0A2B65] to-blue-600 text-white shadow-sm shadow-blue-950/15">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#0A2B65] to-primary text-white shadow-sm shadow-blue-950/15">
             <Store className="h-5 w-5" />
           </div>
 
@@ -299,7 +299,7 @@ function BoutiqueCard({
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          <Button asChild className="bg-blue-700 text-white hover:bg-blue-800">
+          <Button asChild className="bg-primary text-white hover:bg-primary">
             <Link to={editPath}>
               <Settings2 className="mr-2 h-4 w-4" />
               {translateUi("Gérer")}
@@ -465,7 +465,7 @@ export default function Boutiques() {
 
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-medium text-blue-50">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-medium text-primary-foreground">
                 <Store className="h-3.5 w-3.5 text-warning-ink" />
                 {translateUi("Espace marchand · Portefeuille")}
               </div>
@@ -474,7 +474,7 @@ export default function Boutiques() {
                 {translateUi("Vos boutiques, un seul cockpit.")}
               </h1>
 
-              <p className="mt-3 max-w-xl text-sm leading-6 text-blue-100 sm:text-base">
+              <p className="mt-3 max-w-xl text-sm leading-6 text-primary-foreground sm:text-base">
                 {translateUi(
                   "Suivez la publication, la disponibilité des produits et les opérations de chaque boutique depuis un espace centralisé.",
                 )}
@@ -494,19 +494,19 @@ export default function Boutiques() {
 
           <div className="relative mt-7 grid grid-cols-2 gap-4 border-t border-white/15 pt-5 sm:grid-cols-4">
             <div>
-              <p className="text-xs text-blue-200">
+              <p className="text-xs text-primary-foreground/75">
                 {translateUi("Boutiques")}
               </p>
               <p className="mt-1 text-2xl font-semibold">{portfolio.total}</p>
             </div>
             <div>
-              <p className="text-xs text-blue-200">{translateUi("En ligne")}</p>
+              <p className="text-xs text-primary-foreground/75">{translateUi("En ligne")}</p>
               <p className="mt-1 text-2xl font-semibold">
                 {portfolio.published}
               </p>
             </div>
             <div>
-              <p className="text-xs text-blue-200">
+              <p className="text-xs text-primary-foreground/75">
                 {translateUi("Produits actifs")}
               </p>
               <p className="mt-1 text-2xl font-semibold">
@@ -514,7 +514,7 @@ export default function Boutiques() {
               </p>
             </div>
             <div>
-              <p className="text-xs text-blue-200">
+              <p className="text-xs text-primary-foreground/75">
                 {translateUi("Commandes à traiter")}
               </p>
               <p className="mt-1 text-2xl font-semibold">
@@ -649,7 +649,7 @@ export default function Boutiques() {
                 <Button
                   asChild
                   size="lg"
-                  className="gap-2 bg-blue-700 hover:bg-blue-800"
+                  className="gap-2 bg-primary hover:bg-primary"
                 >
                   <Link to="/dashboard/boutiques/create">
                     <Plus className="h-5 w-5" />
