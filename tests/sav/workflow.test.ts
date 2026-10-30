@@ -99,6 +99,14 @@ describe("Seller SAV response / 48-hour insurance handoff",() => {
     await db.query("UPDATE public.order_issues SET deadline_at=now()-interval '1 minute' WHERE id=$1",[issue]);
     expect(((await escalate()) as any).rows).toHaveLength(0);
   });
+  it("refuses takeover when the insurance subscription belongs to another Stripe environment",async () => {
+    await db.query("UPDATE public.order_issues SET created_at=now()-interval '49 hours',deadline_at=now()-interval '1 hour' WHERE id=$1",[issue]);
+    await db.query("UPDATE public.subscriptions SET environment='sandbox' WHERE id=$1",[subscription]);
+    expect(((await escalate("live")) as any).rows).toHaveLength(0);
+    expect((await db.query("SELECT status::text FROM public.order_issues WHERE id=$1",[issue])).rows[0].status).toBe("pending");
+    await db.query("UPDATE public.subscriptions SET environment='live' WHERE id=$1",[subscription]);
+    expect(((await escalate("live")) as any).rows).toHaveLength(1);
+  });
   it("keeps sandbox and live escalation passes isolated",async () => {
     await db.query("UPDATE public.order_issues SET created_at=now()-interval '49 hours',deadline_at=now()-interval '1 hour' WHERE id=$1",[issue]);
     expect(((await escalate("sandbox")) as any).rows).toHaveLength(0);
