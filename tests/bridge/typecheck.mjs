@@ -27,7 +27,7 @@ const config = {
   },
   files: [
     resolve(here, "deno.d.ts"),
-    ...["intranet-import", "intranet-export", "partner-portal-action"].map(
+    ...["intranet-import", "intranet-export", "partner-portal-action", "sav-escalation-worker"].map(
       (name) => platform + "/supabase/functions/" + name + "/index.ts",
     ),
     intranet + "/supabase/functions/platform-bridge/index.ts",
