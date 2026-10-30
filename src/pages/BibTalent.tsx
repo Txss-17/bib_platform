@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, ArrowUpRight, Compass, Lightbulb, Pause, Play, Sparkles, Users, Workflow, Shapes } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSemotUUORqFwUdM60S1BAW-79YzSm-5TiocRvm-wuTUiCevvg/viewform";
 const GOLD = "#b88949";
@@ -56,6 +57,7 @@ function Join({secondary=false}:{secondary?:boolean}) {
 }
 
 export default function BibTalent(){
+ useLanguage(); // Shared language state; the BIB Talent pilot's public editorial is French-first.
  useSEO({title:"BIB Talent — Imaginez et construisez BIB avec nous",description:"BIB Talent est l'espace de contribution et d'exploration de Brand-in-a-Box : idées, innovation, produit et communauté."});
  return <div className="min-h-screen bg-[#fbfcfd] font-sans text-[#18334e]" style={{colorScheme:"light"}}>
    <header className="sticky top-0 z-30 border-b border-[#e3eaf0] bg-white/95 backdrop-blur">
