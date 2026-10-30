@@ -26,7 +26,7 @@ export default function BibTalent(){
  return <div className="min-h-screen bg-[#fbfcfd] font-sans text-[#18334e]" style={{colorScheme:"light"}}>
    <header className="sticky top-0 z-30 border-b border-[#e3eaf0] bg-white/95 backdrop-blur">
      <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8" aria-label="Navigation BIB Talent">
-       <a href="/carrieres/talent" className="text-xl font-black tracking-tight text-[#18334e]">BIB <span className="font-medium text-[#b88949]">TALENT</span></a>
+       <a href="/bib-talent" className="text-xl font-black tracking-tight text-[#18334e]">BIB <span className="font-medium text-[#b88949]">TALENT</span></a>
        <div className="flex items-center gap-5">
          <a href="#projet-bib" className="hidden text-sm font-semibold text-[#43566a] hover:text-[#b88949] sm:inline">Le projet BIB</a>
          <a href="#decouvrir" className="hidden text-sm font-semibold text-[#43566a] hover:text-[#b88949] lg:inline">Voir le film</a>
