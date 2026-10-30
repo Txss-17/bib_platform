@@ -71,6 +71,7 @@ Deno.serve(async (req) => {
     customizationRows,
     restockRows,
     refundRows,
+    savRows,
   ] = await Promise.all([
     // Full reference snapshots keep ownership and commission joins valid for incremental orders.
     readAll(() =>
@@ -183,12 +184,22 @@ Deno.serve(async (req) => {
         .lte("updated_at", snapshotAt)
         .order("id"),
     ),
+    // Append-only, private operational handoffs; no customer email or claim message.
+    readAll(() =>
+      sb
+        .from("sav_escalation_events")
+        .select("issue_id, order_id, boutique_id, merchant_id, due_at, escalated_at, environment, reason")
+        .gte("escalated_at", since)
+        .lte("escalated_at", snapshotAt)
+        .order("issue_id"),
+    ),
   ]);
 
   // An unavailable required source is an export failure, never an empty snapshot.
   const appsData = apps.data ?? [];
 
   const err =
+    savRows.error ||
     refundRows.error ||
     restockRows.error ||
     customizationRows.error ||
@@ -817,6 +828,8 @@ Deno.serve(async (req) => {
     fees,
 
     refunds,
+
+    sav_escalations: savRows.data ?? [],
 
     payouts,
 
