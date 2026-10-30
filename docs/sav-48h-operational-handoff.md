@@ -9,7 +9,7 @@
 - L'action `partial_refund` n'est jamais acceptée par ce service ; elle doit suivre le service Stripe dédié et son propre journal.
 - Le dépassement de 48 h **n'interdit pas à lui seul** une réponse du marchand. Tant que BIB n'a pas effectivement enregistré une escalade atomique, le vendeur conserve son droit de répondre ; après escalade, les décisions sont traitées par BIB. Ceci évite de bloquer indéfiniment les vendeurs non assurés et permet à la première opération valide (réponse ou reprise) de gagner la course transactionnelle.
 - `escalate_unanswered_order_issues` peut traiter jusqu'à 500 dossiers par exécution, par lot paginé avec `FOR UPDATE SKIP LOCKED`. Seuls les signalements `pending` **créés depuis au moins 48 h**, dont l'échéance est atteinte, sans réponse marchand et associés à une assurance BIB active et à un abonnement d'assurance actif, sont escaladés.
-- L'environnement Stripe `sandbox/live` est obligatoirement explicite. Le journal `sav_escalation_events` est privé et dédoublonné par `issue_id`.
+- L'environnement Stripe `sandbox/live` est obligatoirement explicite : **l'abonnement assurance doit appartenir au même environnement Stripe que la commande**. Une assurance de test n'autorise jamais une reprise réelle. Le journal `sav_escalation_events` est privé et dédoublonné par `issue_id`.
 - L'Edge Function `sav-escalation-worker` est protégée par un secret serveur dédié, s'exécute uniquement par POST, et refuse de travailler si le secret, l'environnement Stripe ou la connexion serveur sont absents.
 
 ## Activation après recette
