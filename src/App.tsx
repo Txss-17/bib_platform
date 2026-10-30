@@ -93,6 +93,9 @@ const OpsPortal = lazy(() => import("@/pages/OpsPortal"));
 ===================================================== */
 
 const BibTalent = lazy(() => import("@/pages/BibTalent"));
+const TalentMentions = lazy(() => import("@/pages/TalentLegal").then(m => ({ default: m.TalentMentions })));
+const TalentConfidentialite = lazy(() => import("@/pages/TalentLegal").then(m => ({ default: m.TalentConfidentialite })));
+const TalentCookies = lazy(() => import("@/pages/TalentLegal").then(m => ({ default: m.TalentCookies })));
 
 /* =====================================================
    DASHBOARD
@@ -267,10 +270,16 @@ export default function App() {
                     <Routes>
                       <Route path="/" element={<Navigate to="/carrieres/talent" replace />} />
                       <Route path="/carrieres/talent" element={<BibTalent />} />
+                    <Route path="/talent/mentions-legales" element={<TalentMentions />} />
+                    <Route path="/talent/confidentialite" element={<TalentConfidentialite />} />
+                    <Route path="/talent/cookies" element={<TalentCookies />} />
                       <Route path="/bib-talent" element={<Navigate to="/carrieres/talent" replace />} />
-                      <Route path="/mentions-legales" element={<MentionsLegales />} />
-                      <Route path="/confidentialite" element={<Confidentialite />} />
-                      <Route path="/cookies" element={<Cookies />} />
+                      <Route path="/mentions-legales" element={<Navigate to="/talent/mentions-legales" replace />} />
+                      <Route path="/confidentialite" element={<Navigate to="/talent/confidentialite" replace />} />
+                      <Route path="/cookies" element={<Navigate to="/talent/cookies" replace />} />
+                      <Route path="/talent/mentions-legales" element={<TalentMentions />} />
+                      <Route path="/talent/confidentialite" element={<TalentConfidentialite />} />
+                      <Route path="/talent/cookies" element={<TalentCookies />} />
                       <Route path="*" element={<Navigate to="/carrieres/talent" replace />} />
                     </Routes>
                   ) : (
