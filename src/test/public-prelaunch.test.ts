@@ -51,6 +51,9 @@ describe("Public BIB Talent programme editorial boundaries", () => {
     expect(talent).toContain('import clientExperience from "@/assets/landing-unboxing.jpg"');
     expect(talent).toContain('import partnerEcosystem from "@/assets/landing-partener.jpg"');
     expect(talent).toContain("BIB est en développement");
+    expect(talent).toContain('href="/bib-talent"');
+    expect(router).toContain('<Route path="/carrieres/talent" element={<Navigate to="/bib-talent" replace />} />');
+    expect(router).toContain('<Route path="/bib-talent" element={<BibTalent />} />');
     expect(talent).toContain("modèle logistique BIB");
   });
   it("uses dedicated Talent legal content and links without store, subscription or checkout notices",()=>{
