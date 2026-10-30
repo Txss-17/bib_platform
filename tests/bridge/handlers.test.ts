@@ -580,3 +580,57 @@ describe("Bridge export", () => {
   });
 
 });
+
+
+describe("Private insured SAV scheduler", () => {
+  const secret = "worker-secret-0123456789-0123456789-abcdef";
+  const configure = (enabled=true) => vi.stubGlobal("Deno", {
+    serve: (fn: typeof handler) => { handler = fn; },
+    env: { get: (key: string) => ({
+      BIB_SAV_WORKER_SECRET: enabled ? secret : undefined,
+      BIB_SAV_WORKER_ENVIRONMENT: "sandbox",
+      SUPABASE_URL: "https://sandbox.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: "server-only-example",
+    } as Record<string,string|undefined>)[key] },
+  });
+  const workerRequest = (key?: string, method = "POST") =>
+    new Request("https://example.com/sav-escalation-worker", {
+      method, headers: key ? { "x-bib-sav-worker-key": key } : {},
+    });
+  it("refuses missing or incorrect secret before opening a service connection",async () => {
+    configure();
+    await load("sav-escalation-worker");
+    expect((await handler(workerRequest())).status).toBe(401);
+    expect((await handler(workerRequest("incorrect"))).status).toBe(401);
+    expect(mocks.createClient).not.toHaveBeenCalled();
+  });
+  it("fails closed when scheduler secret is not configured",async () => {
+    configure(false);
+    await load("sav-escalation-worker");
+    expect((await handler(workerRequest(secret))).status).toBe(503);
+    expect(mocks.createClient).not.toHaveBeenCalled();
+  });
+  it("requires POST and returns only counts without merchant identifiers",async () => {
+    configure();
+    mocks.rpc.mockResolvedValue(ok([{issue_id:id,merchant_id:other}]));
+    mocks.createClient.mockReturnValue({rpc:mocks.rpc});
+    await load("sav-escalation-worker");
+    expect((await handler(workerRequest(secret, "GET"))).status).toBe(405);
+    const response=await handler(workerRequest(secret));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      ok:true, escalated_count:1, environment:"sandbox",
+    });
+    expect(mocks.rpc).toHaveBeenCalledWith("escalate_unanswered_order_issues",{
+      p_limit:100,p_environment:"sandbox",
+    });
+  });
+  it("does not claim success when the database rejects the worker operation",async () => {
+    configure();
+    mocks.createClient.mockReturnValue({rpc:vi.fn().mockResolvedValue({
+      data:null, error:{code:"PG_FAILED"},
+    })});
+    await load("sav-escalation-worker");
+    expect((await handler(workerRequest(secret))).status).toBe(503);
+  });
+});
