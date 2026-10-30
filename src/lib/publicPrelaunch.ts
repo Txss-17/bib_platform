@@ -15,4 +15,7 @@ export const PRELAUNCH_PUBLIC_ROUTES = [
  "/mentions-legales",
  "/confidentialite",
  "/cookies",
+ "/talent/mentions-legales",
+ "/talent/confidentialite",
+ "/talent/cookies",
 ] as const;
