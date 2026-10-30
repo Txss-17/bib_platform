@@ -1,4 +1,5 @@
 import { readAll, readByIds } from "../_shared/bridge-pagination.ts";
+import { confirmedRefundExports } from "../_shared/refund-export.ts";
 import {
   adminClient,
   bridgeCors,
@@ -69,6 +70,7 @@ Deno.serve(async (req) => {
     products,
     customizationRows,
     restockRows,
+    refundRows,
   ] = await Promise.all([
     // Full reference snapshots keep ownership and commission joins valid for incremental orders.
     readAll(() =>
@@ -171,12 +173,23 @@ Deno.serve(async (req) => {
         .lte("updated_at", snapshotAt)
         .order("id"),
     ),
+    // Export only settled refunds. Every page must succeed before moving the bridge watermark.
+    readAll(() =>
+      sb
+        .from("order_refunds")
+        .select("id, order_id, amount_cents, currency, status, stripe_refund_id, payment_intent_id, updated_at, orders (boutique_id, order_number)")
+        .eq("status", "succeeded")
+        .gte("updated_at", since)
+        .lte("updated_at", snapshotAt)
+        .order("id"),
+    ),
   ]);
 
   // An unavailable required source is an export failure, never an empty snapshot.
   const appsData = apps.data ?? [];
 
   const err =
+    refundRows.error ||
     restockRows.error ||
     customizationRows.error ||
     apps.error ||
@@ -578,7 +591,12 @@ Deno.serve(async (req) => {
       plan: null as string | null,
     }));
 
-  const refunds: unknown[] = [];
+  let refunds;
+  try {
+    refunds = confirmedRefundExports(refundRows.data ?? []);
+  } catch {
+    return json({ error: "refund_export_invalid_source" }, 503);
+  }
 
   const payouts = (payRows.data ?? [])
     .filter((p) => p.payout_date)
