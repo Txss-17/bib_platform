@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const HOME="/carrieres/talent";
 const updated="30 octobre 2026";
@@ -13,6 +14,7 @@ const links=[
 ];
 
 function Layout({title,subtitle,children}:{title:string,subtitle:string,children:ReactNode}){
+ useLanguage(); // The initial legal publications are written in French for this first audience.
  useSEO({title:title+" | BIB Talent",description:subtitle});
  return <div className="min-h-screen bg-[#f7fafc] text-[#18334e]" style={{colorScheme:"light"}}>
   <header className="border-b border-[#dde7ef] bg-white"><nav className="mx-auto flex max-w-5xl items-center justify-between px-5 py-6">
