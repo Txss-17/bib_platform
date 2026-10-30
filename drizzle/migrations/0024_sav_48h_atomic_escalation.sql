@@ -115,6 +115,7 @@ BEGIN
    AND EXISTS (
      SELECT 1 FROM public.subscriptions s
      WHERE s.user_id=b.user_id AND s.price_id LIKE 'insurance_%'
+       AND s.environment=p_environment
        AND s.status IN('active','trialing')
        AND (s.current_period_end IS NULL OR s.current_period_end>now())
    )
