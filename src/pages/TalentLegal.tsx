@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-const HOME="/carrieres/talent";
+const HOME="/bib-talent";
 const updated="30 octobre 2026";
 const contact="contact@brand-in-a-box.space";
 const privacy="privacy@brand-in-a-box.space";

@@ -28,19 +28,33 @@ describe("Public BIB Talent programme editorial boundaries", () => {
   const legal=readFileSync("src/pages/TalentLegal.tsx","utf8");
   const router=readFileSync("src/App.tsx","utf8");
   it("describes contribution rather than a recruitment offer or internal employee access",()=>{
-    expect(talent).toContain("Les grandes idées");
+    expect(talent).toContain("Derrière BIB Talent");
+    expect(talent).toContain("BIB, c'est quoi concrètement ?");
+    for (const actor of ["marchands", "clients", "fournisseurs", "logistique"]) {
+      expect(talent.toLowerCase()).toContain(actor);
+    }
     expect(talent).toContain("Comment fonctionne BIB Talent ?");
     for (const banned of ["candidature", "recrutement", "promesse d'emploi", "Intranet", "rémunération le cas échéant", "À savoir"]) {
       expect(talent).not.toContain(banned);
     }
   });
-  it("replaces the former MP4 with a pauseable animated storyboard, respecting reduced motion",()=>{
-    expect(talent).toContain("function TalentMotion()");
-    expect(talent).toContain("prefers-reduced-motion");
-    expect(talent).toContain("setPlaying");
-    expect(talent).not.toContain("bib-talent.mp4");
+  it("plays a real locally sourced BIB project film instead of the generic animation",()=>{
+    expect(talent).toContain('import bibProjectFilm from "@/assets/bib-project-talent.mp4"');
+    expect(talent).toContain('<video controls playsInline preload="metadata"');
+    expect(talent).toContain("src={bibProjectFilm}");
+    expect(talent).not.toContain("function TalentMotion()");
     expect(talent).toContain('bg-[#fbfcfd]');
     expect(talent).toContain('colorScheme:"light"');
+  });
+  it("grounds the product story in actual BIB assets and identifies its development status",()=>{
+    expect(talent).toContain('import platformDashboard from "@/assets/landing-dashboard.jpg"');
+    expect(talent).toContain('import clientExperience from "@/assets/landing-unboxing.jpg"');
+    expect(talent).toContain('import partnerEcosystem from "@/assets/landing-partener.jpg"');
+    expect(talent).toContain("BIB est en développement");
+    expect(talent).toContain('href="/bib-talent"');
+    expect(router).toContain('<Route path="/carrieres/talent" element={<Navigate to="/bib-talent" replace />} />');
+    expect(router).toContain('<Route path="/bib-talent" element={<BibTalent />} />');
+    expect(talent).toContain("modèle logistique BIB");
   });
   it("uses dedicated Talent legal content and links without store, subscription or checkout notices",()=>{
     for(const route of ["/talent/mentions-legales","/talent/confidentialite","/talent/cookies"]){

@@ -268,19 +268,19 @@ export default function App() {
                 >
                   {typeof window !== "undefined" && isPublicPrelaunchHost(window.location.hostname) ? (
                     <Routes>
-                      <Route path="/" element={<Navigate to="/carrieres/talent" replace />} />
-                      <Route path="/carrieres/talent" element={<BibTalent />} />
+                      <Route path="/" element={<Navigate to="/bib-talent" replace />} />
+                      <Route path="/carrieres/talent" element={<Navigate to="/bib-talent" replace />} />
                     <Route path="/talent/mentions-legales" element={<TalentMentions />} />
                     <Route path="/talent/confidentialite" element={<TalentConfidentialite />} />
                     <Route path="/talent/cookies" element={<TalentCookies />} />
-                      <Route path="/bib-talent" element={<Navigate to="/carrieres/talent" replace />} />
+                      <Route path="/bib-talent" element={<BibTalent />} />
                       <Route path="/mentions-legales" element={<Navigate to="/talent/mentions-legales" replace />} />
                       <Route path="/confidentialite" element={<Navigate to="/talent/confidentialite" replace />} />
                       <Route path="/cookies" element={<Navigate to="/talent/cookies" replace />} />
                       <Route path="/talent/mentions-legales" element={<TalentMentions />} />
                       <Route path="/talent/confidentialite" element={<TalentConfidentialite />} />
                       <Route path="/talent/cookies" element={<TalentCookies />} />
-                      <Route path="*" element={<Navigate to="/carrieres/talent" replace />} />
+                      <Route path="*" element={<BibTalent />} />
                     </Routes>
                   ) : (
                   <Routes>
@@ -852,11 +852,11 @@ export default function App() {
                       element={<CarrieresPostes />}
                     />
 
-                    <Route path="/carrieres/talent" element={<BibTalent />} />
+                    <Route path="/carrieres/talent" element={<Navigate to="/bib-talent" replace />} />
 
                     <Route
                       path="/bib-talent"
-                      element={<Navigate to="/carrieres/talent" replace />}
+                      element={<BibTalent />}
                     />
 
                     {/* =================================================
