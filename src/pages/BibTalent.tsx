@@ -124,6 +124,12 @@ export default function BibTalent() {
                     {translateUi("Candidater à BIB Talent")}
                   </a>
                 </Button>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Le formulaire s'ouvre sur Google Forms. Vos informations servent à examiner
+                  votre candidature ; consultez les informations de confidentialité avant
+                  de transmettre vos données.
+                  {' '}<a className="underline underline-offset-2" href="/confidentialite">Confidentialité</a>
+                </p>
               </div>
             </div>
           </div>
