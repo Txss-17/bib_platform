@@ -205,24 +205,15 @@ export function useRespondToIssue() {
       message?: string;
       newStatus: IssueStatus;
     }) => {
-      // Create response
-      const { error: responseError } = await supabase
-        .from("issue_responses" as any)
-        .insert({
-          issue_id: issueId,
-          action,
-          message: message || null,
-        });
-
-      if (responseError) throw responseError;
-
-      // Update issue status
-      const { error: updateError } = await supabase
-        .from("order_issues" as any)
-        .update({ status: newStatus })
-        .eq("id", issueId);
-
-      if (updateError) throw updateError;
+      // One server-side transaction validates ownership, deadline and status.
+      // Never insert a response if the status transition could fail afterwards.
+      const { error } = await supabase.rpc("respond_to_order_issue", {
+        p_issue_id: issueId,
+        p_action: action,
+        p_message: message?.trim() || null,
+        p_new_status: newStatus,
+      } as never);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order-issues"] });
