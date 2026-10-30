@@ -46,3 +46,9 @@ verify_jwt = false
 # The partner token and approval are checked in the handler.
 [functions.partner-portal-action]
 verify_jwt = false
+
+# Private scheduler: gateway JWT not required because handler enforces a
+# dedicated >=32-character secret header before touching the service client.
+# Never expose this key in VITE_* variables or browser code.
+[functions.sav-escalation-worker]
+verify_jwt = false

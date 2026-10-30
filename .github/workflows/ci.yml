@@ -64,7 +64,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: Txss-17/bib_intranet
-          ref: e6827102c9141dd50ff56f047c8acc8869899931
+          ref: main
           path: bib_intranet
       - name: Set up Node.js
         uses: actions/setup-node@v7
