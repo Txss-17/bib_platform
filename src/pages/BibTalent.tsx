@@ -3,7 +3,6 @@ import { ArrowRight, ArrowUpRight, Compass, Lightbulb, Pause, Play, Sparkles, Us
 import { useSEO } from "@/hooks/useSEO";
 
 const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSemotUUORqFwUdM60S1BAW-79YzSm-5TiocRvm-wuTUiCevvg/viewform";
-const BLUE = "#18334e";
 const GOLD = "#b88949";
 
 const steps = [
