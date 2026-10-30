@@ -502,11 +502,18 @@ describe("Bridge export", () => {
       due_at: version, escalated_at: version, environment: "sandbox",
       reason: "merchant_silence_48h",
     };
-    for (let i=0;i<14;i++) mocks.results.push(ok(i===13?[handoff]:[]));
+    // A valid SAV event must refer to an exported boutique and its owner.
+    const boutique = { id: other, user_id: id, name: "Boutique SAV", status: "draft", intranet_status: null };
+    for (let i=0;i<14;i++) mocks.results.push(ok(i===0?[boutique]:i===13?[handoff]:[]));
+    mocks.results.push(ok([{ user_id:id,plan_tier:"starter" }]),ok([{ user_id:id,full_name:"Marchand",business_name:"Boutique SAV" }]),ok([]));
+    mocks.createClient.mockReturnValue({
+      from, rpc:mocks.rpc,
+      auth:{admin:{listUsers:vi.fn().mockResolvedValue(ok({users:[{id,email:"merchant@example.test"}]}))}},
+    });
     await load("intranet-export");
     const response=await handler(request({since:"2026-10-24T00:00:00Z"}));
-    expect(response.status).toBe(200);
     const payload=await response.json();
+    expect(response.status,JSON.stringify(payload)).toBe(200);
     expect(payload.sav_escalations).toEqual([handoff]);
     expect(JSON.stringify(payload.sav_escalations)).not.toContain("customer_email");
     expect(mocks.calls.find(c=>c.table==="sav_escalation_events").filters)
