@@ -45,6 +45,9 @@ jobs:
       - name: Run tests
         run: npm test -- --run --passWithNoTests
 
+      - name: Test insured SAV with real PostgreSQL functions
+        run: npx vitest run --config tests/sav/vitest.config.ts
+
       - name: Build application
         run: npm run build
 
