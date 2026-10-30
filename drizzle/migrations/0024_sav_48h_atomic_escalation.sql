@@ -133,7 +133,7 @@ BEGIN
   INSERT INTO public.sav_escalation_events(issue_id,order_id,boutique_id,merchant_id,due_at,environment)
   SELECT c.issue_id,c.order_id,c.boutique_id,c.merchant_id,c.due_at,p_environment
   FROM candidates c JOIN moved m ON m.id=c.issue_id
-  ON CONFLICT(issue_id) DO NOTHING
+  ON CONFLICT ON CONSTRAINT sav_escalation_events_pkey DO NOTHING
   RETURNING sav_escalation_events.issue_id
  )
  SELECT c.issue_id,c.order_id,c.boutique_id,c.merchant_id,c.due_at
