@@ -52,10 +52,11 @@ BEGIN
  WHERE i.id=p_issue_id AND b.user_id=actor
  FOR UPDATE OF i;
  IF NOT FOUND THEN RAISE EXCEPTION 'issue_not_owned' USING ERRCODE='42501'; END IF;
- -- A pending claim past the contractual deadline belongs to the SLA review
- -- even when the background worker has not run yet.
+ -- The 48-hour deadline enables BIB's insured takeover but must never
+ -- permanently deprive an uninsured seller of the ability to respond.
+ -- Before an actual atomic takeover, the merchant may still answer late;
+ -- whichever transaction locks the issue first determines the outcome.
  IF current_status='escalated'
-    OR (current_status='pending' AND due<=now())
    THEN RAISE EXCEPTION 'bib_sav_escalation_required' USING ERRCODE='55000'; END IF;
 
  IF current_status='pending' THEN
