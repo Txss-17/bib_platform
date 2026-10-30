@@ -11,7 +11,7 @@ CREATE TYPE public.issue_action AS ENUM ('accept','refuse','partial_refund','res
 CREATE TABLE public.boutiques(id uuid PRIMARY KEY,user_id uuid NOT NULL REFERENCES auth.users(id));
 CREATE TABLE public.orders(id uuid PRIMARY KEY,boutique_id uuid NOT NULL REFERENCES public.boutiques(id),stripe_environment text);
 CREATE TABLE public.profiles(user_id uuid PRIMARY KEY REFERENCES auth.users(id),insurance_addon_enabled boolean NOT NULL DEFAULT false);
-CREATE TABLE public.subscriptions(id uuid PRIMARY KEY,user_id uuid NOT NULL REFERENCES auth.users(id),price_id text NOT NULL,status text NOT NULL,current_period_end timestamptz);
+CREATE TABLE public.subscriptions(id uuid PRIMARY KEY,user_id uuid NOT NULL REFERENCES auth.users(id),price_id text NOT NULL,status text NOT NULL,environment text NOT NULL DEFAULT 'live',current_period_end timestamptz);
 CREATE TABLE public.order_issues(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),order_id uuid NOT NULL REFERENCES public.orders(id),status public.issue_status NOT NULL DEFAULT 'pending',created_at timestamptz NOT NULL DEFAULT now(),deadline_at timestamptz NOT NULL DEFAULT now()+interval '48 hours');
 CREATE TABLE public.issue_responses(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),issue_id uuid NOT NULL REFERENCES public.order_issues(id),action public.issue_action NOT NULL,message text,created_at timestamptz DEFAULT now());
 GRANT SELECT,UPDATE ON public.order_issues TO authenticated;
