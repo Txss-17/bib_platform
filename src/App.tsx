@@ -16,6 +16,7 @@ import {
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { isPublicPrelaunchHost } from "@/lib/publicPrelaunch";
 import { CartProvider } from "@/contexts/CartContext";
 import { StoreCartProvider } from "@/contexts/StoreCartContext";
 import SuppliersOnboarding from "@/pages/SuppliersOnboarding";
@@ -262,6 +263,17 @@ export default function App() {
                     />
                   }
                 >
+                  {typeof window !== "undefined" && isPublicPrelaunchHost(window.location.hostname) ? (
+                    <Routes>
+                      <Route path="/" element={<Navigate to="/carrieres/talent" replace />} />
+                      <Route path="/carrieres/talent" element={<BibTalent />} />
+                      <Route path="/bib-talent" element={<Navigate to="/carrieres/talent" replace />} />
+                      <Route path="/mentions-legales" element={<MentionsLegales />} />
+                      <Route path="/confidentialite" element={<Confidentialite />} />
+                      <Route path="/cookies" element={<Cookies />} />
+                      <Route path="*" element={<Navigate to="/carrieres/talent" replace />} />
+                    </Routes>
+                  ) : (
                   <Routes>
                     {/* =================================================
                       ROOT / PUBLIC
@@ -910,6 +922,7 @@ export default function App() {
 
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  )}
                 </Suspense>
               </StoreCartProvider>
             </AuthProvider>
