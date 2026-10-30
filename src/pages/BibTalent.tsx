@@ -1,7 +1,5 @@
 import { translateUi } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useSEO } from "@/hooks/useSEO";
 import bibTalentVideo from "@/assets/bib-talent.mp4.asset.json";
@@ -21,7 +19,12 @@ export default function BibTalent() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Header />
+      <header className="border-b border-border bg-card">
+        <nav aria-label="Navigation BIB Talent" className="container mx-auto flex items-center justify-between gap-4 px-4 py-4 sm:px-6">
+          <a href="/carrieres/talent" className="font-display text-xl font-bold text-foreground">BIB <span className="text-bib-gold">TALENT</span></a>
+          <a href="#discover" className="text-sm font-medium text-foreground hover:text-bib-gold">Découvrir le programme</a>
+        </nav>
+      </header>
 
       <main>
         {/* HERO */}
@@ -114,6 +117,19 @@ export default function BibTalent() {
                     "Votre navigateur ne prend pas en charge la lecture vidéo.",
                   )}
                 </video>
+              </div>
+              <div className="mt-8 text-center">
+                <Button asChild variant="premium" size="lg">
+                  <a href={talentFormUrl} target="_blank" rel="noopener noreferrer">
+                    {translateUi("Candidater à BIB Talent")}
+                  </a>
+                </Button>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Le formulaire s'ouvre sur Google Forms. Vos informations servent à examiner
+                  votre candidature ; consultez les informations de confidentialité avant
+                  de transmettre vos données.
+                  {' '}<a className="underline underline-offset-2" href="/confidentialite">Confidentialité</a>
+                </p>
               </div>
             </div>
           </div>
@@ -309,7 +325,7 @@ export default function BibTalent() {
 
               <p className="mt-4 leading-relaxed text-muted-foreground">
                 {translateUi(
-                  "Les modalités de collaboration pourront évoluer lorsque BIB entrera dans ses différentes phases de développement.",
+                  "Avant toute mission opérationnelle, les modalités adaptées à chaque situation sont définies par écrit : statut, durée, responsabilités, encadrement, confidentialité et rémunération le cas échéant. Une candidature ne donne aucun accès automatique à l'Intranet.",
                 )}
               </p>
             </div>
@@ -348,7 +364,16 @@ export default function BibTalent() {
         </section>
       </main>
 
-      <Footer />
+      <footer className="border-t border-border bg-card px-4 py-8">
+        <div className="container mx-auto flex flex-wrap items-center justify-between gap-4 text-sm text-muted-foreground">
+          <p>BIB Talent · Programme de pré-lancement Brand-in-a-Box.</p>
+          <nav aria-label="Informations légales" className="flex flex-wrap gap-5">
+            <a className="hover:text-foreground" href="/confidentialite">Confidentialité</a>
+            <a className="hover:text-foreground" href="/mentions-legales">Mentions légales</a>
+            <a className="hover:text-foreground" href="/cookies">Cookies</a>
+          </nav>
+        </div>
+      </footer>
     </div>
   );
 }
