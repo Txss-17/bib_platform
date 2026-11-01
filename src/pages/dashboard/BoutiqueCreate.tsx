@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateBoutique } from "@/hooks/useBoutiques";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 
 const STEPS = [
   {
@@ -187,6 +188,7 @@ export default function BoutiqueCreate() {
   useLanguage();
   const navigate = useNavigate();
   const createBoutique = useCreateBoutique();
+  const { canCreateBoutique, isLoading: planLoading, maxBoutiques, boutiqueCount } = usePlanLimits();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
@@ -277,6 +279,11 @@ export default function BoutiqueCreate() {
   };
 
   const handleCreateBoutique = async () => {
+    if (planLoading || !canCreateBoutique) {
+      toast.error(translateUi("Limite de boutiques atteinte. Consultez vos abonnements pour activer une boutique supplémentaire."));
+      navigate("/dashboard/parametres");
+      return;
+    }
     if (!isStepOneValid) {
       setCurrentStep(1);
       toast.error(translateUi("Certaines informations sont manquantes."));
@@ -332,7 +339,14 @@ export default function BoutiqueCreate() {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout
+      {!planLoading && !canCreateBoutique && (
+        <div className="mx-auto max-w-5xl rounded-xl border border-border bg-muted/40 p-5">
+          <p className="font-semibold text-foreground">{translateUi("Plafond de boutiques atteint")} — {boutiqueCount}/{maxBoutiques}</p>
+          <p className="mt-2 text-sm text-muted-foreground">{translateUi("L'ajout d'une boutique nécessite une place disponible dans votre abonnement. Pour Pro, les boutiques supplémentaires s'activent après paiement.")}</p>
+          <Button asChild variant="outline" className="mt-3"><Link to="/dashboard/parametres">{translateUi("Gérer mon abonnement")}</Link></Button>
+        </div>
+      )}
       <PageHeader
         eyebrow={translateUi("Espace marchand")}
         title={translateUi("Créer une boutique")}
@@ -809,7 +823,7 @@ export default function BoutiqueCreate() {
               <Button
                 type="button"
                 onClick={handleCreateBoutique}
-                disabled={createBoutique.isPending || !isStepOneValid}
+                disabled={createBoutique.isPending || planLoading || !canCreateBoutique || !isStepOneValid}
                 className="gap-2"
               >
                 {createBoutique.isPending ? (
