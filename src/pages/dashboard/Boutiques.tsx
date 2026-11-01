@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   ExternalLink,
   Globe,
-  Package,
   Plus,
   Settings2,
   Store,
@@ -21,7 +20,6 @@ import { toast } from "sonner";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import {
   EmptyState,
-  HealthRing,
   KpiGrid,
   KpiTile,
   KpiTileSkeleton,
@@ -41,68 +39,6 @@ import type { Tables } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
 
 type Boutique = Tables<"boutiques">;
-
-const HEALTH_LABELS: Record<PerBoutiqueHealth["level"], string> = {
-  excellent: "Excellente",
-  good: "Bonne",
-  fair: "À surveiller",
-  poor: "Action requise",
-};
-
-const HEALTH_STYLES: Record<PerBoutiqueHealth["level"], string> = {
-  excellent: "border-success/30 bg-success/10 text-success-ink",
-  good: "border-success/30 bg-success/10 text-success-ink",
-  fair: "border-warning/30 bg-warning/10 text-warning-ink",
-  poor: "border-destructive/30 bg-destructive/10 text-destructive-ink",
-};
-
-type SignalStatus = "ok" | "warning" | "critical";
-
-function Signal({
-  status,
-  label,
-  icon: Icon,
-  detail,
-}: {
-  status: SignalStatus;
-  label: string;
-  icon: typeof Globe;
-  detail: string;
-}) {
-  useLanguage();
-  const styles: Record<SignalStatus, string> = {
-    ok: "bg-success/10 text-success-ink",
-    warning: "bg-warning/10 text-warning-ink",
-    critical: "bg-destructive/10 text-destructive-ink",
-  };
-
-  const dotStyles: Record<SignalStatus, string> = {
-    ok: "bg-success",
-    warning: "bg-warning",
-    critical: "bg-destructive",
-  };
-
-  return (
-    <div className="flex min-w-0 items-start gap-2.5">
-      <span className={cn("mt-0.5 rounded-lg p-2", styles[status])}>
-        <Icon className="h-4 w-4" />
-      </span>
-
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span
-            className={cn(
-              "h-1.5 w-1.5 shrink-0 rounded-full",
-              dotStyles[status],
-            )}
-          />
-          <p className="text-xs font-semibold text-foreground">{label}</p>
-        </div>
-        <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail}</p>
-      </div>
-    </div>
-  );
-}
 
 function PublicationBadge({ status }: { status: string | null }) {
   useLanguage();
@@ -126,53 +62,6 @@ function PublicationBadge({ status }: { status: string | null }) {
       />
       {published ? translateUi("En ligne") : translateUi("Brouillon")}
     </Badge>
-  );
-}
-
-function BoutiqueHealth({ health }: { health?: PerBoutiqueHealth }) {
-  useLanguage();
-  if (!health) {
-    return (
-      <div className="flex items-center gap-3 rounded-xl bg-muted p-3">
-        <HealthRing score={0} level="fair" size={52} strokeWidth={6} loading />
-        <div>
-          <p className="text-xs font-semibold text-foreground">
-            {translateUi("Santé opérationnelle")}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {translateUi("Analyse en cours…")}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/80 p-3">
-      <div className="flex min-w-0 items-center gap-3">
-        <HealthRing
-          score={health.score}
-          level={health.level}
-          size={52}
-          strokeWidth={6}
-        />
-        <div className="min-w-0">
-          <p className="text-xs font-semibold text-foreground">
-            {translateUi("Santé opérationnelle")}
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {translateUi("Score global de la boutique")}
-          </p>
-        </div>
-      </div>
-
-      <Badge
-        variant="outline"
-        className={cn("shrink-0 text-[10px]", HEALTH_STYLES[health.level])}
-      >
-        {HEALTH_LABELS[health.level]}
-      </Badge>
-    </div>
   );
 }
 
