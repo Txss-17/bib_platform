@@ -133,42 +133,20 @@ export function AuthProvider({
    * automatiquement considérés comme des
    * comptes Store.
    */
-  const resolveAccountType = (
+  const resolveAccountType = async (
     currentUser: User | null,
-  ): AccountType | null => {
-    if (!currentUser) {
-      return null;
-    }
-
-    const value =
-      currentUser.user_metadata
-        ?.account_type;
-
-    /* -------------------------------------------------------
-       COMPTE PLATEFORME
-       ------------------------------------------------------- */
-
-    if (value === "platform") {
-      return "platform";
-    }
-
-    /* -------------------------------------------------------
-       COMPTE STORE
-       ------------------------------------------------------- */
-
-    if (
-      value === "store" ||
-      value === "marketplace"
-    ) {
-      return "store";
-    }
-
-    /* Anciens comptes créés avant account_type : comptes plateforme. */
-    if (value === undefined || value === null) {
-      return "platform";
-    }
-
-    return null;
+  ): Promise<AccountType | null> => {
+    if (!currentUser) return null;
+    // The server-maintained account_portals table is the trusted source.
+    // Never accept user_metadata.account_type as authorization.
+    const { data, error } = await supabase
+      .from("account_portals" as never)
+      .select("portal")
+      .eq("user_id", currentUser.id)
+      .maybeSingle();
+    if (error) return null;
+    const value = (data as { portal?: string } | null)?.portal;
+    return value === "platform" || value === "store" ? value : null;
   };
 
   /* =======================================================
@@ -177,108 +155,40 @@ export function AuthProvider({
 
   useEffect(() => {
     let mounted = true;
+    let sequence = 0;
 
-    /**
-     * Récupération de la session initiale.
-     */
-    supabase.auth
-      .getSession()
-      .then(({ data }) => {
-        if (!mounted) {
-          return;
-        }
+    const syncSession = async (currentSession: Session | null) => {
+      const revision = ++sequence;
+      setLoading(true);
+      const currentUser = currentSession?.user ?? null;
+      const verifiedType = await resolveAccountType(currentUser);
+      if (!mounted || revision !== sequence) return;
+      setSession(currentSession);
+      setUser(currentUser);
+      setAccountType(verifiedType);
+      if (currentUser && verifiedType === "platform") {
+        const { data } = await supabase.from("profiles")
+          .select("*").eq("user_id", currentUser.id).maybeSingle();
+        if (!mounted || revision !== sequence) return;
+        setProfile(data);
+      } else {
+        setProfile(null);
+      }
+      if (mounted && revision === sequence) setLoading(false);
+    };
 
-        const currentSession =
-          data.session;
-
-        const currentUser =
-          currentSession?.user ?? null;
-
-        setSession(
-          currentSession,
-        );
-
-        setUser(
-          currentUser,
-        );
-
-        setAccountType(
-          resolveAccountType(
-            currentUser,
-          ),
-        );
-
-        if (currentUser) {
-          void supabase
-            .from("profiles")
-            .select("*")
-            .eq("user_id", currentUser.id)
-            .maybeSingle()
-            .then(({ data }) => {
-              if (mounted) setProfile(data);
-            });
-        } else {
-          setProfile(null);
-        }
-
-        setLoading(false);
-      });
-
-    /**
-     * Écoute des changements
-     * d'authentification.
-     */
-    const {
-      data: {
-        subscription,
+    void supabase.auth.getSession().then(({ data }) => {
+      void syncSession(data.session);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, currentSession) => {
+        // Defer database calls until after the auth-state callback returns.
+        queueMicrotask(() => { if (mounted) void syncSession(currentSession); });
       },
-    } =
-      supabase.auth.onAuthStateChange(
-        (
-          _event,
-          currentSession,
-        ) => {
-          if (!mounted) {
-            return;
-          }
-
-          const currentUser =
-            currentSession?.user ??
-            null;
-
-          setSession(
-            currentSession,
-          );
-
-          setUser(
-            currentUser,
-          );
-
-          setAccountType(
-            resolveAccountType(
-              currentUser,
-            ),
-          );
-
-          if (currentUser) {
-            void supabase
-              .from("profiles")
-              .select("*")
-              .eq("user_id", currentUser.id)
-              .maybeSingle()
-              .then(({ data }) => {
-                if (mounted) setProfile(data);
-              });
-          } else {
-            setProfile(null);
-          }
-
-          setLoading(false);
-        },
-      );
-
+    );
     return () => {
       mounted = false;
+      sequence++;
       subscription.unsubscribe();
     };
   }, []);
@@ -306,7 +216,7 @@ export function AuthProvider({
       password,
     });
     if (error) return { error };
-    const actualType = resolveAccountType(data.user);
+    const actualType = await resolveAccountType(data.user);
     if (actualType !== portal) {
       await supabase.auth.signOut();
       return {
