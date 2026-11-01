@@ -183,10 +183,12 @@ function BoutiqueStatusBadge({ published }: { published: boolean }) {
 function BoutiqueIdentityHeader({
   name,
   slug,
+  logoUrl,
   published,
 }: {
   name: string;
   slug: string;
+  logoUrl?: string | null;
   published: boolean;
 }) {
   useLanguage();
@@ -197,7 +199,7 @@ function BoutiqueIdentityHeader({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-start gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Store className="h-5 w-5" />
+            {logoUrl ? <img src={logoUrl} alt="" className="h-10 w-10 rounded-lg object-contain" /> : <Store className="h-5 w-5" />}
           </div>
 
           <div className="min-w-0">
@@ -388,6 +390,7 @@ export default function BoutiqueEdit() {
             </Button>
           </div>
           <BoutiqueIdentityHeader
+            logoUrl={boutique.logo_url}
             name={boutique.name}
             slug={boutique.slug}
             published={isPublished}
@@ -503,7 +506,7 @@ export default function BoutiqueEdit() {
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <Store className="h-4 w-4" />
+            {boutique.logo_url ? <img src={boutique.logo_url} alt="" className="h-9 w-9 object-contain" /> : <Store className="h-4 w-4" />}
           </div>
 
           <div className="min-w-0">
