@@ -39,3 +39,23 @@ export function isMerchantTestPath(pathname: string): boolean {
     pathname === "/dashboard" ||
     pathname.startsWith("/dashboard/");
 }
+
+/**
+ * Restore all informational/marketing pages while critical commerce and
+ * partner workflows remain under security review. The original prelaunch
+ * catch-all must not redirect ordinary navigation to BIB Talent.
+ */
+export function isPublicInformationPath(pathname: string): boolean {
+  const path = pathname.replace(/\/+$/, "") || "/";
+  return new Set([
+    "/", "/landing", "/vendre", "/tarifs", "/pricing",
+    "/a-propos", "/bib-talent", "/suppliers", "/fournisseurs",
+    "/ops", "/logistics", "/logistique", "/centre-aide",
+    "/help", "/help/faq", "/help/guide", "/pack-legal",
+    "/legal", "/mentions-legales", "/cgu", "/cgv",
+    "/confidentialite", "/cookies", "/talent/mentions-legales",
+    "/talent/confidentialite", "/talent/cookies",
+    "/carrieres", "/carrieres/postes", "/carrieres/talent",
+    "/careers", "/careers/jobs",
+  ]).has(path);
+}
