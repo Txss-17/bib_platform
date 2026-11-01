@@ -1,5 +1,5 @@
 import { useParams, Link, useSearchParams } from "react-router-dom";
-import { Store, ArrowLeft, Settings2, Mail, Bell, Wallet, Users, Search } from "lucide-react";
+import { Store, ArrowLeft, Settings2, Mail, Bell, Wallet, Users, Search, Image as ImageIcon } from "lucide-react";
 import { BoutiquePayoutSettings } from "@/components/dashboard/boutique/BoutiquePayoutSettings";
 import { useCurrentPlan } from "@/hooks/usePlans";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -9,6 +9,7 @@ import { useBoutiques } from "@/hooks/useBoutiques";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { BoutiqueSettingsTab } from "@/components/dashboard/boutique/BoutiqueSettingsTab";
 import { BoutiqueSeoTools } from "@/components/dashboard/boutique/BoutiqueSeoTools";
+import { BoutiqueLogoManager } from "@/components/dashboard/boutique/BoutiqueLogoManager";
 import { EmailMarketingSettings } from "@/components/dashboard/EmailMarketingSettings";
 import { BoutiqueAlertsSettings } from "@/components/dashboard/BoutiqueAlertsSettings";
 
@@ -46,15 +47,16 @@ export default function BoutiqueConfiguration() {
       ) : (
         <>
           <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-5">
-            <Store className="h-5 w-5 text-bib-gold" />
+            {boutique.logo_url ? <img src={boutique.logo_url} alt={en ? `Logo of ${boutique.name}` : `Logo de ${boutique.name}`} className="h-12 w-12 shrink-0 rounded-xl border border-border object-contain p-1" /> : <Store className="h-5 w-5 text-bib-gold" />}
             <div>
               <p className="font-semibold text-foreground">{boutique.name}</p>
               <p className="text-xs text-muted-foreground">{en ? "Settings are independent of storefront publication." : "Les paramètres sont accessibles même lorsque la boutique est en brouillon."}</p>
             </div>
           </div>
           <Tabs value={tab} onValueChange={setTab}>
-            <div className="w-full overflow-x-auto pb-1"><TabsList className="inline-flex h-auto min-w-max gap-1 p-1 sm:grid sm:w-full sm:min-w-0 sm:grid-cols-3 lg:grid-cols-6">
+            <div className="w-full overflow-x-auto pb-1"><TabsList className="inline-flex h-auto min-w-max gap-1 p-1 sm:grid sm:w-full sm:min-w-0 sm:grid-cols-3 lg:grid-cols-7">
               <TabsTrigger value="general" className="gap-2"><Settings2 size={16} />{en ? "General" : "Général"}</TabsTrigger>
+              <TabsTrigger value="identity" className="gap-2"><ImageIcon size={16} />{en ? "Identity" : "Identité"}</TabsTrigger>
               <TabsTrigger value="seo" className="gap-2"><Search size={16} />SEO</TabsTrigger>
               <TabsTrigger value="email" className="gap-2"><Mail size={16} />{en ? "Email" : "E-mail"}</TabsTrigger>
               <TabsTrigger value="alerts" className="gap-2"><Bell size={16} />{en ? "Alerts" : "Alertes"}</TabsTrigger>
@@ -62,6 +64,7 @@ export default function BoutiqueConfiguration() {
               {teamEligible && <TabsTrigger value="team" className="gap-2"><Users size={16} />{en ? "Team" : "Équipe"}</TabsTrigger>}
             </TabsList></div>
             <TabsContent value="general" className="mt-6"><BoutiqueSettingsTab boutiqueId={boutique.id} /></TabsContent>
+            <TabsContent value="identity" className="mt-6"><BoutiqueLogoManager boutiqueId={boutique.id} boutiqueName={boutique.name} logoUrl={boutique.logo_url ?? null} /></TabsContent>
             <TabsContent value="seo" className="mt-6"><BoutiqueSeoTools boutiqueId={boutique.id} /></TabsContent>
             <TabsContent value="email" className="mt-6"><EmailMarketingSettings boutiqueId={boutique.id} /></TabsContent>
             <TabsContent value="alerts" className="mt-6"><BoutiqueAlertsSettings boutiqueId={boutique.id} /></TabsContent>
