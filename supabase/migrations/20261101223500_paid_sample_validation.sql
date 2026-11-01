@@ -26,6 +26,9 @@ ALTER TABLE public.sample_validations DROP CONSTRAINT IF EXISTS sample_validatio
 ALTER TABLE public.sample_validations ADD CONSTRAINT sample_validations_status_check
   CHECK (status IN ('none','ordered','received','validated','to_validate','rejected'));
 
+ALTER TABLE public.sample_validations
+  ADD COLUMN IF NOT EXISTS visual_confirmed_at timestamptz;
+
 CREATE OR REPLACE FUNCTION public.mark_paid_sample_received(p_product_id uuid)
 RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
@@ -65,7 +68,7 @@ BEGIN
   ) THEN RAISE EXCEPTION 'Verified sample purchase required'; END IF;
   UPDATE public.sample_validations
     SET status='validated', comment=left(trim(p_comment),2000),
-        photo_url=p_photo_url, validated_at=now()
+        photo_url=p_photo_url, validated_at=now(), visual_confirmed_at=now()
     WHERE product_id=p_product_id AND user_id=auth.uid() AND status='received';
   IF NOT FOUND THEN RAISE EXCEPTION 'Sample must be received before validation'; END IF;
   UPDATE public.products SET status='active' WHERE id=p_product_id
@@ -86,7 +89,8 @@ BEGIN
   INSERT INTO public.sample_validations(product_id,user_id,status,comment,validated_at)
     VALUES (p_product_id,auth.uid(),p_status,p_comment,now())
     ON CONFLICT(product_id,user_id) DO UPDATE
-      SET status=EXCLUDED.status, comment=EXCLUDED.comment, validated_at=now();
+      SET status=EXCLUDED.status, comment=EXCLUDED.comment,
+          validated_at=now(), visual_confirmed_at=NULL;
   IF p_status='rejected' THEN
     UPDATE public.products SET status='paused' WHERE id=p_product_id;
   END IF;
@@ -105,7 +109,8 @@ BEGIN
        JOIN public.sample_purchases s ON s.product_id=v.product_id AND s.user_id=v.user_id
        JOIN public.boutiques b ON b.id=NEW.boutique_id
        WHERE v.product_id=NEW.id AND v.user_id=b.user_id
-         AND v.status='validated' AND s.payment_status='paid'
+         AND v.status='validated' AND v.visual_confirmed_at IS NOT NULL
+         AND s.payment_status='paid'
          AND s.stripe_environment='live'
      ) THEN
     RAISE EXCEPTION 'Paid physical sample inspection required before activation';
