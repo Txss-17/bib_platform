@@ -59,9 +59,12 @@ describe("Merchant operational workspaces", () => {
     expect(catalog).toContain("filteredProducts.map(product =>");
     expect(catalog).toContain("lg:hidden");
     const marketing = read("src/pages/dashboard/Marketing.tsx");
-    expect(marketing).toContain('overflow-x-auto pb-1');
-    expect(marketing).toContain('min-w-[350px]');
+    expect(marketing).toContain('w-full min-w-0 pb-1');
+    expect(marketing).toContain('min-w-0 grid-cols-3');
     expect(marketing).toContain('sm:flex-row sm:items-end');
+    const composer = read("src/components/marketing/BlockComposer.tsx");
+    expect(composer).toContain("lg:grid-cols-[minmax(0,1fr)_minmax(0,320px)]");
+    expect(read("src/pages/dashboard/Ventes.tsx")).toContain("<LiveSalesGlobe boutiqueId={selectedBoutique} />");
   });
   it("persists per-store alert settings with owner-only access and safe email templates", () => {
     const sql = read("supabase/migrations/20261101183000_boutique_alerts_persistence.sql");
