@@ -380,6 +380,13 @@ export default function BoutiqueEdit() {
         />
 
         <div className="mx-auto max-w-4xl">
+          <div className="mb-4 flex justify-end">
+            <Button asChild variant="outline" size="sm">
+              <Link to={`/dashboard/boutiques/${boutique.id}/settings`}>
+                {translateUi("Paramètres de la boutique")}
+              </Link>
+            </Button>
+          </div>
           <BoutiqueIdentityHeader
             name={boutique.name}
             slug={boutique.slug}
@@ -466,6 +473,11 @@ export default function BoutiqueEdit() {
         ]}
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link to={`/dashboard/boutiques/${boutique.id}/settings`}>
+                {translateUi("Paramètres de la boutique")}
+              </Link>
+            </Button>
             <Button
               variant="outline"
               size="sm"
