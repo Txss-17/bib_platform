@@ -16,7 +16,6 @@ import {
   ArrowRight,
   ArrowLeft,
   Check,
-  Globe2,
   Building2,
   User,
   Sparkles,
@@ -37,45 +36,6 @@ import { useSearchParams } from "react-router-dom";
  *   3. Type d'activité (Particulier / Business)
  * Skippable mais relancé à chaque login tant que profil incomplet.
  */
-
-const MARKETS = [
-  {
-    value: "EU",
-    get label() {
-      return translateUi("Union Européenne");
-    },
-    get desc() {
-      return translateUi("FR, DE, IT, ES… — TVA UE, RGPD");
-    },
-  },
-  {
-    value: "UAE",
-    get label() {
-      return translateUi("Émirats Arabes Unis");
-    },
-    get desc() {
-      return translateUi("Dubaï, Abu Dhabi — AED, EN/AR");
-    },
-  },
-  {
-    value: "AF",
-    get label() {
-      return translateUi("Afrique");
-    },
-    get desc() {
-      return translateUi("Multi-pays, multi-devises locales");
-    },
-  },
-  {
-    value: "WW",
-    get label() {
-      return translateUi("Mondial");
-    },
-    get desc() {
-      return translateUi("Tous marchés — config avancée");
-    },
-  },
-];
 
 const TYPES = [
   {
@@ -109,7 +69,6 @@ export function OnboardingWizard() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [fullName, setFullName] = useState("");
-  const [market, setMarket] = useState<string>("");
   const [businessType, setBusinessType] = useState<string>("");
   const [businessName, setBusinessName] = useState("");
   const [planTier, setPlanTier] = useState<PlanTier>("starter");
@@ -123,7 +82,6 @@ export function OnboardingWizard() {
     if (needsWizard) {
       setOpen(true);
       setFullName(profile?.full_name || "");
-      setMarket(profile?.market || "");
       setBusinessType(profile?.business_type || "");
       setBusinessName(profile?.business_name || "");
       const queryPlan = searchParams.get("plan") as PlanTier | null;
@@ -141,14 +99,13 @@ export function OnboardingWizard() {
     }
   }, [needsWizard, profile, searchParams]);
 
-  const totalSteps = 4;
+  const totalSteps = 3;
   const canNext =
     (step === 0 && fullName.trim().length >= 2) ||
-    (step === 1 && !!market) ||
-    (step === 2 &&
+    (step === 1 &&
       !!businessType &&
       (businessType !== "business" || businessName.trim().length >= 2)) ||
-    (step === 3 && !!planTier);
+    (step === 2 && !!planTier);
 
   const handleSave = async () => {
     if (!user) return;
@@ -157,7 +114,6 @@ export function OnboardingWizard() {
       .from("profiles")
       .update({
         full_name: fullName.trim(),
-        market,
         business_type: businessType,
         business_name: businessType === "business" ? businessName.trim() : null,
         plan_tier: planTier,
@@ -197,9 +153,8 @@ export function OnboardingWizard() {
           <DialogHeader className="space-y-1 text-left">
             <DialogTitle className="font-display text-xl sm:text-2xl text-primary-foreground">
               {step === 0 && translateUi("Faisons connaissance")}
-              {step === 1 && translateUi("Choisissez votre marché")}
-              {step === 2 && translateUi("Particulier ou business ?")}
-              {step === 3 && translateUi("Choisissez votre plan")}
+              {step === 1 && translateUi("Particulier ou business ?")}
+              {step === 2 && translateUi("Choisissez votre plan")}
             </DialogTitle>
             <DialogDescription className="text-primary-foreground/70 text-sm">
               {step === 0 &&
@@ -208,13 +163,9 @@ export function OnboardingWizard() {
                 )}
               {step === 1 &&
                 translateUi(
-                  "Le marché principal détermine devises, langues et règles fiscales par défaut.",
-                )}
-              {step === 2 &&
-                translateUi(
                   "Cela conditionne les documents de conformité que nous demanderons.",
                 )}
-              {step === 3 &&
+              {step === 2 &&
                 translateUi("Modifiable à tout moment depuis vos paramètres.")}
             </DialogDescription>
           </DialogHeader>
@@ -253,44 +204,6 @@ export function OnboardingWizard() {
           )}
 
           {step === 1 && (
-            <RadioGroup
-              value={market}
-              onValueChange={setMarket}
-              className="space-y-2"
-            >
-              {MARKETS.map((m) => (
-                <label
-                  key={m.value}
-                  htmlFor={`market-${m.value}`}
-                  className={`flex items-start gap-3 p-3.5 rounded-xl border cursor-pointer transition-colors ${
-                    market === m.value
-                      ? "border-bib-gold bg-bib-gold/5"
-                      : "border-border hover:border-bib-marine/30 hover:bg-muted/50"
-                  }`}
-                >
-                  <RadioGroupItem
-                    value={m.value}
-                    id={`market-${m.value}`}
-                    className="mt-0.5"
-                  />
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <Globe2
-                      size={18}
-                      className="text-foreground mt-0.5 shrink-0"
-                    />
-                    <div className="min-w-0">
-                      <p className="font-medium text-foreground">{m.label}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {m.desc}
-                      </p>
-                    </div>
-                  </div>
-                </label>
-              ))}
-            </RadioGroup>
-          )}
-
-          {step === 2 && (
             <div className="space-y-3">
               <RadioGroup
                 value={businessType}
@@ -344,7 +257,7 @@ export function OnboardingWizard() {
             </div>
           )}
 
-          {step === 3 && (
+          {step === 2 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2 mb-2">
                 <Label className="text-xs text-muted-foreground">
