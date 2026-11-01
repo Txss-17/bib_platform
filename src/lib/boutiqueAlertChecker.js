@@ -51,12 +51,12 @@ async function runBoutiqueAlertCheck(s) {
       metadata: { scenes: lowCtr.map((r) => ({ id: r.scene_id, type: r.scene_type, ctr: r.ctr })) }
     });
   }
-  const { data: products } = await supabase.from("products").select("id, supplier_products!inner(name, stock, moq)").eq("boutique_id", boutiqueId).eq("status", "active");
+  const { data: products } = await supabase.from("products").select("id, stock_quantity, supplier_products!inner(name, moq)").eq("boutique_id", boutiqueId).eq("status", "active");
   const lowStock = [];
   for (const p of products ?? []) {
     const sp = p.supplier_products;
     if (!sp) continue;
-    const stock = Number(sp.stock ?? 0);
+    const stock = Number(p.stock_quantity ?? 0);
     const moq = Math.max(Number(sp.moq ?? 1), 1);
     if (stock / moq <= s.low_stock_ratio) lowStock.push({ id: p.id, name: sp.name, stock, moq });
   }
