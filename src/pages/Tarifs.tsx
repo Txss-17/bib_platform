@@ -221,7 +221,7 @@ export default function Tarifs() {
                                   className="flex items-start gap-2.5 text-sm leading-5 text-muted-foreground"
                                 >
                                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-foreground" />
-                                  <span>{feature}</span>
+                                  <span>{translateUi(feature)}</span>
                                 </li>
                               ),
                             )}
