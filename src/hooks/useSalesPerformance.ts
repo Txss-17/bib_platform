@@ -35,6 +35,7 @@ export function useSalesPerformance(boutiqueId = "all") {
       if (productsResult.error) throw productsResult.error;
       const orders = (ordersResult.data ?? []).filter(o => o.stripe_environment !== "sandbox");
       const products = productsResult.data ?? [];
+      const activeProductIds = new Set(products.filter(p => p.status === "active").map(p => p.id));
       const monthMap = new Map<string, SalesPeriod>();
       for (let offset = 5; offset >= 0; offset--) {
         const date = new Date();
@@ -67,7 +68,7 @@ export function useSalesPerformance(boutiqueId = "all") {
       }
       const top = Array.from(productMap.values()).filter(p => p.sales > 0).sort((a,b) => b.revenue - a.revenue).slice(0, 8);
       const now = Date.now();
-      const lowRotation = Array.from(productMap.values()).filter(p => p.stock > 0 && (!p.lastSoldAt || now - new Date(p.lastSoldAt).getTime() > 30 * 86400000))
+      const lowRotation = Array.from(productMap.values()).filter(p => activeProductIds.has(p.id) && p.stock > 0 && (!p.lastSoldAt || now - new Date(p.lastSoldAt).getTime() > 30 * 86400000))
         .map(p => ({
           id: p.id, name: p.name, stock: p.stock,
           daysSinceLastSale: p.lastSoldAt ? Math.floor((now - new Date(p.lastSoldAt).getTime()) / 86400000) : null,
