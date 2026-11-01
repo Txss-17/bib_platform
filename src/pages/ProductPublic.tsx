@@ -396,7 +396,8 @@ export default function ProductPublic() {
           <>
             <StorefrontHeader
               boutiqueName={boutique.name}
-            logoUrl={boutique.logo_url}
+              logoUrl={boutique.logo_url}
+              navigation={themeSettings?.navigation}
               primaryColor={primaryColor}
             />
 
