@@ -167,6 +167,7 @@ export default function StoreSubscriberAccount() {
                 <FeatureItem label={translateUi("Favoris")} />
                 <FeatureItem label={translateUi("Commandes")} />
                 <FeatureItem label={translateUi("Suivi des commandes")} />
+                <FeatureItem label={translateUi("Retours gratuits : frais de retour pris en charge")} />
               </div>
             </div>
 
@@ -320,6 +321,7 @@ export default function StoreSubscriberAccount() {
                     <FeatureItem label={translateUi("Favoris")} />
                     <FeatureItem label={translateUi("Commandes")} />
                     <FeatureItem label={translateUi("Suivi des commandes")} />
+                <FeatureItem label={translateUi("Retours gratuits : frais de retour pris en charge")} />
                   </div>
                 </div>
 
