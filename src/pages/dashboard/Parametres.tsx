@@ -14,8 +14,6 @@ import {
   Loader2,
   FileCheck,
   Crown,
-  AlertTriangle,
-  Search,
   Mail,
   KeyRound,
   LogOut,
