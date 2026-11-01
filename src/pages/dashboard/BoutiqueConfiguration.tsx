@@ -1,5 +1,5 @@
 import { useParams, Link, useSearchParams } from "react-router-dom";
-import { Store, ArrowLeft, Settings2, Mail, Bell, Wallet, Users } from "lucide-react";
+import { Store, ArrowLeft, Settings2, Mail, Bell, Wallet, Users, Search } from "lucide-react";
 import { BoutiquePayoutSettings } from "@/components/dashboard/boutique/BoutiquePayoutSettings";
 import { useCurrentPlan } from "@/hooks/usePlans";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useBoutiques } from "@/hooks/useBoutiques";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { BoutiqueSettingsTab } from "@/components/dashboard/boutique/BoutiqueSettingsTab";
+import { BoutiqueSeoTools } from "@/components/dashboard/boutique/BoutiqueSeoTools";
 import { EmailMarketingSettings } from "@/components/dashboard/EmailMarketingSettings";
 import { BoutiqueAlertsSettings } from "@/components/dashboard/BoutiqueAlertsSettings";
 
@@ -52,14 +53,16 @@ export default function BoutiqueConfiguration() {
             </div>
           </div>
           <Tabs value={tab} onValueChange={setTab}>
-            <div className="w-full overflow-x-auto pb-1"><TabsList className="inline-flex h-auto min-w-max gap-1 p-1 sm:grid sm:w-full sm:min-w-0 sm:grid-cols-4 lg:grid-cols-5">
+            <div className="w-full overflow-x-auto pb-1"><TabsList className="inline-flex h-auto min-w-max gap-1 p-1 sm:grid sm:w-full sm:min-w-0 sm:grid-cols-3 lg:grid-cols-6">
               <TabsTrigger value="general" className="gap-2"><Settings2 size={16} />{en ? "General" : "Général"}</TabsTrigger>
+              <TabsTrigger value="seo" className="gap-2"><Search size={16} />SEO</TabsTrigger>
               <TabsTrigger value="email" className="gap-2"><Mail size={16} />{en ? "Email" : "E-mail"}</TabsTrigger>
               <TabsTrigger value="alerts" className="gap-2"><Bell size={16} />{en ? "Alerts" : "Alertes"}</TabsTrigger>
               <TabsTrigger value="payouts" className="gap-2"><Wallet size={16} />{en ? "Payouts" : "Versements"}</TabsTrigger>
               {teamEligible && <TabsTrigger value="team" className="gap-2"><Users size={16} />{en ? "Team" : "Équipe"}</TabsTrigger>}
             </TabsList></div>
             <TabsContent value="general" className="mt-6"><BoutiqueSettingsTab boutiqueId={boutique.id} /></TabsContent>
+            <TabsContent value="seo" className="mt-6"><BoutiqueSeoTools boutiqueId={boutique.id} /></TabsContent>
             <TabsContent value="email" className="mt-6"><EmailMarketingSettings boutiqueId={boutique.id} /></TabsContent>
             <TabsContent value="alerts" className="mt-6"><BoutiqueAlertsSettings boutiqueId={boutique.id} /></TabsContent>
             <TabsContent value="payouts" className="mt-6"><BoutiquePayoutSettings boutiqueId={boutique.id} /></TabsContent>
