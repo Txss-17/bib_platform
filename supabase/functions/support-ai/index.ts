@@ -33,10 +33,61 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
 
+    if (req.method !== "POST") {
+      return new Response(JSON.stringify({ error: "method_not_allowed" }), {
+        status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const token = req.headers.get("Authorization")?.replace(/^Bearer\\s+/i, "").trim();
+    if (!token) {
+      return new Response(JSON.stringify({ error: "authentication_required" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const authClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } }
+    );
+    const { data: actor, error: actorError } = await authClient.auth.getUser(token);
+    if (actorError || !actor.user) {
+      return new Response(JSON.stringify({ error: "invalid_session" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const body = await req.json();
     const messages = Array.isArray(body?.messages) ? body.messages : [];
+    if (messages.length === 0 || messages.length > 16 ||
+      messages.some((msg: unknown) =>
+        !msg || typeof msg !== "object" ||
+        !["user", "assistant"].includes((msg as { role?: string }).role ?? "") ||
+        typeof (msg as { content?: unknown }).content !== "string" ||
+        ((msg as { content: string }).content.length > 3000)
+      )) {
+      return new Response(JSON.stringify({ error: "invalid_messages" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const context = body?.context ?? {};
-
+    let authorizedBoutiqueId: string | null = null;
+    if (context.boutique_id != null) {
+      if (typeof context.boutique_id !== "string") {
+        return new Response(JSON.stringify({ error: "invalid_boutique" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { data: ownedBoutique } = await authClient
+        .from("boutiques").select("id,user_id").eq("id", context.boutique_id).maybeSingle();
+      if (!ownedBoutique || ownedBoutique.user_id !== actor.user.id) {
+        return new Response(JSON.stringify({ error: "boutique_access_denied" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      authorizedBoutiqueId = ownedBoutique.id;
+    }
+    const contactEmail = actor.user.email ?? null;
+    
     const tools = [
       {
         type: "function",
@@ -118,13 +169,13 @@ serve(async (req) => {
         const { data: inserted, error } = await supabase
           .from("support_tickets")
           .insert({
-            user_id: context.user_id ?? null,
-            boutique_id: context.boutique_id ?? null,
-            source: context.source ?? "dashboard_ai",
+            user_id: actor.user.id,
+            boutique_id: authorizedBoutiqueId,
+            source: "dashboard_ai",
             subject,
             message: summary,
-            contact_email: context.contact_email ?? "noreply@brand-in-a-box.space",
-            contact_name: context.contact_name ?? null,
+            contact_email: contactEmail,
+            contact_name: null,
             ai_summary: summary,
             ai_conversation: messages,
           })
