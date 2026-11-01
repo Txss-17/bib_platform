@@ -132,17 +132,12 @@ export function SimpleValidationSection({
 
   const handleOrder = async () => {
     try {
-      await orderSample.mutateAsync(productId);
-
-      toast.success(translateUi("Échantillon commandé"), {
-        description: translateUi(
-          'Votre échantillon de "{v0}" a été commandé. Vous serez notifié à sa réception.',
-          { v0: productName },
-        ),
-        duration: 5000,
-      });
+      const checkoutUrl = await orderSample.mutateAsync(productId);
+      window.location.assign(checkoutUrl);
     } catch {
-      toast.error(translateUi("Erreur lors de la commande"));
+      toast.error(translateUi("Le paiement de l'échantillon n'est pas disponible actuellement."), {
+        description: translateUi("Aucune commande n'a été enregistrée. Réessayez lorsque le paiement sera activé."),
+      });
     }
   };
 
@@ -291,7 +286,7 @@ export function SimpleValidationSection({
           })}
         </div>
 
-        {/* Order sample */}
+        {/* Verified paid sample checkout, not a synthetic order status */}
         {status === "none" && (
           <Button
             onClick={handleOrder}
@@ -305,7 +300,7 @@ export function SimpleValidationSection({
               <ShoppingBag className="w-4 h-4" />
             )}
 
-            {translateUi("Commander un échantillon")}
+            {translateUi("Acheter l’échantillon pour validation")}
           </Button>
         )}
 
