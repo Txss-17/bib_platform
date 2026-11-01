@@ -193,7 +193,7 @@ function formatServerError(err: any): string {
   return msg || "Erreur inconnue";
 }
 
-export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
+export function BoutiqueSettingsTab({ boutiqueId, showTeam = false }: { boutiqueId: string; showTeam?: boolean }) {
   useLanguage();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -1257,8 +1257,8 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
         </Button>
       </div>
 
-      {/* Équipe */}
-      <Card>
+      {/* Team management has its own dedicated workspace for Growth and Pro. */}
+      {showTeam && <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <Users className="w-4 h-4 text-primary" />
@@ -1349,7 +1349,7 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
             </div>
           )}
         </CardContent>
-      </Card>
+      </Card>}
 
       {/* Zone danger */}
       <Card className="border-destructive/40">
