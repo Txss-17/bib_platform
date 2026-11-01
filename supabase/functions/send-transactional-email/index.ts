@@ -176,8 +176,7 @@ Deno.serve(async (req) => {
 
   if (suppressionError) {
     console.error('Suppression check failed — refusing to send', {
-      error: suppressionError,
-      effectiveRecipient,
+      code: suppressionError?.code ?? 'unknown',
     })
     return new Response(
       JSON.stringify({ error: 'Failed to verify suppression status' }),
@@ -197,7 +196,7 @@ Deno.serve(async (req) => {
       status: 'suppressed',
     })
 
-    console.log('Email suppressed', { effectiveRecipient, templateName })
+    console.log('Email suppressed', { templateName })
     return new Response(
       JSON.stringify({ success: false, reason: 'email_suppressed' }),
       {
@@ -221,7 +220,7 @@ Deno.serve(async (req) => {
   if (tokenLookupError) {
     console.error('Token lookup failed', {
       error: tokenLookupError,
-      email: normalizedEmail,
+      address_redacted: true,
     })
     await supabase.from('email_send_log').insert({
       message_id: messageId,
