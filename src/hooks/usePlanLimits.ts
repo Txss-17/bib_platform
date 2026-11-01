@@ -2,7 +2,6 @@ import { useBoutiques } from "@/hooks/useBoutiques";
 import { useProducts } from "@/hooks/useProducts";
 import { useCurrentPlan } from "@/hooks/usePlans";
 import { useUserSubscriptions, isActiveSubscription } from "@/hooks/useSubscriptions";
-import { getStripeEnvironment } from "@/lib/stripe";
 
 /**
  * Computes the plan-driven limits used to gate creation flows
