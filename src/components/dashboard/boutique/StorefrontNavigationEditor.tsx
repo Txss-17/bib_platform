@@ -109,7 +109,7 @@ export function StorefrontNavigationEditor({ boutiqueId, boutiqueName, pages }: 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label>{tx("Présentation du menu", "Header layout")}</Label>
-          <Select value={draft.layout ?? "classic"} onValueChange={value => change({ layout: value as StorefrontNavigationSettings["layout"] })}>
+          <Select value={draft.layout ?? "classic"} onValueChange={value => change({ layout: value as StorefrontNavigationSettings["layout"], ...(value === "centered" ? { logoPosition: "center" as const } : {}) })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="classic">{tx("Classique — une ligne", "Classic — single row")}</SelectItem>
@@ -121,7 +121,7 @@ export function StorefrontNavigationEditor({ boutiqueId, boutiqueName, pages }: 
         </div>
         <div className="space-y-1.5">
           <Label>{tx("Position du logo", "Logo position")}</Label>
-          <Select value={draft.logoPosition ?? "left"} onValueChange={value => change({ logoPosition: value as StorefrontNavigationSettings["logoPosition"] })}>
+          <Select value={draft.logoPosition ?? "left"} onValueChange={value => change({ logoPosition: value as StorefrontNavigationSettings["logoPosition"], ...(draft.layout === "centered" && value !== "center" ? { layout: "classic" as const } : {}) })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="left">{tx("Gauche", "Left")}</SelectItem>
