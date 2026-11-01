@@ -339,7 +339,7 @@ export default function BoutiqueCreate() {
   };
 
   return (
-    <DashboardLayout
+    <DashboardLayout>
       {!planLoading && !canCreateBoutique && (
         <div className="mx-auto max-w-5xl rounded-xl border border-border bg-muted/40 p-5">
           <p className="font-semibold text-foreground">{translateUi("Plafond de boutiques atteint")} — {boutiqueCount}/{maxBoutiques}</p>
