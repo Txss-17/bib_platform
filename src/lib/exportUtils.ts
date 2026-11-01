@@ -11,6 +11,12 @@ interface ExportOptions {
   boutiqueLogo?: string | null;
 }
 
+/** Escape spreadsheet formula characters as data, not executable formulas. */
+export function escapeCsvFormula(value: unknown): string {
+  const text = String(value ?? "");
+  return /^[\\s\\u0000-\\u001f]*[=+@-]/.test(text) ? "'" + text : text;
+}
+
 export function exportToCSV(
   data: any[],
   columns: ExportColumn[],
@@ -19,7 +25,7 @@ export function exportToCSV(
 ) {
   const headerLines: string[] = [];
   if (options?.boutiqueName) {
-    headerLines.push(`"${options.boutiqueName} — Verified by BIB"`);
+    headerLines.push(`"${escapeCsvFormula(options.boutiqueName).replace(/"/g, '" "').trim()} — Verified by BIB"`);
     headerLines.push(
       `"${getUiLanguage() === "en" ? "Exported on" : "Exporté le"} ${new Date().toLocaleDateString(getUiLocale())}"`,
     );
@@ -30,7 +36,7 @@ export function exportToCSV(
   const csv = [
     ...headerLines,
     [headers, ...rows]
-      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+      .map((r) => r.map((c) => `"${escapeCsvFormula(c).replace(/"/g, '""')}"`).join(","))
       .join("\n"),
   ].join("\n");
   const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
