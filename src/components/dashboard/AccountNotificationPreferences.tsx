@@ -25,7 +25,7 @@ export function AccountNotificationPreferences() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [prefs, setPrefs] = useState(defaults);
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["account-notifications", user?.id],
     enabled: !!user,
     queryFn: async () => {
@@ -51,6 +51,7 @@ export function AccountNotificationPreferences() {
     onError: (error: Error) => toast.error(error.message),
   });
   if (isLoading) return <p className="py-5 text-sm text-muted-foreground">{translateUi("Chargement des préférences…")}</p>;
+  if (isError) return <p role="alert" className="rounded-lg border border-destructive/30 p-4 text-sm text-destructive">{translateUi("Impossible de charger les préférences de notification. Réessayez avant de modifier vos réglages.")}</p>;
   const rows: { key: keyof Preferences; label: string; detail: string; locked?: boolean }[] = [
     { key: "security_emails", label: "Sécurité du compte", detail: "Alertes de connexion et événements de sécurité obligatoires", locked: true },
     { key: "account_updates", label: "Informations de compte", detail: "Mises à jour administratives et changements de votre espace" },
@@ -67,6 +68,7 @@ export function AccountNotificationPreferences() {
         <Switch checked={row.locked ? true : prefs[row.key]} disabled={row.locked} onCheckedChange={v => setPrefs(p => ({ ...p, [row.key]: v }))} aria-label={translateUi(row.label)}/>
       </div>)}
     </div>
+    <p className="text-xs text-muted-foreground">{translateUi("Les annonces et la synthèse hebdomadaire sont des préférences enregistrées. Leur diffusion dépend de l’activation des services d’envoi correspondants ; aucun e-mail n’est programmé par ce formulaire.")}</p>
     <p className="flex gap-2 text-xs text-muted-foreground"><ShieldCheck className="h-4 w-4 shrink-0" />{translateUi("Les e-mails transactionnels et de sécurité obligatoires ne peuvent pas être désactivés. Les préférences enregistrées doivent être respectées par les envois automatisés.")}</p>
     <Button disabled={save.isPending || !user} onClick={() => save.mutate()}>{save.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}{translateUi("Enregistrer les préférences")}</Button>
   </div>;
