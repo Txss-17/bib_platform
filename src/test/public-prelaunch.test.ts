@@ -34,11 +34,13 @@ describe("BIB Platform public prelaunch boundary", () => {
     }
   });
 
-  it("exposes Coming Soon signup routes without enabling signups", () => {
-    for (const path of ["/signup", "/store/signup", "/register"]) {
+  it("keeps merchant signup closed but customer signup and partner applications open", () => {
+    for (const path of ["/signup", "/register"]) {
       expect(PRELAUNCH_PUBLIC_ROUTES).toContain(path);
       expect(router).toContain('path="' + path + '" element={<SignupComingSoon />} />');
     }
+    expect(PRELAUNCH_PUBLIC_ROUTES).toContain("/store/signup");
+    expect(router).toContain('path="/store/signup" element={<StoreSignup />} />');
   });
 
   it("keeps a single public footer legal destination and no Careers entry", () => {
