@@ -29,9 +29,8 @@ import OpsOnboarding from "@/pages/OpsOnboarding";
 const Index = lazy(() => import("@/pages/Index"));
 const Vendre = lazy(() => import("@/pages/Vendre"));
 const Login = lazy(() => import("@/pages/Login"));
-const Signup = lazy(() => import("@/pages/Signup"));
+const SignupComingSoon = lazy(() => import("@/pages/SignupComingSoon"));
 const StoreLogin = lazy(() => import("@/pages/StoreLogin"));
-const StoreSignup = lazy(() => import("@/pages/StoreSignup"));
 const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 
@@ -459,7 +458,7 @@ export default function App() {
 
                     <Route path="/store/login" element={<StoreLogin />} />
 
-                    <Route path="/store/signup" element={<StoreSignup />} />
+                    <Route path="/store/signup" element={<SignupComingSoon />} />
 
                     {/* =================================================
                       BIB ABONNÉ — ACTIVATION / PAYMENT
@@ -514,7 +513,8 @@ export default function App() {
 
                     <Route path="/login" element={<Login />} />
 
-                    <Route path="/signup" element={<Signup />} />
+                    <Route path="/signup" element={<SignupComingSoon />} />
+                    <Route path="/register" element={<SignupComingSoon />} />
 
                     <Route
                       path="/forgot-password"
