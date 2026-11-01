@@ -34,6 +34,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useAuth } from "@/contexts/AuthContext";
 import { Logo } from "@/components/Logo";
 import { useBoutiques } from "@/hooks/useBoutiques";
+import { useCurrentPlan } from "@/hooks/usePlans";
 import {
   useMemberBoutiques,
   ROLE_PERMISSIONS,
@@ -222,6 +223,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { isAdmin } = useAdminRole();
   const { data: ownedBoutiques = [] } = useBoutiques();
   const { data: memberBoutiques = [] } = useMemberBoutiques();
+  const { tier: planTier } = useCurrentPlan();
+  const teamAvailable = planTier === "growth" || planTier === "pro";
 
   const isMemberOnly =
     ownedBoutiques.length === 0 && memberBoutiques.length > 0;
@@ -243,7 +246,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
   const visibleBoutiqueItems = isMemberOnly
     ? boutiqueNavItems.filter((item) => allowedModules.has(item.module))
-    : boutiqueNavItems;
+    : boutiqueNavItems.filter((item) => item.module !== "equipe" || teamAvailable);
 
   const primaryRole = memberRoles[0];
 
