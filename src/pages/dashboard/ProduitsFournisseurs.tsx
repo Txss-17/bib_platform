@@ -434,7 +434,7 @@ export default function ProduitsFournisseurs() {
               </h5>
               <Slider
                 min={0}
-                max={100}
+                max={maximumPrice}
                 step={1}
                 value={priceRange}
                 onValueChange={setPriceRange}
@@ -493,7 +493,7 @@ export default function ProduitsFournisseurs() {
             </h4>
             <Slider
               min={0}
-              max={100}
+              max={maximumPrice}
               step={1}
               value={priceRange}
               onValueChange={setPriceRange}
@@ -605,8 +605,6 @@ function ProductGridCard({
   onToggleFavorite: () => void;
 }) {
   useLanguage();
-  const rotation =
-    rotationConfig[product.rotation_indicator as RotationIndicator];
   const [showCalc, setShowCalc] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
   const [referenceParams] = useSearchParams();
@@ -624,112 +622,96 @@ function ProductGridCard({
 
   return (
     <>
-      <Card className="bg-card border-border/50 overflow-hidden group hover:shadow-md transition-shadow">
-        <div
-          className="aspect-[4/3] sm:aspect-square relative bg-muted cursor-pointer"
+      <Card className="group relative flex min-w-0 flex-col overflow-hidden rounded-2xl border-border/70 bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg">
+        <button
+          type="button"
+          className="relative block aspect-[5/4] w-full overflow-hidden bg-muted/40 text-left"
           onClick={() => setShowDetail(true)}
+          aria-label={translateUi("Consulter le produit {v0}", { v0: product.name })}
         >
           {product.image_url ? (
             <img
               src={product.image_url}
               alt={product.name}
-              className="w-full h-full object-cover"
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <LayoutGrid className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
+            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-secondary/10">
+              <Package className="h-10 w-10 text-muted-foreground/60" />
             </div>
           )}
-          <span className="absolute top-1.5 left-1.5 bg-background/80 backdrop-blur-sm text-[9px] sm:text-[10px] font-medium px-1.5 py-0.5 rounded">
+          <span className="absolute bottom-3 left-3 max-w-[calc(100%-4rem)] truncate rounded-full border border-border/40 bg-background/95 px-3 py-1.5 text-[11px] font-semibold text-foreground shadow-sm">
             {product.category}
           </span>
-          {/* Favorite button */}
+        </button>
+        <button
+          type="button"
+          aria-label={isFavorite ? translateUi("Retirer des favoris") : translateUi("Ajouter aux favoris")}
+          aria-pressed={isFavorite}
+          className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border/70 bg-background/95 text-foreground shadow-sm transition-colors hover:text-destructive"
+          onClick={onToggleFavorite}
+        >
+          <Heart className={`h-4 w-4 ${isFavorite ? "fill-destructive text-destructive" : ""}`} />
+        </button>
+        <CardContent className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
           <button
-            className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center hover:bg-background transition-colors"
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleFavorite();
-            }}
-          >
-            <Heart
-              className={`w-3.5 h-3.5 transition-colors ${isFavorite ? "fill-destructive text-destructive" : "text-muted-foreground"}`}
-            />
-          </button>
-          {/* Hover overlay */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
-            <span className="bg-background/90 backdrop-blur-sm text-foreground text-[10px] font-medium px-3 py-1.5 rounded-full flex items-center gap-1">
-              <Eye className="w-3 h-3" /> {translateUi("Voir détails")}
-            </span>
-          </div>
-        </div>
-        <CardContent className="p-2.5 sm:p-3 space-y-1.5">
-          <h3
-            className="font-semibold text-xs sm:text-sm text-foreground line-clamp-2 leading-tight cursor-pointer hover:text-primary transition-colors"
+            type="button"
+            className="min-h-10 text-left text-sm font-semibold leading-snug text-foreground line-clamp-2 hover:text-primary sm:text-base"
             onClick={() => setShowDetail(true)}
           >
             {product.name}
-          </h3>
-          <div className="flex items-center gap-1">
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${rotation.color} shrink-0`}
-            />
-            <span
-              className={`text-[9px] sm:text-[10px] ${rotation.badgeClass} px-1.5 py-0.5 rounded-full`}
-            >
-              {rotation.badgeLabel}
+          </button>
+          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+            <span>{translateUi("Prix de base")}</span>
+            <span className="text-lg font-bold tabular-nums text-foreground">
+              {product.base_price.toFixed(2)} €
             </span>
           </div>
-          <div className="flex items-end justify-between pt-1">
-            <div>
-              <p className="text-sm sm:text-base font-bold text-foreground">
-                €{product.base_price.toFixed(2)}
-              </p>
-              <p className="text-[9px] sm:text-[10px] text-muted-foreground">
-                {product.max_margin_percent}
-                {translateUi("% marge max")}
-              </p>
-            </div>
-            <div className="flex gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0"
-                onClick={() => setShowCalc(!showCalc)}
-                title={translateUi("Calculer marge")}
-              >
-                {showCalc ? (
-                  <ChevronUp className="w-3.5 h-3.5" />
-                ) : (
-                  <Calculator className="w-3.5 h-3.5" />
-                )}
-              </Button>
-              <Button
-                size="sm"
-                className="h-7 px-2 text-[10px] sm:text-xs gap-0.5"
-                onClick={() => setShowAddDialog(true)}
-              >
-                <Plus className="w-3 h-3" />
-                <span className="hidden sm:inline">
-                  {translateUi("Ajouter")}
-                </span>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-7 w-7 p-0 shrink-0"
-                title={translateUi("Personnaliser ce produit")}
-                aria-label={translateUi("Personnaliser {v0}", {
-                  v0: product.name,
-                })}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleCustomize();
-                }}
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-              </Button>
-            </div>
+          <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-3">
+            <span className="text-xs text-muted-foreground">{translateUi("Marge autorisée jusqu'à")}</span>
+            <span className="text-sm font-semibold tabular-nums text-primary">{product.max_margin_percent} %</span>
+          </div>
+          <div className="mt-auto grid grid-cols-2 gap-2 pt-1">
+            <Button
+              type="button"
+              variant="outline"
+              className="min-w-0 gap-1.5 rounded-xl px-2 text-xs sm:text-sm"
+              onClick={() => setShowDetail(true)}
+            >
+              <Eye className="h-4 w-4 shrink-0" />
+              {translateUi("Détails")}
+            </Button>
+            <Button
+              type="button"
+              className="min-w-0 gap-1.5 rounded-xl px-2 text-xs sm:text-sm"
+              onClick={() => setShowAddDialog(true)}
+            >
+              <Plus className="h-4 w-4 shrink-0" />
+              {translateUi("Ajouter")}
+            </Button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              className="min-w-0 gap-1.5 px-1 text-xs"
+              onClick={() => setShowCalc(!showCalc)}
+              aria-expanded={showCalc}
+            >
+              <Calculator className="h-4 w-4 shrink-0" />
+              {translateUi("Simuler")}
+              {showCalc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="min-w-0 gap-1.5 px-1 text-xs"
+              onClick={handleCustomize}
+            >
+              <Sparkles className="h-4 w-4 shrink-0" />
+              {translateUi("Personnaliser")}
+            </Button>
           </div>
         </CardContent>
         {showCalc && <InlineMarginCalc product={product} />}
