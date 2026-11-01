@@ -487,7 +487,7 @@ export default function Produits() {
   return (
     <DashboardLayout>
       <div className="space-y-6 pb-8">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-primary p-5 text-white shadow-lg shadow-primary/10 sm:p-8">
+        <div className="relative overflow-hidden rounded-2xl bg-primary p-5 text-primary-foreground sm:p-7">
           <div className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full border border-white/10" />
           <div className="pointer-events-none absolute -right-2 -top-10 h-44 w-44 rounded-full border border-warning/30" />
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -556,7 +556,7 @@ export default function Produits() {
           eyebrow={translateUi("Gestion du catalogue")}
           title={translateUi("Mes produits")}
           subtitle={translateUi(
-            "Les indicateurs restent globaux ; les filtres ci-dessous servent à retrouver un produit précis.",
+            "Inventaire opérationnel : recherchez, filtrez, vérifiez les échantillons, contrôlez les stocks et modifiez les références de vos boutiques.",
           )}
         />
 
@@ -605,7 +605,7 @@ export default function Produits() {
           )}
           flush
         >
-          <div className="space-y-4 border-b border-border bg-muted/80 p-4 sm:p-5">
+          <div className="space-y-4 border-b border-border bg-muted/40 p-4 sm:p-5">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -740,7 +740,66 @@ export default function Produits() {
                 onReset={resetFilters}
               />
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <>
+                <div className="hidden overflow-x-auto rounded-xl border border-border lg:block">
+                  <table className="w-full min-w-[850px] border-collapse text-left text-sm">
+                    <thead className="bg-muted/60 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      <tr>
+                        <th className="px-4 py-3">{translateUi("Produit et boutique")}</th>
+                        <th className="px-3 py-3">{translateUi("Prix public")}</th>
+                        <th className="px-3 py-3">{translateUi("Stock / seuil")}</th>
+                        <th className="px-3 py-3">{translateUi("Échantillon")}</th>
+                        <th className="px-3 py-3">{translateUi("Publication")}</th>
+                        <th className="px-3 py-3 text-right">{translateUi("Ventes cumulées")}</th>
+                        <th className="px-4 py-3 text-right">{translateUi("Actions")}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {filteredProducts.map(product => {
+                        const status = getSampleStatus(product.id);
+                        const quantity = Number(product.stock_quantity ?? 0);
+                        const threshold = Number(product.low_stock_threshold ?? 5);
+                        const name = product.supplier_products?.name ?? translateUi("Produit sans nom");
+                        return <tr key={product.id} className="align-middle transition-colors hover:bg-muted/25">
+                          <td className="px-4 py-3">
+                            <div className="flex min-w-[200px] items-center gap-3">
+                              <img src={product.supplier_products?.image_url || "/placeholder.svg"} alt="" loading="lazy" className="h-12 w-12 shrink-0 rounded-lg border border-border bg-muted object-cover" />
+                              <div className="min-w-0">
+                                <p className="max-w-[260px] truncate font-semibold text-foreground" title={name}>{name}</p>
+                                <p className="mt-1 max-w-[260px] truncate text-xs text-muted-foreground">{boutiqueNameById.get(product.boutique_id) ?? "—"}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-3 font-medium tabular-nums">{formatPrice(product.public_price)}</td>
+                          <td className="px-3 py-3">
+                            <span className={cn("font-medium tabular-nums", quantity <= threshold ? "text-warning-ink" : "text-foreground")}>{quantity}</span>
+                            <span className="text-xs text-muted-foreground"> / {threshold}</span>
+                            {quantity === 0 && <p className="mt-1 text-[11px] text-destructive">{translateUi("Rupture")}</p>}
+                          </td>
+                          <td className="px-3 py-3"><Badge variant="outline" className={getSampleStatusColor(status)}>{getSampleStatusLabel(status)}</Badge></td>
+                          <td className="px-3 py-3"><Badge variant={product.status === "active" ? "default" : "secondary"}>{product.status === "active" ? translateUi("Actif") : translateUi("En pause")}</Badge></td>
+                          <td className="px-3 py-3 text-right font-semibold tabular-nums">{formatNumber(Number(product.cumulative_sales ?? 0))}</td>
+                          <td className="px-4 py-3">
+                            <div className="flex justify-end gap-2">
+                              <Button size="sm" variant="outline" onClick={() => setEditProductId(product.id)}><Edit className="mr-1.5 h-3.5 w-3.5" />{translateUi("Modifier")}</Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild><Button size="sm" variant="ghost" aria-label={translateUi("Autres actions")}><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => setSelectedProductId(product.id)}>{translateUi("Voir la validation")}</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => setMediaProductId(product.id)}>{translateUi("Studio de visuels")}</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => setReviewProductId(product.id)}>{translateUi("Modération")}</DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => void toggleStatus(product.id, product.status)}>{product.status === "active" ? translateUi("Mettre en pause") : translateUi("Activer")}</DropdownMenuItem>
+                                  <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(product.id)}>{translateUi("Supprimer")}</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </td>
+                        </tr>;
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2 lg:hidden">
                 {filteredProducts.map((product) => {
                   const sampleStatus = getSampleStatus(product.id);
                   const isValidated = sampleStatus === "validated";
@@ -1002,7 +1061,8 @@ export default function Produits() {
                     </Card>
                   );
                 })}
-              </div>
+                </div>
+              </>
             )}
           </div>
         </SectionCard>
