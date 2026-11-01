@@ -144,11 +144,16 @@ Deno.serve(async (req) => {
 
     // --- TEST SEND : envoi unique, pas de campagne, pas de log destinataires ---
     if (test_recipient && typeof test_recipient === "string") {
+      if (!user.email || test_recipient.trim().toLowerCase() !== user.email.toLowerCase()) {
+        return new Response(JSON.stringify({ error: "test_recipient_must_be_account_email" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       const unsubLink = `${Deno.env.get("SUPABASE_URL")?.replace(/\.supabase\.co.*/, "")}.lovable.app/unsubscribe?email=${encodeURIComponent(test_recipient)}&boutique=${boutique.slug}`;
       const vars = {
         first_name: "Test",
         full_name: "Destinataire de test",
-        boutique_name: boutique.name,
+        boutique_name: escapeHtml(boutique.name),
         promo_code: promo_code ?? "TESTCODE",
       };
       const html = appendSignatureAndFooter(renderTemplate(body_html, vars), {
@@ -207,10 +212,10 @@ Deno.serve(async (req) => {
     for (const r of recipients) {
       const unsubLink = `${Deno.env.get("SUPABASE_URL")?.replace(/\.supabase\.co.*/, "")}.lovable.app/unsubscribe?email=${encodeURIComponent(r.email)}&boutique=${boutique.slug}`;
       const vars = {
-        first_name: (r.full_name ?? "").split(" ")[0] ?? "",
-        full_name: r.full_name ?? "",
+        first_name: escapeHtml((r.full_name ?? "").split(" ")[0] ?? ""),
+        full_name: escapeHtml(r.full_name ?? ""),
         boutique_name: boutique.name,
-        promo_code: promo_code ?? "",
+        promo_code: escapeHtml(String(promo_code ?? "")),
       };
       const html = appendSignatureAndFooter(renderTemplate(body_html, vars), {
         signature, footerLinks, boutiqueName: boutique.name, unsubLink,
