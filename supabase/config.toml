@@ -9,6 +9,9 @@ verify_jwt = true
 [functions.create-checkout]
 verify_jwt = false
 
+[functions.create-sample-checkout]
+verify_jwt = true
+
 [functions.create-storefront-checkout]
 verify_jwt = false
 
