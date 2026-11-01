@@ -667,9 +667,7 @@ function HeroCinemaScene({
 }: {
   content: any;
   displayFont: string;
-  proBackground?: SceneRecord["style_overrides"] extends infer _T
-    ? { color?: string | null; imageUrl?: string | null; videoUrl?: string | null; overlayOpacity?: number }
-    : never;
+  proBackground?: { color?: string | null; imageUrl?: string | null; videoUrl?: string | null; overlayOpacity?: number };
 }) {
   useLanguage();
   const variant = content.variant || "fullscreen";
@@ -677,9 +675,11 @@ function HeroCinemaScene({
   const fullPage = !!content.fullPageBackground;
 
   const overlayOpacity = proBackground?.overlayOpacity ?? content.overlayOpacity ?? 0.45;
-  const heroVideo = proBackground?.videoUrl || (!proBackground?.imageUrl ? content.videoUrl : null);
-  const heroImage = proBackground?.imageUrl || content.backgroundImage;
-  const heroColor = proBackground?.color ? `hsl(${proBackground.color})` : null;
+  const proHasMedia = Boolean(proBackground?.videoUrl || proBackground?.imageUrl);
+  const proHasColor = Boolean(proBackground?.color);
+  const heroVideo = proBackground?.videoUrl || (!proHasMedia && !proHasColor ? content.videoUrl : null);
+  const heroImage = proBackground?.imageUrl || (!proHasMedia && !proHasColor ? content.backgroundImage : null);
+  const heroColor = proHasColor ? `hsl(${proBackground!.color})` : null;
 
   const align =
     content.textAlign === "left"
@@ -772,7 +772,12 @@ function HeroCinemaScene({
   if (variant === "type-only") {
     return (
       <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden py-20" style={heroColor ? { background: heroColor } : undefined}>
-        <div className="max-w-5xl px-6 text-center">
+        {(proHasMedia || proHasColor) && (
+          <>
+            {media}
+          </>
+        )}
+        <div className={`relative z-10 max-w-5xl px-6 text-center ${proHasMedia ? "text-white" : ""}`}>
           {content.eyebrow && (
             <p className="text-xs uppercase tracking-[0.3em] opacity-50 mb-6">
               {content.eyebrow}
