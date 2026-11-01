@@ -95,12 +95,14 @@ export default function Paiements() {
         return { total: 0, byBoutique: [] };
       const { data, error } = await supabase
         .from("orders")
-        .select("amount, boutique_id")
-        .in("boutique_id", boutiqueIds);
+        .select("amount, boutique_id, stripe_environment")
+        .in("boutique_id", boutiqueIds)
+        .eq("payment_status", "paid");
       if (error) throw error;
-      const total = data.reduce((s, o) => s + Number(o.amount), 0);
+      const confirmedOrders = (data ?? []).filter(o => o.stripe_environment !== "sandbox");
+      const total = confirmedOrders.reduce((s, o) => s + Number(o.amount), 0);
       const byMap: Record<string, number> = {};
-      data.forEach((o) => {
+      confirmedOrders.forEach((o) => {
         byMap[o.boutique_id] = (byMap[o.boutique_id] || 0) + Number(o.amount);
       });
       const byBoutique = boutiques
