@@ -80,24 +80,7 @@ type Boutique = {
   target_markets: string[];
 };
 
-const MARKETS = [
-  { code: "FR", label: "France" },
-  { code: "EU", label: "Europe" },
-  {
-    code: "UK",
-    get label() {
-      return translateUi("Royaume-Uni");
-    },
-  },
-  {
-    code: "US",
-    get label() {
-      return translateUi("États-Unis");
-    },
-  },
-  { code: "CA", label: "Canada" },
-  { code: "INTL", label: "International" },
-];
+const MARKETS = [{ code: "EU", label: "Europe" }];
 
 const ROLES = [
   {
@@ -111,62 +94,8 @@ const ROLES = [
 ] as const;
 
 /** Country -> default currency + target market suggestions (BIB commerce defaults). */
-const COUNTRY_PRESETS: Record<
-  string,
-  { label: string; currency: string; markets: string[] }
-> = {
-  FR: { label: "France", currency: "EUR", markets: ["FR", "EU"] },
-  BE: {
-    get label() {
-      return translateUi("Belgique");
-    },
-    currency: "EUR",
-    markets: ["EU"],
-  },
-  DE: {
-    get label() {
-      return translateUi("Allemagne");
-    },
-    currency: "EUR",
-    markets: ["EU"],
-  },
-  ES: {
-    get label() {
-      return translateUi("Espagne");
-    },
-    currency: "EUR",
-    markets: ["EU"],
-  },
-  IT: {
-    get label() {
-      return translateUi("Italie");
-    },
-    currency: "EUR",
-    markets: ["EU"],
-  },
-  CH: {
-    get label() {
-      return translateUi("Suisse");
-    },
-    currency: "CHF",
-    markets: ["EU", "INTL"],
-  },
-  GB: {
-    get label() {
-      return translateUi("Royaume-Uni");
-    },
-    currency: "GBP",
-    markets: ["UK", "EU"],
-  },
-  US: {
-    get label() {
-      return translateUi("États-Unis");
-    },
-    currency: "USD",
-    markets: ["US", "INTL"],
-  },
-  CA: { label: "Canada", currency: "CAD", markets: ["CA", "US"] },
-  INTL: { label: "International", currency: "EUR", markets: ["INTL"] },
+const COUNTRY_PRESETS: Record<string, {label: string; currency: string; markets: string[]}> = {
+  EU: { label: "Europe", currency: "EUR", markets: ["EU"] },
 };
 
 /**
@@ -1251,18 +1180,6 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="EUR">EUR — Euro (€)</SelectItem>
-                <SelectItem value="USD">
-                  {translateUi("USD — US Dollar ($)")}
-                </SelectItem>
-                <SelectItem value="GBP">
-                  {translateUi("GBP — Livre Sterling (£)")}
-                </SelectItem>
-                <SelectItem value="CHF">
-                  {translateUi("CHF — Franc Suisse")}
-                </SelectItem>
-                <SelectItem value="CAD">
-                  {translateUi("CAD — Dollar Canadien")}
-                </SelectItem>
               </SelectContent>
             </Select>
           </div>
