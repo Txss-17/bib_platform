@@ -14,14 +14,14 @@ function Layout({title,subtitle,children}:{title:string,subtitle:string,children
  useLanguage(); // The initial legal publications are written in French for this first audience.
  useSEO({title:title+" | BIB Talent",description:subtitle});
  return <PublicPageLayout>
-  <main className="container mx-auto max-w-5xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
+  <div className="container mx-auto max-w-5xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
    <Link to={HOME} className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-accent-ink"><ArrowLeft size={16}/> Retour à BIB Talent</Link>
    <span className="text-xs font-semibold uppercase tracking-[0.23em] text-accent-ink">BIB Talent · Informations</span>
    <h1 className="mt-5 font-display text-4xl font-semibold leading-tight sm:text-5xl">{title}</h1>
    <p className="mt-5 max-w-3xl text-lg leading-8 text-muted-foreground">{subtitle}</p>
    <p className="mt-3 text-xs text-muted-foreground">Mise à jour : {updated}</p>
    <article className="mt-11 space-y-8 rounded-2xl border border-border bg-card px-6 py-9 text-[15px] leading-8 text-foreground shadow-sm sm:px-10 [&_h2]:mb-3 [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-foreground [&_a]:font-semibold [&_a]:text-accent-ink [&_a]:underline [&_a]:underline-offset-2 [&_li]:ml-5 [&_li]:list-disc">{children}</article>
-  </main>
+  </div>
  </PublicPageLayout>;
 }
 
