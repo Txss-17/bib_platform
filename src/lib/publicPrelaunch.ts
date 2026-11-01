@@ -16,6 +16,9 @@ export const PRELAUNCH_PUBLIC_ROUTES = [
  "/careers",
  "/careers/jobs",
  "/bib-talent",
+ "/signup",
+ "/store/signup",
+ "/register",
  "/pack-legal",
  "/legal",
  "/cgv",
@@ -49,6 +52,7 @@ export function isPublicInformationPath(pathname: string): boolean {
   const path = pathname.replace(/\/+$/, "") || "/";
   return new Set([
     "/", "/landing", "/vendre", "/tarifs", "/pricing",
+    "/signup", "/store/signup", "/register",
     "/a-propos", "/bib-talent", "/suppliers", "/fournisseurs",
     "/ops", "/logistics", "/logistique", "/centre-aide",
     "/help", "/help/faq", "/help/guide", "/pack-legal",
