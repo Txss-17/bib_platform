@@ -187,181 +187,71 @@ function BoutiqueCard({
 }) {
   useLanguage();
   const isPublished = boutique.status === "published";
-  const activeProducts = health?.metrics.activeProducts ?? 0;
-  const pendingOrders = health?.metrics.pendingOrders ?? 0;
-
+  const activeProducts = health?.metrics.activeProducts;
+  const pendingOrders = health?.metrics.pendingOrders;
   const publicPath = `/boutique/${boutique.slug}`;
   const editPath = `/dashboard/boutiques/${boutique.id}/edit`;
-  const analyticsPath = `/dashboard/boutiques/${boutique.id}/analytics`;
-
-  const publicationStatus: SignalStatus = isPublished ? "ok" : "warning";
-
-  const productStatus: SignalStatus = activeProducts > 0 ? "ok" : "warning";
-
-  const fulfillmentStatus: SignalStatus = pendingOrders > 0 ? "warning" : "ok";
-
-  const stockStatus: SignalStatus = health?.signals.stock ?? "warning";
+  const settingsPath = `/dashboard/boutiques/${boutique.id}/settings`;
 
   return (
-    <article className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-info/30 hover:shadow-lg hover:shadow-primary/5">
-      <div className="h-1 bg-gradient-to-r from-primary via-primary to-amber-300" />
+    <article className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md">
+      <div className="flex min-w-0 items-start gap-3 border-b border-border/60 p-3 sm:p-4">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted/30 p-1">
+          {boutique.logo_url ? (
+            <img src={boutique.logo_url} alt={translateUi("Logo de {v0}", { v0: boutique.name })} loading="lazy" className="h-full w-full object-contain" />
+          ) : (
+            <Store className="h-5 w-5 text-muted-foreground" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-sm font-semibold tracking-tight text-foreground sm:text-base" title={boutique.name}>{boutique.name}</h2>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">{boutique.category || translateUi("Boutique BIB")}</p>
+          <div className="mt-2"><PublicationBadge status={boutique.status} /></div>
+        </div>
+      </div>
 
-      <div className="space-y-5 p-4 sm:p-5">
-        <div className="flex items-start gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary text-white shadow-sm shadow-primary/15">
-            <Store className="h-5 w-5" />
+      <div className="flex-1 space-y-3 p-3 sm:p-4">
+        <p className="truncate font-mono text-[11px] text-muted-foreground" title={publicPath}>{publicPath}</p>
+        <div className="grid grid-cols-2 gap-2 rounded-xl bg-muted/40 px-3 py-2.5">
+          <div className="min-w-0">
+            <p className="text-[10px] text-muted-foreground">{translateUi("Produits actifs")}</p>
+            <p className="mt-0.5 text-sm font-semibold tabular-nums">{activeProducts ?? "—"}</p>
           </div>
-
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <div className="min-w-0">
-                <h2 className="break-words text-base font-semibold tracking-tight text-foreground">
-                  {boutique.name}
-                </h2>
-
-                {boutique.category && (
-                  <p className="mt-1 truncate text-xs text-muted-foreground">
-                    {boutique.category}
-                  </p>
-                )}
-              </div>
-
-              <PublicationBadge status={boutique.status} />
-            </div>
+          <div className="min-w-0">
+            <p className="text-[10px] text-muted-foreground">{translateUi("Commandes à traiter")}</p>
+            <p className={cn("mt-0.5 text-sm font-semibold tabular-nums", (pendingOrders ?? 0) > 0 && "text-warning-ink")}>{pendingOrders ?? "—"}</p>
           </div>
         </div>
-
-        <BoutiqueHealth health={health} />
-
-        <div className="grid grid-cols-2 gap-x-3 gap-y-4">
-          <Signal
-            status={publicationStatus}
-            label="Publication"
-            icon={Globe}
-            detail={
-              isPublished
-                ? translateUi("Boutique publiée")
-                : translateUi("Publication à préparer")
-            }
-          />
-
-          <Signal
-            status={productStatus}
-            label="Catalogue"
-            icon={Package}
-            detail={translateUi("{v0} produit{v1} actif{v2}", {
-              v0: activeProducts,
-              v1: activeProducts > 1 ? "s" : "",
-              v2: activeProducts > 1 ? "s" : "",
-            })}
-          />
-
-          <Signal
-            status={fulfillmentStatus}
-            label={translateUi("Commandes")}
-            icon={Truck}
-            detail={
-              pendingOrders > 0
-                ? translateUi("{v0} à traiter", { v0: pendingOrders })
-                : translateUi("Aucune commande en attente signalée")
-            }
-          />
-
-          <Signal
-            status={stockStatus}
-            label={translateUi("Disponibilité")}
-            icon={stockStatus === "ok" ? CheckCircle2 : AlertTriangle}
-            detail={
-              stockStatus === "ok"
-                ? translateUi("Aucune alerte de stock signalée")
-                : stockStatus === "warning"
-                  ? translateUi("Vérification du stock recommandée")
-                  : translateUi("Une action sur le stock est requise")
-            }
-          />
-        </div>
-
-        <div className="rounded-xl border border-border bg-muted/70 p-3">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-              {translateUi("Adresse de la boutique")}
-            </p>
-            {isPublished && (
-              <span className="flex shrink-0 items-center gap-1 text-[10px] font-medium text-success-ink">
-                <CheckCircle2 className="h-3 w-3" />
-                {translateUi("Publique")}
-              </span>
-            )}
-          </div>
-
-          <p className="mt-1.5 truncate font-mono text-xs text-info-ink">
-            {publicPath}
+        {health && (health.level === "poor" || health.level === "fair") && (
+          <p className="flex items-center gap-1.5 text-xs font-medium text-warning-ink">
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            {translateUi("Points à vérifier")}
           </p>
-        </div>
-
-        <div className="mb-3">
-          <Button asChild variant="outline" className="w-full gap-2">
-            <Link to={`/dashboard/boutiques/${boutique.id}/settings`}>
-              <Settings2 className="h-4 w-4" />
-              {translateUi("Paramètres de la boutique")}
-            </Link>
-          </Button>
-        </div>
-
+        )}
         <div className="grid grid-cols-2 gap-2">
-          <Button asChild className="bg-primary text-white hover:bg-primary">
-            <Link to={editPath}>
-              <Settings2 className="mr-2 h-4 w-4" />
-              {translateUi("Gérer")}
-            </Link>
+          <Button asChild size="sm" className="min-w-0 gap-1.5 rounded-lg px-2 text-xs">
+            <Link to={editPath}><Settings2 className="h-3.5 w-3.5 shrink-0" />{translateUi("Gérer")}</Link>
           </Button>
-
-          <Button
-            asChild
-            variant="outline"
-            className="border-border text-foreground hover:border-info/30 hover:bg-info/10 hover:text-info-ink"
-          >
-            <Link to={analyticsPath}>
-              {translateUi("Voir les analyses")}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
+          <Button asChild size="sm" variant="outline" className="min-w-0 gap-1.5 rounded-lg px-2 text-xs">
+            <Link to={settingsPath}><Settings2 className="h-3.5 w-3.5 shrink-0" />{translateUi("Paramètres")}</Link>
           </Button>
         </div>
-
-        <div className="flex items-center justify-between border-t border-border pt-3">
+        <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-2">
           {isPublished ? (
-            <a
-              href={publicPath}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-info-ink hover:text-info-ink"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-              {translateUi("Voir la boutique publique")}
+            <a href={publicPath} target="_blank" rel="noopener noreferrer" className="inline-flex min-w-0 items-center gap-1 text-[11px] font-medium text-primary hover:underline">
+              <ExternalLink className="h-3.5 w-3.5 shrink-0" />{translateUi("Voir la boutique")}
             </a>
           ) : (
-            <Link
-              to={editPath}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-info-ink"
-            >
-              <Settings2 className="h-3.5 w-3.5" />
-              {translateUi("Préparer la publication")}
-            </Link>
+            <Link to={editPath} className="text-[11px] font-medium text-muted-foreground hover:text-primary">{translateUi("Préparer la publication")}</Link>
           )}
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive-ink"
-            onClick={() => onDelete(boutique.id)}
-            aria-label={translateUi("Supprimer la boutique {v0}", {
-              v0: boutique.name,
-            })}
-            title={translateUi("Supprimer la boutique")}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button asChild type="button" variant="ghost" size="icon" className="h-8 w-8" title={translateUi("Analyses")}>
+              <Link to={`/dashboard/boutiques/${boutique.id}/analytics`} aria-label={translateUi("Analyses de {v0}", { v0: boutique.name })}><ArrowRight className="h-4 w-4" /></Link>
+            </Button>
+            <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => onDelete(boutique.id)} aria-label={translateUi("Supprimer la boutique {v0}", { v0: boutique.name })}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </article>
@@ -369,28 +259,18 @@ function BoutiqueCard({
 }
 
 function BoutiqueCardSkeleton() {
-  useLanguage();
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-card">
-      <div className="h-1 bg-muted" />
-      <div className="animate-pulse space-y-5 p-5">
-        <div className="flex gap-3">
-          <div className="h-12 w-12 rounded-xl bg-muted" />
-          <div className="flex-1 space-y-2 pt-1">
-            <div className="h-4 w-2/3 rounded bg-muted" />
-            <div className="h-3 w-1/3 rounded bg-muted" />
-          </div>
+    <div className="overflow-hidden rounded-2xl border border-border bg-card p-3">
+      <div className="flex animate-pulse gap-3">
+        <div className="h-12 w-12 shrink-0 rounded-xl bg-muted" />
+        <div className="flex-1 space-y-2">
+          <div className="h-4 w-3/4 rounded bg-muted" />
+          <div className="h-3 w-1/2 rounded bg-muted" />
+          <div className="h-5 w-20 rounded-full bg-muted" />
         </div>
-        <div className="h-[76px] rounded-xl bg-muted" />
-        <div className="grid grid-cols-2 gap-4">
-          <div className="h-12 rounded-lg bg-muted" />
-          <div className="h-12 rounded-lg bg-muted" />
-          <div className="h-12 rounded-lg bg-muted" />
-          <div className="h-12 rounded-lg bg-muted" />
-        </div>
-        <div className="h-10 rounded-lg bg-muted" />
-        <div className="h-9 rounded-lg bg-muted" />
       </div>
+      <div className="mt-4 h-12 rounded-xl bg-muted" />
+      <div className="mt-3 grid grid-cols-2 gap-2"><div className="h-8 rounded-lg bg-muted" /><div className="h-8 rounded-lg bg-muted" /></div>
     </div>
   );
 }
@@ -646,7 +526,7 @@ export default function Boutiques() {
         )}
 
         {isLoading && !error && (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {Array.from({ length: 3 }).map((_, index) => (
               <BoutiqueCardSkeleton key={index} />
             ))}
@@ -709,7 +589,7 @@ export default function Boutiques() {
               </Badge>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               {boutiques?.map((boutique) => (
                 <BoutiqueCard
                   key={boutique.id}
