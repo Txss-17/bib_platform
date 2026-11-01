@@ -979,6 +979,7 @@ export function StorefrontPreview({
            */}
 
           <StorefrontHeader
+            navigation={themeSettings?.navigation}
             boutiqueName={boutiqueName}
             primaryColor={primaryColor}
             boutiqueSlug={boutiqueSlug}
