@@ -242,8 +242,8 @@ export default function Parametres() {
             >
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" asChild>
-                  <Link to="/dashboard/aide">
-                    {english ? "Setup guide and URL inspection" : "Guide de connexion et inspection d’URL"}
+                  <Link to="/dashboard/boutiques/configuration">
+                    {english ? "Choose a store to manage indexing" : "Choisir une boutique pour gérer l’indexation"}
                   </Link>
                 </Button>
                 <Button variant="outline" asChild>
