@@ -269,8 +269,8 @@ export default function Marketing() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="min-w-0 space-y-5 pb-8">
+        <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-end">
           <div>
             <h1 className="text-2xl font-display font-bold text-foreground flex items-center gap-2">
               <Megaphone className="w-6 h-6 text-primary" /> Marketing
@@ -283,7 +283,7 @@ export default function Marketing() {
           </div>
           {boutiques.length > 1 && (
             <Select value={activeId} onValueChange={setBoutiqueId}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full min-w-0 sm:w-56">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -304,7 +304,7 @@ export default function Marketing() {
               <strong>{translateUi("Gmail non connecté.")}</strong>{" "}
               {translateUi("Connectez votre boîte Gmail dans")}{" "}
               <a href="/dashboard/parametres" className="underline font-medium">
-                {translateUi("Paramètres &gt; Email")}
+                {translateUi("Mes boutiques → Paramètres de la boutique → E-mail")}
               </a>{" "}
               {translateUi(
                 "pour envoyer des campagnes depuis votre propre adresse (préserve votre réputation d'expéditeur).",
@@ -313,7 +313,7 @@ export default function Marketing() {
           </Alert>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 xl:grid-cols-4">
           <Kpi
             icon={Mail}
             label={translateUi("Opt-in marketing")}
@@ -355,21 +355,23 @@ export default function Marketing() {
           />
         </div>
 
-        <Tabs defaultValue="composer" className="w-full">
-          <TabsList className="grid grid-cols-3 max-w-md">
+        <Tabs defaultValue="composer" className="w-full min-w-0">
+          <div className="w-full overflow-x-auto pb-1">
+          <TabsList className="grid h-auto w-full min-w-[350px] grid-cols-3 gap-1 p-1 sm:max-w-lg">
             <TabsTrigger value="composer">
-              <Sparkles className="w-4 h-4 mr-1" />
+              <Sparkles className="hidden h-4 w-4 shrink-0 sm:inline" />
               {translateUi("Composer")}
             </TabsTrigger>
             <TabsTrigger value="campaigns">
-              <ListChecks className="w-4 h-4 mr-1" />
+              <ListChecks className="hidden h-4 w-4 shrink-0 sm:inline" />
               {translateUi("Historique")}
             </TabsTrigger>
             <TabsTrigger value="automations">
-              <Bot className="w-4 h-4 mr-1" />
+              <Bot className="hidden h-4 w-4 shrink-0 sm:inline" />
               Automations
             </TabsTrigger>
           </TabsList>
+          </div>
 
           {/* COMPOSER */}
           <TabsContent value="composer" className="space-y-4 mt-4">
@@ -384,7 +386,7 @@ export default function Marketing() {
                   <Label className="text-xs mb-2 block">
                     {translateUi("Type d'envoi")}
                   </Label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-3">
                     <KindButton
                       active={kind === "newsletter"}
                       onClick={() => setKind("newsletter")}
@@ -494,7 +496,7 @@ export default function Marketing() {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t">
+                <div className="flex flex-col gap-3 border-t pt-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-sm">
                     <span className="text-muted-foreground">
                       {translateUi("Destinataires estimés :")}
@@ -503,7 +505,7 @@ export default function Marketing() {
                       {estimatedRecipients}
                     </Badge>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 justify-end">
+                  <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                     <Button
                       variant="outline"
                       size="sm"
@@ -575,7 +577,7 @@ export default function Marketing() {
             ) : (
               campaigns.map((c) => (
                 <Card key={c.id}>
-                  <CardContent className="p-4 flex items-center justify-between gap-3">
+                  <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium text-foreground truncate">
@@ -605,7 +607,7 @@ export default function Marketing() {
                         </div>
                       )}
                     </div>
-                    <div className="text-right text-xs">
+                    <div className="shrink-0 self-end text-right text-xs sm:self-auto">
                       {c.status === "draft" || c.status === "scheduled" ? (
                         <Button
                           size="sm"
