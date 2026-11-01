@@ -18,7 +18,7 @@ const Footer = () => {
     <footer className="bg-primary text-primary-foreground">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-16 lg:py-20">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.5fr_repeat(4,1fr)] lg:gap-10">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.35fr_repeat(5,minmax(0,1fr))] lg:gap-10">
             {/* Brand */}
             <div className="max-w-sm">
               <Link
@@ -118,6 +118,15 @@ const Footer = () => {
                   </Link>
                 </li>
 
+              </ul>
+            </div>
+
+            {/* Entreprise : présentation institutionnelle et programme Talent */}
+            <div>
+              <h4 className="mb-5 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-foreground/45">
+                {translateUi("Entreprise")}
+              </h4>
+              <ul className="space-y-3.5">
                 <li>
                   <Link
                     to="/a-propos"
