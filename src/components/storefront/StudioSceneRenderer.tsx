@@ -1338,6 +1338,8 @@ function TrustWallScene({
       }
   >;
 
+  if (!reviews.length && !badges.length && !press.length) return null;
+
   const renderPress = () => (
     <div>
       <p className="text-[11px] uppercase tracking-[0.25em] opacity-50 mb-7 text-center">
@@ -2066,6 +2068,7 @@ function PressStripScene({
   }>;
 
   const variant = content.variant || "scrolling";
+  if (!logos.length) return null;
 
   const renderLogo = (
     logo: {
@@ -2209,6 +2212,7 @@ function ComparisonScene({
   }>;
 
   const variant = content.variant || "check-cross";
+  if (!rows.length) return null;
 
   const renderValue = (value: boolean, type: "us" | "them") => {
     if (variant === "stars") {
@@ -2874,6 +2878,7 @@ function StatsCounterScene({
   }>;
 
   const variant = content.variant || "centered";
+  if (!stats.length) return null;
 
   if (variant === "split") {
     return (
