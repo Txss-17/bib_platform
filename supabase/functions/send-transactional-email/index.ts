@@ -30,10 +30,8 @@ function generateToken(): string {
     .join('')
 }
 
-// Auth note: this function uses verify_jwt = true in config.toml, so Supabase's
-// gateway validates the caller's JWT (anon or service_role) before the request
-// reaches this code. No in-function auth check is needed.
-
+// Validate the caller's JWT inside this function. An anon gateway key is
+// not proof of identity, and must never authorize third-party email sending.
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -52,6 +50,30 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
+  }
+
+  if (req.method !== 'POST') return new Response(
+    JSON.stringify({ error: 'method_not_allowed' }), {
+      status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    }
+  )
+  const authorization = req.headers.get('Authorization') ?? ''
+  const credential = authorization.replace(/^Bearer\s+/i, '').trim()
+  const serverCaller = credential.length > 0 && credential === supabaseServiceKey
+  let verifiedUser: { id: string; email?: string } | null = null
+  if (!serverCaller) {
+    if (!credential) return new Response(JSON.stringify({ error: 'authentication_required' }), {
+      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+    const caller = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
+      auth: { persistSession: false },
+      global: { headers: { Authorization: `Bearer ${credential}` } },
+    })
+    const { data: identity, error: identityError } = await caller.auth.getUser(credential)
+    if (identityError || !identity.user) return new Response(JSON.stringify({ error: 'invalid_session' }), {
+      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+    verifiedUser = { id: identity.user.id, email: identity.user.email }
   }
 
   // Parse request body
@@ -103,6 +125,26 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
+  }
+
+  // Browser calls may send only a short onboarding *test to the account's own
+  // verified email*. Other template sends require a trusted server-side caller.
+  if (!serverCaller) {
+    const testAllowed = templateName === 'onboarding-stuck-reminder' &&
+      typeof recipientEmail === 'string' &&
+      recipientEmail.toLowerCase().trim() === verifiedUser?.email?.toLowerCase().trim() &&
+      idempotencyKey.startsWith(`onboarding-test-${verifiedUser?.id}-`) &&
+      Object.keys(templateData).length <= 15;
+    if (!testAllowed) return new Response(JSON.stringify({ error: 'server_sender_required' }), {
+      status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+    // Do not let client-provided copy rewrite sender-controlled templates.
+    templateData = {
+      name: "Test", stepLabel: "Créer votre première boutique",
+      stepDescription: "Choisissez un nom, une catégorie et une adresse publique.",
+      stepUrl: "https://brand-in-a-box.space/dashboard",
+      attemptNo: 1, totalSteps: 4, doneSteps: 2,
+    }
   }
 
   // Resolve effective recipient: template-level `to` takes precedence over
@@ -347,7 +389,7 @@ Deno.serve(async (req) => {
     })
   }
 
-  console.log('Transactional email enqueued', { templateName, effectiveRecipient })
+  console.log('Transactional email enqueued', { templateName, messageId })
 
   return new Response(
     JSON.stringify({ success: true, queued: true }),
