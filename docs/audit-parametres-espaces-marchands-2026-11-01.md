@@ -44,3 +44,8 @@
 - Valider les droits Starter/Growth/Pro et l'isolement entre propriétaires, notamment le nouvel historique d'alertes.
 - Exécuter typecheck, build et suite de tests ; **non exécutés à ce stade**.
 - Mettre en place et auditer séparément un orchestrateur serveur pour les alertes périodiques, les synthèses hebdomadaires, la vérification bancaire et les versements effectifs.
+
+### Correction de cohérence des données d'alerte
+- L'ancien évaluateur demandait une colonne inexistante `supplier_products.stock`, ce qui pouvait faire échouer le contrôle d'inventaire. Il utilise désormais `products.stock_quantity` et le MOQ fourni par `supplier_products`.
+- Les erreurs SQL des requêtes d'activité, stocks et journal ne sont plus interprétées silencieusement comme « aucune alerte » ; elles sont remontées à l'interface. Les versions TypeScript et JavaScript suivies dans le dépôt ont été alignées.
+- Le score SEO nul est différencié du cas sans données jusque dans la jauge et les recommandations.
