@@ -156,12 +156,12 @@ export default function SEOAnalytics() {
       const ids = filteredBoutiques.map((b) => b.id);
       const { data, error } = await supabase
         .from("orders")
-        .select("id, amount, created_at")
+        .select("id, amount, created_at, payment_status, stripe_environment")
         .in("boutique_id", ids)
         .gte("created_at", subDays(new Date(), 30).toISOString())
         .order("created_at", { ascending: true });
       if (error) throw error;
-      return data || [];
+      return (data || []).filter(order => order.payment_status === "paid" && order.stripe_environment !== "sandbox");
     },
     enabled: !!user && filteredBoutiques.length > 0,
   });
@@ -328,7 +328,7 @@ export default function SEOAnalytics() {
 
   const boutiqueAnalytics = filteredBoutiques.map((boutique) => {
     const bOrders =
-      allOrders?.filter((o) => o.boutique_id === boutique.id) || [];
+      allOrders?.filter((o) => o.boutique_id === boutique.id && o.payment_status === "paid" && o.stripe_environment !== "sandbox") || [];
     const bProducts =
       allProducts?.filter((p) => p.boutique_id === boutique.id) || [];
     const revenue = bOrders.reduce((s, o) => s + Number(o.amount), 0);
@@ -340,9 +340,7 @@ export default function SEOAnalytics() {
       orderCount: bOrders.length,
       productCount: bProducts.length,
       revenue,
-      conversionRate: bOrders.length
-        ? Math.round((delivered / bOrders.length) * 100)
-        : 0,
+      deliveredCount: delivered,
     };
   });
 
@@ -376,9 +374,9 @@ export default function SEOAnalytics() {
     <DashboardLayout>
       <PageHeader
         eyebrow="Analytics & SEO"
-        title={translateUi("Performance & découvrabilité")}
+        title={translateUi("Statistiques & qualité SEO")}
         subtitle={translateUi(
-          "Vos KPIs revenus, vos scores SEO par page et les optimisations recommandées.",
+          "Analyse de ventes payées, contrôle SEO des fiches et priorités de correction. Les scores SEO sont des diagnostics internes, pas des positions Google.",
         )}
         actions={
           <Select value={selectedBoutique} onValueChange={setSelectedBoutique}>
@@ -403,7 +401,7 @@ export default function SEOAnalytics() {
       <KpiGrid cols={2}>
         <KpiTile
           tone="primary"
-          label={translateUi("Score SEO moyen")}
+          label={translateUi("Indice de qualité SEO")}
           value={`${avgScore}/100`}
           icon={<Search className="w-5 h-5" />}
           hint={
@@ -427,6 +425,8 @@ export default function SEOAnalytics() {
           }
         />
       </KpiGrid>
+
+      <p className="mb-5 text-xs text-muted-foreground">{translateUi("Sources : boutiques, produits et commandes BIB. Seules les ventes payées hors environnement de test sont comptées. Le score SEO est une grille interne de contrôle éditorial.")}</p>
 
       {/* Concrete SEO alerts */}
       <SectionCard
@@ -570,9 +570,9 @@ export default function SEOAnalytics() {
 
         <SectionCard
           className="lg:col-span-2"
-          title={translateUi("Recommandations IA")}
+          title={translateUi("Actions prioritaires")}
           description={translateUi(
-            "Actions prioritaires pour booster votre découvrabilité",
+            "Conseils calculés à partir des données et anomalies détectées, sans simulation d’analyse IA",
           )}
           icon={<Sparkles className="w-4 h-4 text-secondary" />}
           actions={
@@ -717,7 +717,7 @@ export default function SEOAnalytics() {
                     </p>
                   </div>
                 </div>
-                <Link to={`/dashboard/boutiques/edit/${b.id}`}>
+                <Link to={`/dashboard/boutiques/${b.id}/edit`}>
                   <Button
                     variant="outline"
                     size="sm"
@@ -735,9 +735,9 @@ export default function SEOAnalytics() {
 
       {/* SEO per page */}
       <SectionCard
-        title={translateUi("Score SEO par page")}
+        title={translateUi("Contrôles SEO des fiches et pages")}
         description={translateUi(
-          "Détail des points à optimiser pour chaque page indexée",
+          "Diagnostic du contenu présent dans BIB — ne présume pas de son indexation par les moteurs de recherche",
         )}
         icon={<Search className="w-4 h-4" />}
       >
