@@ -55,6 +55,7 @@ const englishLabels: Record<string, string> = {
   "Mes tickets": "My tickets",
   "Aide et support": "Help and support",
   "Mes boutiques": "My stores",
+  "Paramètres des boutiques": "Store settings",
   "Produits de mes boutiques": "My store products",
   Commandes: "Orders",
   Clients: "Customers",
@@ -118,7 +119,7 @@ const boutiqueNavItems = [
       return translateUi("Paramètres des boutiques");
     },
     url: "/dashboard/boutiques/configuration",
-    icon: Settings2,
+    icon: Settings,
     module: "boutiques",
   },
   {
