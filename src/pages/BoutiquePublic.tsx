@@ -500,6 +500,7 @@ export default function BoutiquePublic() {
     <>
       <StorefrontPreview
         boutiqueName={boutique.name}
+        logoUrl={boutique.logo_url}
         boutiqueId={boutique.id}
         boutiqueSlug={boutique.slug}
         category={boutique.category}
