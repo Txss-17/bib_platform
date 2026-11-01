@@ -303,7 +303,7 @@ export default function Marketing() {
             <AlertDescription>
               <strong>{translateUi("Gmail non connecté.")}</strong>{" "}
               {translateUi("Connectez votre boîte Gmail dans")}{" "}
-              <a href="/dashboard/parametres" className="underline font-medium">
+              <a href={activeId ? `/dashboard/boutiques/${activeId}/settings?tab=email` : "/dashboard/boutiques/configuration"} className="underline font-medium">
                 {translateUi("Mes boutiques → Paramètres de la boutique → E-mail")}
               </a>{" "}
               {translateUi(
@@ -357,7 +357,7 @@ export default function Marketing() {
 
         <Tabs defaultValue="composer" className="w-full min-w-0">
           <div className="w-full overflow-x-auto pb-1">
-          <TabsList className="grid h-auto w-full min-w-[350px] grid-cols-3 gap-1 p-1 sm:max-w-lg">
+          <TabsList className="grid h-auto w-full min-w-[315px] grid-cols-3 gap-1 p-1 sm:max-w-lg">
             <TabsTrigger value="composer">
               <Sparkles className="hidden h-4 w-4 shrink-0 sm:inline" />
               {translateUi("Composer")}
@@ -381,7 +381,7 @@ export default function Marketing() {
                   {translateUi("Nouvelle campagne")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="min-w-0 space-y-4">
                 <div>
                   <Label className="text-xs mb-2 block">
                     {translateUi("Type d'envoi")}
@@ -721,7 +721,7 @@ export default function Marketing() {
 
       {/* PREVIEW DIALOG */}
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-2xl max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{translateUi("Aperçu de l'email")}</DialogTitle>
             <DialogDescription>
@@ -757,7 +757,7 @@ export default function Marketing() {
 
       {/* TEST SEND DIALOG */}
       <Dialog open={testOpen} onOpenChange={setTestOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-md max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{translateUi("Envoyer un email de test")}</DialogTitle>
             <DialogDescription>
@@ -796,7 +796,7 @@ export default function Marketing() {
 
       {/* SCHEDULE DIALOG */}
       <Dialog open={scheduleOpen} onOpenChange={setScheduleOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-md max-h-[90dvh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{translateUi("Programmer l'envoi")}</DialogTitle>
             <DialogDescription>
