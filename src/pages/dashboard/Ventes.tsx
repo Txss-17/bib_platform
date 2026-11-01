@@ -35,6 +35,7 @@ import {
   Bar,
 } from "recharts";
 import { useSalesGeography } from "@/hooks/useSalesGeography";
+import { useSalesPerformance } from "@/hooks/useSalesPerformance";
 import { useBoutiques } from "@/hooks/useBoutiques";
 import { exportToCSV, exportToPDF } from "@/lib/exportUtils";
 import {
@@ -51,34 +52,16 @@ import { RealtimePulseCard } from "@/components/dashboard/sales/RealtimePulseCar
 import { useSalesKpis } from "@/hooks/useSalesKpis";
 import { PlanCommissionBanner } from "@/components/dashboard/PlanCommissionBanner";
 
-const monthlyData = [
-  { month: "Jan", revenue: 4200 },
-  { month: "Fév", revenue: 5100 },
-  { month: "Mar", revenue: 4800 },
-  { month: "Avr", revenue: 6200 },
-  { month: "Mai", revenue: 7500 },
-  { month: "Juin", revenue: 8100 },
-];
-
-const topProducts = [
-  { name: "Lampe LED Design", sales: 45, revenue: 2250 },
-  { name: "Coussin Velours", sales: 38, revenue: 1140 },
-  { name: "Vase Céramique", sales: 32, revenue: 1280 },
-  { name: "Cadre Photo Bois", sales: 28, revenue: 840 },
-];
-
-const lowRotationProducts = [
-  { name: "Tapis Berbère XL", daysSinceLastSale: 45, stock: 12 },
-  { name: "Étagère Murale", daysSinceLastSale: 38, stock: 8 },
-  { name: "Miroir Vintage", daysSinceLastSale: 32, stock: 5 },
-];
-
 export default function Ventes() {
   useLanguage();
-  const { data: salesGeo } = useSalesGeography();
+  const { data: salesGeo, isLoading: geoLoading } = useSalesGeography(selectedBoutique);
   const { data: boutiques = [] } = useBoutiques();
   const [selectedBoutique, setSelectedBoutique] = useState<string>("all");
   const { data: kpis, isLoading: kpisLoading } = useSalesKpis(selectedBoutique);
+  const { data: performance, isLoading: performanceLoading, isError: performanceError } = useSalesPerformance(selectedBoutique);
+  const monthlyData = performance?.monthly ?? [];
+  const topProducts = performance?.top ?? [];
+  const lowRotationProducts = performance?.lowRotation ?? [];
 
   const fmtEUR = (n: number) =>
     new Intl.NumberFormat(getUiLocale(), {
@@ -229,11 +212,11 @@ export default function Ventes() {
         <SectionCard
           className="lg:col-span-2"
           title={translateUi("Évolution du chiffre d'affaires")}
-          description={translateUi("6 derniers mois")}
+          description={translateUi("Six derniers mois · commandes payées, hors environnement de test")}
           icon={<TrendingUp className="w-4 h-4" />}
         >
           <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
+            {performanceLoading ? <p className="p-8 text-sm text-muted-foreground">{translateUi("Chargement des ventes…")}</p> : performanceError ? <p role="alert" className="p-8 text-sm text-destructive">{translateUi("Données de ventes indisponibles.")}</p> : <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={monthlyData}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -293,52 +276,33 @@ export default function Ventes() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
         <SectionCard
           className="lg:col-span-2"
-          title={translateUi("Répartition géographique")}
-          description={translateUi("Top régions par chiffre d'affaires")}
+          title={translateUi("Répartition par marché")}
+          description={translateUi("Montants des commandes payées par marché déclaré · aucune localisation client inventée")}
           icon={<Globe2 className="w-4 h-4" />}
         >
-          <SalesHeatmap data={salesGeo?.byCountry || []} />
+          {geoLoading ? <p className="py-8 text-sm text-muted-foreground">{translateUi("Chargement des marchés…")}</p> : <SalesHeatmap data={salesGeo?.byCountry || []} />}
         </SectionCard>
 
         <SectionCard
           title={translateUi("Produits performants")}
-          description={translateUi("Top ventes du mois")}
+          description={translateUi("Produits classés par chiffre d’affaires payé sur les six derniers mois")}
           icon={<Sparkles className="w-4 h-4" />}
         >
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topProducts} layout="vertical">
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="hsl(var(--border))"
-                />
-                <XAxis
-                  type="number"
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={11}
-                />
-                <YAxis
-                  dataKey="name"
-                  type="category"
-                  width={110}
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={11}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "12px",
-                  }}
-                />
-                <Bar
-                  dataKey="sales"
-                  fill="hsl(var(--secondary))"
-                  radius={[0, 6, 6, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {performanceLoading ? <p className="py-8 text-sm text-muted-foreground">{translateUi("Chargement des performances…")}</p> : performanceError ? <p role="alert" className="py-8 text-sm text-destructive">{translateUi("Performances indisponibles.")}</p> : topProducts.length === 0 ? (
+            <EmptyState icon={<ShoppingCart className="h-6 w-6" />} title={translateUi("Aucune vente payée")} description={translateUi("Les produits apparaîtront ici après une vente confirmée, hors commandes de test.")} />
+          ) : (
+            <div className="divide-y divide-border">
+              {topProducts.map((product, index) => (
+                <div key={product.id} className="flex items-center justify-between gap-3 py-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-semibold tabular-nums">{index + 1}</span>
+                    <div className="min-w-0"><p className="truncate text-sm font-semibold text-foreground">{product.name}</p><p className="truncate text-xs text-muted-foreground">{product.boutiqueName} · {product.sales} {translateUi("unités vendues")}</p></div>
+                  </div>
+                  <span className="shrink-0 text-sm font-semibold tabular-nums text-foreground">{fmtEUR(product.revenue)}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </SectionCard>
       </div>
 
@@ -346,7 +310,7 @@ export default function Ventes() {
       <SectionCard
         title={translateUi("Produits à faible rotation")}
         description={translateUi(
-          "Pensez à les promouvoir ou à ajuster votre stock",
+          "Produits en stock sans vente confirmée depuis plus de 30 jours ; les produits jamais vendus sont signalés séparément",
         )}
         icon={<AlertTriangle className="w-4 h-4" />}
       >
@@ -369,9 +333,7 @@ export default function Ventes() {
                   </p>
                   <p className="text-xs sm:text-sm text-muted-foreground">
                     {translateUi("Dernière vente il y a") + " "}
-                    {product.daysSinceLastSale}{" "}
-                    {translateUi("jours · Stock") + " "}
-                    {product.stock}
+                    {product.daysSinceLastSale === null ? translateUi("Aucune vente payée enregistrée sur la période") : `${product.daysSinceLastSale} ${translateUi("jours depuis la dernière vente")}`} · {translateUi("Stock")} {product.stock}
                   </p>
                 </div>
                 <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-warning/10 text-warning-ink shrink-0">
