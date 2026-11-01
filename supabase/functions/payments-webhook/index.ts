@@ -502,6 +502,33 @@ async function handleSubscriptionDeleted(
  */
 
 async function handleCheckoutCompleted(session: any, env: StripeEnv) {
+  if (session.metadata?.kind === "merchant_sample") {
+    // Webhook signature and Stripe environment were verified by verifyWebhook.
+    if (session.payment_status !== "paid") return;
+    const { data: purchase, error: findError } = await getSupabase()
+      .from("sample_purchases").select("id, product_id, user_id, amount_cents, currency, payment_status")
+      .eq("stripe_session_id", session.id)
+      .eq("stripe_environment", env).maybeSingle();
+    if (findError || !purchase) throw new Error("Sample checkout not registered");
+    if (purchase.payment_status === "paid") return;
+    if (session.metadata?.user_id !== purchase.user_id ||
+        session.metadata?.product_id !== purchase.product_id ||
+        session.amount_total !== purchase.amount_cents ||
+        session.currency !== purchase.currency) {
+      throw new Error("Sample payment metadata mismatch");
+    }
+    const { error: paymentError } = await getSupabase()
+      .from("sample_purchases").update({ payment_status: "paid", paid_at: new Date().toISOString() })
+      .eq("id", purchase.id).eq("payment_status", "pending");
+    if (paymentError) throw paymentError;
+    // Do not automatically mark a sample as received or validated.
+    const { error: validationError } = await getSupabase().from("sample_validations").upsert({
+      product_id: purchase.product_id, user_id: purchase.user_id,
+      status: "ordered", ordered_at: new Date().toISOString(),
+    }, { onConflict: "product_id,user_id" });
+    if (validationError) throw validationError;
+    return;
+  }
   if (session.metadata?.kind !== "storefront") return;
 
   const orderIds = checkoutOrderIds(session.metadata);
