@@ -2,7 +2,6 @@ import {
   Store,
   BarChart3,
   ShieldCheck,
-  Globe2,
   Headphones,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -28,12 +27,6 @@ const FeaturesSection = () => {
       icon: ShieldCheck,
       titleKey: "features.trust.title",
       descKey: "features.trust.desc",
-      tone: "marine" as const,
-    },
-    {
-      icon: Globe2,
-      titleKey: "features.multimarket.title",
-      descKey: "features.multimarket.desc",
       tone: "marine" as const,
     },
     {
