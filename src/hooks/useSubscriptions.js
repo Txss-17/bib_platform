@@ -70,6 +70,7 @@ function useInvalidateSubscriptions() {
 function subscriptionCategory(subscription) {
   if (subscription.kind === "bib_subscriber") return null;
   if (subscription.price_id.startsWith("insurance_")) return "insurance";
+  if (/^boutique_extra_(one|two)_monthly$/.test(subscription.price_id)) return "boutique_extra";
   if (/(starter|growth|pro)_(monthly|yearly)$/.test(subscription.price_id)) return "plan";
   return null;
 }
