@@ -39,7 +39,7 @@ export function BoutiqueAlertsSettings({ boutiqueId: fixedBoutiqueId }: { boutiq
   const { data: boutiques = [] } = useBoutiques();
   const [boutiqueId, setBoutiqueId] = useState("");
   const activeId = fixedBoutiqueId || boutiqueId || boutiques[0]?.id || "";
-  const { data: existing } = useAlertSettings(activeId);
+  const { data: existing, isLoading: alertLoading, isError: alertError } = useAlertSettings(activeId);
   const upsert = useUpsertAlertSettings();
   const [s, setS] = useState<AlertSettings | null>(null);
   const [running, setRunning] = useState(false);
@@ -47,6 +47,7 @@ export function BoutiqueAlertsSettings({ boutiqueId: fixedBoutiqueId }: { boutiq
   useEffect(() => {
     if (existing) setS(existing);
   }, [existing]);
+  useEffect(() => { setS(null); }, [activeId]);
 
   if (boutiques.length === 0) {
     return (
@@ -55,7 +56,8 @@ export function BoutiqueAlertsSettings({ boutiqueId: fixedBoutiqueId }: { boutiq
       </Card>
     );
   }
-  if (!s)
+  if (alertError) return <Card className="p-6 text-sm text-destructive" role="alert">{translateUi("Impossible de charger les alertes. Vérifiez les droits d'accès et réessayez.")}</Card>;
+  if (!s || alertLoading)
     return (
       <Card className="p-6 text-sm text-muted-foreground">
         {translateUi("Chargement…")}
@@ -67,6 +69,9 @@ export function BoutiqueAlertsSettings({ boutiqueId: fixedBoutiqueId }: { boutiq
 
   const save = async () => {
     try {
+      if (s.email_enabled && (!s.notify_email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.notify_email))) {
+        throw new Error(translateUi("Veuillez renseigner une adresse de notification valide."));
+      }
       await upsert.mutateAsync(s);
       toast.success(translateUi("Seuils d'alerte enregistrés"));
     } catch (e: any) {
@@ -77,6 +82,8 @@ export function BoutiqueAlertsSettings({ boutiqueId: fixedBoutiqueId }: { boutiq
   const runNow = async () => {
     setRunning(true);
     try {
+      if (s.email_enabled && (!s.notify_email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.notify_email))) throw new Error(translateUi("Veuillez renseigner une adresse de notification valide."));
+      await upsert.mutateAsync(s);
       const res = await runBoutiqueAlertCheck(s);
       if (res.created === 0)
         toast.success(translateUi("Tout est normal — aucune alerte détectée"));
