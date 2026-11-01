@@ -36,8 +36,8 @@ interface FloatingSupportButtonProps {
 
 /**
  * Floating Support widget powered by Lovable AI.
- * Answers from the BIB FAQ; auto-creates a support ticket via tool-call
- * when it cannot resolve the request.
+ * Answers BIB questions conversationally and requests explicit approval
+ * before submitting a support ticket.
  */
 export function FloatingSupportButton({
   source = "dashboard_ai",
@@ -51,11 +51,12 @@ export function FloatingSupportButton({
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [offerTicket, setOfferTicket] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([
     {
       role: "assistant",
       content:
-        "Bonjour 👋 Je suis l'assistant Brand-In-A-Box. Posez votre question — si je ne peux pas répondre, je crée un ticket pour l'équipe humaine.",
+        "Bonjour ! Comment puis-je vous aider ?",
     },
   ]);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
@@ -73,6 +74,7 @@ export function FloatingSupportButton({
     const text = input.trim();
     if (!text || loading) return;
     setInput("");
+    setOfferTicket(false);
     const next = [...messages, { role: "user" as const, content: text }];
     setMessages(next);
     setLoading(true);
@@ -91,6 +93,7 @@ export function FloatingSupportButton({
       });
       if (error) throw error;
       const reply = data?.reply ?? "…";
+      setOfferTicket(data?.offer_ticket === true);
       setMessages((m) => [...m, { role: "assistant", content: reply }]);
       if (data?.ticket?.id) {
         // Upload any pending attachments now that we have a ticket id
@@ -121,6 +124,39 @@ export function FloatingSupportButton({
         },
       ]);
       toast.error(translateUi("Assistant indisponible"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmTicket = async () => {
+    if (!offerTicket || loading) return;
+    setOfferTicket(false);
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("support-ai", {
+        body: {
+          action: "create_ticket",
+          messages,
+          context: { source, boutique_id: boutiqueId ?? null },
+        },
+      });
+      if (error || !data?.ticket?.id) throw error ?? new Error("ticket_creation_failed");
+      setMessages((previous) => [...previous, {
+        role: "assistant", content: data.reply || "Votre demande a bien été transmise au support.",
+      }]);
+      for (const file of pendingFiles) {
+        try {
+          await uploadTicketAttachment(data.ticket.id, file, user?.id ?? null);
+        } catch {
+          toast.error(translateUi("Une pièce jointe n’a pas pu être transmise."));
+        }
+      }
+      setPendingFiles([]);
+      toast.success(translateUi("Ticket créé"), { icon: <Ticket className="w-4 h-4" /> });
+    } catch {
+      setOfferTicket(true);
+      toast.error(translateUi("La création du ticket a échoué. Réessayez."));
     } finally {
       setLoading(false);
     }
@@ -177,6 +213,16 @@ export function FloatingSupportButton({
               {m.content}
             </div>
           ))}
+          {offerTicket && !loading && (
+            <div className="flex flex-wrap items-center gap-2" role="group" aria-label={translateUi("Transmettre au support")}>
+              <Button type="button" size="sm" onClick={confirmTicket} className="gap-1.5">
+                <Ticket className="h-4 w-4" /> {translateUi("Créer un ticket")}
+              </Button>
+              <Button type="button" size="sm" variant="outline" onClick={() => setOfferTicket(false)}>
+                {translateUi("Continuer la discussion")}
+              </Button>
+            </div>
+          )}
           {loading && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Loader2 className="w-3 h-3 animate-spin" />{" "}
