@@ -73,6 +73,7 @@ interface Product {
 
 interface StorefrontPreviewProps {
   boutiqueName: string;
+  logoUrl?: string | null;
   boutiqueId?: string;
   boutiqueSlug?: string;
   category: string;
@@ -259,6 +260,7 @@ function getAnimClasses(level: AnimationLevel): {
 
 export function StorefrontPreview({
   boutiqueName,
+  logoUrl,
   boutiqueId,
   boutiqueSlug,
   category,
@@ -979,6 +981,7 @@ export function StorefrontPreview({
            */}
 
           <StorefrontHeader
+            logoUrl={logoUrl}
             navigation={themeSettings?.navigation}
             boutiqueName={boutiqueName}
             primaryColor={primaryColor}
