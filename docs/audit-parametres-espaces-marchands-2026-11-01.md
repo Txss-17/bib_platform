@@ -25,3 +25,22 @@
 - Tester les écrans de versement avec statut `pending_verification`, et vérifier qu'une mutation client ne peut forger `verified`.
 - Vérifier que les graphiques restent vides en l'absence de commande payée et ne contiennent aucune série d'exemple.
 - Le projet Lovable ne permettait pas de lancer l'agent de validation depuis cette session faute de crédits disponibles. **Aucun succès de compilation/test ne doit être affirmé sans exécution effective.**
+
+## Consolidation complémentaire des espaces de travail
+
+- **Alertes par boutique** : migration `20261101183000_boutique_alerts_persistence.sql` appliquée. Les tables de préférences et d'historique existent désormais et disposent de politiques RLS marchandes. Le panneau liste les alertes datées, l'état d'envoi et permet la résolution. La vérification manuelle sauvegarde les seuils avant calcul ; la désactivation globale est honorée. Le moteur d'alerte n'envoie plus de HTML ni de sujet arbitraire au service Gmail : une trame fixe échappée est envoyée uniquement vers l'adresse configurée pour cette boutique.
+- **Notification de compte** : distinction explicite entre une préférence persistée et un service réellement programmé. Les annonces et synthèses hebdomadaires ne sont pas distribuées par ce seul formulaire. Les erreurs de lecture bloquent une sauvegarde trompeuse.
+- **Versements EU** : sélection du pays du bénéficiaire parmi les États membres de l'UE, sans forçage silencieux sur FR. Toujours aucune saisie bancaire ni déclenchement de virement dans l'interface.
+- **Configuration des boutiques** : l'onglet est sélectionnable par `?tab=email|alerts|payouts|team` ; barre mobile défilante ; gestion d'équipe dans un seul espace dédié plutôt que doublée dans « Général ». Le lien Équipe conserve l'identifiant de la boutique.
+- **Marketing responsive** : boîtes de dialogue limitées à la hauteur du viewport, barre d'onglets défilable à 315 px, lien de configuration Gmail vers les réglages de la boutique concernée.
+- **Ventes** : zone commerciale explicitement distinguée d'un pays de livraison ; tableau de produits performants à largeur complète, tri existant par chiffre d'affaires payé, unités, stock, date de dernière vente et accès aux références. Sur la base examinée, **0 commande réelle enregistrée** ; les états vides sont donc attendus.
+- **Statistiques** : deux indicateurs complémentaires, commandes payées et revenu 30 jours hors environnement sandbox. Le score SEO affiche un état sans données au lieu d'un faux 0/100 et aucun conseil de conversion n'est déduit de l'absence de vente.
+- **Mes produits** : l'alerte de stock ne compte plus des références mises en pause, pour rendre l'indicateur actionnable.
+
+### Validation requise après ces corrections
+- Comparer la version publiée à la branche `main` ; **les commits GitHub ne publient pas automatiquement les Edge Functions**.
+- Vérifier les tables d'alertes et effectuer une vérification manuelle d'une boutique, puis contrôler la réception vers une adresse configurée et la lecture du journal, en tenant compte de la connexion Gmail.
+- Tester les vues 320 / 375 / 768 / 1024 / 1440 px et la sélection des onglets par lien profond.
+- Valider les droits Starter/Growth/Pro et l'isolement entre propriétaires, notamment le nouvel historique d'alertes.
+- Exécuter typecheck, build et suite de tests ; **non exécutés à ce stade**.
+- Mettre en place et auditer séparément un orchestrateur serveur pour les alertes périodiques, les synthèses hebdomadaires, la vérification bancaire et les versements effectifs.
