@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
+import PublicPageLayout from "@/components/layout/PublicPageLayout";
+import { Link } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -7,29 +9,20 @@ const HOME="/bib-talent";
 const updated="30 octobre 2026";
 const contact="contact@brand-in-a-box.space";
 const privacy="privacy@brand-in-a-box.space";
-const links=[
- {url:"/talent/mentions-legales",label:"Mentions légales"},
- {url:"/talent/confidentialite",label:"Confidentialité"},
- {url:"/talent/cookies",label:"Cookies"},
-];
 
 function Layout({title,subtitle,children}:{title:string,subtitle:string,children:ReactNode}){
  useLanguage(); // The initial legal publications are written in French for this first audience.
  useSEO({title:title+" | BIB Talent",description:subtitle});
- return <div className="min-h-screen bg-[#f7fafc] text-[#18334e]" style={{colorScheme:"light"}}>
-  <header className="border-b border-[#dde7ef] bg-white"><nav className="mx-auto flex max-w-5xl items-center justify-between px-5 py-6">
-   <a href={HOME} className="text-xl font-extrabold">BIB <span className="font-normal text-[#b88949]">TALENT</span></a>
-   <a href={HOME} className="inline-flex items-center gap-2 text-sm font-semibold text-[#405a6e] hover:text-[#a77b44]"><ArrowLeft size={16}/> Retour au programme</a>
-  </nav></header>
-  <main className="mx-auto max-w-5xl px-5 pb-24 pt-16">
-   <span className="text-xs font-extrabold uppercase tracking-[0.23em] text-[#a37a43]">BIB Talent · Informations</span>
-   <h1 className="mt-5 text-4xl font-extrabold leading-tight sm:text-5xl">{title}</h1>
-   <p className="mt-5 max-w-3xl text-lg leading-8 text-[#53697c]">{subtitle}</p>
-   <p className="mt-3 text-xs text-[#6f8292]">Mise à jour : {updated}</p>
-   <article className="mt-11 space-y-8 rounded-[1.5rem] border border-[#dfebf2] bg-white px-6 py-9 text-[15px] leading-8 text-[#3d5265] shadow-sm sm:px-10 [&_h2]:mb-3 [&_h2]:text-2xl [&_h2]:font-extrabold [&_h2]:text-[#18334e] [&_a]:font-semibold [&_a]:text-[#8f6837] [&_a]:underline [&_a]:underline-offset-2 [&_li]:ml-5 [&_li]:list-disc">{children}</article>
+ return <PublicPageLayout>
+  <main className="container mx-auto max-w-5xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
+   <Link to={HOME} className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-accent-ink"><ArrowLeft size={16}/> Retour à BIB Talent</Link>
+   <span className="text-xs font-semibold uppercase tracking-[0.23em] text-accent-ink">BIB Talent · Informations</span>
+   <h1 className="mt-5 font-display text-4xl font-semibold leading-tight sm:text-5xl">{title}</h1>
+   <p className="mt-5 max-w-3xl text-lg leading-8 text-muted-foreground">{subtitle}</p>
+   <p className="mt-3 text-xs text-muted-foreground">Mise à jour : {updated}</p>
+   <article className="mt-11 space-y-8 rounded-2xl border border-border bg-card px-6 py-9 text-[15px] leading-8 text-foreground shadow-sm sm:px-10 [&_h2]:mb-3 [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-foreground [&_a]:font-semibold [&_a]:text-accent-ink [&_a]:underline [&_a]:underline-offset-2 [&_li]:ml-5 [&_li]:list-disc">{children}</article>
   </main>
-  <footer className="border-t border-[#dde7ef] bg-white"><div className="mx-auto flex max-w-5xl flex-col justify-between gap-5 px-5 py-8 text-sm text-[#52697c] sm:flex-row"><span>Une initiative Brand-in-a-Box</span><nav className="flex flex-wrap gap-5" aria-label="Informations BIB Talent">{links.map(x=><a key={x.url} href={x.url} className="hover:underline">{x.label}</a>)}</nav></div></footer>
- </div>;
+ </PublicPageLayout>;
 }
 
 export function TalentMentions() {
