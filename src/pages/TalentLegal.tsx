@@ -16,7 +16,7 @@ function Layout({title,subtitle,children}:{title:string,subtitle:string,children
  return <PublicPageLayout>
   <div className="container mx-auto max-w-5xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
    <Link to={HOME} className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-accent-ink"><ArrowLeft size={16}/> Retour à BIB Talent</Link>
-   <span className="text-xs font-semibold uppercase tracking-[0.23em] text-accent-ink">BIB Talent · Informations</span>
+   <span className="mt-8 block text-xs font-semibold uppercase tracking-[0.23em] text-accent-ink">BIB Talent · Informations</span>
    <h1 className="mt-5 font-display text-4xl font-semibold leading-tight sm:text-5xl">{title}</h1>
    <p className="mt-5 max-w-3xl text-lg leading-8 text-muted-foreground">{subtitle}</p>
    <p className="mt-3 text-xs text-muted-foreground">Mise à jour : {updated}</p>
