@@ -32,6 +32,7 @@ import { ConfirmDeleteDialog } from "@/components/dashboard/ConfirmDeleteDialog"
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useBoutiques, useDeleteBoutique } from "@/hooks/useBoutiques";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 import {
   usePerBoutiqueHealth,
   type PerBoutiqueHealth,
@@ -400,6 +401,7 @@ export default function Boutiques() {
 
   const { data: healthMap } = usePerBoutiqueHealth();
   const deleteBoutique = useDeleteBoutique();
+  const { canCreateBoutique, isLoading: planLoading, boutiqueCount, maxBoutiques } = usePlanLimits();
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -494,9 +496,9 @@ export default function Boutiques() {
               asChild
               className="w-full shrink-0 bg-warning/20 text-info-ink hover:bg-warning/10 sm:w-auto"
             >
-              <Link to="/dashboard/boutiques/create">
+              <Link to={!planLoading && !canCreateBoutique ? "/dashboard/parametres" : "/dashboard/boutiques/create"}>
                 <Plus className="mr-2 h-4 w-4" />
-                {translateUi("Créer une boutique")}
+                {!planLoading && !canCreateBoutique ? translateUi("Activer une boutique supplémentaire") : translateUi("Créer une boutique")}
               </Link>
             </Button>
           </div>
@@ -533,6 +535,11 @@ export default function Boutiques() {
           </div>
         </div>
 
+        {!planLoading && !canCreateBoutique && (
+          <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+            {translateUi("Plafond actuel :")} {boutiqueCount}/{maxBoutiques}. {translateUi("Les boutiques supplémentaires du plan Pro nécessitent une activation payante confirmée dans l'abonnement.")}
+          </p>
+        )}
         <PageHeader
           eyebrow={translateUi("Pilotage opérationnel")}
           title={translateUi("Mes boutiques")}
@@ -541,9 +548,9 @@ export default function Boutiques() {
           )}
           actions={
             <Button asChild variant="outline" className="border-border bg-card">
-              <Link to="/dashboard/boutiques/create">
+              <Link to={!planLoading && !canCreateBoutique ? "/dashboard/parametres" : "/dashboard/boutiques/create"}>
                 <Plus className="mr-2 h-4 w-4" />
-                {translateUi("Nouvelle boutique")}
+                {!planLoading && !canCreateBoutique ? translateUi("Gérer les boutiques supplémentaires") : translateUi("Nouvelle boutique")}
               </Link>
             </Button>
           }
