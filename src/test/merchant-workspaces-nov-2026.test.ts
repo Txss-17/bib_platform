@@ -153,6 +153,23 @@ describe("Merchant operational workspaces", () => {
     expect(renderer).toContain("if (!rows.length) return null");
   });
 
+  it("applies Hero Cinema Pro media and color overrides in live and preview renderers", () => {
+    const renderer = read("src/components/storefront/StudioSceneRenderer.tsx");
+    const inspector = read("src/components/dashboard/boutique/SceneInspectorPro.tsx");
+    const css = read("src/components/storefront/studioScene.css");
+    expect(renderer).toContain("proBackground={scene.style_overrides?.background}");
+    expect(renderer).toContain("const heroVideo = proBackground?.videoUrl");
+    expect(renderer).toContain("const heroImage = proBackground?.imageUrl");
+    expect(renderer).toContain("const overlayOpacity = proBackground?.overlayOpacity");
+    expect(renderer).toContain("const hasBgMedia = !heroCinema");
+    expect(renderer).toContain("proHasMedia || proHasColor");
+    expect(inspector).toContain("Couleur de fond Pro");
+    expect(inspector).toContain('setBg("color", hexToHsl(event.target.value))');
+    expect(inspector).toContain("scene.content.backgroundImage || scene.content.videoUrl");
+    expect(css).toContain(".studio-scope.has-frame-vars > section");
+    expect(css).toContain(".studio-btn-pill a[href]");
+  });
+
   it("shows compact logo-led merchant boutiques without oversized diagnostics", () => {
     const shops = read("src/pages/dashboard/Boutiques.tsx");
     expect(shops).toContain("boutique.logo_url");
