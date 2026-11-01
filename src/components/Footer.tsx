@@ -5,8 +5,6 @@ import {
   Linkedin,
   Instagram,
   Shield,
-  Globe,
-  MapPin,
   ArrowUpRight,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -207,15 +205,7 @@ const Footer = () => {
                 <span>{t("footer.ssl")}</span>
               </div>
 
-              <div className="inline-flex items-center gap-2">
-                <Globe size={15} />
-                <span>{t("footer.multimarket")}</span>
-              </div>
 
-              <div className="inline-flex items-center gap-2">
-                <MapPin size={15} />
-                <span>{translateUi("EU · UAE · Africa")}</span>
-              </div>
             </div>
 
             <div className="flex flex-col gap-2 text-xs text-primary-foreground/45 lg:items-end">
