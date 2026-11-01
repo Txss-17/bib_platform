@@ -17,12 +17,12 @@ describe("BIB public navigation", () => {
 
   it("keeps checkout blocked but exposes customer and partner applications", () => {
     for (const route of [
-      "/store", "/checkout",
+      "/store/cart", "/checkout",
     ]) {
       expect(isPublicInformationPath(route)).toBe(false);
       expect(isMerchantTestPath(route)).toBe(false);
     }
-    for (const route of ["/store/signup", "/suppliers/apply", "/fournisseurs/candidature", "/ops/apply", "/logistics/apply", "/suppliers/portal/test-token", "/ops/portal/test-token"]) {
+    for (const route of ["/store", "/store/products", "/store/boutique/sample", "/store/product/item", "/store/login", "/store/account", "/store/signup", "/suppliers/apply", "/fournisseurs/candidature", "/ops/apply", "/logistics/apply", "/suppliers/portal/test-token", "/ops/portal/test-token"]) {
       expect(isPublicInformationPath(route)).toBe(true);
     }
   });
