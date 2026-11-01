@@ -327,10 +327,26 @@ export function AuthProvider({
    * /store/signup
    *      -> store
    */
-  const signUp: AuthContextType["signUp"] = async () => ({
-    data: { user: null, session: null },
-    error: new AuthError("Account registration is coming soon.", 403),
-  });
+  const signUp: AuthContextType["signUp"] = async (
+    email, password, fullName = "", type = "platform",
+  ) => {
+    // Only customer Store accounts can self-register. Merchant signup remains
+    // closed; partner qualification uses its dedicated application workflow.
+    if (type !== "store") {
+      return {
+        data: { user: null, session: null },
+        error: new AuthError("Merchant account registration is coming soon.", 403),
+      };
+    }
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        data: { full_name: fullName.trim(), account_type: "store" },
+      },
+    });
+    return { data: { user: data.user, session: data.session }, error };
+  };
 
   /* =======================================================
      SIGN OUT
