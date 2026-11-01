@@ -99,6 +99,14 @@ async function processUser(sb: any, userId: string, source: string) {
   if (isSeller && !settings.persona_seller_enabled) { await logSkip('-', null, 'skipped:persona', { role: roleStr }); return 'skipped:persona' }
   if (isTeam && !settings.persona_team_enabled) { await logSkip('-', null, 'skipped:persona', { role: roleStr }); return 'skipped:persona' }
 
+  // Non-essential account onboarding reminders honor merchant preferences.
+  const { data: notificationPrefs, error: notificationPrefsError } = await sb
+    .from('account_notification_preferences')
+    .select('account_updates')
+    .eq('user_id',userId).maybeSingle()
+  if (notificationPrefsError) return 'skipped:preferences_unavailable'
+  if (notificationPrefs?.account_updates === false) return 'skipped:account_updates_disabled'
+
   // Age check (24h after signup) — only for cron fallback; event mode can fire sooner if already overdue
   const ageMs = Date.now() - new Date(p.created_at).getTime()
   if (source === 'cron' && ageMs < MIN_AGE_HOURS * 3600_000) return 'skipped:too_recent'
