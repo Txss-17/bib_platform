@@ -136,6 +136,7 @@ export default function Ventes() {
               size="sm"
               className="gap-1.5"
               onClick={() => handleExport("csv")}
+              disabled={performanceLoading || performanceError || !performance?.paidOrders}
             >
               <Download className="w-4 h-4" /> CSV
             </Button>
@@ -144,6 +145,7 @@ export default function Ventes() {
               size="sm"
               className="gap-1.5"
               onClick={() => handleExport("pdf")}
+              disabled={performanceLoading || performanceError || !performance?.paidOrders}
             >
               <FileText className="w-4 h-4" /> PDF
             </Button>
@@ -314,11 +316,11 @@ export default function Ventes() {
         )}
         icon={<AlertTriangle className="w-4 h-4" />}
       >
-        {lowRotationProducts.length === 0 ? (
+        {performanceLoading ? <p className="py-6 text-sm text-muted-foreground">{translateUi("Chargement des stocks et ventes…")}</p> : performanceError ? <p role="alert" className="py-6 text-sm text-destructive">{translateUi("Impossible de calculer les alertes de rotation.")}</p> : lowRotationProducts.length === 0 ? (
           <EmptyState
             icon={<AlertTriangle className="w-6 h-6" />}
             title={translateUi("Aucune alerte")}
-            description={translateUi("Tous vos produits tournent bien.")}
+            description={translateUi("Aucun produit actif en stock ne répond aux critères de faible rotation sur les données disponibles.")}
           />
         ) : (
           <div className="space-y-2">
