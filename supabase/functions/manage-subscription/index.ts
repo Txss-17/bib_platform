@@ -100,11 +100,11 @@ Deno.serve(async (req) => {
           price.type !== "recurring" || price.recurring?.interval !== "month") {
         return json({ error: "Invalid extra boutique price" }, 400);
       }
-      const hasPro = (subs ?? []).some((entry) =>
-        /^plan_pro_(monthly|yearly)$/.test(entry.price_id ?? "") &&
+      const hasEligiblePlan = (subs ?? []).some((entry) =>
+        /^plan_(growth|pro)_(monthly|yearly)$/.test(entry.price_id ?? "") &&
         ["active", "trialing"].includes(entry.status)
       );
-      if (!hasPro) return json({ error: "Pro plan required" }, 403);
+      if (!hasEligiblePlan) return json({ error: "Growth or Pro plan required" }, 403);
     }
 
 
