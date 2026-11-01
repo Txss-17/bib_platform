@@ -3,6 +3,22 @@ import { readFileSync } from "node:fs";
 const read = (path: string) => readFileSync(new URL("../../" + path, import.meta.url), "utf8");
 
 describe("Merchant operational workspaces", () => {
+  it("supports a collapsible dashboard and clearly identified BIB assistant", () => {
+    const layout = read("src/components/dashboard/DashboardLayout.tsx");
+    const sidebar = read("src/components/dashboard/DashboardSidebar.tsx");
+    const widget = read("src/components/support/FloatingSupportButton.tsx");
+    const server = read("supabase/functions/support-ai/index.ts");
+    expect(layout).toContain("bib.dashboard.sidebar.collapsed");
+    expect(layout).toContain("PanelLeftOpen");
+    expect(layout).toContain("PanelLeftClose");
+    expect(sidebar).toContain("if (collapsed) return null;");
+    expect(widget).toContain("Assistant BIB");
+    expect(widget).toContain("Besoin d’aide ?");
+    expect(server).toContain("CONNAISSANCES BIB");
+    expect(server).toContain("Mes boutiques > Paramètres de la boutique");
+    expect(server).not.toContain("versements tous les 15 jours");
+  });
+
   it("stores notification preferences without disabling mandatory security emails", () => {
     const sql = read("supabase/migrations/20261101170000_account_boutique_preferences.sql");
     expect(sql).toContain("account_notification_preferences");
