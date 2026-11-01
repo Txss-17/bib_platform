@@ -394,7 +394,7 @@ export default function SEOAnalytics() {
       />
 
       {/* KPI strip — essentiels uniquement */}
-      <KpiGrid cols={2}>
+      <KpiGrid cols={4}>
         <KpiTile
           tone="primary"
           label={translateUi("Indice de qualité SEO")}
@@ -421,6 +421,18 @@ export default function SEOAnalytics() {
                 ? translateUi("Aucune à corriger")
                 : translateUi("À traiter")
           }
+        />
+        <KpiTile
+          label={translateUi("Commandes payées — 30 jours")}
+          value={recentOrders.length}
+          icon={<BarChart3 className="h-5 w-5" />}
+          hint={translateUi("Hors transactions de test")}
+        />
+        <KpiTile
+          label={translateUi("Chiffre d'affaires payé — 30 jours")}
+          value={new Intl.NumberFormat(getUiLocale(), { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(totalRevenue)}
+          icon={<TrendingUp className="h-5 w-5" />}
+          hint={translateUi("Montants des commandes BIB confirmées")}
         />
       </KpiGrid>
 
