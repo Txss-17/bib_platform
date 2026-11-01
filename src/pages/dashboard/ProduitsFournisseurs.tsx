@@ -36,7 +36,6 @@ import {
   Eye,
   Heart,
   Package,
-  Sparkles,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -50,7 +49,7 @@ import { AddToBoutiqueDialog } from "@/components/dashboard/AddToBoutiqueDialog"
 import { useFavorites } from "@/hooks/useFavorites";
 import type { Tables } from "@/integrations/supabase/types";
 import { SectionCard, EmptyState } from "@/components/dashboard/shared";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 type SupplierProduct = Tables<"supplier_products">;
 type RotationIndicator = "green" | "yellow" | "orange" | "red";
@@ -614,12 +613,6 @@ function ProductGridCard({
   }, [requestedReference, product.id]);
   const [showAddDialog, setShowAddDialog] = useState(false);
 
-  const navigate = useNavigate();
-
-  const handleCustomize = () => {
-    navigate(`/dashboard/personnalisation?supplierProductId=${product.id}`);
-  };
-
   return (
     <>
       <Card className="group relative flex min-w-0 flex-col overflow-hidden rounded-2xl border-border/70 bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg">
@@ -691,7 +684,7 @@ function ProductGridCard({
               {translateUi("Ajouter")}
             </Button>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="flex justify-start">
             <Button
               type="button"
               variant="ghost"
@@ -702,15 +695,6 @@ function ProductGridCard({
               <Calculator className="h-4 w-4 shrink-0" />
               {translateUi("Simuler")}
               {showCalc ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              className="min-w-0 gap-1.5 px-1 text-xs"
-              onClick={handleCustomize}
-            >
-              <Sparkles className="h-4 w-4 shrink-0" />
-              {translateUi("Personnaliser")}
             </Button>
           </div>
         </CardContent>
@@ -755,7 +739,6 @@ function ProductListCard({
     if (requestedReference === product.id) setShowDetail(true);
   }, [requestedReference, product.id]);
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const navigate = useNavigate();
 
   return (
     <>
@@ -828,21 +811,6 @@ function ProductListCard({
                     onClick={() => setShowAddDialog(true)}
                   >
                     <Plus className="w-3 h-3" /> {translateUi("Ajouter")}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-7 gap-1 px-2 text-[10px] sm:text-xs"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      navigate(
-                        `/dashboard/personnalisation?supplierProductId=${product.id}`,
-                      );
-                    }}
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    {translateUi("Personnaliser")}
                   </Button>
                 </div>
               </div>
