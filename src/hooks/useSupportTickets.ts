@@ -102,41 +102,14 @@ export function useUpdateTicketStatus() {
         .eq("id", ticket.id);
       if (error) throw error;
 
-      // Notify customer if a meaningful transition happens
-      if (
-        ticket.contact_email &&
-        (status === "in_progress" ||
-          status === "resolved" ||
-          status === "closed")
-      ) {
-        const trackingUrl =
-          typeof window !== "undefined"
-            ? `${window.location.origin}/dashboard/aide?ticket=${ticket.id}`
-            : `https://brand-in-a-box.space/dashboard/aide?ticket=${ticket.id}`;
-        try {
-          await supabase.functions.invoke("send-transactional-email", {
-            body: {
-              templateName: "support-ticket-status",
-              recipientEmail: ticket.contact_email,
-              idempotencyKey: `ticket-${ticket.id}-${status}`,
-              templateData: {
-                name: ticket.contact_name ?? undefined,
-                subject: ticket.subject,
-                status,
-                trackingUrl,
-                ticketId: ticket.id,
-              },
-            },
-          });
-        } catch (e) {
-          console.warn("Email notification failed", e);
-        }
-      }
+      // Notification is intentionally deferred to an authenticated,
+      // server-side support workflow. Browser-originated transactional email
+      // sends must not impersonate the merchant or target arbitrary recipients.
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["support_tickets"] });
       toast.success(translateUi("Statut mis à jour"), {
-        description: translateUi("Le client est notifié par e-mail."),
+        description: translateUi("Le changement est enregistré. La notification client doit être envoyée par le workflow support sécurisé."),
       });
     },
     onError: (e: any) =>
