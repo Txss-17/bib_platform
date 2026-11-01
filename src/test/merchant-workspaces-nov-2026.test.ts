@@ -100,6 +100,13 @@ describe("Merchant operational workspaces", () => {
     expect(catalog).toContain('className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"');
     expect(catalog).toContain("AddToBoutiqueDialog");
     expect(catalog).toContain("ProductDetailDialog");
+    const details = read("src/components/dashboard/ProductDetailDialog.tsx");
+    expect(details).toContain("Informations complémentaires");
+    expect(details).toContain("Simuler mon prix de vente");
+    expect(details).toContain("Écart brut par unité");
+    expect(details).not.toContain("Indice commercial BIB");
+    expect(details).not.toContain("3 à 7 jours");
+    expect(details).not.toContain("France · Europe");
   });
 
   it("shows a real product operations table and mobile marketing layout", () => {
