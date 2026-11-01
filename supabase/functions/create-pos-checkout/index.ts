@@ -1,3 +1,4 @@
+import { assertTrustedReturnUrl } from "../_shared/return-url.ts";
 import { assertPaymentEnvironment } from "../_shared/payment-environment.ts";
 import { checkoutOrderMetadata } from "../_shared/checkout-session.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -422,8 +423,8 @@ async function createPosCheckout(
       })),
       mode: "payment",
       ui_mode: "hosted",
-      success_url: body.returnUrl,
-      cancel_url: body.returnUrl,
+      success_url: assertTrustedReturnUrl(body.returnUrl),
+      cancel_url: assertTrustedReturnUrl(body.returnUrl),
       payment_method_types: ["card"],
       automatic_tax: { enabled: true },
       metadata: {
