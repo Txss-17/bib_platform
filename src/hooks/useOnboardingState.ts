@@ -50,7 +50,7 @@ export function useOnboardingState() {
         label: translateUi("Compléter votre profil"),
         description: translateUi("Nom, marché cible et type d'activité."),
         done: hasProfileBasics && hasBusinessType,
-        href: "/dashboard/parametres",
+        href: "/dashboard/profil",
         cta: "Compléter",
       },
       {
@@ -96,7 +96,7 @@ export function useOnboardingState() {
       description: translateUi("Rendez votre vitrine accessible publiquement."),
       done: hasPublishedBoutique,
       href: firstBoutique
-        ? `/dashboard/boutiques/edit/${firstBoutique.id}`
+        ? `/dashboard/boutiques/${firstBoutique.id}/edit`
         : "/dashboard/boutiques",
       cta: "Publier",
     });
