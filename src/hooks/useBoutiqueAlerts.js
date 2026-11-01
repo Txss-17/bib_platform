@@ -9,7 +9,7 @@ const DEFAULTS = (boutiqueId) => ({
   low_stock_ratio: 0.3,
   audits_enabled: true,
   notify_email: null,
-  email_enabled: true,
+  email_enabled: false,
   period_days: 7,
   last_checked_at: null
 });
@@ -18,7 +18,8 @@ function useAlertSettings(boutiqueId) {
     queryKey: ["alert-settings", boutiqueId],
     enabled: !!boutiqueId,
     queryFn: async () => {
-      const { data } = await supabase.from("boutique_alert_settings").select("*").eq("boutique_id", boutiqueId).maybeSingle();
+      const { data, error } = await supabase.from("boutique_alert_settings").select("*").eq("boutique_id", boutiqueId).maybeSingle();
+      if (error) throw error;
       return data ?? DEFAULTS(boutiqueId);
     }
   });
@@ -38,7 +39,8 @@ function useAlertLog(boutiqueId, limit = 30) {
     queryKey: ["alert-log", boutiqueId, limit],
     enabled: !!boutiqueId,
     queryFn: async () => {
-      const { data } = await supabase.from("boutique_alert_log").select("*").eq("boutique_id", boutiqueId).order("created_at", { ascending: false }).limit(limit);
+      const { data, error } = await supabase.from("boutique_alert_log").select("*").eq("boutique_id", boutiqueId).order("created_at", { ascending: false }).limit(limit);
+      if (error) throw error;
       return data ?? [];
     }
   });
