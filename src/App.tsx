@@ -16,7 +16,7 @@ import {
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { isPublicPrelaunchHost, isMerchantTestPath } from "@/lib/publicPrelaunch";
+import { isPublicPrelaunchHost, isMerchantTestPath, isPublicInformationPath } from "@/lib/publicPrelaunch";
 import { CartProvider } from "@/contexts/CartContext";
 import { StoreCartProvider } from "@/contexts/StoreCartContext";
 import SuppliersOnboarding from "@/pages/SuppliersOnboarding";
@@ -265,7 +265,7 @@ export default function App() {
                     />
                   }
                 >
-                  {typeof window !== "undefined" && isPublicPrelaunchHost(window.location.hostname) && !isMerchantTestPath(window.location.pathname) ? (
+                  {typeof window !== "undefined" && isPublicPrelaunchHost(window.location.hostname) && !isMerchantTestPath(window.location.pathname) && !isPublicInformationPath(window.location.pathname) ? (
                     <Routes>
                       <Route path="/" element={<Navigate to="/bib-talent" replace />} />
                       <Route path="/bib-talent" element={<BibTalent />} />
