@@ -243,10 +243,21 @@ export default function Produits() {
       return;
     }
 
-    setEditProductId(requestedProductId);
+    const sampleCheckout = searchParams.get("sampleCheckout");
+    if (sampleCheckout) {
+      setSelectedProductId(requestedProductId);
+      if (sampleCheckout === "success") {
+        toast.info(translateUi("Paiement transmis. Le statut de votre commande sera confirmé après vérification Stripe."));
+      } else {
+        toast.info(translateUi("Achat de l'échantillon annulé. Aucun échantillon n'est encore confirmé."));
+      }
+    } else {
+      setEditProductId(requestedProductId);
+    }
 
     const nextParams = new URLSearchParams(searchParams);
     nextParams.delete("productId");
+    nextParams.delete("sampleCheckout");
 
     setSearchParams(nextParams, { replace: true });
   }, [allProducts, isLoading, searchParams, setSearchParams]);
