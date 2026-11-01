@@ -54,9 +54,9 @@ import { PlanCommissionBanner } from "@/components/dashboard/PlanCommissionBanne
 
 export default function Ventes() {
   useLanguage();
-  const { data: salesGeo, isLoading: geoLoading } = useSalesGeography(selectedBoutique);
-  const { data: boutiques = [] } = useBoutiques();
   const [selectedBoutique, setSelectedBoutique] = useState<string>("all");
+  const { data: boutiques = [] } = useBoutiques();
+  const { data: salesGeo, isLoading: geoLoading } = useSalesGeography(selectedBoutique);
   const { data: kpis, isLoading: kpisLoading } = useSalesKpis(selectedBoutique);
   const { data: performance, isLoading: performanceLoading, isError: performanceError } = useSalesPerformance(selectedBoutique);
   const monthlyData = performance?.monthly ?? [];
