@@ -71,11 +71,17 @@ export function StudioSceneRenderer({
       s.is_visible &&
       s.scene_type === "hero-cinema" &&
       (s.content as any)?.fullPageBackground &&
-      (s.content as any)?.backgroundImage,
+      !(s.style_overrides?.background?.videoUrl) &&
+      (s.style_overrides?.background?.imageUrl ||
+       (!(s.style_overrides?.background?.color) && (s.content as any)?.backgroundImage)),
   );
 
-  const fullBg = heroFull
-    ? `url(${(heroFull.content as any).backgroundImage}) center/cover fixed`
+  const fullBgImage = heroFull
+    ? heroFull.style_overrides?.background?.imageUrl ||
+      (heroFull.content as any).backgroundImage
+    : null;
+  const fullBg = fullBgImage
+    ? `url(${fullBgImage}) center/cover fixed`
     : undefined;
 
   return (
