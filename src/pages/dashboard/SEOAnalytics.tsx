@@ -436,7 +436,7 @@ export default function SEOAnalytics() {
         />
       </KpiGrid>
 
-      <p className="mb-5 text-xs text-muted-foreground">{translateUi("Sources : boutiques, produits et commandes BIB. Seules les ventes payées hors environnement de test sont comptées. Le score SEO est une grille interne de contrôle éditorial.")}</p>
+      <p className="mb-5 text-xs text-muted-foreground">{translateUi("Vos statistiques reflètent les commandes confirmées. Le score SEO évalue la qualité du contenu de vos pages.")}</p>
 
       {/* Concrete SEO alerts */}
       <SectionCard
