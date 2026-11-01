@@ -89,6 +89,19 @@ describe("Merchant operational workspaces", () => {
     expect(stats).toContain("Statistiques & qualité SEO");
   });
 
+  it("keeps the supplier catalog focused on discovery rather than favorite KPIs", () => {
+    const catalog = read("src/pages/dashboard/ProduitsFournisseurs.tsx");
+    expect(catalog).toContain("Trouvez les produits de votre prochaine collection");
+    expect(catalog).toContain("Explorer les références");
+    expect(catalog).toContain("Mes favoris");
+    expect(catalog).toContain("Ajouter aux favoris");
+    expect(catalog).not.toContain("<KpiTile");
+    expect(catalog).not.toContain("catalogueKpis");
+    expect(catalog).toContain('className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"');
+    expect(catalog).toContain("AddToBoutiqueDialog");
+    expect(catalog).toContain("ProductDetailDialog");
+  });
+
   it("shows a real product operations table and mobile marketing layout", () => {
     const catalog = read("src/pages/dashboard/Produits.tsx");
     expect(catalog).toContain('className="w-full min-w-[850px]');
