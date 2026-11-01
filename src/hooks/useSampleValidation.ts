@@ -85,26 +85,21 @@ export function useSampleValidations() {
 }
 
 export function useOrderSample() {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
-
   return useMutation({
     mutationFn: async (productId: string) => {
-      const { error } = await supabase.from("sample_validations" as any).upsert(
-        {
-          product_id: productId,
-          user_id: user!.id,
-          status: "ordered",
-          ordered_at: new Date().toISOString(),
-        } as any,
-        { onConflict: "product_id,user_id" },
-      );
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sample-validation"] });
-      queryClient.invalidateQueries({ queryKey: ["sample-validations"] });
+      const { data, error } = await supabase.functions.invoke("create-sample-checkout", {
+        body: {
+          productId,
+          environment: "live",
+          returnUrl: window.location.origin + "/dashboard/produits",
+        },
+      });
+      if (error || !data?.checkoutUrl ||
+          typeof data.checkoutUrl !== "string" ||
+          !data.checkoutUrl.startsWith("https://checkout.stripe.com/")) {
+        throw new Error("Le paiement de l'échantillon n'est pas encore disponible.");
+      }
+      return data.checkoutUrl as string;
     },
   });
 }
@@ -115,14 +110,10 @@ export function useReceiveSample() {
 
   return useMutation({
     mutationFn: async (productId: string) => {
-      const { error } = await supabase
-        .from("sample_validations" as any)
-        .update({ status: "received" } as any)
-        .eq("product_id", productId)
-        .eq("user_id", user!.id);
-
-      if (error) throw error;
-    },
+      const { error } = await supabase.rpc("mark_paid_sample_received" as any, {
+        p_product_id: productId,
+      } as any);
+      if (error) throw error;    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sample-validation"] });
       queryClient.invalidateQueries({ queryKey: ["sample-validations"] });
@@ -144,27 +135,12 @@ export function useValidateSample() {
       comment?: string;
       photoUrl?: string;
     }) => {
-      const { error: valError } = await supabase
-        .from("sample_validations" as any)
-        .update({
-          status: "validated",
-          comment,
-          photo_url: photoUrl,
-          validated_at: new Date().toISOString(),
-        } as any)
-        .eq("product_id", productId)
-        .eq("user_id", user!.id);
-
-      if (valError) throw valError;
-
-      // Activate the product
-      const { error } = await supabase
-        .from("products")
-        .update({ status: "active" })
-        .eq("id", productId);
-
-      if (error) throw error;
-    },
+      const { error } = await supabase.rpc("validate_paid_sample" as any, {
+        p_product_id: productId,
+        p_comment: comment ?? "",
+        p_photo_url: photoUrl ?? null,
+      } as any);
+      if (error) throw error;    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sample-validation"] });
       queryClient.invalidateQueries({ queryKey: ["sample-validations"] });
@@ -193,26 +169,10 @@ export function useReviewSample() {
       status: "to_validate" | "rejected";
       comment?: string;
     }) => {
-      const { error } = await supabase.from("sample_validations" as any).upsert(
-        {
-          product_id: productId,
-          user_id: user!.id,
-          status,
-          comment: comment ?? null,
-          validated_at: new Date().toISOString(),
-        } as any,
-        { onConflict: "product_id,user_id" },
-      );
-      if (error) throw error;
-
-      // Rejected products must not stay published.
-      if (status === "rejected") {
-        await supabase
-          .from("products")
-          .update({ status: "paused" })
-          .eq("id", productId);
-      }
-    },
+      const { error } = await supabase.rpc("review_paid_sample" as any, {
+        p_product_id: productId, p_status: status, p_comment: comment ?? null,
+      } as any);
+      if (error) throw error;    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sample-validation"] });
       queryClient.invalidateQueries({ queryKey: ["sample-validations"] });
