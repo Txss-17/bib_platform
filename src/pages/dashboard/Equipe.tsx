@@ -92,9 +92,10 @@ export default function Equipe() {
 
   const { tier } = useCurrentPlan();
   const currentPlan = (tier as keyof typeof PLAN_LIMITS) || "starter";
+  const canUseTeam = tier === "growth" || tier === "pro";
   const memberLimit = PLAN_LIMITS[currentPlan] || 1;
   const activeCount = members.filter((m) => m.status !== "removed").length;
-  const canInvite = activeCount < memberLimit;
+  const canInvite = canUseTeam && activeCount < memberLimit;
   const pendingCount = members.filter((m) => m.status === "pending").length;
   const activeNow = members.filter((m) => m.status === "active").length;
 
@@ -110,6 +111,17 @@ export default function Equipe() {
       },
     );
   };
+
+  if (!canUseTeam) {
+    return <DashboardLayout>
+      <PageHeader eyebrow={translateUi("Collaboration")} title={translateUi("Équipe & rôles")}
+        subtitle={translateUi("L'espace Équipe est disponible avec Growth et Pro.")}/>
+      <SectionCard title={translateUi("Gestion d'équipe indisponible sur Starter")}>
+        <p className="mb-4 text-sm text-muted-foreground">{translateUi("Passez à Growth ou Pro pour inviter des collaborateurs et leur attribuer des rôles sur vos boutiques.")}</p>
+        <Button asChild><Link to="/tarifs">{translateUi("Comparer les offres")}</Link></Button>
+      </SectionCard>
+    </DashboardLayout>;
+  }
 
   return (
     <DashboardLayout>
