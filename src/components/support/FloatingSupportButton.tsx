@@ -11,10 +11,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
-  LifeBuoy,
   Bot,
   Send,
-  Sparkles,
   Ticket,
   Loader2,
   Paperclip,
@@ -113,7 +111,7 @@ export function FloatingSupportButton({
           icon: <Ticket className="w-4 h-4" />,
         });
       }
-    } catch (e: any) {
+    } catch {
       const msg = "Veuillez réessayer ou utiliser la rubrique Mes tickets.";
       setMessages((m) => [
         ...m,
