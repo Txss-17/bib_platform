@@ -39,6 +39,12 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps --no-audit --no-fund
 
+      - name: Validate TypeScript
+        run: npm run check
+
+      - name: Build application
+        run: npm run build
+
       - name: Run ESLint
         run: npm run lint
 
@@ -47,9 +53,6 @@ jobs:
 
       - name: Test insured SAV with real PostgreSQL functions
         run: npx vitest run --config tests/sav/vitest.config.ts
-
-      - name: Build application
-        run: npm run build
 
   bridge:
     name: Platform and Intranet contracts
