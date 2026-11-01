@@ -45,14 +45,20 @@ export default function Personnalisation() {
     params.get("supplierProductId") ??
     ownedProduct?.supplier_product_id ??
     (products.some((product) => product.id === productId) ? productId : null);
-  const supplierProduct =
+  const supplierCandidate =
     products.find((product) => product.id === supplierId) ??
     ownedProduct?.supplier_products;
+  const supplierProduct = supplierCandidate &&
+    supplierCandidate.is_active !== false &&
+    readCatalogCustomization(supplierCandidate).valid &&
+    hasCustomization(readCatalogCustomization(supplierCandidate).capabilities)
+      ? supplierCandidate : undefined;
   const matches = mine.filter(
     (product) => product.supplier_product_id === supplierId,
   );
-  const selected =
-    ownedProduct ?? (matches.length === 1 ? matches[0] : undefined);
+  const selected = supplierProduct
+    ? (ownedProduct ?? (matches.length === 1 ? matches[0] : undefined))
+    : undefined;
   const context = !!productId || !!supplierId;
   const [view, setView] = useState<"all" | "mine">("all");
   const [scope, setScope] = useState<Scope>("all");
@@ -68,7 +74,9 @@ export default function Personnalisation() {
     [products, en],
   );
   const available = products.filter((product) => {
-    const caps = readCatalogCustomization(product).capabilities;
+    const metadata = readCatalogCustomization(product);
+    const caps = metadata.capabilities;
+    if (!metadata.valid || !hasCustomization(caps) || product.is_active === false) return false;
     const supports =
       scope === "all" ||
       (scope === "packaging"
@@ -364,9 +372,8 @@ export default function Personnalisation() {
                 ) : (
                   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {available.map((product) => {
-                      const meta = readCatalogCustomization(product),
-                        ready =
-                          meta.valid && hasCustomization(meta.capabilities);
+                      const meta = readCatalogCustomization(product);
+                      const ready = true;
                       return (
                         <article
                           key={product.id}
