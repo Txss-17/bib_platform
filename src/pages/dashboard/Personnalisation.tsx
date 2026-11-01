@@ -3,6 +3,8 @@ import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
+  CheckCircle2,
+  SlidersHorizontal,
   ArrowLeft,
   Package,
   Search,
@@ -91,10 +93,6 @@ export default function Personnalisation() {
         ))
     );
   });
-  const qualified = products.filter((product) => {
-    const meta = readCatalogCustomization(product);
-    return meta.valid && hasCustomization(meta.capabilities);
-  }).length;
   const open = (id: string) =>
     navigate(
       "/dashboard/personnalisation?supplierProductId=" + encodeURIComponent(id),
@@ -107,9 +105,9 @@ export default function Personnalisation() {
   };
   return (
     <DashboardLayout>
-      <div className="mx-auto max-w-7xl space-y-6 pb-8">
-        <header className="flex flex-col gap-4 rounded-2xl border bg-card p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7">
-          <div>
+      <div className="mx-auto w-full min-w-0 max-w-7xl space-y-6 pb-8">
+        <header className="flex min-w-0 flex-col gap-5 overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-primary/[0.07] via-card to-secondary/[0.07] p-5 sm:p-7 lg:flex-row lg:items-center lg:justify-between lg:p-9">
+          <div className="min-w-0">
             <Badge
               variant="outline"
               className="mb-3 border-accent/30 bg-accent/10 text-accent-ink"
@@ -117,21 +115,22 @@ export default function Personnalisation() {
               <Sparkles className="mr-1.5 h-3.5 w-3.5" />
               {en ? "BIB customization" : "Personnalisation BIB"}
             </Badge>
-            <h1 className="text-2xl font-semibold text-foreground">
+            <h1 className="break-words font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               {selected
                 ? selected.supplier_products.name
                 : en
                   ? "Product customization"
-                  : "Personnalisation des produits"}
+                  : "Donnez votre identité à vos produits"}
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
               {en
                 ? "Choose a reference, select its boutique, and configure the options qualified by BIB."
-                : "Choisissez une référence, sélectionnez sa boutique, puis configurez les options qualifiées par BIB."}
+                : "Explorez les possibilités de personnalisation, choisissez votre boutique et préparez votre dossier de configuration."}
             </p>
           </div>
           <Button
             variant="outline"
+            className="w-full shrink-0 justify-center rounded-xl bg-background sm:w-auto"
             onClick={() =>
               context
                 ? navigate("/dashboard/personnalisation")
@@ -192,13 +191,19 @@ export default function Personnalisation() {
             </div>
           )}
         {context && supplierProduct && !merchantProducts.isError && (
-          <Card>
-            <CardContent className="space-y-4 p-5">
-              <div>
-                <p className="font-semibold">{supplierProduct.name}</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {supplierProduct.category}
-                </p>
+          <Card className="overflow-hidden rounded-2xl border-border/70">
+            <CardContent className="space-y-5 p-4 sm:p-6">
+              <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center">
+                <div className="flex h-32 w-full shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted/30 sm:h-28 sm:w-36">
+                  {supplierProduct.image_url ? (
+                    <img src={supplierProduct.image_url} alt={supplierProduct.name} className="h-full w-full object-contain" />
+                  ) : <Package className="h-8 w-8 text-muted-foreground" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <Badge variant="secondary">{supplierProduct.category}</Badge>
+                  <h2 className="mt-2 break-words text-lg font-semibold">{supplierProduct.name}</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">{en ? "Configure a product from your supplier catalogue" : "Configurez une référence de votre catalogue fournisseur"}</p>
+                </div>
               </div>
               {matches.length > 1 && (
                 <div className="max-w-lg space-y-2">
@@ -256,46 +261,13 @@ export default function Personnalisation() {
         )}
         {!context && (
           <>
-            <section
-              className="grid gap-3 sm:grid-cols-3"
-              aria-label={en ? "Catalogue overview" : "Aperçu du catalogue"}
-            >
-              {[
-                [
-                  en ? "Catalogue references" : "Références au catalogue",
-                  products.length,
-                ],
-                [
-                  en ? "Qualified for customization" : "Capacités qualifiées",
-                  qualified,
-                ],
-                [
-                  en ? "In my boutiques" : "Dans mes boutiques",
-                  new Set(mine.map((product) => product.supplier_product_id))
-                    .size,
-                ],
-              ].map(([label, value]) => (
-                <Card key={label}>
-                  <CardContent className="p-5">
-                    <p className="text-sm text-muted-foreground">{label}</p>
-                    <p className="mt-2 text-2xl font-semibold">
-                      {catalogue.isLoading || merchantProducts.isLoading
-                        ? "…"
-                        : catalogue.isError || merchantProducts.isError
-                          ? "—"
-                          : value}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </section>
-            <Card>
-              <CardContent className="space-y-5 p-4 sm:p-6">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h2 className="font-semibold">
+            <Card className="min-w-0 overflow-hidden rounded-2xl border-border/70">
+              <CardContent className="min-w-0 space-y-6 p-4 sm:p-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <h2 className="text-lg font-semibold">
                     {en ? "Choose a reference" : "Choisir une référence"}
                   </h2>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <Button
                       variant={view === "all" ? "default" : "outline"}
                       size="sm"
@@ -312,11 +284,11 @@ export default function Personnalisation() {
                     </Button>
                   </div>
                 </div>
-                <div className="grid gap-3 md:grid-cols-[1fr_190px_190px]">
-                  <div className="relative">
+                <div className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,190px)_minmax(0,190px)]">
+                  <div className="relative min-w-0">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
-                      className="pl-9"
+                      className="h-11 w-full min-w-0 rounded-xl pl-10"
                       value={search}
                       onChange={(event) => setSearch(event.target.value)}
                       placeholder={
@@ -331,7 +303,7 @@ export default function Personnalisation() {
                     aria-label={en ? "Category" : "Catégorie"}
                     value={category}
                     onChange={(event) => setCategory(event.target.value)}
-                    className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                    className="h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3 text-sm"
                   >
                     <option value="">
                       {en ? "All categories" : "Toutes les catégories"}
@@ -365,7 +337,7 @@ export default function Personnalisation() {
                 {catalogue.isLoading ? (
                   <div
                     role="status"
-                    className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+                    className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
                   >
                     {[1, 2, 3].map((value) => (
                       <div
@@ -400,14 +372,14 @@ export default function Personnalisation() {
                       return (
                         <article
                           key={product.id}
-                          className="flex min-w-0 flex-col overflow-hidden rounded-xl border bg-card"
+                          className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg"
                         >
-                          <div className="aspect-[16/10] bg-muted/40">
+                          <div className="aspect-[5/4] overflow-hidden bg-muted/30">
                             {product.image_url ? (
                               <img
                                 src={product.image_url}
                                 alt={product.name}
-                                className="h-full w-full object-contain"
+                                className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.03]"
                                 loading="lazy"
                               />
                             ) : (
@@ -416,11 +388,11 @@ export default function Personnalisation() {
                               </div>
                             )}
                           </div>
-                          <div className="flex flex-1 flex-col gap-3 p-4">
+                          <div className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
                             <p className="text-xs text-muted-foreground">
                               {product.category}
                             </p>
-                            <h3 className="font-semibold">{product.name}</h3>
+                            <h3 className="line-clamp-2 min-h-10 text-base font-semibold leading-snug">{product.name}</h3>
                             <p className="line-clamp-3 text-sm text-muted-foreground">
                               {product.description ||
                                 (en
@@ -444,12 +416,12 @@ export default function Personnalisation() {
                                   : "Qualification en attente"}
                             </Badge>
                             <p className="text-xs text-muted-foreground">
-                              {en ? "MOQ: " : "MOQ : "}
+                              {en ? "Minimum quantity: " : "Quantité minimale : "}
                               {meta.terms.moq ??
                                 product.moq ??
                                 (en ? "To confirm" : "À confirmer")}
                             </p>
-                            <div className="mt-auto grid gap-2 pt-2">
+                            <div className="mt-auto grid grid-cols-1 gap-2 pt-2">
                               <Button
                                 disabled={!ready || merchantProducts.isError}
                                 onClick={() => open(product.id)}
