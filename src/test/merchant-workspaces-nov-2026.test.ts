@@ -39,7 +39,9 @@ describe("Merchant operational workspaces", () => {
     expect(sales).not.toContain("Lampe LED Design");
     expect(sales).not.toContain("Coussin Velours");
     expect(sales).toContain("useSalesPerformance(selectedBoutique)");
-    expect(sales).toContain("Répartition par marché");
+    expect(sales).toContain("Vos ventes par marché");
+    expect(sales).not.toContain("hors test");
+    expect(read("src/components/dashboard/sales/SalesHeatmap.tsx")).toContain("conic-gradient");
     const geo = read("src/hooks/useSalesGeography.ts");
     expect(geo).toContain('.eq("payment_status", "paid")');
     expect(geo).toContain('order.stripe_environment === "sandbox"');
@@ -92,7 +94,7 @@ describe("Merchant operational workspaces", () => {
     expect(payout).toContain("country_code: draft.country_code");
     const sales = read("src/pages/dashboard/Ventes.tsx");
     expect(sales).toContain("ProductPerformanceTable");
-    expect(sales).toContain("Pays et villes indisponibles");
+    expect(sales).toContain("Identifiez les marchés qui génèrent le plus de chiffre d’affaires.");
     const table = read("src/components/dashboard/sales/ProductPerformanceTable.tsx");
     expect(table).toContain("Dernière vente");
     expect(table).toContain("stock");
