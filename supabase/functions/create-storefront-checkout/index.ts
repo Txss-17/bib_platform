@@ -1,3 +1,4 @@
+import { assertTrustedReturnUrl } from "../_shared/return-url.ts";
 import { assertPaymentEnvironment } from "../_shared/payment-environment.ts";
 import { checkoutOrderMetadata } from "../_shared/checkout-session.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -215,23 +216,11 @@ function getCurrentBasePrice(product: ProductRow): number {
 }
 
 function validateReturnUrl(value: string): string {
-  if (typeof value !== "string" || value.length > 2048) {
-    throw new CheckoutError("URL de retour invalide.");
-  }
-
-  let url: URL;
-
   try {
-    url = new URL(value);
+    return assertTrustedReturnUrl(value);
   } catch {
-    throw new CheckoutError("URL de retour invalide.");
+    throw new CheckoutError("URL de retour non autorisée.");
   }
-
-  if (url.protocol !== "https:") {
-    throw new CheckoutError("Une URL de retour HTTPS est requise.");
-  }
-
-  return url.toString();
 }
 
 async function createStorefrontCheckout(
