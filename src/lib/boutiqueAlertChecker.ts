@@ -15,6 +15,7 @@ export async function runBoutiqueAlertCheck(s: AlertSettings): Promise<{
   emailed: number;
   alerts: { type: string; title: string; severity: string }[];
 }> {
+  if (!s.enabled) return { created: 0, emailed: 0, alerts: [] };
   const boutiqueId = s.boutique_id;
   const days = Math.max(1, s.period_days || 7);
   const now = new Date();
@@ -172,15 +173,6 @@ export async function runBoutiqueAlertCheck(s: AlertSettings): Promise<{
     let emailStatus: string | null = null;
     if (s.email_enabled && s.notify_email) {
       try {
-        const subject = `[Alerte] ${a.title}`;
-        const body = `
-          <div style="font-family:Inter,Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;">
-            <h2 style="color:#0f2438;margin:0 0 12px;">${escapeHtml(a.title)}</h2>
-            <p style="color:#475569;line-height:1.6;">${escapeHtml(a.message ?? "")}</p>
-            <p style="color:#94a3b8;font-size:12px;margin-top:24px;">
-              Alerte automatique Brand-In-A-Box — réglez vos seuils dans Paramètres &gt; Alertes.
-            </p>
-          </div>`;
         const { error } = await supabase.functions.invoke(
           "send-boutique-email",
           {
@@ -188,8 +180,10 @@ export async function runBoutiqueAlertCheck(s: AlertSettings): Promise<{
               boutique_id: boutiqueId,
               type: "alert",
               recipient_email: s.notify_email,
-              subject_override: subject,
-              body_override: body,
+              variables: {
+                title: String(a.title).slice(0, 150),
+                message: String(a.message ?? "").slice(0, 1800),
+              },
             },
           },
         );
@@ -224,16 +218,3 @@ export async function runBoutiqueAlertCheck(s: AlertSettings): Promise<{
   };
 }
 
-function escapeHtml(s: string) {
-  return s.replace(
-    /[&<>"']/g,
-    (c) =>
-      ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;",
-      })[c]!,
-  );
-}
