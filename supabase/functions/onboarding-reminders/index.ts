@@ -18,9 +18,9 @@ const MIN_AGE_HOURS = 24
 interface StepDef { key: string; label: string; description: string; href: string }
 
 function pickBlockedStep(ctx: any): StepDef | null {
-  if (!ctx.hasProfileBasics || !ctx.hasMarket || !ctx.hasBusinessType)
+  if (!ctx.hasProfileBasics || !ctx.hasBusinessType)
     return { key: 'profile', label: 'Compléter votre profil',
-      description: "Renseignez votre nom, marché cible et type d'activité.",
+      description: "Renseignez votre nom et votre type d'activité.",
       href: `${DASHBOARD_BASE}/dashboard/parametres` }
   if (!ctx.hasBoutique)
     return { key: 'boutique', label: 'Créer votre première boutique',
@@ -166,7 +166,7 @@ async function processUser(sb: any, userId: string, source: string) {
   const attemptNo = sentCount + 1
   const totalSteps = ctx.isBusiness ? 5 : 4
   const doneSteps = [
-    ctx.hasProfileBasics && ctx.hasMarket && ctx.hasBusinessType,
+    ctx.hasProfileBasics && ctx.hasBusinessType,
     ctx.hasBoutique, ctx.hasProduct,
     ctx.isBusiness ? ctx.isVerified : null,
     ctx.hasPublishedBoutique,
@@ -207,13 +207,36 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   try {
     const sb = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } })
-    const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {}
-    const source = body.source === 'event' ? 'event' : 'cron'
-
-    if (body.user_id && typeof body.user_id === 'string') {
-      const result = await processUser(sb, body.user_id, source)
-      return json({ user_id: body.user_id, result })
+    if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405)
+    const authorization = req.headers.get('Authorization')
+    const token = authorization?.replace(/^Bearer\\s+/i, '').trim() ?? ''
+    const configuredCronKey = Deno.env.get('ONBOARDING_REMINDERS_CRON_KEY')
+    const cronKey = req.headers.get('x-bib-cron-key')
+    const isCron = Boolean(configuredCronKey && cronKey && cronKey === configuredCronKey)
+    let authenticatedUserId: string | null = null
+    if (!isCron) {
+      if (!token) return json({ error: 'authentication_required' }, 401)
+      const auth = createClient(SUPABASE_URL, Deno.env.get('SUPABASE_ANON_KEY')!, {
+        auth: { persistSession: false },
+        global: { headers: { Authorization: `Bearer ${token}` } },
+      })
+      const { data: identity, error: identityError } = await auth.auth.getUser(token)
+      if (identityError || !identity.user) return json({ error: 'invalid_session' }, 401)
+      authenticatedUserId = identity.user.id
     }
+    const body = await req.json().catch(() => ({}))
+    const source = isCron ? 'cron' : 'event'
+
+    if (authenticatedUserId) {
+      if (body.user_id != null && body.user_id !== authenticatedUserId) {
+        return json({ error: 'user_scope_forbidden' }, 403)
+      }
+      const result = await processUser(sb, authenticatedUserId, source)
+      return json({ user_id: authenticatedUserId, result })
+    }
+
+    // Only a verified cron key can scan all accounts.
+    if (!isCron) return json({ error: 'cron_key_required' }, 403)
 
     // cron scan
     const cutoff = new Date(Date.now() - MIN_AGE_HOURS * 3600_000).toISOString()
