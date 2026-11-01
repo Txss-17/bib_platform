@@ -15,8 +15,9 @@ const supabase = createClient(
 
 const PLAN_RE = /^plan_(starter|growth|pro)_(monthly|yearly)$/;
 const INSURANCE_RE = /^insurance_(starter|growth|pro)_(monthly|yearly)$/;
+const BOUTIQUE_EXTRA_RE = /^boutique_extra_(one|two)_monthly$/;
 
-type Category = "plan" | "insurance";
+type Category = "plan" | "insurance" | "boutique_extra";
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -28,6 +29,7 @@ function json(body: unknown, status = 200) {
 function categoryOf(priceId: string | null | undefined): Category | null {
   if (!priceId) return null;
   if (priceId.startsWith("insurance_")) return "insurance";
+  if (BOUTIQUE_EXTRA_RE.test(priceId)) return "boutique_extra";
   if (/^(plan_)?(starter|growth|pro)_(monthly|yearly)$/.test(priceId)) return "plan";
   return null;
 }
@@ -55,9 +57,10 @@ Deno.serve(async (req) => {
       newPriceId = String(body?.priceId ?? "");
       if (PLAN_RE.test(newPriceId)) category = "plan";
       else if (INSURANCE_RE.test(newPriceId)) category = "insurance";
+      else if (BOUTIQUE_EXTRA_RE.test(newPriceId)) category = "boutique_extra";
       else return json({ error: "Invalid priceId" }, 400);
     } else if (action === "cancel") {
-      if (body?.category !== "plan" && body?.category !== "insurance") {
+      if (!["plan", "insurance", "boutique_extra"].includes(body?.category)) {
         return json({ error: "Invalid category" }, 400);
       }
       category = body.category;
@@ -90,6 +93,20 @@ Deno.serve(async (req) => {
 
     const prices = await stripe.prices.list({ lookup_keys: [newPriceId!], active: true, limit: 1 });
     if (!prices.data.length) return json({ error: "Price not found" }, 404);
+    if (category === "boutique_extra") {
+      const amount = newPriceId === "boutique_extra_one_monthly" ? 1999 : 3599;
+      const price = prices.data[0];
+      if (price.currency !== "eur" || price.unit_amount !== amount ||
+          price.type !== "recurring" || price.recurring?.interval !== "month") {
+        return json({ error: "Invalid extra boutique price" }, 400);
+      }
+      const hasPro = (subs ?? []).some((entry) =>
+        /^plan_pro_(monthly|yearly)$/.test(entry.price_id ?? "") &&
+        ["active", "trialing"].includes(entry.status)
+      );
+      if (!hasPro) return json({ error: "Pro plan required" }, 403);
+    }
+
 
     const sub = await stripe.subscriptions.retrieve(current.stripe_subscription_id);
     const item = sub.items.data[0];
