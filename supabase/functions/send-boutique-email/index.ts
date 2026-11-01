@@ -28,12 +28,61 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (req.method !== "POST") {
+      return new Response(JSON.stringify({ error: "method_not_allowed" }), {
+        status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const authorization = req.headers.get("Authorization");
+    if (!authorization?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "authentication_required" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const accessToken = authorization.slice(7).trim();
+    const caller = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: `Bearer ${accessToken}` } }, auth: { persistSession: false } }
+    );
+    const { data: authentication, error: authError } = await caller.auth.getUser(accessToken);
+    if (authError || !authentication.user) {
+      return new Response(JSON.stringify({ error: "invalid_session" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { boutique_id, type, recipient_email, variables = {}, subject_override, body_override } =
       await req.json();
 
     if (!boutique_id || !type || !recipient_email) {
       return new Response(JSON.stringify({ error: "Paramètres manquants" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (typeof boutique_id !== "string" || typeof type !== "string" ||
+        typeof recipient_email !== "string" ||
+        !/^[^\\s@<>\\r\\n]+@[^\\s@<>\\r\\n]+\\.[^\\s@<>\\r\\n]+$/.test(recipient_email) ||
+        typeof variables !== "object" || variables === null || Array.isArray(variables) ||
+        Object.keys(variables).length > 25 ||
+        Object.values(variables).some(v => typeof v !== "string" || v.length > 2000)) {
+      return new Response(JSON.stringify({ error: "invalid_request" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    // Do not allow client-supplied mail HTML, headers or subjects.
+    if (subject_override != null || body_override != null) {
+      return new Response(JSON.stringify({ error: "template_overrides_forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const { data: authorizedBoutique, error: boutiqueAuthError } = await caller
+      .from("boutiques").select("id,user_id").eq("id",boutique_id).maybeSingle();
+    if (boutiqueAuthError || !authorizedBoutique ||
+        authorizedBoutique.user_id !== authentication.user.id) {
+      return new Response(JSON.stringify({ error: "store_owner_required" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -47,20 +96,22 @@ Deno.serve(async (req) => {
     const { data: settings } = await supabase.from("boutique_email_settings")
       .select("from_name").eq("boutique_id", boutique_id).maybeSingle();
 
-    let subject = subject_override ?? "";
-    let html = body_override ?? "";
-    if (!subject_override || !body_override) {
+    let subject = "";
+    let html = "";
+    {
       const { data: tpl } = await supabase.from("email_templates")
         .select("subject, body_html").eq("boutique_id", boutique_id).eq("type", type).maybeSingle();
-      subject = subject_override ?? tpl?.subject ?? "";
-      html = body_override ?? tpl?.body_html ?? "";
+      subject = tpl?.subject ?? "";
+      html = tpl?.body_html ?? "";
     }
 
-    const vars = { boutique_name: boutique?.name ?? "", ...variables };
+    const escapeHtml = (v: string) => v.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/\x27/g,"&#39;");
+    const vars = Object.fromEntries(Object.entries({ boutique_name: boutique?.name ?? "", ...variables }).map(([key, value]) => [key, escapeHtml(String(value))]));
     subject = renderTemplate(subject, vars);
     html = renderTemplate(html, vars);
 
-    const fromName = settings?.from_name || boutique?.name || "Boutique";
+    subject = subject.replace(/[\\r\\n]/g, " ").slice(0, 160);
+    const fromName = String(settings?.from_name || boutique?.name || "Boutique").replace(/[\\r\\n]/g, " ").slice(0, 100);
     const rawLines = [
       `From: ${fromName} <me>`,
       `To: ${recipient_email}`,
