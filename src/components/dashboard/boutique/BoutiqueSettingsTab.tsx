@@ -95,7 +95,11 @@ const ROLES = [
 
 /** Country -> default currency + target market suggestions (BIB commerce defaults). */
 const COUNTRY_PRESETS: Record<string, {label: string; currency: string; markets: string[]}> = {
-  EU: { label: "Europe", currency: "EUR", markets: ["EU"] },
+  FR: { label: "France", currency: "EUR", markets: ["EU"] },
+  BE: { label: "Belgique", currency: "EUR", markets: ["EU"] },
+  DE: { label: "Allemagne", currency: "EUR", markets: ["EU"] },
+  ES: { label: "Espagne", currency: "EUR", markets: ["EU"] },
+  IT: { label: "Italie", currency: "EUR", markets: ["EU"] },
 };
 
 /**
@@ -1192,7 +1196,8 @@ export function BoutiqueSettingsTab({ boutiqueId }: { boutiqueId: string }) {
                   <button
                     key={m.code}
                     type="button"
-                    onClick={() => toggleMarket(m.code)}
+                    onClick={() => { if (!active) toggleMarket(m.code); }}
+                     disabled={active}
                     className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
                       active
                         ? "bg-primary text-primary-foreground border-primary"
