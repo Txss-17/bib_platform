@@ -254,7 +254,7 @@ export default function Ventes() {
                   fill="url(#colorRevenue)"
                 />
               </AreaChart>
-            </ResponsiveContainer>
+            </ResponsiveContainer>}
           </div>
         </SectionCard>
 
