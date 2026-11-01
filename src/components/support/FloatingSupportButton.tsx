@@ -81,7 +81,7 @@ export function FloatingSupportButton({
     try {
       const { data, error } = await supabase.functions.invoke("support-ai", {
         body: {
-          messages: next,
+          messages: next.slice(-16),
           context: {
             source,
             boutique_id: boutiqueId ?? null,
@@ -95,25 +95,6 @@ export function FloatingSupportButton({
       const reply = data?.reply ?? "…";
       setOfferTicket(data?.offer_ticket === true);
       setMessages((m) => [...m, { role: "assistant", content: reply }]);
-      if (data?.ticket?.id) {
-        // Upload any pending attachments now that we have a ticket id
-        if (pendingFiles.length > 0) {
-          for (const f of pendingFiles) {
-            try {
-              await uploadTicketAttachment(data.ticket.id, f, user?.id ?? null);
-            } catch (e) {
-              console.warn("attachment upload failed", e);
-            }
-          }
-          setPendingFiles([]);
-        }
-        toast.success(translateUi("Ticket créé"), {
-          description: translateUi("« {v0} » — votre demande est transmise à l’équipe support.", {
-            v0: data.ticket.subject,
-          }),
-          icon: <Ticket className="w-4 h-4" />,
-        });
-      }
     } catch {
       const msg = "Veuillez réessayer ou utiliser la rubrique Mes tickets.";
       setMessages((m) => [
@@ -137,7 +118,7 @@ export function FloatingSupportButton({
       const { data, error } = await supabase.functions.invoke("support-ai", {
         body: {
           action: "create_ticket",
-          messages,
+          messages: messages.slice(-16),
           context: { source, boutique_id: boutiqueId ?? null },
         },
       });
