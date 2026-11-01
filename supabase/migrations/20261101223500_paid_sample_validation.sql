@@ -93,3 +93,26 @@ BEGIN
 END $$;
 REVOKE ALL ON FUNCTION public.review_paid_sample(uuid,text,text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.review_paid_sample(uuid,text,text) TO authenticated;
+
+-- Server-side publication guard: stock counts and client updates are not proof of inspection.
+CREATE OR REPLACE FUNCTION public.require_verified_sample_before_activation()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
+BEGIN
+  IF NEW.status='active' AND OLD.status IS DISTINCT FROM 'active'
+     AND NEW.supplier_product_id IS NOT NULL
+     AND NOT EXISTS (
+       SELECT 1 FROM public.sample_validations v
+       JOIN public.sample_purchases s ON s.product_id=v.product_id AND s.user_id=v.user_id
+       JOIN public.boutiques b ON b.id=NEW.boutique_id
+       WHERE v.product_id=NEW.id AND v.user_id=b.user_id
+         AND v.status='validated' AND s.payment_status='paid'
+         AND s.stripe_environment='live'
+     ) THEN
+    RAISE EXCEPTION 'Paid physical sample inspection required before activation';
+  END IF;
+  RETURN NEW;
+END $$;
+DROP TRIGGER IF EXISTS products_require_verified_sample ON public.products;
+CREATE TRIGGER products_require_verified_sample
+  BEFORE UPDATE OF status ON public.products FOR EACH ROW
+  EXECUTE FUNCTION public.require_verified_sample_before_activation();
