@@ -37,9 +37,8 @@ import {
   Heart,
   Package,
   Sparkles,
-  TrendingUp,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   useSupplierProducts,
   useSupplierProductsRealtime,
@@ -50,14 +49,7 @@ import { ProductDetailDialog } from "@/components/dashboard/ProductDetailDialog"
 import { AddToBoutiqueDialog } from "@/components/dashboard/AddToBoutiqueDialog";
 import { useFavorites } from "@/hooks/useFavorites";
 import type { Tables } from "@/integrations/supabase/types";
-import {
-  PageHeader,
-  SectionCard,
-  KpiTile,
-  KpiTileSkeleton,
-  EmptyState,
-  RealtimeStatusPill,
-} from "@/components/dashboard/shared";
+import { SectionCard, EmptyState } from "@/components/dashboard/shared";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 type SupplierProduct = Tables<"supplier_products">;
@@ -231,7 +223,7 @@ export default function ProduitsFournisseurs() {
   useLanguage();
   const { data: supplierProducts, isLoading } = useSupplierProducts();
   useSupplierProductsRealtime();
-  const { favorites, isFavorite, toggleFavorite } = useFavorites();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState("popularity");
@@ -247,6 +239,7 @@ export default function ProduitsFournisseurs() {
   };
 
   const products = supplierProducts || [];
+  const maximumPrice = Math.max(100, ...products.map((p) => Number(p.base_price || 0)));
   const [params] = useSearchParams();
   const reference = params.get("reference");
   const categoryCounts = CATEGORIES.map((cat) => ({
@@ -258,9 +251,9 @@ export default function ProduitsFournisseurs() {
 
   const filteredProducts = products.filter((product) => {
     if (reference && product.id === reference) return true;
-    const matchesSearch = product.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+    const matchesSearch = [product.name, product.category].some((value) =>
+      String(value || "").toLocaleLowerCase().includes(searchQuery.trim().toLocaleLowerCase()),
+    );
     const matchesCategory =
       selectedCategories.length === 0 ||
       selectedCategories.some(
@@ -268,7 +261,7 @@ export default function ProduitsFournisseurs() {
       );
     const matchesPrice =
       product.base_price >= priceRange[0] &&
-      product.base_price <= priceRange[1];
+      (priceRange[1] === 100 ? true : product.base_price <= priceRange[1]);
     const matchesFavorite = !showFavoritesOnly || isFavorite(product.id);
     return matchesSearch && matchesCategory && matchesPrice && matchesFavorite;
   });
@@ -291,190 +284,106 @@ export default function ProduitsFournisseurs() {
 
   const activeFilterCount =
     selectedCategories.length +
-    (priceRange[0] > 0 || priceRange[1] < 100 ? 1 : 0);
-
-  // Catalogue KPIs (computed on full list, not on filtered view)
-  const catalogueKpis = useMemo(() => {
-    const all = products;
-    const total = all.length;
-    const highDemand = all.filter(
-      (p) => p.rotation_indicator === "green",
-    ).length;
-    const avgMargin =
-      total > 0
-        ? Math.round(
-            all.reduce((s, p) => s + (p.max_margin_percent || 0), 0) / total,
-          )
-        : 0;
-    const favoritesCount = favorites.length;
-    return { total, highDemand, avgMargin, favoritesCount };
-  }, [products, favorites]);
+    (priceRange[0] > 0 || priceRange[1] < 100 ? 1 : 0) +
+    (showFavoritesOnly ? 1 : 0);
 
   return (
     <DashboardLayout>
-      <PageHeader
-        eyebrow={translateUi("Catalogue fournisseur")}
-        title={translateUi("Produits validés")}
-        subtitle={translateUi(
-          "Sélectionnez les produits adaptés à votre vision et à la demande du marché.",
-        )}
-        actions={<RealtimeStatusPill status="live" />}
-      />
+      <section className="mb-6 overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-primary/[0.07] via-card to-secondary/[0.08] p-5 sm:p-7 lg:p-9">
+        <div className="max-w-3xl space-y-3">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-background/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            {translateUi("Sélection fournisseurs BIB")}
+          </div>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+            {translateUi("Trouvez les produits de votre prochaine collection")}
+          </h1>
+          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            {translateUi("Explorez les références du catalogue, comparez leur prix de base et personnalisez votre sélection avant de l'ajouter à une boutique.")}
+          </p>
+        </div>
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              aria-label={translateUi("Rechercher dans le catalogue")}
+              placeholder={translateUi("Nom du produit, catégorie…")}
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              className="h-12 rounded-xl border-border/70 bg-background pl-11 text-sm shadow-sm"
+            />
+          </div>
+          <Button
+            type="button"
+            variant={showFilters ? "default" : "outline"}
+            className="h-12 justify-center gap-2 rounded-xl sm:px-5 md:hidden"
+            onClick={() => setShowFilters(!showFilters)}
+            aria-expanded={showFilters}
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            {translateUi("Affiner ma sélection")}
+            {activeFilterCount > 0 && <span className="rounded-full bg-primary-foreground/20 px-2 text-xs">{activeFilterCount}</span>}
+          </Button>
+        </div>
+      </section>
 
-      {/* KPI strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        {isLoading ? (
-          <>
-            <KpiTileSkeleton />
-            <KpiTileSkeleton />
-            <KpiTileSkeleton />
-            <KpiTileSkeleton tone="gold" />
-          </>
-        ) : (
-          <>
-            <KpiTile
-              label={translateUi("Produits")}
-              value={catalogueKpis.total}
-              icon={<Package className="w-4 h-4" />}
-              hint={translateUi("Pré-validés")}
-            />
-            <KpiTile
-              label={translateUi("Demande élevée")}
-              value={catalogueKpis.highDemand}
-              icon={<TrendingUp className="w-4 h-4" />}
-              hint={translateUi("Indicateur vert")}
-            />
-            <KpiTile
-              label={translateUi("Marge max moy.")}
-              value={`${catalogueKpis.avgMargin}%`}
-              icon={<Calculator className="w-4 h-4" />}
-            />
-            <KpiTile
-              label={translateUi("Favoris")}
-              value={catalogueKpis.favoritesCount}
-              tone="gold"
-              icon={<Heart className="w-4 h-4" />}
-            />
-          </>
-        )}
+      <div className="mb-5 flex min-w-0 flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setSelectedCategories([])}
+          className={`rounded-full border px-3.5 py-2 text-xs font-semibold transition-colors ${selectedCategories.length === 0 ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground hover:border-primary/40"}`}
+        >
+          {translateUi("Tout découvrir")}
+        </button>
+        {categoryCounts.filter((category) => category.count > 0).map((category) => (
+          <button
+            type="button"
+            key={category.name}
+            onClick={() => toggleCategory(category.name)}
+            aria-pressed={selectedCategories.includes(category.name)}
+            className={`rounded-full border px-3.5 py-2 text-xs font-medium transition-colors ${selectedCategories.includes(category.name) ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground hover:border-primary/40"}`}
+          >
+            {category.name}
+          </button>
+        ))}
       </div>
 
-      {/* Strategic banner */}
-      <SectionCard className="mb-4 sm:mb-6 bg-primary/5 border-primary/20">
-        <div className="flex items-start gap-2 sm:gap-3">
-          <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-primary mt-0.5 shrink-0" />
-          <div>
-            <p className="text-xs sm:text-sm text-foreground">
-              <span className="font-semibold">
-                {translateUi("Vos choix impactent vos") + " "}
-              </span>
-              <span className="font-bold text-primary">
-                {translateUi("résultats.")}
-              </span>
-              <span className="hidden sm:inline">
-                {" "}
-                {translateUi(
-                  "Sélectionnez uniquement les produits adaptés à votre vision et à la demande marché.",
-                )}
-              </span>
+      <div className="mb-4 flex min-w-0 flex-col gap-3 rounded-2xl border border-border/70 bg-card p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Package className="h-5 w-5" /></span>
+          <div className="min-w-0">
+            <h2 className="text-sm font-semibold text-foreground">{translateUi("Explorer les références")}</h2>
+            <p className="text-xs text-muted-foreground">
+              {isLoading ? translateUi("Chargement du catalogue…") : `${sortedProducts.length} ${translateUi("produits disponibles selon vos critères")}`}
             </p>
-            <div className="flex items-center gap-3 mt-1.5">
-              <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-success" />{" "}
-                {translateUi("Risque faible")}
-              </span>
-              <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-success" />{" "}
-                {translateUi("Demande élevée")}
-              </span>
-            </div>
           </div>
         </div>
-      </SectionCard>
-
-      {/* Top bar - stacked on mobile */}
-      <div className="space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-4 mb-4 sm:mb-6">
-        {/* Search - full width on mobile */}
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder={translateUi("Rechercher un produit...")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-9 text-sm"
-          />
-        </div>
-
-        <div className="flex items-center justify-between sm:justify-end gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2 sm:justify-end">
           <Button
-            variant={showFavoritesOnly ? "default" : "outline"}
+            type="button"
+            variant={showFavoritesOnly ? "secondary" : "outline"}
             size="sm"
-            className="gap-1 h-8 text-xs"
+            className="gap-1.5"
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            aria-pressed={showFavoritesOnly}
           >
-            <Heart
-              className={`w-3.5 h-3.5 ${showFavoritesOnly ? "fill-current" : ""}`}
-            />
-            {translateUi("Favoris")}
-            {favorites.length > 0 && (
-              <span className="ml-0.5 w-4 h-4 rounded-full bg-primary/20 text-[10px] flex items-center justify-center font-semibold">
-                {favorites.length}
-              </span>
-            )}
+            <Heart className={`h-4 w-4 ${showFavoritesOnly ? "fill-current" : ""}`} />
+            {translateUi("Mes favoris")}
           </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1 h-8 text-xs md:hidden"
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5" />
-            {translateUi("Filtres")}
-            {activeFilterCount > 0 && (
-              <span className="ml-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center">
-                {activeFilterCount}
-              </span>
-            )}
-          </Button>
-
-          <span className="text-xs text-muted-foreground">
-            {sortedProducts.length} {translateUi("résultats")}
-          </span>
-
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-28 sm:w-36 h-8 text-xs">
+            <SelectTrigger className="h-9 w-[145px] max-w-full text-xs sm:w-44" aria-label={translateUi("Trier les produits")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="popularity">
-                {translateUi("Popularité")}
-              </SelectItem>
-              <SelectItem value="price-asc">{translateUi("Prix ↑")}</SelectItem>
-              <SelectItem value="price-desc">
-                {translateUi("Prix ↓")}
-              </SelectItem>
-              <SelectItem value="margin">{translateUi("Marge max")}</SelectItem>
+              <SelectItem value="popularity">{translateUi("Sélection BIB")}</SelectItem>
+              <SelectItem value="price-asc">{translateUi("Prix croissant")}</SelectItem>
+              <SelectItem value="price-desc">{translateUi("Prix décroissant")}</SelectItem>
+              <SelectItem value="margin">{translateUi("Marge maximale")}</SelectItem>
             </SelectContent>
           </Select>
-
-          <div className="flex border rounded-lg overflow-hidden">
-            <Button
-              variant={viewMode === "grid" ? "default" : "ghost"}
-              size="sm"
-              className="rounded-none h-8 w-8 p-0"
-              onClick={() => setViewMode("grid")}
-            >
-              <Grid3X3 className="w-3.5 h-3.5" />
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "default" : "ghost"}
-              size="sm"
-              className="rounded-none h-8 w-8 p-0"
-              onClick={() => setViewMode("list")}
-            >
-              <List className="w-3.5 h-3.5" />
-            </Button>
+          <div className="inline-flex overflow-hidden rounded-lg border border-border">
+            <Button type="button" variant={viewMode === "grid" ? "secondary" : "ghost"} size="icon" className="h-9 w-9 rounded-none" aria-label={translateUi("Vue grille")} aria-pressed={viewMode === "grid"} onClick={() => setViewMode("grid")}><Grid3X3 className="h-4 w-4" /></Button>
+            <Button type="button" variant={viewMode === "list" ? "secondary" : "ghost"} size="icon" className="h-9 w-9 rounded-none" aria-label={translateUi("Vue liste")} aria-pressed={viewMode === "list"} onClick={() => setViewMode("list")}><List className="h-4 w-4" /></Button>
           </div>
         </div>
       </div>
@@ -548,9 +457,9 @@ export default function ProduitsFournisseurs() {
         </Card>
       )}
 
-      <div className="flex gap-6">
+      <div className="flex min-w-0 flex-col gap-5 md:flex-row lg:gap-7">
         {/* Desktop Sidebar Filters */}
-        <aside className="w-52 shrink-0 space-y-5 hidden md:block">
+        <aside className="hidden w-52 shrink-0 space-y-5 rounded-2xl border border-border/70 bg-card p-4 md:block lg:w-56">
           <div>
             <h4 className="text-xs font-semibold text-foreground mb-2.5">
               {translateUi("Catégories")}
@@ -617,7 +526,7 @@ export default function ProduitsFournisseurs() {
         {/* Products */}
         <div className="flex-1 min-w-0">
           {isLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <Card key={i} className="overflow-hidden">
                   <CardContent className="p-0">
@@ -631,7 +540,7 @@ export default function ProduitsFournisseurs() {
               ))}
             </div>
           ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {sortedProducts.map((product) => (
                 <ProductGridCard
                   key={product.id}
