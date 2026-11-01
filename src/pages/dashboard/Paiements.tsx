@@ -52,14 +52,6 @@ const fmt = (n: number) =>
     maximumFractionDigits: 2,
   });
 
-function nextPayoutDate(): Date {
-  // Versements tous les 15 jours: 1er et 15 du mois.
-  const now = new Date();
-  const day = now.getDate();
-  const next = new Date(now.getFullYear(), now.getMonth(), day < 15 ? 15 : 1);
-  if (day >= 15) next.setMonth(next.getMonth() + 1);
-  return next;
-}
 
 export default function Paiements() {
   useLanguage();
@@ -125,7 +117,7 @@ export default function Paiements() {
   const totalPending = pending.reduce((s, p: any) => s + Number(p.amount), 0);
   const isLoading = paymentsLoading || revenueLoading;
 
-  const next = nextPayoutDate();
+  const nextConfirmedPayout = pending.filter((p: any) => p.payout_date).map((p: any) => String(p.payout_date)).sort()[0] ?? null;
   const topBoutique = orderRevenue.byBoutique[0];
   const maxRev = Math.max(
     1,
@@ -222,12 +214,9 @@ export default function Paiements() {
             <KpiTile
               tone="gold"
               label={translateUi("Prochain virement")}
-              value={next.toLocaleDateString(getUiLocale(), {
-                day: "2-digit",
-                month: "short",
-              })}
+              value={nextConfirmedPayout ? new Date(`${nextConfirmedPayout}T12:00:00`).toLocaleDateString(getUiLocale(), { day: "2-digit", month: "short" }) : "—"}
               icon={<CalendarClock className="w-5 h-5" />}
-              hint={translateUi("Cycle de 15 jours")}
+              hint={nextConfirmedPayout ? translateUi("Date planifiée enregistrée") : translateUi("Aucune date confirmée")}
             />
             <KpiTile
               label={translateUi("Déjà versé")}
@@ -248,7 +237,7 @@ export default function Paiements() {
               {translateUi("Frais logistiques inclus dans vos prix.")}
             </span>{" "}
             {translateUi(
-              "Aucun ajustement à prévoir — vos versements sont déclenchés tous les 15 jours et apparaissent ci-dessous dès leur émission.",
+              "Les dates de versement ne sont affichées que lorsqu’un virement est réellement planifié. Les préférences de chaque boutique ne constituent pas un calendrier de paiement confirmé.",
             )}
           </p>
         </div>
