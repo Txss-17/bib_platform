@@ -27,7 +27,7 @@ describe("BIB Starter / Growth / Pro entitlements", () => {
     expect(read("supabase/migrations/20261101154000_advanced_scene_analytics_tiers.sql")).toContain("Growth and Pro owners read scene analytics");
   });
 
-  it("requires paid Pro shop add-on before authorizing 2 or 3 shops", () => {
+  it("requires paid Growth or Pro shop add-on before authorizing 2 or 3 shops", () => {
     const sql = read("supabase/migrations/20261101153000_pro_boutique_addon_quota.sql");
     const plans = read("supabase/migrations/20261101152500_growth_pro_entitlements.sql");
     expect(plans).toContain("19,99");
@@ -40,9 +40,10 @@ describe("BIB Starter / Growth / Pro entitlements", () => {
     expect(client).toContain("Math.min(3");
     const checkout = read("supabase/functions/create-checkout/index.ts");
     expect(checkout).toContain("expectedCents");
-    expect(checkout).toContain("ACTIVE_PRO_PLAN_REQUIRED");
+    expect(checkout).toContain("ACTIVE_GROWTH_OR_PRO_PLAN_REQUIRED");
     const manager = read("supabase/functions/manage-subscription/index.ts");
     expect(manager).toContain("BOUTIQUE_EXTRA_RE");
+    expect(manager).toContain("Growth or Pro plan required");
   });
 
   it("reserves custom public-origin settings for Pro and protects them in SQL", () => {
