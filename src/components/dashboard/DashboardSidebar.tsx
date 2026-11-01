@@ -115,6 +115,14 @@ const boutiqueNavItems = [
   },
   {
     get title() {
+      return translateUi("Paramètres des boutiques");
+    },
+    url: "/dashboard/boutiques/configuration",
+    icon: Settings2,
+    module: "boutiques",
+  },
+  {
+    get title() {
       return translateUi("Produits de mes boutiques");
     },
     url: "/dashboard/produits",
