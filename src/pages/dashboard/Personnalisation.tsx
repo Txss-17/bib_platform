@@ -3,8 +3,6 @@ import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
-  CheckCircle2,
-  SlidersHorizontal,
   ArrowLeft,
   Package,
   Search,
