@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
 
     if (typeof boutique_id !== "string" || typeof type !== "string" ||
         typeof recipient_email !== "string" ||
-        !/^[^\s@<>\r\n]+@[^\s@<>\r\n]+\\.[^\s@<>\r\n]+$/.test(recipient_email) ||
+        !/^[^\s@<>\r\n]+@[^\s@<>\r\n]+\.[^\s@<>\r\n]+$/.test(recipient_email) ||
         typeof variables !== "object" || variables === null || Array.isArray(variables) ||
         Object.keys(variables).length > 25 ||
         Object.values(variables).some(v => typeof v !== "string" || v.length > 2000)) {
