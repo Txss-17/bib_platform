@@ -19,7 +19,7 @@ const contributions=[
 
 function Join({secondary=false}:{secondary?:boolean}) {
  return <Button asChild variant={secondary ? "outline" : "premium"} size="lg"
-   className={secondary ? "rounded-full border-primary/25 bg-background text-foreground hover:bg-muted" : "rounded-full"}>
+   className={secondary ? "rounded-full border-bib-ivory/35 bg-transparent text-bib-ivory hover:bg-background hover:text-foreground" : "rounded-full"}>
    <a href={FORM_URL} target="_blank" rel="noopener noreferrer">Rejoindre BIB Talent <ArrowUpRight size={18} className="ml-2"/></a>
  </Button>;
 }
@@ -44,7 +44,7 @@ export default function BibTalent(){
            <div aria-hidden="true" className="absolute -inset-5 rotate-3 rounded-[2.5rem] bg-bib-gold/10"/>
            <div className="relative rounded-[2rem] border border-bib-ivory/15 bg-primary/75 p-6 shadow-xl sm:p-9">
              <div className="flex items-center justify-between border-b border-bib-ivory/20 pb-6"><span className="text-sm font-semibold tracking-[0.16em]">BRAND-IN-A-BOX</span><Compass size={27} className="text-bib-gold"/></div>
-             <div className="py-8"><span className="text-xs font-bold uppercase tracking-widest text-accent-ink">La vision du projet</span><p className="mt-3 font-display text-3xl font-semibold leading-tight sm:text-4xl">Un écosystème.<br/><span className="text-bib-gold">Quatre acteurs.</span><br/>Des expériences reliées.</p></div>
+             <div className="py-8"><span className="text-xs font-bold uppercase tracking-widest text-bib-gold">La vision du projet</span><p className="mt-3 font-display text-3xl font-semibold leading-tight sm:text-4xl">Un écosystème.<br/><span className="text-bib-gold">Quatre acteurs.</span><br/>Des expériences reliées.</p></div>
              <div className="grid grid-cols-2 gap-3 border-t border-bib-ivory/20 pt-6">{["Marchands","Clients","Fournisseurs","Logistique"].map((x,i)=><div key={x} className="rounded-xl border border-bib-ivory/10 bg-background/10 p-3 text-center text-xs font-semibold text-bib-ivory"><span className="mr-2 text-bib-gold">0{i+1}</span>{x}</div>)}</div>
            </div>
          </div>
