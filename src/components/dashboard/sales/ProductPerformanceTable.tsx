@@ -14,7 +14,7 @@ export function ProductPerformanceTable({ products }: { products: RankedProduct[
     <div className="min-w-0 space-y-3">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{translateUi("Classement des ventes payées")}</span>
-        <span>{translateUi("Six derniers mois · commandes hors test")}</span>
+        <span>{translateUi("Six derniers mois")}</span>
       </div>
       <div className="overflow-x-auto rounded-xl border border-border">
         <table className="w-full min-w-[650px] text-left text-sm">
