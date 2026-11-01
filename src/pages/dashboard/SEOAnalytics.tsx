@@ -607,19 +607,17 @@ export default function SEOAnalytics() {
                   {translateUi("Score SEO global")}
                 </span>
                 <span
-                  className={`text-xl font-display font-bold ${scoreColor(avgScore)}`}
+                  className={`text-xl font-display font-bold ${scoreColor(avgScore ?? 0)}`}
                 >
-                  {avgScore}/100
+                  {avgScore === null ? "—" : `${avgScore}/100`}
                 </span>
               </div>
-              <Progress value={avgScore} className="h-2" />
+              <Progress value={avgScore ?? 0} className="h-2" />
             </div>
             {recommendations.length === 0 ? (
               <EmptyState
-                title={translateUi("Tout est optimal")}
-                description={translateUi(
-                  "Aucune recommandation à appliquer pour l'instant.",
-                )}
+                title={translateUi(avgScore === null ? "Aucune donnée SEO" : "Aucune action prioritaire")}
+                description={translateUi(avgScore === null ? "Ajoutez des boutiques et produits pour établir un contrôle SEO." : "Aucune correction prioritaire n’a été identifiée selon la grille interne.")}
               />
             ) : (
               <div className="space-y-2">
