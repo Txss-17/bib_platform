@@ -153,6 +153,17 @@ describe("Merchant operational workspaces", () => {
     expect(renderer).toContain("if (!rows.length) return null");
   });
 
+  it("shows compact logo-led merchant boutiques without oversized diagnostics", () => {
+    const shops = read("src/pages/dashboard/Boutiques.tsx");
+    expect(shops).toContain("boutique.logo_url");
+    expect(shops).toContain("grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4");
+    expect(shops).toContain("Produits actifs");
+    expect(shops).toContain("Commandes à traiter");
+    expect(shops).toContain("Paramètres");
+    expect(shops).not.toContain("<BoutiqueHealth");
+    expect(shops).not.toContain("<HealthRing");
+  });
+
   it("keeps the supplier catalog focused on discovery rather than favorite KPIs", () => {
     const catalog = read("src/pages/dashboard/ProduitsFournisseurs.tsx");
     expect(catalog).toContain("Trouvez les produits de votre prochaine collection");
