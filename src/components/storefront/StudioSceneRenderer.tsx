@@ -187,6 +187,13 @@ function SceneStyleScope({
     classes.push(`studio-frame-${layout.frame}`);
   }
 
+  if (layout?.maxWidth && layout.maxWidth !== "normal") {
+    classes.push(`studio-width-${layout.maxWidth}`);
+  }
+  if (layout?.align && layout.align !== "center") {
+    classes.push(`studio-align-${layout.align}`);
+  }
+
   if (layout?.padding === "compact") {
     classes.push("studio-pad-compact");
   }
