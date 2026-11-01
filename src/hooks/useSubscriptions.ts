@@ -142,16 +142,17 @@ export function useInvalidateSubscriptions() {
 /** Catégorie d'un abonnement marchand : plan ou assurance. */
 export function subscriptionCategory(
   subscription: Subscription,
-): "plan" | "insurance" | null {
+): "plan" | "insurance" | "boutique_extra" | null {
   if (subscription.kind === "bib_subscriber") return null;
   if (subscription.price_id.startsWith("insurance_")) return "insurance";
+  if (/^boutique_extra_(one|two)_monthly$/.test(subscription.price_id)) return "boutique_extra";
   if (/(starter|growth|pro)_(monthly|yearly)$/.test(subscription.price_id)) return "plan";
   return null;
 }
 
 export type ManageSubscriptionInput =
   | { action: "change"; priceId: string }
-  | { action: "cancel"; category: "plan" | "insurance" };
+  | { action: "cancel"; category: "plan" | "insurance" | "boutique_extra" };
 
 /**
  * Changement de plan immédiat au prorata, ou résiliation immédiate.
