@@ -25,6 +25,8 @@ import {
   Sun,
   Moon,
   Monitor,
+  Search,
+  ExternalLink as ExternalLinkIcon,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { BusinessDocuments } from "@/components/dashboard/BusinessDocuments";
@@ -45,7 +47,8 @@ type SettingsTab =
   | "notifications"
   | "securite"
   | "paiement"
-  | "apparence";
+  | "apparence"
+  | "seo";
 
 export default function Parametres() {
   const { user } = useAuth();
@@ -56,7 +59,7 @@ export default function Parametres() {
   const [signingOutAll, setSigningOutAll] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const allowedTabs: SettingsTab[] = ["notifications", "securite", "documents", "abonnement", "paiement", "apparence"];
+  const allowedTabs: SettingsTab[] = ["notifications", "securite", "documents", "abonnement", "paiement", "apparence", "seo"];
   const selectedTab = searchParams.get("tab");
   const activeTab: SettingsTab = allowedTabs.includes(selectedTab as SettingsTab)
     ? selectedTab as SettingsTab
@@ -153,7 +156,7 @@ export default function Parametres() {
           onValueChange={(value) => setSearchParams({ tab: value }, { replace: true })}
           className="w-full"
         >
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-muted/50 p-1 sm:grid-cols-3 lg:grid-cols-6">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-muted/50 p-1 sm:grid-cols-3 lg:grid-cols-7">
             <TabsTrigger
               value="notifications"
               className="gap-1.5 px-2 py-2 text-xs"
@@ -195,7 +198,68 @@ export default function Parametres() {
               <Monitor className="h-3.5 w-3.5" />
               {translateUi("Apparence")}
             </TabsTrigger>
+            <TabsTrigger value="seo" className="gap-1.5 px-2 py-2 text-xs">
+              <Search className="h-3.5 w-3.5" />
+              SEO
+            </TabsTrigger>
           </TabsList>
+
+          {/* SEO - restored navigation to boutique-scoped controls */}
+          <TabsContent value="seo" className="mt-5 space-y-4">
+            <SectionCard
+              title={english ? "Store SEO settings" : "Référencement des boutiques"}
+              description={english
+                ? "SEO titles, descriptions, share images, languages and custom domains are managed per store."
+                : "Les titres, descriptions, images de partage, langues et domaines personnalisés se configurent pour chaque boutique."}
+              icon={<Search className="h-4 w-4" />}
+            >
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" asChild>
+                  <Link to="/dashboard/boutiques/configuration">
+                    <Store className="mr-2 h-4 w-4" />
+                    {english ? "Choose a store" : "Choisir une boutique"}
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link to="/dashboard/seo-analytics">
+                    <Search className="mr-2 h-4 w-4" />
+                    {english ? "SEO diagnostics" : "Diagnostic SEO"}
+                  </Link>
+                </Button>
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                {english
+                  ? "Basic SEO is in Store settings → General. Languages and custom domain configuration remain in the store's Brand Studio."
+                  : "Le SEO général se trouve dans Paramètres de la boutique → Général. Les langues et le domaine personnalisé se trouvent dans le Brand Studio de la boutique."}
+              </p>
+            </SectionCard>
+            <SectionCard
+              title="Google Search Console"
+              description={english
+                ? "Verify your published pages, submit a sitemap and request URL indexing."
+                : "Vérifiez vos pages publiées, soumettez le sitemap et demandez leur indexation."}
+              icon={<Search className="h-4 w-4" />}
+            >
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" asChild>
+                  <Link to="/dashboard/aide">
+                    {english ? "Setup guide and URL inspection" : "Guide de connexion et inspection d’URL"}
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer">
+                    <ExternalLinkIcon className="mr-2 h-4 w-4" />
+                    {english ? "Open Search Console" : "Ouvrir Search Console"}
+                  </a>
+                </Button>
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                {english
+                  ? "Google property verification is separate from the SEO settings of each store."
+                  : "La vérification de propriété Google est distincte des réglages SEO de chaque boutique."}
+              </p>
+            </SectionCard>
+          </TabsContent>
 
           {/* Apparence */}
           <TabsContent value="apparence" className="mt-5 space-y-4">
