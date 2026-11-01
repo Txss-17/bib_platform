@@ -29,8 +29,15 @@ describe("BIB Platform public prelaunch boundary", () => {
     for (const href of ["/cgv", "/cgu", "/mentions-legales", "/confidentialite", "/cookies"]) {
       expect(pack).toContain('href: "' + href + '"');
     }
-    for (const route of ["/dashboard", "/store", "/checkout", "/signup"]) {
+    for (const route of ["/dashboard", "/store", "/checkout"]) {
       expect(PRELAUNCH_PUBLIC_ROUTES).not.toContain(route);
+    }
+  });
+
+  it("exposes Coming Soon signup routes without enabling signups", () => {
+    for (const path of ["/signup", "/store/signup", "/register"]) {
+      expect(PRELAUNCH_PUBLIC_ROUTES).toContain(path);
+      expect(router).toContain('path="' + path + '" element={<SignupComingSoon />} />');
     }
   });
 
