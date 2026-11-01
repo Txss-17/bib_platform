@@ -61,4 +61,45 @@ describe("Merchant operational workspaces", () => {
     expect(marketing).toContain('min-w-[350px]');
     expect(marketing).toContain('sm:flex-row sm:items-end');
   });
+  it("persists per-store alert settings with owner-only access and safe email templates", () => {
+    const sql = read("supabase/migrations/20261101183000_boutique_alerts_persistence.sql");
+    expect(sql).toContain("CREATE TABLE IF NOT EXISTS public.boutique_alert_settings");
+    expect(sql).toContain("CREATE TABLE IF NOT EXISTS public.boutique_alert_log");
+    expect(sql).toContain("Merchant manages own alert settings");
+    expect(sql).toContain("public.bib_has_portal('platform')");
+    const server = read("supabase/functions/send-boutique-email/index.ts");
+    expect(server).toContain("alert_recipient_not_authorized");
+    expect(server).toContain('type === "alert"');
+    expect(server).toContain("invalid_alert_variables");
+    const checker = read("src/lib/boutiqueAlertChecker.ts");
+    expect(checker).toContain("if (!s.enabled) return");
+    expect(checker).not.toContain("subject_override:");
+    expect(checker).not.toContain("body_override:");
+    const panel = read("src/components/dashboard/BoutiqueAlertsSettings.tsx");
+    expect(panel).toContain("Journal des alertes");
+    expect(panel).toContain("useResolveAlert()");
+    expect(panel).toContain("await upsert.mutateAsync(s)");
+  });
+
+  it("separates dedicated team settings, allows EU payout location, and renders actionable sales rows", () => {
+    expect(read("src/components/dashboard/boutique/BoutiqueSettingsTab.tsx")).toContain("showTeam = false");
+    const config = read("src/pages/dashboard/BoutiqueConfiguration.tsx");
+    expect(config).toContain('searchParams.get("tab")');
+    expect(config).toContain("overflow-x-auto");
+    expect(config).toContain("boutiqueId=${boutique.id}");
+    const payout = read("src/components/dashboard/boutique/BoutiquePayoutSettings.tsx");
+    expect(payout).toContain("EU_PAYOUT_COUNTRIES");
+    expect(payout).toContain("country_code: draft.country_code");
+    const sales = read("src/pages/dashboard/Ventes.tsx");
+    expect(sales).toContain("ProductPerformanceTable");
+    expect(sales).toContain("Pays et villes indisponibles");
+    const table = read("src/components/dashboard/sales/ProductPerformanceTable.tsx");
+    expect(table).toContain("Dernière vente");
+    expect(table).toContain("stock");
+    const marketing = read("src/pages/dashboard/Marketing.tsx");
+    expect(marketing).toContain("max-h-[90dvh] overflow-y-auto");
+    const products = read("src/pages/dashboard/Produits.tsx");
+    expect(products).toContain('if (product.status !== "active") return false;');
+  });
+
 });
