@@ -4,22 +4,29 @@ import { isPublicInformationPath } from "@/lib/publicPrelaunch";
 
 const read = (path: string) => readFileSync(new URL("../../" + path, import.meta.url), "utf8");
 
-describe("Public registration remains closed", () => {
-  it("routes all known signup entry points to Coming Soon", () => {
+describe("Merchant registration remains closed while customers and partners can apply", () => {
+  it("routes only merchant signup entry points to Coming Soon", () => {
     const router = read("src/App.tsx");
-    for (const route of ["/signup", "/store/signup", "/register"]) {
+    for (const route of ["/signup", "/register"]) {
       expect(router).toContain(`path="${route}" element={<SignupComingSoon />} />`);
       expect(isPublicInformationPath(route)).toBe(true);
     }
     expect(router).not.toContain('element={<Signup />}');
-    expect(router).not.toContain('element={<StoreSignup />}');
+    expect(router).toContain('path="/store/signup" element={<StoreSignup />} />');
   });
 
-  it("blocks client signup while retaining sign-in for existing test merchants", () => {
+  it("blocks merchant signup, allows customer signup, and retains sign-in", () => {
     const auth = read("src/contexts/AuthContext.tsx");
-    expect(auth).toContain('error: new AuthError("Account registration is coming soon.", 403)');
-    expect(auth).not.toContain("supabase.auth.signUp(");
+    expect(auth).toContain('type !== "store"');
+    expect(auth).toContain('error: new AuthError("Merchant account registration is coming soon.", 403)');
+    expect(auth).toContain("supabase.auth.signUp(");
     expect(auth).toContain("supabase.auth.signInWithPassword(");
+  });
+
+  it("permits public partner qualification routes", () => {
+    for (const route of ["/suppliers/apply", "/fournisseurs/candidature", "/ops/apply", "/logistics/apply", "/suppliers/portal/token", "/ops/portal/token"]) {
+      expect(isPublicInformationPath(route)).toBe(true);
+    }
   });
 
   it("presents bilingual Coming Soon copy with login and home links", () => {
