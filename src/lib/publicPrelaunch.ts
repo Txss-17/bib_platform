@@ -18,6 +18,7 @@ export const PRELAUNCH_PUBLIC_ROUTES = [
  "/bib-talent",
  "/signup",
  "/store/signup",
+ "/store/login",
  "/register",
  "/pack-legal",
  "/legal",
@@ -52,7 +53,8 @@ export function isPublicInformationPath(pathname: string): boolean {
   const path = pathname.replace(/\/+$/, "") || "/";
   return new Set([
     "/", "/landing", "/vendre", "/tarifs", "/pricing",
-    "/signup", "/store/signup", "/register",
+    "/signup", "/store/signup", "/store/login", "/register",
+    "/store/account", "/store/favorites", "/store/orders",
     // Partner applications and their token-scoped onboarding/resume pages.
     "/suppliers/apply", "/fournisseurs/candidature",
     "/suppliers/onboarding", "/suppliers/reprendre",
