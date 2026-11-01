@@ -170,6 +170,41 @@ describe("Merchant operational workspaces", () => {
     expect(css).toContain(".studio-btn-pill a[href]");
   });
 
+  it("lets merchants compose pages, reorder navigation and place their own logo", () => {
+    const studio = read("src/components/dashboard/boutique/StudioEditor.tsx");
+    const panel = read("src/components/dashboard/boutique/StorefrontNavigationEditor.tsx");
+    const gallery = read("src/components/dashboard/boutique/StudioThemeGallery.tsx");
+    const header = read("src/components/storefront/StorefrontHeader.tsx");
+    const presets = read("src/lib/studioScenes.ts");
+    const generate = read("src/hooks/useBrandStudio.ts");
+    const publicPage = read("src/pages/BoutiquePublic.tsx");
+    const productPage = read("src/pages/ProductPublic.tsx");
+    const legacy = read("src/components/storefront/StorefrontPreview.tsx");
+    expect(studio).toContain('<TabsTrigger value="navigation"');
+    expect(studio).toContain('<TabsTrigger value="themes"');
+    expect(studio).toContain("<StorefrontNavigationEditor");
+    expect(studio).toContain("<StudioThemeGallery");
+    expect(studio).toContain("handleReorderScenes");
+    expect(panel).toContain('navigation: draft');
+    expect(panel).toContain("pageOrder: ids");
+    expect(panel).toContain('logoPosition');
+    expect(panel).toContain("showHomeLink");
+    expect(header).toContain('const centeredBrand = logoPosition === "center"');
+    expect(header).toContain('layout === "minimal" ? "hidden"');
+    expect(header).toContain("const orderedPages");
+    expect(publicPage).toContain("navigation={themeSettings?.navigation}");
+    expect(productPage).toContain("navigation={themeSettings?.navigation}");
+    expect(legacy).toContain("navigation={themeSettings?.navigation}");
+    expect(gallery).toContain('.is("page_id", null)');
+    expect(gallery).not.toContain('.delete()');
+    expect(gallery).toContain('content: definition.defaultContent');
+    expect(presets).toContain('key: "editorial-luxe"');
+    expect(presets).toContain('key: "boutique-directe"');
+    expect(generate).toContain("layoutByBundle");
+    expect(read("src/components/dashboard/boutique/SceneInspectorPro.tsx")).toContain('setLayout("maxWidth"');
+    expect(read("src/components/storefront/studioScene.css")).toContain(".studio-width-narrow");
+  });
+
   it("shows compact logo-led merchant boutiques without oversized diagnostics", () => {
     const shops = read("src/pages/dashboard/Boutiques.tsx");
     expect(shops).toContain("boutique.logo_url");
