@@ -170,7 +170,7 @@ export default function APropos() {
                   size="lg"
                   className="bg-transparent border-bib-ivory/30 text-bib-ivory hover:bg-background hover:text-foreground"
                 >
-                  <Link to="/carrieres">
+                  <Link to="/bib-talent">
                     {translateUi("Découvrir BIB Talent")}
                   </Link>
                 </Button>
