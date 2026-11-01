@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, Search, Menu } from "lucide-react";
+import { Bell, Search, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,18 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const english = lang === "en";
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try { return window.localStorage.getItem("bib.dashboard.sidebar.collapsed") === "1"; }
+    catch { return false; }
+  });
+  const toggleDesktopSidebar = () => {
+    setSidebarCollapsed((previous) => {
+      const next = !previous;
+      try { window.localStorage.setItem("bib.dashboard.sidebar.collapsed", next ? "1" : "0"); }
+      catch { /* browser storage may be disabled */ }
+      return next;
+    });
+  };
   const { theme: themePreference, resolvedTheme } = useTheme();
 
   return (
@@ -35,11 +47,32 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       data-dashboard-theme={resolvedTheme}
       data-dashboard-theme-preference={themePreference}
     >
-      <DashboardSidebar open={sidebarOpen} onOpenChange={setSidebarOpen} />
+      <DashboardSidebar open={sidebarOpen} onOpenChange={setSidebarOpen} collapsed={!isMobile && sidebarCollapsed} />
 
-      <main className={`${isMobile ? "" : "ml-64"} min-w-0 p-3 sm:p-4 md:p-8`}>
+      <main className={`${isMobile || sidebarCollapsed ? "" : "ml-64"} min-w-0 p-3 sm:p-4 md:p-8 transition-[margin] duration-200`}>
         <header className="mb-4 flex items-center justify-between gap-2 sm:mb-6 sm:gap-4">
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+            {!isMobile && (
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="shrink-0"
+                onClick={toggleDesktopSidebar}
+                aria-expanded={!sidebarCollapsed}
+                aria-controls="bib-dashboard-sidebar"
+                aria-label={sidebarCollapsed
+                  ? (english ? "Expand sidebar" : "Afficher le menu latéral")
+                  : (english ? "Collapse sidebar" : "Réduire le menu latéral")}
+                title={sidebarCollapsed
+                  ? (english ? "Show navigation" : "Afficher la navigation")
+                  : (english ? "Hide navigation" : "Masquer la navigation")}
+              >
+                {sidebarCollapsed
+                  ? <PanelLeftOpen className="h-5 w-5" />
+                  : <PanelLeftClose className="h-5 w-5" />}
+              </Button>
+            )}
             {isMobile && (
               <Button
                 variant="outline"
