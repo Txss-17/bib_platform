@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import {
   LifeBuoy,
+  Bot,
   Send,
   Sparkles,
   Ticket,
@@ -106,14 +107,14 @@ export function FloatingSupportButton({
           setPendingFiles([]);
         }
         toast.success(translateUi("Ticket créé"), {
-          description: translateUi("« {v0} » — réponse sous 24 h ouvrées.", {
+          description: translateUi("« {v0} » — votre demande est transmise à l’équipe support.", {
             v0: data.ticket.subject,
           }),
           icon: <Ticket className="w-4 h-4" />,
         });
       }
     } catch (e: any) {
-      const msg = e?.message ?? "Erreur réseau";
+      const msg = "Veuillez réessayer ou utiliser la rubrique Mes tickets.";
       setMessages((m) => [
         ...m,
         {
@@ -133,33 +134,38 @@ export function FloatingSupportButton({
         <Button
           aria-label={translateUi("Ouvrir l'assistant support")}
           className={cn(
-            "fixed bottom-5 right-5 z-50 h-14 w-14 rounded-full shadow-lg",
+            "fixed bottom-4 right-4 z-50 min-h-14 max-w-[calc(100vw-2rem)] rounded-full px-4 py-3 shadow-xl ring-2 ring-secondary/40 sm:bottom-6 sm:right-6",
             "bg-primary hover:bg-primary/90 text-primary-foreground",
-            "flex items-center justify-center",
+            "flex items-center justify-center gap-2.5",
             className,
           )}
-          size="icon"
         >
-          <LifeBuoy className="w-6 h-6" />
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-foreground/15">
+            <Bot className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <span className="flex flex-col items-start leading-tight">
+            <span className="text-sm font-bold">{translateUi("Assistant BIB")}</span>
+            <span className="text-[11px] opacity-90">{translateUi("Besoin d’aide ?")}</span>
+          </span>
         </Button>
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-md flex flex-col p-0"
+        className="flex h-full w-full min-w-0 flex-col p-0 sm:max-w-md"
       >
-        <SheetHeader className="border-b p-4">
+        <SheetHeader className="border-b bg-muted/25 p-4 pr-12">
           <SheetTitle className="flex items-center gap-2 text-base">
-            <Sparkles className="w-4 h-4 text-secondary" />
-            {translateUi("Assistant Support")}
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground"><Bot className="h-5 w-5" /></span>
+            {translateUi("Assistant BIB · Support")}
           </SheetTitle>
           <p className="text-xs text-muted-foreground">
             {translateUi(
-              "Réponses instantanées · ticket créé automatiquement si besoin",
+              "Conseils sur BIB · possibilité de contacter le support humain",
             )}
           </p>
         </SheetHeader>
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+        <div ref={scrollRef} className="min-h-0 min-w-0 flex-1 overflow-y-auto p-4 space-y-3">
           {messages.map((m, i) => (
             <div
               key={i}
@@ -181,7 +187,7 @@ export function FloatingSupportButton({
           )}
         </div>
 
-        <div className="border-t p-3 flex items-end gap-2">
+        <div className="min-w-0 border-t p-3 flex items-end gap-2">
           <input
             ref={fileInputRef}
             type="file"
