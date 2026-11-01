@@ -34,11 +34,11 @@ import {
   PlayCircle,
 } from "lucide-react";
 
-export function BoutiqueAlertsSettings() {
+export function BoutiqueAlertsSettings({ boutiqueId: fixedBoutiqueId }: { boutiqueId?: string } = {}) {
   useLanguage();
   const { data: boutiques = [] } = useBoutiques();
   const [boutiqueId, setBoutiqueId] = useState("");
-  const activeId = boutiqueId || boutiques[0]?.id || "";
+  const activeId = fixedBoutiqueId || boutiqueId || boutiques[0]?.id || "";
   const { data: existing } = useAlertSettings(activeId);
   const upsert = useUpsertAlertSettings();
   const [s, setS] = useState<AlertSettings | null>(null);
@@ -98,7 +98,7 @@ export function BoutiqueAlertsSettings() {
 
   return (
     <div className="space-y-4">
-      {boutiques.length > 1 && (
+      {!fixedBoutiqueId && boutiques.length > 1 && (
         <div className="space-y-1.5">
           <Label className="text-xs">Boutique</Label>
           <Select value={activeId} onValueChange={setBoutiqueId}>
