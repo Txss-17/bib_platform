@@ -138,14 +138,6 @@ const Footer = () => {
                   </Link>
                 </li>
 
-                <li>
-                  <Link
-                    to="/carrieres"
-                    className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
-                  >
-                    {translateUi("Carrières")}
-                  </Link>
-                </li>
               </ul>
             </div>
 
@@ -201,50 +193,6 @@ const Footer = () => {
                   </Link>
                 </li>
 
-                <li>
-                  <Link
-                    to="/mentions-legales"
-                    className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
-                  >
-                    {translateUi("Mentions légales")}
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    to="/confidentialite"
-                    className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
-                  >
-                    {translateUi("Confidentialité")}
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    to="/cgv"
-                    className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
-                  >
-                    CGV
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    to="/cgu"
-                    className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
-                  >
-                    CGU
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    to="/cookies"
-                    className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground"
-                  >
-                    Cookies
-                  </Link>
-                </li>
               </ul>
             </div>
           </div>
