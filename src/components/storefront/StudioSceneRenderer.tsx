@@ -170,7 +170,10 @@ function SceneStyleScope({
   const btn = ov?.button;
   const anim = ov?.animation;
 
-  const hasBgMedia = !!(bg?.imageUrl || bg?.videoUrl);
+  // The cinema hero owns its backdrop. Rendering a second layer behind its
+  // opaque section makes Pro image/video controls appear to do nothing.
+  const heroCinema = scene.scene_type === "hero-cinema";
+  const hasBgMedia = !heroCinema && !!(bg?.imageUrl || bg?.videoUrl);
 
   const classes: string[] = ["studio-scope"];
 
@@ -339,7 +342,7 @@ function SceneStyleScope({
 
   return (
     <div ref={ref} className={classes.join(" ")} style={style}>
-      {bg?.imageUrl && (
+      {!heroCinema && bg?.imageUrl && (
         <div
           className="studio-bg-layer"
           style={{
@@ -348,7 +351,7 @@ function SceneStyleScope({
         />
       )}
 
-      {bg?.videoUrl && (
+      {!heroCinema && bg?.videoUrl && (
         <video
           className="studio-bg-video"
           src={bg.videoUrl}
@@ -483,7 +486,7 @@ function SceneSwitch({
 
   switch (scene.scene_type) {
     case "hero-cinema":
-      return <HeroCinemaScene content={content} displayFont={displayFont} />;
+      return <HeroCinemaScene content={content} displayFont={displayFont} proBackground={scene.style_overrides?.background} />;
 
     case "story-scrolly":
       return <StoryScrollyScene content={content} displayFont={displayFont} />;
@@ -660,16 +663,23 @@ function ProductLink({
 function HeroCinemaScene({
   content,
   displayFont,
+  proBackground,
 }: {
   content: any;
   displayFont: string;
+  proBackground?: SceneRecord["style_overrides"] extends infer _T
+    ? { color?: string | null; imageUrl?: string | null; videoUrl?: string | null; overlayOpacity?: number }
+    : never;
 }) {
   useLanguage();
   const variant = content.variant || "fullscreen";
 
   const fullPage = !!content.fullPageBackground;
 
-  const overlayOpacity = content.overlayOpacity ?? 0.45;
+  const overlayOpacity = proBackground?.overlayOpacity ?? content.overlayOpacity ?? 0.45;
+  const heroVideo = proBackground?.videoUrl || (!proBackground?.imageUrl ? content.videoUrl : null);
+  const heroImage = proBackground?.imageUrl || content.backgroundImage;
+  const heroColor = proBackground?.color ? `hsl(${proBackground.color})` : null;
 
   const align =
     content.textAlign === "left"
@@ -720,28 +730,28 @@ function HeroCinemaScene({
 
   const media = (
     <>
-      {content.videoUrl ? (
+      {heroVideo ? (
         <video
-          src={content.videoUrl}
+          src={heroVideo}
           autoPlay
           muted
           loop
           playsInline
-          poster={content.backgroundImage || undefined}
+          poster={heroImage || undefined}
           className="absolute inset-0 w-full h-full object-cover"
         />
-      ) : content.backgroundImage ? (
+      ) : heroImage ? (
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `url(${content.backgroundImage})`,
+            backgroundImage: `url(${heroImage})`,
           }}
         />
       ) : (
         <div
           className="absolute inset-0"
           style={{
-            background: `linear-gradient(
+            background: heroColor || `linear-gradient(
                 135deg,
                 hsl(var(--studio-primary)),
                 hsl(var(--studio-accent))
@@ -761,7 +771,7 @@ function HeroCinemaScene({
 
   if (variant === "type-only") {
     return (
-      <section className="min-h-[70vh] flex items-center justify-center py-20">
+      <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden py-20" style={heroColor ? { background: heroColor } : undefined}>
         <div className="max-w-5xl px-6 text-center">
           {content.eyebrow && (
             <p className="text-xs uppercase tracking-[0.3em] opacity-50 mb-6">
