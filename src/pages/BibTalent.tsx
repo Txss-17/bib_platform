@@ -85,7 +85,7 @@ export default function BibTalent(){
              <a href="#fonctionnement" className="inline-flex items-center gap-2 font-semibold text-foreground hover:text-accent-ink">Et BIB Talent dans tout ça ? <ArrowRight size={16}/></a>
            </div>
          </div>
-         <div className="mt-9 flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center"><p className="max-w-xl text-sm leading-6 text-muted-foreground">Vous connaissez maintenant le projet. Vous souhaitez apporter vos idées à sa construction ?</p><Join secondary/></div>
+         <div className="mt-9 flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center"><p className="max-w-xl text-sm leading-6 text-muted-foreground">Vous connaissez maintenant le projet. Vous souhaitez apporter vos idées à sa construction ?</p><Join/></div>
        </div>
      </section>
      <section className="bg-muted/35 py-20 sm:py-24">
