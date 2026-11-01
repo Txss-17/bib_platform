@@ -524,10 +524,11 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
     }
     // Webhook replays must not reset a physically received or approved sample.
     const { data: sample, error: sampleReadError } = await getSupabase()
-      .from("sample_validations").select("status")
+      .from("sample_validations").select("status, visual_confirmed_at")
       .eq("product_id", purchase.product_id).eq("user_id", purchase.user_id).maybeSingle();
     if (sampleReadError) throw sampleReadError;
-    if (!sample || sample.status === "none") {
+    if (!sample || sample.status === "none" ||
+        (sample.status === "validated" && !sample.visual_confirmed_at)) {
       const { error: validationError } = await getSupabase().from("sample_validations").upsert({
         product_id: purchase.product_id, user_id: purchase.user_id,
         status: "ordered", ordered_at: new Date().toISOString(),
