@@ -34,6 +34,19 @@ describe("Merchant operational workspaces", () => {
     expect(read("src/pages/dashboard/Equipe.tsx")).toContain("canUseTeam");
   });
 
+  it("keeps store SEO tools in boutique settings instead of Help", () => {
+    const help = read("src/pages/dashboard/Aide.tsx");
+    const config = read("src/pages/dashboard/BoutiqueConfiguration.tsx");
+    const seo = read("src/components/dashboard/boutique/BoutiqueSeoTools.tsx");
+    expect(help).not.toContain("Connecter Google Search Console");
+    expect(help).not.toContain("SeoFixChecklist");
+    expect(config).toContain('<TabsTrigger value="seo"');
+    expect(config).toContain("<BoutiqueSeoTools boutiqueId={boutique.id} />");
+    expect(seo).toContain("allBoutiques.filter((boutique) => boutique.id === boutiqueId)");
+    expect(seo).toContain("allProducts.filter((product) => product.boutique_id === boutiqueId)");
+    expect(seo).toContain("SeoFixChecklist boutiques={boutiques} products={products}");
+  });
+
   it("does not fabricate sales or payout information", () => {
     const sales = read("src/pages/dashboard/Ventes.tsx");
     expect(sales).not.toContain("Lampe LED Design");
