@@ -1,9 +1,8 @@
-import { ArrowRight, ArrowUpRight, Compass, Lightbulb, PlayCircle, Sparkles, Users, Workflow, Shapes, Store, ShoppingBag, Truck, Package } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Compass, Lightbulb, Sparkles, Users, Workflow, Shapes, Store, ShoppingBag, Truck, Package } from "lucide-react";
 import { useSEO } from "@/hooks/useSEO";
 import PublicPageLayout from "@/components/layout/PublicPageLayout";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
-import bibProjectFilm from "@/assets/bib-project-talent.mp4";
 import platformDashboard from "@/assets/landing-dashboard.jpg";
 import clientExperience from "@/assets/landing-unboxing.jpg";
 import partnerEcosystem from "@/assets/landing-partener.jpg";
@@ -38,7 +37,7 @@ export default function BibTalent(){
            <h1 className="mt-7 max-w-3xl font-display text-5xl font-bold leading-[1.06] tracking-tight text-bib-ivory sm:text-6xl xl:text-7xl">BIB Talent : <span className="text-bib-gold">construire la suite ensemble.</span></h1>
            <p className="mt-7 max-w-2xl text-lg leading-8 text-bib-ivory/80"><strong className="font-semibold text-bib-ivory">Brand-in-a-Box (BIB)</strong> développe un écosystème de commerce qui met en relation <strong>marchands, clients, fournisseurs et partenaires logistiques</strong>. L'ambition : simplifier les expériences de vente, d'achat et de coordination au sein d'une même plateforme.</p>
            <p className="mt-4 max-w-2xl text-base leading-7 text-bib-ivory/70">BIB Talent, c'est la porte d'entrée pour participer à la réflexion, aux tests et à la création de cet écosystème.</p>
-           <div className="mt-9 flex flex-wrap items-center gap-5"><a href="#projet-bib" className="inline-flex w-fit items-center justify-center gap-3 rounded-full bg-bib-gold px-7 py-4 text-sm font-semibold text-primary transition hover:opacity-90">Comprendre BIB <ArrowRight size={18}/></a><a href="#decouvrir" className="inline-flex items-center gap-2 font-semibold text-bib-ivory hover:text-bib-gold"><PlayCircle size={20}/> Voir le film du projet</a></div>
+           <div className="mt-9 flex flex-wrap items-center gap-5"><a href="#projet-bib" className="inline-flex w-fit items-center justify-center gap-3 rounded-full bg-bib-gold px-7 py-4 text-sm font-semibold text-primary transition hover:opacity-90">Comprendre BIB <ArrowRight size={18}/></a><a href="#fonctionnement" className="inline-flex items-center gap-2 font-semibold text-bib-ivory hover:text-bib-gold">Comment participer ? <ArrowRight size={18}/></a></div>
          </div>
          <div className="relative">
            <div aria-hidden="true" className="absolute -inset-5 rotate-3 rounded-[2.5rem] bg-bib-gold/10"/>
@@ -71,22 +70,6 @@ export default function BibTalent(){
          <div><h3 className="text-lg font-semibold">Et la logistique ?</h3><p className="mt-2 text-sm leading-7 text-muted-foreground">BIB prévoit de coordonner la préparation et l'acheminement des commandes grâce à ses partenaires opérationnels. L'expédition directe marchand → client ne constitue pas le modèle logistique BIB.</p></div>
        </div>
        <p className="mt-6 text-sm leading-6 text-muted-foreground">Aperçus visuels issus des supports de présentation du projet. BIB est en développement : ces illustrations ne signifient pas que toutes les fonctionnalités sont déjà ouvertes au public.</p>
-     </section>
-     <section id="decouvrir" className="scroll-mt-24 bg-muted/35 px-5 py-20 sm:py-24">
-       <div className="mx-auto max-w-7xl">
-         <div className="mb-10 max-w-4xl"><span className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-ink">Film de présentation · Brand-in-a-Box</span><h2 className="mt-4 font-display text-4xl font-semibold tracking-tight sm:text-5xl">Découvrez le projet BIB en 30 secondes.</h2><p className="mt-5 text-lg leading-8 text-muted-foreground">Des boutiques aux clients, des fournisseurs à la logistique : une présentation concrète de l'écosystème que nous construisons et des domaines dans lesquels BIB Talent peut contribuer.</p></div>
-         <div className="overflow-hidden rounded-[1.75rem] border border-border bg-card shadow-xl">
-           <video controls playsInline preload="metadata" poster={platformDashboard} className="aspect-video w-full bg-brand-marine object-contain" aria-label="Film de présentation de l'écosystème Brand-in-a-Box : marchands, clients, fournisseurs, logistique et BIB Talent">
-             <source src={bibProjectFilm} type="video/mp4"/>
-             Votre navigateur ne permet pas la lecture de cette vidéo. Le résumé du projet est présenté juste au-dessus.
-           </video>
-           <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 text-sm text-muted-foreground sm:px-7">
-             <span>Film original BIB · Parcours et vision de la plateforme · Sous-titres intégrés</span>
-             <a href="#fonctionnement" className="inline-flex items-center gap-2 font-semibold text-foreground hover:text-accent-ink">Et BIB Talent dans tout ça ? <ArrowRight size={16}/></a>
-           </div>
-         </div>
-         <div className="mt-9 flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center"><p className="max-w-xl text-sm leading-6 text-muted-foreground">Vous connaissez maintenant le projet. Vous souhaitez apporter vos idées à sa construction ?</p><Join/></div>
-       </div>
      </section>
      <section className="bg-muted/35 py-20 sm:py-24">
        <div className="mx-auto max-w-7xl px-5 sm:px-8">
