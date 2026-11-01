@@ -17,11 +17,18 @@ describe("BIB public navigation", () => {
 
   it("keeps commerce and partner mutations outside the public informational allowlist", () => {
     for (const route of [
-      "/store", "/checkout", "/signup", "/suppliers/apply",
-      "/ops/apply", "/store/signup",
+      "/store", "/checkout", "/suppliers/apply",
+      "/ops/apply",
     ]) {
       expect(isPublicInformationPath(route)).toBe(false);
       expect(isMerchantTestPath(route)).toBe(false);
+    }
+  });
+
+  it("routes both signup paths to the bilingual Coming Soon screen", () => {
+    for (const path of ["/signup", "/store/signup", "/register"]) {
+      expect(isPublicInformationPath(path)).toBe(true);
+      expect(app).toContain('path="' + path + '" element={<SignupComingSoon />} />');
     }
   });
 
