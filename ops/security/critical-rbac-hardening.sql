@@ -13,6 +13,40 @@ DROP POLICY IF EXISTS "Anyone can create orders for published boutiques" ON publ
 -- a server-side verified ownership proof and a scoped server-side operation.
 DROP POLICY IF EXISTS "Customers update own orders link" ON public.orders;
 
+-- This SECURITY DEFINER RPC originally trusted an email supplied by the caller.
+-- A linked customer must own the profile AND the exact verified auth email.
+CREATE OR REPLACE FUNCTION public.claim_guest_orders(
+  _customer_profile_id uuid, _email text
+) RETURNS integer
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp AS $
+DECLARE
+  verified_email text;
+  claimed_count integer;
+BEGIN
+  SELECT lower(btrim(u.email)) INTO verified_email
+  FROM auth.users u
+  WHERE u.id = auth.uid() AND u.email_confirmed_at IS NOT NULL;
+  IF verified_email IS NULL OR
+     lower(btrim(coalesce(_email, ''))) IS DISTINCT FROM verified_email OR
+     NOT EXISTS (
+       SELECT 1 FROM public.customer_profiles cp
+       WHERE cp.id = _customer_profile_id
+         AND cp.user_id = auth.uid()
+         AND lower(btrim(cp.email)) = verified_email
+     ) THEN
+    RAISE EXCEPTION 'verified_customer_email_required' USING ERRCODE='42501';
+  END IF;
+  UPDATE public.orders
+  SET customer_profile_id = _customer_profile_id
+  WHERE lower(btrim(customer_email)) = verified_email
+    AND customer_profile_id IS NULL;
+  GET DIAGNOSTICS claimed_count = ROW_COUNT;
+  RETURN claimed_count;
+END
+$;
+REVOKE EXECUTE ON FUNCTION public.claim_guest_orders(uuid,text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.claim_guest_orders(uuid,text) TO authenticated;
+
 CREATE OR REPLACE FUNCTION public.bib_guard_order_financial_fields()
 RETURNS trigger LANGUAGE plpgsql SET search_path = public, pg_temp AS $$
 BEGIN
