@@ -29,7 +29,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { BusinessDocuments } from "@/components/dashboard/BusinessDocuments";
 import { AccountNotificationPreferences } from "@/components/dashboard/AccountNotificationPreferences";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { SubscriptionSection } from "@/components/payments/SubscriptionSection";
 import {
   useOpenBillingPortal,
@@ -55,7 +55,12 @@ export default function Parametres() {
   const [sendingReset, setSendingReset] = useState(false);
   const [signingOutAll, setSigningOutAll] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<SettingsTab>("notifications");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const allowedTabs: SettingsTab[] = ["notifications", "securite", "documents", "abonnement", "paiement", "apparence"];
+  const selectedTab = searchParams.get("tab");
+  const activeTab: SettingsTab = allowedTabs.includes(selectedTab as SettingsTab)
+    ? selectedTab as SettingsTab
+    : "notifications";
 
   const { theme: themePreference, setTheme: setThemePreference } = useTheme();
   const { lang } = useLanguage();
@@ -145,7 +150,7 @@ export default function Parametres() {
 
         <Tabs
           value={activeTab}
-          onValueChange={(value) => setActiveTab(value as SettingsTab)}
+          onValueChange={(value) => setSearchParams({ tab: value }, { replace: true })}
           className="w-full"
         >
           <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-muted/50 p-1 sm:grid-cols-3 lg:grid-cols-6">
@@ -427,7 +432,7 @@ export default function Parametres() {
             >
               <p className="text-sm text-muted-foreground">{translateUi("Les préférences de versement dépendent de la boutique et se règlent dans son espace de configuration. Les paiements et virements effectifs restent disponibles dans « Paiements ».")}</p>
               <Button variant="outline" asChild className="mt-3">
-                <Link to="/dashboard/boutiques">{translateUi("Choisir une boutique et configurer ses versements")}</Link>
+                <Link to="/dashboard/boutiques/configuration">{translateUi("Choisir une boutique et configurer ses versements")}</Link>
               </Button>
             </SectionCard>
           </TabsContent>
