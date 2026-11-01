@@ -14,7 +14,7 @@ interface ExportOptions {
 /** Escape spreadsheet formula characters as data, not executable formulas. */
 export function escapeCsvFormula(value: unknown): string {
   const text = String(value ?? "");
-  return /^[\\s\\u0000-\\u001f]*[=+@-]/.test(text) ? "'" + text : text;
+  return /^[\s\u0000-\u001f]*[=+@-]/.test(text) ? "'" + text : text;
 }
 
 export function exportToCSV(
@@ -25,7 +25,7 @@ export function exportToCSV(
 ) {
   const headerLines: string[] = [];
   if (options?.boutiqueName) {
-    headerLines.push(`"${escapeCsvFormula(options.boutiqueName).replace(/"/g, '" "').trim()} — Verified by BIB"`);
+    headerLines.push(`"${escapeCsvFormula(options.boutiqueName).replace(/"/g, '""')} — Verified by BIB"`);
     headerLines.push(
       `"${getUiLanguage() === "en" ? "Exported on" : "Exporté le"} ${new Date().toLocaleDateString(getUiLocale())}"`,
     );
