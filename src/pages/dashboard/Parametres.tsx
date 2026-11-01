@@ -20,11 +20,7 @@ import {
   ExternalLink,
   Smartphone,
   ShieldCheck,
-  Sparkles,
-  Plus,
-  Minus,
   Store,
-  Users,
   Settings2,
   Sun,
   Moon,
@@ -40,7 +36,6 @@ import {
   useUserSubscriptions,
 } from "@/hooks/useSubscriptions";
 import { supabase } from "@/integrations/supabase/client";
-import { useState as useReactState } from "react";
 import { toast } from "sonner";
 import { PageHeader, SectionCard } from "@/components/dashboard/shared";
 
@@ -381,11 +376,6 @@ export default function Parametres() {
           <TabsContent value="abonnement" className="mt-5 space-y-4">
             <SubscriptionSection />
 
-            <AddOnsCompact
-              onOpenPortal={() => portal.mutate()}
-              portalPending={portal.isPending}
-              hasSub={subscriptions.length > 0}
-            />
           </TabsContent>
 
           {/* Paiement */}
@@ -497,160 +487,3 @@ function ThemePreferenceOption({
   );
 }
 
-function PackageIcon() {
-  useLanguage();
-  return <Store className="h-4 w-4 text-primary" />;
-}
-
-function AddOnsCompact({
-  onOpenPortal,
-  portalPending,
-  hasSub,
-}: {
-  onOpenPortal: () => void;
-  portalPending: boolean;
-  hasSub: boolean;
-}) {
-  useLanguage();
-  const [extraBoutiques, setExtraBoutiques] = useReactState(0);
-  const [extraSeats, setExtraSeats] = useReactState(0);
-
-  const BOUTIQUE_PRICE = 9;
-  const SEAT_PRICE = 6;
-
-  const totalDelta = extraBoutiques * BOUTIQUE_PRICE + extraSeats * SEAT_PRICE;
-
-  const AddOnRow = ({
-    icon,
-    title,
-    description,
-    value,
-    onChange,
-    unitPrice,
-  }: {
-    icon: React.ReactNode;
-    title: string;
-    description: string;
-    value: number;
-    onChange: (value: number) => void;
-    unitPrice: number;
-  }) => {
-    useLanguage();
-    return (
-      <div className="flex items-center justify-between gap-3 py-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            {icon}
-          </div>
-
-          <div className="min-w-0">
-            <p className="text-sm font-medium">{title}</p>
-            <p className="text-xs text-muted-foreground">{description}</p>
-          </div>
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2">
-          <div className="flex items-center gap-1 rounded-lg border border-border/60 p-1">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              onClick={() => onChange(Math.max(0, value - 1))}
-              aria-label={translateUi("Retirer un élément : {v0}", {
-                v0: title,
-              })}
-              disabled={value === 0}
-            >
-              <Minus className="h-3 w-3" />
-            </Button>
-
-            <span className="w-5 text-center text-sm font-semibold tabular-nums">
-              {value}
-            </span>
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              onClick={() => onChange(value + 1)}
-              aria-label={translateUi("Ajouter un élément : {v0}", {
-                v0: title,
-              })}
-            >
-              <Plus className="h-3 w-3" />
-            </Button>
-          </div>
-
-          <span className="w-16 text-right text-xs font-semibold tabular-nums">
-            +{value * unitPrice} {translateUi("€/mois")}
-          </span>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <SectionCard
-      title={translateUi("Options supplémentaires")}
-      description={translateUi(
-        "Estimation des options au-delà des limites du plan.",
-      )}
-      icon={<Sparkles className="h-4 w-4" />}
-    >
-      <div className="divide-y divide-border/50">
-        <AddOnRow
-          icon={<Store className="h-4 w-4" />}
-          title={translateUi("Boutique supplémentaire")}
-          description={translateUi("{v0} €/mois par boutique", {
-            v0: BOUTIQUE_PRICE,
-          })}
-          value={extraBoutiques}
-          onChange={setExtraBoutiques}
-          unitPrice={BOUTIQUE_PRICE}
-        />
-
-        <AddOnRow
-          icon={<Users className="h-4 w-4" />}
-          title={translateUi("Membre d'équipe supplémentaire")}
-          description={translateUi("{v0} €/mois par siège", { v0: SEAT_PRICE })}
-          value={extraSeats}
-          onChange={setExtraSeats}
-          unitPrice={SEAT_PRICE}
-        />
-      </div>
-
-      {totalDelta > 0 && (
-        <div className="mt-4 flex flex-col gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs text-muted-foreground">
-              {translateUi("Supplément estimé")}
-            </p>
-            <p className="text-lg font-bold tabular-nums">
-              +{totalDelta} {translateUi("€/mois")}
-            </p>
-          </div>
-
-          <Button
-            size="sm"
-            onClick={onOpenPortal}
-            disabled={portalPending || !hasSub}
-            title={!hasSub ? translateUi("Aucun abonnement actif") : undefined}
-          >
-            {portalPending && (
-              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-            )}
-            {translateUi("Continuer vers la facturation")}
-          </Button>
-        </div>
-      )}
-
-      <p className="mt-3 text-xs text-muted-foreground">
-        {translateUi(
-          "Cette estimation n'ajoute pas automatiquement les options à votre abonnement. Le changement effectif doit être confirmé et pris en charge par le système de facturation.",
-        )}
-      </p>
-    </SectionCard>
-  );
-}
