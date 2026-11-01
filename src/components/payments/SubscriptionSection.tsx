@@ -76,6 +76,12 @@ export function SubscriptionSection() {
   const insuranceSubscription = activeSubs.find(
     (s) => subscriptionCategory(s) === "insurance",
   );
+  const extraBoutiqueSubscription = activeSubs.find(
+    (s) => subscriptionCategory(s) === "boutique_extra",
+  );
+  const extraBoutiqueCount = extraBoutiqueSubscription?.status === "active" || extraBoutiqueSubscription?.status === "trialing"
+    ? extraBoutiqueSubscription.price_id === "boutique_extra_two_monthly" ? 2 : 1
+    : 0;
 
   const manage = useManageSubscription();
   const [pendingChange, setPendingChange] = useState<{
@@ -83,7 +89,7 @@ export function SubscriptionSection() {
     label: string;
   } | null>(null);
   const [pendingCancel, setPendingCancel] = useState<
-    "plan" | "insurance" | null
+    "plan" | "insurance" | "boutique_extra" | null
   >(null);
 
   function subscribe(planTier: PlanTier, planName: string) {
@@ -103,6 +109,21 @@ export function SubscriptionSection() {
     const cycle = annual ? "yearly" : "monthly";
     setCheckoutPriceId(`insurance_${tier}_${cycle}`);
   }
+  function activateExtraBoutiques(count: 1 | 2) {
+    if (tier !== "pro") return;
+    const priceId = `boutique_extra_${count === 1 ? "one" : "two"}_monthly`;
+    if (extraBoutiqueSubscription) {
+      setPendingChange({
+        priceId,
+        label: count === 1
+          ? translateUi("1 boutique supplémentaire (+19,99 €/mois)")
+          : translateUi("2 boutiques supplémentaires (+35,99 €/mois)"),
+      });
+    } else {
+      setCheckoutPriceId(priceId);
+    }
+  }
+
 
   function confirmChange() {
     if (!pendingChange) return;
@@ -386,6 +407,36 @@ export function SubscriptionSection() {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {tier === "pro" && (
+        <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+          <h3 className="font-display text-lg font-semibold text-foreground">{translateUi("Boutiques supplémentaires — Pro")}</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {translateUi("Une boutique est incluse dans Pro. Activez un seul palier supplémentaire : les deux prix ne se cumulent pas. L'accès s'ouvre uniquement après validation du paiement.")}
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {[
+              { count: 1 as const, amount: "19,99 €", total: 2 },
+              { count: 2 as const, amount: "35,99 €", total: 3 },
+            ].map(({ count, amount, total }) => (
+              <div key={count} className="rounded-xl border border-border bg-muted/25 p-4">
+                <p className="text-sm font-semibold text-foreground">{total} {translateUi("boutiques au total")}</p>
+                <p className="mt-1 text-lg font-bold text-foreground">+{amount}<span className="ml-1 text-xs font-normal text-muted-foreground">/mois</span></p>
+                <Button size="sm" variant="outline" className="mt-4 w-full"
+                  disabled={extraBoutiqueCount === count || manage.isPending}
+                  onClick={() => activateExtraBoutiques(count)}>
+                  {extraBoutiqueCount === count ? translateUi("Palier actif") : extraBoutiqueSubscription ? translateUi("Changer de palier") : translateUi("Activer ce palier")}
+                </Button>
+              </div>
+            ))}
+          </div>
+          {extraBoutiqueSubscription && (
+            <Button variant="ghost" size="sm" className="mt-3" onClick={() => setPendingCancel("boutique_extra")} disabled={manage.isPending}>
+              {translateUi("Résilier les boutiques supplémentaires")}
+            </Button>
+          )}
         </div>
       )}
 
