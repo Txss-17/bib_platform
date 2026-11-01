@@ -487,77 +487,20 @@ export default function Produits() {
   return (
     <DashboardLayout>
       <div className="space-y-6 pb-8">
-        <div className="relative overflow-hidden rounded-2xl bg-primary p-5 text-primary-foreground sm:p-7">
-          <div className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full border border-white/10" />
-          <div className="pointer-events-none absolute -right-2 -top-10 h-44 w-44 rounded-full border border-warning/30" />
-          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-medium text-primary-foreground">
-                <Package className="h-3.5 w-3.5 text-warning-ink" />
-                {translateUi("Espace marchand · Catalogue produits")}
-              </div>
-              <h1 className="text-2xl font-semibold tracking-tight sm:text-4xl">
-                {translateUi("Pilotez votre catalogue.")}
-              </h1>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-primary-foreground sm:text-base">
-                {translateUi(
-                  "Suivez vos produits, contrôlez les validations et surveillez les stocks avant qu’ils ne perturbent vos ventes.",
-                )}
-              </p>
-            </div>
-            <Button
-              asChild
-              className="w-full shrink-0 bg-warning/20 text-info-ink hover:bg-warning/10 sm:w-auto"
-            >
-              <Link to="/dashboard/produits-fournisseurs">
-                <Plus className="mr-2 h-4 w-4" />
-                {translateUi("Ajouter depuis le catalogue")}
-              </Link>
-            </Button>
-          </div>
-
-          <div className="relative mt-7 grid grid-cols-2 gap-3 border-t border-white/15 pt-5 sm:grid-cols-4">
-            <div>
-              <p className="text-xs text-primary-foreground/75">
-                {translateUi("Produits référencés")}
-              </p>
-              <p className="mt-1 text-2xl font-semibold">
-                {formatNumber(kpis.total)}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-primary-foreground/75">
-                {translateUi("Produits actifs")}
-              </p>
-              <p className="mt-1 text-2xl font-semibold">
-                {formatNumber(kpis.active)}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-primary-foreground/75">
-                {translateUi("Échantillons validés")}
-              </p>
-              <p className="mt-1 text-2xl font-semibold">
-                {formatNumber(kpis.validated)}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-primary-foreground/75">
-                {translateUi("Ventes cumulées")}
-              </p>
-              <p className="mt-1 text-2xl font-semibold">
-                {formatNumber(kpis.sales)}
-              </p>
-            </div>
-          </div>
-        </div>
-
         <PageHeader
           eyebrow={translateUi("Gestion du catalogue")}
           title={translateUi("Mes produits")}
           subtitle={translateUi(
             "Inventaire opérationnel : recherchez, filtrez, vérifiez les échantillons, contrôlez les stocks et modifiez les références de vos boutiques.",
           )}
+          actions={
+            <Button asChild className="w-full sm:w-auto">
+              <Link to="/dashboard/produits-fournisseurs">
+                <Plus className="mr-2 h-4 w-4" />
+                {translateUi("Ajouter depuis le catalogue")}
+              </Link>
+            </Button>
+          }
         />
 
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
