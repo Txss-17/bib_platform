@@ -211,7 +211,7 @@ export default function Ventes() {
       </KpiGrid>
 
       {/* Trend + Live Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 mb-6">
         <SectionCard
           className="lg:col-span-2"
           title={translateUi("Évolution du chiffre d'affaires")}
@@ -278,7 +278,6 @@ export default function Ventes() {
       {/* Geographic + Top Products */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
         <SectionCard
-          className="lg:col-span-2"
           title={translateUi("Répartition géographique — zone commerciale")}
           description={translateUi("Ventes payées hors test, regroupées selon la zone commerciale enregistrée. Pays et villes indisponibles dans les commandes actuelles.")}
           icon={<Globe2 className="w-4 h-4" />}
