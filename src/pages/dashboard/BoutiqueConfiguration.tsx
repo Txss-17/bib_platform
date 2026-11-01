@@ -1,5 +1,4 @@
-import { useParams, Link } from "react-router-dom";
-import { useState } from "react";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { Store, ArrowLeft, Settings2, Mail, Bell, Wallet, Users } from "lucide-react";
 import { BoutiquePayoutSettings } from "@/components/dashboard/boutique/BoutiquePayoutSettings";
 import { useCurrentPlan } from "@/hooks/usePlans";
@@ -21,7 +20,9 @@ export default function BoutiqueConfiguration() {
   const en = lang === "en";
   const { data: boutiques = [], isLoading } = useBoutiques();
   const boutique = boutiques.find(b => b.id === id);
-  const [tab, setTab] = useState("general");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get("tab") || "general";
+  const setTab = (next: string) => setSearchParams({ tab: next }, { replace: true });
   const { tier } = useCurrentPlan();
   const teamEligible = tier === "growth" || tier === "pro";
 
@@ -51,18 +52,18 @@ export default function BoutiqueConfiguration() {
             </div>
           </div>
           <Tabs value={tab} onValueChange={setTab}>
-            <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:grid-cols-4 lg:grid-cols-5">
+            <div className="w-full overflow-x-auto pb-1"><TabsList className="inline-flex h-auto min-w-max gap-1 p-1 sm:grid sm:w-full sm:min-w-0 sm:grid-cols-4 lg:grid-cols-5">
               <TabsTrigger value="general" className="gap-2"><Settings2 size={16} />{en ? "General" : "Général"}</TabsTrigger>
               <TabsTrigger value="email" className="gap-2"><Mail size={16} />{en ? "Email" : "E-mail"}</TabsTrigger>
               <TabsTrigger value="alerts" className="gap-2"><Bell size={16} />{en ? "Alerts" : "Alertes"}</TabsTrigger>
               <TabsTrigger value="payouts" className="gap-2"><Wallet size={16} />{en ? "Payouts" : "Versements"}</TabsTrigger>
               {teamEligible && <TabsTrigger value="team" className="gap-2"><Users size={16} />{en ? "Team" : "Équipe"}</TabsTrigger>}
-            </TabsList>
+            </TabsList></div>
             <TabsContent value="general" className="mt-6"><BoutiqueSettingsTab boutiqueId={boutique.id} /></TabsContent>
             <TabsContent value="email" className="mt-6"><EmailMarketingSettings boutiqueId={boutique.id} /></TabsContent>
             <TabsContent value="alerts" className="mt-6"><BoutiqueAlertsSettings boutiqueId={boutique.id} /></TabsContent>
             <TabsContent value="payouts" className="mt-6"><BoutiquePayoutSettings boutiqueId={boutique.id} /></TabsContent>
-            {teamEligible && <TabsContent value="team" className="mt-6"><p className="mb-4 text-sm text-muted-foreground">{en ? "Manage members and roles for this store." : "Gérez les membres et les rôles de cette boutique."}</p><Link to="/dashboard/equipe" className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-muted"><Users size={16}/>{en ? "Open team workspace" : "Ouvrir l’espace Équipe"}</Link></TabsContent>}
+            {teamEligible && <TabsContent value="team" className="mt-6"><p className="mb-4 text-sm text-muted-foreground">{en ? "Manage members and roles for this store." : "Gérez les membres et les rôles de cette boutique."}</p><Link to={`/dashboard/equipe?boutiqueId=${boutique.id}`} className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-muted"><Users size={16}/>{en ? "Open team workspace" : "Ouvrir l’espace Équipe"}</Link></TabsContent>}
           </Tabs>
         </>
       )}
