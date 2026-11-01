@@ -18,6 +18,23 @@ type PayoutData = {
   country_code: string;
   status: string;
 };
+const EU_PAYOUT_COUNTRIES = [
+  { code: "FR", label: "France" }, { code: "BE", label: "Belgique" },
+  { code: "DE", label: "Allemagne" }, { code: "ES", label: "Espagne" },
+  { code: "IT", label: "Italie" }, { code: "NL", label: "Pays-Bas" },
+  { code: "PT", label: "Portugal" }, { code: "IE", label: "Irlande" },
+  { code: "LU", label: "Luxembourg" }, { code: "AT", label: "Autriche" },
+  { code: "FI", label: "Finlande" }, { code: "GR", label: "Grèce" },
+  { code: "PL", label: "Pologne" }, { code: "CZ", label: "Tchéquie" },
+  { code: "SK", label: "Slovaquie" }, { code: "SI", label: "Slovénie" },
+  { code: "HR", label: "Croatie" }, { code: "HU", label: "Hongrie" },
+  { code: "RO", label: "Roumanie" }, { code: "BG", label: "Bulgarie" },
+  { code: "DK", label: "Danemark" }, { code: "SE", label: "Suède" },
+  { code: "EE", label: "Estonie" }, { code: "LV", label: "Lettonie" },
+  { code: "LT", label: "Lituanie" }, { code: "CY", label: "Chypre" },
+  { code: "MT", label: "Malte" },
+] as const;
+
 const initial: PayoutData = {
   payout_frequency: "semi_monthly",
   beneficiary_name: "",
@@ -47,13 +64,14 @@ export function BoutiquePayoutSettings({ boutiqueId }: { boutiqueId: string }) {
       if (!user || !boutiqueId) throw new Error("Accès non autorisé");
       if (!draft.beneficiary_name.trim() || draft.beneficiary_name.trim().length > 150) throw new Error("Nom du bénéficiaire invalide");
       if (draft.payout_contact_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.payout_contact_email)) throw new Error("Adresse e-mail invalide");
+      if (!EU_PAYOUT_COUNTRIES.some(c => c.code === draft.country_code)) throw new Error("Pays de versement non autorisé");
       const { error } = await supabase.from("boutique_payout_preferences" as never)
         .upsert({
           boutique_id: boutiqueId,
           payout_frequency: draft.payout_frequency,
           beneficiary_name: draft.beneficiary_name.trim(),
           payout_contact_email: draft.payout_contact_email.trim() || null,
-          country_code: "FR",
+          country_code: draft.country_code,
           currency: "EUR",
         } as never, { onConflict: "boutique_id" });
       if (error) throw error;
@@ -75,6 +93,15 @@ export function BoutiquePayoutSettings({ boutiqueId }: { boutiqueId: string }) {
           <div className="space-y-2"><Label htmlFor="payout-beneficiary">{translateUi("Bénéficiaire légal")}</Label><Input id="payout-beneficiary" maxLength={150} value={draft.beneficiary_name ?? ""} onChange={e => setDraft(v => ({ ...v, beneficiary_name: e.target.value }))} placeholder={translateUi("Raison sociale ou nom légal")} /></div>
           <div className="space-y-2"><Label htmlFor="payout-email">{translateUi("E-mail de contact pour les versements")}</Label><Input id="payout-email" type="email" maxLength={200} value={draft.payout_contact_email ?? ""} onChange={e => setDraft(v => ({ ...v, payout_contact_email: e.target.value }))} placeholder="finance@example.com" /></div>
           <div className="space-y-2"><Label>{translateUi("Préférence de périodicité")}</Label><Select value={draft.payout_frequency} onValueChange={v => setDraft(d => ({ ...d, payout_frequency: v as PayoutData["payout_frequency"] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="semi_monthly">{translateUi("Deux fois par mois")}</SelectItem><SelectItem value="monthly">{translateUi("Une fois par mois")}</SelectItem></SelectContent></Select></div>
+          <div className="space-y-2">
+            <Label>{translateUi("Pays du bénéficiaire")}</Label>
+            <Select value={draft.country_code} onValueChange={country_code => setDraft(current => ({...current, country_code}))}>
+              <SelectTrigger><SelectValue placeholder={translateUi("Choisir un pays")} /></SelectTrigger>
+              <SelectContent>{EU_PAYOUT_COUNTRIES.map(country => (
+                <SelectItem key={country.code} value={country.code}>{translateUi(country.label)}</SelectItem>
+              ))}</SelectContent>
+            </Select>
+          </div>
           <div className="space-y-2"><Label>{translateUi("Devise")}</Label><Input disabled value="EUR — Euro" /></div>
         </div>
         <p className="flex items-start gap-2 text-xs text-muted-foreground"><LockKeyhole className="h-4 w-4 shrink-0" />{translateUi("La périodicité est une préférence, pas une promesse de date de versement. Les fonds sont versés uniquement après validation financière et contrôle des commandes.")}</p>
