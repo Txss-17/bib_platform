@@ -2229,7 +2229,8 @@ export function StudioEditor({
                       <p className="mt-1 text-xs font-medium text-accent-ink">
                         {translateUi("Le domaine personnalisé est réservé au plan Pro.")}
                       </p>
-                    )}               </div>
+                    )}
+                  </div>
                 </Card>
 
                 <Card className="p-4">
