@@ -220,7 +220,7 @@ Deno.serve(async (req) => {
   if (tokenLookupError) {
     console.error('Token lookup failed', {
       error: tokenLookupError,
-      address_redacted: true,
+      email: normalizedEmail,
     })
     await supabase.from('email_send_log').insert({
       message_id: messageId,
