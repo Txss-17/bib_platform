@@ -215,7 +215,7 @@ export default function Ventes() {
         <SectionCard
           className="lg:col-span-2"
           title={translateUi("Évolution du chiffre d'affaires")}
-          description={translateUi("Six derniers mois · commandes payées, hors environnement de test")}
+          description={translateUi("Évolution de vos ventes confirmées sur les six derniers mois")}
           icon={<TrendingUp className="w-4 h-4" />}
         >
           <div className="h-72">
@@ -278,8 +278,8 @@ export default function Ventes() {
       {/* Geographic + Top Products */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
         <SectionCard
-          title={translateUi("Répartition géographique — zone commerciale")}
-          description={translateUi("Ventes payées hors test, regroupées selon la zone commerciale enregistrée. Pays et villes indisponibles dans les commandes actuelles.")}
+          title={translateUi("Vos ventes par marché")}
+          description={translateUi("Identifiez les marchés qui génèrent le plus de chiffre d’affaires.")}
           icon={<Globe2 className="w-4 h-4" />}
         >
           {geoLoading ? <p className="py-8 text-sm text-muted-foreground">{translateUi("Chargement des marchés…")}</p> : <SalesHeatmap data={salesGeo?.byCountry || []} />}
@@ -291,7 +291,7 @@ export default function Ventes() {
           icon={<Sparkles className="w-4 h-4" />}
         >
           {performanceLoading ? <p className="py-8 text-sm text-muted-foreground">{translateUi("Chargement des performances…")}</p> : performanceError ? <p role="alert" className="py-8 text-sm text-destructive">{translateUi("Performances indisponibles.")}</p> : topProducts.length === 0 ? (
-            <EmptyState icon={<ShoppingCart className="h-6 w-6" />} title={translateUi("Aucune vente payée")} description={translateUi("Les produits apparaîtront ici après une vente confirmée, hors commandes de test.")} />
+            <EmptyState icon={<ShoppingCart className="h-6 w-6" />} title={translateUi("Aucune vente payée")} description={translateUi("Vos meilleures ventes apparaîtront ici dès les premières commandes confirmées.")} />
           ) : (
             <ProductPerformanceTable products={topProducts} />
           )}
