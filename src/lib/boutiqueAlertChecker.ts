@@ -112,14 +112,14 @@ export async function runBoutiqueAlertCheck(s: AlertSettings): Promise<{
   // 3. Low stock
   const { data: products } = await supabase
     .from("products")
-    .select("id, supplier_products!inner(name, stock, moq)")
+    .select("id, stock_quantity, supplier_products!inner(name, moq)")
     .eq("boutique_id", boutiqueId)
     .eq("status", "active");
   const lowStock: any[] = [];
   for (const p of (products ?? []) as any[]) {
     const sp: any = p.supplier_products;
     if (!sp) continue;
-    const stock = Number(sp.stock ?? 0);
+    const stock = Number(p.stock_quantity ?? 0);
     const moq = Math.max(Number(sp.moq ?? 1), 1);
     if (stock / moq <= s.low_stock_ratio)
       lowStock.push({ id: p.id, name: sp.name, stock, moq });
