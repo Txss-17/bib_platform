@@ -298,6 +298,15 @@ function BoutiqueCard({
           </p>
         </div>
 
+        <div className="mb-3">
+          <Button asChild variant="outline" className="w-full gap-2">
+            <Link to={`/dashboard/boutiques/${boutique.id}/settings`}>
+              <Settings2 className="h-4 w-4" />
+              {translateUi("Paramètres de la boutique")}
+            </Link>
+          </Button>
+        </div>
+
         <div className="grid grid-cols-2 gap-2">
           <Button asChild className="bg-primary text-white hover:bg-primary">
             <Link to={editPath}>
