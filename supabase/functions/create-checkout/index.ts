@@ -245,7 +245,6 @@ async function createCheckoutSession(
       const { data: activePro } = await admin.from("subscriptions")
         .select("id").eq("user_id", user.id)
         .eq("environment", options.environment)
-        .eq("kind", "plan")
         .in("status", ["active", "trialing"])
         .like("price_id", "plan_pro_%")
         .limit(1);
