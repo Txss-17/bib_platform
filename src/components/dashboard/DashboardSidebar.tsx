@@ -46,6 +46,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 interface DashboardSidebarProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  collapsed?: boolean;
 }
 
 const englishLabels: Record<string, string> = {
@@ -453,6 +454,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 export function DashboardSidebar({
   open,
   onOpenChange,
+  collapsed = false,
 }: DashboardSidebarProps) {
   useLanguage();
   const isMobile = useIsMobile();
@@ -471,8 +473,10 @@ export function DashboardSidebar({
     );
   }
 
+  if (collapsed) return null;
+
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 bg-card border-r border-border/50 flex flex-col z-50">
+    <aside id="bib-dashboard-sidebar" className="fixed left-0 top-0 h-full w-64 bg-card border-r border-border/50 flex flex-col z-50">
       <SidebarContent />
     </aside>
   );
