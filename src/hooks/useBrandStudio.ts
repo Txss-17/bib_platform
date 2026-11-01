@@ -453,6 +453,45 @@ export function useGenerateBrandDNA() {
           throw scenesError;
         }
       }
+      // Give newly generated sites a matching navigation identity as well.
+      // Keep every existing merchant theme setting and never override navigation
+      // already customized after initial creation.
+      const { data: currentBoutique, error: themeReadError } = await supabase
+        .from("boutiques").select("theme_settings").eq("id", params.boutiqueId).single();
+      if (themeReadError) throw themeReadError;
+      const currentTheme = (
+        currentBoutique?.theme_settings &&
+        typeof currentBoutique.theme_settings === "object" &&
+        !Array.isArray(currentBoutique.theme_settings)
+          ? currentBoutique.theme_settings : {}
+      ) as Record<string, unknown>;
+      if (!currentTheme.navigation) {
+        const initialBundle = pickStudioBundle(data.seed);
+        const layoutByBundle: Record<string, "classic" | "centered" | "stacked" | "minimal"> = {
+          narrative: "centered",
+          "product-first": "classic",
+          minimal: "minimal",
+          magazine: "stacked",
+          showroom: "centered",
+          community: "stacked",
+          atelier: "classic",
+          "editorial-luxe": "centered",
+          "boutique-directe": "classic",
+        };
+        const navigation = {
+          layout: layoutByBundle[initialBundle.key] ?? "classic",
+          logoPosition: ["narrative", "magazine", "showroom", "editorial-luxe"].includes(initialBundle.key) ? "center" : "left",
+          menuAlignment: "center",
+          showStoreName: true,
+          showHomeLink: true,
+          showTracking: true,
+          pageOrder: [],
+        };
+        const { error: themeError } = await supabase.from("boutiques")
+          .update({ theme_settings: { ...currentTheme, navigation } as never })
+          .eq("id", params.boutiqueId);
+        if (themeError) throw themeError;
+      }
       /*
        * Le wizard est considéré comme terminé uniquement après :
        *
