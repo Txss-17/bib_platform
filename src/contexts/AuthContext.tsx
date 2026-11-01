@@ -330,58 +330,10 @@ export function AuthProvider({
    * /store/signup
    *      -> store
    */
-  const signUp = async (
-    email: string,
-    password: string,
-    fullName = "",
-    type: AccountType = "platform",
-    legalAcceptances?: MerchantLegalAcceptances,
-  ) => {
-    // Closed registration pilot: do not create new users through this client
-    // even if an outdated signup screen is reached. Existing sign-in is intact.
-    return {
-      data: { user: null, session: null },
-      error: new AuthError("Account registration is coming soon.", 403),
-    };
-
-    /* Account creation stays disabled until the public launch.
-
-    const {
-      data,
-      error,
-    } =
-      await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: {
-          data: {
-            full_name:
-              fullName.trim(),
-
-            account_type:
-              type,
-
-            ...(type === "platform" && legalAcceptances
-              ? {
-                  legal_acceptances: {
-                    cgu: legalAcceptances.cgu,
-                    cgv: legalAcceptances.cgv,
-                    privacy: legalAcceptances.privacy,
-                  },
-                }
-              : {}),
-          },
-        },
-      });
-
-    return {
-      data: {
-        user: data.user,
-        session: data.session,
-      },
-      error,
-    };    */
-  };
+  const signUp: AuthContextType["signUp"] = async () => ({
+    data: { user: null, session: null },
+    error: new AuthError("Account registration is coming soon.", 403),
+  });
 
   /* =======================================================
      SIGN OUT
