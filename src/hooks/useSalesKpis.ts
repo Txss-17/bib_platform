@@ -42,7 +42,7 @@ function bucketIndex(d: Date, start: number): number {
  * Aggregates real KPIs for the Sales Cockpit.
  * Compares current calendar month vs previous calendar month for the
  * authenticated seller's boutiques. Conversion is approximated from the
- * number of paid orders against published products (proxy for sessions);
+ * number of paid orders divided by actual unique storefront sessions;
  * if no proxy data is available, it stays at 0%.
  */
 export function useSalesKpis(boutiqueId: string = "all") {
@@ -92,8 +92,9 @@ export function useSalesKpis(boutiqueId: string = "all") {
 
       const { data: orders, error } = await supabase
         .from("orders")
-        .select("amount, created_at")
+        .select("amount, created_at, stripe_environment")
         .in("boutique_id", ids)
+        .eq("payment_status", "paid")
         .gte("created_at", startPrevious.toISOString());
       if (error) throw error;
 
@@ -101,7 +102,8 @@ export function useSalesKpis(boutiqueId: string = "all") {
         curCount = 0,
         prevRev = 0,
         prevCount = 0;
-      (orders || []).forEach((o) => {
+      const realOrders = (orders || []).filter((o) => o.stripe_environment !== "sandbox");
+      realOrders.forEach((o) => {
         const d = new Date(o.created_at as string);
         const amt = Number(o.amount) || 0;
         if (d >= startCurrent) {
@@ -116,22 +118,26 @@ export function useSalesKpis(boutiqueId: string = "all") {
       const curBasket = curCount > 0 ? curRev / curCount : 0;
       const prevBasket = prevCount > 0 ? prevRev / prevCount : 0;
 
-      // Conversion proxy: orders / active products on the seller's boutiques.
-      // Without real session tracking this stays as a proxy; trend uses
-      // count vs previous period using the same denominator.
-      const { count: productsCount } = await supabase
-        .from("products")
-        .select("id", { count: "exact", head: true })
-        .in("boutique_id", ids);
-      const denom = productsCount && productsCount > 0 ? productsCount : 0;
-      const curConv = denom > 0 ? (curCount / denom) * 100 : 0;
-      const prevConv = denom > 0 ? (prevCount / denom) * 100 : 0;
+      // Ratio commandes payées / visites uniques réelles, uniquement quand
+      // les sessions de consultation sont enregistrées.
+      const { data: visits, error: visitsError } = await supabase
+        .from("storefront_events")
+        .select("session_id,created_at")
+        .in("boutique_id", ids)
+        .eq("event_type", "boutique_view")
+        .gte("created_at", startPrevious.toISOString())
+        .limit(5000);
+      if (visitsError) throw visitsError;
+      const curSessions = new Set((visits || []).filter(v => v.created_at && new Date(v.created_at) >= startCurrent).map(v => v.session_id).filter(Boolean));
+      const prevSessions = new Set((visits || []).filter(v => v.created_at && new Date(v.created_at) < startCurrent).map(v => v.session_id).filter(Boolean));
+      const curConv = curSessions.size ? Math.min(100, curCount / curSessions.size * 100) : 0;
+      const prevConv = prevSessions.size ? Math.min(100, prevCount / prevSessions.size * 100) : 0;
 
       // ---- Sparklines (rolling 30 min, 6 buckets) ----
       const sparkStart = now.getTime() - SPARK_WINDOW_MS;
       const revBuckets = Array(SPARK_BUCKETS).fill(0);
       const ordBuckets = Array(SPARK_BUCKETS).fill(0);
-      (orders || []).forEach((o) => {
+      realOrders.forEach((o) => {
         const d = new Date(o.created_at as string);
         if (d.getTime() < sparkStart) return;
         const i = bucketIndex(d, sparkStart);
