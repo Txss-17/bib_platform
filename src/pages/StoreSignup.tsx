@@ -296,6 +296,9 @@ export default function StoreSignup() {
                       <Benefit>
                         {tx("Commandes et suivi", "Orders and tracking")}
                       </Benefit>
+                      <Benefit>
+                        {tx("Retours gratuits : frais de retour pris en charge", "Free returns: return shipping costs covered")}
+                      </Benefit>
                     </div>
 
                     <div className="mt-4 border-t pt-4">
