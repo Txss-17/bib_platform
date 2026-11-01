@@ -15,21 +15,24 @@ describe("BIB public navigation", () => {
     expect(app).toContain("!isPublicInformationPath(window.location.pathname)");
   });
 
-  it("keeps commerce and partner mutations outside the public informational allowlist", () => {
+  it("keeps checkout blocked but exposes customer and partner applications", () => {
     for (const route of [
-      "/store", "/checkout", "/suppliers/apply",
-      "/ops/apply",
+      "/store", "/checkout",
     ]) {
       expect(isPublicInformationPath(route)).toBe(false);
       expect(isMerchantTestPath(route)).toBe(false);
     }
+    for (const route of ["/store/signup", "/suppliers/apply", "/fournisseurs/candidature", "/ops/apply", "/logistics/apply", "/suppliers/portal/test-token", "/ops/portal/test-token"]) {
+      expect(isPublicInformationPath(route)).toBe(true);
+    }
   });
 
-  it("routes both signup paths to the bilingual Coming Soon screen", () => {
-    for (const path of ["/signup", "/store/signup", "/register"]) {
+  it("keeps merchant signup on Coming Soon but permits customer registration", () => {
+    for (const path of ["/signup", "/register"]) {
       expect(isPublicInformationPath(path)).toBe(true);
       expect(app).toContain('path="' + path + '" element={<SignupComingSoon />} />');
     }
+    expect(app).toContain('path="/store/signup" element={<StoreSignup />} />');
   });
 
   it("does not unhide Careers ahead of the recruitment phase", () => {
