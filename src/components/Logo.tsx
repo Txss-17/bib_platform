@@ -78,7 +78,7 @@ export function Logo({
           <span
             className={`font-display font-bold text-base sm:text-lg tracking-tight ${wordmarkColor}`}
           >
-            Brand<span className="text-bib-gold">-In-A-</span>Box
+            Brand<span className="text-bib-gold dark:text-bib-gold-light">-In-A-</span>Box
           </span>
           {variant === "full" && (
             <span
