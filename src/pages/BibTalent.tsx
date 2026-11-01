@@ -35,14 +35,14 @@ export default function BibTalent(){
        <div className="relative mx-auto grid max-w-7xl gap-12 px-5 py-20 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-28">
          <div>
            <span className="inline-flex items-center gap-2 rounded-full border border-bib-ivory/20 bg-background/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.19em] text-bib-gold"><Sparkles size={15}/> Programme BIB Talent</span>
-           <h1 className="mt-7 max-w-3xl font-display text-5xl font-bold leading-[1.06] tracking-tight text-foreground sm:text-6xl xl:text-7xl">BIB Talent : <span className="text-bib-gold">construire la suite ensemble.</span></h1>
+           <h1 className="mt-7 max-w-3xl font-display text-5xl font-bold leading-[1.06] tracking-tight text-bib-ivory sm:text-6xl xl:text-7xl">BIB Talent : <span className="text-bib-gold">construire la suite ensemble.</span></h1>
            <p className="mt-7 max-w-2xl text-lg leading-8 text-bib-ivory/80"><strong className="font-semibold text-bib-ivory">Brand-in-a-Box (BIB)</strong> développe un écosystème de commerce qui met en relation <strong>marchands, clients, fournisseurs et partenaires logistiques</strong>. L'ambition : simplifier les expériences de vente, d'achat et de coordination au sein d'une même plateforme.</p>
            <p className="mt-4 max-w-2xl text-base leading-7 text-bib-ivory/70">BIB Talent, c'est la porte d'entrée pour participer à la réflexion, aux tests et à la création de cet écosystème.</p>
            <div className="mt-9 flex flex-wrap items-center gap-5"><a href="#projet-bib" className="inline-flex w-fit items-center justify-center gap-3 rounded-full bg-bib-gold px-7 py-4 text-sm font-semibold text-primary transition hover:opacity-90">Comprendre BIB <ArrowRight size={18}/></a><a href="#decouvrir" className="inline-flex items-center gap-2 font-semibold text-bib-ivory hover:text-bib-gold"><PlayCircle size={20}/> Voir le film du projet</a></div>
          </div>
          <div className="relative">
            <div aria-hidden="true" className="absolute -inset-5 rotate-3 rounded-[2.5rem] bg-bib-gold/10"/>
-           <div className="relative rounded-[2rem] border border-bib-ivory/15 bg-primary/75 p-6 shadow-xl sm:p-9">
+           <div className="relative rounded-[2rem] border border-bib-ivory/20 bg-brand-marine p-6 shadow-xl sm:p-9">
              <div className="flex items-center justify-between border-b border-bib-ivory/20 pb-6"><span className="text-sm font-semibold tracking-[0.16em]">BRAND-IN-A-BOX</span><Compass size={27} className="text-bib-gold"/></div>
              <div className="py-8"><span className="text-xs font-bold uppercase tracking-widest text-bib-gold">La vision du projet</span><p className="mt-3 font-display text-3xl font-semibold leading-tight sm:text-4xl">Un écosystème.<br/><span className="text-bib-gold">Quatre acteurs.</span><br/>Des expériences reliées.</p></div>
              <div className="grid grid-cols-2 gap-3 border-t border-bib-ivory/20 pt-6">{["Marchands","Clients","Fournisseurs","Logistique"].map((x,i)=><div key={x} className="rounded-xl border border-bib-ivory/10 bg-background/10 p-3 text-center text-xs font-semibold text-bib-ivory"><span className="mr-2 text-bib-gold">0{i+1}</span>{x}</div>)}</div>
