@@ -131,6 +131,28 @@ describe("Merchant operational workspaces", () => {
     expect(products).toContain('sampleCheckout === "success"');
   });
 
+  it("shows merchant logos and prevents fictitious default studio proof", () => {
+    const settings = read("src/pages/dashboard/BoutiqueConfiguration.tsx");
+    const logo = read("src/components/dashboard/boutique/BoutiqueLogoManager.tsx");
+    const header = read("src/components/storefront/StorefrontHeader.tsx");
+    const scenes = read("src/lib/studioScenes.ts");
+    const renderer = read("src/components/storefront/StudioSceneRenderer.tsx");
+    expect(settings).toContain('<TabsTrigger value="identity"');
+    expect(settings).toContain("<BoutiqueLogoManager");
+    expect(logo).toContain('update({ logo_url: data.publicUrl })');
+    expect(logo).toContain("image/png,image/jpeg,image/webp");
+    expect(header).toContain("logoUrl");
+    expect(header).toContain('alt="" className="h-9 w-9');
+    expect(scenes).not.toContain("Verified by Linksy");
+    expect(scenes).not.toContain("Rejoignez les 10 000 clients");
+    expect(scenes).not.toContain("10K+");
+    expect(scenes).not.toContain("48 à 72h");
+    expect(renderer).toContain("if (!reviews.length && !badges.length && !press.length) return null");
+    expect(renderer).toContain("if (!stats.length) return null");
+    expect(renderer).toContain("if (!logos.length) return null");
+    expect(renderer).toContain("if (!rows.length) return null");
+  });
+
   it("keeps the supplier catalog focused on discovery rather than favorite KPIs", () => {
     const catalog = read("src/pages/dashboard/ProduitsFournisseurs.tsx");
     expect(catalog).toContain("Trouvez les produits de votre prochaine collection");
