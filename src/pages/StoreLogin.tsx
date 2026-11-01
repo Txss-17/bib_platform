@@ -124,7 +124,7 @@ export default function StoreLogin() {
 
     setLoading(true);
 
-    const { error: signInError } = await signIn(normalizedEmail, password);
+    const { error: signInError } = await signIn(normalizedEmail, password, "store");
 
     if (signInError) {
       setError(getErrorMessage(signInError.message));
