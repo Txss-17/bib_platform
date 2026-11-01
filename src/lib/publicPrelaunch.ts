@@ -53,6 +53,13 @@ export function isPublicInformationPath(pathname: string): boolean {
   return new Set([
     "/", "/landing", "/vendre", "/tarifs", "/pricing",
     "/signup", "/store/signup", "/register",
+    // Partner applications and their token-scoped onboarding/resume pages.
+    "/suppliers/apply", "/fournisseurs/candidature",
+    "/suppliers/onboarding", "/suppliers/reprendre",
+    "/suppliers/onboarding/resume", "/suppliers/resume", "/suppliers/portal",
+    "/ops/apply", "/ops/candidature", "/logistics/apply",
+    "/logistique/candidature", "/ops/onboarding",
+    "/ops/reprendre", "/ops/onboarding/resume", "/ops/resume", "/ops/portal",
     "/a-propos", "/bib-talent", "/suppliers", "/fournisseurs",
     "/ops", "/logistics", "/logistique", "/centre-aide",
     "/help", "/help/faq", "/help/guide", "/pack-legal",
@@ -61,5 +68,5 @@ export function isPublicInformationPath(pathname: string): boolean {
     "/talent/confidentialite", "/talent/cookies",
     "/carrieres", "/carrieres/postes", "/carrieres/talent",
     "/careers", "/careers/jobs",
-  ]).has(path);
+  ]).has(path) || /^\/(suppliers|ops)\/portal\/[^/]+$/.test(path);
 }
