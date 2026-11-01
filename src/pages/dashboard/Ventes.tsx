@@ -47,6 +47,7 @@ import {
   KpiGrid,
 } from "@/components/dashboard/shared";
 import { SalesHeatmap } from "@/components/dashboard/sales/SalesHeatmap";
+import { ProductPerformanceTable } from "@/components/dashboard/sales/ProductPerformanceTable";
 import { LiveActivity } from "@/components/dashboard/sales/LiveActivity";
 import { RealtimePulseCard } from "@/components/dashboard/sales/RealtimePulseCard";
 import { useSalesKpis } from "@/hooks/useSalesKpis";
@@ -278,8 +279,8 @@ export default function Ventes() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
         <SectionCard
           className="lg:col-span-2"
-          title={translateUi("Répartition par marché")}
-          description={translateUi("Montants des commandes payées par marché déclaré · aucune localisation client inventée")}
+          title={translateUi("Répartition géographique — zone commerciale")}
+          description={translateUi("Ventes payées hors test, regroupées selon la zone commerciale enregistrée. Pays et villes indisponibles dans les commandes actuelles.")}
           icon={<Globe2 className="w-4 h-4" />}
         >
           {geoLoading ? <p className="py-8 text-sm text-muted-foreground">{translateUi("Chargement des marchés…")}</p> : <SalesHeatmap data={salesGeo?.byCountry || []} />}
@@ -293,17 +294,7 @@ export default function Ventes() {
           {performanceLoading ? <p className="py-8 text-sm text-muted-foreground">{translateUi("Chargement des performances…")}</p> : performanceError ? <p role="alert" className="py-8 text-sm text-destructive">{translateUi("Performances indisponibles.")}</p> : topProducts.length === 0 ? (
             <EmptyState icon={<ShoppingCart className="h-6 w-6" />} title={translateUi("Aucune vente payée")} description={translateUi("Les produits apparaîtront ici après une vente confirmée, hors commandes de test.")} />
           ) : (
-            <div className="divide-y divide-border">
-              {topProducts.map((product, index) => (
-                <div key={product.id} className="flex items-center justify-between gap-3 py-3">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-semibold tabular-nums">{index + 1}</span>
-                    <div className="min-w-0"><p className="truncate text-sm font-semibold text-foreground">{product.name}</p><p className="truncate text-xs text-muted-foreground">{product.boutiqueName} · {product.sales} {translateUi("unités vendues")}</p></div>
-                  </div>
-                  <span className="shrink-0 text-sm font-semibold tabular-nums text-foreground">{fmtEUR(product.revenue)}</span>
-                </div>
-              ))}
-            </div>
+            <ProductPerformanceTable products={topProducts} />
           )}
         </SectionCard>
       </div>
