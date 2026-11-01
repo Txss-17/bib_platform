@@ -1,7 +1,7 @@
 import { translateUi } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -79,8 +79,9 @@ const statusLabels: Record<string, { label: string; color: string }> = {
 export default function Equipe() {
   useLanguage();
   const { data: boutiques = [] } = useBoutiques();
-  const [selectedBoutique, setSelectedBoutique] = useState<string>("");
-  const boutiqueId = selectedBoutique || boutiques[0]?.id || "";
+  const [searchParams] = useSearchParams();
+  const [selectedBoutique, setSelectedBoutique] = useState<string>(searchParams.get("boutiqueId") || "");
+  const boutiqueId = boutiques.find(b => b.id === selectedBoutique)?.id || boutiques[0]?.id || "";
   const { data: members = [], isLoading } = useBoutiqueMembers(boutiqueId);
   const removeMember = useRemoveMember();
   const updateRole = useUpdateMemberRole();
