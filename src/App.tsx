@@ -267,18 +267,23 @@ export default function App() {
                   {typeof window !== "undefined" && isPublicPrelaunchHost(window.location.hostname) ? (
                     <Routes>
                       <Route path="/" element={<Navigate to="/bib-talent" replace />} />
-                      <Route path="/carrieres/talent" element={<Navigate to="/bib-talent" replace />} />
-                    <Route path="/talent/mentions-legales" element={<TalentMentions />} />
-                    <Route path="/talent/confidentialite" element={<TalentConfidentialite />} />
-                    <Route path="/talent/cookies" element={<TalentCookies />} />
                       <Route path="/bib-talent" element={<BibTalent />} />
-                      <Route path="/mentions-legales" element={<Navigate to="/talent/mentions-legales" replace />} />
-                      <Route path="/confidentialite" element={<Navigate to="/talent/confidentialite" replace />} />
-                      <Route path="/cookies" element={<Navigate to="/talent/cookies" replace />} />
+                      <Route path="/carrieres" element={<Navigate to="/bib-talent" replace />} />
+                      <Route path="/carrieres/postes" element={<Navigate to="/bib-talent" replace />} />
+                      <Route path="/carrieres/talent" element={<Navigate to="/bib-talent" replace />} />
+                      <Route path="/careers" element={<Navigate to="/bib-talent" replace />} />
+                      <Route path="/careers/jobs" element={<Navigate to="/bib-talent" replace />} />
+                      <Route path="/pack-legal" element={<PackLegal />} />
+                      <Route path="/legal" element={<Navigate to="/pack-legal" replace />} />
+                      <Route path="/mentions-legales" element={<MentionsLegales />} />
+                      <Route path="/cgu" element={<CGU />} />
+                      <Route path="/cgv" element={<CGV />} />
+                      <Route path="/confidentialite" element={<Confidentialite />} />
+                      <Route path="/cookies" element={<Cookies />} />
                       <Route path="/talent/mentions-legales" element={<TalentMentions />} />
                       <Route path="/talent/confidentialite" element={<TalentConfidentialite />} />
                       <Route path="/talent/cookies" element={<TalentCookies />} />
-                      <Route path="*" element={<BibTalent />} />
+                      <Route path="*" element={<Navigate to="/bib-talent" replace />} />
                     </Routes>
                   ) : (
                   <Routes>
