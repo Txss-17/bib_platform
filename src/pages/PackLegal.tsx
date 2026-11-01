@@ -48,6 +48,20 @@ const docs = [
     points: ["Création de compte 18+", "Services & tarifs", "Résiliation"],
   },
   {
+    icon: ScrollText,
+    get eyebrow() {
+      return translateUi("Vente");
+    },
+    get title() {
+      return translateUi("Conditions Générales de Vente");
+    },
+    get desc() {
+      return translateUi("Conditions applicables aux ventes, commandes, paiements, livraisons, retours et garanties selon les responsabilités des parties.");
+    },
+    href: "/cgv",
+    points: ["Commandes", "Livraison et retours", "Garanties"],
+  },
+  {
     icon: ShieldCheck,
     eyebrow: "RGPD",
     get title() {
@@ -84,7 +98,7 @@ export default function PackLegal() {
   useSEO({
     title: translateUi("Pack légal complet — Brand-In-A-Box"),
     description: translateUi(
-      "Mentions légales, CGU, politique de confidentialité et politique cookies de Brand-In-A-Box réunis sur une seule page.",
+      "Mentions légales, CGU, CGV, politique de confidentialité et cookies de Brand-In-A-Box accessibles depuis un même répertoire.",
     ),
   });
 
@@ -110,7 +124,7 @@ export default function PackLegal() {
             </h1>
             <p className="mt-6 text-lg text-bib-ivory/80 leading-relaxed max-w-2xl">
               {translateUi(
-                "Quatre documents qui régissent l'utilisation de Brand-In-A-Box. Chacun est rédigé clairement et tenu à jour.",
+                "Retrouvez les mentions légales, les conditions d'utilisation et de vente, la confidentialité et les cookies au même endroit.",
               )}
             </p>
           </div>
