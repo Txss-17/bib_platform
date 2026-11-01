@@ -23,17 +23,18 @@ export async function runBoutiqueAlertCheck(s: AlertSettings): Promise<{
   const prevSince = new Date(Date.now() - 2 * days * 86400_000).toISOString();
 
   // Recent alerts (24h) to dedupe by type.
-  const { data: recent } = await supabase
+  const { data: recent, error: recentError } = await supabase
     .from("boutique_alert_log" as any)
     .select("type, created_at")
     .eq("boutique_id", boutiqueId)
     .gte("created_at", new Date(Date.now() - 86400_000).toISOString());
+  if (recentError) throw recentError;
   const recentTypes = new Set(((recent as any[]) ?? []).map((r) => r.type));
 
   const toInsert: any[] = [];
 
   // 1. Views drop
-  const [{ data: cur }, { data: prev }] = await Promise.all([
+  const [{ data: cur, error: currentError }, { data: prev, error: previousError }] = await Promise.all([
     supabase.rpc(
       "boutique_period_kpis" as never,
       {
@@ -51,6 +52,7 @@ export async function runBoutiqueAlertCheck(s: AlertSettings): Promise<{
       } as never,
     ),
   ]);
+  if (currentError || previousError) throw currentError || previousError;
   const curK = (cur as any[])?.[0];
   const prevK = (prev as any[])?.[0];
   if (curK && prevK && prevK.views > 5) {
@@ -77,13 +79,14 @@ export async function runBoutiqueAlertCheck(s: AlertSettings): Promise<{
   }
 
   // 2. CTR drop on scenes
-  const { data: scenes } = await supabase.rpc(
+  const { data: scenes, error: sceneError } = await supabase.rpc(
     "scene_analytics_summary" as never,
     {
       _boutique_id: boutiqueId,
       _since: since,
     } as never,
   );
+  if (sceneError) throw sceneError;
   const lowCtr = ((scenes as any[]) ?? []).filter(
     (r) => Number(r.impressions) > 50 && Number(r.ctr) < s.ctr_floor,
   );
@@ -110,11 +113,12 @@ export async function runBoutiqueAlertCheck(s: AlertSettings): Promise<{
   }
 
   // 3. Low stock
-  const { data: products } = await supabase
+  const { data: products, error: productError } = await supabase
     .from("products")
     .select("id, stock_quantity, supplier_products!inner(name, moq)")
     .eq("boutique_id", boutiqueId)
     .eq("status", "active");
+  if (productError) throw productError;
   const lowStock: any[] = [];
   for (const p of (products ?? []) as any[]) {
     const sp: any = p.supplier_products;
@@ -142,11 +146,12 @@ export async function runBoutiqueAlertCheck(s: AlertSettings): Promise<{
 
   // 4. Audits (missing legal info / no published page)
   if (s.audits_enabled && !recentTypes.has("audit")) {
-    const { data: bData } = await supabase
+    const { data: bData, error: boutiqueError } = await supabase
       .from("boutiques")
       .select("legal_email, legal_siret, status")
       .eq("id", boutiqueId)
       .single();
+    if (boutiqueError) throw boutiqueError;
     const missing: string[] = [];
     if (!bData?.legal_email) missing.push("email légal");
     if (!bData?.legal_siret) missing.push("SIRET");
@@ -199,13 +204,15 @@ export async function runBoutiqueAlertCheck(s: AlertSettings): Promise<{
   }
 
   if (toInsert.length > 0) {
-    await supabase.from("boutique_alert_log" as any).insert(toInsert as any);
+    const { error: insertError } = await supabase.from("boutique_alert_log" as any).insert(toInsert as any);
+    if (insertError) throw insertError;
   }
 
-  await supabase
+  const { error: updateError } = await supabase
     .from("boutique_alert_settings" as any)
     .update({ last_checked_at: now.toISOString() } as any)
     .eq("boutique_id", boutiqueId);
+  if (updateError) throw updateError;
 
   return {
     created: toInsert.length,
