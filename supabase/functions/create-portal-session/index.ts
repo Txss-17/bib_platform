@@ -1,3 +1,4 @@
+import { assertTrustedReturnUrl } from "../_shared/return-url.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { type StripeEnv, createStripeClient, corsHeaders } from "../_shared/stripe.ts";
 
@@ -25,7 +26,7 @@ async function createPortalSession(authHeader: string | null, returnUrl: string,
   const stripe = createStripeClient(environment);
   const portal = await stripe.billingPortal.sessions.create({
     customer: sub.stripe_customer_id as string,
-    return_url: returnUrl,
+    return_url: assertTrustedReturnUrl(returnUrl),
   });
   return portal.url;
 }
