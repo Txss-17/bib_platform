@@ -82,6 +82,7 @@ type FormData = {
   slug: string;
   category: string;
   description: string;
+  market: "EU";
 };
 
 function slugify(value: string): string {
@@ -193,6 +194,7 @@ export default function BoutiqueCreate() {
     slug: "",
     category: "",
     description: "",
+    market: "EU",
   });
 
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
@@ -288,6 +290,8 @@ export default function BoutiqueCreate() {
         category: formData.category,
         description: formData.description.trim() || null,
         theme_settings: null,
+        target_markets: [formData.market],
+        default_currency: "EUR",
         status: "draft",
       });
 
@@ -486,6 +490,20 @@ export default function BoutiqueCreate() {
                     )}
                   </p>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <FieldLabel htmlFor="boutique-market" required>
+                  {getUiLanguage() === "en" ? "Store market" : "Marché de la boutique"}
+                </FieldLabel>
+                <Select value={formData.market} onValueChange={(value: "EU") => updateField("market", value)}>
+                  <SelectTrigger id="boutique-market">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="EU">{getUiLanguage() === "en" ? "European Union" : "Union européenne"}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
@@ -697,6 +715,11 @@ export default function BoutiqueCreate() {
                     <dd className="break-all font-mono text-sm text-primary">
                       /boutique/{formData.slug || "—"}
                     </dd>
+                  </div>
+
+                  <div className="grid gap-2 p-4 sm:grid-cols-[160px_1fr]">
+                    <dt className="text-sm text-muted-foreground">{getUiLanguage() === "en" ? "Store market" : "Marché de la boutique"}</dt>
+                    <dd className="font-medium text-foreground">{getUiLanguage() === "en" ? "European Union" : "Union européenne"}</dd>
                   </div>
 
                   <div className="grid gap-2 p-4 sm:grid-cols-[160px_1fr]">
