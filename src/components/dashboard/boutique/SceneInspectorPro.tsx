@@ -2723,6 +2723,32 @@ function ProModePanel({
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <Label className="text-[10px] opacity-70">{tx("Largeur de contenu", "Content width")}</Label>
+              <Select value={layout.maxWidth ?? "normal"} onValueChange={value => setLayout("maxWidth", value === "normal" ? null : value)}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="narrow">{tx("Étroite", "Narrow")}</SelectItem>
+                  <SelectItem value="normal">{tx("Normale", "Normal")}</SelectItem>
+                  <SelectItem value="wide">{tx("Large", "Wide")}</SelectItem>
+                  <SelectItem value="full">{tx("Pleine largeur", "Full width")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] opacity-70">{tx("Alignement du contenu", "Content alignment")}</Label>
+              <Select value={layout.align ?? "center"} onValueChange={value => setLayout("align", value === "center" ? null : value)}>
+                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="left">{tx("Gauche", "Left")}</SelectItem>
+                  <SelectItem value="center">{tx("Centre", "Center")}</SelectItem>
+                  <SelectItem value="right">{tx("Droite", "Right")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           {/* Presets professionnels — un clic */}
           <div className="space-y-1.5">
             <Label className="text-[10px] opacity-70">
