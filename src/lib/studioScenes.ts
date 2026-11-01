@@ -984,6 +984,42 @@ export const STUDIO_BUNDLES: Array<{
     ],
   },
   {
+    key: "atelier",
+    name: "Atelier contemporain",
+    scenes: [
+      { id: "hero-cinema", variant: "split" },
+      { id: "image-text-split", variant: "image-right" },
+      { id: "product-spotlight", variant: "image-left" },
+      { id: "gallery-mosaic", variant: "masonry" },
+      { id: "products-grid", variant: "3-up" },
+      { id: "faq-accordion", variant: "two-column" },
+    ],
+  },
+  {
+    key: "editorial-luxe",
+    name: "Éditorial luxe",
+    scenes: [
+      { id: "hero-cinema", variant: "type-only" },
+      { id: "lookbook-parallax", variant: "asymmetric" },
+      { id: "manifesto-typographic", variant: "stacked" },
+      { id: "showcase-magazine", variant: "carousel" },
+      { id: "founder-letter", variant: "portrait-right" },
+      { id: "products-grid", variant: "4-up" },
+    ],
+  },
+  {
+    key: "boutique-directe",
+    name: "Boutique directe",
+    scenes: [
+      { id: "banner-promo", variant: "solid" },
+      { id: "hero-cinema", variant: "fullscreen" },
+      { id: "products-grid", variant: "4-up" },
+      { id: "product-spotlight", variant: "centered" },
+      { id: "faq-accordion", variant: "accordion" },
+      { id: "cta-sticky", variant: "centered" },
+    ],
+  },
+  {
     key: "community",
     name: "Communauté & valeurs",
     scenes: [
