@@ -2807,6 +2807,33 @@ function ProModePanel({
           <p className="text-[10px] uppercase tracking-wide opacity-60 flex items-center gap-1">
             <ImageIcon className="w-3 h-3" /> {translateUi("Fond personnalisé")}
           </p>
+          <p className="text-[11px] leading-5 text-muted-foreground">
+            {scene.scene_type === "hero-cinema"
+              ? tx("Le fond Pro remplace le fond classique du Hero Cinéma. Les modifications se voient dans l’aperçu et sont enregistrées automatiquement.",
+                   "Pro background overrides the Cinema Hero's standard background. Changes appear in the preview and save automatically.")
+              : tx("Les réglages s’appliquent à cette scène et sont enregistrés automatiquement.",
+                   "These settings apply to this scene and save automatically.")}
+          </p>
+          <div className="flex items-center gap-2 rounded-lg border border-border/60 p-2">
+            <input
+              type="color"
+              aria-label={tx("Couleur de fond Pro", "Pro background color")}
+              value={hslToHex(bg.color)}
+              onChange={(event) => setBg("color", hexToHsl(event.target.value))}
+              className="h-9 w-12 cursor-pointer rounded border border-border bg-background"
+            />
+            <div className="min-w-0 flex-1">
+              <Label className="text-xs">{tx("Couleur de fond", "Background color")}</Label>
+              <p className="text-[10px] text-muted-foreground">
+                {tx("Prioritaire sur le fond classique si aucun média Pro n'est choisi.", "Overrides the standard background unless Pro media is selected.")}
+              </p>
+            </div>
+            {bg.color && (
+              <Button type="button" size="sm" variant="ghost" onClick={() => setBg("color", null)}>
+                {translateUi("Retirer")}
+              </Button>
+            )}
+          </div>
           <ImageField
             boutiqueId={boutiqueId}
             label={translateUi("Image de fond")}
@@ -2863,7 +2890,7 @@ function ProModePanel({
               className="h-8 text-xs"
             />
           </div>
-          {(bg.imageUrl || bg.videoUrl) && (
+          {(bg.imageUrl || bg.videoUrl || (scene.scene_type === "hero-cinema" && (scene.content.backgroundImage || scene.content.videoUrl))) && (
             <div>
               <Label className="text-[10px] opacity-70">
                 {translateUi("Voile sombre —") + " "}
