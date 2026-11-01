@@ -69,7 +69,6 @@ export default function BibTalent(){
          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-card text-bib-gold"><Truck size={28}/></span>
          <div><h3 className="text-lg font-semibold">Et la logistique ?</h3><p className="mt-2 text-sm leading-7 text-muted-foreground">BIB prévoit de coordonner la préparation et l'acheminement des commandes grâce à ses partenaires opérationnels. L'expédition directe marchand → client ne constitue pas le modèle logistique BIB.</p></div>
        </div>
-       <p className="mt-6 text-sm leading-6 text-muted-foreground">Aperçus visuels issus des supports de présentation du projet. BIB est en développement : ces illustrations ne signifient pas que toutes les fonctionnalités sont déjà ouvertes au public.</p>
      </section>
      <section className="bg-muted/35 py-20 sm:py-24">
        <div className="mx-auto max-w-7xl px-5 sm:px-8">
