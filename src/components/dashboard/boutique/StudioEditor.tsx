@@ -79,6 +79,7 @@ import {
 
 import { ActionButton, stateFromMutation } from "./ActionButton";
 import { SceneInspectorPro } from "./SceneInspectorPro";
+import { StorefrontNavigationEditor } from "./StorefrontNavigationEditor";
 import { StoriesManager } from "./StoriesManager";
 
 import {
@@ -1913,9 +1914,10 @@ export function StudioEditor({
         {/* Left rail */}
         <Card className="min-w-0 overflow-hidden">
           <Tabs defaultValue="scenes" className="flex h-full flex-col">
-            <TabsList className="m-3 grid grid-cols-2 sm:grid-cols-4">
+            <TabsList className="m-3 grid grid-cols-2 gap-1 sm:grid-cols-5">
               <TabsTrigger value="scenes">{translateUi("Scènes")}</TabsTrigger>
               <TabsTrigger value="brand">{translateUi("Identité")}</TabsTrigger>
+              <TabsTrigger value="navigation">{translateUi("Menu & logo")}</TabsTrigger>
               <TabsTrigger value="seo">SEO</TabsTrigger>
               <TabsTrigger value="stories">Stories</TabsTrigger>
             </TabsList>
@@ -2064,6 +2066,14 @@ export function StudioEditor({
                   />
                 </div>
               )}
+            </TabsContent>
+
+            <TabsContent value="navigation" className="mt-0 min-h-0 flex-1 overflow-y-auto px-4 pb-5">
+              <StorefrontNavigationEditor
+                boutiqueId={boutiqueId}
+                boutiqueName={boutiqueName}
+                pages={pages}
+              />
             </TabsContent>
 
             <TabsContent
