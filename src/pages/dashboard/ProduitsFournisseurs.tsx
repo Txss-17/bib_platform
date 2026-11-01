@@ -525,7 +525,7 @@ export default function ProduitsFournisseurs() {
         {/* Products */}
         <div className="flex-1 min-w-0">
           {isLoading ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <Card key={i} className="overflow-hidden">
                   <CardContent className="p-0">
@@ -539,7 +539,7 @@ export default function ProduitsFournisseurs() {
               ))}
             </div>
           ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4">
               {sortedProducts.map((product) => (
                 <ProductGridCard
                   key={product.id}
@@ -618,7 +618,7 @@ function ProductGridCard({
       <Card className="group relative flex min-w-0 flex-col overflow-hidden rounded-2xl border-border/70 bg-card shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg">
         <button
           type="button"
-          className="relative block aspect-[5/4] w-full overflow-hidden bg-muted/40 text-left"
+          className="relative block aspect-[4/3] w-full overflow-hidden bg-muted/40 text-left"
           onClick={() => setShowDetail(true)}
           aria-label={translateUi("Consulter le produit {v0}", { v0: product.name })}
         >
@@ -634,7 +634,7 @@ function ProductGridCard({
               <Package className="h-10 w-10 text-muted-foreground/60" />
             </div>
           )}
-          <span className="absolute bottom-3 left-3 max-w-[calc(100%-4rem)] truncate rounded-full border border-border/40 bg-background/95 px-3 py-1.5 text-[11px] font-semibold text-foreground shadow-sm">
+          <span className="absolute bottom-2 left-2 max-w-[calc(100%-3rem)] truncate rounded-full border border-border/40 bg-background/95 px-2 py-1 text-[10px] font-medium text-foreground shadow-sm">
             {product.category}
           </span>
         </button>
@@ -642,34 +642,34 @@ function ProductGridCard({
           type="button"
           aria-label={isFavorite ? translateUi("Retirer des favoris") : translateUi("Ajouter aux favoris")}
           aria-pressed={isFavorite}
-          className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border/70 bg-background/95 text-foreground shadow-sm transition-colors hover:text-destructive"
+          className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border border-border/70 bg-background/95 text-foreground shadow-sm transition-colors hover:text-destructive"
           onClick={onToggleFavorite}
         >
           <Heart className={`h-4 w-4 ${isFavorite ? "fill-destructive text-destructive" : ""}`} />
         </button>
-        <CardContent className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
+        <CardContent className="flex flex-1 flex-col gap-2 p-2.5 sm:p-3">
           <button
             type="button"
-            className="min-h-10 text-left text-sm font-semibold leading-snug text-foreground line-clamp-2 hover:text-primary sm:text-base"
+            className="min-h-9 text-left text-xs font-semibold leading-snug text-foreground line-clamp-2 hover:text-primary sm:text-sm"
             onClick={() => setShowDetail(true)}
           >
             {product.name}
           </button>
           <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
             <span>{translateUi("Prix de base")}</span>
-            <span className="text-lg font-bold tabular-nums text-foreground">
+            <span className="text-sm font-bold tabular-nums text-foreground sm:text-base">
               {product.base_price.toFixed(2)} €
             </span>
           </div>
-          <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-3">
+          <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-2">
             <span className="text-xs text-muted-foreground">{translateUi("Marge autorisée jusqu'à")}</span>
-            <span className="text-sm font-semibold tabular-nums text-primary">{product.max_margin_percent} %</span>
+            <span className="text-xs font-semibold tabular-nums text-primary sm:text-sm">{product.max_margin_percent} %</span>
           </div>
-          <div className="mt-auto grid grid-cols-2 gap-2 pt-1">
+          <div className="mt-auto grid grid-cols-2 gap-1.5 pt-1">
             <Button
               type="button"
               variant="outline"
-              className="min-w-0 gap-1.5 rounded-xl px-2 text-xs sm:text-sm"
+              className="h-8 min-w-0 gap-1 rounded-lg px-1.5 text-[11px] sm:text-xs"
               onClick={() => setShowDetail(true)}
             >
               <Eye className="h-4 w-4 shrink-0" />
@@ -688,7 +688,7 @@ function ProductGridCard({
             <Button
               type="button"
               variant="ghost"
-              className="min-w-0 gap-1.5 px-1 text-xs"
+              className="h-7 min-w-0 gap-1 px-1 text-[11px]"
               onClick={() => setShowCalc(!showCalc)}
               aria-expanded={showCalc}
             >
