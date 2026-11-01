@@ -34,6 +34,9 @@ const Header = () => {
       ? {
           stores: "Boutiques",
           about: "À propos",
+          company: "Entreprise",
+          companyDesc: "Découvrir Brand-in-a-Box",
+          talentDesc: "Participer au développement de BIB",
           network: "Réseau BIB",
           infrastructure: "Infrastructure BIB",
           suppliers: "Fournisseurs",
@@ -48,6 +51,9 @@ const Header = () => {
       : {
           stores: "Stores",
           about: "About",
+          company: "Company",
+          companyDesc: "Learn about Brand-in-a-Box",
+          talentDesc: "Contribute to BIB",
           network: "BIB Network",
           infrastructure: "BIB Infrastructure",
           suppliers: "Suppliers",
@@ -120,19 +126,33 @@ const Header = () => {
               {t("nav.pricing")}
             </Link>
 
-            <Link
-              to="/a-propos"
-              className="whitespace-nowrap text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
-            >
-              {nav.about}
-            </Link>
-
-            <Link
-              to="/bib-talent"
-              className="whitespace-nowrap text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
-            >
-              BIB Talent
-            </Link>
+            {/* Entreprise */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-medium text-foreground/80 transition-colors hover:text-foreground focus:outline-none">
+                {nav.company}
+                <ChevronDown className="h-3.5 w-3.5" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-[310px] rounded-2xl border-border/60 bg-background/95 p-2 shadow-xl backdrop-blur-xl">
+                <DropdownMenuLabel className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  {nav.company}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {[
+                  { to: "/a-propos", label: nav.about, desc: nav.companyDesc, icon: Info },
+                  { to: "/bib-talent", label: "BIB Talent", desc: nav.talentDesc, icon: Users },
+                ].map(({ to, label, desc, icon: Icon }) => (
+                  <DropdownMenuItem key={to} asChild className="rounded-xl">
+                    <Link to={to} className="flex cursor-pointer items-center gap-3 px-3 py-3">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-foreground"><Icon className="h-4 w-4" /></span>
+                      <span className="flex min-w-0 flex-col">
+                        <span className="text-sm font-medium text-foreground">{label}</span>
+                        <span className="text-xs text-muted-foreground">{desc}</span>
+                      </span>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Réseau BIB */}
             <DropdownMenu>
@@ -240,23 +260,28 @@ const Header = () => {
                   {t("nav.pricing")}
                 </Link>
 
-                <Link
-                  to="/a-propos"
-                  onClick={closeMobileMenu}
-                  className="flex items-center gap-3 border-b border-border/40 py-3.5 text-[15px] font-medium text-foreground"
-                >
-                  <Info className="h-4 w-4 text-foreground" />
-                  {nav.about}
-                </Link>
-
-                <Link
-                  to="/bib-talent"
-                  onClick={closeMobileMenu}
-                  className="flex items-center gap-3 border-b border-border/40 py-3.5 text-[15px] font-medium text-foreground"
-                >
-                  <Users className="h-4 w-4 text-foreground" />
-                  BIB Talent
-                </Link>
+                {/* Entreprise */}
+                <div className="border-b border-border/40">
+                  <div className="flex items-center gap-3 py-3.5 text-[15px] font-medium text-foreground">
+                    <Info className="h-4 w-4 text-foreground" />
+                    <span>{nav.company}</span>
+                  </div>
+                  <div className="pb-3 pl-3">
+                    {[
+                      { to: "/a-propos", label: nav.about, desc: nav.companyDesc, icon: Info },
+                      { to: "/bib-talent", label: "BIB Talent", desc: nav.talentDesc, icon: Users },
+                    ].map(({ to, label, desc, icon: Icon }) => (
+                      <Link key={to} to={to} onClick={closeMobileMenu}
+                        className="flex items-center gap-3 rounded-xl px-2 py-3 transition-colors hover:bg-muted/60">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-foreground"><Icon className="h-4 w-4" /></span>
+                        <span className="flex flex-col">
+                          <span className="text-sm font-medium text-foreground">{label}</span>
+                          <span className="text-xs text-muted-foreground">{desc}</span>
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
 
                 {/* Réseau BIB */}
                 <div className="border-b border-border/40">
