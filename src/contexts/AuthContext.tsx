@@ -37,6 +37,7 @@ interface AuthContextType {
   signIn: (
     email: string,
     password: string,
+    portal?: AccountType,
   ) => Promise<{
     error: AuthError | null;
   }>;
@@ -295,23 +296,29 @@ export function AuthProvider({
    * Il est récupéré depuis les metadata
    * du compte Supabase.
    */
-  const signIn = async (
-    email: string,
-    password: string,
+  const signIn: AuthContextType["signIn"] = async (
+    email, password, portal = "platform",
   ) => {
-    const {
-      error,
-    } =
-      await supabase.auth.signInWithPassword(
-        {
-          email: email.trim(),
-          password,
-        },
-      );
-
-    return {
-      error,
-    };
+    // Verify the account context BEFORE accepting the session in this portal.
+    // Account metadata must also be protected by server-side policies.
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    if (error) return { error };
+    const actualType = resolveAccountType(data.user);
+    if (actualType !== portal) {
+      await supabase.auth.signOut();
+      return {
+        error: new AuthError(
+          portal === "store"
+            ? "Ce compte n'est pas un compte client BIB Store."
+            : "Ce compte n'est pas autorisé dans l'espace marchand.",
+          403,
+        ),
+      };
+    }
+    return { error: null };
   };
 
   /* =======================================================
