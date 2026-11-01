@@ -143,9 +143,9 @@ export function BlockComposer({
   );
 
   return (
-    <div className="space-y-3">
+    <div className="w-full min-w-0 max-w-full space-y-3">
       {/* Toolbar: add buttons + view toggle */}
-      <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg bg-muted/40 border border-border/50">
+      <div className="flex min-w-0 flex-wrap items-center gap-2 p-3 rounded-lg bg-muted/40 border border-border/50">
         <span className="text-xs text-muted-foreground mr-1">
           {translateUi("Ajouter :")}
         </span>
@@ -165,7 +165,7 @@ export function BlockComposer({
             </Button>
           );
         })}
-        <div className="ml-auto flex gap-1">
+        <div className="flex w-full flex-wrap gap-1 sm:ml-auto sm:w-auto">
           <Button
             type="button"
             size="sm"
@@ -186,16 +186,16 @@ export function BlockComposer({
       </div>
 
       {view === "preview" ? (
-        <div className="border border-border rounded-lg overflow-hidden bg-muted/30">
+        <div className="min-w-0 max-w-full border border-border rounded-lg overflow-hidden bg-muted/30">
           <iframe
             title={translateUi("Aperçu email")}
             srcDoc={previewHtml}
-            className="w-full h-[600px] bg-card"
+            className="block w-full min-w-0 h-[600px] bg-card"
             sandbox=""
           />
         </div>
       ) : (
-        <div className="grid md:grid-cols-[1fr_320px] gap-3">
+        <div className="grid min-w-0 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
           {/* Block list */}
           <Card>
             <CardContent className="p-3 min-h-[400px]">
