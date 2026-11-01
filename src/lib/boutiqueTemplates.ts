@@ -522,8 +522,24 @@ export function getConversionTemplate(id: ConversionTemplate["id"]): ConversionT
   return conversionTemplates.find((t) => t.id === id);
 }
 
+export type StorefrontHeaderLayout = "classic" | "centered" | "stacked" | "minimal";
+export type StorefrontLogoPosition = "left" | "center" | "right";
+export type StorefrontMenuAlignment = "left" | "center" | "right";
+
+export interface StorefrontNavigationSettings {
+  layout?: StorefrontHeaderLayout;
+  logoPosition?: StorefrontLogoPosition;
+  menuAlignment?: StorefrontMenuAlignment;
+  showStoreName?: boolean;
+  showHomeLink?: boolean;
+  showTracking?: boolean;
+  /** Persisted ordered page IDs, excluding invisible pages and reserved system pages. */
+  pageOrder?: string[];
+}
+
 export interface ThemeSettings {
   colorScheme: string;
+  navigation?: StorefrontNavigationSettings;
   primaryColor: string;
   secondaryColor: string;
   siteType?: SiteType;
