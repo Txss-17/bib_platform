@@ -48,11 +48,12 @@ export function useAlertSettings(boutiqueId?: string) {
     queryKey: ["alert-settings", boutiqueId],
     enabled: !!boutiqueId,
     queryFn: async (): Promise<AlertSettings> => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("boutique_alert_settings" as any)
         .select("*")
         .eq("boutique_id", boutiqueId!)
         .maybeSingle();
+      if (error) throw error;
       return (data as any) ?? DEFAULTS(boutiqueId!);
     },
   });
@@ -77,12 +78,13 @@ export function useAlertLog(boutiqueId?: string, limit = 30) {
     queryKey: ["alert-log", boutiqueId, limit],
     enabled: !!boutiqueId,
     queryFn: async (): Promise<AlertLogRow[]> => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("boutique_alert_log" as any)
         .select("*")
         .eq("boutique_id", boutiqueId!)
         .order("created_at", { ascending: false })
         .limit(limit);
+      if (error) throw error;
       return (data as any) ?? [];
     },
   });
