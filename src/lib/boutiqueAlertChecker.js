@@ -6,10 +6,11 @@ async function runBoutiqueAlertCheck(s) {
   const now = /* @__PURE__ */ new Date();
   const since = new Date(Date.now() - days * 864e5).toISOString();
   const prevSince = new Date(Date.now() - 2 * days * 864e5).toISOString();
-  const { data: recent } = await supabase.from("boutique_alert_log").select("type, created_at").eq("boutique_id", boutiqueId).gte("created_at", new Date(Date.now() - 864e5).toISOString());
+  const { data: recent, error: recentError } = await supabase.from("boutique_alert_log").select("type, created_at").eq("boutique_id", boutiqueId).gte("created_at", new Date(Date.now() - 864e5).toISOString());
+  if (recentError) throw recentError;
   const recentTypes = new Set((recent ?? []).map((r) => r.type));
   const toInsert = [];
-  const [{ data: cur }, { data: prev }] = await Promise.all([
+  const [{ data: cur, error: currentError }, { data: prev, error: previousError }] = await Promise.all([
     supabase.rpc("boutique_period_kpis", {
       _boutique_id: boutiqueId,
       _since: since,
@@ -21,6 +22,7 @@ async function runBoutiqueAlertCheck(s) {
       _until: since
     })
   ]);
+  if (currentError || previousError) throw currentError || previousError;
   const curK = cur?.[0];
   const prevK = prev?.[0];
   if (curK && prevK && prevK.views > 5) {
@@ -36,10 +38,11 @@ async function runBoutiqueAlertCheck(s) {
       });
     }
   }
-  const { data: scenes } = await supabase.rpc("scene_analytics_summary", {
+  const { data: scenes, error: sceneError } = await supabase.rpc("scene_analytics_summary", {
     _boutique_id: boutiqueId,
     _since: since
   });
+  if (sceneError) throw sceneError;
   const lowCtr = (scenes ?? []).filter((r) => Number(r.impressions) > 50 && Number(r.ctr) < s.ctr_floor);
   if (lowCtr.length > 0 && !recentTypes.has("ctr_drop")) {
     toInsert.push({
@@ -51,7 +54,8 @@ async function runBoutiqueAlertCheck(s) {
       metadata: { scenes: lowCtr.map((r) => ({ id: r.scene_id, type: r.scene_type, ctr: r.ctr })) }
     });
   }
-  const { data: products } = await supabase.from("products").select("id, stock_quantity, supplier_products!inner(name, moq)").eq("boutique_id", boutiqueId).eq("status", "active");
+  const { data: products, error: productError } = await supabase.from("products").select("id, stock_quantity, supplier_products!inner(name, moq)").eq("boutique_id", boutiqueId).eq("status", "active");
+  if (productError) throw productError;
   const lowStock = [];
   for (const p of products ?? []) {
     const sp = p.supplier_products;
@@ -71,7 +75,8 @@ async function runBoutiqueAlertCheck(s) {
     });
   }
   if (s.audits_enabled && !recentTypes.has("audit")) {
-    const { data: bData } = await supabase.from("boutiques").select("legal_email, legal_siret, status").eq("id", boutiqueId).single();
+    const { data: bData, error: boutiqueError } = await supabase.from("boutiques").select("legal_email, legal_siret, status").eq("id", boutiqueId).single();
+    if (boutiqueError) throw boutiqueError;
     const missing = [];
     if (!bData?.legal_email) missing.push("email l\xE9gal");
     if (!bData?.legal_siret) missing.push("SIRET");
@@ -111,9 +116,11 @@ async function runBoutiqueAlertCheck(s) {
     a.email_status = emailStatus;
   }
   if (toInsert.length > 0) {
-    await supabase.from("boutique_alert_log").insert(toInsert);
+    const { error: insertError } = await supabase.from("boutique_alert_log").insert(toInsert);
+    if (insertError) throw insertError;
   }
-  await supabase.from("boutique_alert_settings").update({ last_checked_at: now.toISOString() }).eq("boutique_id", boutiqueId);
+  const { error: updateError } = await supabase.from("boutique_alert_settings").update({ last_checked_at: now.toISOString() }).eq("boutique_id", boutiqueId);
+  if (updateError) throw updateError;
   return {
     created: toInsert.length,
     emailed,
