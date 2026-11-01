@@ -22,7 +22,7 @@ const ROLE_PERMISSIONS = {
 const PLAN_LIMITS = {
   starter: 1,
   growth: 3,
-  premium: 10
+  pro: 10
 };
 function useBoutiqueMembers(boutiqueId) {
   return useQuery({
