@@ -6,10 +6,10 @@
 - **Stripe**: centralisé côté BIB (PAS Stripe Connect). BIB encaisse les ventes et reverse les vendeurs via table `payments`. Le client final n'a qu'UN compte sur le marketplace.
 - **Stack**: Supabase (Auth, RLS, `boutique-media`), Vercel. Custom React Query hooks.
 - **Recyclage**: 1 point = 10 centimes crédités sur la carte cadeau de la boutique d'origine (trigger `credit_gift_card_on_scan`).
-- **Data & Security**: Order format BIB26-XXXXXX. Anonymous inserts on 'orders' for checkout. Explicit confirm on deletions.
+- **Data & Security**: Order format BIB26-XXXXXX. Orders/payment states must be written only by verified server checkout/webhook paths (no anonymous inserts). Account portals are classified in an immutable server-managed registry; customer Store users cannot use merchant dashboard login. Explicit confirmation on deletion.
 - **UX/UI**: Mobile-first premium (marine + gold + ivory). Trust-first, KPIs readable <5s. Bilingual (FR default, EN). Legacy Tailwind namespace `linksy-*` is repointed to BIB palette — do NOT mass-rename.
 
-## Memories
+- **Current pricing**: Starter 1 boutique/15 produits/support 72h; Growth 1 boutique/50 produits/support 48h; Pro 1 boutique incluse/illimité/domaine personnalisé. Growth and Pro extra boutiques: +19,99€/mois for a second, +35,99€/mois for a second and third together, confirmed by Stripe; CRM exports disabled. No J+ early-product access promise. BIB Abonné client includes order tracking and covered return shipping.\n\n## Memories
 - [Brand Identity](mem://brand/identity) — Brand-In-A-Box logo, marine+gold palette, Playfair+Inter, <Logo /> component
 - [Project Vision](mem://project/vision) — Shopify + catalogue fournisseurs pré-intégré, 0 stock 0 logistique
 - [Marketplace](mem://features/marketplace) — /marketplace public, cartes boutiques + stories produits, comptes clients, gift cards alimentées par recyclage
