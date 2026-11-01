@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AlertCircle, CheckCircle2, Loader2, Send } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, Send, Palette, Image as ImageIcon, ClipboardList, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
@@ -141,11 +141,12 @@ export function ProductCustomizationEditor({
     ["marking", "marking", en ? "Marking" : "Marquage"],
   ] as const;
   return (
-    <Card>
-      <CardHeader className="space-y-3">
+    <Card className="min-w-0 overflow-hidden rounded-2xl border-border/70">
+      <CardHeader className="space-y-3 border-b border-border/70 bg-muted/20 p-4 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <CardTitle>
-            {en ? "Product configuration" : "Configuration du produit"}
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Palette className="h-5 w-5 text-primary" />
+            {en ? "Customize your product" : "Personnalisez votre produit"}
           </CardTitle>
           <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium">
             {statuses[dossier?.supplier_status ?? "not_requested"]}
@@ -157,7 +158,7 @@ export function ProductCustomizationEditor({
             : "Seules les options qualifiées au catalogue BIB sont proposées. Un échantillon physique doit être validé avant production."}
         </p>
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className="min-w-0 space-y-6 p-4 sm:p-6">
         {isLoading && (
           <p
             role="status"
@@ -238,7 +239,7 @@ export function ProductCustomizationEditor({
             </p>
           </div>
         )}
-        <dl className="grid gap-3 rounded-lg bg-muted/50 p-4 text-sm sm:grid-cols-3">
+        <dl className="grid min-w-0 grid-cols-1 gap-4 rounded-2xl border border-border/70 bg-muted/30 p-4 text-sm sm:grid-cols-3">
           <div>
             <dt className="text-muted-foreground">MOQ</dt>
             <dd className="mt-1 font-medium">
@@ -275,9 +276,18 @@ export function ProductCustomizationEditor({
             </dd>
           </div>
         </dl>
+        <div className="space-y-2">
+          <h3 className="flex items-center gap-2 text-base font-semibold">
+            <Palette className="h-4 w-4 text-primary" />
+            {en ? "Customization options" : "Choix de personnalisation"}
+          </h3>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            {en ? "Select only the options available for this product. You can save your choices before submitting them." : "Sélectionnez les options réellement disponibles pour cette référence. Vous pourrez enregistrer vos choix avant de les transmettre."}
+          </p>
+        </div>
         <fieldset
           disabled={!ready || isLoading || isError || invalidDraft || pending}
-          className="grid min-w-0 gap-4 sm:grid-cols-2"
+          className="grid min-w-0 gap-4 rounded-2xl border border-border/70 bg-card p-4 sm:grid-cols-2 sm:p-5"
         >
           <div className="space-y-1.5">
             <Label htmlFor="custom-brand">
@@ -298,7 +308,7 @@ export function ProductCustomizationEditor({
                   id={"custom-" + field}
                   value={config[field]}
                   onChange={(event) => change(field, event.target.value)}
-                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  className="h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3 text-sm"
                 >
                   <option value="">
                     {en ? "Select an option" : "Choisir une option"}
@@ -361,14 +371,15 @@ export function ProductCustomizationEditor({
         </fieldset>
         <section
           aria-label={en ? "Illustrative preview" : "Aperçu indicatif"}
-          className="grid min-w-0 gap-4 overflow-hidden rounded-xl border bg-muted/30 p-4 lg:grid-cols-2"
+          className="grid min-w-0 grid-cols-1 gap-5 overflow-hidden rounded-2xl border border-border/70 bg-muted/20 p-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] sm:p-5"
         >
           <div className="min-w-0">
+            <p className="mb-3 flex items-center gap-2 text-sm font-semibold"><ImageIcon className="h-4 w-4 text-primary" />{en ? "Supplier visuals" : "Visuels du fournisseur"}</p>
             {images.length ? (
               <img
                 src={images[imageIndex] ?? images[0]}
                 alt={product.supplier_products.name}
-                className="h-64 w-full rounded-lg object-contain"
+                className="h-64 w-full rounded-xl border border-border/70 bg-card object-contain sm:h-80"
               />
             ) : (
               <p className="py-12 text-center text-sm text-muted-foreground">
@@ -393,7 +404,8 @@ export function ProductCustomizationEditor({
               </div>
             )}
           </div>
-          <div className="flex min-w-0 flex-col justify-center gap-3">
+          <div className="flex min-w-0 flex-col justify-center gap-3 rounded-xl border border-border/70 bg-card p-4">
+            <p className="flex items-center gap-2 text-sm font-semibold"><ClipboardList className="h-4 w-4 text-primary" />{en ? "Your selected options" : "Récapitulatif de vos choix"}</p>
             {config.logo.startsWith("https://") && !!options.logo?.length && (
               <img
                 src={config.logo}
@@ -424,14 +436,14 @@ export function ProductCustomizationEditor({
             </p>
           </div>
         </section>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 border-t border-border/70 pt-5">
           <Button
             disabled={!ready || isLoading || isError || invalidDraft || pending}
             onClick={saveDraft}
           >
-            {save.isPending && (
+            {save.isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            )}
+            ) : <Save className="mr-2 h-4 w-4" />}
             {en ? "Save draft" : "Enregistrer le brouillon"}
           </Button>
           <Button
