@@ -98,7 +98,7 @@ export default function Login() {
     setError(null);
     setLoading(true);
 
-    const { error } = await signIn(email.trim(), password);
+    const { error } = await signIn(email.trim(), password, "platform");
 
     if (error) {
       setError(getErrorMessage(error.message));
