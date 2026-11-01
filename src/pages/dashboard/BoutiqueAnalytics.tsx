@@ -1,6 +1,7 @@
 import { translateUi, getUiLocale } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useParams, Link } from "react-router-dom";
+import { useCurrentPlan } from "@/hooks/usePlans";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
@@ -82,6 +83,8 @@ export default function BoutiqueAnalytics() {
   useLanguage();
   const { id } = useParams<{ id: string }>();
   const [days, setDays] = useState(30);
+  const { tier, isLoading: planLoading } = useCurrentPlan();
+  const canViewDetailedAnalytics = !planLoading && (tier === "growth" || tier === "pro");
 
   const { data: boutique } = useQuery({
     queryKey: ["boutique-analytics-meta", id],
@@ -98,14 +101,14 @@ export default function BoutiqueAnalytics() {
   });
 
   const { data: scenes = [], isLoading: scenesLoading } =
-    useSceneAnalyticsSummary(id, days);
-  const { data: pages = [] } = useBoutiquePages(id);
+    useSceneAnalyticsSummary(canViewDetailedAnalytics ? id : undefined, days);
+  const { data: pages = [] } = useBoutiquePages(canViewDetailedAnalytics ? id : undefined);
   const { data: pageRows = [], isLoading: pagesLoading } = usePageAnalytics(
-    id,
+    canViewDetailedAnalytics ? id : undefined,
     days,
   );
   const { data: funnel = [], isLoading: funnelLoading } = useProductFunnel(
-    id,
+    canViewDetailedAnalytics ? id : undefined,
     days,
   );
   const { data: products = [] } = useProducts();
@@ -114,7 +117,7 @@ export default function BoutiqueAnalytics() {
   // Map scene_id -> page_id (boutique_scenes carries page_id; analytics rows don't).
   const { data: sceneIndex = {} } = useQuery({
     queryKey: ["scene-index", id],
-    enabled: !!id,
+    enabled: !!id && canViewDetailedAnalytics,
     queryFn: async () => {
       const { data } = await supabase
         .from("boutique_scenes")
@@ -186,6 +189,7 @@ export default function BoutiqueAnalytics() {
 
   // Export helpers ----------------------------------------------------------
   const exportPages = (fmt: "csv" | "pdf") => {
+    if (!canViewDetailedAnalytics) return;
     const rows = pages.map((p) => {
       const r = pageRows.find((x) => x.page_id === p.id);
       const views = Number(r?.views ?? 0);
@@ -215,6 +219,7 @@ export default function BoutiqueAnalytics() {
   };
 
   const exportScenes = (fmt: "csv" | "pdf") => {
+    if (!canViewDetailedAnalytics) return;
     const cols = [
       {
         header: translateUi("Scène"),
@@ -251,6 +256,7 @@ export default function BoutiqueAnalytics() {
   };
 
   const exportProducts = (fmt: "csv" | "pdf") => {
+    if (!canViewDetailedAnalytics) return;
     const rows = funnel.map((r) => {
       const p: any = productMap.get(r.product_id);
       return {
@@ -356,6 +362,19 @@ export default function BoutiqueAnalytics() {
         />
       </div>
 
+      {planLoading ? (
+        <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
+          {translateUi("Vérification des droits de votre abonnement…")}
+        </div>
+      ) : !canViewDetailedAnalytics ? (
+        <SectionCard
+          title={translateUi("Analytics Starter")}
+          description={translateUi("Votre formule comprend les indicateurs généraux de performance. Les analyses des pages, des scènes et des produits ainsi que les exports sont réservés aux offres Growth et Pro.")}
+        >
+          <p className="text-sm text-muted-foreground">{translateUi("Passez à Growth ou Pro pour accéder aux analyses détaillées et aux exports CSV et PDF.")}</p>
+          <Button variant="outline" className="mt-4" asChild><Link to="/tarifs">{translateUi("Voir les offres")}</Link></Button>
+        </SectionCard>
+      ) : (
       <Tabs defaultValue="pages" className="w-full">
         <TabsList>
           <TabsTrigger value="pages" className="gap-1.5">
@@ -656,6 +675,7 @@ export default function BoutiqueAnalytics() {
           </SectionCard>
         </TabsContent>
       </Tabs>
+      )}
     </DashboardLayout>
   );
 }
