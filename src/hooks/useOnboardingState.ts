@@ -8,11 +8,11 @@ import { useProducts } from "@/hooks/useProducts";
  * Single source of truth for the "First 5 minutes" onboarding state.
  *
  * The wizard step (welcome dialog) is shown when the seller hasn't yet
- * picked a market or activity type. The checklist on the dashboard
+ * entered basic profile information or activity type. The checklist on the dashboard
  * remains visible until every step is completed.
  *
  * Steps are conditional: a B2B account sees the "Add KYC docs" step,
- * a multi-market boutique sees the "Activate target markets" step.
+ * boutique configuration is handled only in the boutique workflow.
  */
 export interface OnboardingStep {
   key: string;
@@ -29,7 +29,6 @@ export function useOnboardingState() {
   const { data: products } = useProducts();
 
   const hasProfileBasics = !!profile?.full_name;
-  const hasMarket = !!profile?.market;
   const hasBusinessType = !!profile?.business_type;
   const hasBoutique = (boutiques?.length || 0) > 0;
   const firstBoutique = boutiques?.[0];
@@ -37,13 +36,12 @@ export function useOnboardingState() {
     boutiques?.some((b) => b.status === "published") || false;
   const hasProduct = (products?.length || 0) > 0;
   const isBusiness = profile?.business_type === "business";
-  const isMultiMarket = (firstBoutique?.target_markets?.length || 0) > 1;
 
   // Wizard appears post-signup until all 3 essentials are filled.
   const needsWizard =
     !!user &&
     !!profile &&
-    (!hasProfileBasics || !hasMarket || !hasBusinessType);
+    (!hasProfileBasics || !hasBusinessType);
 
   const steps: OnboardingStep[] = useMemo(() => {
     const list: OnboardingStep[] = [
@@ -51,7 +49,7 @@ export function useOnboardingState() {
         key: "profile",
         label: translateUi("Compléter votre profil"),
         description: translateUi("Nom, marché cible et type d'activité."),
-        done: hasProfileBasics && hasMarket && hasBusinessType,
+        done: hasProfileBasics && hasBusinessType,
         href: "/dashboard/parametres",
         cta: "Compléter",
       },
@@ -91,22 +89,6 @@ export function useOnboardingState() {
       });
     }
 
-    // Conditional step #2 — multi-market boutiques must activate markets.
-    if (hasBoutique && isMultiMarket) {
-      list.push({
-        key: "markets",
-        label: translateUi("Configurer vos marchés cibles"),
-        description: translateUi("Activez devises et langues pour {v0}.", {
-          v0: firstBoutique?.target_markets?.join(", "),
-        }),
-        done: hasPublishedBoutique,
-        href: firstBoutique
-          ? `/dashboard/boutiques/edit/${firstBoutique.id}`
-          : "/dashboard/boutiques",
-        cta: "Configurer",
-      });
-    }
-
     // Final activation: publish.
     list.push({
       key: "publish",
@@ -122,13 +104,11 @@ export function useOnboardingState() {
     return list;
   }, [
     hasProfileBasics,
-    hasMarket,
     hasBusinessType,
     hasBoutique,
     hasProduct,
     hasPublishedBoutique,
     isBusiness,
-    isMultiMarket,
     firstBoutique,
     profile?.is_verified,
     getUiLanguage(),
@@ -149,6 +129,5 @@ export function useOnboardingState() {
     allDone,
     hasBoutique,
     hasProduct,
-    hasMarket,
   };
 }
