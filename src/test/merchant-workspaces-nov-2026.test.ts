@@ -139,7 +139,7 @@ describe("Merchant operational workspaces", () => {
     expect(catalog).toContain("Ajouter aux favoris");
     expect(catalog).not.toContain("<KpiTile");
     expect(catalog).not.toContain("catalogueKpis");
-    expect(catalog).toContain('className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"');
+    expect(catalog).toContain('className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-3 2xl:grid-cols-4"');
     expect(catalog).toContain("AddToBoutiqueDialog");
     expect(catalog).toContain("ProductDetailDialog");
     const details = read("src/components/dashboard/ProductDetailDialog.tsx");
