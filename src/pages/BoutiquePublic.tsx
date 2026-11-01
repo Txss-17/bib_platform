@@ -442,6 +442,7 @@ export default function BoutiquePublic() {
         >
           <StorefrontHeader
             boutiqueName={boutique.name}
+            logoUrl={boutique.logo_url}
             boutiqueSlug={boutique.slug}
             primaryColor={primaryColor}
           />
