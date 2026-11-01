@@ -44,10 +44,10 @@ export function BoutiqueAlertsSettings({ boutiqueId: fixedBoutiqueId }: { boutiq
   const [s, setS] = useState<AlertSettings | null>(null);
   const [running, setRunning] = useState(false);
 
-  useEffect(() => {
-    if (existing) setS(existing);
-  }, [existing]);
   useEffect(() => { setS(null); }, [activeId]);
+  useEffect(() => {
+    if (existing && existing.boutique_id === activeId) setS(existing);
+  }, [existing, activeId]);
 
   if (boutiques.length === 0) {
     return (
