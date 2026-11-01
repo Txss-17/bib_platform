@@ -38,7 +38,7 @@ serve(async (req) => {
         status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const token = req.headers.get("Authorization")?.replace(/^Bearer\\s+/i, "").trim();
+    const token = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "").trim();
     if (!token) {
       return new Response(JSON.stringify({ error: "authentication_required" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
