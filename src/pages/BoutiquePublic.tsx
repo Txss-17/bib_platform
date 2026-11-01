@@ -443,6 +443,7 @@ export default function BoutiquePublic() {
           <StorefrontHeader
             boutiqueName={boutique.name}
             logoUrl={boutique.logo_url}
+            navigation={themeSettings?.navigation}
             boutiqueSlug={boutique.slug}
             primaryColor={primaryColor}
           />
