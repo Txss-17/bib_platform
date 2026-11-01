@@ -155,8 +155,6 @@ const BoutiqueAboutPage = lazy(() => import("@/pages/BoutiqueAboutPage"));
    INSTITUTIONAL / MARKETING
 ===================================================== */
 
-const Carrieres = lazy(() => import("@/pages/Carrieres"));
-const CarrieresPostes = lazy(() => import("@/pages/CarrieresPostes"));
 const APropos = lazy(() => import("@/pages/APropos"));
 const CentreAide = lazy(() => import("@/pages/CentreAide"));
 const CentreAideFaq = lazy(() => import("@/pages/CentreAideFaq"));
@@ -215,7 +213,7 @@ function RootPage() {
   }
 
   if (host.startsWith("carrieres.")) {
-    return <Carrieres />;
+    return <BibTalent />;
   }
 
   if (host.startsWith("tarifs.")) {
@@ -845,11 +843,11 @@ export default function App() {
                       CAREERS / BIB TALENT
                   ================================================= */}
 
-                    <Route path="/carrieres" element={<Carrieres />} />
+                    <Route path="/carrieres" element={<Navigate to="/bib-talent" replace />} />
 
                     <Route
                       path="/carrieres/postes"
-                      element={<CarrieresPostes />}
+                      element={<Navigate to="/bib-talent" replace />}
                     />
 
                     <Route path="/carrieres/talent" element={<Navigate to="/bib-talent" replace />} />
@@ -921,9 +919,9 @@ export default function App() {
                       CAREERS ALIASES
                   ================================================= */}
 
-                    <Route path="/careers" element={<Carrieres />} />
+                    <Route path="/careers" element={<Navigate to="/bib-talent" replace />} />
 
-                    <Route path="/careers/jobs" element={<CarrieresPostes />} />
+                    <Route path="/careers/jobs" element={<Navigate to="/bib-talent" replace />} />
 
                     {/* =================================================
                       FALLBACK
