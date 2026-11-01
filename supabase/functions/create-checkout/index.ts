@@ -242,13 +242,13 @@ async function createCheckoutSession(
     if (subscriptionError) throw subscriptionError;
 
     if (merchantCategory === "boutique_extra") {
-      const { data: activePro } = await admin.from("subscriptions")
+      const { data: activeEligiblePlan } = await admin.from("subscriptions")
         .select("id").eq("user_id", user.id)
         .eq("environment", options.environment)
         .in("status", ["active", "trialing"])
-        .like("price_id", "plan_pro_%")
+        .or("price_id.like.plan_growth_%,price_id.like.plan_pro_%")
         .limit(1);
-      if (!activePro?.length) throw new Error("ACTIVE_PRO_PLAN_REQUIRED");
+      if (!activeEligiblePlan?.length) throw new Error("ACTIVE_GROWTH_OR_PRO_PLAN_REQUIRED");
     }
     const hasSameCategory = (activeSubs ?? []).some((s) => {
       if (s.kind === BIB_SUBSCRIBER_KIND) return false;
