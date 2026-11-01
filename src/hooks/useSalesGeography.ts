@@ -1,97 +1,45 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { getContinentForMarket } from "@/lib/salesGeoData";
 
-interface SalesData {
-  location: string;
-  sales: number;
-  revenue: number;
-  orders: number;
-}
+export type SalesRegion = { location: string; revenue: number; orders: number; sales: number };
 
-export function useSalesGeography() {
+/**
+ * Market-level aggregate; never claim country or city precision when order
+ * records only contain the commercial market identifier.
+ */
+export function useSalesGeography(boutiqueId = "all") {
   const { user } = useAuth();
-
   return useQuery({
-    queryKey: ["sales-geography", user?.id],
+    queryKey: ["sales-geography-markets", user?.id, boutiqueId],
+    enabled: Boolean(user),
     queryFn: async () => {
-      if (!user) {
-        return {
-          byContinent: [] as SalesData[],
-          byCountry: [] as SalesData[],
-          byCity: [] as SalesData[],
-        };
+      const empty = { byContinent: [] as SalesRegion[], byCountry: [] as SalesRegion[], byCity: [] as SalesRegion[] };
+      if (!user) return empty;
+      const { data: boutiques, error: bError } = await supabase.from("boutiques").select("id").eq("user_id", user.id);
+      if (bError) throw bError;
+      const ownIds = (boutiques ?? []).map(b => b.id);
+      const ids = boutiqueId === "all" ? ownIds : ownIds.filter(id => id === boutiqueId);
+      if (!ids.length) return empty;
+      const { data: orders, error } = await supabase.from("orders")
+        .select("market,amount,stripe_environment,payment_status")
+        .in("boutique_id", ids).eq("payment_status", "paid").limit(5000);
+      if (error) throw error;
+      const map = new Map<string, SalesRegion>();
+      for (const order of orders ?? []) {
+        if (order.stripe_environment === "sandbox") continue;
+        const code = String(order.market || "non_renseigne").toUpperCase();
+        const label = code === "EU" ? "Union européenne" :
+          code === "NON_RENSEIGNE" ? "Marché non renseigné" : code;
+        const existing = map.get(label) ?? { location: label, sales: 0, revenue: 0, orders: 0 };
+        existing.orders += 1;
+        existing.sales += 1;
+        existing.revenue += Number(order.amount ?? 0);
+        map.set(label, existing);
       }
-
-      // Get user's boutiques first
-      const { data: boutiques, error: boutiquesError } = await supabase
-        .from("boutiques")
-        .select("id")
-        .eq("user_id", user.id);
-
-      if (boutiquesError) throw boutiquesError;
-      if (!boutiques || boutiques.length === 0) {
-        return {
-          byContinent: [] as SalesData[],
-          byCountry: [] as SalesData[],
-          byCity: [] as SalesData[],
-        };
-      }
-
-      const boutiqueIds = boutiques.map(b => b.id);
-
-      // Fetch orders with market info
-      const { data: orders, error: ordersError } = await supabase
-        .from("orders")
-        .select("market, amount")
-        .in("boutique_id", boutiqueIds);
-
-      if (ordersError) throw ordersError;
-
-      // Aggregate by country (market field)
-      const countryMap = new Map<string, { sales: number; revenue: number; orders: number }>();
-      
-      orders?.forEach(order => {
-        const market = order.market || "EU";
-        const existing = countryMap.get(market) || { sales: 0, revenue: 0, orders: 0 };
-        countryMap.set(market, {
-          sales: existing.sales + 1,
-          revenue: existing.revenue + Number(order.amount),
-          orders: existing.orders + 1,
-        });
-      });
-
-      const byCountry: SalesData[] = Array.from(countryMap.entries()).map(([location, data]) => ({
-        location,
-        ...data,
-      }));
-
-      // Aggregate by continent
-      const continentMap = new Map<string, { sales: number; revenue: number; orders: number }>();
-      
-      byCountry.forEach(country => {
-        const continent = getContinentForMarket(country.location);
-        const existing = continentMap.get(continent) || { sales: 0, revenue: 0, orders: 0 };
-        continentMap.set(continent, {
-          sales: existing.sales + country.sales,
-          revenue: existing.revenue + country.revenue,
-          orders: existing.orders + country.orders,
-        });
-      });
-
-      const byContinent: SalesData[] = Array.from(continentMap.entries()).map(([location, data]) => ({
-        location,
-        ...data,
-      }));
-
-      // Note: City-level data would require a city field in orders table
-      // For now, return empty array - can be populated later
-      const byCity: SalesData[] = [];
-
-      return { byContinent, byCountry, byCity };
+      const byMarket = Array.from(map.values()).sort((a,b) => b.revenue - a.revenue);
+      return { byContinent: byMarket, byCountry: byMarket, byCity: [] as SalesRegion[] };
     },
-    enabled: !!user,
-    refetchInterval: 30000, // Refresh every 30 seconds for "real-time" feel
+    staleTime: 60_000,
   });
 }
