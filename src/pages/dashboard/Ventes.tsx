@@ -50,6 +50,7 @@ import { SalesHeatmap } from "@/components/dashboard/sales/SalesHeatmap";
 import { ProductPerformanceTable } from "@/components/dashboard/sales/ProductPerformanceTable";
 import { LiveActivity } from "@/components/dashboard/sales/LiveActivity";
 import { RealtimePulseCard } from "@/components/dashboard/sales/RealtimePulseCard";
+import { LiveSalesGlobe } from "@/components/dashboard/sales/LiveSalesGlobe";
 import { useSalesKpis } from "@/hooks/useSalesKpis";
 import { PlanCommissionBanner } from "@/components/dashboard/PlanCommissionBanner";
 
@@ -268,6 +269,11 @@ export default function Ventes() {
         >
           <LiveActivity />
         </SectionCard>
+      </div>
+
+      {/* Live confirmed sales by commercial market */}
+      <div className="mb-6 min-w-0">
+        <LiveSalesGlobe boutiqueId={selectedBoutique} />
       </div>
 
       {/* Realtime storefront pulse */}
