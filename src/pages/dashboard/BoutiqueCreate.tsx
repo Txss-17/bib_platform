@@ -496,7 +496,7 @@ export default function BoutiqueCreate() {
                 <FieldLabel htmlFor="boutique-market" required>
                   {getUiLanguage() === "en" ? "Store market" : "Marché de la boutique"}
                 </FieldLabel>
-                <Select value={formData.market} onValueChange={(value: "EU") => updateField("market", value)}>
+                <Select value={formData.market} onValueChange={() => updateField("market", "EU")}>
                   <SelectTrigger id="boutique-market">
                     <SelectValue />
                   </SelectTrigger>
