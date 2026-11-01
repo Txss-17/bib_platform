@@ -89,6 +89,21 @@ describe("Merchant operational workspaces", () => {
     expect(stats).toContain("Statistiques & qualité SEO");
   });
 
+  it("presents product customization as an editable product dossier rather than a KPI dashboard", () => {
+    const page = read("src/pages/dashboard/Personnalisation.tsx");
+    const editor = read("src/components/dashboard/products/ProductCustomizationEditor.tsx");
+    expect(page).toContain("Donnez votre identité à vos produits");
+    expect(page).toContain("Personnalisation BIB");
+    expect(page).not.toContain("Références au catalogue");
+    expect(page).not.toContain("Capacités qualifiées");
+    expect(page).toContain("<ProductCustomizationEditor key={selected.id} product={selected} />");
+    expect(editor).toContain("Choix de personnalisation");
+    expect(editor).toContain("Visuels du fournisseur");
+    expect(editor).toContain("Récapitulatif de vos choix");
+    expect(editor).toContain("Enregistrer le brouillon");
+    expect(editor).toContain("Demander la revue BIB");
+  });
+
   it("keeps the supplier catalog focused on discovery rather than favorite KPIs", () => {
     const catalog = read("src/pages/dashboard/ProduitsFournisseurs.tsx");
     expect(catalog).toContain("Trouvez les produits de votre prochaine collection");
