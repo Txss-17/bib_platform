@@ -209,7 +209,7 @@ Deno.serve(async (req) => {
     const sb = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } })
     if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405)
     const authorization = req.headers.get('Authorization')
-    const token = authorization?.replace(/^Bearer\\s+/i, '').trim() ?? ''
+    const token = authorization?.replace(/^Bearer\s+/i, '').trim() ?? ''
     const configuredCronKey = Deno.env.get('ONBOARDING_REMINDERS_CRON_KEY')
     const cronKey = req.headers.get('x-bib-cron-key')
     const isCron = Boolean(configuredCronKey && cronKey && cronKey === configuredCronKey)
