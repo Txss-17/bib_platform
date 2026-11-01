@@ -38,7 +38,7 @@ const DEFAULTS = (boutiqueId: string): AlertSettings => ({
   low_stock_ratio: 0.3,
   audits_enabled: true,
   notify_email: null,
-  email_enabled: true,
+  email_enabled: false,
   period_days: 7,
   last_checked_at: null,
 });
