@@ -1,3 +1,4 @@
+import { assertTrustedReturnUrl } from "../_shared/return-url.ts";
 import { assertPaymentEnvironment } from "../_shared/payment-environment.ts";
 import {
   type StripeEnv,
@@ -74,10 +75,7 @@ async function createCheckoutSession(
     throw new Error("Invalid priceId");
   }
   assertPaymentEnvironment(options.environment, (key) => Deno.env.get(key));
-  const returnUrl = new URL(options.returnUrl);
-  if (returnUrl.protocol !== "https:" || returnUrl.username || returnUrl.password) {
-    throw new Error("Invalid returnUrl");
-  }
+  assertTrustedReturnUrl(options.returnUrl);
 
   const stripe =
     createStripeClient(
@@ -180,7 +178,7 @@ async function createCheckoutSession(
             "embedded_page",
 
           return_url:
-            options.returnUrl,
+            assertTrustedReturnUrl(options.returnUrl),
 
           managed_payments: {
             enabled: true,
