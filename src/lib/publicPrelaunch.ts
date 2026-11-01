@@ -10,8 +10,16 @@ export function isPublicPrelaunchHost(hostname: string): boolean {
 }
 export const PRELAUNCH_PUBLIC_ROUTES = [
  "/",
+ "/carrieres",
+ "/carrieres/postes",
  "/carrieres/talent",
+ "/careers",
+ "/careers/jobs",
  "/bib-talent",
+ "/pack-legal",
+ "/legal",
+ "/cgv",
+ "/cgu",
  "/mentions-legales",
  "/confidentialite",
  "/cookies",
