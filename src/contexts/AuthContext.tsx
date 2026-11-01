@@ -9,11 +9,8 @@ import {
 
 import { supabase } from "@/integrations/supabase/client";
 
-import type {
-  Session,
-  User,
-  AuthError,
-} from "@supabase/supabase-js";
+import { AuthError } from "@supabase/supabase-js";
+import type { Session, User } from "@supabase/supabase-js";
 import type { Tables } from "@/integrations/supabase/types";
 import type { MerchantLegalAcceptances } from "@/lib/legalDocumentVersions";
 
