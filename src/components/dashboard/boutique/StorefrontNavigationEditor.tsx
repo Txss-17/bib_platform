@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, LayoutTemplate, Menu, Save, Store } from "lucide-react";
 import { toast } from "sonner";
@@ -57,14 +57,12 @@ export function StorefrontNavigationEditor({ boutiqueId, boutiqueName, pages }: 
     setDirty(true);
   };
   const visible = pages.filter(page => page.is_visible && page.show_in_nav && page.slug !== "__product__");
-  const ordered = useMemo(() => {
-    const order = draft.pageOrder ?? [];
-    return [...visible].sort((a, b) => {
-      const ia = order.indexOf(a.id);
-      const ib = order.indexOf(b.id);
-      return (ia < 0 ? order.length + a.position : ia) - (ib < 0 ? order.length + b.position : ib);
-    });
-  }, [visible.map(page => [page.id, page.position, page.show_in_nav].join(":")).join("|"), (draft.pageOrder ?? []).join("|")]);
+  const order = draft.pageOrder ?? [];
+  const ordered = [...visible].sort((a, b) => {
+    const ia = order.indexOf(a.id);
+    const ib = order.indexOf(b.id);
+    return (ia < 0 ? order.length + a.position : ia) - (ib < 0 ? order.length + b.position : ib);
+  });
 
   const movePage = (id: string, shift: -1 | 1) => {
     const ids = ordered.map(page => page.id);
@@ -171,16 +169,27 @@ export function StorefrontNavigationEditor({ boutiqueId, boutiqueName, pages }: 
       </div>
       <div className="rounded-xl border border-border/70 bg-muted/20 p-3">
         <p className="mb-2 text-xs font-medium">{tx("Aperçu de l'en-tête", "Header preview")}</p>
-        <div className={`flex min-h-20 flex-col gap-3 rounded-lg bg-background p-3 ${draft.layout === "stacked" ? "items-center" : ""}`}>
-          <div className={`flex w-full items-center gap-2 ${draft.logoPosition === "center" ? "justify-center" : draft.logoPosition === "right" ? "justify-end" : "justify-start"}`}>
-            {boutique?.logo_url ? <img src={boutique.logo_url} alt="" className="h-9 w-9 rounded-md object-contain" /> : <Store className="h-7 w-7 text-muted-foreground" />}
-            {(draft.showStoreName !== false || !boutique?.logo_url) && <span className="truncate text-sm font-semibold">{boutiqueName}</span>}
+        <div className={`flex min-h-20 min-w-0 flex-col gap-3 rounded-lg bg-background p-3 ${draft.layout === "stacked" ? "items-center" : ""}`}>
+          <div className={`flex w-full min-w-0 flex-wrap items-center gap-3 ${draft.layout === "stacked" ? "justify-center" : "justify-between"}`}>
+            <div className={`flex min-w-0 items-center gap-2 ${draft.logoPosition === "center" || draft.layout === "centered" ? "mx-auto" : draft.logoPosition === "right" ? "ml-auto order-last" : ""}`}>
+              {boutique?.logo_url ? <img src={boutique.logo_url} alt="" className="h-9 w-9 shrink-0 rounded-md object-contain" /> : <Store className="h-7 w-7 shrink-0 text-muted-foreground" />}
+              {(draft.showStoreName !== false || !boutique?.logo_url) && <span className="truncate text-sm font-semibold">{boutiqueName}</span>}
+            </div>
+            {draft.layout !== "stacked" && draft.layout !== "minimal" && draft.logoPosition !== "center" && draft.layout !== "centered" && (
+              <div className={`flex flex-1 flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground ${draft.menuAlignment === "left" ? "justify-start" : draft.menuAlignment === "right" ? "justify-end" : "justify-center"}`}>
+                {draft.showHomeLink !== false && <span>{tx("Accueil", "Home")}</span>}
+                {ordered.slice(0, 4).map(page => <span key={page.id}>{page.title}</span>)}
+              </div>
+            )}
+            <span className="shrink-0 text-xs text-muted-foreground">{draft.layout === "minimal" ? "☰" : "▣"}</span>
           </div>
-          <div className={`flex w-full flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground ${draft.menuAlignment === "left" ? "justify-start" : draft.menuAlignment === "right" ? "justify-end" : "justify-center"}`}>
-            {draft.showHomeLink !== false && <span>{tx("Accueil", "Home")}</span>}
-            {ordered.slice(0, 5).map(page => <span key={page.id}>{page.title}</span>)}
-            {draft.showTracking !== false && <span>{tx("Suivi", "Tracking")}</span>}
-          </div>
+          {(draft.layout === "stacked" || draft.logoPosition === "center" || draft.layout === "centered") && (
+            <div className={`flex w-full flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground ${draft.menuAlignment === "left" ? "justify-start" : draft.menuAlignment === "right" ? "justify-end" : "justify-center"}`}>
+              {draft.showHomeLink !== false && <span>{tx("Accueil", "Home")}</span>}
+              {ordered.slice(0, 5).map(page => <span key={page.id}>{page.title}</span>)}
+              {draft.showTracking !== false && <span>{tx("Suivi", "Tracking")}</span>}
+            </div>
+          )}
         </div>
         <p className="mt-2 text-[11px] text-muted-foreground">{tx("Aperçu simplifié. Le menu mobile reste accessible via le bouton de navigation.", "Simplified preview. Mobile navigation remains accessible through its menu button.")}</p>
       </div>
