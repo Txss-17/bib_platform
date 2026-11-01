@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { Menu, Package, ShoppingCart, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import type { StorefrontNavigationSettings } from "@/lib/boutiqueTemplates";
 import { useCart } from "@/contexts/CartContext";
 import { useStorefrontContext } from "@/contexts/StorefrontContext";
 import { usePublicBoutiquePages } from "@/hooks/useBoutiquePages";
@@ -13,6 +14,7 @@ import { usePublicBoutiquePages } from "@/hooks/useBoutiquePages";
 interface StorefrontHeaderProps {
   boutiqueName: string;
   logoUrl?: string | null;
+  navigation?: StorefrontNavigationSettings;
   primaryColor?: string;
   navLinks?: {
     label: string;
@@ -24,6 +26,7 @@ interface StorefrontHeaderProps {
 export function StorefrontHeader({
   boutiqueName,
   logoUrl,
+  navigation,
   primaryColor,
   navLinks,
   boutiqueSlug,
@@ -72,8 +75,15 @@ export function StorefrontHeader({
    * --------------------------------------------------------------------------
    */
 
-  const dynamicLinks = (customPages as any[])
-    .filter((page) => page.show_in_nav)
+  const orderedPages = [...(customPages as any[])]
+    .filter((page) => page.show_in_nav && page.slug !== "__product__")
+    .sort((a, b) => {
+      const order = navigation?.pageOrder ?? [];
+      const ia = order.indexOf(a.id);
+      const ib = order.indexOf(b.id);
+      return (ia < 0 ? order.length + a.position : ia) - (ib < 0 ? order.length + b.position : ib);
+    });
+  const dynamicLinks = orderedPages
     .map((page) => ({
       label: page.title as string,
       href: boutiqueSlug
@@ -104,7 +114,34 @@ export function StorefrontHeader({
         ]
       : [];
 
-  const links = navLinks ?? [homeLink, ...dynamicLinks, ...fallbackLinks];
+  const links = navLinks ?? [
+    ...(navigation?.showHomeLink === false ? [] : [homeLink]),
+    ...dynamicLinks,
+    ...fallbackLinks,
+  ];
+  const layout = navigation?.layout ?? "classic";
+  const logoPosition = navigation?.logoPosition ?? "left";
+  const menuAlignment = navigation?.menuAlignment ?? "center";
+  const showStoreName = navigation?.showStoreName !== false || !logoUrl;
+  const brand = (
+    <Link to={boutiqueRoot}
+      className="inline-flex min-w-0 shrink-0 items-center gap-2.5 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+      style={{ ["--tw-ring-color" as string]: accent }}
+      onClick={() => setMobileMenuOpen(false)}
+      aria-label={translateUi("Accueil {v0}", { v0: boutiqueName })}>
+      {logoUrl && <img src={logoUrl} alt="" className="h-9 w-9 shrink-0 rounded-lg object-contain sm:h-11 sm:w-11" />}
+      {showStoreName && <span className="max-w-[140px] truncate text-lg font-semibold tracking-tight sm:max-w-[220px] md:max-w-none md:text-2xl" style={{ color: accent }}>{boutiqueName}</span>}
+    </Link>
+  );
+  const menu = (
+    <nav aria-label={translateUi("Navigation principale")}
+      className={`hidden min-w-0 flex-wrap items-center gap-x-6 gap-y-2 md:flex ${menuAlignment === "left" ? "justify-start" : menuAlignment === "right" ? "justify-end" : "justify-center"}`}>
+      {links.map(link => (
+        <a key={`${link.label}-${link.href}`} href={link.href}
+          className="text-sm font-medium text-gray-600 transition-colors hover:text-gray-900">{link.label}</a>
+      ))}
+    </nav>
+  );
 
   /*
    * --------------------------------------------------------------------------
@@ -119,57 +156,33 @@ export function StorefrontHeader({
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          {/* ---------------------------------------------------------------- */}
-          {/* Brand                                                            */}
-          {/* ---------------------------------------------------------------- */}
-
-          <Link
-            to={boutiqueRoot}
-            className="min-w-0 shrink-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-            style={{
-              ["--tw-ring-color" as string]: accent,
-            }}
-            onClick={closeMobileMenu}
-            aria-label={translateUi("Accueil {v0}", { v0: boutiqueName })}
-          >
-            <span className="flex min-w-0 items-center gap-2.5">
-              {logoUrl && <img src={logoUrl} alt="" className="h-9 w-9 shrink-0 rounded-lg object-contain sm:h-11 sm:w-11" />}
-              <span
-              className="block max-w-[150px] truncate text-lg font-semibold tracking-tight sm:max-w-[220px] md:max-w-none md:text-2xl"
-              style={{ color: accent }}
-            >
-              {boutiqueName}
-              </span>
-            </span>
-          </Link>
-
-          {/* ---------------------------------------------------------------- */}
-          {/* Desktop navigation                                               */}
-          {/* ---------------------------------------------------------------- */}
-
-          <nav
-            aria-label={translateUi("Navigation principale")}
-            className="hidden items-center gap-8 md:flex"
-          >
-            {links.map((link) => (
-              <a
-                key={`${link.label}-${link.href}`}
-                href={link.href}
-                className="text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"
-              >
-                {link.label}
-              </a>
-            ))}
-          </nav>
-
+        <div className={`relative flex min-h-16 min-w-0 items-center gap-3 py-2 ${layout === "stacked" ? "flex-wrap justify-center md:flex-col md:py-4" : layout === "centered" ? "justify-between md:grid md:grid-cols-[1fr_auto_1fr]" : "justify-between"}`}>
+          {layout === "stacked" ? (
+            <div className="min-w-0 flex-1 md:flex-none">{brand}</div>
+          ) : layout === "centered" ? (
+            <>
+              <div className="hidden md:block">{menu}</div>
+              <div className="min-w-0">{brand}</div>
+            </>
+          ) : logoPosition === "right" ? (
+            <>
+              <div className="hidden min-w-0 flex-1 md:block">{menu}</div>
+              <div className="min-w-0">{brand}</div>
+            </>
+          ) : (
+            <>
+              <div className="min-w-0">{brand}</div>
+              <div className="hidden min-w-0 flex-1 md:block">{menu}</div>
+            </>
+          )}
+          {layout === "stacked" && <div className="hidden w-full justify-center md:flex">{menu}</div>}
           {/* ---------------------------------------------------------------- */}
           {/* Actions                                                          */}
           {/* ---------------------------------------------------------------- */}
 
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className={`flex shrink-0 items-center gap-1 sm:gap-2 ${layout === "centered" ? "md:justify-self-end" : ""}`}>
             <LanguageSwitcher className="text-gray-700" />
-            {boutiqueSlug && (
+            {boutiqueSlug && navigation?.showTracking !== false && (
               <Link to={orderTrackingUrl} className="hidden sm:block">
                 <Button
                   variant="ghost"
@@ -262,7 +275,7 @@ export function StorefrontHeader({
                 </a>
               ))}
 
-              {boutiqueSlug && (
+              {boutiqueSlug && navigation?.showTracking !== false && (
                 <Link
                   to={orderTrackingUrl}
                   className="flex items-center gap-2 rounded-md px-2 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
