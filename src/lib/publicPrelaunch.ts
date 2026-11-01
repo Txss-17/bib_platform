@@ -27,3 +27,15 @@ export const PRELAUNCH_PUBLIC_ROUTES = [
  "/talent/confidentialite",
  "/talent/cookies",
 ] as const;
+
+/** During the closed boutique pilot, expose only authenticated account and
+ * dashboard routes through the full application router. ProtectedRoute and
+ * Supabase RLS remain authoritative for business data and mutations.
+ * Public signup, checkout and storefront remain under the prelaunch gate.
+ */
+export function isMerchantTestPath(pathname: string): boolean {
+  return pathname === "/login" ||
+    pathname === "/reset-password" ||
+    pathname === "/dashboard" ||
+    pathname.startsWith("/dashboard/");
+}
