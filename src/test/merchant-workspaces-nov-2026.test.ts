@@ -104,6 +104,33 @@ describe("Merchant operational workspaces", () => {
     expect(editor).toContain("Demander la revue BIB");
   });
 
+  it("separates standard catalog from customization and requires paid physical samples", () => {
+    const supplier = read("src/pages/dashboard/ProduitsFournisseurs.tsx");
+    const personalization = read("src/pages/dashboard/Personnalisation.tsx");
+    const hook = read("src/hooks/useSampleValidation.ts");
+    const validation = read("src/components/dashboard/SimpleValidationSection.tsx");
+    const purchases = read("supabase/functions/create-sample-checkout/index.ts");
+    const webhook = read("supabase/functions/payments-webhook/index.ts");
+    const migration = read("supabase/migrations/20261101223500_paid_sample_validation.sql");
+    const products = read("src/pages/dashboard/Produits.tsx");
+    expect(supplier).not.toContain("handleCustomize");
+    expect(supplier).not.toContain("Personnaliser");
+    expect(personalization).toContain("!hasCustomization(caps)");
+    expect(personalization).toContain("hasCustomization(readCatalogCustomization(supplierCandidate).capabilities)");
+    expect(hook).toContain('functions.invoke("create-sample-checkout"');
+    expect(hook).toContain('rpc("mark_paid_sample_received"');
+    expect(hook).toContain('rpc("validate_paid_sample"');
+    expect(validation).toContain("Acheter l’échantillon pour validation");
+    expect(purchases).toContain('BIB_SAMPLE_FULFILLMENT_READY');
+    expect(purchases).toContain("checkout.sessions.create");
+    expect(webhook).toContain('session.metadata?.kind === "merchant_sample"');
+    expect(webhook).toContain('session.payment_status !== "paid"');
+    expect(migration).toContain("require_verified_sample_before_activation");
+    expect(migration).toContain("stripe_environment='live'");
+    expect(products).not.toContain("!hasPhysicalStock");
+    expect(products).toContain('sampleCheckout === "success"');
+  });
+
   it("keeps the supplier catalog focused on discovery rather than favorite KPIs", () => {
     const catalog = read("src/pages/dashboard/ProduitsFournisseurs.tsx");
     expect(catalog).toContain("Trouvez les produits de votre prochaine collection");
