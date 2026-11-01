@@ -130,13 +130,13 @@ export const STUDIO_SCENES: SceneDefinition[] = [
         {
           eyebrow: "Savoir-faire",
           title: "Façonné à la main, pensé pour durer",
-          body: "Chaque pièce passe par 14 étapes de contrôle.",
+          body: "Chaque détail mérite une attention particulière.",
           image: null,
         },
         {
           eyebrow: "Promesse",
           title: "Une garantie qui parle pour nous",
-          body: "Réparation à vie, sur simple demande.",
+          body: "Découvrez nos engagements et les informations propres à chaque produit.",
           image: null,
         },
       ],
@@ -202,23 +202,8 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     defaultContent: {
       title: "Ils nous font confiance",
       pressLogos: [],
-      reviews: [
-        {
-          author: "Camille L.",
-          quote: "La meilleure pièce de mon dressing.",
-          rating: 5,
-        },
-        {
-          author: "Hugo R.",
-          quote: "Service irréprochable, finition sublime.",
-          rating: 5,
-        },
-      ],
-      badges: [
-        "Verified by Linksy",
-        "Garantie 2 ans",
-        "Livraison neutre carbone",
-      ],
+      reviews: [],
+      badges: [],
     },
   },
   {
@@ -237,7 +222,7 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     previewKey: "cta-sticky",
     defaultContent: {
       title: "Prêt à passer à l'action ?",
-      subtitle: "Rejoignez les 10 000 clients qui nous font déjà confiance.",
+      subtitle: "Explorez notre sélection et trouvez votre prochain favori.",
       ctaLabel: "Commander maintenant",
       ctaSecondaryLabel: "Recevoir la newsletter",
       stickyEnabled: true,
@@ -262,15 +247,15 @@ export const STUDIO_SCENES: SceneDefinition[] = [
       items: [
         {
           q: "Quels sont vos délais de livraison ?",
-          a: "48 à 72h en France métropolitaine, 5 à 7 jours en Europe.",
+          a: "Les délais applicables sont précisés lors du parcours de commande.",
         },
         {
           q: "Quelle est votre politique de retour ?",
-          a: "Retours gratuits sous 30 jours, sans condition.",
+          a: "Consultez les conditions de retour de la boutique et les garanties légales applicables.",
         },
         {
           q: "Vos produits sont-ils garantis ?",
-          a: "Oui, garantie 2 ans incluse sur toute la collection.",
+          a: "Les garanties légales s'appliquent conformément à la réglementation en vigueur.",
         },
       ],
     },
@@ -295,11 +280,7 @@ export const STUDIO_SCENES: SceneDefinition[] = [
       subtitle: "Une lettre éditoriale par mois. Pas de spam, jamais.",
       placeholder: "Votre email",
       ctaLabel: "S'abonner",
-      benefits: [
-        "-10% sur la première commande",
-        "Accès anticipé aux drops",
-        "Histoires de la maison",
-      ],
+      benefits: [],
     },
   },
   {
@@ -318,13 +299,7 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     previewKey: "press-strip",
     defaultContent: {
       eyebrow: "Vu dans",
-      logos: [
-        { name: "Vogue", url: null },
-        { name: "ELLE", url: null },
-        { name: "Le Monde", url: null },
-        { name: "Forbes", url: null },
-        { name: "Madame Figaro", url: null },
-      ],
+      logos: [],
     },
   },
   {
@@ -345,12 +320,7 @@ export const STUDIO_SCENES: SceneDefinition[] = [
       title: "Pourquoi nous choisir",
       brand_name: "Notre maison",
       competitor_name: "La concurrence",
-      rows: [
-        { label: "Matières premium", us: true, them: false },
-        { label: "Garantie 2 ans", us: true, them: false },
-        { label: "Livraison neutre carbone", us: true, them: false },
-        { label: "Service client humain", us: true, them: false },
-      ],
+      rows: [],
     },
   },
   {
@@ -371,7 +341,7 @@ export const STUDIO_SCENES: SceneDefinition[] = [
       eyebrow: "Notre histoire",
       title: "Un mot du fondateur",
       body: "Quand j'ai imaginé cette maison, j'avais en tête une seule idée : faire mieux, sans compromis. Chaque pièce qui sort de notre atelier porte cette obsession.",
-      signature: "Antoine, fondateur",
+      signature: "",
       portraitUrl: null,
     },
   },
@@ -409,7 +379,7 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     variants: ["dark", "light", "accent", "outline"],
     previewKey: "marquee-strip",
     defaultContent: {
-      text: "Livraison offerte dès 50€ · Retours gratuits · Garantie 2 ans",
+      text: "Découvrez notre collection · Nos nouveautés · Notre univers",
       separator: "·",
       speed: 30,
       fontFamily: "",
@@ -454,24 +424,7 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     previewKey: "stats-counter",
     defaultContent: {
       title: "Quelques chiffres",
-      stats: [
-        {
-          value: "10K+",
-          label: "Clients satisfaits",
-        },
-        {
-          value: "98%",
-          label: "Avis 5 étoiles",
-        },
-        {
-          value: "48h",
-          label: "Livraison moyenne",
-        },
-        {
-          value: "2 ans",
-          label: "Garantie",
-        },
-      ],
+      stats: [],
     },
   },
 
@@ -513,7 +466,7 @@ export const STUDIO_SCENES: SceneDefinition[] = [
     variants: ["solid", "gradient", "outline"],
     previewKey: "banner-promo",
     defaultContent: {
-      text: "🎁 -10% sur la première commande avec le code BIENVENUE",
+      text: "Découvrez nos nouveautés",
       ctaLabel: "Profiter",
       ctaUrl: "#shop",
       bgColor: "primary",
