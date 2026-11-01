@@ -308,6 +308,43 @@
   padding-bottom: 6rem !important;
 }
 
+/* Per-scene structure controls: affect the actual storefront, not just the editor. */
+.studio-width-narrow > section > [class*="max-w-"],
+.studio-width-narrow > section > [class*="mx-auto"],
+.studio-width-narrow > section > .relative {
+  max-width: min(100%, 760px) !important;
+}
+
+.studio-width-wide > section > [class*="max-w-"],
+.studio-width-wide > section > [class*="mx-auto"],
+.studio-width-wide > section > .relative {
+  max-width: min(100%, 1440px) !important;
+}
+
+.studio-width-full > section > [class*="max-w-"],
+.studio-width-full > section > [class*="mx-auto"],
+.studio-width-full > section > .relative {
+  max-width: 100% !important;
+}
+
+.studio-align-left > section > [class*="mx-auto"] {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+
+.studio-align-right > section > [class*="mx-auto"] {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+}
+
+@media (max-width: 639px) {
+  .studio-width-narrow > section > [class*="max-w-"],
+  .studio-width-wide > section > [class*="max-w-"],
+  .studio-width-full > section > [class*="max-w-"] {
+    max-width: 100% !important;
+  }
+}
+
 /* --------------------------------------------------------------------------
    Background media
    -------------------------------------------------------------------------- */
