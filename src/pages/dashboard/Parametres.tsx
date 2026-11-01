@@ -34,8 +34,6 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { BusinessDocuments } from "@/components/dashboard/BusinessDocuments";
-import { EmailMarketingSettings } from "@/components/dashboard/EmailMarketingSettings";
-import { BoutiqueAlertsSettings } from "@/components/dashboard/BoutiqueAlertsSettings";
 import { SubscriptionSection } from "@/components/payments/SubscriptionSection";
 import {
   useOpenBillingPortal,
@@ -50,8 +48,6 @@ type SettingsTab =
   | "documents"
   | "abonnement"
   | "notifications"
-  | "email"
-  | "alerts"
   | "securite"
   | "paiement"
   | "apparence";
@@ -145,7 +141,7 @@ export default function Parametres() {
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 {translateUi(
-                  "Les informations personnelles sont disponibles dans « Mon profil ». Cette page regroupe les préférences et les configurations de votre environnement BIB.",
+                  "Les informations personnelles restent dans « Mon profil ». Les e-mails marketing, alertes et réglages commerciaux de chaque boutique se trouvent dans « Mes boutiques » → « Paramètres de la boutique ».",
                 )}
               </p>
             </div>
@@ -157,7 +153,7 @@ export default function Parametres() {
           onValueChange={(value) => setActiveTab(value as SettingsTab)}
           className="w-full"
         >
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-muted/50 p-1 sm:grid-cols-4 lg:grid-cols-8">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 bg-muted/50 p-1 sm:grid-cols-3 lg:grid-cols-6">
             <TabsTrigger
               value="notifications"
               className="gap-1.5 px-2 py-2 text-xs"
@@ -190,16 +186,6 @@ export default function Parametres() {
             <TabsTrigger value="paiement" className="gap-1.5 px-2 py-2 text-xs">
               <CreditCard className="h-3.5 w-3.5" />
               {translateUi("Paiement")}
-            </TabsTrigger>
-
-            <TabsTrigger value="email" className="gap-1.5 px-2 py-2 text-xs">
-              <Mail className="h-3.5 w-3.5" />
-              {translateUi("E-mail")}
-            </TabsTrigger>
-
-            <TabsTrigger value="alerts" className="gap-1.5 px-2 py-2 text-xs">
-              <AlertTriangle className="h-3.5 w-3.5" />
-              {translateUi("Alertes")}
             </TabsTrigger>
 
             <TabsTrigger
@@ -527,15 +513,6 @@ export default function Parametres() {
             </SectionCard>
           </TabsContent>
 
-          {/* E-mail */}
-          <TabsContent value="email" className="mt-5">
-            <EmailMarketingSettings />
-          </TabsContent>
-
-          {/* Alertes */}
-          <TabsContent value="alerts" className="mt-5">
-            <BoutiqueAlertsSettings />
-          </TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>
