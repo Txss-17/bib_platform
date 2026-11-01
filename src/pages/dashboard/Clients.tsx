@@ -31,16 +31,13 @@ import {
 import {
   Users,
   Search,
-  Download,
   Mail,
   ShoppingBag,
   Euro,
   Sparkles,
 } from "lucide-react";
-import { exportToCSV } from "@/lib/exportUtils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
-import { toast } from "@/hooks/use-toast";
 
 const fmtCents = (c: number) =>
   (c / 100).toLocaleString(getUiLocale(), {
@@ -91,35 +88,6 @@ export default function Clients() {
     [customers],
   );
 
-  const handleExport = () => {
-    exportToCSV(
-      filtered,
-      [
-        { header: "Email", accessor: (r) => r.email },
-        { header: translateUi("Nom"), accessor: (r) => r.full_name ?? "" },
-        { header: translateUi("Ville"), accessor: (r) => r.city ?? "" },
-        {
-          header: translateUi("Commandes"),
-          accessor: (r) => String(r.orders_count),
-        },
-        {
-          header: translateUi("Dépensé (€)"),
-          accessor: (r) => (r.total_spent_cents / 100).toFixed(2),
-        },
-        {
-          header: translateUi("Dernière commande"),
-          accessor: (r) => r.last_order_at ?? "",
-        },
-        {
-          header: "Opt-in",
-          accessor: (r) => (r.marketing_opt_in ? "oui" : "non"),
-        },
-        { header: "Source", accessor: (r) => r.source },
-      ],
-      `clients-${activeId}`,
-    );
-    toast({ title: translateUi("Export CSV généré") });
-  };
 
   return (
     <DashboardLayout>
@@ -151,14 +119,7 @@ export default function Clients() {
                 </SelectContent>
               </Select>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExport}
-              disabled={!filtered.length}
-            >
-              <Download className="w-4 h-4 mr-2" /> CSV
-            </Button>
+
             <Button size="sm" onClick={() => navigate("/dashboard/marketing")}>
               <Sparkles className="w-4 h-4 mr-2" />{" "}
               {translateUi("Envoyer une campagne")}
@@ -293,7 +254,7 @@ export default function Clients() {
         {filtered.length > 200 && (
           <p className="text-xs text-muted-foreground text-center">
             {translateUi(
-              "Affichage limité à 200 lignes — utilisez l'export CSV pour la liste complète.",
+              "Affichage limité à 200 lignes. Affinez votre recherche pour retrouver un client.",
             )}
           </p>
         )}
