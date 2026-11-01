@@ -15,6 +15,13 @@ describe("Merchant operational workspaces", () => {
     expect(widget).toContain("Assistant BIB");
     expect(widget).toContain("Besoin d’aide ?");
     expect(server).toContain("CONNAISSANCES BIB");
+    expect(server).toContain('name: "suggest_ticket"');
+    expect(server).toContain('body?.action === "create_ticket"');
+    expect(server).toContain("offer_ticket: offerTicket");
+    expect(widget).toContain("Bonjour ! Comment puis-je vous aider ?");
+    expect(widget).toContain("setOfferTicket(data?.offer_ticket === true)");
+    expect(widget).toContain("const confirmTicket = async () =>");
+    expect(widget).toContain("Continuer la discussion");
     expect(server).toContain("Mes boutiques > Paramètres de la boutique");
     expect(server).not.toContain("versements tous les 15 jours");
   });
