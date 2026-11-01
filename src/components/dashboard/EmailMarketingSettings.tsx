@@ -74,11 +74,11 @@ type Row = {
   gmail_connected?: boolean | null;
 };
 
-export function EmailMarketingSettings() {
+export function EmailMarketingSettings({ boutiqueId: fixedBoutiqueId }: { boutiqueId?: string } = {}) {
   useLanguage();
   const { data: boutiques = [] } = useBoutiques();
   const [boutiqueId, setBoutiqueId] = useState<string>("");
-  const activeId = boutiqueId || boutiques[0]?.id || "";
+  const activeId = fixedBoutiqueId || boutiqueId || boutiques[0]?.id || "";
   const { data: existing } = useEmailSettings(activeId) as { data: Row | null };
   const upsert = useUpsertEmailSettings();
 
@@ -142,7 +142,7 @@ export function EmailMarketingSettings() {
 
   return (
     <div className="space-y-4">
-      {boutiques.length > 1 && (
+      {!fixedBoutiqueId && boutiques.length > 1 && (
         <div className="space-y-1.5">
           <Label className="text-xs">Boutique</Label>
           <Select value={activeId} onValueChange={setBoutiqueId}>
