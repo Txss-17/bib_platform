@@ -379,7 +379,6 @@ export default function Produits() {
     }
 
     const sampleStatus = getSampleStatus(productId);
-    const hasPhysicalStock = Number(product.stock_quantity ?? 0) > 0;
 
     // Un rejet ou une validation complémentaire en attente ne peut pas
     // être contourné par la présence d'un stock existant.
