@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrentPlan } from "@/hooks/usePlans";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -919,6 +920,8 @@ export function StudioEditor({
   const { lang } = useLanguage();
   const english = lang === "en";
   const tx = (fr: string, en: string) => (english ? en : fr);
+  const { tier, isLoading: planLoading } = useCurrentPlan();
+  const canCustomizeDomain = !planLoading && tier === "pro";
 
   const navigate = useNavigate();
 
@@ -2210,6 +2213,7 @@ export function StudioEditor({
                       value={seoPublicOrigin}
                       placeholder="https://boutique.exemple.com"
                       type="url"
+                      disabled={!canCustomizeDomain}
                       onChange={(event) => {
                         setSeoPublicOrigin(event.target.value);
                         setSeoDirty(true);
@@ -2220,7 +2224,12 @@ export function StudioEditor({
                         "Indique uniquement le domaine et le protocole, sans chemin, paramètres ni fragment. Laisse vide pour utiliser le domaine public de BIB.",
                       )}
                     </p>
-                  </div>
+   
+                    {!canCustomizeDomain && (
+                      <p className="mt-1 text-xs font-medium text-accent-ink">
+                        {translateUi("Le domaine personnalisé est réservé au plan Pro.")}
+                      </p>
+                    )}               </div>
                 </Card>
 
                 <Card className="p-4">
