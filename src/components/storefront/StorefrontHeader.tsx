@@ -121,6 +121,7 @@ export function StorefrontHeader({
   ];
   const layout = navigation?.layout ?? "classic";
   const logoPosition = navigation?.logoPosition ?? "left";
+  const centeredBrand = logoPosition === "center" || layout === "centered";
   const menuAlignment = navigation?.menuAlignment ?? "center";
   const showStoreName = navigation?.showStoreName !== false || !logoUrl;
   const brand = (
@@ -156,10 +157,10 @@ export function StorefrontHeader({
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className={`relative flex min-h-16 min-w-0 items-center gap-3 py-2 ${layout === "stacked" ? "flex-wrap justify-center md:flex-col md:py-4" : layout === "centered" ? "justify-between md:grid md:grid-cols-[1fr_auto_1fr]" : "justify-between"}`}>
+        <div className={`relative flex min-h-16 min-w-0 items-center gap-3 py-2 ${layout === "stacked" ? "flex-wrap justify-center md:flex-col md:py-4" : centeredBrand ? "justify-between md:grid md:grid-cols-[1fr_auto_1fr]" : "justify-between"}`}>
           {layout === "stacked" ? (
-            <div className="min-w-0 flex-1 md:flex-none">{brand}</div>
-          ) : layout === "centered" ? (
+            <div className={`min-w-0 flex-1 md:flex-none ${logoPosition === "right" ? "md:self-end" : logoPosition === "left" ? "md:self-start" : "md:self-center"}`}>{brand}</div>
+          ) : centeredBrand ? (
             <>
               <div className="hidden md:block">{menu}</div>
               <div className="min-w-0">{brand}</div>
@@ -180,7 +181,7 @@ export function StorefrontHeader({
           {/* Actions                                                          */}
           {/* ---------------------------------------------------------------- */}
 
-          <div className={`flex shrink-0 items-center gap-1 sm:gap-2 ${layout === "centered" ? "md:justify-self-end" : ""}`}>
+          <div className={`flex shrink-0 items-center gap-1 sm:gap-2 ${centeredBrand ? "md:justify-self-end" : ""} ${layout === "stacked" ? "md:absolute md:right-0 md:top-2" : ""}`}>
             <LanguageSwitcher className="text-gray-700" />
             {boutiqueSlug && navigation?.showTracking !== false && (
               <Link to={orderTrackingUrl} className="hidden sm:block">
