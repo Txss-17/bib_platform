@@ -12,6 +12,7 @@ import { usePublicBoutiquePages } from "@/hooks/useBoutiquePages";
 
 interface StorefrontHeaderProps {
   boutiqueName: string;
+  logoUrl?: string | null;
   primaryColor?: string;
   navLinks?: {
     label: string;
@@ -22,6 +23,7 @@ interface StorefrontHeaderProps {
 
 export function StorefrontHeader({
   boutiqueName,
+  logoUrl,
   primaryColor,
   navLinks,
   boutiqueSlug,
@@ -131,11 +133,14 @@ export function StorefrontHeader({
             onClick={closeMobileMenu}
             aria-label={translateUi("Accueil {v0}", { v0: boutiqueName })}
           >
-            <span
-              className="block max-w-[220px] truncate text-xl font-semibold tracking-tight md:max-w-none md:text-2xl"
+            <span className="flex min-w-0 items-center gap-2.5">
+              {logoUrl && <img src={logoUrl} alt="" className="h-9 w-9 shrink-0 rounded-lg object-contain sm:h-11 sm:w-11" />}
+              <span
+              className="block max-w-[150px] truncate text-lg font-semibold tracking-tight sm:max-w-[220px] md:max-w-none md:text-2xl"
               style={{ color: accent }}
             >
               {boutiqueName}
+              </span>
             </span>
           </Link>
 
