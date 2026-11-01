@@ -136,7 +136,7 @@ export function StorefrontHeader({
   );
   const menu = (
     <nav aria-label={translateUi("Navigation principale")}
-      className={`hidden min-w-0 flex-wrap items-center gap-x-6 gap-y-2 md:flex ${menuAlignment === "left" ? "justify-start" : menuAlignment === "right" ? "justify-end" : "justify-center"}`}>
+      className={`${layout === "minimal" ? "hidden" : "hidden md:flex"} min-w-0 flex-wrap items-center gap-x-6 gap-y-2 ${menuAlignment === "left" ? "justify-start" : menuAlignment === "right" ? "justify-end" : "justify-center"}`}>
       {links.map(link => (
         <a key={`${link.label}-${link.href}`} href={link.href}
           className="text-sm font-medium text-gray-600 transition-colors hover:text-gray-900">{link.label}</a>
@@ -237,7 +237,7 @@ export function StorefrontHeader({
               type="button"
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className={layout === "minimal" ? "" : "md:hidden"}
               onClick={() => setMobileMenuOpen((open) => !open)}
               aria-label={
                 mobileMenuOpen
@@ -260,7 +260,7 @@ export function StorefrontHeader({
         {/* ------------------------------------------------------------------ */}
 
         {mobileMenuOpen && (
-          <div className="border-t border-gray-100 py-4 md:hidden">
+          <div className={`border-t border-gray-100 py-4 ${layout === "minimal" ? "" : "md:hidden"}`}>
             <nav
               aria-label={translateUi("Navigation mobile")}
               className="flex flex-col gap-1"
