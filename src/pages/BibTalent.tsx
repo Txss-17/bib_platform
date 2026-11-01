@@ -28,7 +28,7 @@ export default function BibTalent(){
  useLanguage(); // Shared language state; the BIB Talent pilot's public editorial is French-first.
  useSEO({title:"BIB Talent — Contribuer à construire Brand-in-a-Box",description:"Découvrez Brand-in-a-Box (BIB), un écosystème en construction qui connecte marchands, clients, fournisseurs et partenaires logistiques. Explorez le projet et BIB Talent."});
  return <PublicPageLayout>
-   <main>
+   <>
      <section className="relative overflow-hidden bg-brand-marine text-bib-ivory">
        <div className="pointer-events-none absolute right-[-170px] top-[-140px] h-[530px] w-[530px] rounded-full bg-bib-gold/10" aria-hidden="true"/>
        <div className="pointer-events-none absolute bottom-[-160px] left-[-180px] h-[420px] w-[420px] rounded-full bg-bib-gold/5" aria-hidden="true"/>
@@ -36,7 +36,7 @@ export default function BibTalent(){
          <div>
            <span className="inline-flex items-center gap-2 rounded-full border border-bib-ivory/20 bg-background/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.19em] text-bib-gold"><Sparkles size={15}/> Programme BIB Talent</span>
            <h1 className="mt-7 max-w-3xl font-display text-5xl font-bold leading-[1.06] tracking-tight text-foreground sm:text-6xl xl:text-7xl">BIB Talent : <span className="text-bib-gold">construire la suite ensemble.</span></h1>
-           <p className="mt-7 max-w-2xl text-lg leading-8 text-bib-ivory/80"><strong className="font-semibold text-foreground">Brand-in-a-Box (BIB)</strong> développe un écosystème de commerce qui met en relation <strong>marchands, clients, fournisseurs et partenaires logistiques</strong>. L'ambition : simplifier les expériences de vente, d'achat et de coordination au sein d'une même plateforme.</p>
+           <p className="mt-7 max-w-2xl text-lg leading-8 text-bib-ivory/80"><strong className="font-semibold text-bib-ivory">Brand-in-a-Box (BIB)</strong> développe un écosystème de commerce qui met en relation <strong>marchands, clients, fournisseurs et partenaires logistiques</strong>. L'ambition : simplifier les expériences de vente, d'achat et de coordination au sein d'une même plateforme.</p>
            <p className="mt-4 max-w-2xl text-base leading-7 text-bib-ivory/70">BIB Talent, c'est la porte d'entrée pour participer à la réflexion, aux tests et à la création de cet écosystème.</p>
            <div className="mt-9 flex flex-wrap items-center gap-5"><a href="#projet-bib" className="inline-flex w-fit items-center justify-center gap-3 rounded-full bg-bib-gold px-7 py-4 text-sm font-semibold text-primary transition hover:opacity-90">Comprendre BIB <ArrowRight size={18}/></a><a href="#decouvrir" className="inline-flex items-center gap-2 font-semibold text-bib-ivory hover:text-bib-gold"><PlayCircle size={20}/> Voir le film du projet</a></div>
          </div>
@@ -103,6 +103,6 @@ export default function BibTalent(){
      <section className="bg-brand-marine px-5 py-20 text-center text-bib-ivory sm:py-24">
        <div className="mx-auto max-w-3xl"><span className="text-xs font-semibold uppercase tracking-[0.22em] text-bib-gold">BIB Talent</span><h2 className="mt-4 font-display text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">Et si la prochaine idée venait de toi ?</h2><p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-bib-ivory/75">Viens partager ton regard et découvrir comment participer à la construction de BIB.</p><div className="mt-8 flex justify-center"><Join secondary/></div></div>
      </section>
-   </main>
+   </>
  </PublicPageLayout>;
 }
