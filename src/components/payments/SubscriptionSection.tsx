@@ -110,7 +110,7 @@ export function SubscriptionSection() {
     setCheckoutPriceId(`insurance_${tier}_${cycle}`);
   }
   function activateExtraBoutiques(count: 1 | 2) {
-    if (tier !== "pro") return;
+    if (tier !== "growth" && tier !== "pro") return;
     const priceId = `boutique_extra_${count === 1 ? "one" : "two"}_monthly`;
     if (extraBoutiqueSubscription) {
       setPendingChange({
@@ -410,11 +410,11 @@ export function SubscriptionSection() {
         </div>
       )}
 
-      {tier === "pro" && (
+      {(tier === "growth" || tier === "pro") && (
         <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
-          <h3 className="font-display text-lg font-semibold text-foreground">{translateUi("Boutiques supplémentaires — Pro")}</h3>
+          <h3 className="font-display text-lg font-semibold text-foreground">{translateUi("Boutiques supplémentaires — Growth et Pro")}</h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            {translateUi("Une boutique est incluse dans Pro. Activez un seul palier supplémentaire : les deux prix ne se cumulent pas. L'accès s'ouvre uniquement après validation du paiement.")}
+            {translateUi("Une boutique est incluse dans Growth et Pro. Activez un seul palier supplémentaire : les deux prix ne se cumulent pas. L'accès s'ouvre uniquement après validation du paiement.")}
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {[
