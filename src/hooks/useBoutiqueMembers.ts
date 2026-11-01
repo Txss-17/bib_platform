@@ -41,7 +41,7 @@ export { ROLE_LABELS, ROLE_DESCRIPTIONS, ROLE_PERMISSIONS };
 const PLAN_LIMITS: Record<string, number> = {
   starter: 1,
   growth: 3,
-  premium: 10,
+  pro: 10,
 };
 
 export { PLAN_LIMITS };
