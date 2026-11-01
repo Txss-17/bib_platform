@@ -32,6 +32,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { BusinessDocuments } from "@/components/dashboard/BusinessDocuments";
+import { AccountNotificationPreferences } from "@/components/dashboard/AccountNotificationPreferences";
+import { Link } from "react-router-dom";
 import { SubscriptionSection } from "@/components/payments/SubscriptionSection";
 import {
   useOpenBillingPortal,
@@ -261,69 +263,7 @@ export default function Parametres() {
               )}
               icon={<Bell className="h-4 w-4" />}
             >
-              <div className="rounded-lg border border-border/60 bg-muted/30 p-4">
-                <p className="text-sm font-medium text-foreground">
-                  {translateUi("Configuration des notifications")}
-                </p>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  {translateUi(
-                    "Les préférences par catégorie ne sont pas encore disponibles. Consultez les commandes et les alertes dans leurs modules.",
-                  )}
-                </p>
-                <Badge variant="outline" className="mt-3">
-                  {translateUi("Bientôt disponible")}
-                </Badge>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 rounded-md bg-primary/10 p-2">
-                    <Store className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">
-                      {translateUi("Activité des boutiques")}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {translateUi(
-                        "Commandes, changements d'état et activité commerciale.",
-                      )}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 rounded-md bg-primary/10 p-2">
-                    <PackageIcon />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">
-                      {translateUi("Produits et stocks")}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {translateUi(
-                        "Alertes liées aux produits et à la disponibilité du catalogue.",
-                      )}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 rounded-md bg-primary/10 p-2">
-                    <Mail className="h-4 w-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">
-                      {translateUi("Communications BIB")}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {translateUi(
-                        "Informations importantes concernant le compte et la plateforme.",
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <AccountNotificationPreferences />
             </SectionCard>
           </TabsContent>
 
@@ -495,19 +435,10 @@ export default function Parametres() {
               )}
               icon={<CreditCard className="h-4 w-4" />}
             >
-              <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
-                <p className="text-sm font-medium">
-                  {translateUi("Configuration des versements")}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {translateUi(
-                    "La configuration des versements n’est pas encore accessible depuis cette page. Consultez Paiements pour suivre les versements enregistrés.",
-                  )}
-                </p>
-                <Badge variant="outline" className="mt-3">
-                  {translateUi("Configuration indisponible ici")}
-                </Badge>
-              </div>
+              <p className="text-sm text-muted-foreground">{translateUi("Les préférences de versement dépendent de la boutique et se règlent dans son espace de configuration. Les paiements et virements effectifs restent disponibles dans « Paiements ».")}</p>
+              <Button variant="outline" asChild className="mt-3">
+                <Link to="/dashboard/boutiques">{translateUi("Choisir une boutique et configurer ses versements")}</Link>
+              </Button>
             </SectionCard>
           </TabsContent>
 
