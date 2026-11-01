@@ -114,12 +114,11 @@ describe("Customization identities and capability filters", () => {
     );
     expect(screen.getByTestId("add-reference")).toHaveTextContent("sp2");
   });
-  it("filters real capabilities and disables unqualified references", () => {
+  it("filters out unqualified references and only shows real personalization options", () => {
     page();
     const cards = screen.getAllByRole("article");
-    expect(
-      within(cards[2]).getByRole("button", { name: "Configurer" }),
-    ).toBeDisabled();
+    expect(cards).toHaveLength(2);
+    expect(screen.queryByRole("heading", { name: "Sans options" })).not.toBeInTheDocument();
     fireEvent.change(
       screen.getByRole("combobox", { name: "Type de personnalisation" }),
       { target: { value: "packaging" } },
