@@ -322,7 +322,7 @@ export default function SEOAnalytics() {
 
   const avgScore = seoPages.length
     ? Math.round(seoPages.reduce((s, p) => s + p.score, 0) / seoPages.length)
-    : 0;
+    : null;
   const totalIssues = seoAlerts.reduce((s, a) => s + a.pages.length, 0);
   const totalRevenue = recentOrders.reduce((s, o) => s + Number(o.amount), 0);
 
@@ -349,13 +349,9 @@ export default function SEOAnalytics() {
     desc: string;
     priority: "haute" | "moyenne";
   }[] = [];
-  if (recentOrders.length === 0)
-    recommendations.push({
-      title: translateUi("Optimiser le tunnel de conversion"),
-      desc: translateUi("Simplifiez le processus d'achat"),
-      priority: "haute",
-    });
-  if (avgScore < 70)
+  // No paid orders is not evidence of poor conversion: impressions and
+  // checkout-funnel attribution would be needed before issuing that diagnosis.
+  if (avgScore !== null && avgScore < 70)
     recommendations.push({
       title: translateUi("Améliorer les méta-données"),
       desc: translateUi("Optimisez titres et descriptions"),
@@ -402,12 +398,14 @@ export default function SEOAnalytics() {
         <KpiTile
           tone="primary"
           label={translateUi("Indice de qualité SEO")}
-          value={`${avgScore}/100`}
+          value={avgScore === null ? "—" : `${avgScore}/100`}
           icon={<Search className="w-5 h-5" />}
           hint={
-            avgScore >= 80
-              ? "Excellent"
-              : avgScore >= 60
+            avgScore === null
+              ? translateUi("Aucune donnée à évaluer")
+              : avgScore >= 80
+                ? "Excellent"
+                : avgScore >= 60
                 ? translateUi("À améliorer")
                 : translateUi("Critique")
           }
