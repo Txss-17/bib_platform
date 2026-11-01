@@ -1,5 +1,5 @@
--- Pro starts at 1 included boutique. Extra 1 or 2 shops require an active
--- live Stripe-confirmed Pro subscription and an active add-on subscription.
+-- Growth and Pro start at 1 included boutique. Extra 1 or 2 shops require an active
+-- live Stripe-confirmed Growth/Pro subscription and an active add-on subscription.
 -- Sandbox billing never grants production store entitlements.
 CREATE OR REPLACE FUNCTION public.enforce_plan_limits()
  RETURNS trigger
@@ -12,7 +12,7 @@ DECLARE
   lim_boutiques int;
   lim_products int;
   owner_plan text;
-  paid_pro boolean := false;
+  paid_eligible_plan boolean := false;
   paid_extra integer := 0;
   cnt int;
 BEGIN
@@ -31,14 +31,14 @@ BEGIN
   IF TG_TABLE_NAME = 'boutiques' THEN
     -- Prevent simultaneous creations from bypassing the quota.
     PERFORM pg_advisory_xact_lock(hashtextextended(owner::text, 0));
-    IF owner_plan = 'pro' THEN
+    IF owner_plan IN ('growth','pro') THEN
       SELECT EXISTS (
         SELECT 1 FROM public.subscriptions
         WHERE user_id=owner AND environment='live'
           AND status IN ('active','trialing')
-          AND price_id IN ('plan_pro_monthly','plan_pro_yearly')
-      ) INTO paid_pro;
-      IF paid_pro THEN
+          AND price_id IN ('plan_growth_monthly','plan_growth_yearly','plan_pro_monthly','plan_pro_yearly')
+      ) INTO paid_eligible_plan;
+      IF paid_eligible_plan THEN
         SELECT COALESCE(MAX(CASE price_id
           WHEN 'boutique_extra_one_monthly' THEN 1
           WHEN 'boutique_extra_two_monthly' THEN 2
