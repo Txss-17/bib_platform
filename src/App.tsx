@@ -111,6 +111,7 @@ const Paiements = lazy(() => import("@/pages/dashboard/Paiements"));
 const SEOAnalytics = lazy(() => import("@/pages/dashboard/SEOAnalytics"));
 const Boutiques = lazy(() => import("@/pages/dashboard/Boutiques"));
 const BoutiqueCreate = lazy(() => import("@/pages/dashboard/BoutiqueCreate"));
+const BoutiqueConfiguration = lazy(() => import("@/pages/dashboard/BoutiqueConfiguration"));
 const BoutiqueEdit = lazy(() => import("@/pages/dashboard/BoutiqueEdit"));
 const BoutiqueAnalytics = lazy(
   () => import("@/pages/dashboard/BoutiqueAnalytics"),
@@ -636,6 +637,15 @@ export default function App() {
                       element={
                         <ProtectedRoute>
                           <BoutiqueEdit />
+                        </ProtectedRoute>
+                      }
+                    />
+
+                    <Route
+                      path="/dashboard/boutiques/:id/settings"
+                      element={
+                        <ProtectedRoute>
+                          <BoutiqueConfiguration />
                         </ProtectedRoute>
                       }
                     />
