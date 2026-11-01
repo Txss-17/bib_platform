@@ -1,7 +1,8 @@
-import { translateUi, getUiLocale } from "@/lib/uiTranslation";
+import { translateUi } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { PageHeader, SectionCard } from "@/components/dashboard/shared";
 import { Button } from "@/components/ui/button";
@@ -10,11 +11,8 @@ import { Label } from "@/components/ui/label";
 import {
   UserRound,
   Mail,
-  KeyRound,
-  Smartphone,
   ShieldCheck,
   Loader2,
-  LogOut,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,8 +25,6 @@ export default function MonProfil() {
   const [fullName, setFullName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [saving, setSaving] = useState(false);
-  const [sendingReset, setSendingReset] = useState(false);
-  const [signingOutAll, setSigningOutAll] = useState(false);
 
   useEffect(() => {
     setFullName(profile?.full_name || "");
@@ -61,53 +57,6 @@ export default function MonProfil() {
       toast.error(translateUi("Impossible d'enregistrer les modifications."));
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleSendPasswordReset = async () => {
-    if (!user?.email) {
-      toast.error(translateUi("Aucune adresse e-mail associée au compte."));
-      return;
-    }
-
-    setSendingReset(true);
-
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-
-      if (error) throw error;
-
-      toast.success(translateUi("E-mail de réinitialisation envoyé."));
-    } catch (error) {
-      console.error("Erreur de réinitialisation :", error);
-      toast.error(
-        translateUi("Impossible d'envoyer l'e-mail de réinitialisation."),
-      );
-    } finally {
-      setSendingReset(false);
-    }
-  };
-
-  const handleSignOutAll = async () => {
-    setSigningOutAll(true);
-
-    try {
-      const { error } = await supabase.auth.signOut({
-        scope: "global",
-      });
-
-      if (error) throw error;
-
-      toast.success(translateUi("Déconnexion des sessions demandée."));
-    } catch (error) {
-      console.error("Erreur de déconnexion globale :", error);
-      toast.error(
-        translateUi("Impossible de déconnecter toutes les sessions."),
-      );
-    } finally {
-      setSigningOutAll(false);
     }
   };
 
@@ -225,81 +174,9 @@ export default function MonProfil() {
           </div>
         </SectionCard>
 
-        <SectionCard
-          title={translateUi("Mot de passe")}
-          description={translateUi(
-            "Réinitialisez votre mot de passe via un lien envoyé à l'adresse e-mail du compte.",
-          )}
-          icon={<KeyRound className="h-4 w-4" />}
-        >
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <p className="text-sm font-medium">
-                {translateUi("Réinitialisation sécurisée")}
-              </p>
-              <p className="mt-1 break-all text-xs text-muted-foreground">
-                {user?.email || translateUi("Aucune adresse disponible")}
-              </p>
-            </div>
-
-            <Button
-              variant="outline"
-              onClick={handleSendPasswordReset}
-              disabled={sendingReset || !user?.email}
-            >
-              {sendingReset ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Mail className="mr-2 h-4 w-4" />
-              )}
-              {translateUi("Envoyer le lien")}
-            </Button>
-          </div>
-        </SectionCard>
-
-        <SectionCard
-          title={translateUi("Sessions et appareils")}
-          description={translateUi(
-            "Révoquez les sessions de votre compte si vous pensez qu'un appareil n'est plus sécurisé.",
-          )}
-          icon={<Smartphone className="h-4 w-4" />}
-        >
-          <div className="space-y-3">
-            <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
-              <p className="text-sm font-medium">
-                {translateUi("Compte actuellement connecté")}
-              </p>
-              <p className="mt-1 break-all text-xs text-muted-foreground">
-                {user?.email}
-              </p>
-              {user?.last_sign_in_at && (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {translateUi("Dernière connexion connue :")}{" "}
-                  {new Date(user.last_sign_in_at).toLocaleString(getUiLocale())}
-                </p>
-              )}
-            </div>
-
-            <Button
-              variant="outline"
-              onClick={handleSignOutAll}
-              disabled={signingOutAll}
-            >
-              {signingOutAll ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <LogOut className="mr-2 h-4 w-4" />
-              )}
-              {translateUi("Déconnecter toutes les sessions")}
-            </Button>
-
-            <p className="text-xs text-muted-foreground">
-              {translateUi(
-                "Cette action peut vous obliger à vous reconnecter sur cet appareil.",
-              )}
-            </p>
-          </div>
-        </SectionCard>
+        <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+          <Link to="/dashboard/parametres" className="font-semibold text-foreground underline-offset-4 hover:underline">{translateUi("Mot de passe, sessions et sécurité du compte : ouvrir les paramètres.")}</Link>
+        </div>
       </div>
     </DashboardLayout>
   );
