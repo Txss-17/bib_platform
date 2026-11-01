@@ -273,6 +273,7 @@ export default function Produits() {
     ).length;
     const attention = allProducts.length - validated;
     const lowStock = allProducts.filter((product) => {
+      if (product.status !== "active") return false;
       const quantity = Number(product.stock_quantity ?? 0);
       const threshold = Number(product.low_stock_threshold ?? 5);
       return quantity <= Math.max(threshold, 1);
@@ -524,7 +525,7 @@ export default function Produits() {
           <MetricCard
             label={translateUi("Stock à surveiller")}
             value={formatNumber(kpis.lowStock)}
-            detail={translateUi("Stock nul ou inférieur au seuil configuré")}
+            detail={translateUi("Produits actifs : stock nul ou inférieur au seuil configuré")}
             icon={AlertTriangle}
             tone="orange"
           />
