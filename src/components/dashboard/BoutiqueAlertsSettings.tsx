@@ -5,6 +5,8 @@ import { useBoutiques } from "@/hooks/useBoutiques";
 import {
   useAlertSettings,
   useUpsertAlertSettings,
+  useAlertLog,
+  useResolveAlert,
   type AlertSettings,
 } from "@/hooks/useBoutiqueAlerts";
 import { runBoutiqueAlertCheck } from "@/lib/boutiqueAlertChecker";
@@ -32,6 +34,8 @@ import {
   AtSign,
   Loader2,
   PlayCircle,
+  History,
+  CheckCircle2,
 } from "lucide-react";
 
 export function BoutiqueAlertsSettings({ boutiqueId: fixedBoutiqueId }: { boutiqueId?: string } = {}) {
@@ -41,6 +45,8 @@ export function BoutiqueAlertsSettings({ boutiqueId: fixedBoutiqueId }: { boutiq
   const activeId = fixedBoutiqueId || boutiqueId || boutiques[0]?.id || "";
   const { data: existing, isLoading: alertLoading, isError: alertError } = useAlertSettings(activeId);
   const upsert = useUpsertAlertSettings();
+  const { data: alertHistory = [], isLoading: historyLoading, isError: historyError } = useAlertLog(activeId, 20);
+  const resolveAlert = useResolveAlert();
   const [s, setS] = useState<AlertSettings | null>(null);
   const [running, setRunning] = useState(false);
 
@@ -274,6 +280,44 @@ export function BoutiqueAlertsSettings({ boutiqueId: fixedBoutiqueId }: { boutiq
             </p>
           </div>
         </div>
+      </SectionCard>
+
+      <SectionCard
+        title={translateUi("Journal des alertes")}
+        description={translateUi("Dernières vérifications de cette boutique. Les événements sont datés et peuvent être marqués comme traités.")}
+        icon={<History className="h-4 w-4" />}
+      >
+        {historyLoading ? (
+          <p className="text-sm text-muted-foreground">{translateUi("Chargement de l'historique…")}</p>
+        ) : historyError ? (
+          <p role="alert" className="text-sm text-destructive">{translateUi("Impossible de charger l'historique des alertes.")}</p>
+        ) : alertHistory.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">
+            {translateUi("Aucune alerte enregistrée. Lancez une vérification pour analyser les indicateurs disponibles.")}
+          </p>
+        ) : (
+          <div className="divide-y divide-border">
+            {alertHistory.map(item => (
+              <div key={item.id} className="flex flex-col gap-2 py-3 first:pt-0 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                  {item.message && <p className="mt-1 text-xs text-muted-foreground">{item.message}</p>}
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    {new Date(item.created_at).toLocaleString()} · {translateUi(item.severity)} · {item.email_status === "sent" ? translateUi("E-mail envoyé") : translateUi("E-mail non envoyé")}
+                  </p>
+                </div>
+                {item.resolved_at ? (
+                  <span className="inline-flex shrink-0 items-center gap-1 text-xs text-success-ink"><CheckCircle2 className="h-4 w-4"/>{translateUi("Traité")}</span>
+                ) : (
+                  <Button size="sm" variant="outline" disabled={resolveAlert.isPending}
+                    onClick={() => resolveAlert.mutate(item.id, { onError: (error: Error) => toast.error(error.message) })}>
+                    {translateUi("Marquer comme traité")}
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </SectionCard>
 
       <div className="flex flex-col sm:flex-row justify-end gap-2">
