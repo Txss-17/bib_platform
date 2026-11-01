@@ -91,6 +91,29 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    if (type === "alert") {
+      // The alert recipient must be the one explicitly configured for this store.
+      const { data: configuredAlert, error: alertConfigError } = await supabase
+        .from("boutique_alert_settings")
+        .select("enabled,email_enabled,notify_email")
+        .eq("boutique_id", boutique_id).maybeSingle();
+      if (alertConfigError || !configuredAlert?.enabled ||
+          !configuredAlert?.email_enabled ||
+          !configuredAlert.notify_email ||
+          configuredAlert.notify_email.trim().toLowerCase() !== recipient_email.trim().toLowerCase()) {
+        return new Response(JSON.stringify({ error: "alert_recipient_not_authorized" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (Object.keys(variables).some((key) => !["title","message"].includes(key)) ||
+          typeof variables.title !== "string" ||
+          typeof variables.message !== "string") {
+        return new Response(JSON.stringify({ error: "invalid_alert_variables" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const { data: boutique } = await supabase.from("boutiques")
       .select("name").eq("id", boutique_id).maybeSingle();
     const { data: settings } = await supabase.from("boutique_email_settings")
@@ -106,6 +129,16 @@ Deno.serve(async (req) => {
     }
 
     const escapeHtml = (v: string) => v.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/\x27/g,"&#39;");
+    if (type === "alert") {
+      // Built-in, fixed template: caller supplies only escaped text variables.
+      // Avoid reliance on editable boutique templates for critical alerts.
+      subject = "[BIB] Alerte boutique : {{title}}";
+      html = `<div style="font-family:Arial,sans-serif;padding:24px;max-width:600px;margin:auto">
+        <h2>Alerte de boutique</h2><p><strong>{{title}}</strong></p>
+        <p>{{message}}</p>
+        <p style="font-size:12px;color:#64748b">Vérifiez vos alertes dans les paramètres de votre boutique BIB.</p>
+      </div>`;
+    }
     const vars = Object.fromEntries(Object.entries({ boutique_name: boutique?.name ?? "", ...variables }).map(([key, value]) => [key, escapeHtml(String(value))]));
     subject = renderTemplate(subject, vars);
     html = renderTemplate(html, vars);
