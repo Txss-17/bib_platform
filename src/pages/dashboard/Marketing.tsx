@@ -269,8 +269,8 @@ export default function Marketing() {
 
   return (
     <DashboardLayout>
-      <div className="min-w-0 space-y-5 pb-8">
-        <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-end">
+      <div className="w-full min-w-0 max-w-full space-y-5 pb-8">
+        <div className="flex min-w-0 flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-end">
           <div>
             <h1 className="text-2xl font-display font-bold text-foreground flex items-center gap-2">
               <Megaphone className="w-6 h-6 text-primary" /> Marketing
@@ -356,17 +356,17 @@ export default function Marketing() {
         </div>
 
         <Tabs defaultValue="composer" className="w-full min-w-0">
-          <div className="w-full overflow-x-auto pb-1">
-          <TabsList className="grid h-auto w-full min-w-[315px] grid-cols-3 gap-1 p-1 sm:max-w-lg">
-            <TabsTrigger value="composer">
+          <div className="w-full min-w-0 pb-1">
+          <TabsList className="grid h-auto w-full min-w-0 grid-cols-3 gap-1 p-1 sm:max-w-lg">
+            <TabsTrigger value="composer" className="min-w-0 px-1.5 text-[11px] sm:px-3 sm:text-sm">
               <Sparkles className="hidden h-4 w-4 shrink-0 sm:inline" />
               {translateUi("Composer")}
             </TabsTrigger>
-            <TabsTrigger value="campaigns">
+            <TabsTrigger value="campaigns" className="min-w-0 px-1.5 text-[11px] sm:px-3 sm:text-sm">
               <ListChecks className="hidden h-4 w-4 shrink-0 sm:inline" />
               {translateUi("Historique")}
             </TabsTrigger>
-            <TabsTrigger value="automations">
+            <TabsTrigger value="automations" className="min-w-0 px-1.5 text-[11px] sm:px-3 sm:text-sm">
               <Bot className="hidden h-4 w-4 shrink-0 sm:inline" />
               Automations
             </TabsTrigger>
@@ -374,14 +374,14 @@ export default function Marketing() {
           </div>
 
           {/* COMPOSER */}
-          <TabsContent value="composer" className="space-y-4 mt-4">
+          <TabsContent value="composer" className="min-w-0 max-w-full space-y-4 mt-4">
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">
                   {translateUi("Nouvelle campagne")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="min-w-0 space-y-4">
+              <CardContent className="min-w-0 max-w-full space-y-4">
                 <div>
                   <Label className="text-xs mb-2 block">
                     {translateUi("Type d'envoi")}
@@ -408,7 +408,7 @@ export default function Marketing() {
                   </div>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-3">
+                <div className="grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2">
                   <div>
                     <Label className="text-xs">
                       {translateUi("Nom interne (optionnel)")}
@@ -463,7 +463,7 @@ export default function Marketing() {
                   />
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-3">
+                <div className="grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2">
                   <div>
                     <Label className="text-xs">Segment</Label>
                     <Select value={segmentType} onValueChange={setSegmentType}>
@@ -505,7 +505,7 @@ export default function Marketing() {
                       {estimatedRecipients}
                     </Badge>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2 sm:justify-end">
                     <Button
                       variant="outline"
                       size="sm"
@@ -732,7 +732,7 @@ export default function Marketing() {
               {translateUi(") sont remplacées par des valeurs d'exemple.")}
             </DialogDescription>
           </DialogHeader>
-          <div className="rounded-md border bg-muted/30 p-2">
+          <div className="min-w-0 max-w-full overflow-hidden rounded-md border bg-muted/30 p-2">
             <div className="text-xs text-muted-foreground px-2 py-1">
               <strong>{translateUi("Sujet :")}</strong>{" "}
               {subject || <em>{translateUi("(sujet vide)")}</em>}
@@ -748,7 +748,7 @@ export default function Marketing() {
                     translateUi("Votre boutique"),
                 )
                 .replace(/\{\{promo_code\}\}/g, promoCode || "EXEMPLE10")}
-              className="w-full h-[60vh] rounded bg-background"
+              className="block w-full min-w-0 h-[60vh] rounded bg-background"
               sandbox=""
             />
           </div>
