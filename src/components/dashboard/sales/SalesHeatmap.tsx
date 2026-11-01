@@ -1,74 +1,58 @@
 import { translateUi, getUiLocale } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useMemo } from "react";
-import { cn } from "@/lib/utils";
 
 interface RegionData {
   location: string;
   revenue: number;
   orders: number;
 }
-
 interface SalesHeatmapProps {
   data: RegionData[];
   title?: string;
 }
 
-/**
- * Lightweight 2D heatmap (no 3D / no globe).
- * Renders the top N regions as gold-graded tiles, ordered by revenue.
- * Premium, lisible en <5s — remplace l'ancienne carte 3D globale.
+/** Ranked and proportional paid-sales breakdown by declared selling market.
+ * No fake map, city or geographical precision is inferred from the market code.
  */
 export function SalesHeatmap({ data, title }: SalesHeatmapProps) {
   useLanguage();
-  const sorted = useMemo(
-    () => [...data].sort((a, b) => b.revenue - a.revenue).slice(0, 12),
-    [data],
-  );
-  const max = sorted[0]?.revenue || 1;
+  const sorted = useMemo(() => [...data].filter(r => r.orders > 0)
+    .sort((a, b) => b.revenue - a.revenue).slice(0, 12), [data]);
+  const max = Math.max(1, ...sorted.map(r => r.revenue));
+  const total = sorted.reduce((sum, r) => sum + r.revenue, 0);
+  const money = (value: number) => new Intl.NumberFormat(getUiLocale(), {
+    style: "currency", currency: "EUR", maximumFractionDigits: 0,
+  }).format(value);
 
-  if (sorted.length === 0) {
-    return (
-      <div className="text-sm text-muted-foreground text-center py-8">
-        {translateUi("Aucune vente géographique pour le moment.")}
-      </div>
-    );
-  }
+  if (!sorted.length) return <div className="rounded-xl border border-dashed border-border px-6 py-12 text-center">
+    <p className="text-sm font-medium text-foreground">{translateUi("Aucune vente payée localisée par marché")}</p>
+    <p className="mt-2 text-xs text-muted-foreground">{translateUi("Cette répartition sera alimentée par les commandes réellement payées. Les commandes de test sont exclues.")}</p>
+  </div>;
 
-  return (
-    <div className="space-y-3">
-      {title && (
-        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground font-medium">
-          {title}
-        </p>
-      )}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-        {sorted.map((r) => {
-          const intensity = r.revenue / max;
-          const opacity = Math.max(0.18, intensity);
-          return (
-            <div
-              key={r.location}
-              className={cn(
-                "rounded-xl border border-secondary/30 p-3 transition-all hover:scale-[1.02] hover:shadow-md",
-              )}
-              style={{
-                background: `linear-gradient(135deg, hsl(var(--bib-gold) / ${opacity}) 0%, hsl(var(--bib-gold) / ${opacity * 0.5}) 100%)`,
-              }}
-            >
-              <p className="text-xs font-medium text-foreground/80 truncate">
-                {r.location}
-              </p>
-              <p className="font-display text-lg font-bold text-foreground mt-0.5">
-                {r.revenue.toLocaleString(getUiLocale())} €
-              </p>
-              <p className="text-[11px] text-foreground/70 mt-0.5">
-                {r.orders} commande{r.orders > 1 ? "s" : ""}
-              </p>
+  return <div className="space-y-4">
+    {title && <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</p>}
+    <div className="grid gap-3 sm:grid-cols-2">
+      {sorted.map((item, index) => (
+        <div key={item.location} className="min-w-0 rounded-xl border border-border bg-card p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{translateUi("Marché")} {String(index + 1).padStart(2,"0")}</p>
+              <p className="mt-1 truncate text-sm font-semibold text-foreground" title={item.location}>{item.location}</p>
             </div>
-          );
-        })}
-      </div>
+            <div className="shrink-0 text-right">
+              <p className="font-semibold tabular-nums text-foreground">{money(item.revenue)}</p>
+              <p className="mt-1 text-xs tabular-nums text-muted-foreground">{item.orders} {translateUi("commandes")}</p>
+            </div>
+          </div>
+          <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted" role="meter" aria-label={item.location} aria-valuemin={0} aria-valuemax={100} aria-valuenow={total ? Math.round(item.revenue / total * 100) : 0}>
+            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.max(3, item.revenue / max * 100)}%` }} />
+          </div>
+          <p className="mt-2 text-right text-xs text-muted-foreground tabular-nums">
+            {total ? (item.revenue / total * 100).toLocaleString(getUiLocale(), { maximumFractionDigits: 1 }) : "0"} % {translateUi("du chiffre d'affaires analysé")}
+          </p>
+        </div>
+      ))}
     </div>
-  );
+  </div>;
 }
