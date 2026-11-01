@@ -71,7 +71,7 @@ async function createCheckoutSession(
     throw new Error("Invalid environment");
   }
   if (typeof options.priceId !== "string" ||
-      !/^(bib_subscriber_monthly|(?:plan|insurance)_(?:starter|growth|pro)_(?:monthly|yearly))$/.test(options.priceId)) {
+      !/^(bib_subscriber_monthly|(?:plan|insurance)_(?:starter|growth|pro)_(?:monthly|yearly)|boutique_extra_(?:one|two)_monthly)$/.test(options.priceId)) {
     throw new Error("Invalid priceId");
   }
   assertPaymentEnvironment(options.environment, (key) => Deno.env.get(key));
@@ -216,7 +216,9 @@ async function createCheckoutSession(
       ? "plan"
       : /^insurance_(starter|growth|pro)_(monthly|yearly)$/.test(options.priceId)
         ? "insurance"
-        : null;
+        : /^boutique_extra_(one|two)_monthly$/.test(options.priceId)
+          ? "boutique_extra"
+          : null;
 
   if (merchantCategory) {
     const user = await getAuthenticatedUser(req);
@@ -239,9 +241,21 @@ async function createCheckoutSession(
 
     if (subscriptionError) throw subscriptionError;
 
+    if (merchantCategory === "boutique_extra") {
+      const { data: activePro } = await admin.from("subscriptions")
+        .select("id").eq("user_id", user.id)
+        .eq("environment", options.environment)
+        .eq("kind", "plan")
+        .in("status", ["active", "trialing"])
+        .like("price_id", "plan_pro_%")
+        .limit(1);
+      if (!activePro?.length) throw new Error("ACTIVE_PRO_PLAN_REQUIRED");
+    }
     const hasSameCategory = (activeSubs ?? []).some((s) => {
       if (s.kind === BIB_SUBSCRIBER_KIND) return false;
       const isInsurance = s.price_id?.startsWith("insurance_");
+      if (merchantCategory === "boutique_extra")
+        return s.kind === "boutique_extra";
       return merchantCategory === "insurance"
         ? isInsurance
         : !isInsurance && /(starter|growth|pro)_(monthly|yearly)$/.test(s.price_id ?? "");
@@ -267,6 +281,13 @@ async function createCheckoutSession(
   const stripePrice =
     prices.data[0];
 
+  if (merchantCategory === "boutique_extra") {
+    const expectedCents = options.priceId === "boutique_extra_one_monthly" ? 1999 : 3599;
+    if (stripePrice.currency !== "eur" || stripePrice.unit_amount !== expectedCents ||
+        stripePrice.type !== "recurring" || stripePrice.recurring?.interval !== "month") {
+      throw new Error("INVALID_EXTRA_BOUTIQUE_PRICE");
+    }
+  }
   const isRecurring = stripePrice.type === "recurring";
   if (!isRecurring) throw new Error("Subscription price must be recurring");
 
@@ -274,7 +295,7 @@ async function createCheckoutSession(
     metadata = {
       userId:
         effectiveUserId,
-      kind: "subscription",
+      kind: merchantCategory === "boutique_extra" ? "boutique_extra" : "subscription",
     };
 
     if (isRecurring) {
@@ -282,7 +303,7 @@ async function createCheckoutSession(
         metadata: {
           userId:
             effectiveUserId,
-          kind: "subscription",
+          kind: merchantCategory === "boutique_extra" ? "boutique_extra" : "subscription",
         },
       };
     }
