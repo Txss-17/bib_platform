@@ -260,6 +260,9 @@ export default function StoreSubscriberSubscribe() {
                   <Feature>
                     {translateUi("Retrouver vos commandes et leur suivi")}
                   </Feature>
+                  <Feature>
+                    {translateUi("Retours gratuits : frais de retour pris en charge")}
+                  </Feature>
                 </div>
 
                 <div className="mt-6 rounded-xl border bg-muted/30 p-4">
