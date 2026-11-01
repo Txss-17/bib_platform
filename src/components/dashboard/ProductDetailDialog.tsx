@@ -1,35 +1,13 @@
 import { translateUi, getUiLocale } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useMemo } from "react";
-import {
-  Check,
-  Heart,
-  MapPin,
-  Package,
-  Percent,
-  ShoppingBag,
-  Sparkles,
-  Star,
-  Truck,
-  TrendingUp,
-  X,
-  ShieldCheck,
-  Clock3,
-  Boxes,
-  BadgeCheck,
-  ArrowUpRight,
-} from "lucide-react";
-
+import { useState } from "react";
+import { Heart, Package, ShoppingBag, SlidersHorizontal, MapPin, Boxes, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 import type { Tables } from "@/integrations/supabase/types";
 
 type SupplierProduct = Tables<"supplier_products">;
@@ -43,571 +21,151 @@ interface ProductDetailDialogProps {
   onToggleFavorite: (product: SupplierProduct) => void;
 }
 
-type RotationIndicator = "green" | "yellow" | "orange" | "red";
-
-const rotationConfig: Record<
-  RotationIndicator,
-  {
-    label: string;
-    shortLabel: string;
-    description: string;
-    className: string;
-  }
-> = {
-  green: {
-    get label() {
-      return translateUi("Demande élevée");
-    },
-    shortLabel: "Élevée",
-    get description() {
-      return translateUi("Produit présentant une forte dynamique commerciale.");
-    },
-    className:
-      "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300",
-  },
-  yellow: {
-    get label() {
-      return translateUi("Demande modérée");
-    },
-    shortLabel: "Modérée",
-    get description() {
-      return translateUi("Produit présentant une demande régulière.");
-    },
-    className:
-      "border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-900 dark:bg-yellow-950/40 dark:text-yellow-300",
-  },
-  orange: {
-    get label() {
-      return translateUi("Demande faible");
-    },
-    shortLabel: "Faible",
-    get description() {
-      return translateUi(
-        "Produit à positionner avec une stratégie commerciale adaptée.",
-      );
-    },
-    className:
-      "border-warning/30 bg-warning/10 text-warning-ink dark:border-orange-900 dark:bg-orange-950/40 dark:text-orange-300",
-  },
-  red: {
-    get label() {
-      return translateUi("Très utilisé");
-    },
-    shortLabel: "Très utilisé",
-    get description() {
-      return translateUi("Produit déjà fortement représenté dans le réseau.");
-    },
-    className:
-      "border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300",
-  },
-};
-
-function formatPrice(value: number) {
+function money(amount: number) {
   return new Intl.NumberFormat(getUiLocale(), {
-    style: "currency",
-    currency: "EUR",
-  }).format(value);
-}
-
-function getRotationConfig(indicator: SupplierProduct["rotation_indicator"]) {
-  return (
-    rotationConfig[indicator as RotationIndicator] ?? rotationConfig.yellow
-  );
-}
-
-function getPerformanceLabel(indicator: SupplierProduct["rotation_indicator"]) {
-  switch (indicator) {
-    case "green":
-      return translateUi("Très bon potentiel");
-    case "yellow":
-      return translateUi("Potentiel régulier");
-    case "orange":
-      return translateUi("Potentiel à travailler");
-    case "red":
-      return translateUi("Marché déjà exploité");
-    default:
-      return "Potentiel commercial";
-  }
-}
-
-function getCommercialScore(
-  indicator: SupplierProduct["rotation_indicator"],
-  margin: number,
-) {
-  const rotationScore =
-    indicator === "green"
-      ? 5
-      : indicator === "yellow"
-        ? 4
-        : indicator === "orange"
-          ? 3
-          : 2;
-
-  const marginScore =
-    margin >= 50 ? 5 : margin >= 35 ? 4 : margin >= 20 ? 3 : 2;
-
-  return Math.round(((rotationScore + marginScore) / 10) * 100);
-}
-
-function getMarketLabel(market: string | null | undefined) {
-  if (!market) return translateUi("Marché BIB");
-
-  return market
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .join(" · ");
+    style: "currency", currency: "EUR",
+  }).format(amount);
 }
 
 export function ProductDetailDialog({
-  product,
-  open,
-  onOpenChange,
-  onAdd,
-  isFavorite,
-  onToggleFavorite,
+  product, open, onOpenChange, onAdd, isFavorite, onToggleFavorite,
 }: ProductDetailDialogProps) {
   useLanguage();
-  const rotation = getRotationConfig(product.rotation_indicator);
-
-  const commercialData = useMemo(() => {
-    const basePrice = Number(product.base_price) || 0;
-    const maxMargin = Number(product.max_margin_percent) || 0;
-    const moq = Number(product.moq) || 0;
-
-    const recommendedPrice = basePrice * (1 + maxMargin / 100);
-    const potentialProfit = recommendedPrice - basePrice;
-
-    const commercialScore = getCommercialScore(
-      product.rotation_indicator,
-      maxMargin,
-    );
-
-    /*
-     * Ces données représentent la vision commerciale cible de BIB.
-     * Lovable/Supabase pourra ensuite les remplacer par les vrais champs.
-     */
-    const estimatedDelivery = "3 à 7 jours";
-    const availability = "Disponible";
-    const logisticsIncluded = true;
-    const commercialZones = product.market
-      ? getMarketLabel(product.market)
-      : "France · Europe";
-
-    return {
-      basePrice,
-      maxMargin,
-      moq,
-      recommendedPrice,
-      potentialProfit,
-      commercialScore,
-      estimatedDelivery,
-      availability,
-      logisticsIncluded,
-      commercialZones,
-    };
-  }, [product]);
-
+  const basePrice = Number(product.base_price) || 0;
+  const maxMargin = Math.max(0, Number(product.max_margin_percent) || 0);
+  const [requestedMargin, setRequestedMargin] = useState(20);
+  const margin = Math.min(requestedMargin, maxMargin);
+  const sellingPrice = basePrice * (1 + margin / 100);
+  const grossDifference = sellingPrice - basePrice;
+  const minimumQuantity = Number(product.moq) || 0;
   const favorite = isFavorite(product.id);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92vh] w-[calc(100%-1rem)] max-w-6xl overflow-hidden p-0">
-        <div className="flex max-h-[92vh] flex-col overflow-hidden">
-          {/* Header */}
-          <DialogHeader className="border-b px-6 py-5">
-            <div className="flex items-start justify-between gap-4 pr-8">
-              <div className="min-w-0">
-                <div className="mb-2 flex flex-wrap items-center gap-2">
-                  <Badge className="gap-1 border-0 bg-emerald-600 text-white">
-                    <ShieldCheck className="h-3.5 w-3.5" />
-                    {translateUi("Validé par BIB")}
-                  </Badge>
+      <DialogContent className="flex max-h-[92dvh] w-[calc(100vw-1rem)] max-w-5xl flex-col overflow-hidden rounded-2xl p-0 sm:w-[calc(100vw-2rem)]">
+        <DialogHeader className="shrink-0 border-b border-border/70 px-4 py-4 pr-12 sm:px-6 sm:py-5">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="secondary">{product.category}</Badge>
+            <Badge variant="outline" className="gap-1">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              {translateUi("Catalogue BIB")}
+            </Badge>
+          </div>
+          <DialogTitle className="mt-2 text-left text-xl font-semibold leading-tight sm:text-2xl">
+            {product.name}
+          </DialogTitle>
+          <DialogDescription className="text-left text-sm">
+            {translateUi("Informations produit et simulation de prix avant l'ajout à votre boutique.")}
+          </DialogDescription>
+        </DialogHeader>
 
-                  <Badge variant="outline">{product.category}</Badge>
-
-                  <Badge variant="outline" className={rotation.className}>
-                    <TrendingUp className="mr-1 h-3.5 w-3.5" />
-                    {rotation.label}
-                  </Badge>
-                </div>
-
-                <DialogTitle className="text-xl font-semibold md:text-2xl">
-                  {product.name}
-                </DialogTitle>
-
-                <DialogDescription className="mt-1 max-w-3xl">
-                  {translateUi(
-                    "Évaluez rapidement le potentiel commercial de ce produit avant de l’intégrer à votre boutique.",
-                  )}
-                </DialogDescription>
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="shrink-0"
-                onClick={() => onToggleFavorite(product)}
-                aria-label={
-                  favorite
-                    ? translateUi("Retirer des favoris")
-                    : translateUi("Ajouter aux favoris")
-                }
-              >
-                <Heart
-                  className={`h-5 w-5 ${
-                    favorite ? "fill-current text-red-500" : ""
-                  }`}
-                />
-              </Button>
-            </div>
-          </DialogHeader>
-
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="grid gap-0 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-              {/* Product visual */}
-              <div className="border-b bg-muted/20 p-5 lg:border-b-0 lg:border-r lg:p-6">
-                <div className="relative aspect-square overflow-hidden rounded-2xl border bg-background">
-                  {product.image_url ? (
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-muted-foreground">
-                      <Package className="h-14 w-14 opacity-40" />
-                      <span className="text-sm">
-                        {translateUi("Image produit indisponible")}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="absolute left-4 top-4">
-                    <Badge className="gap-1 bg-background/95 text-foreground shadow-sm hover:bg-background">
-                      <BadgeCheck className="h-3.5 w-3.5 text-emerald-600" />
-                      {translateUi("Produit validé")}
-                    </Badge>
-                  </div>
-
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <div className="rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-xs text-muted-foreground">
-                            {translateUi("Potentiel commercial")}
-                          </p>
-                          <p className="font-semibold">
-                            {getPerformanceLabel(product.rotation_indicator)}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-1">
-                          {Array.from({ length: 5 }).map((_, index) => {
-                            const active =
-                              index <
-                              Math.round(commercialData.commercialScore / 20);
-
-                            return (
-                              <Star
-                                key={index}
-                                className={`h-4 w-4 ${
-                                  active
-                                    ? "fill-current"
-                                    : "text-muted-foreground/30"
-                                }`}
-                              />
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Commercial confidence */}
-                <div className="mt-5 rounded-xl border bg-background p-4">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-medium">
-                        {translateUi("Indice commercial BIB")}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {translateUi("Synthèse du potentiel du produit")}
-                      </p>
-                    </div>
-
-                    <span className="text-lg font-bold">
-                      {commercialData.commercialScore}/100
-                    </span>
-                  </div>
-
-                  <div className="h-2 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-foreground transition-all"
-                      style={{
-                        width: `${commercialData.commercialScore}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Commercial information */}
-              <div className="p-5 lg:p-6">
-                {/* Price block */}
-                <div className="rounded-2xl border bg-muted/20 p-5">
-                  <div className="mb-4 flex items-center gap-2">
-                    <Sparkles className="h-5 w-5" />
-                    <h3 className="font-semibold">
-                      {translateUi("Opportunité commerciale")}
-                    </h3>
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-3">
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        {translateUi("Prix fournisseur")}
-                      </p>
-                      <p className="mt-1 text-xl font-bold">
-                        {formatPrice(commercialData.basePrice)}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        {translateUi("Marge maximale")}
-                      </p>
-                      <p className="mt-1 text-xl font-bold">
-                        +{commercialData.maxMargin}%
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="text-xs text-muted-foreground">
-                        {translateUi("Prix potentiel")}
-                      </p>
-                      <p className="mt-1 text-xl font-bold">
-                        {formatPrice(commercialData.recommendedPrice)}
-                      </p>
-                    </div>
-                  </div>
-
-                  <Separator className="my-4" />
-
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm text-muted-foreground">
-                      {translateUi("Potentiel brut par unité")}
-                    </span>
-
-                    <span className="font-semibold text-emerald-600">
-                      +{formatPrice(commercialData.potentialProfit)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Commercial indicators */}
-                <div className="mt-5">
-                  <h3 className="mb-3 font-semibold">
-                    {translateUi("Indicateurs commerciaux")}
-                  </h3>
-
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-xl border p-4">
-                      <div className="flex items-start gap-3">
-                        <MapPin className="mt-0.5 h-5 w-5 text-muted-foreground" />
-                        <div className="min-w-0">
-                          <p className="text-xs text-muted-foreground">
-                            {translateUi("Zones de commercialisation")}
-                          </p>
-                          <p className="mt-1 font-medium">
-                            {commercialData.commercialZones}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border p-4">
-                      <div className="flex items-start gap-3">
-                        <TrendingUp className="mt-0.5 h-5 w-5 text-muted-foreground" />
-                        <div className="min-w-0">
-                          <p className="text-xs text-muted-foreground">
-                            {translateUi("Rotation")}
-                          </p>
-                          <p className="mt-1 font-medium">{rotation.label}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border p-4">
-                      <div className="flex items-start gap-3">
-                        <Boxes className="mt-0.5 h-5 w-5 text-muted-foreground" />
-                        <div className="min-w-0">
-                          <p className="text-xs text-muted-foreground">
-                            {translateUi("Quantité minimale")}
-                          </p>
-                          <p className="mt-1 font-medium">
-                            {commercialData.moq} {translateUi("unité")}
-                            {commercialData.moq > 1 ? "s" : ""}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border p-4">
-                      <div className="flex items-start gap-3">
-                        <Package className="mt-0.5 h-5 w-5 text-muted-foreground" />
-                        <div className="min-w-0">
-                          <p className="text-xs text-muted-foreground">
-                            {translateUi("Disponibilité")}
-                          </p>
-                          <p className="mt-1 font-medium">
-                            {commercialData.availability}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border p-4">
-                      <div className="flex items-start gap-3">
-                        <Truck className="mt-0.5 h-5 w-5 text-muted-foreground" />
-                        <div className="min-w-0">
-                          <p className="text-xs text-muted-foreground">
-                            {translateUi("Logistique")}
-                          </p>
-                          <p className="mt-1 font-medium">
-                            {commercialData.logisticsIncluded
-                              ? translateUi("Logistique incluse")
-                              : translateUi("Logistique à prévoir")}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border p-4">
-                      <div className="flex items-start gap-3">
-                        <Clock3 className="mt-0.5 h-5 w-5 text-muted-foreground" />
-                        <div className="min-w-0">
-                          <p className="text-xs text-muted-foreground">
-                            {translateUi("Délai indicatif")}
-                          </p>
-                          <p className="mt-1 font-medium">
-                            {commercialData.estimatedDelivery}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Performance history */}
-                <div className="mt-5 rounded-xl border p-4">
-                  <div className="mb-3 flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    <h3 className="font-semibold">
-                      {translateUi("Performance commerciale")}
-                    </h3>
-                  </div>
-
-                  {product.performance_history ? (
-                    <div className="rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">
-                      {translateUi("Historique de performance disponible.")}
-                      <span className="ml-1 font-medium text-foreground">
-                        {translateUi(
-                          "Les données détaillées sont suivies par BIB.",
-                        )}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">
-                      {translateUi(
-                        "Les données historiques détaillées seront progressivement enrichies par BIB.",
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Product description */}
-                {product.description && (
-                  <div className="mt-5">
-                    <h3 className="mb-2 font-semibold">
-                      {translateUi("À propos du produit")}
-                    </h3>
-
-                    <p className="text-sm leading-6 text-muted-foreground">
-                      {product.description}
-                    </p>
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="grid min-w-0 grid-cols-1 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+            <div className="min-w-0 border-b border-border/70 bg-muted/20 p-4 sm:p-6 lg:border-b-0 lg:border-r">
+              <div className="flex aspect-[5/4] items-center justify-center overflow-hidden rounded-2xl border border-border/70 bg-card">
+                {product.image_url ? (
+                  <img src={product.image_url} alt={product.name} className="h-full w-full object-contain" />
+                ) : (
+                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                    <Package className="h-12 w-12 opacity-50" />
+                    <span className="text-sm">{translateUi("Visuel indisponible")}</span>
                   </div>
                 )}
+              </div>
+              {product.description && (
+                <section className="mt-5">
+                  <h3 className="text-sm font-semibold text-foreground">{translateUi("Description du produit")}</h3>
+                  <p className="mt-2 whitespace-pre-line break-words text-sm leading-6 text-muted-foreground">
+                    {product.description}
+                  </p>
+                </section>
+              )}
+            </div>
 
-                {/* BIB validation */}
-                <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50/70 p-4 dark:border-emerald-900 dark:bg-emerald-950/20">
-                  <div className="flex gap-3">
-                    <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
-
-                    <div>
-                      <p className="font-medium">
-                        {translateUi("Produit validé par BIB")}
-                      </p>
-
-                      <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                        {translateUi(
-                          "Ce produit fait partie du catalogue sélectionné par BIB. Les informations commerciales et logistiques sont présentées pour vous aider à évaluer son intégration à votre boutique.",
-                        )}
-                      </p>
-                    </div>
+            <div className="min-w-0 space-y-5 p-4 sm:p-6">
+              <section className="rounded-2xl border border-border/70 bg-card p-4 sm:p-5">
+                <h3 className="mb-4 text-sm font-semibold">{translateUi("Conditions commerciales")}</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground">{translateUi("Prix de base")}</p>
+                    <p className="mt-1 text-xl font-bold tabular-nums">{money(basePrice)}</p>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground">{translateUi("Marge maximale autorisée")}</p>
+                    <p className="mt-1 text-xl font-bold tabular-nums text-primary">{maxMargin} %</p>
                   </div>
                 </div>
-              </div>
+                <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                  {translateUi("Le prix final dépend de la marge que vous choisissez et des frais applicables.")}
+                </p>
+              </section>
+
+              <section className="rounded-2xl border border-border/70 bg-muted/20 p-4 sm:p-5">
+                <div className="mb-4 flex items-center gap-2">
+                  <SlidersHorizontal className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold">{translateUi("Simuler mon prix de vente")}</h3>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <label className="text-xs text-muted-foreground" htmlFor="supplier-detail-margin">
+                    {translateUi("Marge appliquée")}
+                  </label>
+                  <span className="text-sm font-semibold tabular-nums">{margin} %</span>
+                </div>
+                <Slider
+                  id="supplier-detail-margin"
+                  min={0}
+                  max={Math.max(1, maxMargin)}
+                  step={1}
+                  value={[margin]}
+                  onValueChange={([next]) => setRequestedMargin(Math.min(next, maxMargin))}
+                  className="mt-3"
+                  disabled={maxMargin === 0}
+                />
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-card p-3">
+                    <p className="text-xs text-muted-foreground">{translateUi("Prix de vente estimé")}</p>
+                    <p className="mt-1 text-lg font-bold tabular-nums">{money(sellingPrice)}</p>
+                  </div>
+                  <div className="rounded-xl bg-card p-3">
+                    <p className="text-xs text-muted-foreground">{translateUi("Écart brut par unité")}</p>
+                    <p className="mt-1 text-lg font-bold tabular-nums text-primary">{money(grossDifference)}</p>
+                  </div>
+                </div>
+                <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                  {translateUi("Simulation indicative avant commissions, impôts et éventuels frais supplémentaires ; ce montant n'est pas un bénéfice net.")}
+                </p>
+              </section>
+
+              <section className="rounded-2xl border border-border/70 p-4 sm:p-5">
+                <h3 className="mb-3 text-sm font-semibold">{translateUi("Informations complémentaires")}</h3>
+                <div className="divide-y divide-border/60 text-sm">
+                  <div className="flex items-center justify-between gap-3 py-2">
+                    <span className="inline-flex items-center gap-2 text-muted-foreground"><Boxes className="h-4 w-4" />{translateUi("Quantité minimale")}</span>
+                    <span className="font-medium tabular-nums">{minimumQuantity > 0 ? minimumQuantity : "—"}</span>
+                  </div>
+                  <div className="flex items-start justify-between gap-3 py-2">
+                    <span className="inline-flex items-center gap-2 text-muted-foreground"><MapPin className="h-4 w-4 shrink-0" />{translateUi("Marché commercial")}</span>
+                    <span className="max-w-[55%] break-words text-right font-medium">{product.market || translateUi("Non renseigné")}</span>
+                  </div>
+                </div>
+              </section>
             </div>
           </div>
+        </div>
 
-          {/* Footer */}
-          <div className="border-t bg-background px-5 py-4 lg:px-6">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Check className="h-4 w-4 text-emerald-600" />
-                <span>
-                  {translateUi(
-                    "Vous pouvez modifier votre stratégie de marge après l’ajout.",
-                  )}
-                </span>
-              </div>
-
-              <div className="flex flex-col-reverse gap-2 sm:flex-row">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => onOpenChange(false)}
-                >
-                  {translateUi("Fermer")}
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => onToggleFavorite(product)}
-                  className="gap-2"
-                >
-                  <Heart
-                    className={`h-4 w-4 ${
-                      favorite ? "fill-current text-red-500" : ""
-                    }`}
-                  />
-                  {favorite
-                    ? translateUi("Retirer des favoris")
-                    : translateUi("Ajouter aux favoris")}
-                </Button>
-
-                <Button type="button" onClick={onAdd} className="gap-2">
-                  <ShoppingBag className="h-4 w-4" />
-                  {translateUi("Ajouter à ma boutique")}
-                  <ArrowUpRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-border/70 bg-background px-4 py-3 sm:px-6">
+          <Button type="button" variant="outline" className="gap-2" onClick={() => onToggleFavorite(product)}>
+            <Heart className={`h-4 w-4 ${favorite ? "fill-destructive text-destructive" : ""}`} />
+            {favorite ? translateUi("En favoris") : translateUi("Ajouter aux favoris")}
+          </Button>
+          <div className="flex flex-1 justify-end gap-2 sm:flex-none">
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              {translateUi("Fermer")}
+            </Button>
+            <Button type="button" onClick={onAdd} className="gap-2">
+              <ShoppingBag className="h-4 w-4" />
+              {translateUi("Ajouter à une boutique")}
+            </Button>
           </div>
         </div>
       </DialogContent>
