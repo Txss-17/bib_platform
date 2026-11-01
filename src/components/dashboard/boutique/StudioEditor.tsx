@@ -80,6 +80,7 @@ import {
 import { ActionButton, stateFromMutation } from "./ActionButton";
 import { SceneInspectorPro } from "./SceneInspectorPro";
 import { StorefrontNavigationEditor } from "./StorefrontNavigationEditor";
+import { StudioThemeGallery } from "./StudioThemeGallery";
 import { StoriesManager } from "./StoriesManager";
 
 import {
@@ -1914,10 +1915,11 @@ export function StudioEditor({
         {/* Left rail */}
         <Card className="min-w-0 overflow-hidden">
           <Tabs defaultValue="scenes" className="flex h-full flex-col">
-            <TabsList className="m-3 grid grid-cols-2 gap-1 sm:grid-cols-5">
+            <TabsList className="m-3 grid h-auto grid-cols-2 gap-1 sm:grid-cols-3">
               <TabsTrigger value="scenes">{translateUi("Scènes")}</TabsTrigger>
               <TabsTrigger value="brand">{translateUi("Identité")}</TabsTrigger>
               <TabsTrigger value="navigation">{translateUi("Menu & logo")}</TabsTrigger>
+              <TabsTrigger value="themes">{translateUi("Thèmes")}</TabsTrigger>
               <TabsTrigger value="seo">SEO</TabsTrigger>
               <TabsTrigger value="stories">Stories</TabsTrigger>
             </TabsList>
@@ -2066,6 +2068,10 @@ export function StudioEditor({
                   />
                 </div>
               )}
+            </TabsContent>
+
+            <TabsContent value="themes" className="mt-0 min-h-0 flex-1 overflow-y-auto px-4 pb-5">
+              <StudioThemeGallery boutiqueId={boutiqueId} />
             </TabsContent>
 
             <TabsContent value="navigation" className="mt-0 min-h-0 flex-1 overflow-y-auto px-4 pb-5">
