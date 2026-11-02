@@ -1,5 +1,48 @@
 # BIB Platform — Public-release security gate (2026-11-01)
 
+## Security scan follow-up — 2026-11-02, prices / Pro / brand AI
+Additional findings were traced to source and current Supabase policies.
+Applied and verified in the connected database:
+- `20261102123000_pricing_and_pro_sales_guards.sql`: merchant product
+  prices and promotions cannot undercut the supplier base or exceed the
+  supplier-authorized margin; Pro private sales require an active Pro
+  subscription and protected usage counts. Three pricing/financial triggers
+  were confirmed as present.
+- `20261102123500_brand_ai_rate_limits.sql`: a service-role-only atomic
+  quota of eight paid AI generations per boutique/hour. It is effective
+  **only when the updated boutique-ai Edge Function is deployed**.
+- `20261102124000_public_application_and_attachment_hardening.sql`: public
+  partner applications must use the existing OTP-backed Edge workflow;
+  anonymous ticket attachment uploads are disabled until an authenticated
+  or signed-upload flow is implemented.
+
+The source implementation of public checkout and POS also validates price
+floors and maximum supplier margins before creating Stripe sessions.
+POS requires a current Pro subscription matching the Stripe environment.
+The obsolete, unauthenticated `generate-brand-dna` endpoint returns HTTP
+410 in source; its deployment status has **not** been established.
+`support-ai` now rejects client-authored `assistant` or `system` roles,
+and the dashboard widget sends only user messages.
+
+Read-only post-change checks confirmed that the active database no longer
+has public INSERT policies on `orders` or `partner_onboarding_submissions`,
+that public ticket attachment upload is disabled, and that pricing and
+private-sale protection triggers are installed.
+Existing product pricing audit: four products were checked; no recorded
+supplier-margin or promotion anomalies were found.
+
+Intentionally public reads remain for the `plans` catalogue and published
+`boutique-media` assets. The media bucket itself is PUBLIC; never store
+customer, support, KYC, contract or personal data there. Support attachment
+storage remains PRIVATE. Public images should be separated from private
+merchant media if merchants need non-public assets.
+
+Not yet established: a successful TypeScript/build/test run, updated Edge
+Functions deployed and active in Supabase, live negative-access tests with
+anonymous/Starter/Pro accounts, the Stripe sandbox tampering matrix, and
+a new Lovable security scan. The source and SQL work must not be represented
+as closure of every scanner finding.
+
 ## Security hardening update — 2026-11-02
 The connected BIB Platform Supabase database was inspected and the following
 SQL protections were executed and verified in the live database:
