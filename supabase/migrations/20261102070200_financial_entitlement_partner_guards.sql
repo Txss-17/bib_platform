@@ -40,7 +40,7 @@ BEGIN
     END IF;
   END IF;
   RETURN NEW;
-END $;
+END $$;
 
 DROP TRIGGER IF EXISTS bib_guard_order_financial_fields ON public.orders;
 CREATE TRIGGER bib_guard_order_financial_fields
