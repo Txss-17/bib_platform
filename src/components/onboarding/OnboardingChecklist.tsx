@@ -1,207 +1,83 @@
-import { translateUi } from "@/lib/uiTranslation";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  Check,
-  Circle,
-  ChevronRight,
-  X,
-  Sparkles,
-  Bell,
-  BellOff,
-  Settings,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useOnboardingState } from "@/hooks/useOnboardingState";
-import { Progress } from "@/components/ui/progress";
-import { useOnboardingReminders } from "@/hooks/useOnboardingReminders";
-import { Switch } from "@/components/ui/switch";
-import { supabase } from "@/integrations/supabase/client";
+import { CheckCircle2, ChevronRight, ListChecks, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOnboardingState } from "@/hooks/useOnboardingState";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translateUi } from "@/lib/uiTranslation";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
-const dismissKey = (userId: string) => `bib_onboarding_dismissed_${userId}`;
+const dismissedKey = (userId: string) => `bib_merchant_next_action_dismissed_${userId}`;
 
 /**
- * OnboardingChecklist
- * Carte épinglée en haut du dashboard. Disparaît automatiquement à 100%
- * ou si l'utilisateur la ferme manuellement (état local persistant).
- * Étapes conditionnelles via useOnboardingState (KYC si business, marchés si multi-market).
+ * Contextual first-run assistance:
+ * one relevant action instead of a mandatory walkthrough.
+ * Completion comes from real boutique/profile/product data, not "Next" clicks.
  */
 export function OnboardingChecklist() {
   useLanguage();
-  const { steps, doneCount, totalCount, completionPct, allDone } =
-    useOnboardingState();
-  const {
-    enabled: remindersEnabled,
-    loading: remindersLoading,
-    toggle: toggleReminders,
-  } = useOnboardingReminders();
   const { user } = useAuth();
+  const { steps, doneCount, totalCount, completionPct, allDone } = useOnboardingState();
   const [dismissed, setDismissed] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
   useEffect(() => {
     if (!user?.id) { setDismissed(false); return; }
-    try { setDismissed(window.localStorage.getItem(dismissKey(user.id)) === "1"); }
+    try { setDismissed(localStorage.getItem(dismissedKey(user.id)) === "1"); }
     catch { setDismissed(false); }
   }, [user?.id]);
 
-  // Event-driven trigger: if at least one step is blocked, ping the
-  // reminders function (rate-limited to once / 6h per browser).
-  useEffect(() => {
-    if (!user || remindersLoading || !remindersEnabled) return;
-    if (allDone || totalCount === 0) return;
-    const hasBlocked = steps.some((s) => !s.done);
-    if (!hasBlocked) return;
-    const key = `bib_reminder_event_${user.id}`;
-    const last = Number(localStorage.getItem(key) || 0);
-    if (Date.now() - last < 6 * 3600_000) return;
-    localStorage.setItem(key, String(Date.now()));
-    supabase.functions
-      .invoke("onboarding-reminders", {
-        body: { user_id: user.id, source: "event" },
-      })
-      .catch(() => {});
-  }, [user, remindersLoading, remindersEnabled, steps, allDone, totalCount]);
+  if (!user || allDone || dismissed || !totalCount) return null;
+  const next = steps.find(step => !step.done);
+  if (!next) return null;
 
-  // Hide when complete or explicitly dismissed by the user.
-  if (allDone || dismissed || totalCount === 0) return null;
-
-  const handleDismiss = () => {
-    if (user?.id) {
-      try { window.localStorage.setItem(dismissKey(user.id), "1"); } catch { /* non-persistent browser */ }
-    }
+  const dismiss = () => {
+    try { localStorage.setItem(dismissedKey(user.id), "1"); } catch { /* storage optional */ }
     setDismissed(true);
   };
 
   return (
-    <section
-      aria-label={translateUi("Onboarding checklist")}
-      className="rounded-2xl border border-bib-gold/30 bg-card overflow-hidden mb-6 shadow-sm"
-    >
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3 p-4 sm:p-5 border-b border-bib-gold/15 bg-bib-gold/[0.04]">
-        <div className="flex items-start gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-bib-gold/15 text-bib-gold flex items-center justify-center shrink-0">
-            <Sparkles className="w-4 h-4" />
-          </div>
-          <div className="min-w-0">
-            <p className="font-display font-semibold text-foreground">
-              {translateUi("Démarrage — Votre parcours marchand")}
-            </p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {doneCount} / {totalCount}{" "}
-              {translateUi("étapes terminées ·") + " "}
-              {completionPct}%
-            </p>
-          </div>
+    <section aria-label={translateUi("Votre prochaine action marchand")} className="mb-5 rounded-xl border border-border/80 bg-card p-4 shadow-sm sm:p-5">
+      <div className="flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <ListChecks className="h-4 w-4" />
         </div>
-        <button
-          onClick={handleDismiss}
-          aria-label={translateUi("Masquer la checklist")}
-          className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors shrink-0"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Progress bar */}
-      <div className="px-4 sm:px-5 pt-3">
-        <Progress value={completionPct} className="h-1.5" />
-      </div>
-
-      {/* Steps */}
-      <ul className="divide-y divide-border/40 px-1 py-2">
-        {steps.map((step) => (
-          <li key={step.key}>
-            <Link
-              to={step.href}
-              className={`flex items-center gap-3 px-3 sm:px-4 py-3 rounded-lg hover:bg-muted/40 transition-colors group ${
-                step.done ? "opacity-70" : ""
-              }`}
-            >
-              {step.done ? (
-                <span className="w-7 h-7 rounded-full bg-success/15 text-success flex items-center justify-center shrink-0">
-                  <Check className="w-4 h-4" strokeWidth={3} />
-                </span>
-              ) : (
-                <span className="w-7 h-7 rounded-full border-2 border-bib-gold/40 text-bib-gold flex items-center justify-center shrink-0">
-                  <Circle className="w-3 h-3" />
-                </span>
-              )}
-              <div className="flex-1 min-w-0">
-                <p
-                  className={`text-sm font-medium ${
-                    step.done
-                      ? "line-through text-muted-foreground"
-                      : "text-foreground"
-                  }`}
-                >
-                  {step.label}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {step.description}
-                </p>
-              </div>
-              {!step.done && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="shrink-0 hidden sm:inline-flex h-8 text-xs gap-1 border-bib-gold/40 text-foreground hover:bg-bib-gold/10 hover:border-bib-gold/60"
-                  asChild
-                >
-                  <span>
-                    {step.cta} <ChevronRight className="w-3 h-3" />
-                  </span>
-                </Button>
-              )}
-              <ChevronRight className="w-4 h-4 text-muted-foreground sm:hidden shrink-0" />
-            </Link>
-          </li>
-        ))}
-      </ul>
-
-      {/* Reminder toggle */}
-      <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3 border-t border-border/40 bg-muted/20">
-        <div className="flex items-start gap-2 min-w-0">
-          {remindersEnabled ? (
-            <Bell className="w-4 h-4 text-bib-gold mt-0.5 shrink-0" />
-          ) : (
-            <BellOff className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
-          )}
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-foreground">
-              {translateUi("Relances automatiques")}
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {translateUi("Votre prochaine action")} · {doneCount}/{totalCount}
             </p>
-            <p className="text-xs text-muted-foreground">
-              {translateUi(
-                "Recevez des rappels facultatifs sur les étapes non terminées. Vous pouvez les désactiver.",
-              )}
-            </p>
+            <button type="button" onClick={dismiss} aria-label={translateUi("Masquer cette aide")} className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground">
+              <X className="h-4 w-4" />
+            </button>
           </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Link to="/dashboard/parametres/relances">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-1 h-8 px-2 text-xs"
-            >
-              <Settings className="w-3.5 h-3.5" />{" "}
-              <span className="hidden sm:inline">
-                {translateUi("Réglages")}
-              </span>
+          <h2 className="mt-1 text-base font-semibold">{next.label}</h2>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">{next.description}</p>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <Button asChild size="sm" className="gap-1.5">
+              <Link to={next.href}>{next.cta} <ChevronRight className="h-4 w-4" /></Link>
             </Button>
-          </Link>
-          <Switch
-            checked={remindersEnabled}
-            disabled={remindersLoading}
-            onCheckedChange={toggleReminders}
-            aria-label={translateUi(
-              "Activer les relances onboarding par e-mail",
-            )}
-          />
+            <button type="button" onClick={() => setExpanded(value => !value)} aria-expanded={expanded}
+              className="text-xs font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground">
+              {expanded ? translateUi("Masquer les étapes") : translateUi("Voir toutes les étapes")}
+            </button>
+          </div>
         </div>
       </div>
+      <Progress value={completionPct} className="mt-4 h-1" />
+      {expanded && (
+        <ul className="mt-3 space-y-1 border-t border-border/60 pt-3">
+          {steps.map(step => <li key={step.key}>
+            <Link to={step.href} className="flex items-center gap-2 rounded-md px-2 py-2 text-xs hover:bg-muted/50">
+              {step.done ? <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" /> :
+                <span className="h-4 w-4 shrink-0 rounded-full border border-border" />}
+              <span className={step.done ? "flex-1 text-muted-foreground" : "flex-1 font-medium"}>{step.label}</span>
+              {!step.done && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
+            </Link>
+          </li>)}
+        </ul>
+      )}
     </section>
   );
 }
