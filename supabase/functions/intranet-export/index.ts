@@ -198,7 +198,7 @@ Deno.serve(async (req) => {
     // Never export visitor_digest, IP address or individual response IDs.
     readAll(() =>
       sb.from("prelaunch_survey_responses")
-        .select("challenge, solution, role, wants_to_be_merchant, preferred_launch_timing, survey_day")
+        .select("challenge, solution, challenge_selections, solution_selections, role, wants_to_be_merchant, preferred_launch_timing, survey_day")
         .lte("survey_day", snapshotAt.slice(0, 10))
         .order("survey_day"),
     ),
@@ -765,7 +765,11 @@ Deno.serve(async (req) => {
   const countCategories = (field: "challenge" | "solution" | "role", values: readonly string[]) =>
     values.map(value => ({
       value,
-      count: survey.filter(row => row[field] === value).length,
+      count: survey.filter(row => {
+        if (field === "challenge") return (row.challenge_selections ?? [row.challenge]).includes(value);
+        if (field === "solution") return (row.solution_selections ?? [row.solution]).includes(value);
+        return row.role === value;
+      }).length,
     }));
   const surveySummary = {
     primary_owner: "product_engineering",
