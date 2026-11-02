@@ -147,6 +147,22 @@ Deno.serve(async (req) => {
     }
   }
 
+  if (!serverCaller) {
+    // Avoid unbounded paid email usage even to the caller's own inbox.
+    const adminForThrottle = createClient(supabaseUrl, supabaseServiceKey)
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const { data: recent, error: quotaError } = await adminForThrottle
+      .from('email_send_log').select('id').eq('template_name', templateName)
+      .eq('recipient_email', verifiedUser!.email!.toLowerCase().trim())
+      .gte('created_at', since).limit(3)
+    if (quotaError) return new Response(JSON.stringify({ error: 'email_rate_check_unavailable' }), {
+      status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+    if ((recent?.length ?? 0) >= 3) return new Response(JSON.stringify({ error: 'email_rate_limited' }), {
+      status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
+
   // Resolve effective recipient: template-level `to` takes precedence over
   // the caller-provided recipientEmail. This allows notification templates
   // to always send to a fixed address (e.g., site owner from env var).
@@ -219,8 +235,7 @@ Deno.serve(async (req) => {
 
   if (tokenLookupError) {
     console.error('Token lookup failed', {
-      error: tokenLookupError,
-      email: normalizedEmail,
+      code: tokenLookupError?.code ?? 'unknown',
     })
     await supabase.from('email_send_log').insert({
       message_id: messageId,
@@ -281,8 +296,7 @@ Deno.serve(async (req) => {
 
     if (reReadError || !storedToken) {
       console.error('Failed to read back unsubscribe token after upsert', {
-        error: reReadError,
-        email: normalizedEmail,
+        code: reReadError?.code ?? 'unknown',
       })
       await supabase.from('email_send_log').insert({
         message_id: messageId,
@@ -304,7 +318,7 @@ Deno.serve(async (req) => {
     // Token exists but is already used — email should have been caught by suppression check above.
     // This is a safety fallback; log and skip sending.
     console.warn('Unsubscribe token already used but email not suppressed', {
-      email: normalizedEmail,
+      templateName,
     })
     await supabase.from('email_send_log').insert({
       message_id: messageId,
@@ -369,9 +383,8 @@ Deno.serve(async (req) => {
 
   if (enqueueError) {
     console.error('Failed to enqueue email', {
-      error: enqueueError,
+      code: enqueueError?.code ?? 'unknown',
       templateName,
-      effectiveRecipient,
     })
 
     await supabase.from('email_send_log').insert({
