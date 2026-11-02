@@ -256,7 +256,6 @@ export default function PartnerOnboardingWizard({
   const { lang } = useLanguage();
   const english = lang === "en";
   const copy = (text: string) => localizePartnerOnboardingCopy(text, english);
-  const storageKey = `bib-onboarding-${config.portal}`;
 
   const [step, setStep] = useState(mode === "edit" ? 7 : 1);
 
@@ -297,84 +296,8 @@ export default function PartnerOnboardingWizard({
   const [submissionId, setSubmissionId] = useState<string | undefined>();
   const [portalUrl, setPortalUrl] = useState<string | undefined>();
 
-  /* ------------------------------------------------------------------------ */
-  /* Restore draft                                                            */
-  /* ------------------------------------------------------------------------ */
-
-  useEffect(() => {
-    if (mode !== "new") return;
-
-    try {
-      const raw = localStorage.getItem(storageKey);
-
-      if (!raw) return;
-
-      const saved = JSON.parse(raw);
-
-      if (saved.identity) {
-        setIdentity((current) => ({
-          ...current,
-          ...saved.identity,
-        }));
-      }
-
-      if (saved.documents) {
-        setDocuments(saved.documents);
-      }
-
-      if (saved.commitments) {
-        setCommitments(saved.commitments);
-      }
-
-      if (saved.integration) {
-        setIntegration(saved.integration);
-      }
-
-      if (typeof saved.pilotNotes === "string") {
-        setPilotNotes(saved.pilotNotes);
-      }
-
-      if (typeof saved.finalDecl === "boolean") {
-        setFinalDecl(saved.finalDecl);
-      }
-    } catch {
-      // Ignore invalid local draft.
-    }
-  }, [mode, storageKey]);
-
-  /* ------------------------------------------------------------------------ */
-  /* Persist draft                                                            */
-  /* ------------------------------------------------------------------------ */
-
-  useEffect(() => {
-    if (mode !== "new" || submitted) return;
-
-    try {
-      localStorage.setItem(
-        storageKey,
-        JSON.stringify({
-          identity,
-          documents,
-          commitments,
-          integration,
-          pilotNotes,
-          finalDecl,
-        }),
-      );
-    } catch {
-      // Local persistence is best effort.
-    }
-  }, [
-    mode,
-    storageKey,
-    identity,
-    documents,
-    commitments,
-    integration,
-    pilotNotes,
-    finalDecl,
-    submitted,
-  ]);
+  // Unsubmitted partner details remain in React memory only.
+  // Server-backed drafts require a separate authenticated workflow.
 
   /* ------------------------------------------------------------------------ */
   /* Initial payload in edit mode                                             */
@@ -817,9 +740,6 @@ export default function PartnerOnboardingWizard({
 
       setSubmitted(true);
 
-      if (mode === "new") {
-        localStorage.removeItem(storageKey);
-      }
 
       onSubmitted?.({
         submissionId: data?.submission_id,
