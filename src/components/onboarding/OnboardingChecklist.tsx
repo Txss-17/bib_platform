@@ -8,7 +8,7 @@ import { translateUi } from "@/lib/uiTranslation";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
-const dismissedKey = (userId: string) => `bib_merchant_next_action_dismissed_${userId}`;
+
 
 /**
  * Contextual first-run assistance:
@@ -22,18 +22,13 @@ export function OnboardingChecklist() {
   const [dismissed, setDismissed] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  useEffect(() => {
-    if (!user?.id) { setDismissed(false); return; }
-    try { setDismissed(localStorage.getItem(dismissedKey(user.id)) === "1"); }
-    catch { setDismissed(false); }
-  }, [user?.id]);
+
 
   if (!user || allDone || dismissed || !totalCount) return null;
   const next = steps.find(step => !step.done);
   if (!next) return null;
 
   const dismiss = () => {
-    try { localStorage.setItem(dismissedKey(user.id), "1"); } catch { /* storage optional */ }
     setDismissed(true);
   };
 
