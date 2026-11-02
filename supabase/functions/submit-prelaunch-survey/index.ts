@@ -22,7 +22,7 @@ function trustedOrigin(request: Request): string | null {
   } catch { return null; }
 }
 function response(data: unknown, status: number, origin: string | null): Response {
-  return new Response(JSON.stringify(data), {
+  return new Response(status === 204 ? null : JSON.stringify(data), {
     status,
     headers: { ...headers, ...(origin ? { "Access-Control-Allow-Origin": origin } : {}) },
   });
