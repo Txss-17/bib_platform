@@ -228,6 +228,15 @@ async function createPosCheckout(
     );
   }
 
+  // A private sale is a paid Pro feature, not a client-side toggle.
+  const { data: hasPro, error: proError } = await supabase.rpc(
+    "bib_has_active_pro_subscription",
+    { p_user_id: userId, p_environment: body.environment },
+  );
+  if (proError || hasPro !== true) {
+    throw new PosCheckoutError("Abonnement Pro actif requis pour la caisse des ventes privées", 403);
+  }
+
   // 2. Validate the private sale on the server. Never trust the
   // discount percentage or sale status sent by the browser.
   const { data: privateSale, error: saleError } = await supabase
@@ -313,7 +322,7 @@ async function createPosCheckout(
 
   const { data: supplierData, error: supplierError } = await supabase
     .from("supplier_products")
-    .select("id, name, image_url, is_active")
+    .select("id, name, image_url, is_active, base_price")
     .in("id", supplierIds);
 
   if (supplierError) throw supplierError;
@@ -332,6 +341,11 @@ async function createPosCheckout(
     const basePrice = getCurrentBasePrice(product);
     const discountedPrice = basePrice * (1 - discountPercent / 100);
     const unitAmount = Math.round(discountedPrice * 100);
+    if (!Number.isFinite(Number(supplier.base_price)) ||
+        Number(supplier.base_price) <= 0 ||
+        unitAmount < Math.round(Number(supplier.base_price) * 100)) {
+      throw new PosCheckoutError("La remise passe sous le coût fournisseur autorisé", 409);
+    }
 
     if (!Number.isSafeInteger(unitAmount) || unitAmount <= 0) {
       throw new PosCheckoutError(
