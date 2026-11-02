@@ -1,8 +1,6 @@
 import { translateUi } from "@/lib/uiTranslation";
 /**
- * SEO settings — locale/market configuration used to drive hreflang alternates,
- * x-default and the canonical URL. Persisted in localStorage so non-tech users
- * can manage their international targeting without a backend round-trip.
+ * SEO settings — volatile until securely persisted on the server.
  */
 import { useEffect, useState, useCallback } from "react";
 
@@ -59,38 +57,20 @@ export const ALL_LOCALES: {
   },
 ];
 
-const STORAGE_KEY = "bib.seo.settings.v1";
-
 export const DEFAULT_SEO_SETTINGS: SeoSettings = {
   activeLocales: ["fr", "en"],
   defaultLocale: "fr",
 };
 
+// SEO settings are volatile until a protected backend configuration endpoint
+// exists; never claim a local setting is a published site-wide configuration.
+let currentSeo: SeoSettings = DEFAULT_SEO_SETTINGS;
 export function readSeoSettings(): SeoSettings {
-  if (typeof window === "undefined") return DEFAULT_SEO_SETTINGS;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_SEO_SETTINGS;
-    const parsed = JSON.parse(raw) as Partial<SeoSettings>;
-    return {
-      activeLocales:
-        Array.isArray(parsed.activeLocales) && parsed.activeLocales.length > 0
-          ? (parsed.activeLocales as SeoLocale[])
-          : DEFAULT_SEO_SETTINGS.activeLocales,
-      defaultLocale:
-        (parsed.defaultLocale as SeoLocale) ||
-        DEFAULT_SEO_SETTINGS.defaultLocale,
-      publicOrigin: parsed.publicOrigin || undefined,
-    };
-  } catch {
-    return DEFAULT_SEO_SETTINGS;
-  }
+  return currentSeo;
 }
-
 export function writeSeoSettings(next: SeoSettings) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  window.dispatchEvent(new CustomEvent("bib:seo-settings-changed"));
+  currentSeo = next;
+  if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("bib:seo-settings-changed"));
 }
 
 /**
@@ -104,10 +84,8 @@ export function useSeoSettings() {
 
   useEffect(() => {
     const sync = () => setSettings(readSeoSettings());
-    window.addEventListener("storage", sync);
     window.addEventListener("bib:seo-settings-changed", sync as EventListener);
     return () => {
-      window.removeEventListener("storage", sync);
       window.removeEventListener(
         "bib:seo-settings-changed",
         sync as EventListener,
