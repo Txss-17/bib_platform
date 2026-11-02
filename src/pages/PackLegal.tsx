@@ -9,6 +9,7 @@ import {
   ScrollText,
   ShieldCheck,
   ClipboardCheck,
+  BriefcaseBusiness,
   Cookie,
   ArrowRight,
   ScaleIcon,
@@ -83,6 +84,14 @@ const docs = [
     get desc() { return translateUi("Parcours par parcours : comptes, commandes, BIB Talent, sondage, assistance IA, communications et publicités."); },
     href: "/donnees-et-consentements",
     points: ["Consentement et bases légales", "Destinataires", "Choix et retrait"],
+  },
+  {
+    icon: BriefcaseBusiness,
+    get eyebrow() { return translateUi("Marchands"); },
+    get title() { return translateUi("Annexe de traitement des données"); },
+    get desc() { return translateUi("Projet d'accord entre BIB et les marchands pour protéger les données clients des boutiques ; à valider avant signature."); },
+    href: "/annexe-donnees-marchands",
+    points: ["Responsabilités RGPD", "Sécurité et transferts", "Projet non signé"],
   },
   {
     icon: Cookie,
