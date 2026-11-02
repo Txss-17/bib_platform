@@ -21,10 +21,11 @@ describe("Merchant operational workspaces", () => {
     expect(tour).toContain("9. Retrouvez l'assistance et le guide");
     expect(tour).toContain("onOpenChange?.(false)");
     expect(hook).toContain('onConflict: "user_id,scope"');
-    expect(hook).toContain('bib_tour_progress_${userId ?? "guest"}_${scope}');
+    expect(hook).not.toContain("localStorage.setItem");
+    expect(hook).toContain('onConflict: "user_id,scope"');
     expect(migration).toContain("PRIMARY KEY (user_id, scope)");
     expect(migration).toContain("auth.uid()=user_id");
-    expect(checklist).toContain("bib_merchant_next_action_dismissed_${userId}");
+    expect(checklist).not.toContain("localStorage.setItem");
   });
 
   it("supports a collapsible dashboard and clearly identified BIB assistant", () => {
