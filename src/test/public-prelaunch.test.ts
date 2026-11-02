@@ -22,16 +22,38 @@ describe("BIB Platform public prelaunch boundary", () => {
   });
 
   it("offers the legal pack and its documents even on the restricted public host", () => {
-    for (const route of ["/pack-legal", "/cgv", "/cgu", "/mentions-legales", "/confidentialite", "/cookies"]) {
+    for (const route of ["/pack-legal", "/donnees-et-consentements", "/annexe-donnees-marchands", "/cgv", "/cgu", "/mentions-legales", "/confidentialite", "/cookies"]) {
       expect(PRELAUNCH_PUBLIC_ROUTES).toContain(route);
       expect(router).toContain('path="' + route + '"');
     }
-    for (const href of ["/cgv", "/cgu", "/mentions-legales", "/confidentialite", "/cookies"]) {
+    for (const href of ["/cgv", "/cgu", "/mentions-legales", "/confidentialite", "/cookies", "/donnees-et-consentements", "/annexe-donnees-marchands"]) {
       expect(pack).toContain('href: "' + href + '"');
     }
     for (const route of ["/dashboard", "/store", "/checkout"]) {
       expect(PRELAUNCH_PUBLIC_ROUTES).not.toContain(route);
     }
+  });
+
+  it("documents all BIB data purposes and flags unverified legal identifiers", () => {
+    const legalPages = read("src/pages/LegalPages.tsx");
+    const charter = read("src/pages/LegalConsentCharter.tsx");
+    const dpa = read("src/pages/LegalMerchantDataAnnex.tsx");
+    const versions = read("src/lib/legalDocumentVersions.ts");
+    expect(legalPages).toContain("l'identité légale complète");
+    expect(legalPages).toContain("Le marchand identifié est le vendeur professionnel");
+    expect(legalPages).toContain("politique de confidentialité");
+    expect(legalPages).toContain("acceptation contractuelle");
+    expect(legalPages).toContain("refuser");
+    expect(charter).toContain("Sondage de prélancement");
+    expect(charter).toContain("BIB Talent");
+    expect(charter).toContain("Assistant BIB et tickets");
+    expect(charter).toContain("Emails et publicités");
+    expect(charter).toContain("Retirer");
+    expect(dpa).toContain("Document de travail");
+    expect(dpa).toContain("sous-traitant au sens de l'article 28");
+    expect(versions).toContain('privacy: "2026-11-02"');
+    expect(pack).toContain('href: "/donnees-et-consentements"');
+    expect(pack).toContain('href: "/annexe-donnees-marchands"');
   });
 
   it("keeps merchant signup closed but customer signup and partner applications open", () => {
