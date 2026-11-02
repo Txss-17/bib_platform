@@ -75,8 +75,6 @@ interface StoreCartContextType {
    CONSTANTS
    ========================================================= */
 
-const STORAGE_KEY = "bib-store-cart";
-
 /* =========================================================
    CONTEXT
    ========================================================= */
@@ -96,100 +94,9 @@ export function StoreCartProvider({
   children: ReactNode;
 }) {
   const [items, setItems] = useState<StoreCartItem[]>([]);
-  const [hydrated, setHydrated] = useState(false);
 
-  /* =======================================================
-     INITIALISATION
-     ======================================================= */
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-
-      if (!stored) {
-        setHydrated(true);
-        return;
-      }
-
-      const parsed: unknown = JSON.parse(stored);
-
-      if (!Array.isArray(parsed)) {
-        setHydrated(true);
-        return;
-      }
-
-      const validItems = parsed.filter(
-        (item): item is StoreCartItem => {
-          if (!item || typeof item !== "object") {
-            return false;
-          }
-
-          const value = item as Record<string, unknown>;
-
-          const validBoutiqueSlug =
-            value.boutiqueSlug === undefined ||
-            typeof value.boutiqueSlug === "string";
-
-          const validBoutiqueUrl =
-            value.boutiqueUrl === undefined ||
-            typeof value.boutiqueUrl === "string";
-
-          return (
-            typeof value.productId === "string" &&
-            typeof value.productName === "string" &&
-            typeof value.productImage === "string" &&
-            typeof value.price === "number" &&
-            Number.isFinite(value.price) &&
-            value.price >= 0 &&
-            typeof value.quantity === "number" &&
-            Number.isFinite(value.quantity) &&
-            value.quantity > 0 &&
-            value.quantity <= 99 &&
-            typeof value.boutiqueId === "string" &&
-            typeof value.boutiqueName === "string" &&
-            validBoutiqueSlug &&
-            validBoutiqueUrl
-          );
-        },
-      ).map((item) => ({
-        ...item,
-        quantity: Math.min(
-          99,
-          Math.max(1, Math.floor(item.quantity)),
-        ),
-      }));
-
-      setItems(validItems);
-    } catch {
-      try {
-        localStorage.removeItem(STORAGE_KEY);
-      } catch {
-        // localStorage indisponible.
-      }
-    } finally {
-      setHydrated(true);
-    }
-  }, []);
-
-  /* =======================================================
-     PERSISTENCE
-     ======================================================= */
-
-  useEffect(() => {
-    if (!hydrated) {
-      return;
-    }
-
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(items),
-      );
-    } catch {
-      // Le panier reste fonctionnel en mémoire
-      // si localStorage n'est pas disponible.
-    }
-  }, [items, hydrated]);
+  // Cart data stays in volatile React state. No local or session storage.
+  // Checkout price is always re-verified on the server.
 
   /* =======================================================
      AJOUT
