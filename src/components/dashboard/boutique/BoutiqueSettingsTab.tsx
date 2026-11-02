@@ -456,7 +456,7 @@ export function BoutiqueSettingsTab({ boutiqueId, showTeam = false }: { boutique
     });
     const previousUrl = form.seo_og_image_url ?? "";
     try {
-      const path = `og/${user.id}/${boutiqueId}_${Date.now()}.jpg`;
+      const path = `${user.id}/og/${boutiqueId}_${Date.now()}.jpg`;
       setOgUpload({
         status: "uploading",
         progress: 45,
