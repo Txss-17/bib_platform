@@ -1,17 +1,9 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-const SESSION_KEY = "bib_scene_session";
-
-function getSessionId(): string {
-  if (typeof window === "undefined") return "ssr";
-  let s = window.sessionStorage.getItem(SESSION_KEY);
-  if (!s) {
-    s = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-    window.sessionStorage.setItem(SESSION_KEY, s);
-  }
-  return s;
-}
+const volatileSessionId = typeof crypto !== "undefined" && crypto.randomUUID
+  ? crypto.randomUUID() : "not-tracked";
+function getSessionId(): string { return volatileSessionId; }
 
 type EventType = "impression" | "cta_click" | "dwell" | "scroll_depth" | "conversion";
 
