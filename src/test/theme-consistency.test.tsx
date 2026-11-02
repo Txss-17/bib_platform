@@ -1,12 +1,9 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { ThemeProvider, useTheme } from "next-themes";
+import { ThemeProvider, useTheme } from "@/components/VolatileThemeProvider";
 import { beforeEach, describe, expect, it } from "vitest";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import {
-  migrateThemePreference,
-  THEME_STORAGE_KEY,
-} from "@/lib/themePreference";
+
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 function Preference() {
@@ -22,12 +19,7 @@ function Preference() {
 function mount() {
   return render(
     <LanguageProvider>
-      <ThemeProvider
-        attribute="class"
-        storageKey={THEME_STORAGE_KEY}
-        defaultTheme="light"
-        enableSystem
-      >
+      <ThemeProvider defaultTheme="light">
         <Preference />
       </ThemeProvider>
     </LanguageProvider>,
@@ -35,45 +27,18 @@ function mount() {
 }
 beforeEach(() => {
   document.documentElement.classList.remove("dark", "light");
-  localStorage.removeItem(THEME_STORAGE_KEY);
 });
-describe("One shared theme preference", () => {
-  it("migrates a legacy dashboard choice without overriding an explicit shared choice", () => {
-    localStorage.setItem("bib-dashboard-theme", "dark");
-    migrateThemePreference();
-    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
-    localStorage.setItem(THEME_STORAGE_KEY, "system");
-    migrateThemePreference();
-    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe("system");
-  });
-  it("remains usable when browser persistence is unavailable", () =>
-    expect(() =>
-      migrateThemePreference({
-        getItem: () => {
-          throw new Error("blocked");
-        },
-        setItem: () => {
-          throw new Error("blocked");
-        },
-      }),
-    ).not.toThrow());
-  it("applies the same persisted root theme after a page remount", async () => {
-    const first = mount();
-    fireEvent.click(
-      screen.getByRole("button", { name: "Activer le thème sombre" }),
-    );
-    await waitFor(() => expect(document.documentElement).toHaveClass("dark"));
-    expect(document.body).not.toHaveClass("dark");
-    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe("dark");
-    first.unmount();
+describe("Volatile BIB theme preference", () => {
+  it("switches the root theme without persisting data in browser storage", async () => {
     mount();
-    expect(
-      screen.getByRole("button", { name: "Activer le thème clair" }),
-    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Activer le thème sombre" }));
+    await waitFor(() => expect(document.documentElement).toHaveClass("dark"));
+    expect(localStorage.getItem("bib-theme")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "System preference" }));
-    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe("system");
+    expect(localStorage.getItem("bib-theme")).toBeNull();
   });
 });
+
 function luminance(hsl: string) {
   let [h, s, l] = hsl.trim().split(/\s+/).map(Number);
   s /= 100;
