@@ -1,6 +1,7 @@
 import { translateUi, getUiLocale } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useBoutiques } from "@/hooks/useBoutiques";
 import { useCustomers } from "@/hooks/useCustomers";
@@ -68,8 +69,11 @@ type Kind = "newsletter" | "promo" | "custom";
 export default function Marketing() {
   useLanguage();
   const { data: boutiques = [] } = useBoutiques();
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") === "ads" ? "ads" : "composer");
   const [boutiqueId, setBoutiqueId] = useState<string>("");
-  const activeId = boutiqueId || boutiques[0]?.id || "";
+  const requestedBoutiqueId = searchParams.get("boutiqueId");
+  const activeId = boutiqueId || boutiques.find(b => b.id === requestedBoutiqueId)?.id || boutiques[0]?.id || "";
   const { data: customers = [] } = useCustomers(activeId);
   const { data: campaigns = [] } = useCampaigns(activeId);
   const { data: automations } = useAutomations(activeId);
@@ -298,7 +302,7 @@ export default function Marketing() {
           )}
         </div>
 
-        {!gmailReady && (
+        {activeTab !== "ads" && !gmailReady && (
           <Alert>
             <AlertTriangle className="w-4 h-4" />
             <AlertDescription>
@@ -314,7 +318,7 @@ export default function Marketing() {
           </Alert>
         )}
 
-        <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 xl:grid-cols-4">
+        {activeTab !== "ads" && <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 xl:grid-cols-4">
           <Kpi
             icon={Mail}
             label={translateUi("Opt-in marketing")}
@@ -354,9 +358,9 @@ export default function Marketing() {
                 : "—"
             }
           />
-        </div>
+        </div>}
 
-        <Tabs defaultValue="composer" className="w-full min-w-0">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full min-w-0">
           <div className="w-full min-w-0 pb-1">
           <TabsList className="grid h-auto w-full min-w-0 grid-cols-2 gap-1 p-1 sm:max-w-2xl sm:grid-cols-4">
             <TabsTrigger value="composer" className="min-w-0 px-1.5 text-[11px] sm:px-3 sm:text-sm">
