@@ -163,6 +163,7 @@ const CentreAideFaq = lazy(() => import("@/pages/CentreAideFaq"));
 const CentreAideGuide = lazy(() => import("@/pages/CentreAideGuide"));
 const PackLegal = lazy(() => import("@/pages/PackLegal"));
 const LegalConsentCharter = lazy(() => import("@/pages/LegalConsentCharter"));
+const LegalMerchantDataAnnex = lazy(() => import("@/pages/LegalMerchantDataAnnex"));
 
 /* =====================================================
    LEGAL
@@ -278,6 +279,7 @@ export default function App() {
                       <Route path="/careers/jobs" element={<Navigate to="/bib-talent" replace />} />
                       <Route path="/pack-legal" element={<PackLegal />} />
                       <Route path="/donnees-et-consentements" element={<LegalConsentCharter />} />
+                      <Route path="/annexe-donnees-marchands" element={<LegalMerchantDataAnnex />} />
                       <Route path="/legal" element={<Navigate to="/pack-legal" replace />} />
                       <Route path="/mentions-legales" element={<MentionsLegales />} />
                       <Route path="/cgu" element={<CGU />} />
@@ -907,6 +909,7 @@ export default function App() {
 
                     <Route path="/pack-legal" element={<PackLegal />} />
                       <Route path="/donnees-et-consentements" element={<LegalConsentCharter />} />
+                      <Route path="/annexe-donnees-marchands" element={<LegalMerchantDataAnnex />} />
 
                     <Route path="/legal" element={<PackLegal />} />
 
