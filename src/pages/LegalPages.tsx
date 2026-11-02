@@ -52,62 +52,22 @@ function LegalShell({
 export function MentionsLegales() {
   useLanguage();
   useSEO({
-    title: translateUi("Mentions légales — Brand-In-A-Box"),
-    description: translateUi(
-      "Mentions légales de la plateforme Brand-In-A-Box.",
-    ),
+    title: "Mentions légales — BIB",
+    description: "Éditeur, contacts et responsabilité des services Brand-in-a-Box.",
   });
-  return (
-    <LegalShell
-      eyebrow={translateUi("Légal")}
-      title={translateUi("Mentions légales")}
-      updated="17 mai 2026"
-    >
-      <h2>{translateUi("Éditeur du site")}</h2>
-      <p>
-        {translateUi("Le site") + " "}
-        <strong>brand-in-a-box.space</strong>{" "}
-        {translateUi("est édité par") + " "}
-        <strong>Brand-In-A-Box SAS</strong>
-        {translateUi(
-          ", société par actions simplifiée au capital social de 10 000 €, dont le siège social est situé en France.",
-        )}
-      </p>
-      <p>
-        {translateUi("Email de contact :") + " "}
-        <a href="mailto:contact@brand-in-a-box.space">
-          contact@brand-in-a-box.space
-        </a>
-      </p>
-      <h2>{translateUi("Directeur de la publication")}</h2>
-      <p>
-        {translateUi(
-          "Le directeur de la publication est le représentant légal de Brand-In-A-Box SAS.",
-        )}
-      </p>
-      <h2>{translateUi("Hébergement")}</h2>
-      <p>
-        {translateUi("Le site est hébergé par") + " "}
-        <strong>Vercel Inc.</strong>
-        {translateUi(", 340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis.")}
-      </p>
-      <h2>{translateUi("Propriété intellectuelle")}</h2>
-      <p>
-        {translateUi(
-          "L'ensemble des contenus (textes, images, logos, marques) est protégé par le droit d'auteur. Toute reproduction est interdite sans autorisation préalable.",
-        )}
-      </p>
-      <h2>{translateUi("Signalement")}</h2>
-      <p>
-        {translateUi("Pour toute question juridique ou demande de retrait :") +
-          " "}
-        <a href="mailto:legal@brand-in-a-box.space">
-          legal@brand-in-a-box.space
-        </a>
-        .
-      </p>
-    </LegalShell>
-  );
+  return <LegalShell eyebrow="Légal" title="Mentions légales" updated="2 novembre 2026">
+    <h2>Éditeur et responsabilité</h2>
+    <p>Brand-in-a-Box (« BIB ») exploite une plateforme numérique destinée aux marchands, clients, fournisseurs et partenaires opérationnels. L'identité légale complète de l'exploitant doit être confirmée avant publication commerciale définitive : <strong>dénomination exacte, forme juridique, siège, capital social le cas échéant, immatriculation SIREN/RCS, numéro de TVA le cas échéant et représentant légal</strong>. Ces éléments ne sont pas indiqués ici comme acquis en l'absence de justificatifs.</p>
+    <p>Site : <strong>brand-in-a-box.space</strong>. Contact général : <a href="mailto:contact@brand-in-a-box.space">contact@brand-in-a-box.space</a> (adresse à confirmer opérationnelle). Pour les questions juridiques : <a href="mailto:legal@brand-in-a-box.space">legal@brand-in-a-box.space</a> ; pour les données personnelles : <a href="mailto:privacy@brand-in-a-box.space">privacy@brand-in-a-box.space</a>.</p>
+    <h2>Directeur de publication et hébergement</h2>
+    <p>L'identité du directeur de la publication ainsi que la raison sociale, l'adresse et les coordonnées légales de l'hébergeur effectivement contractuel doivent être confirmées et renseignées sur cette page avant mise en exploitation publique. La présence d'outils de développement, de déploiement ou de base de données (notamment Lovable et Supabase) ne permet pas d'affirmer sans contrôle l'identité de l'hébergeur juridique.</p>
+    <h2>Rôle dans la vente</h2>
+    <p>Sur les boutiques hébergées par BIB, le <strong>marchand identifié est le vendeur professionnel</strong> du produit. BIB fournit les services d'intermédiation et organise des prestations logistiques via ses partenaires selon le cadre contractuel applicable. Les droits légaux du consommateur restent opposables au vendeur, indépendamment des services BIB ou d'un éventuel complément d'assurance.</p>
+    <h2>Contenus, propriété intellectuelle et signalements</h2>
+    <p>Les marques, logiciels et créations sont protégés selon les droits effectivement détenus ou concédés à BIB. Les contenus des boutiques peuvent appartenir aux marchands ou à leurs ayants droit. Pour signaler un contenu, une utilisation illicite ou exercer des droits, contactez l'équipe juridique par courriel.</p>
+    <h2>Informations complémentaires</h2>
+    <p>Consultez les <a href="/cgu">conditions d'utilisation</a>, les <a href="/cgv">conditions de vente</a>, la <a href="/confidentialite">politique de confidentialité</a> et la <a href="/donnees-et-consentements">charte des données et consentements</a>. Pour une vente, la boutique doit également afficher l'identité du marchand vendeur et ses informations contractuelles obligatoires.</p>
+  </LegalShell>;
 }
 
 export function CGU() {
