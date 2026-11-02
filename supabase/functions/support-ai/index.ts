@@ -36,7 +36,7 @@ async function sealAssistantTurn(reply: string, baseHash: string): Promise<strin
   return payload + "." + toBase64Url(new Uint8Array(mac));
 }
 async function openAssistantTurn(token: unknown, expectedHash: string): Promise<string | null> {
-  if (typeof token !== "string" || token.length > 6000) return null;
+  if (typeof token !== "string" || token.length > 16000) return null;
   const [payload, signature, extra] = token.split(".");
   if (!payload || !signature || extra) return null;
   try {
