@@ -1,13 +1,12 @@
-import { ArrowRight, ArrowUpRight, Compass, Lightbulb, Sparkles, Users, Workflow, Shapes, Store, ShoppingBag, Truck, Package } from "lucide-react";
+import { ArrowRight, Compass, Lightbulb, Sparkles, Users, Workflow, Shapes, Store, ShoppingBag, Truck, Package } from "lucide-react";
 import PublicPageLayout from "@/components/layout/PublicPageLayout";
 import { Button } from "@/components/ui/button";
+import { BibTalentApplicationForm } from "@/components/talent/BibTalentApplicationForm";
 import { useSEO } from "@/hooks/useSEO";
 import { useLanguage } from "@/contexts/LanguageContext";
 import platformDashboard from "@/assets/landing-dashboard.jpg";
 import clientExperience from "@/assets/landing-unboxing.jpg";
 import partnerEcosystem from "@/assets/landing-partener.jpg";
-
-const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSemotUUORqFwUdM60S1BAW-79YzSm-5TiocRvm-wuTUiCevvg/viewform";
 
 type Copy = { fr: string; en: string };
 const copy = (fr: string, en: string): Copy => ({ fr, en });
@@ -74,7 +73,7 @@ export default function BibTalent() {
   function Join({ secondary = false }: { secondary?: boolean }) {
     return <Button asChild variant={secondary ? "outline" : "premium"} size="lg"
       className={secondary ? "rounded-full border-bib-ivory/35 bg-transparent text-bib-ivory hover:bg-background hover:text-foreground" : "rounded-full"}>
-      <a href={FORM_URL} target="_blank" rel="noopener noreferrer">{tr(messages.join)} <ArrowUpRight size={18} className="ml-2" /></a>
+      <a href="#candidature">{tr(messages.join)} <ArrowRight size={18} className="ml-2" /></a>
     </Button>;
   }
 
@@ -133,6 +132,10 @@ export default function BibTalent() {
     <section id="fonctionnement" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-20 sm:px-8 lg:py-28">
       <div className="max-w-3xl"><span className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-ink">{tr(messages.howEyebrow)}</span><h2 className="mt-4 font-display text-4xl font-semibold tracking-tight sm:text-5xl">{tr(messages.howTitle)}</h2></div>
       <div className="mt-12 grid gap-5 md:grid-cols-3">{steps.map(({ number, title, desc }) => <article key={number} className="border-t-2 border-bib-gold py-7"><span className="text-sm font-semibold text-accent-ink">{number}</span><h3 className="mt-5 text-2xl font-bold">{tr(title)}</h3><p className="mt-4 max-w-sm leading-7 text-muted-foreground">{tr(desc)}</p></article>)}</div>
+    </section>
+
+    <section id="candidature" className="scroll-mt-24 bg-muted/35 px-5 py-16 sm:py-24">
+      <BibTalentApplicationForm />
     </section>
 
     <section className="bg-brand-marine px-5 py-20 text-center text-bib-ivory sm:py-24">
