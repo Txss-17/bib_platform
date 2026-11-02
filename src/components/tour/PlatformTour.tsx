@@ -56,129 +56,62 @@ interface TourStep {
 const SELLER_STEPS: TourStep[] = [
   {
     icon: Rocket,
-    get title() {
-      return translateUi("Bienvenue dans votre Commerce OS");
-    },
-    get description() {
-      return translateUi(
-        "Brand-In-A-Box vous fournit boutique, catalogue fournisseurs pré-validé, logistique et paiements. Vous gardez la marque et la relation client.",
-      );
-    },
+    title: "Bienvenue dans votre espace marchand BIB",
+    description: "Découvrez votre tableau de bord et les fonctions essentielles. Cette présentation apparaît à la première connexion ; vous pouvez la quitter et la reprendre depuis Aide et support.",
+  },
+  {
+    icon: Users,
+    title: "1. Complétez votre profil",
+    description: "Renseignez votre activité et vos informations de contact. Les justificatifs professionnels requis sont traités séparément avant les opérations qui l'exigent.",
+    cta: { label: "Mon profil", to: "/dashboard/profil" },
   },
   {
     icon: Store,
-    get title() {
-      return translateUi("1. Créez votre boutique");
-    },
-    get description() {
-      return translateUi(
-        "Choisissez un template (Fashion, Tech, One-product, Fitness), votre nom, slug et couleurs. Vous pourrez tout modifier en drag-and-drop.",
-      );
-    },
-    cta: {
-      get label() {
-        return translateUi("Créer une boutique");
-      },
-      to: "/dashboard/boutiques/create",
-    },
+    title: "2. Créez votre première boutique",
+    description: "Définissez votre nom, votre identité et votre URL. Vous pourrez modifier vos pages, le menu et le logo dans le studio.",
+    cta: { label: "Créer ma boutique", to: "/dashboard/boutiques/create" },
   },
   {
     icon: Package,
-    get title() {
-      return translateUi("2. Piochez dans le catalogue fournisseur");
-    },
-    get description() {
-      return translateUi(
-        "Parcourez les produits déjà sourcés et validés. Appliquez votre marge, choisissez la boutique cible.",
-      );
-    },
-    tip: "Un échantillon Stripe est obligatoire avant activation : garantie qualité avant la mise en vente.",
-    cta: {
-      get label() {
-        return translateUi("Catalogue fournisseurs");
-      },
-      to: "/dashboard/produits-fournisseurs",
-    },
+    title: "3. Explorez le catalogue BIB",
+    description: "Consultez les produits fournisseurs disponibles, leurs conditions et les marges autorisées. Choisissez les références adaptées à votre boutique.",
+    cta: { label: "Catalogue BIB", to: "/dashboard/produits-fournisseurs" },
+  },
+  {
+    icon: ShieldCheck,
+    title: "4. Vérifiez les conditions d'activation des produits",
+    description: "Le contrôle qualité, les éventuels échantillons requis, les prix et le stock doivent être validés avant d'activer une offre. Un produit importé n'est pas automatiquement disponible à la vente.",
+    cta: { label: "Mes produits", to: "/dashboard/produits" },
   },
   {
     icon: Sparkles,
-    get title() {
-      return translateUi("3. Personnalisez votre vitrine");
-    },
-    get description() {
-      return translateUi(
-        "Sections de conversion, blocs marketing, pages FAQ/CGV : tout est modulable. Publiez quand vous êtes prêt.",
-      );
-    },
-    cta: {
-      get label() {
-        return translateUi("Mes boutiques");
-      },
-      to: "/dashboard/boutiques",
-    },
+    title: "5. Personnalisez votre vitrine",
+    description: "Choisissez une composition, configurez les scènes, organisez les pages, les menus et le positionnement de votre logo. Vérifiez l'aperçu avant publication.",
+    cta: { label: "Personnaliser ma boutique", to: "/dashboard/boutiques" },
+  },
+  {
+    icon: FileCheck2,
+    title: "6. Préparez la publication",
+    description: "Contrôlez vos informations légales, les CGV de votre boutique, le catalogue actif et les moyens de paiement disponibles. Publiez uniquement lorsque tous les prérequis sont satisfaits.",
+    cta: { label: "Mes boutiques", to: "/dashboard/boutiques" },
   },
   {
     icon: ShoppingCart,
-    get title() {
-      return translateUi("4. Recevez et validez vos commandes");
-    },
-    get description() {
-      return translateUi(
-        "Chaque vente déclenche une notification sonore. Vous validez la commande, la logistique BIB prend le relais pour l'expédition.",
-      );
-    },
-    cta: {
-      get label() {
-        return translateUi("Mes commandes");
-      },
-      to: "/dashboard/commandes",
-    },
+    title: "7. Suivez vos commandes et la livraison",
+    description: "Une fois les ventes ouvertes, retrouvez les commandes, leurs statuts et les opérations confiées aux partenaires logistiques BIB. Le marchand conserve ses obligations envers le client.",
+    cta: { label: "Commandes", to: "/dashboard/commandes" },
   },
   {
     icon: Megaphone,
-    get title() {
-      return translateUi("5. Fidélisez et marketez");
-    },
-    get description() {
-      return translateUi(
-        "Emails transactionnels et campagnes promotionnelles, ventes privées, suivi clients : tout est intégré.",
-      );
-    },
+    title: "8. Développez votre boutique",
+    description: "Préparez des campagnes et des brouillons publicitaires. La diffusion sur Meta ou Google nécessite une connexion officielle distincte ; aucune publicité n'est publiée automatiquement.",
     cta: { label: "Marketing", to: "/dashboard/marketing" },
   },
   {
-    icon: Wallet,
-    get title() {
-      return translateUi("6. Encaissez en toute sérénité");
-    },
-    get description() {
-      return translateUi(
-        "Versements automatiques tous les 15 jours sur votre IBAN. Frais logistiques déjà inclus dans vos prix.",
-      );
-    },
-    cta: {
-      get label() {
-        return translateUi("Paiements");
-      },
-      to: "/dashboard/paiements",
-    },
-  },
-  {
     icon: LifeBuoy,
-    get title() {
-      return translateUi("Besoin d'aide ?");
-    },
-    get description() {
-      return translateUi(
-        "FAQ, tickets et chat de support sont accessibles 24/7 depuis le Centre d'aide. Litiges client : escalade automatique sous 48h.",
-      );
-    },
-    cta: {
-      get label() {
-        return translateUi("Centre d'aide");
-      },
-      to: "/dashboard/aide",
-    },
+    title: "9. Retrouvez l'assistance et le guide",
+    description: "Le centre d'aide vous permet de consulter la FAQ, de relancer ce parcours ou de discuter avec l'agent BIB. Un ticket humain ne s'ouvre qu'après votre confirmation.",
+    cta: { label: "Aide et support", to: "/dashboard/aide" },
   },
 ];
 
@@ -487,7 +420,7 @@ export function PlatformTour({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden">
+      <DialogContent className="max-w-lg max-h-[90dvh] overflow-y-auto p-0">
         {!persona ? (
           // ---- Persona selection ----
           <div className="p-6 sm:p-8">
@@ -586,14 +519,14 @@ export function PlatformTour({
               <Progress value={progressPct} className="h-1.5" />
             </div>
 
-            <div className="px-6 sm:px-8 py-6 sm:py-8 min-h-[280px]">
+            <div className="px-4 sm:px-6 py-4 sm:py-5 min-h-[210px]">
               {currentStep && (
                 <div className="flex flex-col items-start gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-secondary/15 to-secondary/5 border border-secondary/30 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary/15 to-secondary/5 border border-secondary/30 flex items-center justify-center">
                     <currentStep.icon className="w-6 h-6 text-secondary" />
                   </div>
                   <div>
-                    <h3 className="text-xl sm:text-2xl font-display font-semibold text-foreground mb-2">
+                    <h3 className="text-lg sm:text-xl font-display font-semibold text-foreground mb-2">
                       {currentStep.title}
                     </h3>
                     <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
