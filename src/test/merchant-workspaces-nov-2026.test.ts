@@ -19,11 +19,36 @@ describe("Merchant operational workspaces", () => {
     expect(server).toContain('body?.action === "create_ticket"');
     expect(server).toContain("offer_ticket: offerTicket");
     expect(widget).toContain("Bonjour ! Comment puis-je vous aider ?");
-    expect(widget).toContain("setOfferTicket(data?.offer_ticket === true)");
+    expect(widget).toContain('data?.offer_ticket === true && typeof data?.offer_id === "string"');
     expect(widget).toContain("const confirmTicket = async () =>");
-    expect(widget).toContain("Continuer la discussion");
+    expect(widget).toContain("Oui, ouvrir un ticket");
+    expect(widget).toContain("Non, pas de ticket");
     expect(server).toContain("Mes boutiques > Paramètres de la boutique");
     expect(server).not.toContain("versements tous les 15 jours");
+  });
+
+  it("requires a completed diagnostic and explicit single-use consent for support tickets", () => {
+    const server = read("supabase/functions/support-ai/index.ts");
+    const widget = read("src/components/support/FloatingSupportButton.tsx");
+    const schema = read("supabase/migrations/20261102130000_support_ticket_consent_and_prelaunch_survey.sql");
+    expect(server).toContain("userTurns >= 3");
+    expect(server).toContain("explicit_ticket_consent_required");
+    expect(server).toContain('consume_support_ticket_offer');
+    expect(server).toContain('body.confirmed !== true');
+    expect(server).toContain('name: "finish_topic"');
+    expect(server).toContain("sealAssistantTurn");
+    expect(server).toContain("openAssistantTurn");
+    expect(server).toContain("offer_another_topic");
+    expect(widget).toContain("confirmed: true");
+    expect(widget).toContain("offer_id: offerId");
+    expect(widget).toContain("Oui, ouvrir un ticket");
+    expect(widget).toContain("Non, pas de ticket");
+    expect(widget).toContain("Oui, un autre sujet");
+    expect(widget).toContain("Non, merci");
+    expect(widget).toContain("🙇");
+    expect(schema).toContain("consumed_at IS NULL AND expires_at>now()");
+    expect(schema).toContain("conversation_hash=p_hash");
+    expect(schema).toContain("REVOKE ALL ON public.support_ticket_offers");
   });
 
   it("stores notification preferences without disabling mandatory security emails", () => {
