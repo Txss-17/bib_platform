@@ -23,6 +23,7 @@ describe("Merchant operational workspaces", () => {
     expect(widget).toContain("const confirmTicket = async () =>");
     expect(widget).toContain("Oui, ouvrir un ticket");
     expect(widget).toContain("Non, pas de ticket");
+    expect(widget).toContain("Quel point souhaitez-vous approfondir ?");
     expect(server).toContain("Mes boutiques > Paramètres de la boutique");
     expect(server).not.toContain("versements tous les 15 jours");
   });
@@ -32,6 +33,9 @@ describe("Merchant operational workspaces", () => {
     const widget = read("src/components/support/FloatingSupportButton.tsx");
     const schema = read("supabase/migrations/20261102130000_support_ticket_consent_and_prelaunch_survey.sql");
     expect(server).toContain("userTurns >= 3");
+    expect(server).toContain("priorDiagnosticQuestions >= 2");
+    expect(server).toContain("reconstructConversation");
+    expect(server).toContain("conversation_hash: hash");
     expect(server).toContain("explicit_ticket_consent_required");
     expect(server).toContain('consume_support_ticket_offer');
     expect(server).toContain('body.confirmed !== true');
@@ -40,6 +44,7 @@ describe("Merchant operational workspaces", () => {
     expect(server).toContain("openAssistantTurn");
     expect(server).toContain("offer_another_topic");
     expect(widget).toContain("confirmed: true");
+    expect(widget).toContain("turn_token: turnToken");
     expect(widget).toContain("offer_id: offerId");
     expect(widget).toContain("Oui, ouvrir un ticket");
     expect(widget).toContain("Non, pas de ticket");
