@@ -54,8 +54,8 @@ RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public,pg_t
       AND (sub.current_period_end IS NULL OR sub.current_period_end>now())
   )
 $$;
-REVOKE ALL ON FUNCTION public.bib_has_active_pro_subscription(uuid,text) FROM PUBLIC,anon,authenticated;
-GRANT EXECUTE ON FUNCTION public.bib_has_active_pro_subscription(uuid,text) TO service_role;
+REVOKE ALL ON FUNCTION public.bib_has_active_pro_subscription(uuid,text) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.bib_has_active_pro_subscription(uuid,text) TO authenticated,service_role;
 
 CREATE OR REPLACE FUNCTION public.bib_private_sale_pro_guard()
 RETURNS trigger LANGUAGE plpgsql SET search_path=public,pg_temp AS $$
