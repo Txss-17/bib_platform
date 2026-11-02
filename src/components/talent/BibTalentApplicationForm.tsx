@@ -64,65 +64,65 @@ export function BibTalentApplicationForm() {
       setBusy(false);
     }
   }
-  if (done) return <div role="status" className="mx-auto max-w-2xl rounded-3xl border border-primary/20 bg-card p-8 text-center">
+  if (done) return <div role="status" className="mx-auto max-w-xl rounded-xl border border-primary/20 bg-card p-5 text-center">
     <CheckCircle2 className="mx-auto mb-4 h-11 w-11 text-primary" />
-    <h2 className="text-2xl font-semibold">{tr("Merci pour votre intérêt !", "Thank you for your interest!")}</h2>
-    <p className="mt-3 text-sm leading-7 text-muted-foreground">
+    <h2 className="text-lg font-semibold">{tr("Merci pour votre intérêt !", "Thank you for your interest!")}</h2>
+    <p className="mt-2 text-sm leading-6 text-muted-foreground">
       {tr("Votre manifestation d'intérêt a été enregistrée et orientée vers le domaine concerné. L'équipe BIB examinera votre dossier ; cela ne constitue pas une promesse de collaboration ou de réponse dans un délai précis.",
         "Your interest has been received and routed to the relevant team. BIB may review it; this does not guarantee an opportunity or a reply within a specific time.")}
     </p>
-    <Button asChild variant="outline" className="mt-6"><Link to="/">{tr("Retour à l'accueil", "Back to homepage")}</Link></Button>
+    <Button asChild variant="outline" className="mt-4"><Link to="/">{tr("Retour à l'accueil", "Back to homepage")}</Link></Button>
   </div>;
 
-  return <form onSubmit={submit} className="mx-auto max-w-3xl space-y-6 rounded-3xl border border-border bg-card p-5 text-left shadow-sm sm:p-8" aria-labelledby="talent-form-heading">
+  return <form onSubmit={submit} className="mx-auto max-w-2xl space-y-4 rounded-xl border border-border bg-card p-4 text-left shadow-sm sm:p-6" aria-labelledby="talent-form-heading">
     <div>
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-ink">BIB Talent</p>
-      <h2 id="talent-form-heading" className="mt-2 font-display text-2xl font-semibold sm:text-3xl">
+      <h2 id="talent-form-heading" className="mt-2 font-display text-lg font-semibold sm:text-3xl">
         {tr("Exprimer mon intérêt", "Express my interest")}
       </h2>
-      <p className="mt-3 text-sm leading-6 text-muted-foreground">
+      <p className="mt-2 text-xs leading-5 text-muted-foreground">
         {tr("Aucun compte nécessaire. Votre dossier sera orienté vers la coordination Talent et le pôle concerné ; il ne sera pas publié.",
           "No account required. Your submission will be handled by Talent coordination and the relevant team; it won't be made public.")}
       </p>
     </div>
-    <div className="grid gap-4 sm:grid-cols-2">
-      <div className="space-y-2"><Label htmlFor="talent-name">{tr("Nom et prénom *", "Full name *")}</Label>
+    <div className="grid gap-3 sm:grid-cols-2">
+      <div className="space-y-1.5"><Label htmlFor="talent-name">{tr("Nom et prénom *", "Full name *")}</Label>
         <Input id="talent-name" required minLength={2} maxLength={120} value={form.full_name} autoComplete="name" onChange={e => update("full_name",e.target.value)} />
       </div>
-      <div className="space-y-2"><Label htmlFor="talent-email">{tr("Adresse email *", "Email address *")}</Label>
+      <div className="space-y-1.5"><Label htmlFor="talent-email">{tr("Adresse email *", "Email address *")}</Label>
         <Input id="talent-email" type="email" required maxLength={254} autoComplete="email" value={form.email} onChange={e => update("email",e.target.value)} />
       </div>
-      <div className="space-y-2"><Label htmlFor="talent-location">{tr("Ville / pays (facultatif)", "City / country (optional)")}</Label>
+      <div className="space-y-1.5"><Label htmlFor="talent-location">{tr("Ville / pays (facultatif)", "City / country (optional)")}</Label>
         <Input id="talent-location" maxLength={120} autoComplete="address-level2" value={form.location} onChange={e => update("location",e.target.value)} />
       </div>
-      <div className="space-y-2"><Label htmlFor="talent-activity">{tr("Votre situation actuelle *", "Current activity *")}</Label>
+      <div className="space-y-1.5"><Label htmlFor="talent-activity">{tr("Votre situation actuelle *", "Current activity *")}</Label>
         <Input id="talent-activity" required minLength={2} maxLength={160} placeholder={tr("Étudiant, professionnel, en reconversion…", "Student, professional, career change…")} value={form.current_activity} onChange={e => update("current_activity",e.target.value)} />
       </div>
-      <div className="space-y-2"><Label htmlFor="talent-pole">{tr("Domaine qui vous intéresse *", "Area of interest *")}</Label>
+      <div className="space-y-1.5"><Label htmlFor="talent-pole">{tr("Domaine qui vous intéresse *", "Area of interest *")}</Label>
         <Select value={form.preferred_pole} onValueChange={value => update("preferred_pole",value)}>
           <SelectTrigger id="talent-pole"><SelectValue placeholder={tr("Choisir un domaine", "Choose an area")} /></SelectTrigger>
           <SelectContent>{POLES.map(([key,fr,english]) => <SelectItem key={key} value={key}>{tr(fr,english)}</SelectItem>)}</SelectContent>
         </Select>
       </div>
-      <div className="space-y-2"><Label htmlFor="talent-type">{tr("Type de contribution", "Type of interest")}</Label>
+      <div className="space-y-1.5"><Label htmlFor="talent-type">{tr("Type de contribution", "Type of interest")}</Label>
         <Select value={form.contribution_type} onValueChange={value => update("contribution_type",value)}>
           <SelectTrigger id="talent-type"><SelectValue /></SelectTrigger>
           <SelectContent>{TYPES.map(([key,fr,english]) => <SelectItem key={key} value={key}>{tr(fr,english)}</SelectItem>)}</SelectContent>
         </Select>
       </div>
-      <div className="space-y-2 sm:col-span-2"><Label htmlFor="talent-skills">{tr("Compétences, expériences ou centres d'intérêt *", "Skills, experience or interests *")}</Label>
-        <Textarea id="talent-skills" required minLength={5} maxLength={1200} rows={3} value={form.skills} onChange={e => update("skills",e.target.value)} />
+      <div className="space-y-1.5 sm:col-span-2"><Label htmlFor="talent-skills">{tr("Compétences, expériences ou centres d'intérêt *", "Skills, experience or interests *")}</Label>
+        <Textarea id="talent-skills" required minLength={5} maxLength={1200} rows={2} value={form.skills} onChange={e => update("skills",e.target.value)} />
       </div>
-      <div className="space-y-2 sm:col-span-2"><Label htmlFor="talent-motivation">{tr("Pourquoi souhaitez-vous contribuer à BIB ? *", "Why would you like to contribute to BIB? *")}</Label>
-        <Textarea id="talent-motivation" required minLength={20} maxLength={1800} rows={4} value={form.motivation} onChange={e => update("motivation",e.target.value)} />
+      <div className="space-y-1.5 sm:col-span-2"><Label htmlFor="talent-motivation">{tr("Pourquoi souhaitez-vous contribuer à BIB ? *", "Why would you like to contribute to BIB? *")}</Label>
+        <Textarea id="talent-motivation" required minLength={20} maxLength={1800} rows={3} value={form.motivation} onChange={e => update("motivation",e.target.value)} />
       </div>
-      <div className="space-y-2"><Label htmlFor="talent-availability">{tr("Disponibilité", "Availability")}</Label>
+      <div className="space-y-1.5"><Label htmlFor="talent-availability">{tr("Disponibilité", "Availability")}</Label>
         <Select value={form.availability} onValueChange={value => update("availability",value)}>
           <SelectTrigger id="talent-availability"><SelectValue /></SelectTrigger>
           <SelectContent>{AVAILABILITY.map(([key,fr,english]) => <SelectItem key={key} value={key}>{tr(fr,english)}</SelectItem>)}</SelectContent>
         </Select>
       </div>
-      <div className="space-y-2"><Label htmlFor="talent-link">{tr("Lien LinkedIn ou portfolio (facultatif, HTTPS)", "LinkedIn or portfolio URL (optional, HTTPS)")}</Label>
+      <div className="space-y-1.5"><Label htmlFor="talent-link">{tr("Lien LinkedIn ou portfolio (facultatif, HTTPS)", "LinkedIn or portfolio URL (optional, HTTPS)")}</Label>
         <Input id="talent-link" type="url" maxLength={500} placeholder="https://" value={form.portfolio_url} onChange={e => update("portfolio_url",e.target.value)} />
       </div>
     </div>
@@ -130,9 +130,9 @@ export function BibTalentApplicationForm() {
       <Label htmlFor="talent-website">Website</Label>
       <Input id="talent-website" tabIndex={-1} autoComplete="off" value={form.website} onChange={e => update("website",e.target.value)} />
     </div>
-    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border/70 bg-muted/20 p-4">
+    <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border/70 bg-muted/20 p-3">
       <Checkbox checked={consent} onCheckedChange={checked => setConsent(checked === true)} aria-label={tr("Accepter le traitement de ma candidature", "Consent to application processing")} className="mt-1" />
-      <span className="text-xs leading-6 text-muted-foreground">
+      <span className="text-xs leading-5 text-muted-foreground">
         {tr("J'accepte que BIB utilise les informations fournies pour étudier ma manifestation d'intérêt et me contacter si nécessaire. Durée de conservation maximale prévue : 180 jours.",
           "I consent to BIB processing this information to review my interest and contact me if needed. Planned maximum retention: 180 days.")}
         {" "}<Link to="/talent/confidentialite" className="font-semibold text-accent-ink underline">{tr("Politique de confidentialité", "Privacy policy")}</Link>.
