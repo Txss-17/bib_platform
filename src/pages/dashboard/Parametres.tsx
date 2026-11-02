@@ -1,7 +1,7 @@
 import { translateUi } from "@/lib/uiTranslation";
 
 import { useState } from "react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/VolatileThemeProvider";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
