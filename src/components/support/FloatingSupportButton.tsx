@@ -161,6 +161,52 @@ export function FloatingSupportButton({
     }
   };
 
+  const declineTicket = () => {
+    setOfferTicket(false);
+    setOfferId(null);
+    setTurnToken(null);
+    setAskAnotherTopic(true);
+    setMessages(previous => [...previous, {
+      role: "assistant", content: "Très bien, aucun ticket n'a été créé. Souhaitez-vous aborder un autre sujet ?",
+    }]);
+  };
+
+  const finishTopic = () => {
+    if (loading || offerTicket || askAnotherTopic || conversationClosed) return;
+    setAskAnotherTopic(true);
+    setMessages(previous => [...previous, {
+      role: "assistant", content: "Souhaitez-vous en savoir davantage sur un autre sujet ?",
+    }]);
+  };
+
+  const continueWithNewTopic = () => {
+    setMessages([{
+      role: "assistant", content: "Avec plaisir. Quel autre sujet souhaitez-vous aborder ?",
+    }]);
+    setAskAnotherTopic(false);
+    setOfferTicket(false);
+    setOfferId(null);
+    setTurnToken(null);
+    setPendingFiles([]);
+    setInput("");
+  };
+
+  const closeConversation = () => {
+    setAskAnotherTopic(false);
+    setConversationClosed(true);
+    setTurnToken(null);
+    setOfferId(null);
+    setPendingFiles([]);
+    setMessages(previous => [...previous, {
+      role: "assistant", content: "Merci d'avoir échangé avec BIB. Je vous souhaite une excellente continuation. 🙇",
+    }]);
+  };
+
+  const restartConversation = () => {
+    setConversationClosed(false);
+    continueWithNewTopic();
+  };
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
@@ -212,15 +258,43 @@ export function FloatingSupportButton({
               {m.content}
             </div>
           ))}
-          {offerTicket && !loading && (
-            <div className="flex flex-wrap items-center gap-2" role="group" aria-label={translateUi("Transmettre au support")}>
-              <Button type="button" size="sm" onClick={confirmTicket} className="gap-1.5">
-                <Ticket className="h-4 w-4" /> {translateUi("Créer un ticket")}
-              </Button>
-              <Button type="button" size="sm" variant="outline" onClick={() => setOfferTicket(false)}>
-                {translateUi("Continuer la discussion")}
-              </Button>
+          {offerTicket && offerId && !loading && (
+            <div className="space-y-2 rounded-xl border border-border/70 bg-muted/30 p-3" role="group" aria-label={translateUi("Confirmer l'ouverture d'un ticket")}>
+              <p className="text-xs text-muted-foreground">
+                {translateUi("Le ticket ne sera ouvert que si vous choisissez Oui.")}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" size="sm" onClick={confirmTicket} className="gap-1.5">
+                  <Ticket className="h-4 w-4" /> {translateUi("Oui, ouvrir un ticket")}
+                </Button>
+                <Button type="button" size="sm" variant="outline" onClick={declineTicket}>
+                  {translateUi("Non, pas de ticket")}
+                </Button>
+              </div>
             </div>
+          )}
+          {askAnotherTopic && !loading && !conversationClosed && (
+            <div className="space-y-2 rounded-xl border border-border/70 p-3" role="group" aria-label={translateUi("Aborder un autre sujet")}>
+              <p className="text-sm font-medium">{translateUi("Souhaitez-vous aborder un autre sujet ?")}</p>
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" size="sm" onClick={continueWithNewTopic}>
+                  {translateUi("Oui, un autre sujet")}
+                </Button>
+                <Button type="button" size="sm" variant="outline" onClick={closeConversation}>
+                  {translateUi("Non, merci")}
+                </Button>
+              </div>
+            </div>
+          )}
+          {conversationClosed && !loading && (
+            <Button type="button" size="sm" variant="outline" onClick={restartConversation}>
+              {translateUi("Nouvelle conversation")}
+            </Button>
+          )}
+          {!offerTicket && !askAnotherTopic && !conversationClosed && !loading && messages.length > 2 && messages[messages.length - 1]?.role === "assistant" && (
+            <Button type="button" size="sm" variant="ghost" className="text-xs text-muted-foreground" onClick={finishTopic}>
+              {translateUi("Ce sujet est résolu")}
+            </Button>
           )}
           {loading && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -253,7 +327,7 @@ export function FloatingSupportButton({
             variant="ghost"
             size="icon"
             onClick={() => fileInputRef.current?.click()}
-            disabled={loading}
+            disabled={loading || offerTicket || askAnotherTopic || conversationClosed}
             aria-label={translateUi("Joindre un fichier")}
           >
             <Paperclip className="w-4 h-4" />
@@ -268,11 +342,11 @@ export function FloatingSupportButton({
                 send();
               }
             }}
-            disabled={loading}
+            disabled={loading || offerTicket || askAnotherTopic || conversationClosed}
           />
           <Button
             onClick={send}
-            disabled={loading || !input.trim()}
+            disabled={loading || offerTicket || askAnotherTopic || conversationClosed || !input.trim()}
             size="icon"
           >
             <Send className="w-4 h-4" />
