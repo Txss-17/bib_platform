@@ -19,11 +19,11 @@ const DEFAULT_PROGRESS: TourProgress = {
   dismissed: false,
 };
 
-const lsKey = (scope: TourScope) => `bib_tour_progress_${scope}`;
+const lsKey = (scope: TourScope, userId?: string) => `bib_tour_progress_${userId ?? "guest"}_${scope}`;
 
-function readLocal(scope: TourScope): TourProgress {
+function readLocal(scope: TourScope, userId?: string): TourProgress {
   try {
-    const raw = localStorage.getItem(lsKey(scope));
+    const raw = localStorage.getItem(lsKey(scope, userId));
     if (!raw) return DEFAULT_PROGRESS;
     const parsed = JSON.parse(raw);
     return { ...DEFAULT_PROGRESS, ...parsed };
@@ -32,8 +32,8 @@ function readLocal(scope: TourScope): TourProgress {
   }
 }
 
-function writeLocal(scope: TourScope, p: TourProgress) {
-  try { localStorage.setItem(lsKey(scope), JSON.stringify(p)); } catch {}
+function writeLocal(scope: TourScope, p: TourProgress, userId?: string) {
+  try { localStorage.setItem(lsKey(scope, userId), JSON.stringify(p)); } catch {}
 }
 
 /**
@@ -45,7 +45,7 @@ function writeLocal(scope: TourScope, p: TourProgress) {
  */
 export function useTourProgress(scope: TourScope) {
   const { user } = useAuth();
-  const [progress, setProgress] = useState<TourProgress>(() => readLocal(scope));
+  const [progress, setProgress] = useState<TourProgress>(() => readLocal(scope, user?.id));
   const [loaded, setLoaded] = useState(!user);
   const lastSaved = useRef<string>("");
 
@@ -53,6 +53,8 @@ export function useTourProgress(scope: TourScope) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      setLoaded(false);
+      setProgress(readLocal(scope, user?.id));
       if (!user) { setLoaded(true); return; }
       const { data, error } = await (supabase as any)
         .from("user_tour_progress")
@@ -69,7 +71,7 @@ export function useTourProgress(scope: TourScope) {
           dismissed: !!data.dismissed,
         };
         setProgress(remote);
-        writeLocal(scope, remote);
+        writeLocal(scope, remote, user.id);
       }
       setLoaded(true);
     })();
@@ -78,7 +80,7 @@ export function useTourProgress(scope: TourScope) {
 
   const save = useCallback(async (next: TourProgress) => {
     setProgress(next);
-    writeLocal(scope, next);
+    writeLocal(scope, next, user?.id);
     if (!user) return;
     const signature = JSON.stringify(next);
     if (signature === lastSaved.current) return;
@@ -92,7 +94,7 @@ export function useTourProgress(scope: TourScope) {
         completed_personas: next.completedPersonas,
         dismissed: next.dismissed,
       },
-      { onConflict: "user_id" },
+      { onConflict: "user_id,scope" },
     );
   }, [user, scope]);
 
