@@ -29,6 +29,21 @@ describe("Merchant registration remains closed while customers and partners can 
     }
   });
 
+  it("requires privacy consent before creating a Store account", () => {
+    const store = read("src/pages/StoreSignup.tsx");
+    const auth = read("src/contexts/AuthContext.tsx");
+    const talent = read("src/components/talent/BibTalentApplicationForm.tsx");
+    const talentEndpoint = read("supabase/functions/submit-talent-application/index.ts");
+    expect(store).toContain("setPrivacyConsent");
+    expect(store).toContain("if (!privacyConsent)");
+    expect(store).toContain("disabled={loading || !privacyConsent}");
+    expect(store).toContain('privacyConsent,');
+    expect(auth).toContain("if (!privacyConsent)");
+    expect(auth).toContain('privacy_consent_given_at: new Date().toISOString()');
+    expect(talent).toContain("if (busy || !consent");
+    expect(talentEndpoint).toContain("body.consent !== true");
+  });
+
   it("offers a small optional trust survey without collecting identity", () => {
     const page = read("src/pages/SignupComingSoon.tsx");
     const survey = read("src/components/prelaunch/PrelaunchSurvey.tsx");
