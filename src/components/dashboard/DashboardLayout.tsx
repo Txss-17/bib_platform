@@ -27,15 +27,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const english = lang === "en";
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    try { return window.localStorage.getItem("bib.dashboard.sidebar.collapsed") === "1"; }
-    catch { return false; }
-  });
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const toggleDesktopSidebar = () => {
     setSidebarCollapsed((previous) => {
       const next = !previous;
-      try { window.localStorage.setItem("bib.dashboard.sidebar.collapsed", next ? "1" : "0"); }
-      catch { /* browser storage may be disabled */ }
       return next;
     });
   };
