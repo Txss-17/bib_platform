@@ -42,6 +42,17 @@ describe("Merchant registration remains closed while customers and partners can 
     expect(survey).toContain("setStep(old => old+1)");
     expect(survey).toContain("Nous attendons votre retour sur BIB.");
     expect(survey).toContain("Aucun contact nécessaire.");
+    expect(survey).toContain('role="checkbox" aria-checked={checked}');
+    expect(survey).toContain('values.filter(value => value !== option.value)');
+    expect(survey).toContain('challenge_selections: issues');
+    expect(survey).toContain('solution_selections: solutions');
+    expect(survey).toContain('disabled={!canContinue || !consent || submitting}');
+    expect(survey).toContain('checked={consent}');
+    expect(survey).toContain('<TimingOptions options={TIMINGS}');
+    expect(fn).toContain('validSelections(data.challenge_selections, challenges)');
+    expect(fn).toContain('data.consent !== true');
+    expect(fn).toContain('consent_given_at: new Date().toISOString()');
+    expect(read("supabase/migrations/20261102144000_prelaunch_multi_select_consent.sql")).toContain("prelaunch_survey_selection_check");
     expect(survey).toContain("max-w-md");
     expect(survey).toContain("Passer");
     expect(survey).toContain('functions.invoke("submit-prelaunch-survey"');
@@ -67,6 +78,8 @@ describe("Merchant registration remains closed while customers and partners can 
     expect(bridge).toContain('secondary_owner: "marketplace"');
     expect(bridge).toContain("challenge_counts");
     expect(bridge).toContain("solution_counts");
+    expect(bridge).toContain('row.challenge_selections ?? [row.challenge]');
+    expect(bridge).toContain('row.solution_selections ?? [row.solution]');
     expect(bridge).toContain("merchant_interest: {");
     expect(bridge).toContain("preferred_launch_timing_counts");
     expect(bridge).toContain("surveyRows.error ||");
