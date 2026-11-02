@@ -521,48 +521,20 @@ export function Confidentialite() {
 export function Cookies() {
   useLanguage();
   useSEO({
-    title: translateUi("Politique cookies — Brand-In-A-Box"),
-    description: translateUi(
-      "Politique d'utilisation des cookies sur Brand-In-A-Box.",
-    ),
+    title: "Cookies et traceurs — BIB",
+    description: "Fonctionnement des cookies, finalités et gestion des choix pour les services Brand-in-a-Box.",
   });
-  return (
-    <LegalShell
-      eyebrow={translateUi("Légal")}
-      title={translateUi("Politique cookies")}
-      updated="17 mai 2026"
-    >
-      <h2>{translateUi("Qu'est-ce qu'un cookie ?")}</h2>
-      <p>
-        {translateUi(
-          "Un cookie est un petit fichier déposé sur votre appareil lors de votre visite. Il permet de mémoriser vos préférences ou mesurer l'audience.",
-        )}
-      </p>
-      <h2>{translateUi("Cookies utilisés")}</h2>
-      <ul>
-        <li>
-          <strong>{translateUi("Essentiels :")}</strong>{" "}
-          {translateUi(
-            "session d'authentification, panier — exemptés de consentement.",
-          )}
-        </li>
-        <li>
-          <strong>{translateUi("Préférences :")}</strong>{" "}
-          {translateUi("langue (FR/EN), thème (clair/sombre).")}
-        </li>
-        <li>
-          <strong>{translateUi("Mesure d'audience :")}</strong>{" "}
-          {translateUi(
-            "statistiques anonymisées sur l'utilisation de la Plateforme.",
-          )}
-        </li>
-      </ul>
-      <h2>{translateUi("Gestion")}</h2>
-      <p>
-        {translateUi(
-          "Vous pouvez à tout moment supprimer ou bloquer les cookies depuis les paramètres de votre navigateur.",
-        )}
-      </p>
-    </LegalShell>
-  );
+  return <LegalShell eyebrow="Traceurs" title="Politique cookies" updated="2 novembre 2026">
+    <h2>1. Traceurs nécessaires</h2>
+    <p>Les outils d'authentification, de sécurité, de maintien de session, de panier ou de mémorisation d'une demande explicite peuvent nécessiter un stockage technique. Lorsqu'ils sont strictement nécessaires au service demandé, ils ne requièrent pas de consentement cookies ; leur présence et leur finalité doivent néanmoins être expliquées.</p>
+    <h2>2. Mesure d'audience et publicité</h2>
+    <p>Les cookies statistiques, pixels publicitaires, traceurs de conversion et technologies similaires non exemptés doivent être bloqués avant consentement. L'activation ultérieure des connexions Meta Ads ou Google Ads impose une analyse des traceurs, des destinataires, de leur durée et des éventuels transferts.</p>
+    <h2>3. Choix disponibles</h2>
+    <p>Lorsque des traceurs non essentiels sont utilisés, BIB doit proposer un dispositif permettant d'<strong>accepter</strong>, de <strong>refuser</strong> et de <strong>personnaliser</strong> les finalités, avec un refus aussi simple que l'acceptation. Aucune case facultative ne doit être précochée. La poursuite de navigation ne suffit pas à donner un accord.</p>
+    <p>Les décisions doivent pouvoir être modifiées ou retirées facilement ; un lien permanent « Gérer mes cookies » doit être mis à disposition après installation effective du gestionnaire. En attendant, aucun traceur nécessitant un consentement ne doit être activé sans mécanisme valable.</p>
+    <h2>4. Durée et contrôle</h2>
+    <p>La conservation de la preuve du choix doit être proportionnée. Une durée de six mois pour mémoriser l'acceptation ou le refus constitue une pratique couramment recommandée par la CNIL, à adapter au contexte. La liste des fournisseurs, traceurs réellement déposés, durées et finalités doit être vérifiée techniquement et tenue à jour ; le simple paramétrage du navigateur ne remplace pas un choix conforme lorsque le consentement est requis.</p>
+    <h2>5. Contacts et informations complémentaires</h2>
+    <p>Pour toute question : <a href="mailto:privacy@brand-in-a-box.space">privacy@brand-in-a-box.space</a>. Consultez la <a href="/confidentialite">politique de confidentialité</a> et la <a href="/donnees-et-consentements">charte des données et consentements</a>.</p>
+  </LegalShell>;
 }
