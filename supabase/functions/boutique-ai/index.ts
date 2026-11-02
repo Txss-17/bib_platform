@@ -1394,6 +1394,23 @@ Deno.serve(async (req) => {
       );
     }
 
+    // All brand, SEO and remix actions consume a metered AI gateway.
+    // Reserve credits atomically after authenticating and verifying ownership.
+    const meteringClient = createClient(SUPABASE_URL!, SERVICE_ROLE!);
+    const { data: allowed, error: usageError } = await meteringClient.rpc(
+      "reserve_boutique_ai_generation",
+      { p_user_id: userId, p_boutique_id: body.boutique_id },
+    );
+    if (usageError) {
+      console.error("boutique AI quota check failed", usageError.code);
+      return jsonResponse({ error: "brand_ai_temporarily_unavailable" }, 503);
+    }
+    if (!allowed) return jsonResponse({ error: "brand_ai_rate_limited" }, 429);
+    if (!body.payload || typeof body.payload !== "object" ||
+        Array.isArray(body.payload) || JSON.stringify(body.payload).length > 16000) {
+      return jsonResponse({ error: "invalid_payload" }, 400);
+    }
+
     let result:
       | {
           data?: unknown;
