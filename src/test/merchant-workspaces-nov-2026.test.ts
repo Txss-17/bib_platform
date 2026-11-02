@@ -3,6 +3,26 @@ import { readFileSync } from "node:fs";
 const read = (path: string) => readFileSync(new URL("../../" + path, import.meta.url), "utf8");
 
 describe("Merchant operational workspaces", () => {
+  it("walks each new merchant through real features and remembers progress by account", () => {
+    const tour = read("src/components/tour/PlatformTour.tsx");
+    const hook = read("src/hooks/useTourProgress.ts");
+    const checklist = read("src/components/onboarding/OnboardingChecklist.tsx");
+    const migration = read("supabase/migrations/20261102170500_merchant_tour_progress.sql");
+    const dashboard = read("src/pages/Dashboard.tsx");
+    expect(dashboard).toContain('<PlatformTour autoOpen availablePersonas={["seller"]} />');
+    expect(dashboard).toContain("<OnboardingChecklist />");
+    expect(tour).toContain("Bienvenue dans votre espace marchand BIB");
+    expect(tour).toContain("4. Vérifiez les conditions d'activation des produits");
+    expect(tour).toContain("6. Préparez la publication");
+    expect(tour).toContain("9. Retrouvez l'assistance et le guide");
+    expect(tour).toContain("onOpenChange?.(false)");
+    expect(hook).toContain('onConflict: "user_id,scope"');
+    expect(hook).toContain('bib_tour_progress_${userId ?? "guest"}_${scope}');
+    expect(migration).toContain("PRIMARY KEY (user_id, scope)");
+    expect(migration).toContain("auth.uid()=user_id");
+    expect(checklist).toContain("bib_onboarding_dismissed_${userId}");
+  });
+
   it("supports a collapsible dashboard and clearly identified BIB assistant", () => {
     const layout = read("src/components/dashboard/DashboardLayout.tsx");
     const sidebar = read("src/components/dashboard/DashboardSidebar.tsx");
