@@ -205,6 +205,35 @@ describe("Merchant operational workspaces", () => {
     expect(read("src/components/storefront/studioScene.css")).toContain(".studio-width-narrow");
   });
 
+  it("hardens critical public checkout, identity and mail security boundaries", () => {
+    const migration = read("supabase/migrations/20261102070000_critical_public_access_hardening.sql");
+    const sensitive = read("supabase/migrations/20261102070200_financial_entitlement_partner_guards.sql");
+    const quotas = read("supabase/migrations/20261102070100_support_ai_usage_limits.sql");
+    const ai = read("supabase/functions/support-ai/index.ts");
+    const boutiqueEmail = read("supabase/functions/send-boutique-email/index.ts");
+    const marketing = read("supabase/functions/send-marketing-campaign/index.ts");
+    const transactional = read("supabase/functions/send-transactional-email/index.ts");
+    const storefront = read("supabase/functions/create-storefront-checkout/index.ts");
+    const pos = read("supabase/functions/create-pos-checkout/index.ts");
+    const trustedUrl = read("supabase/functions/_shared/return-url.ts");
+    expect(migration).toContain('DROP POLICY IF EXISTS "Anyone can create orders for published boutiques"');
+    expect(migration).toContain("email_confirmed_at IS NOT NULL");
+    expect(migration).toContain("storage.foldername(name)");
+    expect(sensitive).toContain("server_only_order_financial_fields");
+    expect(sensitive).toContain("server_only_profile_entitlements");
+    expect(sensitive).toContain("server_only_partner_approval");
+    expect(quotas).toContain("ON CONFLICT (user_id,kind,window_start)");
+    expect(ai).toContain('reserve_support_ai_request');
+    expect(ai).toContain("last_message_must_be_user");
+    expect(boutiqueEmail).toContain("server_verified_email_workflow_required");
+    expect(boutiqueEmail).toContain("email_rate_limited");
+    expect(marketing).toContain("safeEmailHtml(body_html)");
+    expect(transactional).toContain("email_rate_limited");
+    expect(storefront).toContain("getCurrentBasePrice(product)");
+    expect(pos).toContain("getCurrentBasePrice(product)");
+    expect(trustedUrl).toContain("BUILTIN_HOSTS");
+  });
+
   it("does not bypass sample validation with stock and uses the atomic SAV response RPC", () => {
     const products = read("src/pages/dashboard/Produits.tsx");
     const sav = read("src/hooks/useOrderIssues.ts");
