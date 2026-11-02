@@ -22,7 +22,6 @@ ALTER TABLE public.prelaunch_survey_responses
     AND cardinality(solution_selections) BETWEEN 1 AND 6
     AND challenge_selections <@ ARRAY['fraud','delivery','quality','returns','trust','visibility','costs']::text[]
     AND solution_selections <@ ARRAY['verified_suppliers','secure_delivery','transparent_sav','brand_tools','product_quality','merchant_control']::text[]
-    AND (SELECT 1) = 1
   );
 -- A separate trigger validates uniqueness and explicit consent for new responses.
 CREATE OR REPLACE FUNCTION public.bib_validate_prelaunch_survey()
