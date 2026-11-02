@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowRight, Compass, Lightbulb, Sparkles, Users, Workflow, Shapes, Store, ShoppingBag, Truck, Package } from "lucide-react";
 import PublicPageLayout from "@/components/layout/PublicPageLayout";
 import { Button } from "@/components/ui/button";
 import { BibTalentApplicationForm } from "@/components/talent/BibTalentApplicationForm";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useSEO } from "@/hooks/useSEO";
 import { useLanguage } from "@/contexts/LanguageContext";
 import platformDashboard from "@/assets/landing-dashboard.jpg";
@@ -70,9 +71,7 @@ export default function BibTalent() {
   const { lang } = useLanguage();
   const tr = (value: Copy) => value[lang];
   const [showApplication, setShowApplication] = useState(false);
-  useEffect(() => {
-    if (showApplication) document.getElementById("candidature")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [showApplication]);
+
   useSEO({ title: tr(messages.seoTitle), description: tr(messages.seoDescription) });
 
   function Join({ secondary = false }: { secondary?: boolean }) {
@@ -142,11 +141,15 @@ export default function BibTalent() {
       <div className="mt-7 grid gap-3 md:grid-cols-3">{steps.map(({ number, title, desc }) => <article key={number} className="border-t-2 border-bib-gold py-4"><span className="text-sm font-semibold text-accent-ink">{number}</span><h3 className="mt-3 text-lg font-bold">{tr(title)}</h3><p className="mt-4 max-w-sm leading-7 text-muted-foreground">{tr(desc)}</p></article>)}</div>
     </section>
 
-    {showApplication && (
-      <section id="candidature" className="scroll-mt-20 bg-muted/35 px-5 py-10 sm:py-12" aria-label={tr(messages.join)}>
+    <Dialog open={showApplication} onOpenChange={setShowApplication}>
+      <DialogContent className="w-[calc(100vw-1.25rem)] max-w-2xl max-h-[90dvh] overflow-y-auto p-3 sm:p-5">
+        <DialogTitle className="sr-only">{tr(messages.join)}</DialogTitle>
+        <DialogDescription className="sr-only">
+          {lang === "en" ? "Complete the private application form in this window. Close without submitting any time." : "Remplissez votre candidature dans cette fenêtre. Vous pouvez la fermer sans envoyer de données."}
+        </DialogDescription>
         <BibTalentApplicationForm />
-      </section>
-    )}
+      </DialogContent>
+    </Dialog>
 
     <section className="bg-brand-marine px-5 py-12 text-center text-bib-ivory sm:py-16">
       <div className="mx-auto max-w-3xl"><span className="text-xs font-semibold uppercase tracking-[0.22em] text-bib-gold">BIB Talent</span><h2 className="mt-4 font-display text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">{tr(messages.closingTitle)}</h2><p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-bib-ivory/75">{tr(messages.closingDesc)}</p><div className="mt-5 flex justify-center"><Join secondary /></div></div>
