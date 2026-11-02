@@ -35,7 +35,7 @@ CREATE POLICY "Merchant creates own ad drafts" ON public.merchant_ad_drafts
     user_id = auth.uid()
     AND EXISTS(SELECT 1 FROM public.boutiques b WHERE b.id=boutique_id AND b.user_id=auth.uid())
     AND (product_id IS NULL OR EXISTS(
-      SELECT 1 FROM public.products p WHERE p.id=product_id AND p.boutique_id=boutique_id
+      SELECT 1 FROM public.products p WHERE p.id=merchant_ad_drafts.product_id AND p.boutique_id=merchant_ad_drafts.boutique_id
     ))
   );
 CREATE POLICY "Merchant updates own ad drafts" ON public.merchant_ad_drafts
@@ -47,7 +47,7 @@ CREATE POLICY "Merchant updates own ad drafts" ON public.merchant_ad_drafts
     user_id=auth.uid()
     AND EXISTS(SELECT 1 FROM public.boutiques b WHERE b.id=boutique_id AND b.user_id=auth.uid())
     AND (product_id IS NULL OR EXISTS(
-      SELECT 1 FROM public.products p WHERE p.id=product_id AND p.boutique_id=boutique_id
+      SELECT 1 FROM public.products p WHERE p.id=merchant_ad_drafts.product_id AND p.boutique_id=merchant_ad_drafts.boutique_id
     ))
   );
 CREATE POLICY "Merchant deletes own ad drafts" ON public.merchant_ad_drafts
