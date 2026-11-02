@@ -408,40 +408,8 @@ function TrackedScene({
     ref,
   });
 
-  // Persist the last viewed scene for conversion attribution at checkout.
-  useEffect(() => {
-    if (!enabled || typeof window === "undefined") return;
-
-    const el = ref.current;
-
-    if (!el) return;
-
-    const obs = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting && e.intersectionRatio >= 0.5) {
-            try {
-              window.sessionStorage.setItem(
-                "bib_last_scene",
-                JSON.stringify({
-                  sceneId: scene.id,
-                  sceneType: scene.scene_type,
-                  at: Date.now(),
-                }),
-              );
-            } catch {
-              /* ignore */
-            }
-          }
-        }
-      },
-      { threshold: [0.5] },
-    );
-
-    obs.observe(el);
-
-    return () => obs.disconnect();
-  }, [enabled, scene.id, scene.scene_type]);
+  // Impression and engagement are recorded by server analytics only.
+  // No last-scene record is written into sessionStorage.
 
   const onClickCapture = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!enabled) return;
