@@ -59,6 +59,7 @@ interface SupplierProductRow {
   name: string;
   image_url: string | null;
   is_active: boolean;
+  base_price: number | string;
 }
 
 interface CartLine {
@@ -343,7 +344,7 @@ async function createStorefrontCheckout(
 
   const { data: supplierData, error: supplierError } = await supabase
     .from("supplier_products")
-    .select("id, name, image_url, is_active")
+    .select("id, name, image_url, is_active, base_price")
     .in("id", supplierIds);
 
   if (supplierError) throw supplierError;
@@ -371,6 +372,11 @@ async function createStorefrontCheckout(
 
     const price = getCurrentBasePrice(product);
     const unitAmount = Math.round(price * 100);
+    if (!Number.isFinite(Number(supplier.base_price)) ||
+        Number(supplier.base_price) <= 0 ||
+        unitAmount < Math.round(Number(supplier.base_price) * 100)) {
+      throw new CheckoutError("Prix inférieur au prix fournisseur autorisé.", 409);
+    }
 
     if (!Number.isSafeInteger(unitAmount) || unitAmount <= 0) {
       throw new CheckoutError("Prix produit invalide.", 409);
