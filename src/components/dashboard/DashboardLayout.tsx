@@ -3,7 +3,7 @@ import { Bell, Search, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react"
 
 import { DashboardSidebar } from "./DashboardSidebar";
 import { Button } from "@/components/ui/button";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/VolatileThemeProvider";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
