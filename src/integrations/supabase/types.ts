@@ -14,6 +14,154 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_notification_preferences: {
+        Row: {
+          account_updates: boolean
+          platform_announcements: boolean
+          security_emails: boolean
+          updated_at: string
+          user_id: string
+          weekly_digest: boolean
+        }
+        Insert: {
+          account_updates?: boolean
+          platform_announcements?: boolean
+          security_emails?: boolean
+          updated_at?: string
+          user_id: string
+          weekly_digest?: boolean
+        }
+        Update: {
+          account_updates?: boolean
+          platform_announcements?: boolean
+          security_emails?: boolean
+          updated_at?: string
+          user_id?: string
+          weekly_digest?: boolean
+        }
+        Relationships: []
+      }
+      account_portals: {
+        Row: {
+          created_at: string
+          portal: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          portal?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          portal?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      boutique_alert_log: {
+        Row: {
+          boutique_id: string
+          created_at: string
+          email_status: string | null
+          id: string
+          message: string | null
+          metadata: Json
+          resolved_at: string | null
+          severity: string
+          title: string
+          type: string
+        }
+        Insert: {
+          boutique_id: string
+          created_at?: string
+          email_status?: string | null
+          id?: string
+          message?: string | null
+          metadata?: Json
+          resolved_at?: string | null
+          severity: string
+          title: string
+          type: string
+        }
+        Update: {
+          boutique_id?: string
+          created_at?: string
+          email_status?: string | null
+          id?: string
+          message?: string | null
+          metadata?: Json
+          resolved_at?: string | null
+          severity?: string
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boutique_alert_log_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      boutique_alert_settings: {
+        Row: {
+          audits_enabled: boolean
+          boutique_id: string
+          ctr_drop_pct: number
+          ctr_floor: number
+          email_enabled: boolean
+          enabled: boolean
+          last_checked_at: string | null
+          low_stock_ratio: number
+          notify_email: string | null
+          period_days: number
+          updated_at: string
+          views_drop_pct: number
+        }
+        Insert: {
+          audits_enabled?: boolean
+          boutique_id: string
+          ctr_drop_pct?: number
+          ctr_floor?: number
+          email_enabled?: boolean
+          enabled?: boolean
+          last_checked_at?: string | null
+          low_stock_ratio?: number
+          notify_email?: string | null
+          period_days?: number
+          updated_at?: string
+          views_drop_pct?: number
+        }
+        Update: {
+          audits_enabled?: boolean
+          boutique_id?: string
+          ctr_drop_pct?: number
+          ctr_floor?: number
+          email_enabled?: boolean
+          enabled?: boolean
+          last_checked_at?: string | null
+          low_stock_ratio?: number
+          notify_email?: string | null
+          period_days?: number
+          updated_at?: string
+          views_drop_pct?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boutique_alert_settings_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: true
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       boutique_brand_dna: {
         Row: {
           ambiance: string | null
@@ -291,6 +439,50 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      boutique_payout_preferences: {
+        Row: {
+          beneficiary_name: string | null
+          boutique_id: string
+          country_code: string
+          currency: string
+          payout_contact_email: string | null
+          payout_frequency: string
+          status: string
+          updated_at: string
+          verified_at: string | null
+        }
+        Insert: {
+          beneficiary_name?: string | null
+          boutique_id: string
+          country_code?: string
+          currency?: string
+          payout_contact_email?: string | null
+          payout_frequency?: string
+          status?: string
+          updated_at?: string
+          verified_at?: string | null
+        }
+        Update: {
+          beneficiary_name?: string | null
+          boutique_id?: string
+          country_code?: string
+          currency?: string
+          payout_contact_email?: string | null
+          payout_frequency?: string
+          status?: string
+          updated_at?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boutique_payout_preferences_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: true
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       boutique_scenes: {
         Row: {
@@ -2106,6 +2298,17 @@ export type Database = {
         Args: { p_checkout_key: string; p_stripe_session_id: string }
         Returns: number
       }
+      bib_has_portal: { Args: { requested: string }; Returns: boolean }
+      boutique_period_kpis: {
+        Args: { _boutique_id: string; _since: string; _until: string }
+        Returns: {
+          add_to_cart: number
+          orders: number
+          product_views: number
+          unique_visitors: number
+          views: number
+        }[]
+      }
       claim_guest_orders: {
         Args: { _customer_profile_id: string; _email: string }
         Returns: number
@@ -2159,6 +2362,24 @@ export type Database = {
       owns_boutique: {
         Args: { _boutique_id: string; _user_id: string }
         Returns: boolean
+      }
+      page_analytics_summary: {
+        Args: { _boutique_id: string; _since?: string; _until?: string }
+        Returns: {
+          page_id: string
+          unique_visitors: number
+          views: number
+        }[]
+      }
+      product_funnel_summary: {
+        Args: { _boutique_id: string; _since?: string; _until?: string }
+        Returns: {
+          add_to_cart: number
+          conversion_rate: number
+          product_id: string
+          purchases: number
+          views: number
+        }[]
       }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
