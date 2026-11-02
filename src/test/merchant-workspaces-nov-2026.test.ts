@@ -205,6 +205,18 @@ describe("Merchant operational workspaces", () => {
     expect(read("src/components/storefront/studioScene.css")).toContain(".studio-width-narrow");
   });
 
+  it("does not bypass sample validation with stock and uses the atomic SAV response RPC", () => {
+    const products = read("src/pages/dashboard/Produits.tsx");
+    const sav = read("src/hooks/useOrderIssues.ts");
+    const migration = read("drizzle/migrations/0024_sav_48h_atomic_escalation.sql");
+    expect(products).not.toContain("hasPhysicalStock");
+    expect(products).toContain('sampleStatus !== "validated"');
+    expect(sav).toContain('rpc("respond_to_order_issue"');
+    expect(sav).not.toContain('from("issue_responses" as any).insert');
+    expect(migration).toContain("CREATE OR REPLACE FUNCTION public.respond_to_order_issue");
+    expect(migration).toContain("CREATE OR REPLACE FUNCTION public.escalate_unanswered_order_issues");
+  });
+
   it("shows compact logo-led merchant boutiques without oversized diagnostics", () => {
     const shops = read("src/pages/dashboard/Boutiques.tsx");
     expect(shops).toContain("boutique.logo_url");
