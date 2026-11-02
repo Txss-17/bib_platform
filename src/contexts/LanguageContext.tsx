@@ -70,7 +70,6 @@ const translations: Record<Lang, Record<string, string>> = {
     "features.trust.title": "Confiance & Conformité",
     "features.trust.desc":
       "Conformité intégrée, vérification d'âge, audits fournisseurs et intégration Trustpilot transparente. Votre réputation, protégée.",
-    "features.recycling.desc":
           "features.multimarket.title": "Multi-marchés",
     "features.multimarket.desc":
       "Lancez-vous en UE, EAU, Afrique et au-delà. Multi-devises, multilingue, avec conformité locale intégrée.",
@@ -310,7 +309,6 @@ const translations: Record<Lang, Record<string, string>> = {
     "features.trust.title": "Trust & Compliance",
     "features.trust.desc":
       "Built-in compliance visibility, age verification, supplier audits, and transparent Trustpilot integration. Your reputation, protected.",
-    "features.recycling.desc":
           "features.multimarket.title": "Multi-Market Ready",
     "features.multimarket.desc":
       "Launch across EU, UAE, Africa and beyond. Multi-currency, multi-language, with market-specific compliance built in.",
