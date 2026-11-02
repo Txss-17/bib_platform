@@ -38,7 +38,7 @@ Deno.serve(async request => {
     if (!url || !role) return reply({ error: "not_configured" },503);
     const sb = createClient(url,role,{auth:{persistSession:false}});
     let query = sb.from("bib_talent_applications").select(
-      "id,full_name,email,location,current_activity,preferred_pole,assigned_pole,owner_pole,contribution_type,skills,motivation,availability,portfolio_url,locale,consent_given_at,status,created_at,updated_at,retention_until",
+      "id,full_name,email,location,current_activity,preferred_pole,assigned_pole,owner_pole,contribution_type,skills,motivation,availability,portfolio_url,locale,consent_given_at,future_opportunities_consent,future_opportunities_consented_at,future_opportunities_notice_version,status,created_at,updated_at,retention_until",
     ).gt("retention_until",new Date().toISOString())
       .neq("status","withdrawn").order("updated_at",{ascending:true}).order("id",{ascending:true});
     if (since) query=query.gte("updated_at",new Date(since).toISOString());
