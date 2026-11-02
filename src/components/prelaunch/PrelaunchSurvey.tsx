@@ -1,34 +1,47 @@
 import { useState } from "react";
-import { CheckCircle2, MessageSquareQuote, Send, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Send, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 
-type Answer = { value: string; fr: string; en: string };
-const ISSUES: Answer[] = [
+type Option = { value: string; fr: string; en: string };
+const ISSUES: Option[] = [
   { value: "fraud", fr: "Arnaques et vendeurs peu fiables", en: "Scams and unreliable sellers" },
-  { value: "delivery", fr: "Retards et problèmes de livraison", en: "Delays and delivery problems" },
-  { value: "quality", fr: "Qualité différente des annonces", en: "Products unlike their descriptions" },
-  { value: "returns", fr: "Retours et remboursements compliqués", en: "Difficult returns and refunds" },
-  { value: "trust", fr: "Manque de transparence et de confiance", en: "Lack of trust and transparency" },
-  { value: "visibility", fr: "Manque de visibilité des petits marchands", en: "Low visibility for small sellers" },
-  { value: "costs", fr: "Coûts et commissions élevés", en: "High costs and commissions" },
+  { value: "delivery", fr: "Retards et livraisons", en: "Delays and delivery" },
+  { value: "quality", fr: "Qualité des produits", en: "Product quality" },
+  { value: "returns", fr: "Retours et remboursements", en: "Returns and refunds" },
+  { value: "trust", fr: "Manque de transparence", en: "Lack of transparency" },
+  { value: "visibility", fr: "Visibilité des petits marchands", en: "Small merchants' visibility" },
+  { value: "costs", fr: "Coûts trop élevés", en: "High costs" },
 ];
-const SOLUTIONS: Answer[] = [
-  { value: "verified_suppliers", fr: "Des fournisseurs vérifiés", en: "Verified suppliers" },
-  { value: "secure_delivery", fr: "Une logistique mieux encadrée", en: "More reliable delivery" },
-  { value: "transparent_sav", fr: "Un SAV et des retours transparents", en: "Transparent support and returns" },
-  { value: "brand_tools", fr: "Créer facilement une vraie marque", en: "Tools for building a real brand" },
-  { value: "product_quality", fr: "Des produits et échantillons contrôlés", en: "Better product and sample checks" },
-  { value: "merchant_control", fr: "Plus d'autonomie pour les marchands", en: "More independence for merchants" },
+const SOLUTIONS: Option[] = [
+  { value: "verified_suppliers", fr: "Fournisseurs vérifiés", en: "Verified suppliers" },
+  { value: "secure_delivery", fr: "Livraison mieux encadrée", en: "More reliable delivery" },
+  { value: "transparent_sav", fr: "SAV transparent", en: "Transparent after-sales support" },
+  { value: "brand_tools", fr: "Créer ma marque", en: "Build my brand" },
+  { value: "product_quality", fr: "Qualité contrôlée", en: "Checked product quality" },
+  { value: "merchant_control", fr: "Autonomie des marchands", en: "Merchant independence" },
 ];
-const ROLES: Answer[] = [
-  { value: "exploring", fr: "Je découvre le projet", en: "I'm exploring" },
-  { value: "merchant", fr: "Je suis marchand(e)", en: "I'm a seller" },
-  { value: "customer", fr: "J'achète en ligne", en: "I shop online" },
-  { value: "both", fr: "Les deux", en: "Both" },
+const TIMINGS: Option[] = [
+  { value: "as_soon_as_possible", fr: "Dès que possible", en: "As soon as possible" },
+  { value: "within_1_month", fr: "Dans le mois", en: "Within a month" },
+  { value: "within_3_months", fr: "D'ici 3 mois", en: "Within 3 months" },
+  { value: "within_6_months", fr: "D'ici 6 mois", en: "Within 6 months" },
+  { value: "no_preference", fr: "Sans préférence", en: "No preference" },
 ];
-const STORAGE_KEY = "bib.prelaunch.survey.dismissed.v1";
+const STORAGE_KEY = "bib.prelaunch.survey.dismissed.v2";
+
+function SurveyOptions({ options, value, onChange, en }: {
+  options: Option[]; value: string; onChange: (value: string) => void; en: boolean;
+}) {
+  return <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+    {options.map(option => <button type="button" key={option.value}
+      aria-pressed={value === option.value} onClick={() => onChange(option.value)}
+      className={`min-h-9 rounded-lg border px-3 py-2 text-left text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${value === option.value ? "border-primary bg-primary/10 font-semibold text-foreground" : "border-border/70 text-muted-foreground hover:border-primary/40"}`}>
+      {en ? option.en : option.fr}
+    </button>)}
+  </div>;
+}
 
 export function PrelaunchSurvey() {
   const { lang } = useLanguage();
@@ -38,115 +51,124 @@ export function PrelaunchSurvey() {
     try { return typeof window !== "undefined" && window.localStorage.getItem(STORAGE_KEY) === "yes"; }
     catch { return false; }
   });
+  const [step, setStep] = useState(0);
   const [issue, setIssue] = useState("");
   const [solution, setSolution] = useState("");
-  const [role, setRole] = useState("exploring");
+  const [wantsToBeMerchant, setWantsToBeMerchant] = useState<boolean | null>(null);
+  const [launchTiming, setLaunchTiming] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
 
   const dismiss = () => {
     setDismissed(true);
-    try { window.localStorage.setItem(STORAGE_KEY, "yes"); } catch { /* browser may block storage */ }
+    try { window.localStorage.setItem(STORAGE_KEY, "yes"); } catch { /* optional local persistence */ }
   };
+  const canContinue = step === 0 ? !!issue : step === 1 ? !!solution :
+    wantsToBeMerchant !== null && (!wantsToBeMerchant || !!launchTiming);
+
   const submit = async () => {
-    if (!issue || !solution || submitting) return;
+    if (!issue || !solution || wantsToBeMerchant === null ||
+        (wantsToBeMerchant && !launchTiming) || submitting) return;
     setSubmitting(true);
     setError("");
     try {
       const { data, error: requestError } = await supabase.functions.invoke("submit-prelaunch-survey", {
-        body: { challenge: issue, solution, role, locale: en ? "en" : "fr" },
+        body: {
+          challenge: issue, solution,
+          role: wantsToBeMerchant ? "merchant" : "exploring",
+          wants_to_be_merchant: wantsToBeMerchant,
+          preferred_launch_timing: wantsToBeMerchant ? launchTiming : null,
+          locale: en ? "en" : "fr",
+        },
       });
       if (requestError || data?.ok !== true) throw requestError ?? new Error("survey_save_failed");
       setSubmitted(true);
       dismiss();
     } catch {
-      setError(tx("Votre réponse n'a pas pu être enregistrée. Vous pouvez réessayer ou passer le sondage.",
-        "Your answer could not be saved. Please retry or skip."));
-    } finally {
-      setSubmitting(false);
-    }
+      setError(tx("Impossible d'enregistrer votre avis. Réessayez ou passez le sondage.",
+        "We couldn't save your answer. Retry or skip."));
+    } finally { setSubmitting(false); }
   };
-  if (submitted) {
-    return <div role="status" className="mx-auto mt-10 max-w-xl rounded-2xl border border-border/70 bg-card p-6 text-center">
-      <CheckCircle2 className="mx-auto mb-3 h-7 w-7 text-primary" />
-      <p className="font-semibold">{tx("Merci d'avoir partagé votre avis.", "Thank you for your feedback.")}</p>
-      <p className="mt-1 text-sm text-muted-foreground">{tx("Votre réponse contribuera à orienter les priorités de BIB.", "Your feedback will help shape BIB's priorities.")}</p>
-    </div>;
-  }
+
+  if (submitted) return (
+    <div role="status" className="mx-auto mt-6 max-w-md rounded-xl border border-border/70 bg-card px-5 py-6 text-center">
+      <CheckCircle2 className="mx-auto mb-2 h-6 w-6 text-primary" />
+      <p className="text-base font-semibold">{tx("Merci pour votre avis !", "Thank you for your feedback!")}</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {tx("Nous attendons votre retour sur BIB.", "We look forward to welcoming you back to BIB.")}
+      </p>
+    </div>
+  );
   if (dismissed) return null;
 
   return (
-    <aside aria-labelledby="prelaunch-survey-title" className="mx-auto mt-12 w-full max-w-2xl rounded-2xl border border-border/80 bg-card p-5 text-left shadow-sm sm:p-7">
-      <div className="flex items-start justify-between gap-3">
+    <aside aria-labelledby="prelaunch-survey-title" className="mx-auto mt-7 w-full max-w-md rounded-xl border border-border/80 bg-card p-4 text-left shadow-sm sm:p-5">
+      <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-accent-ink">
-            <MessageSquareQuote className="h-4 w-4" /> {tx("Votre regard sur l'e-commerce", "Your view of e-commerce")}
+          <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-accent-ink">
+            {tx("Votre avis pour BIB", "Your feedback for BIB")} · {step + 1}/3
           </p>
-          <h2 id="prelaunch-survey-title" className="mt-2 text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-            {tx("Deux questions avant de partir ?", "Two quick questions before you go?")}
+          <h2 id="prelaunch-survey-title" className="mt-1 text-base font-semibold tracking-tight">
+            {tx("Préparons le lancement de BIB", "Help prepare BIB's launch")}
           </h2>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            {tx("Vous avez envisagé de rejoindre BIB : votre avis nous aidera à prioriser les problèmes à résoudre.",
-              "You considered joining BIB. Your answers can help us focus on the most important problems.")}
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+            {tx("Votre avis nous aidera à préparer son lancement.", "Your feedback will help us prepare the launch.")}
           </p>
         </div>
-        <Button type="button" variant="ghost" size="icon" className="shrink-0" aria-label={tx("Ignorer le sondage", "Skip survey")} onClick={dismiss}>
-          <X className="h-4 w-4" />
-        </Button>
+        <Button type="button" size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={dismiss}
+          aria-label={tx("Ignorer le sondage", "Skip survey")}><X className="h-4 w-4" /></Button>
+      </div>
+      <div className="mt-3 flex gap-1" aria-hidden="true">
+        {[0,1,2].map(i => <span key={i} className={`h-1 flex-1 rounded-full ${i <= step ? "bg-primary" : "bg-muted"}`} />)}
       </div>
 
-      <fieldset className="mt-6 space-y-3">
-        <legend className="text-sm font-semibold text-foreground">
-          {tx("1. Qu'est-ce qui vous fait le plus perdre confiance dans l'e-commerce aujourd'hui ?",
-            "1. What most undermines your trust in online commerce today?")}
-        </legend>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {ISSUES.map(option => <button key={option.value} type="button" aria-pressed={issue === option.value}
-            onClick={() => setIssue(option.value)}
-            className={`rounded-xl border px-3 py-2.5 text-left text-xs leading-5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${issue === option.value ? "border-primary bg-primary/10 font-semibold text-foreground" : "border-border/70 text-muted-foreground hover:border-primary/40"}`}>
-            {en ? option.en : option.fr}
-          </button>)}
-        </div>
-      </fieldset>
-
-      <fieldset className="mt-6 space-y-3">
-        <legend className="text-sm font-semibold text-foreground">
-          {tx("2. Quelle solution proposée par BIB vous intéresse le plus ?",
-            "2. Which BIB solution interests you the most?")}
-        </legend>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {SOLUTIONS.map(option => <button key={option.value} type="button" aria-pressed={solution === option.value}
-            onClick={() => setSolution(option.value)}
-            className={`rounded-xl border px-3 py-2.5 text-left text-xs leading-5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${solution === option.value ? "border-primary bg-primary/10 font-semibold text-foreground" : "border-border/70 text-muted-foreground hover:border-primary/40"}`}>
-            {en ? option.en : option.fr}
-          </button>)}
-        </div>
-      </fieldset>
-      <div className="mt-5">
-        <p className="text-xs font-semibold">{tx("Votre profil (facultatif)", "Your profile (optional)")}</p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {ROLES.map(option => <button key={option.value} type="button" onClick={() => setRole(option.value)}
-            aria-pressed={role === option.value}
-            className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${role === option.value ? "border-primary bg-primary/10 font-semibold" : "border-border/70 text-muted-foreground"}`}>
-            {en ? option.en : option.fr}
-          </button>)}
-        </div>
+      <div className="mt-4 min-h-[136px] space-y-3" key={step}>
+        {step === 0 && <fieldset className="space-y-2.5">
+          <legend className="text-sm font-semibold">
+            {tx("Qu'est-ce qui nuit le plus à votre confiance dans l'e-commerce ?", "What most harms your trust in e-commerce?")}
+          </legend>
+          <SurveyOptions options={ISSUES} value={issue} onChange={setIssue} en={en} />
+        </fieldset>}
+        {step === 1 && <fieldset className="space-y-2.5">
+          <legend className="text-sm font-semibold">
+            {tx("Quelle solution BIB vous intéresse le plus ?", "Which BIB solution interests you most?")}
+          </legend>
+          <SurveyOptions options={SOLUTIONS} value={solution} onChange={setSolution} en={en} />
+        </fieldset>}
+        {step === 2 && <fieldset className="space-y-3">
+          <legend className="text-sm font-semibold">
+            {tx("Souhaitez-vous devenir marchand BIB ?", "Would you like to become a BIB merchant?")}
+          </legend>
+          <div className="flex gap-2">
+            {[true,false].map(value => <button type="button" key={String(value)}
+              aria-pressed={wantsToBeMerchant === value}
+              onClick={() => { setWantsToBeMerchant(value); if (!value) setLaunchTiming(""); }}
+              className={`flex-1 rounded-lg border px-3 py-2 text-xs ${wantsToBeMerchant === value ? "border-primary bg-primary/10 font-semibold" : "border-border/70 text-muted-foreground"}`}>
+              {value ? tx("Oui", "Yes") : tx("Non", "No")}
+            </button>)}
+          </div>
+          {wantsToBeMerchant === true && <div className="space-y-2">
+            <p className="text-xs font-medium">{tx("Si oui, quand souhaiteriez-vous le lancement ?", "If yes, when would you like BIB to launch?")}</p>
+            <SurveyOptions options={TIMINGS} value={launchTiming} onChange={setLaunchTiming} en={en} />
+          </div>}
+        </fieldset>}
       </div>
-
-      {error && <p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}
-      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <Button type="button" variant="ghost" className="px-1 text-muted-foreground" onClick={dismiss}>
-          {tx("Passer, sans répondre", "Skip without answering")}
-        </Button>
-        <Button type="button" className="gap-2" onClick={submit} disabled={!issue || !solution || submitting}>
-          <Send className="h-4 w-4" />
-          {submitting ? tx("Envoi…", "Submitting…") : tx("Envoyer mon avis", "Send my feedback")}
-        </Button>
+      {error && <p role="alert" className="mt-3 text-xs text-destructive">{error}</p>}
+      <div className="mt-4 flex items-center justify-between gap-2">
+        {step === 0 ? <Button type="button" variant="ghost" size="sm" onClick={dismiss} className="px-1 text-xs">
+          {tx("Passer", "Skip")}
+        </Button> : <Button type="button" variant="ghost" size="sm" onClick={() => { setError(""); setStep(old => old-1); }}
+          className="gap-1 px-1 text-xs"><ArrowLeft className="h-3 w-3" />{tx("Retour", "Back")}</Button>}
+        {step < 2 ? <Button type="button" size="sm" className="gap-1" disabled={!canContinue}
+          onClick={() => { setError(""); setStep(old => old+1); }}>
+          {tx("Valider", "Continue")} <ArrowRight className="h-3.5 w-3.5" />
+        </Button> : <Button type="button" size="sm" className="gap-1" disabled={!canContinue || submitting} onClick={submit}>
+          <Send className="h-3.5 w-3.5" />{submitting ? tx("Envoi…", "Sending…") : tx("Envoyer", "Submit")}
+        </Button>}
       </div>
-      <p className="mt-4 text-[11px] leading-5 text-muted-foreground">
-        {tx("Facultatif, sans création de compte. Aucun nom ni email demandé. Une empreinte réseau temporaire limite les réponses répétées.",
-          "Optional, no account needed. We don't ask for your name or email. A temporary network fingerprint limits repeated submissions.")}
+      <p className="mt-3 text-center text-[11px] text-muted-foreground">
+        {tx("Aucun contact nécessaire.", "No contact details required.")}
       </p>
     </aside>
   );
