@@ -169,8 +169,8 @@ export function FloatingSupportButton({
     setTurnToken(null);
     setAskAnotherTopic(false);
     setMessages(previous => [...previous,
-      { role: "user", content: "Non, je préfère poursuivre sans ticket." },
-      { role: "assistant", content: "Bien compris, aucun ticket n'a été créé. Nous pouvons continuer ici. Quel point souhaitez-vous approfondir ?" },
+      { role: "user", content: en ? "No, I prefer to keep chatting without a ticket." : "Non, je préfère poursuivre sans ticket." },
+      { role: "assistant", content: en ? "Understood, no ticket was created. What would you like to clarify?" : "Bien compris, aucun ticket n'a été créé. Nous pouvons continuer ici. Quel point souhaitez-vous approfondir ?" },
     ]);
   };
 
@@ -201,7 +201,7 @@ export function FloatingSupportButton({
     setOfferId(null);
     setPendingFiles([]);
     setMessages(previous => [...previous, {
-      role: "assistant", content: "Merci d'avoir échangé avec BIB. Je vous souhaite une excellente continuation. 🙇",
+      role: "assistant", content: en ? "Thank you for speaking with BIB. Wishing you all the best. 🙇" : "Merci d'avoir échangé avec BIB. Je vous souhaite une excellente continuation. 🙇",
     }]);
   };
 
