@@ -41,6 +41,7 @@ export function BibTalentApplicationForm() {
     skills: "", motivation: "", availability: "discuss", portfolio_url: "", website: "",
   });
   const [consent, setConsent] = useState(false);
+  const [futureConsent, setFutureConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -53,7 +54,7 @@ export function BibTalentApplicationForm() {
     setError("");
     try {
       const { data, error: serverError } = await supabase.functions.invoke("submit-talent-application", {
-        body: { ...form, locale: en ? "en" : "fr", consent },
+        body: { ...form, locale: en ? "en" : "fr", consent, future_opportunities_consent: futureConsent },
       });
       if (serverError || data?.ok !== true) throw serverError ?? new Error("talent_submission_failed");
       setDone(true);
@@ -133,9 +134,18 @@ export function BibTalentApplicationForm() {
     <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border/70 bg-muted/20 p-3">
       <Checkbox checked={consent} onCheckedChange={checked => setConsent(checked === true)} aria-label={tr("Accepter le traitement de ma candidature", "Consent to application processing")} className="mt-1" />
       <span className="text-xs leading-5 text-muted-foreground">
-        {tr("J'accepte que BIB utilise les informations fournies pour étudier ma manifestation d'intérêt et me contacter si nécessaire. Durée de conservation maximale prévue : 180 jours.",
-          "I consent to BIB processing this information to review my interest and contact me if needed. Planned maximum retention: 180 days.")}
+        {tr("J'accepte que BIB utilise les informations fournies pour étudier ma manifestation d'intérêt et me contacter si nécessaire.",
+          "I consent to BIB processing this information to review my interest and contact me if needed.")}
         {" "}<Link to="/talent/confidentialite" className="font-semibold text-accent-ink underline">{tr("Politique de confidentialité", "Privacy policy")}</Link>.
+      </span>
+    </label>
+    <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border/70 p-3">
+      <Checkbox checked={futureConsent} onCheckedChange={checked => setFutureConsent(checked === true)}
+        aria-label={tr("Autoriser le contact pour de futures opportunités", "Allow contact for future opportunities")} className="mt-1" />
+      <span className="text-xs leading-5 text-muted-foreground">
+        {tr("Facultatif : j'accepte que BIB conserve ma candidature pour me recontacter à propos de futures opportunités. Je peux retirer cet accord à tout moment.",
+          "Optional: I agree that BIB may retain my application for future opportunities. I may withdraw this consent at any time.")}
+        {" "}<Link to="/talent/confidentialite" className="underline">{tr("Détails sur la conservation", "Retention details")}</Link>.
       </span>
     </label>
     {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
