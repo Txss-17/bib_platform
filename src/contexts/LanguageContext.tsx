@@ -50,8 +50,6 @@ const translations: Record<Lang, Record<string, string>> = {
     "hero.live": "En direct",
     "hero.revenue": "Revenus mensuels",
     "hero.vs": "+12,5% vs mois dernier",
-    "hero.eco": "Points Éco",
-    "hero.redeem": "Échanger des récompenses",
     "hero.trustscore": "Score de confiance",
     "hero.excellent": "Excellent",
     "hero.neworder": "Nouvelle commande",
@@ -72,10 +70,8 @@ const translations: Record<Lang, Record<string, string>> = {
     "features.trust.title": "Confiance & Conformité",
     "features.trust.desc":
       "Conformité intégrée, vérification d'âge, audits fournisseurs et intégration Trustpilot transparente. Votre réputation, protégée.",
-    "features.recycling.title": "Recyclage & Fidélité",
     "features.recycling.desc":
-      "Les clients scannent les emballages pour gagner des points. Impact environnemental visible et système de récompenses durable.",
-    "features.multimarket.title": "Multi-marchés",
+          "features.multimarket.title": "Multi-marchés",
     "features.multimarket.desc":
       "Lancez-vous en UE, EAU, Afrique et au-delà. Multi-devises, multilingue, avec conformité locale intégrée.",
     "features.support.title": "Support Pôle 12",
@@ -148,7 +144,6 @@ const translations: Record<Lang, Record<string, string>> = {
     "footer.features": "Fonctionnalités",
     "footer.dashboard": "Tableau de bord",
     "footer.intelligence": "Intelligence Produit",
-    "footer.recycling": "Programme Recyclage",
     "footer.pricing": "Tarifs",
     "footer.company": "Entreprise",
     "footer.about": "À propos",
@@ -295,8 +290,6 @@ const translations: Record<Lang, Record<string, string>> = {
     "hero.live": "Live",
     "hero.revenue": "Monthly Revenue",
     "hero.vs": "+12.5% vs last month",
-    "hero.eco": "Eco Points",
-    "hero.redeem": "Redeem rewards",
     "hero.trustscore": "Trust Score",
     "hero.excellent": "Excellent",
     "hero.neworder": "New Order",
@@ -317,10 +310,8 @@ const translations: Record<Lang, Record<string, string>> = {
     "features.trust.title": "Trust & Compliance",
     "features.trust.desc":
       "Built-in compliance visibility, age verification, supplier audits, and transparent Trustpilot integration. Your reputation, protected.",
-    "features.recycling.title": "Recycling & Loyalty",
     "features.recycling.desc":
-      "Customers scan packaging to earn points. Visible environmental impact stats and rewards system that builds lasting loyalty.",
-    "features.multimarket.title": "Multi-Market Ready",
+          "features.multimarket.title": "Multi-Market Ready",
     "features.multimarket.desc":
       "Launch across EU, UAE, Africa and beyond. Multi-currency, multi-language, with market-specific compliance built in.",
     "features.support.title": "Pôle 12 Support",
@@ -393,7 +384,6 @@ const translations: Record<Lang, Record<string, string>> = {
     "footer.features": "Features",
     "footer.dashboard": "Dashboard",
     "footer.intelligence": "Product Intelligence",
-    "footer.recycling": "Recycling Program",
     "footer.pricing": "Pricing",
     "footer.company": "Company",
     "footer.about": "About Us",
