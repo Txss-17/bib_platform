@@ -92,7 +92,7 @@ export function CGU() {
         {translateUi("Elles se distinguent des") + " "}
         <a href="/cgv">{translateUi("Conditions Générales de Vente")}</a>
         {translateUi(
-          ", qui régissent les commandes de produits, et du Contrat Fournisseur, qui régit la relation commerciale entre BIB et les Marchands référencés.",
+          ", qui régissent les commandes de produits, et du Contrat Marchand, qui régit la relation commerciale entre BIB et les Marchands référencés.",
         )}
       </p>
       <h2>{translateUi("2. Définitions")}</h2>
@@ -130,7 +130,7 @@ export function CGU() {
       <h3>{translateUi("4.1 Compte Marchand")}</h3>
       <p>
         {translateUi(
-          "La création d'un Compte Marchand est soumise au processus de sélection et de validation du réseau BIB et aux conditions du Contrat Fournisseur en vigueur. L'accès aux fonctionnalités marchandes (mise en catalogue, gestion de boutique, programme Boutique Verte) est conditionné à cette validation.",
+          "La création d'un Compte Marchand est soumise au processus de sélection et de validation du réseau BIB et aux conditions du Contrat Marchand en vigueur. L'accès aux fonctionnalités marchandes (mise en catalogue, gestion de boutique, programme Boutique Verte) est conditionné à cette validation.",
         )}
       </p>
       <h3>{translateUi("4.2 Compte Client")}</h3>
@@ -170,7 +170,7 @@ export function CGU() {
         </li>
         <li>
           {translateUi(
-            "pour les Marchands, ne pas expédier directement les commandes au Client final, en violation du Contrat Fournisseur et des CGV ;",
+            "pour les Marchands, ne pas expédier directement les commandes au Client final, en violation du Contrat Marchand et des CGV ;",
           )}
         </li>
         <li>
@@ -220,7 +220,7 @@ export function CGU() {
       <h3>{translateUi("10.2 Par l'Utilisateur")}</h3>
       <p>
         {translateUi(
-          "Le Client peut résilier son abonnement BIB Abonné à tout moment. Le Marchand résilie son Compte dans les conditions du Contrat Fournisseur.",
+          "Le Client peut résilier son abonnement BIB Abonné à tout moment. Le Marchand résilie son Compte dans les conditions du Contrat Marchand.",
         )}
       </p>
       <h2>{translateUi("11. Responsabilité")}</h2>
@@ -274,7 +274,7 @@ export function CGV() {
       <h2>{translateUi("1. Objet et champ d'application")}</h2>
       <p>
         {translateUi(
-          "Les présentes Conditions Générales de Vente (CGV) régissent les commandes de produits passées par un client final auprès des Marchands référencés sur la marketplace Brand-in-a-Box, opérée par Brand-in-a-Box SAS (« BIB »). Elles précisent l'identité du vendeur, le rôle de BIB, les modalités de paiement, les garanties applicables et le règlement des litiges.",
+          "Les présentes Conditions Générales de Vente (CGV) régissent les commandes de produits passées par un client final auprès des Marchands référencés sur la marketplace Brand-in-a-Box, opérée sous la marque Brand-in-a-Box (« BIB »), par l'entité à identifier dans les mentions légales. Elles précisent l'identité du vendeur, le rôle de BIB, les modalités de paiement, les garanties applicables et le règlement des litiges.",
         )}
       </p>
       <h2>{translateUi("2. Définitions")}</h2>
