@@ -9,7 +9,7 @@ import {
   ShieldCheck
 } from "lucide-react";
 const personas = [
-  { id: "client", label: "Je suis client", desc: "Suivre une commande, retours, recyclage, cartes cadeaux", icon: Users },
+  { id: "client", label: "Je suis client", desc: "Suivre une commande, retours et assistance", icon: Users },
   { id: "vendeur", label: "Je suis vendeur", desc: "Cr\xE9er ma boutique, produits, paiements, \xE9chantillons", icon: Store },
   { id: "fournisseur", label: "Je suis fournisseur", desc: "Candidature, catalogue, performance, paiements", icon: Boxes },
   { id: "logistique", label: "Je suis partenaire logistique", desc: "Portail Ops, \xE9tiquettes, litiges, exp\xE9ditions", icon: Truck }
@@ -96,7 +96,7 @@ const faq = [
       { q: "Comment suivre ma commande ?", a: "Munissez-vous de votre num\xE9ro de commande (format LKS26-XXXXXX) et de l'e-mail utilis\xE9 au paiement, puis ouvrez la page de suivi.", to: "/suivi-commande", ctaLabel: "Suivre ma commande" },
       { q: "Quels sont les d\xE9lais de livraison ?", a: "Les d\xE9lais d\xE9pendent du pays et du transporteur s\xE9lectionn\xE9 par la boutique. Une estimation s'affiche \xE0 l'\xE9tape livraison du checkout et un e-mail r\xE9capitule l'exp\xE9dition." },
       { q: "Comment retourner un produit ?", a: "Contactez d'abord la boutique vendeuse via la page produit. Sans r\xE9ponse sous 48 h, la plateforme prend le relais via la proc\xE9dure d'escalade." },
-      { q: "O\xF9 trouver mes cartes cadeaux ?", a: "Connectez-vous avec l'e-mail de votre commande : vos soldes par boutique apparaissent dans votre espace client." },
+      { q: "Qui est responsable de ma commande ?", a: "Le marchand vendeur est responsable des ventes, retours et garanties. BIB coordonne la plateforme et la livraison par ses partenaires." },
       { q: "Mon paiement a \xE9chou\xE9, que faire ?", a: "V\xE9rifiez votre carte (plafond, 3-D Secure) puis r\xE9essayez. Aucune commande n'est confirm\xE9e tant que le paiement n'est pas valid\xE9 \u2014 vous ne risquez pas de double d\xE9bit." }
     ]
   },
