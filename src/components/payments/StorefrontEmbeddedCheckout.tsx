@@ -76,37 +76,10 @@ export function StorefrontEmbeddedCheckout({
       throw new Error("Le panier contient un article invalide.");
     }
 
-    let lastScene: Attribution["lastScene"] = null;
-
-    try {
-      const raw = window.sessionStorage.getItem("bib_last_scene");
-
-      if (raw) {
-        const parsed = JSON.parse(raw);
-
-        if (parsed && typeof parsed === "object") {
-          lastScene = {
-            sceneId:
-              typeof parsed.sceneId === "string"
-                ? parsed.sceneId
-                : undefined,
-            sceneType:
-              typeof parsed.sceneType === "string"
-                ? parsed.sceneType
-                : undefined,
-            at:
-              typeof parsed.at === "number"
-                ? parsed.at
-                : undefined,
-          };
-        }
-      }
-    } catch {
-      // L'attribution est optionnelle : ne pas bloquer le checkout.
-    }
-
-    const sessionId =
-      window.sessionStorage.getItem("bib_scene_session") ?? undefined;
+    // No browser-persisted scene or session identifiers.
+    // Any conversion attribution must be computed from server events.
+    const lastScene: Attribution["lastScene"] = null;
+    const sessionId: string | undefined = undefined;
 
     const payload = {
       boutiqueId,
