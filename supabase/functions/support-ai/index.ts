@@ -76,11 +76,13 @@ serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    // Only user-authored text is accepted. Client-supplied assistant or system
+    // roles can impersonate instructions and contaminate ticket records.
     const messages = Array.isArray(body?.messages) ? body.messages : [];
     if (messages.length === 0 || messages.length > 16 ||
       messages.some((msg: unknown) =>
         !msg || typeof msg !== "object" ||
-        !["user", "assistant"].includes((msg as { role?: string }).role ?? "") ||
+        (msg as { role?: string }).role !== "user" ||
         typeof (msg as { content?: unknown }).content !== "string" ||
         ((msg as { content: string }).content.length > 3000)
       )) {
@@ -166,8 +168,8 @@ serve(async (req) => {
       }
       const lastQuestion = String(userMessages[userMessages.length - 1].content).trim();
       const subject = (lastQuestion.slice(0, 76) || "Demande d'assistance BIB");
-      const summary = messages.map((msg: {role: string; content: string}) =>
-        `${msg.role === "user" ? "Marchand" : "Assistant"} : ${msg.content}`
+      const summary = messages.map((msg: { content: string }) =>
+        `Marchand : ${msg.content}`
       ).join("\n").slice(0, 4000);
       const { data: ticket, error } = await admin.from("support_tickets").insert({
         user_id: actor.user.id,
