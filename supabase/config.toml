@@ -55,3 +55,6 @@ verify_jwt = false
 # Never expose this key in VITE_* variables or browser code.
 [functions.sav-escalation-worker]
 verify_jwt = false
+
+[functions.submit-prelaunch-survey]
+verify_jwt = false
