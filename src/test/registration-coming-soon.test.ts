@@ -29,6 +29,26 @@ describe("Merchant registration remains closed while customers and partners can 
     }
   });
 
+  it("offers a small optional trust survey without collecting identity", () => {
+    const page = read("src/pages/SignupComingSoon.tsx");
+    const survey = read("src/components/prelaunch/PrelaunchSurvey.tsx");
+    const fn = read("supabase/functions/submit-prelaunch-survey/index.ts");
+    const sql = read("supabase/migrations/20261102130000_support_ticket_consent_and_prelaunch_survey.sql");
+    const config = read("supabase/config.toml");
+    expect(page).toContain("<PrelaunchSurvey />");
+    expect(survey).toContain("Deux questions avant de partir ?");
+    expect(survey).toContain("Passer, sans répondre");
+    expect(survey).toContain('functions.invoke("submit-prelaunch-survey"');
+    expect(survey).toContain("Arnaques et vendeurs peu fiables");
+    expect(survey).toContain("Une logistique mieux encadrée");
+    expect(fn).toContain("assertTrustedReturnUrl");
+    expect(fn).toContain("status === 204 ? null");
+    expect(fn).toContain('survey_day: day');
+    expect(sql).toContain("prelaunch_survey_responses");
+    expect(sql).toContain("REVOKE ALL ON public.prelaunch_survey_responses");
+    expect(config).toContain("[functions.submit-prelaunch-survey]");
+  });
+
   it("presents bilingual Coming Soon copy with login and home links", () => {
     const page = read("src/pages/SignupComingSoon.tsx");
     expect(page).toContain("Bientôt disponible");
