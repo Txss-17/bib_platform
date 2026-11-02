@@ -14,6 +14,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import {
   Card,
@@ -43,6 +44,7 @@ export default function StoreSignup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [privacyConsent, setPrivacyConsent] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -150,6 +152,11 @@ export default function StoreSignup() {
       return;
     }
 
+    if (!privacyConsent) {
+      setError(tx("Veuillez accepter le traitement des données nécessaires à la création du compte.", "Please consent to data processing necessary for account creation."));
+      return;
+    }
+
     setLoading(true);
 
     /*
@@ -167,6 +174,8 @@ export default function StoreSignup() {
       password,
       undefined,
       "store",
+      undefined,
+      privacyConsent,
     );
 
     if (signUpError) {
@@ -466,12 +475,23 @@ export default function StoreSignup() {
                       </div>
                     </div>
 
+                    <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-border/70 bg-muted/20 p-3 text-xs leading-5">
+                      <Checkbox checked={privacyConsent} onCheckedChange={value => setPrivacyConsent(value === true)}
+                        aria-label={tx("Consentement au traitement des données pour créer mon compte", "Consent to account data processing")} className="mt-0.5" />
+                      <span>
+                        {tx("J'accepte que BIB traite les informations nécessaires à la création et à la gestion de mon compte.", "I agree that BIB may process information necessary to create and manage my account.")}{" "}
+                        <Link to="/confidentialite" target="_blank" rel="noopener noreferrer" className="font-medium text-primary underline">
+                          {tx("Confidentialité", "Privacy notice")}
+                        </Link>
+                      </span>
+                    </label>
+
                     {/* ACTION */}
 
                     <Button
                       type="submit"
                       className="w-full gap-2"
-                      disabled={loading}
+                      disabled={loading || !privacyConsent}
                     >
                       {loading ? (
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
