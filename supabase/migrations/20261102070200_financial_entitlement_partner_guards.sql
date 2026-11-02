@@ -13,7 +13,6 @@ BEGIN
      OR NEW.product_id IS DISTINCT FROM OLD.product_id
      OR NEW.boutique_id IS DISTINCT FROM OLD.boutique_id
      OR NEW.quantity IS DISTINCT FROM OLD.quantity
-     OR NEW.customer_profile_id IS DISTINCT FROM OLD.customer_profile_id
      OR NEW.customer_email IS DISTINCT FROM OLD.customer_email
      OR NEW.payment_status IS DISTINCT FROM OLD.payment_status
      OR NEW.payment_completed_at IS DISTINCT FROM OLD.payment_completed_at
@@ -23,8 +22,25 @@ BEGIN
      OR NEW.refund_status IS DISTINCT FROM OLD.refund_status
   THEN RAISE EXCEPTION 'server_only_order_financial_fields' USING ERRCODE='42501';
   END IF;
+  -- The verified guest-claim RPC may attach an order to its owner.
+  -- The profile must belong to the authenticated caller, whose auth email
+  -- was confirmed and exactly matches the order's customer email.
+  IF NEW.customer_profile_id IS DISTINCT FROM OLD.customer_profile_id THEN
+    IF OLD.customer_profile_id IS NOT NULL OR NEW.customer_profile_id IS NULL
+       OR NOT EXISTS (
+         SELECT 1 FROM public.customer_profiles cp
+         JOIN auth.users u ON u.id=cp.user_id
+         WHERE cp.id=NEW.customer_profile_id
+           AND cp.user_id=auth.uid()
+           AND u.email_confirmed_at IS NOT NULL
+           AND lower(btrim(cp.email))=lower(btrim(u.email))
+           AND lower(btrim(OLD.customer_email))=lower(btrim(u.email))
+       ) THEN
+      RAISE EXCEPTION 'verified_guest_order_claim_required' USING ERRCODE='42501';
+    END IF;
+  END IF;
   RETURN NEW;
-END $$;
+END $;
 
 DROP TRIGGER IF EXISTS bib_guard_order_financial_fields ON public.orders;
 CREATE TRIGGER bib_guard_order_financial_fields
