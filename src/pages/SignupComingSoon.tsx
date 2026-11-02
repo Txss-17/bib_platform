@@ -4,6 +4,7 @@ import PublicPageLayout from "@/components/layout/PublicPageLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSEO } from "@/hooks/useSEO";
 import { Button } from "@/components/ui/button";
+import { PrelaunchSurvey } from "@/components/prelaunch/PrelaunchSurvey";
 
 export default function SignupComingSoon() {
   const { lang } = useLanguage();
@@ -18,7 +19,7 @@ export default function SignupComingSoon() {
     <PublicPageLayout>
       <section className="relative flex min-h-[70vh] items-center overflow-hidden bg-background py-20">
         <div aria-hidden="true" className="pointer-events-none absolute -right-20 top-0 h-80 w-80 rounded-full bg-bib-gold/10 blur-3xl" />
-        <div className="container relative mx-auto max-w-3xl px-5 text-center sm:px-8">
+        <div className="container relative mx-auto max-w-4xl px-5 text-center sm:px-8">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-bib-gold/30 bg-bib-gold/10 text-accent-ink">
             <Clock3 size={29} aria-hidden="true" />
           </div>
@@ -47,6 +48,7 @@ export default function SignupComingSoon() {
               <Link to="/"><ArrowLeft className="mr-2 h-4 w-4" />{en ? "Back to home" : "Retour à l'accueil"}</Link>
             </Button>
           </div>
+          <PrelaunchSurvey />
         </div>
       </section>
     </PublicPageLayout>
