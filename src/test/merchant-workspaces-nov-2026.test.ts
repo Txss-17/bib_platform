@@ -9,7 +9,11 @@ describe("Merchant operational workspaces", () => {
     const checklist = read("src/components/onboarding/OnboardingChecklist.tsx");
     const migration = read("supabase/migrations/20261102170500_merchant_tour_progress.sql");
     const dashboard = read("src/pages/Dashboard.tsx");
-    expect(dashboard).toContain('<PlatformTour autoOpen availablePersonas={["seller"]} />');
+    expect(dashboard).not.toContain('<PlatformTour autoOpen availablePersonas={["seller"]} />');
+    expect(dashboard).toContain("<OnboardingChecklist />");
+    expect(checklist).toContain("Votre prochaine action");
+    expect(checklist).toContain("Voir toutes les étapes");
+    expect(checklist).toContain("steps.find(step => !step.done)");
     expect(dashboard).toContain("<OnboardingChecklist />");
     expect(tour).toContain("Bienvenue dans votre espace marchand BIB");
     expect(tour).toContain("4. Vérifiez les conditions d'activation des produits");
@@ -20,7 +24,7 @@ describe("Merchant operational workspaces", () => {
     expect(hook).toContain('bib_tour_progress_${userId ?? "guest"}_${scope}');
     expect(migration).toContain("PRIMARY KEY (user_id, scope)");
     expect(migration).toContain("auth.uid()=user_id");
-    expect(checklist).toContain("bib_onboarding_dismissed_${userId}");
+    expect(checklist).toContain("bib_merchant_next_action_dismissed_${userId}");
   });
 
   it("supports a collapsible dashboard and clearly identified BIB assistant", () => {
