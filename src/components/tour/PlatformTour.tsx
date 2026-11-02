@@ -602,8 +602,11 @@ export function PlatformTour({
                   size="sm"
                   className="gap-1.5"
                   onClick={() => {
+                    // Closing via setOpen would overwrite the freshly saved
+                    // completion with stale state and mark the tour dismissed.
                     persist({ completed: true, stepIdx: 0, persona: null });
-                    setOpen(false);
+                    onOpenChange?.(false);
+                    if (openProp === undefined) setInternalOpen(false);
                   }}
                 >
                   {translateUi("Terminer") + " "}
