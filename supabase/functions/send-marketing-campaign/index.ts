@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import sanitizeHtml from "npm:sanitize-html@2.13.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,6 +19,24 @@ function renderTemplate(html: string, vars: Record<string, string>) {
 
 function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+}
+
+// Sanitize merchant-authored HTML before adding escaped customer variables.
+// URL protocols, event-handler attributes, scripts and embedded documents are blocked.
+function safeEmailHtml(value: string): string {
+  return sanitizeHtml(value, {
+    allowedTags: ["div","p","span","strong","b","em","i","u","a","br","hr","h1","h2","h3","h4","ul","ol","li","table","thead","tbody","tr","td","th","img","blockquote","small"],
+    allowedAttributes: {
+      "*": ["style", "class", "align", "width", "height"],
+      a: ["href", "title", "target", "rel", "style"],
+      img: ["src", "alt", "width", "height", "style"],
+    },
+    allowedSchemes: ["https","mailto"],
+    allowedSchemesByTag: { img: ["https"] },
+    allowProtocolRelative: false,
+    disallowedTagsMode: "discard",
+    enforceHtmlBoundary: true,
+  });
 }
 
 function appendSignatureAndFooter(
@@ -113,7 +132,7 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const { boutique_id, name, kind, subject, body_html, body_blocks, segment, promo_code, test_recipient } = body ?? {};
-    if (!boutique_id || !subject || !body_html) {
+    if (!boutique_id || typeof subject !== "string" || typeof body_html !== "string" || !subject.trim() || !body_html.trim() || subject.length > 200 || body_html.length > 100000) {
       return new Response(JSON.stringify({ error: "Paramètres manquants" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -133,12 +152,16 @@ Deno.serve(async (req) => {
       });
     }
 
+    const sanitizedBody = safeEmailHtml(body_html);
+    if (!sanitizedBody.trim()) throw new Error("email_html_invalid");
+
     // Fetch sender + marketing settings (shared by test + bulk)
     const { data: settings } = await admin.from("boutique_email_settings")
       .select("from_name, marketing_from_address, marketing_signature, marketing_footer_links")
       .eq("boutique_id", boutique_id).maybeSingle();
-    const fromName = settings?.from_name || boutique.name || "Boutique";
-    const fromAddress = settings?.marketing_from_address || undefined;
+    const fromName = String(settings?.from_name || boutique.name || "Boutique").replace(/[\r\n]/g, " ").slice(0, 100);
+    const proposedFromAddress = settings?.marketing_from_address;
+    const fromAddress = typeof proposedFromAddress === "string" && /^[^\\s@<>\\r\\n]+@[^\\s@<>\\r\\n]+\\.[^\\s@<>\\r\\n]+$/.test(proposedFromAddress) ? proposedFromAddress : undefined;
     const signature = settings?.marketing_signature ?? null;
     const footerLinks = (settings?.marketing_footer_links as Record<string, string> | null) ?? null;
 
@@ -156,7 +179,7 @@ Deno.serve(async (req) => {
         boutique_name: escapeHtml(boutique.name),
         promo_code: promo_code ?? "TESTCODE",
       };
-      const html = appendSignatureAndFooter(renderTemplate(body_html, vars), {
+      const html = appendSignatureAndFooter(renderTemplate(sanitizedBody, vars), {
         signature, footerLinks, boutiqueName: boutique.name, unsubLink,
       });
       const subj = `[TEST] ${renderTemplate(subject, vars)}`;
@@ -214,7 +237,7 @@ Deno.serve(async (req) => {
       const vars = {
         first_name: escapeHtml((r.full_name ?? "").split(" ")[0] ?? ""),
         full_name: escapeHtml(r.full_name ?? ""),
-        boutique_name: boutique.name,
+        boutique_name: escapeHtml(boutique.name),
         promo_code: escapeHtml(String(promo_code ?? "")),
       };
       const html = appendSignatureAndFooter(renderTemplate(body_html, vars), {
@@ -251,8 +274,8 @@ Deno.serve(async (req) => {
       recipients: recipients.length, sent, failed,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
-    console.error("send-marketing-campaign error", e);
-    return new Response(JSON.stringify({ error: (e as Error).message }), {
+    console.error("send-marketing-campaign error", e instanceof Error ? e.name : "unknown");
+    return new Response(JSON.stringify({ error: "campaign_send_failed" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
