@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
-import { ArrowLeft, ArrowUpRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import PublicPageLayout from "@/components/layout/PublicPageLayout";
 import { Link } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const HOME="/bib-talent";
-const updated="30 octobre 2026";
+const updated="2 novembre 2026";
 const contact="contact@brand-in-a-box.space";
 const privacy="privacy@brand-in-a-box.space";
 
@@ -29,7 +29,7 @@ export function TalentMentions() {
  return <Layout title="Mentions légales — BIB Talent" subtitle="Informations concernant le site de présentation du programme BIB Talent.">
   <section><h2>Le site et son objet</h2><p>BIB Talent est une initiative du projet <strong>Brand-in-a-Box (BIB)</strong>. Cette page présente un programme d'exploration, d'échanges et de contribution à la construction de BIB. Ce site n'est ni une boutique en ligne, ni une interface de paiement.</p></section>
   <section><h2>Édition et contact</h2><p>Marque et projet présentés : <strong>Brand-in-a-Box — BIB Talent</strong>. Contact de l'équipe éditoriale : <a href={"mailto:"+contact}>{contact}</a>.</p><p>L'identification juridique complète de l'éditeur (personne exploitante, forme juridique si constituée, adresse et numéro d'immatriculation le cas échéant) doit être complétée par le responsable du projet avant toute diffusion institutionnelle définitive. Aucune immatriculation, capital social ou adresse de siège n'est affirmé ici sans vérification.</p></section>
-  <section><h2>Hébergement</h2><p>La page BIB Talent est actuellement publiée au moyen du service <a href="https://lovable.dev" target="_blank" rel="noopener noreferrer">Lovable</a>. Les interactions du formulaire se déroulent sur un service distinct de Google.</p></section>
+  <section><h2>Hébergement</h2><p>La page BIB Talent est actuellement publiée au moyen du service <a href="https://lovable.dev" target="_blank" rel="noopener noreferrer">Lovable</a>. Les manifestations d’intérêt sont reçues directement par les services sécurisés de la plateforme BIB, sans passer par Google Forms.</p></section>
   <section><h2>Propriété intellectuelle</h2><p>Les textes, éléments graphiques et signes distinctifs de BIB Talent sont présentés pour informer sur le programme. Toute réutilisation externe doit être autorisée par leurs titulaires de droits.</p></section>
   <section><h2>Nous contacter</h2><p>Pour une question concernant le programme ou les contenus : <a href={"mailto:"+contact}>{contact}</a>. Pour les données personnelles : <a href={"mailto:"+privacy}>{privacy}</a>.</p></section>
  </Layout>;
@@ -49,9 +49,9 @@ export function TalentConfidentialite() {
 
 export function TalentCookies() {
  return <Layout title="Cookies — BIB Talent" subtitle="Les informations liées aux traceurs et aux services externes de la page BIB Talent.">
-  <section><h2>Un site de présentation, pas une boutique</h2><p>Le site public BIB Talent présente le programme et renvoie vers un formulaire externe. Il n'affiche ni panier, ni paiement, ni connexion à un espace client. Les mentions relatives aux cookies d'une boutique, aux abonnements ou aux sessions marchandes ne concernent donc pas ce parcours.</p></section>
+  <section><h2>Un site de présentation, pas une boutique</h2><p>Le site public BIB Talent présente le programme et contient un formulaire intégré. Il n'affiche ni panier, ni paiement, ni connexion à un espace client. Les mentions relatives aux cookies d'une boutique, aux abonnements ou aux sessions marchandes ne concernent donc pas ce parcours.</p></section>
   <section><h2>Fonctionnement de la page</h2><p>Les technologies nécessaires à l'affichage de la page peuvent inclure du stockage technique utilisé par l'hébergement et par votre navigateur. La nouvelle présentation animée s'exécute localement dans la page : elle ne charge pas, à elle seule, de lecteur vidéo d'une plateforme tierce.</p></section>
-  <section><h2>Google Forms</h2><p>Le bouton « Rejoindre BIB Talent » ouvre Google Forms dans un autre onglet. Google peut alors appliquer ses propres cookies ou technologies similaires, conformément aux règles et paramètres de ses services. <a href="https://policies.google.com/technologies/cookies?hl=fr" target="_blank" rel="noopener noreferrer">Informations Google sur les cookies <ArrowUpRight className="inline" size={13}/></a>.</p></section>
+  <section><h2>Formulaire BIB Talent</h2><p>Le formulaire est intégré au site : le bouton « Rejoindre BIB Talent » fait défiler la page jusqu’aux champs de candidature. Aucun formulaire Google n’est ouvert. Les données de candidature sont soumises au serveur BIB sans stockage public de leur contenu.</p></section>
   <section><h2>Mesure d'audience</h2><p>Cette page ne présente actuellement aucun panneau de gestion de cookies statistiques ou publicitaires. Tout ajout de traceurs non essentiels nécessitera une vérification technique, une mise à jour de cette information et, lorsque requis, un mécanisme de consentement préalable.</p></section>
   <section><h2>Vos choix</h2><p>Vous pouvez contrôler le stockage des cookies dans les paramètres de votre navigateur. Pour nous signaler un traceur inattendu ou poser une question : <a href={"mailto:"+privacy}>{privacy}</a>.</p></section>
  </Layout>;
