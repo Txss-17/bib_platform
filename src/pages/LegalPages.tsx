@@ -80,12 +80,12 @@ export function CGU() {
     <LegalShell
       eyebrow={translateUi("Légal")}
       title={translateUi("Conditions Générales d'Utilisation")}
-      updated="septembre 2026"
+      updated="2 novembre 2026"
     >
       <h2>{translateUi("1. Objet et champ d'application")}</h2>
       <p>
         {translateUi(
-          "Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de la marketplace Brand-in-a-Box (« la Marketplace »), éditée et opérée par Brand-in-a-Box SAS (« BIB »), par tout Utilisateur, Marchand ou Client.",
+          "Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de la marketplace Brand-in-a-Box (« la Marketplace »), opérée sous la marque Brand-in-a-Box (« BIB »), par l'entité éditrice à identifier dans les mentions légales, par tout Utilisateur, Marchand ou Client.",
         )}
       </p>
       <p>
@@ -187,7 +187,7 @@ export function CGU() {
       <h2>{translateUi("7. Propriété intellectuelle")}</h2>
       <p>
         {translateUi(
-          "La marque Brand-in-a-Box, le code source et les algorithmes nécessaires à l'exploitation de la Marketplace sont exploités par BIB sous licence concédée par BIB Tech SAS, société sœur du Groupe BIB. Aucune disposition des CGU ne confère à l'Utilisateur un droit de propriété intellectuelle sur ces éléments. Toute reproduction, extraction ou réutilisation non autorisée est interdite.",
+          "Les marques, codes et créations exploités sur la Marketplace sont protégés dans la mesure des droits détenus par BIB ou des licences dont elle dispose. Les présentes CGU ne transfèrent aucun droit de propriété intellectuelle sur ces éléments. Toute reproduction ou réutilisation non autorisée demeure interdite.",
         )}
       </p>
       <p>
@@ -229,7 +229,10 @@ export function CGU() {
           "BIB ne peut être tenue responsable des contenus, produits ou services proposés par les Marchands, ni de leurs manquements, sous réserve des cas de prise en charge prévus par les CGV. BIB met en œuvre des moyens raisonnables pour la sécurité de la Marketplace, sans garantir l'absence totale d'incident technique.",
         )}
       </p>
-      <h2>{translateUi("12. Données personnelles")}</h2>
+      <h2>11 bis. Transparence des fonctionnalités numériques</h2>
+      <p>Les outils de génération de boutique, d'assistance automatisée et de création de publicités peuvent utiliser des services techniques tiers. L'utilisateur conserve la responsabilité de vérifier les contenus proposés par ces outils, les droits de propriété intellectuelle, les informations commerciales et la conformité des publicités avant toute diffusion. Une création de brouillon publicitaire ne constitue ni une mise en ligne d'annonce ni une dépense engagée.</p>
+      <p>Les demandes d'assistance peuvent être orientées vers un support humain. L'ouverture d'un ticket à partir du chat requiert une confirmation positive distincte. Le refus de cette transmission n'empêche pas la poursuite de la conversation.</p>
+            <h2>{translateUi("12. Données personnelles")}</h2>
       <p>
         {translateUi(
           "Le traitement des données personnelles est décrit dans la",
@@ -239,10 +242,11 @@ export function CGU() {
         </a>
         {translateUi(", conformément au RGPD.")}
       </p>
-      <h2>{translateUi("13. Modification des CGU")}</h2>
+      <p>Les champs et documents de création de compte informent sur les traitements indispensables et présentent les textes contractuels pertinents. Les abonnements, emails promotionnels, sondages ou traceurs facultatifs ne doivent pas être activés par une simple acceptation globale des CGU. Les détails figurent dans la <a href="/donnees-et-consentements">charte des données et consentements</a>.</p>
+            <h2>{translateUi("13. Modification des CGU")}</h2>
       <p>
         {translateUi(
-          "BIB peut modifier les CGU à tout moment. Les Utilisateurs sont informés de toute modification substantielle ; la poursuite de l'utilisation de la Marketplace vaut acceptation des CGU modifiées.",
+          "BIB peut mettre à jour les CGU pour tenir compte des évolutions techniques, commerciales ou légales. Toute modification substantielle est portée à la connaissance des utilisateurs concernés ; lorsque la réglementation impose une nouvelle acceptation contractuelle, elle est recueillie avant l'application des nouvelles conditions.",
         )}
       </p>
       <h2>{translateUi("14. Droit applicable")}</h2>
@@ -265,7 +269,7 @@ export function CGV() {
     <LegalShell
       eyebrow={translateUi("Légal")}
       title={translateUi("Conditions Générales de Vente")}
-      updated="septembre 2026"
+      updated="2 novembre 2026"
     >
       <h2>{translateUi("1. Objet et champ d'application")}</h2>
       <p>
@@ -463,7 +467,10 @@ export function CGV() {
           "BIB, opérateur et intermédiaire et non vendeur, ne peut être tenue responsable des manquements du Marchand relatifs à la conformité, à la description ou à la disponibilité des produits, ni de ses obligations de garantie légale. Son rôle dans l'organisation de l'expédition peut engager sa responsabilité dans les conditions prévues par le Code des transports et ses contrats logistiques, sans se substituer à celle du Marchand au titre de la vente.",
         )}
       </p>
-      <h2>{translateUi("13. Réclamations et médiation")}</h2>
+      <h2>12 bis. Informations et données liées à la commande</h2>
+      <p>Avant la commande, le client doit pouvoir identifier le marchand vendeur, les caractéristiques essentielles du produit, le prix total, les frais éventuels, la livraison, le droit de rétractation et les garanties. Une confirmation explicite de l'obligation de paiement doit intervenir avant la finalisation, conformément aux règles applicables.</p>
+      <p>Les informations utiles à la commande sont partagées avec le marchand, BIB et les partenaires de paiement ou de livraison dans la mesure strictement nécessaire. Les communications transactionnelles ne valent pas abonnement à des messages publicitaires. Consultez la <a href="/confidentialite">confidentialité</a> et la <a href="/donnees-et-consentements">charte des consentements</a>.</p>
+            <h2>{translateUi("13. Réclamations et médiation")}</h2>
       <p>
         {translateUi(
           "En cas de litige, le Client contacte en priorité le Marchand, puis le service client BIB. À défaut de résolution amiable, il peut recourir gratuitement à un médiateur de la consommation (articles L. 616-1 et suivants du Code de la consommation).",
