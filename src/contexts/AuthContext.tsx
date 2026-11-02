@@ -266,7 +266,7 @@ export function AuthProvider({
       email: email.trim(),
       password,
       options: {
-        data: { full_name: fullName.trim(), account_type: "store", privacy_notice_version: "store-signup-v1", privacy_consent_given_at: new Date().toISOString() },
+        data: { full_name: fullName.trim(), account_type: "store", privacy_notice_version: "2026-11-02", privacy_notice_acknowledged_at: new Date().toISOString() },
       },
     });
     return { data: { user: data.user, session: data.session }, error };
