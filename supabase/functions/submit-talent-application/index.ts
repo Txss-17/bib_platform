@@ -3,6 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const ALLOWED_HOSTS = new Set([
   "brand-in-a-box.space", "www.brand-in-a-box.space",
   "talent.brand-in-a-box.space", "bib-platform.lovable.app",
+  "bib-talent.lovable.app",
 ]);
 const allowedPoles = new Set([
   "product_engineering", "marketplace", "communication",
