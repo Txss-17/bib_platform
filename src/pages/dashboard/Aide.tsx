@@ -19,6 +19,9 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -28,56 +31,16 @@ import {
 import { PlatformTourLauncher } from "@/components/tour/PlatformTour";
 
 const faqItems = [
-  {
-    get question() {
-      return translateUi("Comment créer une boutique ?");
-    },
-    get answer() {
-      return translateUi(
-        "Rendez-vous dans Boutiques, cliquez sur « Créer une boutique », choisissez un template et personnalisez-le avec vos produits et votre branding.",
-      );
-    },
-  },
-  {
-    get question() {
-      return translateUi("Comment ajouter des produits à ma boutique ?");
-    },
-    get answer() {
-      return translateUi(
-        "Allez dans Catalogue fournisseur, parcourez les références pré-validées et importez celles que vous souhaitez. Vous définissez ensuite votre marge et la boutique cible.",
-      );
-    },
-  },
-  {
-    get question() {
-      return translateUi("Quand et comment suis-je payé ?");
-    },
-    get answer() {
-      return translateUi(
-        "Les versements sont déclenchés tous les 15 jours sur l'IBAN configuré dans Paramètres > Paiement. Frais logistiques déjà inclus dans vos prix.",
-      );
-    },
-  },
-  {
-    get question() {
-      return translateUi("Comment suivre mes commandes ?");
-    },
-    get answer() {
-      return translateUi(
-        "La section Commandes affiche tout en temps réel (en attente, validées, expédiées, livrées). Une notification sonore retentit à chaque nouvelle vente.",
-      );
-    },
-  },
-  {
-    get question() {
-      return translateUi("Comment modifier mon mot de passe ?");
-    },
-    get answer() {
-      return translateUi(
-        "Paramètres > Sécurité, puis « Modifier » à côté de Mot de passe. Vous recevrez un email pour le réinitialiser.",
-      );
-    },
-  },
+  { question: "Quand puis-je ouvrir une boutique BIB ?", answer: "L'ouverture commerciale des comptes marchands est progressive. Les pages publiques indiquent si les inscriptions sont encore en préparation ; l'accès à une démonstration ne constitue pas une boutique activée." },
+  { question: "Pourquoi le catalogue fournisseur est-il vide ?", answer: "BIB a retiré les produits de démonstration. Seules des fiches réelles provenant des fournisseurs et ayant franchi les étapes de validation dans BIB Intranet pourront être proposées aux marchands." },
+  { question: "Comment créer et personnaliser ma boutique ?", answer: "Dans Boutiques, configurez les informations du vendeur, les pages, le logo, le menu et l'aperçu. Les contenus proposés par une IA doivent être vérifiés ; une boutique ne devient pas automatiquement publique." },
+  { question: "Quand puis-je activer un produit ?", answer: "Après qualification du fournisseur, contrôle qualité, validation des éventuels échantillons et disponibilité vérifiée. Une fiche importée n'est pas automatiquement autorisée à la vente." },
+  { question: "Qui est vendeur juridique d'une commande ?", answer: "Vous, en tant que marchand identifié sur la boutique. BIB agit comme intermédiaire et organise la logistique au moyen de ses partenaires ; vos obligations légales envers le client demeurent." },
+  { question: "Puis-je expédier directement au client ?", answer: "Non dans le modèle BIB : l'expédition directe marchand → client est contractuellement exclue ; BIB coordonne les livraisons via les partenaires opérationnels autorisés." },
+  { question: "Comment fonctionne le SAV et l'escalade après 48 heures ?", answer: "Le marchand répond en premier aux réclamations, remboursements et garanties. Pour les marchands disposant de l'option assurance BIB applicable, une absence de réponse pendant 48 heures peut déclencher une prise en charge opérationnelle par BIB, sans transférer les garanties légales." },
+  { question: "Puis-je préparer des publicités dans BIB ?", answer: "Une proposition ou un brouillon n'est pas une publicité publiée. La diffusion exige une connexion officielle au compte publicitaire, la validation du contenu et une autorisation explicite avant toute dépense." },
+  { question: "Quelles données sont conservées ?", answer: "Les données métier doivent être enregistrées sur les services serveur autorisés, pas dans le stockage local du navigateur. L'information et les éventuels consentements facultatifs sont présentés avant les soumissions ; consultez le pack légal." },
+  { question: "Comment solliciter une aide humaine ?", answer: "Utilisez le formulaire de contact ci-contre ou les tickets du support. Une confirmation n'est affichée qu'après enregistrement effectif, et l'assistant IA ne doit pas créer de ticket sans votre accord." },
 ];
 
 const resources = [
@@ -112,20 +75,41 @@ const resources = [
 
 export default function Aide() {
   useLanguage();
+  const { user } = useAuth();
+  const [consent, setConsent] = useState(false);
   const [contactMessage, setContactMessage] = useState("");
   const [contactSubject, setContactSubject] = useState("");
   const [sending, setSending] = useState(false);
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (sending) return;
+    if (!user?.id || !user.email) return toast.error("Connexion requise pour créer une demande d'aide.");
+    if (!consent) return toast.error("Veuillez confirmer l'utilisation de vos données pour cette demande.");
+    if (contactSubject.trim().length < 4 || contactSubject.trim().length > 160 ||
+        contactMessage.trim().length < 10 || contactMessage.trim().length > 5000) {
+      return toast.error("Le sujet doit comporter 4 à 160 caractères et le message 10 à 5 000 caractères.");
+    }
     setSending(true);
-    setTimeout(() => {
-      toast.success(translateUi("Message envoyé"), {
-        description: translateUi("Notre équipe vous répond sous 24h ouvrées."),
+    try {
+      const { error } = await supabase.from("support_tickets").insert({
+        user_id: user.id,
+        source: "dashboard_form",
+        subject: contactSubject.trim(),
+        message: contactMessage.trim(),
+        contact_email: user.email.toLowerCase(),
+        consent_given_at: new Date().toISOString(),
+        consent_notice_version: "support-v1",
+      } as never);
+      if (error) throw error;
+      toast.success("Demande de support enregistrée", {
+        description: "Elle est accessible dans vos tickets BIB.",
       });
       setContactMessage("");
       setContactSubject("");
-      setSending(false);
-    }, 400);
+      setConsent(false);
+    } catch {
+      toast.error("La demande n'a pas été enregistrée. Vérifiez votre connexion et réessayez.");
+    } finally { setSending(false); }
   };
 
   return (
@@ -172,7 +156,7 @@ export default function Aide() {
         <div className="space-y-6">
           <SectionCard
             title={translateUi("Nous contacter")}
-            description={translateUi("Réponse sous 24h en jours ouvrés")}
+            description={translateUi("Un ticket enregistré dans le support BIB, sans délai de réponse garanti.")}
             icon={<MessageCircle className="w-4 h-4" />}
           >
             <form onSubmit={handleContactSubmit} className="space-y-3">
@@ -204,7 +188,14 @@ export default function Aide() {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full gap-2" disabled={sending}>
+              <label className="flex items-start gap-2 rounded-md border border-border/70 p-3 text-xs leading-5 text-muted-foreground">
+                <Checkbox className="mt-0.5" checked={consent} onCheckedChange={value => setConsent(value === true)}
+                  aria-label="J'accepte que BIB traite ma demande de support" />
+                <span>J'accepte que BIB utilise mes informations et mon message pour traiter cette demande.{" "}
+                  <Link to="/confidentialite" className="underline">Confidentialité</Link>
+                </span>
+              </label>
+                            <Button type="submit" className="w-full gap-2" disabled={sending || !consent}>
                 <Mail className="w-4 h-4" />
                 {sending
                   ? translateUi("Envoi…")
