@@ -130,6 +130,7 @@ export function FloatingSupportButton({
           action: "create_ticket",
           confirmed: true,
           offer_id: offerId,
+          turn_token: turnToken,
           messages: messages.filter(msg => msg.role === "user").slice(-16),
           context: { source, boutique_id: boutiqueId ?? null },
         },
