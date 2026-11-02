@@ -42,64 +42,23 @@ function sanitizeIds(value: unknown): string[] {
   );
 }
 
-function readStorageIds(
-  key: string,
-): string[] {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    const raw = localStorage.getItem(key);
-
-    if (!raw) {
-      return [];
-    }
-
-    return sanitizeIds(JSON.parse(raw));
-  } catch {
-    return [];
-  }
+// Guest favorites exist only while this page is open.
+// Signed-in users' favorites are stored in Supabase under RLS.
+const guestMemory = new Map<string,string[]>();
+function readStorageIds(key: string): string[] {
+  return guestMemory.get(key) ?? [];
 }
-
-function writeStorageIds(
-  key: string,
-  ids: string[],
-) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    localStorage.setItem(
-      key,
-      JSON.stringify(
-        Array.from(new Set(ids)),
-      ),
-    );
-  } catch {
-    // localStorage peut être indisponible ou saturé.
-  }
+function writeStorageIds(key: string, ids: string[]) {
+  guestMemory.set(key, [...new Set(ids)]);
 }
-
 function removeStorageKey(key: string) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    localStorage.removeItem(key);
-  } catch {
-    // Rien à faire si le stockage local n'est pas accessible.
-  }
+  guestMemory.delete(key);
 }
 
 /**
  * Lit les favoris produits visiteurs.
  *
- * Une ancienne installation de Linksy utilisait
- * "linksy-favorites". Cette valeur est migrée vers
- * la nouvelle clé BIB Store.
+ * Guest favorites are not migrated from local browser storage.
  */
 function readGuestProductFavorites(): string[] {
   const current = readStorageIds(
@@ -170,11 +129,11 @@ function clearGuestFavorites() {
  * Gestion centralisée des favoris du BIB Store.
  *
  * Produits :
- * - visiteur : localStorage
+ * - visiteur : mémoire volatile, aucune persistance navigateur
  * - compte : customer_product_favorites
  *
  * Boutiques :
- * - visiteur : localStorage
+ * - visiteur : mémoire volatile, aucune persistance navigateur
  * - compte : customer_boutique_favorites
  *
  * Les politiques RLS côté Supabase garantissent qu'un
