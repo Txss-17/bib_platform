@@ -1,8 +1,7 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-const volatileSessionId = typeof crypto !== "undefined" && crypto.randomUUID
-  ? crypto.randomUUID() : "not-tracked";
+const volatileSessionId = crypto.randomUUID();
 function getSessionId(): string { return volatileSessionId; }
 
 type EventType = "impression" | "cta_click" | "dwell" | "scroll_depth" | "conversion";
