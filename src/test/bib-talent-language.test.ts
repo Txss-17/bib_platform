@@ -18,8 +18,9 @@ describe("BIB Talent bilingual content", () => {
     expect(source).not.toContain("<video");
     expect(source).toContain("<BibTalentApplicationForm />");
     expect(source).toContain("setShowApplication(true)");
-    expect(source).toContain("{showApplication && (");
-    expect(source).toContain("scrollIntoView");
+    expect(source).toContain("<Dialog open={showApplication}");
+    expect(source).toContain("<DialogContent");
+    expect(source).not.toContain("scrollIntoView");
     expect(source).toContain("max-w-6xl");
     expect(source).not.toContain("docs.google.com/forms");
   });
