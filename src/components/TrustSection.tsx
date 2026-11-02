@@ -48,32 +48,9 @@ const TrustSection = () => {
               {t("trust.desc")}
             </p>
 
-            <div className="grid grid-cols-3 gap-6">
-              <div>
-                <p className="font-display text-3xl lg:text-4xl font-bold text-foreground">
-                  99.9%
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {t("trust.uptime")}
-                </p>
-              </div>
-              <div>
-                <p className="font-display text-3xl lg:text-4xl font-bold text-bib-gold">
-                  256-bit
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {t("trust.encryption")}
-                </p>
-              </div>
-              <div>
-                <p className="font-display text-3xl lg:text-4xl font-bold text-foreground">
-                  24/7
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {t("trust.monitoring")}
-                </p>
-              </div>
-            </div>
+            <p className="mt-5 text-sm leading-6 text-muted-foreground">
+              Les contrôles et indicateurs BIB sont présentés uniquement lorsqu'ils sont vérifiés et mesurés.
+            </p>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
