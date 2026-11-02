@@ -136,7 +136,7 @@ export function CGU() {
       <h3>{translateUi("4.2 Compte Client")}</h3>
       <p>
         {translateUi(
-          "La création d'un Compte Client permet d'accéder à la Marketplace. Les avantages du programme BIB Abonné (points, cartes cadeaux, boutiques favorites, suivi de commandes) sont conditionnés à la souscription de l'abonnement BIB Abonné.",
+          "La création d'un compte client facilite l'accès à l'historique et aux services disponibles. L'achat auprès d'un marchand ne suppose pas de souscrire une offre facultative sauf condition clairement annoncée avant la commande.",
         ) + " "}
         <strong>
           {translateUi(
@@ -165,7 +165,7 @@ export function CGU() {
         </li>
         <li>
           {translateUi(
-            "ne pas contourner les règles du programme de points et de recyclage, notamment par la duplication d'opérations ou la falsification de données ;",
+            "ne pas falsifier de commandes, de paiements, de documents ou de données opérationnelles ;",
           )}
         </li>
         <li>
@@ -195,14 +195,6 @@ export function CGU() {
           "Les contenus mis en ligne par un Marchand (visuels, descriptions) demeurent sa propriété ou celle des tiers titulaires des droits. Le Marchand garantit disposer des droits nécessaires à leur utilisation sur la Marketplace.",
         )}
       </p>
-      <h2>
-        {translateUi("8. Programme de points, recyclage et cartes cadeaux")}
-      </h2>
-      <p>
-        {translateUi(
-          "L'utilisation du programme de points, du dispositif de recyclage B.I.B Circular et des cartes cadeaux est soumise à leurs conditions propres. Les points ne constituent ni une monnaie ni un moyen de paiement général.",
-        )}
-      </p>
       <h2>{translateUi("9. Rôle de BIB dans les transactions")}</h2>
       <p>
         {translateUi(
@@ -214,7 +206,7 @@ export function CGU() {
       <h3>{translateUi("10.1 Par BIB")}</h3>
       <p>
         {translateUi(
-          "BIB peut suspendre ou résilier l'accès d'un Utilisateur en cas de manquement aux CGU, de fraude avérée ou suspectée (notamment dans le programme de points), ou de non-respect des conditions applicables aux catégories de produits régulées. Sauf urgence ou obligation légale, la décision est précédée d'une notification.",
+          "BIB peut suspendre ou résilier l'accès d'un Utilisateur en cas de manquement aux CGU, de fraude avérée ou suspectée, ou de non-respect des conditions applicables aux produits réglementés. Sauf urgence ou obligation légale, la décision est précédée d'une information appropriée.",
         )}
       </p>
       <h3>{translateUi("10.2 Par l'Utilisateur")}</h3>
@@ -455,12 +447,6 @@ export function CGV() {
           )}
         </li>
       </ul>
-      <h2>{translateUi("11. Programme de fidélité et cartes cadeaux")}</h2>
-      <p>
-        {translateUi(
-          "Selon l'éligibilité du Client et des emballages concernés, les commandes peuvent générer des points de fidélité convertibles en cartes cadeaux. Ces points ne constituent ni une monnaie ni un moyen de paiement.",
-        )}
-      </p>
       <h2>{translateUi("12. Responsabilité")}</h2>
       <p>
         {translateUi(
