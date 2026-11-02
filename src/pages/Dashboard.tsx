@@ -305,7 +305,7 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
       <OnboardingWizard />
-      <PlatformTour autoOpen availablePersonas={["seller"]} />
+      {/* Discover features by taking actual actions; no mandatory opening tour. */}
 
       <div className="mx-auto w-full max-w-[1600px] space-y-7 pb-10">
         {/* En-tête */}
