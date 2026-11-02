@@ -60,6 +60,7 @@ interface SupplierProductRow {
   image_url: string | null;
   is_active: boolean;
   base_price: number | string;
+  max_margin_percent: number;
 }
 
 interface CartLine {
@@ -344,7 +345,7 @@ async function createStorefrontCheckout(
 
   const { data: supplierData, error: supplierError } = await supabase
     .from("supplier_products")
-    .select("id, name, image_url, is_active, base_price")
+    .select("id, name, image_url, is_active, base_price, max_margin_percent")
     .in("id", supplierIds);
 
   if (supplierError) throw supplierError;
@@ -370,6 +371,12 @@ async function createStorefrontCheckout(
       );
     }
 
+    const allowedMax = Number(supplier.base_price) * (1 + Number(supplier.max_margin_percent) / 100);
+    if (!Number.isFinite(allowedMax) || Number(supplier.base_price) <= 0 ||
+        !Number.isFinite(Number(supplier.max_margin_percent)) ||
+        Number(product.public_price) > allowedMax + 0.02) {
+      throw new CheckoutError("Prix boutique hors marge fournisseur autorisée", 409);
+    }
     const price = getCurrentBasePrice(product);
     const unitAmount = Math.round(price * 100);
     if (!Number.isFinite(Number(supplier.base_price)) ||
