@@ -24,6 +24,21 @@ describe("BIB Talent bilingual content", () => {
     expect(source).toContain("max-w-6xl");
     expect(source).not.toContain("docs.google.com/forms");
   });
+  it("removes retention duration from the form and requires a separate future-opportunity opt-in", () => {
+    const form = readFileSync(new URL("../components/talent/BibTalentApplicationForm.tsx", import.meta.url), "utf8");
+    const endpoint = readFileSync(new URL("../../supabase/functions/submit-talent-application/index.ts", import.meta.url), "utf8");
+    const notice = readFileSync(new URL("../pages/TalentLegal.tsx", import.meta.url), "utf8");
+    const migration = readFileSync(new URL("../../supabase/migrations/20261102170000_talent_future_opportunities_retention.sql", import.meta.url), "utf8");
+    expect(form).not.toContain("180 jours");
+    expect(form).not.toContain("180 days");
+    expect(form).toContain("future_opportunities_consent: futureConsent");
+    expect(form).toContain("checked={futureConsent}");
+    expect(endpoint).toContain("future_opportunities_consent === true ? 730 : 180");
+    expect(endpoint).toContain('future_opportunities_notice_version: body.future_opportunities_consent === true ? "talent-v2"');
+    expect(notice).toContain("deux ans");
+    expect(migration).toContain("future_opportunities_consent");
+  });
+
   it("validates and routes first-party Talent applications to RH", () => {
     const form = readFileSync(new URL("../components/talent/BibTalentApplicationForm.tsx", import.meta.url), "utf8");
     const submit = readFileSync(new URL("../../supabase/functions/submit-talent-application/index.ts", import.meta.url), "utf8");
