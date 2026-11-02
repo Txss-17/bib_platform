@@ -132,14 +132,14 @@ export default function APropos() {
             aria-hidden
           />
 
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32 relative">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20 relative">
             <div className="max-w-4xl">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/10 border border-bib-ivory/10 text-bib-ivory text-[11px] font-semibold uppercase tracking-[0.18em] mb-7">
                 <Globe2 className="h-3.5 w-3.5 text-bib-gold" />
                 Brand-In-A-Box
               </div>
 
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-7xl font-bold leading-[1.02] max-w-4xl">
+              <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold leading-[1.02] max-w-4xl">
                 {translateUi("Construire des marques")}
                 <span className="text-bib-gold">
                   {" "}
@@ -180,7 +180,7 @@ export default function APropos() {
         </section>
 
         {/* Intro */}
-        <section className="bg-background py-20 sm:py-28">
+        <section className="bg-background py-12 sm:py-16">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-[1fr_1.2fr] gap-12 lg:gap-20 items-start">
               <div>
@@ -188,7 +188,7 @@ export default function APropos() {
                   {translateUi("Pourquoi BIB")}
                 </span>
 
-                <h2 className="mt-3 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
+                <h2 className="mt-3 font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
                   {translateUi(
                     "Lancer une marque ne devrait pas signifier tout faire seul.",
                   )}
@@ -219,14 +219,14 @@ export default function APropos() {
         </section>
 
         {/* Pillars */}
-        <section className="bg-card py-20 sm:py-28 border-y border-border">
+        <section className="bg-card py-12 sm:py-16 border-y border-border">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl mb-12">
               <span className="text-xs font-semibold uppercase tracking-[0.18em] text-bib-gold">
                 {translateUi("Notre approche")}
               </span>
 
-              <h2 className="mt-3 font-display text-3xl sm:text-4xl font-bold text-foreground leading-tight">
+              <h2 className="mt-3 font-display text-2xl sm:text-3xl font-bold text-foreground leading-tight">
                 {translateUi("Quatre principes structurent BIB.")}
               </h2>
             </div>
@@ -255,7 +255,7 @@ export default function APropos() {
         </section>
 
         {/* Verified */}
-        <section className="bg-brand-marine text-bib-ivory py-20 sm:py-28">
+        <section className="bg-brand-marine text-bib-ivory py-12 sm:py-16">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto text-center">
               <div className="mx-auto w-14 h-14 rounded-2xl bg-bib-gold/15 text-bib-gold flex items-center justify-center mb-6">
@@ -266,7 +266,7 @@ export default function APropos() {
                 {translateUi("Verified by BIB")}
               </span>
 
-              <h2 className="mt-4 font-display text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
+              <h2 className="mt-4 font-display text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight">
                 {translateUi("Une vérification visible.")}
                 <br />
                 {translateUi("Une exigence réelle.")}
@@ -282,14 +282,14 @@ export default function APropos() {
         </section>
 
         {/* Ecosystem */}
-        <section className="bg-background py-20 sm:py-28">
+        <section className="bg-background py-12 sm:py-16">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl mb-12">
               <span className="text-xs font-semibold uppercase tracking-[0.18em] text-bib-gold">
                 {translateUi("L'écosystème")}
               </span>
 
-              <h2 className="mt-3 font-display text-3xl sm:text-4xl font-bold text-foreground">
+              <h2 className="mt-3 font-display text-2xl sm:text-3xl font-bold text-foreground">
                 {translateUi("Plusieurs acteurs. Une même infrastructure.")}
               </h2>
 
@@ -320,7 +320,7 @@ export default function APropos() {
         </section>
 
         {/* Vision */}
-        <section className="bg-card py-20 sm:py-28 border-t border-border">
+        <section className="bg-card py-12 sm:py-16 border-t border-border">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
               <div>
@@ -328,7 +328,7 @@ export default function APropos() {
                   {translateUi("Notre vision")}
                 </span>
 
-                <h2 className="mt-3 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
+                <h2 className="mt-3 font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
                   {translateUi("Commencer simplement.")}
                   <br />
                   {translateUi("Construire durablement.")}
@@ -362,11 +362,11 @@ export default function APropos() {
         </section>
 
         {/* CTA */}
-        <section className="bg-brand-marine text-bib-ivory py-20">
+        <section className="bg-brand-marine text-bib-ivory py-12">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl">
             <Users className="h-8 w-8 text-bib-gold mx-auto mb-5" />
 
-            <h2 className="font-display text-3xl sm:text-4xl font-bold leading-tight">
+            <h2 className="font-display text-2xl sm:text-3xl font-bold leading-tight">
               {translateUi("BIB est en construction.")}
               <br />
               <span className="text-bib-gold">
