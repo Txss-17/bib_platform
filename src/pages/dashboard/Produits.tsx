@@ -409,7 +409,6 @@ export default function Produits() {
     // initiale. Un produit sans stock doit avoir son échantillon validé.
     if (
       currentStatus !== "active" &&
-      !hasPhysicalStock &&
       sampleStatus !== "validated"
     ) {
       toast.error(
