@@ -76,7 +76,7 @@ export function PrelaunchSurvey() {
       const { data, error: requestError } = await supabase.functions.invoke("submit-prelaunch-survey", {
         body: {
           challenge: issue, solution,
-          role: wantsToBeMerchant ? "merchant" : "exploring",
+          role: "exploring", // Interest in becoming a merchant does not mean they are already one.
           wants_to_be_merchant: wantsToBeMerchant,
           preferred_launch_timing: wantsToBeMerchant ? launchTiming : null,
           locale: en ? "en" : "fr",
