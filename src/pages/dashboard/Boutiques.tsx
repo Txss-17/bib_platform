@@ -12,6 +12,7 @@ import {
   Plus,
   Settings2,
   Store,
+  Megaphone,
   Trash2,
   Truck,
 } from "lucide-react";
@@ -126,6 +127,10 @@ function BoutiqueCard({
           </Button>
         </div>
         <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+            <Link to={`/dashboard/marketing?tab=ads&boutiqueId=${encodeURIComponent(boutique.id)}`} className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline">
+              <Megaphone className="h-3.5 w-3.5 shrink-0" />{translateUi("Créer une publicité")}
+            </Link>
           {isPublished ? (
             <a href={publicPath} target="_blank" rel="noopener noreferrer" className="inline-flex min-w-0 items-center gap-1 text-[11px] font-medium text-primary hover:underline">
               <ExternalLink className="h-3.5 w-3.5 shrink-0" />{translateUi("Voir la boutique")}
@@ -133,6 +138,7 @@ function BoutiqueCard({
           ) : (
             <Link to={editPath} className="text-[11px] font-medium text-muted-foreground hover:text-primary">{translateUi("Préparer la publication")}</Link>
           )}
+          </div>
           <div className="flex items-center gap-1">
             <Button asChild type="button" variant="ghost" size="icon" className="h-8 w-8" title={translateUi("Analyses")}>
               <Link to={`/dashboard/boutiques/${boutique.id}/analytics`} aria-label={translateUi("Analyses de {v0}", { v0: boutique.name })}><ArrowRight className="h-4 w-4" /></Link>
