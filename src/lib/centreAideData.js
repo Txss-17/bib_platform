@@ -95,8 +95,8 @@ const faq = [
     items: [
       { q: "Comment suivre ma commande ?", a: "Munissez-vous de votre num\xE9ro de commande (format LKS26-XXXXXX) et de l'e-mail utilis\xE9 au paiement, puis ouvrez la page de suivi.", to: "/suivi-commande", ctaLabel: "Suivre ma commande" },
       { q: "Quels sont les d\xE9lais de livraison ?", a: "Les d\xE9lais d\xE9pendent du pays et du transporteur s\xE9lectionn\xE9 par la boutique. Une estimation s'affiche \xE0 l'\xE9tape livraison du checkout et un e-mail r\xE9capitule l'exp\xE9dition." },
-      { q: "Comment retourner un produit ?", a: "Contactez d'abord la boutique vendeuse via la page produit. Sans r\xE9ponse sous 48 h, la plateforme prend le relais via la proc\xE9dure d'escalade." },
-      { q: "Qui est responsable de ma commande ?", a: "Le marchand vendeur est responsable des ventes, retours et garanties. BIB coordonne la plateforme et la livraison par ses partenaires." },
+      { q: "Comment retourner un produit ?", a: "Contactez d'abord la boutique vendeuse via la page produit. En l'absence de r\xE9ponse du marchand sous 48 h, BIB peut intervenir suivant les conditions de l'assistance et de l'assurance souscrite." },
+      { q: "Qui est responsable de ma commande ?", a: "La boutique marchande est votre vendeur et reste responsable de la vente et du service apr\xE8s-vente. BIB coordonne la plateforme et la livraison avec ses partenaires logistiques." },
       { q: "Mon paiement a \xE9chou\xE9, que faire ?", a: "V\xE9rifiez votre carte (plafond, 3-D Secure) puis r\xE9essayez. Aucune commande n'est confirm\xE9e tant que le paiement n'est pas valid\xE9 \u2014 vous ne risquez pas de double d\xE9bit." }
     ]
   },
@@ -108,7 +108,7 @@ const faq = [
       { q: "Comment cr\xE9er ma premi\xE8re boutique ?", a: "Depuis le dashboard, cliquez \xAB Nouvelle boutique \xBB. Trois \xE9tapes : informations, produits, aper\xE7u. Le Brand Studio IA g\xE9n\xE8re ensuite votre identit\xE9 visuelle sur-mesure.", to: "/dashboard/boutiques", ctaLabel: "Cr\xE9er ma boutique" },
       { q: "Pourquoi l'\xE9chantillon Stripe est-il obligatoire ?", a: "Pour garantir la qualit\xE9 avant mise en ligne, chaque produit fournisseur doit passer une commande \xE9chantillon. Une fois valid\xE9e, le produit devient publiable." },
       { q: "Quand suis-je pay\xE9 ?", a: "Les reversements sont d\xE9clench\xE9s selon votre plan (Starter mensuel, Growth/Pro hebdomadaire) apr\xE8s p\xE9riode de r\xE9tention anti-litige. D\xE9tails dans Paiements.", to: "/dashboard/paiements", ctaLabel: "Voir mes paiements" },
-      { q: "Comment g\xE9rer un litige client ?", a: "Vous avez 48 h pour r\xE9pondre au client. Sans r\xE9solution, la plateforme prend la main et tranche selon nos conditions g\xE9n\xE9rales." },
+      { q: "Comment g\xE9rer un litige client ?", a: "Vous restez responsable du SAV, des retours et des garanties l\xE9gales. L'absence de r\xE9ponse sous 48 h peut d\xE9clencher une escalade BIB suivant les conditions applicables." },
       { q: "Puis-je inviter mon \xE9quipe ?", a: "Oui, dans \xC9quipe : 4 r\xF4les disponibles (Owner, Manager, Marketing, Support). Les limites de si\xE8ges d\xE9pendent de votre plan.", to: "/dashboard/equipe", ctaLabel: "Inviter mon \xE9quipe" },
       { q: "Comment supprimer ma boutique ?", a: "La suppression est bloqu\xE9e tant que vous avez des commandes ouvertes, des commandes r\xE9centes (< 30 j) ou du stock engag\xE9. Confirmez explicitement apr\xE8s v\xE9rification." }
     ]

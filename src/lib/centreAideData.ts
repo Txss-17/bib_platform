@@ -47,10 +47,52 @@ export const guideGroups: GuideGroup[] = [
     slug: "commandes-paiements", title: "Commandes, livraison et SAV", icon: CreditCard, tone: "info",
     intro: "Comprendre la répartition des responsabilités et les recours.",
     guides: [
-      { slug: "commande", title: "Comment consulter une commande ?", to: "/suivi-commande", desc: "Utilisez les références et accès réellement fournis.", long: "Après une commande effective, utilisez les informations de confirmation et l'interface de suivi disponibles. Aucun numéro de commande ou statut ne doit être inventé pour compléter un écran vide." },
-      { slug: "expedition", title: "Le marchand peut-il expédier directement ?", to: "/cgv", desc: "La logistique est organisée par BIB et ses partenaires.", long: "Dans le modèle contractuel BIB, l'expédition directe marchand → client n'est pas autorisée. L'acheminement est orchestré par BIB au moyen de partenaires logistiques habilités, selon la couverture et les services réellement disponibles." },
-      { slug: "retours", title: "Qui gère un retour ou un remboursement ?", to: "/cgv", desc: "Marchand vendeur en premier, BIB selon le cadre prévu.", long: "Le marchand vendeur traite en premier les réclamations, rétractations et garanties légales. Pour les profils bénéficiant de l'option d'assurance BIB applicable, une absence de réponse du marchand pendant 48 heures peut déclencher une reprise opérationnelle par BIB ; cela ne retire pas les droits du client ni les obligations légales du vendeur." },
-      { slug: "paiement", title: "Comment les paiements sont-ils sécurisés ?", to: "/confidentialite", desc: "Montants contrôlés sur le serveur et prestataires spécialisés.", long: "Le prix payé doit être recalculé et contrôlé côté serveur à partir des offres effectivement publiées. Les informations d'une carte ne doivent pas être enregistrées dans les formulaires BIB ; les opérations passent par le prestataire de paiement configuré." },
+      {
+        slug: "suivi-commande",
+        get title() {
+          return translateUi("Suivre une commande");
+        },
+        to: "/suivi-commande",
+        get desc() {
+          return translateUi("Numéro LKS26-XXXXXX + email.");
+        },
+        get long() {
+          return translateUi(
+            "Aucun compte requis : votre numéro de commande + l'email utilisé au paiement suffisent pour voir le statut en temps réel.",
+          );
+        },
+      },
+      {
+        slug: "reversements",
+        get title() {
+          return translateUi("Reversements vendeur");
+        },
+        to: "/dashboard/paiements",
+        get desc() {
+          return translateUi("Calendrier, factures, exports.");
+        },
+        get long() {
+          return translateUi(
+            "Reversements automatiques selon votre plan, après période de rétention anti-litige.",
+          );
+        },
+        requiresAuth: true,
+      },
+      {
+        slug: "litiges",
+        get title() {
+          return translateUi("Litiges & escalade 48h");
+        },
+        to: "/centre-aide/guide/litiges",
+        get desc() {
+          return translateUi("Procédure pas-à-pas.");
+        },
+        get long() {
+          return translateUi(
+            "Le vendeur reste responsable du litige. En l'absence de réponse sous 48 h, BIB peut prendre le relais selon les conditions de l'assistance ou de l'assurance souscrite.",
+          );
+        },
+      },
     ],
   },
   {
@@ -84,40 +126,327 @@ export const guideGroups: GuideGroup[] = [
 export type FaqItem = { q: string; a: string; to?: string; ctaLabel?: string };
 export type FaqCategory = { id: Persona["id"]; label: string; icon: React.ComponentType<{ className?: string }>; items: FaqItem[] };
 export const faq: FaqCategory[] = [
-  { id: "client", label: "Client", icon: Users, items: [
-    { q: "Puis-je commander sans compte ?", a: "Cela dépend des boutiques et du parcours de paiement effectivement ouverts. Avant toute commande, vérifiez l'identité du marchand vendeur, le prix complet, les frais et les conditions de livraison.", to: "/cgv", ctaLabel: "Conditions de vente" },
-    { q: "Comment retrouver une commande réelle ?", a: "Utilisez la confirmation envoyée après un paiement réussi et l'interface de suivi disponible. Aucun statut n'est fabriqué lorsque la commande n'existe pas.", to: "/suivi-commande", ctaLabel: "Suivre une commande" },
-    { q: "Qui répond à une réclamation ?", a: "Le marchand vendeur répond en premier. Les garanties légales restent à sa charge. Lorsque l'option d'assurance BIB s'applique, une absence de réponse pendant 48 heures peut entraîner une reprise opérationnelle par BIB.", to: "/cgv" },
-    { q: "Comment se déroule la livraison ?", a: "Les expéditions sont orchestrées par BIB avec ses partenaires autorisés ; l'envoi direct du marchand au client est exclu du modèle BIB. Les zones, frais et délais doivent être indiqués avant le paiement." },
-    { q: "Que faire si le paiement échoue ?", a: "Vérifiez le message du prestataire de paiement et évitez de renouveler une transaction dont le statut n'est pas confirmé. Le marchand ne doit pas expédier une commande tant que le paiement n'est pas vérifié côté serveur." },
-  ]},
-  { id: "vendeur", label: "Marchand", icon: Store, items: [
-    { q: "Quand pourrai-je créer ma boutique ?", a: "BIB est en phase de préparation de son lancement. Les accès marchands sont ouverts progressivement ; la page d'inscription indique si les créations de compte sont disponibles.", to: "/signup", ctaLabel: "État des inscriptions" },
-    { q: "Le catalogue fournisseur est vide : est-ce normal ?", a: "Oui. BIB n'affiche plus aucun produit de démonstration. Les références apparaîtront uniquement après qualification fournisseur, contrôle qualité et transmission autorisée depuis BIB Intranet." },
-    { q: "Comment personnaliser ma boutique ?", a: "Lorsque votre espace est ouvert, vous configurez les pages, le logo, les blocs visuels et l'aperçu. L'assistant IA peut aider à préparer une proposition, mais aucune publication ni droit d'utilisation n'est automatique.", to: "/dashboard/boutiques" },
-    { q: "Qui fixe les prix et reçoit les commandes ?", a: "Le marchand fixe ses conditions dans les limites contractuelles et demeure vendeur juridique. BIB contrôle côté serveur les prix lors du paiement et orchestre les prestations logistiques." },
-    { q: "Qui traite les retours et le SAV ?", a: "Le marchand est premier responsable ; l'option assurance BIB peut déclencher une reprise opérationnelle après 48 heures sans réponse, sans supprimer les obligations légales du vendeur." },
-    { q: "Puis-je diffuser des publicités depuis BIB ?", a: "Les outils peuvent servir à préparer une campagne. Une diffusion payante exige la configuration officielle du compte publicitaire concerné et votre autorisation expresse ; aucune dépense n'est déclenchée automatiquement." },
-    { q: "Mes données sont-elles enregistrées sur mon appareil ?", a: "Les données métier et les jetons d'authentification ne doivent pas être enregistrés dans le stockage local du navigateur. Les enregistrements durables sont prévus côté serveur, avec des droits limités au compte concerné.", to: "/donnees-et-consentements" },
-  ]},
-  { id: "fournisseur", label: "Fournisseur", icon: Boxes, items: [
-    { q: "Comment proposer des produits au catalogue BIB ?", a: "Soumettez une candidature et les documents de référence. Le pôle Fournisseurs instruit le dossier, Qualité/Audit contrôle l'éligibilité, puis la transmission vers la plateforme est autorisée seulement si les conditions sont remplies.", to: "/suppliers/apply", ctaLabel: "Proposer une candidature" },
-    { q: "Quels justificatifs sont nécessaires ?", a: "Ils dépendent des produits et des pays ciblés : identité professionnelle, fiches techniques, preuves d'origine, conformité et conditions logistiques pertinentes. Aucun dossier n'est considéré comme approuvé par simple dépôt." },
-    { q: "La validation dans l'Intranet garantit-elle une publication ?", a: "Non. Le référencement, la disponibilité fournisseur, les contrôles techniques et les conditions de publication doivent être vérifiés séparément. Un produit non qualifié reste absent du catalogue public." },
-    { q: "Comment BIB gère-t-il les stocks ?", a: "Les stocks et disponibilités doivent provenir de données fournisseur vérifiées et synchronisées. Une valeur manquante ne doit jamais être remplacée par une quantité fictive." },
-  ]},
-  { id: "logistique", label: "Logistique", icon: Truck, items: [
-    { q: "Comment rejoindre les partenaires BIB ?", a: "Le portail de candidature recueille les capacités et zones de prestation. L'ouverture de missions exige une validation opérationnelle et contractuelle.", to: "/ops/apply", ctaLabel: "Candidater" },
-    { q: "Un marchand peut-il livrer directement ?", a: "Non, pas dans le modèle contractuel décrit pour BIB : les livraisons sont confiées aux partenaires opérationnels habilités par BIB." },
-    { q: "Comment traiter un incident de livraison ?", a: "Le partenaire signale l'incident dans le workflow autorisé, avec sa référence réelle et les preuves utiles. BIB coordonne le traitement ; les droits légaux du client envers le vendeur demeurent." },
-    { q: "Les connecteurs transporteurs sont-ils tous actifs ?", a: "Une interface ou une liste de prestataires ne démontre pas qu'une API est branchée. La disponibilité de chaque connexion doit être vérifiée dans les paramètres opérationnels." },
-  ]},
-  { id: "compte", label: "Compte et données", icon: CreditCard, items: [
-    { q: "Quelles données BIB conserve-t-il ?", a: "Les informations varient selon le service : compte, commandes, support, candidatures et obligations légales. Les finalités, durées et destinataires sont décrits dans les pages de confidentialité.", to: "/confidentialite" },
-    { q: "Puis-je retirer un consentement facultatif ?", a: "Oui, lorsqu'un traitement repose sur le consentement. Le retrait n'efface pas rétroactivement un traitement effectué légalement ; les données obligatoires relèvent d'autres bases légales.", to: "/donnees-et-consentements" },
-    { q: "Comment exercer mes droits ?", a: "Contactez le responsable du traitement indiqué dans les mentions légales et la politique de confidentialité pour demander l'accès, la rectification ou l'effacement lorsque la réglementation le permet.", to: "/confidentialite" },
-    { q: "Où consulter les règles de cookies ?", a: "La politique dédiée distingue les traceurs strictement nécessaires des outils facultatifs soumis à un choix préalable. Aucun suivi publicitaire ne doit être considéré comme autorisé par défaut.", to: "/cookies" },
-  ]},
+  {
+    id: "client",
+    get label() {
+      return translateUi("Client");
+    },
+    icon: Users,
+    items: [
+      {
+        get q() {
+          return translateUi("Comment suivre ma commande ?");
+        },
+        get a() {
+          return translateUi(
+            "Munissez-vous de votre numéro de commande (format LKS26-XXXXXX) et de l'e-mail utilisé au paiement, puis ouvrez la page de suivi.",
+          );
+        },
+        to: "/suivi-commande",
+        ctaLabel: "Suivre ma commande",
+      },
+      {
+        get q() {
+          return translateUi("Quels sont les délais de livraison ?");
+        },
+        get a() {
+          return translateUi(
+            "Les délais dépendent du pays et du transporteur sélectionné par la boutique. Une estimation s'affiche à l'étape livraison du checkout et un e-mail récapitule l'expédition.",
+          );
+        },
+      },
+      {
+        get q() {
+          return translateUi("Comment retourner un produit ?");
+        },
+        get a() {
+          return translateUi(
+            "Contactez d'abord la boutique vendeuse via la page produit. Si le marchand ne répond pas sous 48 h, BIB peut intervenir dans les conditions de son assistance et de l'option d'assurance applicable, sans supprimer les obligations légales du vendeur.",
+          );
+        },
+      },
+      {
+        get q() {
+          return translateUi("Qui est responsable de ma commande ?");
+        },
+        get a() {
+          return translateUi(
+            "La boutique marchande est votre vendeur et demeure responsable de la vente, de la conformité et du service après-vente. BIB fournit la plateforme et coordonne l'expédition avec ses partenaires logistiques.",
+          );
+        },
+      },
+      {
+        get q() {
+          return translateUi("Mon paiement a échoué, que faire ?");
+        },
+        get a() {
+          return translateUi(
+            "Vérifiez votre carte (plafond, 3-D Secure) puis réessayez. Aucune commande n'est confirmée tant que le paiement n'est pas validé — vous ne risquez pas de double débit.",
+          );
+        },
+      },
+    ],
+  },
+  {
+    id: "vendeur",
+    get label() {
+      return translateUi("Vendeur");
+    },
+    icon: Store,
+    items: [
+      {
+        get q() {
+          return translateUi("Comment créer ma première boutique ?");
+        },
+        get a() {
+          return translateUi(
+            "Depuis le dashboard, cliquez « Nouvelle boutique ». Trois étapes : informations, produits, aperçu. Le Brand Studio IA génère ensuite votre identité visuelle sur-mesure.",
+          );
+        },
+        to: "/dashboard/boutiques",
+        ctaLabel: "Créer ma boutique",
+      },
+      {
+        get q() {
+          return translateUi(
+            "Pourquoi l'échantillon Stripe est-il obligatoire ?",
+          );
+        },
+        get a() {
+          return translateUi(
+            "Pour garantir la qualité avant mise en ligne, chaque produit fournisseur doit passer une commande échantillon. Une fois validée, le produit devient publiable.",
+          );
+        },
+      },
+      {
+        get q() {
+          return translateUi("Quand suis-je payé ?");
+        },
+        get a() {
+          return translateUi(
+            "Les reversements sont déclenchés selon votre plan (Starter mensuel, Growth/Pro hebdomadaire) après période de rétention anti-litige. Détails dans Paiements.",
+          );
+        },
+        to: "/dashboard/paiements",
+        get ctaLabel() {
+          return translateUi("Voir mes paiements");
+        },
+      },
+      {
+        get q() {
+          return translateUi("Comment gérer un litige client ?");
+        },
+        get a() {
+          return translateUi(
+            "Vous restez responsable du SAV, des retours et des garanties légales. Une absence de réponse sous 48 h peut déclencher une escalade vers BIB selon les conditions de l'assistance ou de l'assurance souscrite.",
+          );
+        },
+      },
+      {
+        get q() {
+          return translateUi("Puis-je inviter mon équipe ?");
+        },
+        get a() {
+          return translateUi(
+            "Oui, dans Équipe : 4 rôles disponibles (Owner, Manager, Marketing, Support). Les limites de sièges dépendent de votre plan.",
+          );
+        },
+        to: "/dashboard/equipe",
+        get ctaLabel() {
+          return translateUi("Inviter mon équipe");
+        },
+      },
+      {
+        get q() {
+          return translateUi("Comment supprimer ma boutique ?");
+        },
+        get a() {
+          return translateUi(
+            "La suppression est bloquée tant que vous avez des commandes ouvertes, des commandes récentes (< 30 j) ou du stock engagé. Confirmez explicitement après vérification.",
+          );
+        },
+      },
+    ],
+  },
+  {
+    id: "fournisseur",
+    get label() {
+      return translateUi("Fournisseur");
+    },
+    icon: Boxes,
+    items: [
+      {
+        get q() {
+          return translateUi("Comment rejoindre le catalogue BIB ?");
+        },
+        get a() {
+          return translateUi(
+            "Remplissez le formulaire de candidature. Notre équipe revient sous 5 jours ouvrés avec un retour qualifié.",
+          );
+        },
+        to: "/suppliers/apply",
+        ctaLabel: "Candidater",
+      },
+      {
+        get q() {
+          return translateUi("Quels documents préparer ?");
+        },
+        get a() {
+          return translateUi(
+            "Kbis ou équivalent, certifications produits (CE, REACH selon catégorie), photos HD, fiche logistique (MOQ, délais, pays d'expédition).",
+          );
+        },
+      },
+      {
+        get q() {
+          return translateUi("Comment fonctionnent les marges ?");
+        },
+        get a() {
+          return translateUi(
+            "Vous fixez votre prix fournisseur. Le vendeur applique sa marge. La plateforme prélève une commission selon le plan du vendeur (15/10/8 %).",
+          );
+        },
+      },
+      {
+        get q() {
+          return translateUi("Comment suivre mes performances ?");
+        },
+        get a() {
+          return translateUi(
+            "Le portail fournisseur affiche les ventes, MOQ atteint, taux de retour et performance sur 6 mois.",
+          );
+        },
+      },
+      {
+        get q() {
+          return translateUi("Que se passe-t-il en cas de rupture ?");
+        },
+        get a() {
+          return translateUi(
+            "Mettez à jour votre stock dans le portail. Les produits passent automatiquement « hors stock » côté boutique pour éviter les commandes orphelines.",
+          );
+        },
+      },
+    ],
+  },
+  {
+    id: "logistique",
+    get label() {
+      return translateUi("Logistique");
+    },
+    icon: Truck,
+    items: [
+      {
+        get q() {
+          return translateUi("Comment devenir partenaire logistique ?");
+        },
+        get a() {
+          return translateUi(
+            "Candidatez sur le portail Ops. Nous validons votre capacité, vos pays couverts et votre process retours avant activation.",
+          );
+        },
+        to: "/ops/apply",
+        ctaLabel: "Candidater",
+      },
+      {
+        get q() {
+          return translateUi("Quel format d'étiquette est utilisé ?");
+        },
+        get a() {
+          return translateUi(
+            "Étiquette BIB A6 (100×150 mm) avec Code128 et QR de suivi. Une variante planche A4 ×4 est disponible pour les imprimantes bureautiques.",
+          );
+        },
+      },
+      {
+        get q() {
+          return translateUi("Comment gérer un litige de livraison ?");
+        },
+        get a() {
+          return translateUi(
+            "Tous les litiges remontent dans le portail Ops avec un SLA de 48 h. Au-delà, la plateforme tranche et indemnise selon contrat.",
+          );
+        },
+      },
+      {
+        get q() {
+          return translateUi("Les API transporteurs sont-elles branchées ?");
+        },
+        get a() {
+          return translateUi(
+            "Les emplacements (tracking_number, carrier, parcel_id) sont réservés dans le modèle. Le branchement API officiel est en cours de déploiement.",
+          );
+        },
+      },
+    ],
+  },
+  {
+    id: "compte",
+    get label() {
+      return translateUi("Compte & facturation");
+    },
+    icon: CreditCard,
+    items: [
+      {
+        get q() {
+          return translateUi("Comment changer de plan ?");
+        },
+        get a() {
+          return translateUi(
+            "Depuis Tarifs ou Paramètres. Le changement est immédiat, prorata appliqué automatiquement.",
+          );
+        },
+        to: "/tarifs",
+        get ctaLabel() {
+          return translateUi("Voir les plans");
+        },
+      },
+      {
+        get q() {
+          return translateUi("Où télécharger mes factures ?");
+        },
+        get a() {
+          return translateUi(
+            "Dans Paiements, onglet Facturation : export PDF ou CSV avec mention « Verified by BIB ».",
+          );
+        },
+      },
+      {
+        get q() {
+          return translateUi("Comment supprimer mon compte ?");
+        },
+        get a() {
+          return translateUi(
+            "Dans Paramètres → Compte. La suppression est définitive et bloquée tant que vous avez du stock actif ou des commandes ouvertes.",
+          );
+        },
+        to: "/dashboard/parametres",
+        get ctaLabel() {
+          return translateUi("Mes paramètres");
+        },
+      },
+      {
+        get q() {
+          return translateUi("Comment activer la double authentification ?");
+        },
+        get a() {
+          return translateUi(
+            "Dans Paramètres → Sécurité. Nous recommandons une app TOTP (Google Authenticator, 1Password).",
+          );
+        },
+      },
+      {
+        get q() {
+          return translateUi("Puis-je avoir plusieurs boutiques ?");
+        },
+        get a() {
+          return translateUi(
+            "Oui, selon votre plan. Starter = 1, Growth = 3, Pro = illimité. Chaque boutique a sa propre identité et son propre catalogue.",
+          );
+        },
+      },
+    ],
+  },
 ];
 export const toneClass = (tone: GuideGroup["tone"]) => {
   switch(tone) {
