@@ -118,8 +118,7 @@ Deno.serve(async (req) => {
 
   if (suppressError) {
     console.error('Failed to suppress email', {
-      error: suppressError,
-      email: tokenRecord.email,
+      code: suppressError?.code ?? 'unknown',
     })
     return jsonResponse({ error: 'Failed to process unsubscribe' }, 500)
   }
