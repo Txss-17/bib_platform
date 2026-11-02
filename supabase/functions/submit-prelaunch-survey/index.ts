@@ -4,6 +4,11 @@ import { assertTrustedReturnUrl } from "../_shared/return-url.ts";
 const challenges = new Set(["fraud","delivery","quality","returns","trust","visibility","costs"]);
 const solutions = new Set(["verified_suppliers","secure_delivery","transparent_sav","brand_tools","product_quality","merchant_control"]);
 const roles = new Set(["merchant","customer","both","exploring"]);
+function validSelections(values: unknown, options: Set<string>): values is string[] {
+  return Array.isArray(values) && values.length >= 1 && values.length <= options.size &&
+    values.every(value => typeof value === "string" && options.has(value)) &&
+    new Set(values).size === values.length;
+}
 const launchTimings = new Set(["as_soon_as_possible","within_1_month","within_3_months","within_6_months","no_preference"]);
 const headers = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -42,7 +47,11 @@ Deno.serve(async request => {
     if (raw.length > 2048) return response({ error: "payload_too_large" }, 413, origin);
     const data = JSON.parse(raw);
     if (!data || typeof data !== "object" || Array.isArray(data) ||
-        !challenges.has(data.challenge) || !solutions.has(data.solution) ||
+        !validSelections(data.challenge_selections, challenges) ||
+        !validSelections(data.solution_selections, solutions) ||
+        data.challenge !== data.challenge_selections[0] ||
+        data.solution !== data.solution_selections[0] ||
+        data.consent !== true || data.consent_notice_version !== "prelaunch-v1" ||
         !roles.has(data.role) || !["fr","en"].includes(data.locale) ||
         typeof data.wants_to_be_merchant !== "boolean" ||
         (data.wants_to_be_merchant ? !launchTimings.has(data.preferred_launch_timing) : data.preferred_launch_timing != null)) {
@@ -68,6 +77,10 @@ Deno.serve(async request => {
     const { error } = await supabase.from("prelaunch_survey_responses").insert({
       challenge: data.challenge,
       solution: data.solution,
+      challenge_selections: data.challenge_selections,
+      solution_selections: data.solution_selections,
+      consent_given_at: new Date().toISOString(),
+      consent_notice_version: "prelaunch-v1",
       role: data.role,
       locale: data.locale,
       wants_to_be_merchant: data.wants_to_be_merchant,
