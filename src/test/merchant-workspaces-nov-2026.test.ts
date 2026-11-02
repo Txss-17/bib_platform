@@ -170,6 +170,24 @@ describe("Merchant operational workspaces", () => {
     expect(css).toContain(".studio-btn-pill a[href]");
   });
 
+  it("supports advertising drafts per merchant boutique without fake publishing", () => {
+    const marketing = read("src/pages/dashboard/Marketing.tsx");
+    const boutiques = read("src/pages/dashboard/Boutiques.tsx");
+    const ads = read("src/components/marketing/MerchantAdsWorkspace.tsx");
+    const migration = read("supabase/migrations/20261102121500_merchant_ad_drafts.sql");
+    expect(marketing).toContain('<TabsTrigger value="ads"');
+    expect(marketing).toContain("<MerchantAdsWorkspace");
+    expect(marketing).toContain('activeTab !== "ads" && !gmailReady');
+    expect(boutiques).toContain("tab=ads&boutiqueId=");
+    expect(ads).toContain("Proposer un texte depuis la boutique");
+    expect(ads).toContain('status: "draft" as const');
+    expect(ads).toContain("No ad was published and no advertising charges were made.");
+    expect(ads).toContain("Integration not connected");
+    expect(migration).toContain("ENABLE ROW LEVEL SECURITY");
+    expect(migration).toContain("user_id = auth.uid()");
+    expect(migration).toContain("ad_publication_requires_provider_connection");
+  });
+
   it("lets merchants compose pages, reorder navigation and place their own logo", () => {
     const studio = read("src/components/dashboard/boutique/StudioEditor.tsx");
     const panel = read("src/components/dashboard/boutique/StorefrontNavigationEditor.tsx");
