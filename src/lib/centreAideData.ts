@@ -246,7 +246,7 @@ export const guideGroups: GuideGroup[] = [
         },
         get long() {
           return translateUi(
-            "Le vendeur a 48h pour répondre au client. Sans résolution, la plateforme prend la main et tranche selon les CGV.",
+            "Le vendeur reste responsable du litige. En l'absence de réponse sous 48 h, BIB peut prendre le relais selon les conditions de l'assistance ou de l'assurance souscrite.",
           );
         },
       },
@@ -450,17 +450,17 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Contactez d'abord la boutique vendeuse via la page produit. Sans réponse sous 48 h, la plateforme prend le relais via la procédure d'escalade.",
+            "Contactez d'abord la boutique vendeuse via la page produit. Si le marchand ne répond pas sous 48 h, BIB peut intervenir dans les conditions de son assistance et de l'option d'assurance applicable, sans supprimer les obligations légales du vendeur.",
           );
         },
       },
       {
         get q() {
-          return translateUi("Où trouver mes cartes cadeaux ?");
+          return translateUi("Qui est responsable de ma commande ?");
         },
         get a() {
           return translateUi(
-            "Connectez-vous avec l'e-mail de votre commande : vos soldes par boutique apparaissent dans votre espace client.",
+            "La boutique marchande est votre vendeur et demeure responsable de la vente, de la conformité et du service après-vente. BIB fournit la plateforme et coordonne l'expédition avec ses partenaires logistiques.",
           );
         },
       },
@@ -527,7 +527,7 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Vous avez 48 h pour répondre au client. Sans résolution, la plateforme prend la main et tranche selon nos conditions générales.",
+            "Vous restez responsable du SAV, des retours et des garanties légales. Une absence de réponse sous 48 h peut déclencher une escalade vers BIB selon les conditions de l'assistance ou de l'assurance souscrite.",
           );
         },
       },
