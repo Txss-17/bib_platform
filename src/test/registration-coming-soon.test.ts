@@ -49,6 +49,19 @@ describe("Merchant registration remains closed while customers and partners can 
     expect(config).toContain("[functions.submit-prelaunch-survey]");
   });
 
+  it("routes anonymized survey results to Product Engineering and Marketplace through the protected intranet bridge", () => {
+    const bridge = read("supabase/functions/intranet-export/index.ts");
+    expect(bridge).toContain("checkBridgeKey(req)");
+    expect(bridge).toContain('.from("prelaunch_survey_responses")');
+    expect(bridge).toContain("prelaunch_survey_summary: surveySummary");
+    expect(bridge).toContain('primary_owner: "product_engineering"');
+    expect(bridge).toContain('secondary_owner: "marketplace"');
+    expect(bridge).toContain("challenge_counts");
+    expect(bridge).toContain("solution_counts");
+    expect(bridge).toContain("surveyRows.error ||");
+    expect(bridge).not.toContain("visitor_digest,");
+  });
+
   it("presents bilingual Coming Soon copy with login and home links", () => {
     const page = read("src/pages/SignupComingSoon.tsx");
     expect(page).toContain("Bientôt disponible");
