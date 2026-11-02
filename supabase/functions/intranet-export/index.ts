@@ -72,6 +72,7 @@ Deno.serve(async (req) => {
     restockRows,
     refundRows,
     savRows,
+    surveyRows,
   ] = await Promise.all([
     // Full reference snapshots keep ownership and commission joins valid for incremental orders.
     readAll(() =>
@@ -193,12 +194,21 @@ Deno.serve(async (req) => {
         .lte("escalated_at", snapshotAt)
         .order("issue_id"),
     ),
+    // Survey is a complete, aggregated snapshot, not per-visitor records.
+    // Never export visitor_digest, IP address or individual response IDs.
+    readAll(() =>
+      sb.from("prelaunch_survey_responses")
+        .select("challenge, solution, role, survey_day")
+        .lte("survey_day", snapshotAt.slice(0, 10))
+        .order("survey_day"),
+    ),
   ]);
 
   // An unavailable required source is an export failure, never an empty snapshot.
   const appsData = apps.data ?? [];
 
   const err =
+    surveyRows.error ||
     savRows.error ||
     refundRows.error ||
     restockRows.error ||
@@ -748,8 +758,36 @@ Deno.serve(async (req) => {
   // EXPORT
   // ============================================================
 
+  // Product Engineering owns the overall product signal; Marketplace owns
+  // supplier, delivery, product quality, returns, trust and merchant signals.
+  // Each category is aggregated independently: no joinable visitor records.
+  const survey = surveyRows.data ?? [];
+  const countCategories = (field: "challenge" | "solution" | "role", values: readonly string[]) =>
+    values.map(value => ({
+      value,
+      count: survey.filter(row => row[field] === value).length,
+    }));
+  const surveySummary = {
+    primary_owner: "product_engineering",
+    secondary_owner: "marketplace",
+    as_of: snapshotAt,
+    total_responses: survey.length,
+    is_complete_snapshot: true,
+    challenge_counts: countCategories("challenge",
+      ["fraud","delivery","quality","returns","trust","visibility","costs"]),
+    solution_counts: countCategories("solution",
+      ["verified_suppliers","secure_delivery","transparent_sav","brand_tools","product_quality","merchant_control"]),
+    role_counts: countCategories("role",["merchant","customer","both","exploring"]),
+    routing: {
+      product_engineering: ["fraud","delivery","quality","returns","trust","visibility","costs"],
+      marketplace: ["fraud","delivery","quality","returns","trust","visibility","costs"],
+    },
+    note: "Aggregated responses only. No names, emails, free-text answers, visitor identifiers or individual records.",
+  };
+
   return json({
     protocol_version: 1,
+    prelaunch_survey_summary: surveySummary,
     snapshot_at: snapshotAt,
     favorites_complete: true,
     merchants_complete: true,
