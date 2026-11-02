@@ -73,7 +73,6 @@ Deno.serve(async (req) => {
     refundRows,
     savRows,
     surveyRows,
-    talentRows,
   ] = await Promise.all([
     // Full reference snapshots keep ownership and commission joins valid for incremental orders.
     readAll(() =>
@@ -203,20 +202,12 @@ Deno.serve(async (req) => {
         .lte("survey_day", snapshotAt.slice(0, 10))
         .order("survey_day"),
     ),
-    // Confidential talent applications go through the authenticated
-    // bridge only, with explicit recruitment ownership and functional routing.
-    // Do not export network or duplicate-detection digests.
-    readAll(() => sb.from("bib_talent_applications")
-      .select("id, full_name, email, location, current_activity, preferred_pole, assigned_pole, owner_pole, contribution_type, skills, motivation, availability, portfolio_url, locale, consent_given_at, status, created_at, updated_at, retention_until")
-      .lte("created_at", snapshotAt)
-      .order("id")),
   ]);
 
   // An unavailable required source is an export failure, never an empty snapshot.
   const appsData = apps.data ?? [];
 
   const err =
-    talentRows.error ||
     surveyRows.error ||
     savRows.error ||
     refundRows.error ||
@@ -804,23 +795,6 @@ Deno.serve(async (req) => {
   return json({
     protocol_version: 1,
     prelaunch_survey_summary: surveySummary,
-    // The intranet ingestion layer must enforce team-level ACLs:
-    // Talent coordination sees all applications; assigned functional
-    // teams see only their own dossiers after explicit recruitment review.
-    talent_applications_complete: true,
-    talent_applications: (talentRows.data ?? [])
-      .filter(application =>
-        application.status !== "withdrawn" &&
-        new Date(application.retention_until).getTime() > Date.now(),
-      )
-      .map(application => ({
-        ...application,
-        routing: {
-          owner_pole: "talent_coordination",
-          assigned_pole: application.assigned_pole,
-          processing_status: application.status,
-        },
-      })),
     snapshot_at: snapshotAt,
     favorites_complete: true,
     merchants_complete: true,
