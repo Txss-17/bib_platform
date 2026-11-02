@@ -166,10 +166,11 @@ export function FloatingSupportButton({
     setOfferTicket(false);
     setOfferId(null);
     setTurnToken(null);
-    setAskAnotherTopic(true);
-    setMessages(previous => [...previous, {
-      role: "assistant", content: "Très bien, aucun ticket n'a été créé. Souhaitez-vous aborder un autre sujet ?",
-    }]);
+    setAskAnotherTopic(false);
+    setMessages(previous => [...previous,
+      { role: "user", content: "Non, je préfère poursuivre sans ticket." },
+      { role: "assistant", content: "Bien compris, aucun ticket n'a été créé. Nous pouvons continuer ici. Quel point souhaitez-vous approfondir ?" },
+    ]);
   };
 
   const finishTopic = () => {
