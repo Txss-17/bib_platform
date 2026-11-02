@@ -81,7 +81,7 @@ export function FloatingSupportButton({
     try {
       const { data, error } = await supabase.functions.invoke("support-ai", {
         body: {
-          messages: next.slice(-16),
+          messages: next.filter(msg => msg.role === "user").slice(-16),
           context: {
             source,
             boutique_id: boutiqueId ?? null,
@@ -118,7 +118,7 @@ export function FloatingSupportButton({
       const { data, error } = await supabase.functions.invoke("support-ai", {
         body: {
           action: "create_ticket",
-          messages: messages.slice(-16),
+          messages: messages.filter(msg => msg.role === "user").slice(-16),
           context: { source, boutique_id: boutiqueId ?? null },
         },
       });
