@@ -36,7 +36,7 @@ function shell(children: React.ReactNode) {
     </MemoryRouter>,
   );
 }
-describe("One persistent BIB language", () => {
+describe("Volatile BIB language without browser persistence", () => {
   it("switches full page headings and configuration descriptions without navigation", () => {
     shell(<APropos />);
     expect(
@@ -48,7 +48,7 @@ describe("One persistent BIB language", () => {
       screen.getByText(/BIB selects and verifies the stores/),
     ).toBeInTheDocument();
     expect(document.documentElement.lang).toBe("en");
-    expect(localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBe("en");
+    expect(localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBeNull();
   });
   it("retains the language when the page tree remounts", () => {
     const rendered = shell(<NotFound />);
@@ -58,19 +58,11 @@ describe("One persistent BIB language", () => {
     expect(screen.getByText("Return to Home")).toBeInTheDocument();
     expect(getUiLocale()).toBe("en-IE");
   });
-  it("updates after another tab changes the stored preference", () => {
+  it("changes language only through explicit in-app selection", () => {
     shell(<NotFound />);
-    act(() => {
-      localStorage.setItem(LANGUAGE_STORAGE_KEY, "en");
-      window.dispatchEvent(
-        new StorageEvent("storage", {
-          key: LANGUAGE_STORAGE_KEY,
-          newValue: "en",
-        }),
-      );
-    });
+    act(() => setUiLanguage("en"));
     expect(screen.getByText("Return to Home")).toBeInTheDocument();
-    expect(getUiLanguage()).toBe("en");
+    expect(localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBeNull();
   });
   it("changes BIB controls while preserving merchant names and headings", () => {
     shell(
