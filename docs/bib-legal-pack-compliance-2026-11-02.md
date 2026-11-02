@@ -23,7 +23,7 @@ Les boutiques des marchands disposent en outre de leurs pages légales propres.
 | Compte marchand | Confirmation des documents marchands et identification légale | Ancien flux fermé ; reprendre les preuves d'acceptation quand réouvert |
 | Achat | Prix TTC, vendeur, CGV, livraison et rétractation avant paiement ; ne pas lier l'achat à la publicité | Test Stripe et conservation de preuve de commande à valider |
 | Sondage Coming Soon | Case non précochée, facultatif, envoi après consentement | `consent_given_at` et `consent_notice_version=prelaunch-v1` |
-| BIB Talent | Information sur finalité, RH, durée et possibilité de droits ; consentement actif | `consent_given_at` en base (180 jours), anonymes non autorisés à lire |
+| BIB Talent | Information sur finalité, RH, durée et possibilité de droits ; consentement actif | `consent_given_at` et opt-in distinct pour le vivier (jusqu'à deux ans), anonymes non autorisés à lire |
 | Assistant BIB | Avertissement sur IA, minimisation ; oui explicite avant ticket | Offre limitée et à usage unique ; à tester en production |
 | Newsletters et publicité | Prospection facultative, désabonnement, traçage soumis aux règles applicables | Auditer toutes les campagnes et l'état réel des connexions OAuth |
 | Cookies | Acceptation et refus équivalents, préférences par finalité | CMP à auditer ; aucune bannière ne peut être déclarée conforme par le texte seul |
