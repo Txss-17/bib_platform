@@ -28,15 +28,21 @@ async function conversationKey(): Promise<CryptoKey> {
   return crypto.subtle.importKey("raw", enc.encode("bib-support-v1:" + secret),
     { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
 }
-async function sealAssistantTurn(reply: string, baseHash: string, questionCount: number): Promise<string> {
+type SignedAssistantTurn = { reply: string; questionCount: number; replies: string[] };
+
+async function sealAssistantTurn(
+  reply: string, baseHash: string, questionCount: number, previousReplies: string[],
+): Promise<string> {
+  const replies = [...previousReplies, reply.slice(0, 3000)].slice(-16);
   const payload = toBase64Url(enc.encode(JSON.stringify({
-    reply: reply.slice(0, 3000), baseHash, questionCount, expiresAt: Date.now() + 15 * 60 * 1000,
+    reply: reply.slice(0, 3000), replies, baseHash, questionCount,
+    expiresAt: Date.now() + 15 * 60 * 1000,
   })));
   const mac = await crypto.subtle.sign("HMAC", await conversationKey(), enc.encode(payload));
   return payload + "." + toBase64Url(new Uint8Array(mac));
 }
-async function openAssistantTurn(token: unknown, expectedHash: string): Promise<{ reply: string; questionCount: number } | null> {
-  if (typeof token !== "string" || token.length > 16000) return null;
+async function openAssistantTurn(token: unknown, expectedHash: string): Promise<SignedAssistantTurn | null> {
+  if (typeof token !== "string" || token.length > 90000) return null;
   const [payload, signature, extra] = token.split(".");
   if (!payload || !signature || extra) return null;
   try {
@@ -46,9 +52,24 @@ async function openAssistantTurn(token: unknown, expectedHash: string): Promise<
     const parsed = JSON.parse(new TextDecoder().decode(fromBase64Url(payload)));
     if (parsed.baseHash !== expectedHash || parsed.expiresAt <= Date.now() ||
         typeof parsed.reply !== "string") return null;
-    if (!Number.isSafeInteger(parsed.questionCount) || parsed.questionCount < 0 || parsed.questionCount > 12) return null;
-    return { reply: parsed.reply.slice(0, 3000), questionCount: parsed.questionCount };
+    if (!Number.isSafeInteger(parsed.questionCount) || parsed.questionCount < 0 ||
+        parsed.questionCount > 12 || !Array.isArray(parsed.replies) ||
+        parsed.replies.length > 16 ||
+        parsed.replies.some((reply: unknown) => typeof reply !== "string" || reply.length > 3000)) {
+      return null;
+    }
+    return { reply: parsed.reply.slice(0, 3000), questionCount: parsed.questionCount, replies: parsed.replies };
   } catch { return null; }
+}
+function reconstructConversation(
+  userMessages: Array<{ role: string; content: string }>,
+  replies: string[],
+): Array<{ role: string; content: string }> {
+  return userMessages.flatMap((message, index) => [
+    message,
+    ...(typeof replies[index] === "string"
+      ? [{ role: "assistant", content: replies[index] }] : []),
+  ]);
 }
 
 const SYSTEM_PROMPT = `Tu es l'assistant officiel de Brand-In-A-Box (BIB), une plateforme de commerce en ligne qui permet aux marchands de créer et gérer leurs boutiques et leur activité. Tu réponds avec précision, clarté et sobriété dans la langue de l'utilisateur (français par défaut).
@@ -144,8 +165,10 @@ serve(async (req) => {
     const priorHash = await digestConversation(messages.slice(0, -1));
     const assistantTurn = body?.turn_token
       ? await openAssistantTurn(body.turn_token, priorHash) : null;
-    const lastAssistant = assistantTurn?.reply ?? null;
-    const priorDiagnosticQuestions = assistantTurn?.questionCount ?? 0;
+    const priorReplies = assistantTurn?.replies?.length === messages.length - 1
+      ? assistantTurn.replies : [];
+    const priorDiagnosticQuestions = priorReplies.length
+      ? assistantTurn?.questionCount ?? 0 : 0;
 
     const context = body?.context ?? {};
     let authorizedBoutiqueId: string | null = null;
@@ -242,6 +265,10 @@ serve(async (req) => {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      const approvedAssistant = await openAssistantTurn(body.turn_token, hash);
+      const completeDialogue = reconstructConversation(
+        messages, approvedAssistant?.replies.length === messages.length ? approvedAssistant.replies : [],
+      );
       // The account and boutique are bound to the verified request, not client IDs.
       // The server derives ticket contents from the authenticated conversation,
       // never from a model-provided arbitrary user_id or summary.
@@ -253,8 +280,8 @@ serve(async (req) => {
       }
       const lastQuestion = String(userMessages[userMessages.length - 1].content).trim();
       const subject = (lastQuestion.slice(0, 76) || "Demande d'assistance BIB");
-      const summary = messages.map((msg: { content: string }) =>
-        `Marchand : ${msg.content}`
+      const summary = completeDialogue.map(msg =>
+        `${msg.role === "user" ? "Marchand" : "Assistant BIB"} : ${msg.content}`
       ).join("\n").slice(0, 4000);
       const { data: ticket, error } = await admin.from("support_tickets").insert({
         user_id: actor.user.id,
@@ -265,7 +292,7 @@ serve(async (req) => {
         contact_email: contactEmail,
         contact_name: null,
         ai_summary: summary,
-        ai_conversation: messages,
+        ai_conversation: completeDialogue,
       }).select("id, subject").single();
       if (error || !ticket) {
         console.error("ticket insert error", error);
@@ -292,8 +319,7 @@ serve(async (req) => {
           model: "google/gemini-2.5-flash",
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
-            ...messages.slice(0, -1),
-            ...(lastAssistant ? [{ role: "assistant", content: lastAssistant }] : []),
+            ...reconstructConversation(messages.slice(0, -1), priorReplies),
             messages[messages.length - 1],
           ],
           tools,
@@ -358,7 +384,7 @@ serve(async (req) => {
       offerId = pendingOffer.id;
     }
     const questionCount = Math.min(12, priorDiagnosticQuestions + (reply.includes("?") ? 1 : 0));
-    const turnToken = await sealAssistantTurn(reply, hash, questionCount);
+    const turnToken = await sealAssistantTurn(reply, hash, questionCount, priorReplies);
     return new Response(JSON.stringify({
       reply, offer_ticket: offerTicket, offer_id: offerId,
       offer_another_topic: finishedTopic && !offerTicket,
