@@ -4,45 +4,65 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useSEO } from "@/hooks/useSEO";
 import { ReactNode } from "react";
+import { Link } from "react-router-dom";
+import { FileText, ShieldCheck, Cookie, Scale, BriefcaseBusiness } from "lucide-react";
 
-function LegalShell({
-  title,
-  eyebrow,
-  updated,
-  children,
-}: {
-  title: string;
-  eyebrow: string;
-  updated: string;
-  children: ReactNode;
+const legalNavigation = [
+  { href: "/mentions-legales", label: "Mentions légales", icon: FileText },
+  { href: "/cgu", label: "Conditions d'utilisation", icon: Scale },
+  { href: "/cgv", label: "Conditions de vente", icon: FileText },
+  { href: "/confidentialite", label: "Confidentialité", icon: ShieldCheck },
+  { href: "/cookies", label: "Cookies et traceurs", icon: Cookie },
+  { href: "/donnees-et-consentements", label: "Données et consentements", icon: ShieldCheck },
+  { href: "/annexe-donnees-marchands", label: "Annexe marchands (projet)", icon: BriefcaseBusiness },
+];
+function LegalShell({ title, eyebrow, updated, children }: {
+  title: string; eyebrow: string; updated: string; children: ReactNode;
 }) {
   useLanguage();
   return (
     <div className="legal-page min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto max-w-5xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-        <header className="legal-page-header relative overflow-hidden rounded-3xl border border-border bg-card px-6 py-8 shadow-sm sm:px-10 sm:py-10 lg:px-12">
-          <div className="legal-header-accent" aria-hidden="true" />
-          <div className="relative">
-            <span className="inline-flex items-center rounded-full border border-bib-gold/30 bg-bib-gold/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-foreground">
-              {eyebrow}
-            </span>
-            <h1 className="mt-5 max-w-4xl font-display text-3xl font-bold leading-tight text-foreground sm:text-4xl lg:text-5xl">
-              {title}
-            </h1>
-            <p className="mt-5 inline-flex items-center gap-2 rounded-lg bg-background px-3 py-2 text-xs font-medium text-muted-foreground sm:text-sm">
-              <span
-                className="h-1.5 w-1.5 rounded-full bg-bib-gold"
-                aria-hidden="true"
-              />
-              {translateUi("Dernière mise à jour :") + " "}
-              {updated}
-            </p>
-          </div>
+      <main className="mx-auto max-w-6xl px-4 pb-16 pt-7 sm:px-6 lg:px-8">
+        <nav className="flex items-center gap-2 text-xs text-muted-foreground" aria-label="Fil d'Ariane">
+          <Link to="/" className="hover:text-foreground">BIB</Link>
+          <span aria-hidden>›</span>
+          <Link to="/pack-legal" className="hover:text-foreground">Centre juridique</Link>
+          <span aria-hidden>›</span>
+          <span className="text-foreground">{title}</span>
+        </nav>
+        <header className="mt-5 border-b border-border pb-6 sm:pb-7">
+          <div className="mb-2 h-0.5 w-10 rounded-full bg-bib-gold" aria-hidden />
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{eyebrow} · BIB</p>
+          <h1 className="mt-2 max-w-3xl font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{title}</h1>
+          <p className="mt-2 text-xs text-muted-foreground">Dernière révision : {updated} · Lecture publique</p>
         </header>
-        <article className="legal-content prose dark:prose-invert mt-6 max-w-none rounded-3xl border border-border bg-card px-6 py-8 shadow-sm sm:px-10 sm:py-10 lg:px-12 lg:py-12 prose-headings:font-display prose-headings:text-foreground prose-a:text-bib-gold prose-strong:text-foreground">
-          {children}
-        </article>
+        <div className="mt-7 grid grid-cols-1 items-start gap-8 lg:grid-cols-[225px_minmax(0,1fr)] lg:gap-12">
+          <aside className="lg:sticky lg:top-20">
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Documents BIB</p>
+            <nav aria-label="Documents juridiques BIB" className="flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible">
+              {legalNavigation.map(item => {
+                const selected = item.label === title ||
+                  (item.href === "/cgu" && title.includes("Utilisation")) ||
+                  (item.href === "/cgv" && title.includes("Vente")) ||
+                  (item.href === "/confidentialite" && title.includes("confidentialité")) ||
+                  (item.href === "/cookies" && title.toLowerCase().includes("cookies"));
+                return <Link key={item.href} to={item.href}
+                  aria-current={selected ? "page" : undefined}
+                  className={`inline-flex shrink-0 items-center gap-2 rounded-md border-l-2 px-3 py-2 text-xs transition-colors lg:w-full ${selected ? "border-bib-gold bg-bib-gold/10 font-semibold text-foreground" : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+                  <item.icon className="h-3.5 w-3.5 shrink-0" />
+                  {item.label}
+                </Link>;
+              })}
+            </nav>
+          </aside>
+          <article className="legal-content prose prose-sm dark:prose-invert min-w-0 max-w-none prose-headings:scroll-mt-24 prose-headings:font-display prose-headings:text-foreground prose-h2:mt-8 prose-h2:border-b prose-h2:border-border/50 prose-h2:pb-2 prose-p:leading-7 prose-a:font-medium prose-a:text-primary prose-strong:text-foreground">
+            {children}
+          </article>
+        </div>
+        <div className="mt-10 border-t border-border pt-5 text-xs text-muted-foreground">
+          Besoin d'une précision ? Consultez le <Link className="underline" to="/centre-aide">centre d'aide</Link> ou les contacts indiqués dans les mentions légales.
+        </div>
       </main>
       <Footer />
     </div>
