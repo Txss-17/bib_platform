@@ -28,47 +28,7 @@ interface CheckoutFormProps {
   onBack: () => void;
 }
 
-interface SavedCustomerProfile {
-  name?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  city?: string;
-  postalCode?: string;
-  country?: string;
-}
-
 type CheckoutStep = "info" | "shipping" | "pay";
-
-function getSavedProfile(): SavedCustomerProfile | null {
-  try {
-    const raw =
-      localStorage.getItem("bib_customer_profile") ||
-      localStorage.getItem("linksy_customer_profile");
-
-    if (!raw) {
-      return null;
-    }
-
-    const parsed = JSON.parse(raw);
-
-    if (!parsed || typeof parsed !== "object") {
-      return null;
-    }
-
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-function saveProfile(data: SavedCustomerProfile) {
-  try {
-    localStorage.setItem("bib_customer_profile", JSON.stringify(data));
-  } catch {
-    // Local storage is optional.
-  }
-}
 
 export function CheckoutForm({
   boutiqueId,
@@ -108,28 +68,6 @@ export function CheckoutForm({
   const [notes, setNotes] = useState("");
 
   const [step, setStep] = useState<CheckoutStep>("info");
-
-  /*
-   * --------------------------------------------------------------------------
-   * Restore customer information
-   * --------------------------------------------------------------------------
-   */
-
-  useEffect(() => {
-    const saved = getSavedProfile();
-
-    if (!saved) {
-      return;
-    }
-
-    setName(saved.name ?? "");
-    setEmail(saved.email ?? "");
-    setPhone(saved.phone ?? "");
-    setAddress(saved.address ?? "");
-    setCity(saved.city ?? "");
-    setPostalCode(saved.postalCode ?? "");
-    setCountry(saved.country ?? "France");
-  }, []);
 
   /*
    * --------------------------------------------------------------------------
@@ -178,15 +116,6 @@ export function CheckoutForm({
       return;
     }
 
-    saveProfile({
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
-      phone: phone.trim(),
-      address: address.trim(),
-      city: city.trim(),
-      postalCode: postalCode.trim(),
-      country: country.trim(),
-    });
 
     setStep("pay");
   };
