@@ -77,6 +77,14 @@ Deno.serve(async (req) => {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    // Never let a browser choose recipients for arbitrary boutique templates.
+    // Only fixed-recipient operational alerts may be requested by the owner.
+    // Transactional order emails must use verified server-side workflows.
+    if (type !== "alert") {
+      return new Response(JSON.stringify({ error: "server_verified_email_workflow_required" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const { data: authorizedBoutique, error: boutiqueAuthError } = await caller
       .from("boutiques").select("id,user_id").eq("id",boutique_id).maybeSingle();
     if (boutiqueAuthError || !authorizedBoutique ||
@@ -90,6 +98,20 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+
+    // Operational alerts are rate limited per merchant and destination.
+    const since = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const { data: recentAlerts, error: throttleError } = await supabase
+      .from("boutique_email_log").select("id")
+      .eq("boutique_id", boutique_id).eq("type", "alert")
+      .eq("recipient_email", recipient_email)
+      .gte("sent_at", since).limit(5);
+    if (throttleError) return new Response(JSON.stringify({ error: "email_rate_check_unavailable" }), {
+      status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+    if ((recentAlerts?.length ?? 0) >= 5) return new Response(JSON.stringify({ error: "email_rate_limited" }), {
+      status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
 
     if (type === "alert") {
       // The alert recipient must be the one explicitly configured for this store.
@@ -189,8 +211,8 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
-    console.error("send-boutique-email error", e);
-    return new Response(JSON.stringify({ error: (e as Error).message }), {
+    console.error("send-boutique-email error", e instanceof Error ? e.name : "unknown");
+    return new Response(JSON.stringify({ error: "email_delivery_failed" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
