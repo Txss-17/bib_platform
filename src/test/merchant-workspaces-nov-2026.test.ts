@@ -223,6 +223,33 @@ describe("Merchant operational workspaces", () => {
     expect(read("src/components/storefront/studioScene.css")).toContain(".studio-width-narrow");
   });
 
+  it("enforces supplier price floors, paid Pro sales, and authenticated brand generation", () => {
+    const pricing = read("supabase/migrations/20261102123000_pricing_and_pro_sales_guards.sql");
+    const limits = read("supabase/migrations/20261102123500_brand_ai_rate_limits.sql");
+    const applications = read("supabase/migrations/20261102124000_public_application_and_attachment_hardening.sql");
+    const pos = read("supabase/functions/create-pos-checkout/index.ts");
+    const checkout = read("supabase/functions/create-storefront-checkout/index.ts");
+    const ai = read("supabase/functions/boutique-ai/index.ts");
+    const legacy = read("supabase/functions/generate-brand-dna/index.ts");
+    const support = read("supabase/functions/support-ai/index.ts");
+    const widget = read("src/components/support/FloatingSupportButton.tsx");
+    expect(pricing).toContain("price_outside_supplier_margin");
+    expect(pricing).toContain("promotion_below_supplier_base_or_invalid");
+    expect(pricing).toContain("bib_has_active_pro_subscription");
+    expect(pricing).toContain('sub.status IN (\'active\',\'trialing\')');
+    expect(pricing).toContain("bib_private_sale_pro_guard");
+    expect(pos).toContain('bib_has_active_pro_subscription');
+    expect(pos).toContain("supplier.base_price");
+    expect(checkout).toContain("supplier.base_price");
+    expect(limits).toContain("usage_count<8");
+    expect(ai).toContain('reserve_boutique_ai_generation');
+    expect(legacy).toContain('status: 410');
+    expect(applications).toContain('DROP POLICY IF EXISTS "Anyone can submit a partner application"');
+    expect(applications).toContain('DROP POLICY IF EXISTS "Anonymous can upload to storefront tickets"');
+    expect(support).toContain('(msg as { role?: string }).role !== "user"');
+    expect(widget).toContain('messages: next.filter(msg => msg.role === "user")');
+  });
+
   it("hardens critical public checkout, identity and mail security boundaries", () => {
     const migration = read("supabase/migrations/20261102070000_critical_public_access_hardening.sql");
     const sensitive = read("supabase/migrations/20261102070200_financial_entitlement_partner_guards.sql");
