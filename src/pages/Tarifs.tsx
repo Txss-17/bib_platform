@@ -92,7 +92,7 @@ export default function Tarifs() {
             <Badge variant="outline" className="mb-5 rounded-full px-4 py-1.5">
               {translateUi("Grille v1.0 — Avril 2026")}
             </Badge>
-            <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
+            <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">
               {translateUi("Une tarification transparente.")}
               <br className="hidden sm:block" />
               {translateUi("Aucune surprise.")}
@@ -184,7 +184,7 @@ export default function Tarifs() {
                         {/* PRICE */}
                         <div className="mt-5">
                           <div className="flex items-baseline gap-1">
-                            <span className="text-4xl font-semibold tracking-tight">
+                            <span className="text-3xl font-semibold tracking-tight">
                               {price}€
                             </span>
                             <span className="text-sm text-muted-foreground">
