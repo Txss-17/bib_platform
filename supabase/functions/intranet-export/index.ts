@@ -779,8 +779,15 @@ Deno.serve(async (req) => {
       ["verified_suppliers","secure_delivery","transparent_sav","brand_tools","product_quality","merchant_control"]),
     role_counts: countCategories("role",["merchant","customer","both","exploring"]),
     routing: {
-      product_engineering: ["fraud","delivery","quality","returns","trust","visibility","costs"],
-      marketplace: ["fraud","delivery","quality","returns","trust","visibility","costs"],
+      product_engineering: {
+        leads_on: ["trust", "visibility", "costs", "brand_tools", "merchant_control"],
+        reviews_all_survey_results: true,
+      },
+      marketplace: {
+        leads_on: ["fraud", "delivery", "quality", "returns",
+          "verified_suppliers", "secure_delivery", "transparent_sav", "product_quality"],
+        reviews_all_survey_results: true,
+      },
     },
     note: "Aggregated responses only. No names, emails, free-text answers, visitor identifiers or individual records.",
   };
