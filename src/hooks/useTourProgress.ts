@@ -19,33 +19,13 @@ const DEFAULT_PROGRESS: TourProgress = {
   dismissed: false,
 };
 
-const lsKey = (scope: TourScope, userId?: string) => `bib_tour_progress_${userId ?? "guest"}_${scope}`;
-
-function readLocal(scope: TourScope, userId?: string): TourProgress {
-  try {
-    const raw = localStorage.getItem(lsKey(scope, userId));
-    if (!raw) return DEFAULT_PROGRESS;
-    const parsed = JSON.parse(raw);
-    return { ...DEFAULT_PROGRESS, ...parsed };
-  } catch {
-    return DEFAULT_PROGRESS;
-  }
-}
-
-function writeLocal(scope: TourScope, p: TourProgress, userId?: string) {
-  try { localStorage.setItem(lsKey(scope, userId), JSON.stringify(p)); } catch {}
-}
-
 /**
- * Tour progress with cross-device sync.
- * - Authenticated users → persisted in `user_tour_progress` (Supabase, RLS-scoped).
- * - Anonymous / token-based portals → localStorage only.
- * The progress is keyed per `scope` ("seller" or "partner") so a seller can
- * have an independent partner-side tour state if they switch roles.
+ * Only authenticated Supabase progress is persisted.
+ * Anonymous preview progress exists in component memory for this render.
  */
 export function useTourProgress(scope: TourScope) {
   const { user } = useAuth();
-  const [progress, setProgress] = useState<TourProgress>(() => readLocal(scope, user?.id));
+  const [progress, setProgress] = useState<TourProgress>(DEFAULT_PROGRESS);
   const [loaded, setLoaded] = useState(!user);
   const lastSaved = useRef<string>("");
 
@@ -54,7 +34,7 @@ export function useTourProgress(scope: TourScope) {
     let cancelled = false;
     (async () => {
       setLoaded(false);
-      setProgress(readLocal(scope, user?.id));
+      setProgress(DEFAULT_PROGRESS);
       if (!user) { setLoaded(true); return; }
       const { data, error } = await (supabase as any)
         .from("user_tour_progress")
@@ -71,7 +51,7 @@ export function useTourProgress(scope: TourScope) {
           dismissed: !!data.dismissed,
         };
         setProgress(remote);
-        writeLocal(scope, remote, user.id);
+
       }
       setLoaded(true);
     })();
@@ -80,7 +60,7 @@ export function useTourProgress(scope: TourScope) {
 
   const save = useCallback(async (next: TourProgress) => {
     setProgress(next);
-    writeLocal(scope, next, user?.id);
+
     if (!user) return;
     const signature = JSON.stringify(next);
     if (signature === lastSaved.current) return;
