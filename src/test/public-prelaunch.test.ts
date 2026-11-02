@@ -68,6 +68,9 @@ describe("BIB Platform public prelaunch boundary", () => {
     expect(talent).not.toContain("<video");
     expect(talent).not.toContain("bibProjectFilm");
     expect(talent).not.toContain("Aperçus visuels issus");
-    expect(legal).toContain("Google Forms");
+    expect(talent).toContain("<BibTalentApplicationForm />");
+    expect(talent).not.toContain("docs.google.com/forms");
+    expect(legal).toContain("Le formulaire intégré enregistre les dossiers");
+    expect(legal).toContain("recrutement RH de l'intranet BIB");
   });
 });
