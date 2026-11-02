@@ -4,6 +4,7 @@ import { assertTrustedReturnUrl } from "../_shared/return-url.ts";
 const challenges = new Set(["fraud","delivery","quality","returns","trust","visibility","costs"]);
 const solutions = new Set(["verified_suppliers","secure_delivery","transparent_sav","brand_tools","product_quality","merchant_control"]);
 const roles = new Set(["merchant","customer","both","exploring"]);
+const launchTimings = new Set(["as_soon_as_possible","within_1_month","within_3_months","within_6_months","no_preference"]);
 const headers = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "content-type, apikey, authorization, x-client-info",
@@ -42,7 +43,9 @@ Deno.serve(async request => {
     const data = JSON.parse(raw);
     if (!data || typeof data !== "object" || Array.isArray(data) ||
         !challenges.has(data.challenge) || !solutions.has(data.solution) ||
-        !roles.has(data.role) || !["fr","en"].includes(data.locale)) {
+        !roles.has(data.role) || !["fr","en"].includes(data.locale) ||
+        typeof data.wants_to_be_merchant !== "boolean" ||
+        (data.wants_to_be_merchant ? !launchTimings.has(data.preferred_launch_timing) : data.preferred_launch_timing != null)) {
       return response({ error: "invalid_answers" }, 400, origin);
     }
 
@@ -67,6 +70,8 @@ Deno.serve(async request => {
       solution: data.solution,
       role: data.role,
       locale: data.locale,
+      wants_to_be_merchant: data.wants_to_be_merchant,
+      preferred_launch_timing: data.wants_to_be_merchant ? data.preferred_launch_timing : null,
       visitor_digest: visitorDigest,
       survey_day: day,
     });
