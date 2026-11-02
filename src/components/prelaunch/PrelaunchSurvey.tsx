@@ -29,7 +29,7 @@ const TIMINGS: Option[] = [
   { value: "within_6_months", fr: "D'ici 6 mois", en: "Within 6 months" },
   { value: "no_preference", fr: "Sans préférence", en: "No preference" },
 ];
-const STORAGE_KEY = "bib.prelaunch.survey.dismissed.v2";
+
 
 function SurveyOptions({ options, values, onChange, en }: {
   options: Option[]; values: string[]; onChange: (value: string[]) => void; en: boolean;
@@ -63,10 +63,7 @@ export function PrelaunchSurvey() {
   const { lang } = useLanguage();
   const en = lang === "en";
   const tx = (fr: string, english: string) => en ? english : fr;
-  const [dismissed, setDismissed] = useState(() => {
-    try { return typeof window !== "undefined" && window.localStorage.getItem(STORAGE_KEY) === "yes"; }
-    catch { return false; }
-  });
+  const [dismissed, setDismissed] = useState(false);
   const [step, setStep] = useState(0);
   const [issues, setIssues] = useState<string[]>([]);
   const [solutions, setSolutions] = useState<string[]>([]);
@@ -79,7 +76,6 @@ export function PrelaunchSurvey() {
 
   const dismiss = () => {
     setDismissed(true);
-    try { window.localStorage.setItem(STORAGE_KEY, "yes"); } catch { /* optional local persistence */ }
   };
   const canContinue = step === 0 ? issues.length > 0 : step === 1 ? solutions.length > 0 :
     wantsToBeMerchant !== null && (!wantsToBeMerchant || !!launchTiming);
