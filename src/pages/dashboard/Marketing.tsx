@@ -55,6 +55,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { BlockComposer } from "@/components/marketing/BlockComposer";
+import { MerchantAdsWorkspace } from "@/components/marketing/MerchantAdsWorkspace";
 import {
   renderBlocksToHtml,
   blocksToPlainText,
@@ -357,7 +358,7 @@ export default function Marketing() {
 
         <Tabs defaultValue="composer" className="w-full min-w-0">
           <div className="w-full min-w-0 pb-1">
-          <TabsList className="grid h-auto w-full min-w-0 grid-cols-3 gap-1 p-1 sm:max-w-lg">
+          <TabsList className="grid h-auto w-full min-w-0 grid-cols-2 gap-1 p-1 sm:max-w-2xl sm:grid-cols-4">
             <TabsTrigger value="composer" className="min-w-0 px-1.5 text-[11px] sm:px-3 sm:text-sm">
               <Sparkles className="hidden h-4 w-4 shrink-0 sm:inline" />
               {translateUi("Composer")}
@@ -365,6 +366,10 @@ export default function Marketing() {
             <TabsTrigger value="campaigns" className="min-w-0 px-1.5 text-[11px] sm:px-3 sm:text-sm">
               <ListChecks className="hidden h-4 w-4 shrink-0 sm:inline" />
               {translateUi("Historique")}
+            </TabsTrigger>
+            <TabsTrigger value="ads" className="min-w-0 px-1.5 text-[11px] sm:px-3 sm:text-sm">
+              <Megaphone className="hidden h-4 w-4 shrink-0 sm:inline" />
+              {translateUi("Publicités")}
             </TabsTrigger>
             <TabsTrigger value="automations" className="min-w-0 px-1.5 text-[11px] sm:px-3 sm:text-sm">
               <Bot className="hidden h-4 w-4 shrink-0 sm:inline" />
@@ -374,6 +379,10 @@ export default function Marketing() {
           </div>
 
           {/* COMPOSER */}
+          <TabsContent value="ads" className="mt-4 min-w-0 max-w-full">
+            <MerchantAdsWorkspace boutique={boutiques.find(b => b.id === activeId)} />
+          </TabsContent>
+
           <TabsContent value="composer" className="min-w-0 max-w-full space-y-4 mt-4">
             <Card>
               <CardHeader>
