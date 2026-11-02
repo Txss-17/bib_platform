@@ -1,19 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const SESSION_KEY = "bib_storefront_session";
-
-function getSessionId(): string {
-  if (typeof window === "undefined") return "ssr";
-  let id = window.sessionStorage.getItem(SESSION_KEY);
-  if (!id) {
-    id =
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : Math.random().toString(36).slice(2);
-    window.sessionStorage.setItem(SESSION_KEY, id);
-  }
-  return id;
-}
+const volatileSessionId = typeof crypto !== "undefined" && crypto.randomUUID
+  ? crypto.randomUUID() : "not-tracked";
+function getSessionId(): string { return volatileSessionId; }
 
 export type StorefrontEventType =
   | "boutique_view"
