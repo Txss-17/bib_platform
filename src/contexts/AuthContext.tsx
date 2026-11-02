@@ -48,6 +48,7 @@ interface AuthContextType {
     fullName?: string,
     accountType?: AccountType,
     legalAcceptances?: MerchantLegalAcceptances,
+    privacyConsent?: boolean,
   ) => Promise<{
     data: {
       user: User | null;
@@ -245,7 +246,7 @@ export function AuthProvider({
    *      -> store
    */
   const signUp: AuthContextType["signUp"] = async (
-    email, password, fullName = "", type = "platform",
+    email, password, fullName = "", type = "platform", _legalAcceptances, privacyConsent = false,
   ) => {
     // Only customer Store accounts can self-register. Merchant signup remains
     // closed; partner qualification uses its dedicated application workflow.
@@ -255,11 +256,17 @@ export function AuthProvider({
         error: new AuthError("Merchant account registration is coming soon.", 403),
       };
     }
+    if (!privacyConsent) {
+      return {
+        data: { user: null, session: null },
+        error: new AuthError("Privacy consent is required before account creation.", 400),
+      };
+    }
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
-        data: { full_name: fullName.trim(), account_type: "store" },
+        data: { full_name: fullName.trim(), account_type: "store", privacy_notice_version: "store-signup-v1", privacy_consent_given_at: new Date().toISOString() },
       },
     });
     return { data: { user: data.user, session: data.session }, error };
