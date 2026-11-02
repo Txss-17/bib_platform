@@ -20,7 +20,7 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-const DISMISS_KEY = "bib_onboarding_dismissed";
+const dismissKey = (userId: string) => `bib_onboarding_dismissed_${userId}`;
 
 /**
  * OnboardingChecklist
@@ -38,10 +38,12 @@ export function OnboardingChecklist() {
     toggle: toggleReminders,
   } = useOnboardingReminders();
   const { user } = useAuth();
-  const [dismissed, setDismissed] = useState<boolean>(
-    typeof window !== "undefined" &&
-      window.localStorage.getItem(DISMISS_KEY) === "1",
-  );
+  const [dismissed, setDismissed] = useState(false);
+  useEffect(() => {
+    if (!user?.id) { setDismissed(false); return; }
+    try { setDismissed(window.localStorage.getItem(dismissKey(user.id)) === "1"); }
+    catch { setDismissed(false); }
+  }, [user?.id]);
 
   // Event-driven trigger: if at least one step is blocked, ping the
   // reminders function (rate-limited to once / 6h per browser).
@@ -65,7 +67,9 @@ export function OnboardingChecklist() {
   if (allDone || dismissed || totalCount === 0) return null;
 
   const handleDismiss = () => {
-    window.localStorage.setItem(DISMISS_KEY, "1");
+    if (user?.id) {
+      try { window.localStorage.setItem(dismissKey(user.id), "1"); } catch { /* non-persistent browser */ }
+    }
     setDismissed(true);
   };
 
@@ -82,7 +86,7 @@ export function OnboardingChecklist() {
           </div>
           <div className="min-w-0">
             <p className="font-display font-semibold text-foreground">
-              {translateUi("Démarrage — First 5 minutes")}
+              {translateUi("Démarrage — Votre parcours marchand")}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
               {doneCount} / {totalCount}{" "}
@@ -170,7 +174,7 @@ export function OnboardingChecklist() {
             </p>
             <p className="text-xs text-muted-foreground">
               {translateUi(
-                "E-mail si une étape reste bloquée. Personnalisez délais, modèle et journal.",
+                "Recevez des rappels facultatifs sur les étapes non terminées. Vous pouvez les désactiver.",
               )}
             </p>
           </div>
