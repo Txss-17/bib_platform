@@ -24,7 +24,9 @@ describe("BIB security release gates", () => {
     expect(fn).toContain("authClient.auth.getUser(token)");
     expect(fn).toContain("user_id: actor.user.id");
     expect(fn).toContain("boutique_id: authorizedBoutiqueId");
-    expect(fn).toContain('["user", "assistant"]');
+    expect(fn).toContain('(msg as { role?: string }).role !== "user"');
+    expect(fn).toContain("explicit_ticket_consent_required");
+    expect(fn).toContain("consume_support_ticket_offer");
     expect(fn).not.toContain("user_id: context.user_id");
   });
 
