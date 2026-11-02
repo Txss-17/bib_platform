@@ -16,5 +16,26 @@ describe("BIB Talent bilingual content", () => {
     expect(source).toContain("Comment participer ?");
     expect(source).toContain("How can I contribute?");
     expect(source).not.toContain("<video");
+    expect(source).toContain("<BibTalentApplicationForm />");
+    expect(source).toContain('href="#candidature"');
+    expect(source).not.toContain("docs.google.com/forms");
+  });
+  it("validates and routes first-party Talent applications to RH", () => {
+    const form = readFileSync(new URL("../components/talent/BibTalentApplicationForm.tsx", import.meta.url), "utf8");
+    const submit = readFileSync(new URL("../../supabase/functions/submit-talent-application/index.ts", import.meta.url), "utf8");
+    const exportFn = readFileSync(new URL("../../supabase/functions/intranet-talent-export/index.ts", import.meta.url), "utf8");
+    const publicExport = readFileSync(new URL("../../supabase/functions/intranet-export/index.ts", import.meta.url), "utf8");
+    const migration = readFileSync(new URL("../../supabase/migrations/20261102133500_bib_talent_applications.sql", import.meta.url), "utf8");
+    expect(form).toContain('functions.invoke("submit-talent-application"');
+    expect(form).toContain("consent");
+    expect(form).toContain("quality_audit");
+    expect(submit).toContain('allowedPoles.has(body.preferred_pole)');
+    expect(submit).toContain('"talent_coordination" : body.preferred_pole');
+    expect(submit).toContain("network_digest");
+    expect(migration).toContain("ENABLE ROW LEVEL SECURITY");
+    expect(migration).toContain("REVOKE ALL ON public.bib_talent_applications");
+    expect(exportFn).toContain("BIB_TALENT_BRIDGE_SECRET");
+    expect(exportFn).toContain('destination: "rh_recruitment"');
+    expect(publicExport).not.toContain("talent_applications:");
   });
 });
