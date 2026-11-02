@@ -126,14 +126,14 @@ export default function PackLegal() {
       <main>
         <section className="relative overflow-hidden bg-brand-marine text-bib-ivory">
           <div
-            className="absolute -top-40 -right-32 w-[520px] h-[520px] rounded-full bg-bib-gold/10 blur-3xl"
+            className="absolute -top-40 -right-32 w-[320px] h-[320px] rounded-full bg-bib-gold/10 blur-3xl"
             aria-hidden
           />
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 relative max-w-4xl">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/10 text-bib-ivory text-[11px] font-semibold uppercase tracking-[0.18em] mb-6">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-9 lg:py-12 relative max-w-6xl">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/10 text-bib-ivory text-[11px] font-semibold uppercase tracking-[0.18em] mb-4">
               <ScaleIcon className="h-3.5 w-3.5" /> {translateUi("Pack légal")}
             </span>
-            <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.05]">
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold leading-[1.05]">
               {translateUi("Tout notre cadre légal,") + " "}
               <span className="text-bib-gold">
                 {translateUi("accessible en un endroit")}
@@ -148,13 +148,13 @@ export default function PackLegal() {
           </div>
         </section>
 
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14 max-w-5xl">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14 max-w-6xl">
+          <div className="grid sm:grid-cols-2 gap-3">
             {docs.map((d) => (
               <Link
                 key={d.href}
                 to={d.href}
-                className="group relative rounded-xl border border-border bg-card p-4 hover:border-bib-gold/50 hover:shadow-xl transition-all"
+                className="group relative rounded-lg border border-border bg-card p-4 hover:border-bib-gold/50 hover:shadow-sm transition-all"
               >
                 <div className="flex items-start gap-4">
                   <div className="w-9 h-9 rounded-lg bg-primary/5 text-foreground flex items-center justify-center group-hover:bg-bib-gold/15 group-hover:text-bib-gold transition-colors">
@@ -172,7 +172,7 @@ export default function PackLegal() {
                 <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
                   {d.desc}
                 </p>
-                <ul className="mt-4 space-y-1.5">
+                <ul className="mt-3 space-y-1">
                   {d.points.map((p) => (
                     <li
                       key={p}
@@ -183,7 +183,7 @@ export default function PackLegal() {
                     </li>
                   ))}
                 </ul>
-                <div className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-foreground group-hover:text-bib-gold transition-colors">
+                <div className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-foreground group-hover:text-bib-gold transition-colors">
                   {translateUi("Consulter") + " "}
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
                 </div>

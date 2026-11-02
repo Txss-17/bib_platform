@@ -20,7 +20,7 @@ export default function DiscoverBoutiquesSection() {
 
   const scrollerRef = useRef<HTMLDivElement>(null);
 
-  const items = boutiques.slice(0, 12);
+  const items = boutiques.filter(boutique => boutique.product_count > 0).slice(0, 12);
 
   const scroll = (direction: 1 | -1) => {
     const element = scrollerRef.current;
@@ -58,16 +58,16 @@ export default function DiscoverBoutiquesSection() {
               id="discover-title"
               className="font-display text-4xl font-bold leading-[1.02] tracking-[-0.035em] text-foreground sm:text-5xl lg:text-6xl"
             >
-              {translateUi("Des marques")}
+              {translateUi("Les marques")}
               <br />
               <span className="text-bib-gold">
-                {translateUi("sélectionnées par BIB.")}
+                {translateUi("du catalogue BIB.")}
               </span>
             </h2>
 
             <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
               {translateUi(
-                "Découvrez les boutiques présentes sur le réseau BIB. Chaque boutique proposée sur le Store est vérifiée avant d&apos;être présentée aux visiteurs.",
+                "Les boutiques seront présentées ici lorsqu'elles disposeront de produits réels qualifiés et publiables.",
               )}
             </p>
           </div>
@@ -117,12 +117,12 @@ export default function DiscoverBoutiquesSection() {
               <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
                 <div className="max-w-2xl text-white">
                   <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/65">
-                    {translateUi("BIB Verified Network")}
+                    {translateUi("Réseau BIB en préparation")}
                   </p>
 
                   <p className="font-display text-2xl font-semibold leading-tight sm:text-3xl lg:text-4xl">
                     {translateUi(
-                      "Un réseau où les boutiques sont vérifiées avant d&apos;être présentées aux clients.",
+                      "Un catalogue construit à partir de références fournisseurs contrôlées.",
                     )}
                   </p>
                 </div>
@@ -133,7 +133,7 @@ export default function DiscoverBoutiquesSection() {
                     aria-hidden="true"
                   />
 
-                  {translateUi("Boutiques vérifiées")}
+                  {translateUi("Sélection en préparation")}
                 </div>
               </div>
             </div>

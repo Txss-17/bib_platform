@@ -8,7 +8,6 @@ export interface CustomerProfile {
   email: string;
   full_name: string | null;
   avatar_url: string | null;
-  total_recycling_points: number;
   marketing_opt_in: boolean;
   created_at: string;
 }
@@ -70,7 +69,6 @@ export function useCreateCustomerProfile() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["customer-profile"] });
       qc.invalidateQueries({ queryKey: ["customer-orders"] });
-      qc.invalidateQueries({ queryKey: ["customer-gift-cards"] });
     },
   });
 }
@@ -102,68 +100,3 @@ export function useCustomerOrders() {
   });
 }
 
-/** Loads all gift cards (one per boutique) for the current customer. */
-export function useCustomerGiftCards() {
-  const { data: profile } = useCustomerProfile();
-
-  return useQuery({
-    queryKey: ["customer-gift-cards", profile?.id],
-    queryFn: async () => {
-      if (!profile) return [];
-      const { data, error } = await supabase
-        .from("gift_cards")
-        .select(
-          `
-          id, balance_cents, updated_at,
-          boutiques ( id, name, slug, logo_url, cover_image_url )
-        `,
-        )
-        .eq("customer_profile_id", profile.id)
-        .gt("balance_cents", 0)
-        .order("balance_cents", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
-    },
-    enabled: !!profile,
-  });
-}
-
-/** Loads recycling scan history for the current customer. */
-export function useRecyclingHistory() {
-  const { data: profile } = useCustomerProfile();
-
-  return useQuery({
-    queryKey: ["customer-recycling", profile?.id],
-    queryFn: async () => {
-      if (!profile) return [];
-      const { data, error } = await supabase
-        .from("recycling_scans")
-        .select(
-          `
-          id, points, source, created_at,
-          boutiques ( id, name, slug, logo_url )
-        `,
-        )
-        .eq("customer_profile_id", profile.id)
-        .order("created_at", { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      return data ?? [];
-    },
-    enabled: !!profile,
-  });
-}
-
-/** The physical recycling workflow is not yet operational. Client scans cannot award credit. */
-export function useRecordRecyclingScan() {
-  return useMutation({
-    mutationFn: async (_input: {
-      boutiqueId: string;
-      points: number;
-      orderId?: string;
-      source?: "qr_scan" | "manual" | "pickup";
-    }): Promise<never> => {
-      throw new Error("recycling_verification_required");
-    },
-  });
-}

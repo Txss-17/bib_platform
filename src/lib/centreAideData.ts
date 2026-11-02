@@ -1,14 +1,5 @@
 import { translateUi } from "@/lib/uiTranslation";
-import {
-  Users,
-  Store,
-  Boxes,
-  Truck,
-  CreditCard,
-  Sparkles,
-  Megaphone,
-  ShieldCheck,
-} from "lucide-react";
+import { Users, Store, Boxes, Truck, CreditCard, Sparkles, Megaphone, ShieldCheck } from "lucide-react";
 
 export type Persona = {
   id: "client" | "vendeur" | "fournisseur" | "logistique" | "compte";
@@ -16,193 +7,45 @@ export type Persona = {
   desc: string;
   icon: React.ComponentType<{ className?: string }>;
 };
-
 export const personas: Persona[] = [
-  {
-    id: "client",
-    get label() {
-      return translateUi("Je suis client");
-    },
-    get desc() {
-      return translateUi("Commandes, suivi et assistance");
-    },
-    icon: Users,
-  },
-  {
-    id: "vendeur",
-    get label() {
-      return translateUi("Je suis vendeur");
-    },
-    get desc() {
-      return translateUi(
-        "Créer ma boutique, produits, paiements, échantillons",
-      );
-    },
-    icon: Store,
-  },
-  {
-    id: "fournisseur",
-    get label() {
-      return translateUi("Je suis fournisseur");
-    },
-    get desc() {
-      return translateUi("Candidature, catalogue, performance, paiements");
-    },
-    icon: Boxes,
-  },
-  {
-    id: "logistique",
-    get label() {
-      return translateUi("Je suis partenaire logistique");
-    },
-    get desc() {
-      return translateUi("Portail Ops, étiquettes, litiges, expéditions");
-    },
-    icon: Truck,
-  },
+  { id: "client", label: "Je suis client", desc: "Achats, vendeur, commandes et garanties", icon: Users },
+  { id: "vendeur", label: "Je suis marchand", desc: "Boutique, catalogue, qualité et publication", icon: Store },
+  { id: "fournisseur", label: "Je suis fournisseur", desc: "Candidature, référencement et conformité", icon: Boxes },
+  { id: "logistique", label: "Je suis partenaire logistique", desc: "Candidature, expédition et suivi opérationnel", icon: Truck },
 ];
 
 export type Guide = {
-  slug: string;
-  title: string;
-  to: string;
-  desc: string;
-  long?: string;
-  requiresAuth?: boolean;
+  slug: string; title: string; to: string; desc: string; long?: string; requiresAuth?: boolean;
 };
 export type GuideGroup = {
-  slug: string;
-  title: string;
+  slug: string; title: string;
   icon: React.ComponentType<{ className?: string }>;
   tone: "marine" | "gold" | "info" | "success" | "accent" | "warning";
-  intro: string;
-  guides: Guide[];
+  intro: string; guides: Guide[];
 };
-
 export const guideGroups: GuideGroup[] = [
   {
-    slug: "premiers-pas",
-    get title() {
-      return translateUi("Premiers pas");
-    },
-    icon: Sparkles,
-    tone: "gold",
-    intro:
-      "Tout ce qu'il faut savoir pour démarrer sur Brand-In-A-Box, sans compte requis.",
+    slug: "premiers-pas", title: "Découvrir BIB", icon: Sparkles, tone: "gold",
+    intro: "Ce qui est accessible aujourd'hui et comment préparer son inscription.",
     guides: [
-      {
-        slug: "creer-compte",
-        get title() {
-          return translateUi("Créer un compte");
-        },
-        to: "/signup",
-        get desc() {
-          return translateUi("Particulier ou pro, vérification 18+.");
-        },
-        get long() {
-          return translateUi(
-            "Inscription en 1 minute : email + mot de passe. Vous choisissez ensuite si vous êtes client, vendeur, fournisseur ou logisticien. La vérification 18+ est obligatoire.",
-          );
-        },
-      },
-      {
-        slug: "choisir-plan",
-        get title() {
-          return translateUi("Choisir un plan");
-        },
-        to: "/tarifs",
-        get desc() {
-          return translateUi("Starter, Growth, Pro — sans engagement.");
-        },
-        get long() {
-          return translateUi(
-            "Trois plans transparents, paiement mensuel ou annuel. Vous pouvez changer à tout moment, prorata appliqué automatiquement.",
-          );
-        },
-      },
-      {
-        slug: "lancer-boutique",
-        get title() {
-          return translateUi("Lancer ma première boutique");
-        },
-        to: "/vendre",
-        get desc() {
-          return translateUi("Brand Studio IA + éditeur drag-and-drop.");
-        },
-        get long() {
-          return translateUi(
-            "Après création, le Brand Studio IA génère votre identité visuelle (logo, palette, scènes hero) en fonction de votre marché. Vous éditez ensuite chaque section dans l'éditeur.",
-          );
-        },
-        requiresAuth: true,
-      },
+      { slug: "prelancement", title: "À quel stade en est BIB ?", to: "/signup", desc: "Comprendre l'accès progressif aux services.", long: "BIB prépare son lancement commercial. Certaines fonctionnalités marchandes sont encore soumises à validation et ne sont pas nécessairement ouvertes au public. La page d'inscription peut présenter un accès en préparation et un sondage facultatif." },
+      { slug: "parcours", title: "Quels sont les rôles sur BIB ?", to: "/a-propos", desc: "Marchand, client, fournisseur, logistique et BIB.", long: "Le marchand est le vendeur juridique. Les fournisseurs proposent des produits à qualifier, les partenaires logistiques exécutent les prestations convenues et BIB fournit l'infrastructure, l'intermédiation et l'orchestration des flux." },
+      { slug: "compte", title: "Comment créer un compte ?", to: "/store/signup", desc: "Compte client ou accès marchand selon ouverture.", long: "Lorsque l'inscription est ouverte, vérifiez le domaine officiel BIB, prenez connaissance des documents contractuels et des informations de confidentialité. Le compte marchand peut rester fermé pendant le prélancement." },
     ],
   },
   {
-    slug: "boutique-produits",
-    get title() {
-      return translateUi("Boutique & produits");
-    },
-    icon: Store,
-    tone: "marine",
-    intro: "Composer une boutique, alimenter le catalogue, valider la qualité.",
+    slug: "boutique-produits", title: "Boutiques et produits", icon: Store, tone: "marine",
+    intro: "Du référencement fournisseur à la publication d'une offre éligible.",
     guides: [
-      {
-        slug: "editeur",
-        get title() {
-          return translateUi("Éditeur de boutique");
-        },
-        to: "/dashboard/boutiques",
-        get desc() {
-          return translateUi("Sections, scènes, médias, SEO.");
-        },
-        get long() {
-          return translateUi(
-            "Drag-and-drop modulaire, blocs marketing prêts à l'emploi, scènes Hero 3D, SEO assisté par IA.",
-          );
-        },
-        requiresAuth: true,
-      },
-      {
-        slug: "catalogue-fournisseur",
-        get title() {
-          return translateUi("Ajouter un produit fournisseur");
-        },
-        to: "/suppliers",
-        get desc() {
-          return translateUi("Catalogue pré-validé par BIB.");
-        },
-        get long() {
-          return translateUi(
-            "Parcourez le catalogue fournisseurs : produits déjà audités. Importez en 1 clic et fixez votre marge.",
-          );
-        },
-      },
-      {
-        slug: "validation-echantillon",
-        get title() {
-          return translateUi("Validation par échantillon");
-        },
-        to: "/centre-aide/guide/validation-echantillon",
-        get desc() {
-          return translateUi("Garantie qualité avant mise en ligne.");
-        },
-        get long() {
-          return translateUi(
-            "Chaque nouveau produit fournisseur doit passer une commande échantillon via Stripe. Une fois reçue et validée, le produit devient publiable.",
-          );
-        },
-      },
+      { slug: "boutique", title: "Créer et personnaliser sa boutique", to: "/dashboard/boutiques", desc: "Identité, pages, catalogue, aperçu.", long: "Dans votre espace marchand habilité, configurez l'identité, les pages et les paramètres de la boutique. Les éléments préparés ou générés avec une IA doivent être vérifiés avant diffusion ; aucun brouillon ne garantit une publication immédiate.", requiresAuth: true },
+      { slug: "catalogue", title: "D'où viennent les produits du catalogue ?", to: "/dashboard/produits-fournisseurs", desc: "Traçabilité depuis le fournisseur et l'intranet BIB.", long: "Le fournisseur dépose les fiches et justificatifs. Les équipes Fournisseurs, Qualité/Audit et Product Engineering de BIB Intranet instruisent et valident les dossiers avant leur transmission contrôlée vers BIB Platform. Un catalogue vide signifie qu'aucun produit réel n'est encore proposé ; BIB n'ajoute pas de produits fictifs.", requiresAuth: true },
+      { slug: "qualite", title: "Un produit importé est-il immédiatement vendable ?", to: "/dashboard/produits", desc: "Contrôles, stock, conditions et échantillons.", long: "Non. Le marchand doit vérifier l'éligibilité, les obligations de conformité, les éventuelles validations d'échantillons, la marge et la disponibilité réelle avant toute activation. Le statut de publication dépend des contrôles effectivement validés.", requiresAuth: true },
+      { slug: "vendeur", title: "Qui vend juridiquement au client final ?", to: "/cgv", desc: "Le marchand est le vendeur professionnel.", long: "BIB est intermédiaire technique et organise certaines opérations avec ses partenaires. Le marchand vendeur reste premier responsable envers le consommateur de la vente, des informations précontractuelles et des garanties légales." },
     ],
   },
   {
-    slug: "commandes-paiements",
-    get title() {
-      return translateUi("Commandes & paiements");
-    },
-    icon: CreditCard,
-    tone: "info",
-    intro: "Suivre, payer, encaisser et résoudre les litiges en confiance.",
+    slug: "commandes-paiements", title: "Commandes, livraison et SAV", icon: CreditCard, tone: "info",
+    intro: "Comprendre la répartition des responsabilités et les recours.",
     guides: [
       {
         slug: "suivi-commande",
@@ -253,167 +96,35 @@ export const guideGroups: GuideGroup[] = [
     ],
   },
   {
-    slug: "marketing-seo",
-    title: "Marketing & SEO",
-    icon: Megaphone,
-    tone: "accent",
-    intro: "Faire venir, faire revenir, faire convertir.",
+    slug: "marketing-seo", title: "Marketing et développement", icon: Megaphone, tone: "accent",
+    intro: "Outils disponibles et fonctionnalités nécessitant une activation distincte.",
     guides: [
-      {
-        slug: "campagnes-email",
-        get title() {
-          return translateUi("Campagnes e-mail");
-        },
-        to: "/dashboard/marketing",
-        get desc() {
-          return translateUi("Templates BIB prêts à l'emploi.");
-        },
-        get long() {
-          return translateUi(
-            "Envoi transactionnel et marketing depuis votre domaine vérifié.",
-          );
-        },
-        requiresAuth: true,
-      },
-      {
-        slug: "seo-copilot",
-        title: "SEO Copilot",
-        to: "/dashboard/seo-analytics",
-        get desc() {
-          return translateUi("Suggestions IA + audit.");
-        },
-        get long() {
-          return translateUi(
-            "Audit automatique de chaque page, suggestions de titres, métadescriptions et balises Schema.org.",
-          );
-        },
-        requiresAuth: true,
-      },
-      {
-        slug: "ventes-privees",
-        get title() {
-          return translateUi("Ventes privées");
-        },
-        to: "/dashboard/ventes-privees",
-        get desc() {
-          return translateUi("Codes d'accès, fenêtres VIP.");
-        },
-        get long() {
-          return translateUi(
-            "Créez une vente flash avec code d'accès, fenêtre horaire et remise dédiée.",
-          );
-        },
-        requiresAuth: true,
-      },
+      { slug: "campagnes", title: "Peut-on préparer des campagnes depuis BIB ?", to: "/dashboard/marketing", desc: "Préparation et conformité des messages.", long: "Les marchands habilités peuvent préparer leurs campagnes selon les outils de leur espace. Les messages promotionnels doivent respecter les règles de prospection et de désabonnement ; aucun envoi à des destinataires arbitraires n'est autorisé.", requiresAuth: true },
+      { slug: "publicites", title: "BIB diffuse-t-il automatiquement des publicités ?", to: "/dashboard/marketing", desc: "Non, une connexion et une autorisation sont requises.", long: "Un brouillon publicitaire n'est pas une campagne publiée. La diffusion et toute dépense sur un réseau externe exigent une connexion autorisée, une vérification des contenus et une confirmation expresse du marchand.", requiresAuth: true },
+      { slug: "seo", title: "Comment améliorer la visibilité de sa boutique ?", to: "/dashboard/boutiques", desc: "Pages complètes et descriptions exactes.", long: "Décrivez précisément vos produits, renseignez les informations du vendeur, les titres et visuels dont vous détenez les droits. Aucune position sur un moteur de recherche n'est garantie par BIB.", requiresAuth: true },
     ],
   },
   {
-    slug: "conformite-legal",
-    get title() {
-      return translateUi("Conformité & légal");
-    },
-    icon: ShieldCheck,
-    tone: "success",
-    intro: "Tout le cadre juridique pour vendre l'esprit tranquille.",
+    slug: "conformite-legal", title: "Données, contrats et assistance", icon: ShieldCheck, tone: "success",
+    intro: "Droits, rôles, consentement et support humain.",
     guides: [
-      {
-        slug: "pack-legal",
-        get title() {
-          return translateUi("Pack légal BIB");
-        },
-        to: "/pack-legal",
-        get desc() {
-          return translateUi("CGV, CGU, RGPD, mentions.");
-        },
-        get long() {
-          return translateUi(
-            "Pack juridique complet prêt à publier sur votre boutique.",
-          );
-        },
-      },
-      {
-        slug: "kyc",
-        get title() {
-          return translateUi("Vérification KYC");
-        },
-        to: "/centre-aide/guide/kyc",
-        get desc() {
-          return translateUi("Documents acceptés & délais.");
-        },
-        get long() {
-          return translateUi(
-            "Pièce d'identité + justificatif d'activité (Kbis ou équivalent). Vérification sous 48h ouvrées.",
-          );
-        },
-      },
-      {
-        slug: "rgpd",
-        get title() {
-          return translateUi("Confidentialité (RGPD)");
-        },
-        to: "/confidentialite",
-        get desc() {
-          return translateUi("Vos droits sur vos données.");
-        },
-        get long() {
-          return translateUi(
-            "Vous pouvez exporter ou supprimer vos données à tout moment depuis Paramètres → Compte.",
-          );
-        },
-      },
+      { slug: "documents", title: "Quels documents juridiques consulter ?", to: "/pack-legal", desc: "CGU, CGV, confidentialité, cookies et annexes.", long: "Le pack légal BIB présente les règles de la plateforme et les responsabilités des parties. Les informations de l'entreprise et les conditions de chaque boutique doivent être finalisées et validées avant l'exploitation commerciale." },
+      { slug: "confidentialite", title: "Pourquoi BIB demande-t-il mes données ?", to: "/donnees-et-consentements", desc: "Finalité expliquée avant chaque formulaire.", long: "Les données nécessaires à un compte, à une commande ou au support ne doivent pas être confondues avec des finalités facultatives. Les sondages, la prospection et les cookies soumis au consentement proposent des choix séparés. Les droits RGPD sont détaillés dans le pack légal." },
+      { slug: "assistant", title: "L'assistant BIB peut-il ouvrir un ticket sans mon accord ?", to: "/centre-aide", desc: "Non, une confirmation doit être demandée.", long: "L'assistant doit chercher à comprendre la demande, poser des questions pertinentes, proposer un ticket si nécessaire puis attendre une réponse affirmative. Une conversation simple ne déclenche pas automatiquement un ticket." },
+      { slug: "talent", title: "Comment rejoindre BIB Talent ?", to: "/talent", desc: "Candidature intégrée et traitement réservé aux RH.", long: "Le bouton Rejoindre BIB Talent ouvre un formulaire dans une fenêtre au-dessus de la page. Les candidatures sont examinées par la coordination RH, avant toute orientation éventuelle vers un pôle métier. Aucune promesse automatique de collaboration n'est faite." },
     ],
   },
   {
-    slug: "partenaires",
-    get title() {
-      return translateUi("Partenaires");
-    },
-    icon: Boxes,
-    tone: "warning",
-    intro: "Rejoindre l'écosystème BIB côté offre.",
+    slug: "partenaires", title: "Fournisseurs et logistique", icon: Boxes, tone: "warning",
+    intro: "Candidatures et qualification préalable, sans promesse de délai.",
     guides: [
-      {
-        slug: "fournisseur",
-        get title() {
-          return translateUi("Devenir fournisseur");
-        },
-        to: "/suppliers/apply",
-        get desc() {
-          return translateUi("Rejoindre le catalogue BIB.");
-        },
-        get long() {
-          return translateUi(
-            "Soumettez votre catalogue. Notre équipe revient sous 5 jours ouvrés.",
-          );
-        },
-      },
-      {
-        slug: "logistique",
-        get title() {
-          return translateUi("Devenir logisticien");
-        },
-        to: "/ops/apply",
-        get desc() {
-          return translateUi("Opérer en marque blanche.");
-        },
-        get long() {
-          return translateUi(
-            "Candidatez sur le portail Ops. Nous validons capacité, pays couverts et process retours.",
-          );
-        },
-      },
+      { slug: "fournisseur", title: "Devenir fournisseur BIB", to: "/suppliers/apply", desc: "Candidature, justificatifs et examen.", long: "Un fournisseur propose ses coordonnées professionnelles, son catalogue et les documents pertinents. Le référencement dépend des contrôles effectués, des catégories et des capacités réellement prises en charge." },
+      { slug: "logistique", title: "Devenir partenaire logistique", to: "/ops/apply", desc: "Capacités, zones de service et procédures.", long: "Le portail partenaire permet une candidature et son instruction. Les missions n'existent qu'après approbation des accès et configuration des conditions opérationnelles." },
     ],
   },
 ];
-
 export type FaqItem = { q: string; a: string; to?: string; ctaLabel?: string };
-export type FaqCategory = {
-  id: Persona["id"];
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  items: FaqItem[];
-};
-
+export type FaqCategory = { id: Persona["id"]; label: string; icon: React.ComponentType<{ className?: string }>; items: FaqItem[] };
 export const faq: FaqCategory[] = [
   {
     id: "client",
@@ -737,26 +448,14 @@ export const faq: FaqCategory[] = [
     ],
   },
 ];
-
 export const toneClass = (tone: GuideGroup["tone"]) => {
-  switch (tone) {
-    case "marine":
-      return "bg-bib-marine/10 text-bib-marine";
-    case "gold":
-      return "bg-bib-gold/15 text-bib-gold";
-    case "info":
-      return "bg-info/10 text-info";
-    case "success":
-      return "bg-success/10 text-success";
-    case "accent":
-      return "bg-accent/10 text-accent";
-    case "warning":
-      return "bg-warning/10 text-warning";
+  switch(tone) {
+    case "marine": return "bg-bib-marine/10 text-bib-marine";
+    case "gold": return "bg-bib-gold/15 text-bib-gold";
+    case "info": return "bg-info/10 text-info";
+    case "success": return "bg-success/10 text-success";
+    case "accent": return "bg-accent/10 text-accent";
+    case "warning": return "bg-warning/10 text-warning";
   }
 };
-
-export const normalize = (s: string) =>
-  s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+export const normalize = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");

@@ -49,7 +49,6 @@ export interface StoreBoutique {
   market: string;
   created_at: string;
   total_sales: number;
-  recycling_points: number;
 }
 
 export interface StoreProduct {
@@ -113,10 +112,6 @@ interface StoreOrderRow {
   market: string | null;
 }
 
-interface StoreRecyclingScanRow {
-  points: number | null;
-}
-
 interface StoreBoutiqueRow {
   id: string;
   name: string;
@@ -132,7 +127,6 @@ interface StoreBoutiqueRow {
 
   products: StoreBoutiqueProductRow[];
   orders: StoreOrderRow[];
-  recycling_scans: StoreRecyclingScanRow[];
 }
 
 /* =========================================================
@@ -272,9 +266,6 @@ export function useStoreBoutiques() {
             orders (
               id,
               market
-            ),
-            recycling_scans (
-              points
             )
           `)
           .eq("status", "published")
@@ -355,22 +346,6 @@ export function useStoreBoutiques() {
                   .length > 0,
             )?.market ?? "EU";
 
-          const recyclingPoints =
-            (
-              boutique.recycling_scans ??
-              []
-            ).reduce(
-              (
-                total,
-                scan,
-              ) =>
-                total +
-                Number(
-                  scan.points ?? 0,
-                ),
-              0,
-            );
-
           return {
             id: boutique.id,
 
@@ -425,8 +400,6 @@ export function useStoreBoutiques() {
             total_sales:
               totalSales,
 
-            recycling_points:
-              recyclingPoints,
           };
         },
       );

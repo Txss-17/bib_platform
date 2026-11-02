@@ -17,7 +17,7 @@ const HeroSection = () => {
           <div className="relative z-10 max-w-xl">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-bib-marine/10 bg-white/70 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground backdrop-blur-sm">
               <ShieldCheck className="h-3.5 w-3.5 text-bib-gold" />
-              {text("Réseau vérifié BIB", "Verified BIB network")}
+              {text("Sélection BIB en préparation", "BIB network in preparation")}
             </div>
 
             <h1 className="font-display text-[3.5rem] font-bold leading-[0.94] tracking-[-0.045em] text-foreground sm:text-6xl lg:text-[5.25rem]">
@@ -32,8 +32,8 @@ const HeroSection = () => {
 
             <p className="mt-7 max-w-lg text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
               {text(
-                "BIB réunit boutique, produits sélectionnés et réseau vérifié pour permettre aux marques de se développer dans un environnement structuré.",
-                "BIB brings together a storefront, selected products, and a verified network to help brands grow in a structured environment.",
+                "BIB prépare une infrastructure réunissant boutiques, produits qualifiés et partenaires opérationnels pour accompagner les futures marques.",
+                "BIB is preparing an infrastructure combining storefronts, qualified products and operational partners for future brands.",
               )}
             </p>
 
@@ -63,9 +63,9 @@ const HeroSection = () => {
             </div>
 
             <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3">
-              <TrustPoint text={text("Réseau vérifié", "Verified network")} />
+              <TrustPoint text={text("Partenaires à qualifier", "Partners being qualified")} />
               <TrustPoint
-                text={text("Produits sélectionnés", "Selected products")}
+                text={text("Produits à référencer", "Products to be listed")}
               />
               <TrustPoint
                 text={text(
@@ -112,7 +112,7 @@ const HeroSection = () => {
 
                   <div className="hidden shrink-0 items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-2 text-[10px] font-semibold text-white backdrop-blur-md sm:flex">
                     <ShieldCheck className="h-3.5 w-3.5 text-bib-gold" />
-                    {text("Vérifié par BIB", "Verified by BIB")}
+                    {text("Programme de vérification", "Verification programme")}
                   </div>
                 </div>
               </div>
@@ -126,11 +126,11 @@ const HeroSection = () => {
 
               <div>
                 <p className="text-[9px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                  {translateUi("BIB Verified")}
+                  {translateUi("BIB en préparation")}
                 </p>
 
                 <p className="mt-0.5 text-xs font-medium text-foreground">
-                  {text("Réseau de confiance", "A trusted network")}
+                  {text("Réseau en construction", "Network under development")}
                 </p>
               </div>
             </div>
