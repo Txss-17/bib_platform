@@ -220,6 +220,7 @@ describe("Merchant operational workspaces", () => {
     expect(migration).toContain("email_confirmed_at IS NOT NULL");
     expect(migration).toContain("storage.foldername(name)");
     expect(sensitive).toContain("server_only_order_financial_fields");
+    expect(sensitive).toContain("verified_guest_order_claim_required");
     expect(sensitive).toContain("server_only_profile_entitlements");
     expect(sensitive).toContain("server_only_partner_approval");
     expect(quotas).toContain("ON CONFLICT (user_id,kind,window_start)");
