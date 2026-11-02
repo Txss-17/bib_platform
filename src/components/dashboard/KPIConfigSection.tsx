@@ -1,6 +1,6 @@
 import { translateUi, getUiLocale } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,27 +32,10 @@ interface KPIConfig {
   period: StatsPeriod;
 }
 
-const STORAGE_KEY = "bib.dashboard.kpi-config.v1";
-
 const DEFAULT_CONFIG: KPIConfig = {
   visible: { revenue: true, orders: true, stock: true, alerts: true },
   period: "month",
 };
-
-function loadConfig(): KPIConfig {
-  if (typeof window === "undefined") return DEFAULT_CONFIG;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_CONFIG;
-    const parsed = JSON.parse(raw);
-    return {
-      visible: { ...DEFAULT_CONFIG.visible, ...(parsed.visible || {}) },
-      period: parsed.period || DEFAULT_CONFIG.period,
-    };
-  } catch {
-    return DEFAULT_CONFIG;
-  }
-}
 
 const PERIOD_LABEL: Record<StatsPeriod, string> = {
   day: "Aujourd'hui",
@@ -201,15 +184,8 @@ function ActiveSessionsTile() {
 
 export function KPIConfigPanel() {
   useLanguage();
-  const [config, setConfig] = useState<KPIConfig>(() => loadConfig());
+  const [config, setConfig] = useState<KPIConfig>(DEFAULT_CONFIG);
 
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-    } catch {
-      /* Ignore localStorage errors */
-    }
-  }, [config]);
 
   const { data: orderStats } = useOrderStats(config.period);
   const { data: productStats } = useProductStats();
