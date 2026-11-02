@@ -198,7 +198,7 @@ Deno.serve(async (req) => {
     // Never export visitor_digest, IP address or individual response IDs.
     readAll(() =>
       sb.from("prelaunch_survey_responses")
-        .select("challenge, solution, role, survey_day")
+        .select("challenge, solution, role, wants_to_be_merchant, preferred_launch_timing, survey_day")
         .lte("survey_day", snapshotAt.slice(0, 10))
         .order("survey_day"),
     ),
@@ -778,6 +778,18 @@ Deno.serve(async (req) => {
     solution_counts: countCategories("solution",
       ["verified_suppliers","secure_delivery","transparent_sav","brand_tools","product_quality","merchant_control"]),
     role_counts: countCategories("role",["merchant","customer","both","exploring"]),
+    merchant_interest: {
+      yes: survey.filter(row => row.wants_to_be_merchant === true).length,
+      no: survey.filter(row => row.wants_to_be_merchant === false).length,
+      unasked_historical: survey.filter(row => row.wants_to_be_merchant == null).length,
+    },
+    preferred_launch_timing_counts: [
+      "as_soon_as_possible","within_1_month","within_3_months","within_6_months","no_preference",
+    ].map(value => ({
+      value,
+      count: survey.filter(row =>
+        row.wants_to_be_merchant === true && row.preferred_launch_timing === value).length,
+    })),
     routing: {
       product_engineering: {
         leads_on: ["trust", "visibility", "costs", "brand_tools", "merchant_control"],
