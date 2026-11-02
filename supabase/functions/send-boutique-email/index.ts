@@ -114,6 +114,15 @@ Deno.serve(async (req) => {
     });
 
     if (type === "alert") {
+      // Until delegated recipients have a verification/consent workflow,
+      // a browser may request alerts only to the verified account mailbox.
+      if (!authentication.user.email ||
+          recipient_email.trim().toLowerCase() !== authentication.user.email.trim().toLowerCase() ||
+          !authentication.user.email_confirmed_at) {
+        return new Response(JSON.stringify({ error: "verified_owner_email_required" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       // The alert recipient must be the one explicitly configured for this store.
       const { data: configuredAlert, error: alertConfigError } = await supabase
         .from("boutique_alert_settings")
