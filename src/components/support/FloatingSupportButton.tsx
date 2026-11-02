@@ -46,7 +46,8 @@ export function FloatingSupportButton({
   contactName,
   className,
 }: FloatingSupportButtonProps) {
-  useLanguage();
+  const { lang } = useLanguage();
+  const en = lang === "en";
   const { user, profile } = useAuth();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -177,13 +178,13 @@ export function FloatingSupportButton({
     if (loading || offerTicket || askAnotherTopic || conversationClosed) return;
     setAskAnotherTopic(true);
     setMessages(previous => [...previous, {
-      role: "assistant", content: "Souhaitez-vous en savoir davantage sur un autre sujet ?",
+      role: "assistant", content: en ? "Would you like help with another topic?" : "Souhaitez-vous en savoir davantage sur un autre sujet ?",
     }]);
   };
 
   const continueWithNewTopic = () => {
     setMessages([{
-      role: "assistant", content: "Avec plaisir. Quel autre sujet souhaitez-vous aborder ?",
+      role: "assistant", content: en ? "Of course. What would you like to discuss next?" : "Avec plaisir. Quel autre sujet souhaitez-vous aborder ?",
     }]);
     setAskAnotherTopic(false);
     setOfferTicket(false);
