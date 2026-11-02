@@ -405,8 +405,8 @@ export default function Produits() {
       return;
     }
 
-    // Un produit déjà en stock n'a pas à repasser par la validation
-    // initiale. Un produit sans stock doit avoir son échantillon validé.
+    // Le stock disponible ne prouve pas l'achat ni l'inspection visuelle
+    // d'un échantillon. L'activation exige une validation explicite.
     if (
       currentStatus !== "active" &&
       sampleStatus !== "validated"
