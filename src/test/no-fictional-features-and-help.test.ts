@@ -16,9 +16,11 @@ describe("Production BIB contains no invented operations or obsolete programs", 
   it("does not advertise unlaunched rewards or recycling", () => {
     const terms = read("src/pages/LegalPages.tsx").toLowerCase();
     const help = read("src/lib/centreAideData.ts").toLowerCase();
+    const helpJs = read("src/lib/centreAideData.js").toLowerCase();
     for (const obsolete of ["cartes cadeaux", "programme de points", "recyclage"]) {
       expect(terms).not.toContain(obsolete);
       expect(help).not.toContain(obsolete);
+      expect(helpJs).not.toContain(obsolete);
     }
   });
 
