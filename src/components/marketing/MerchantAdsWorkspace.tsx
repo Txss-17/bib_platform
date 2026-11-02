@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowUpRight, Check, ExternalLink, Image as ImageIcon, Megaphone, Save, ShieldAlert, Sparkles, Trash2 } from "lucide-react";
+import { Check, ExternalLink, Image as ImageIcon, Megaphone, Save, ShieldAlert, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProducts } from "@/hooks/useProducts";
