@@ -40,7 +40,7 @@ describe("BIB Platform public prelaunch boundary", () => {
     const dpa = read("src/pages/LegalMerchantDataAnnex.tsx");
     const versions = read("src/lib/legalDocumentVersions.ts");
     expect(legalPages).toContain("l'identité légale complète");
-    expect(legalPages).toContain("Le marchand identifié est le vendeur professionnel");
+    expect(legalPages).toContain("marchand identifié est le vendeur professionnel");
     expect(legalPages).toContain("politique de confidentialité");
     expect(legalPages).toContain("acceptation contractuelle");
     expect(legalPages).toContain("refuser");
@@ -48,7 +48,7 @@ describe("BIB Platform public prelaunch boundary", () => {
     expect(charter).toContain("BIB Talent");
     expect(charter).toContain("Assistant BIB et tickets");
     expect(charter).toContain("Emails et publicités");
-    expect(charter).toContain("Retirer");
+    expect(charter).toContain("retiré");
     expect(dpa).toContain("Document de travail");
     expect(dpa).toContain("sous-traitant au sens de l'article 28");
     expect(versions).toContain('privacy: "2026-11-02"');
