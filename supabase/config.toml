@@ -58,3 +58,9 @@ verify_jwt = false
 
 [functions.submit-prelaunch-survey]
 verify_jwt = false
+
+[functions.submit-talent-application]
+verify_jwt = false
+
+[functions.intranet-talent-export]
+verify_jwt = false
