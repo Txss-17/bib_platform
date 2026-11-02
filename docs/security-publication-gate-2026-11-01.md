@@ -1,5 +1,35 @@
 # BIB Platform — Public-release security gate (2026-11-01)
 
+## Security hardening update — 2026-11-02
+The connected BIB Platform Supabase database was inspected and the following
+SQL protections were executed and verified in the live database:
+- `20261102070000_critical_public_access_hardening.sql`: public order INSERT
+  disabled, unverified guest order claiming closed, and owner-scoped boutique
+  media writes.
+- `20261102070100_support_ai_usage_limits.sql`: atomic per-user quota RPC and
+  counters for AI calls and ticket creation.
+- `20261102070200_financial_entitlement_partner_guards.sql`: triggers that
+  reject client-side payment/order financial tampering, self-awarded plan/KYC
+  entitlements, and applicant-side partner approval changes.
+
+These were executed as targeted hardening statements; this does **not** mean
+the pending Drizzle migrations 0015–0024 were applied. Do not mark historical
+migration journals as complete without reconciliation.
+
+GitHub Edge Function changes are **source edits only** until confirmed deployed.
+The email functions now reject arbitrary browser-selected recipients and raw
+template overrides; marketing HTML is sanitized. Existing authenticated
+checkout/POS functions already calculate prices using the server database
+instead of incoming line amounts and redirect through a trusted-origin check.
+
+Remaining release blockers: deploy and verify all modified Edge Functions,
+check legitimate workflows after RLS restrictions, reconcile pending Drizzle
+migrations, run tests and Stripe sandbox tampering trials, add public
+endpoint bot/abuse controls for checkout, public tickets, applications and
+analytics, review other storage/public read access policies and rerun the
+security scan. Critical findings not described in the supplied findings text
+cannot be asserted fixed.
+
 ## Current disposition
 **DO NOT DEPLOY ALL PUBLIC ROUTES YET.** The Lovable scanner reported 29 findings and did not finish its analysis. Several critical server/database authorization issues have been confirmed on the connected Platform database. Code edits in GitHub do not certify deployed Edge Functions or database policy changes.
 
@@ -22,7 +52,7 @@
 - Edge function logs: removed directly logged recipient addresses where identified.
 - `src/components/onboarding/OnboardingWizard.tsx`: removes unpaid plan-tier grants from the account signup wizard.
 
-## SQL patch, NOT APPLIED
+## Earlier proposed SQL patch (superseded for the controls listed above)
 `ops/security/critical-rbac-hardening.sql` contains controls for:
 1. Prevent direct public order insertion.
 2. Prevent arbitrary customer order relinking.
