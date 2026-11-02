@@ -52,6 +52,10 @@ export function FloatingSupportButton({
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [offerTicket, setOfferTicket] = useState(false);
+  const [offerId, setOfferId] = useState<string | null>(null);
+  const [turnToken, setTurnToken] = useState<string | null>(null);
+  const [askAnotherTopic, setAskAnotherTopic] = useState(false);
+  const [conversationClosed, setConversationClosed] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([
     {
       role: "assistant",
@@ -72,9 +76,10 @@ export function FloatingSupportButton({
 
   const send = async () => {
     const text = input.trim();
-    if (!text || loading) return;
+    if (!text || loading || askAnotherTopic || conversationClosed || offerTicket) return;
     setInput("");
     setOfferTicket(false);
+    setOfferId(null);
     const next = [...messages, { role: "user" as const, content: text }];
     setMessages(next);
     setLoading(true);
@@ -82,6 +87,7 @@ export function FloatingSupportButton({
       const { data, error } = await supabase.functions.invoke("support-ai", {
         body: {
           messages: next.filter(msg => msg.role === "user").slice(-16),
+          turn_token: turnToken,
           context: {
             source,
             boutique_id: boutiqueId ?? null,
@@ -92,8 +98,12 @@ export function FloatingSupportButton({
         },
       });
       if (error) throw error;
-      const reply = data?.reply ?? "…";
-      setOfferTicket(data?.offer_ticket === true);
+      const reply = typeof data?.reply === "string" ? data.reply : "Pouvez-vous préciser votre demande ?";
+      const proposed = data?.offer_ticket === true && typeof data?.offer_id === "string";
+      setOfferTicket(proposed);
+      setOfferId(proposed ? data.offer_id : null);
+      setTurnToken(typeof data?.turn_token === "string" ? data.turn_token : null);
+      setAskAnotherTopic(data?.offer_another_topic === true && !proposed);
       setMessages((m) => [...m, { role: "assistant", content: reply }]);
     } catch {
       const msg = "Veuillez réessayer ou utiliser la rubrique Mes tickets.";
@@ -111,13 +121,15 @@ export function FloatingSupportButton({
   };
 
   const confirmTicket = async () => {
-    if (!offerTicket || loading) return;
+    if (!offerTicket || !offerId || loading || conversationClosed) return;
     setOfferTicket(false);
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("support-ai", {
         body: {
           action: "create_ticket",
+          confirmed: true,
+          offer_id: offerId,
           messages: messages.filter(msg => msg.role === "user").slice(-16),
           context: { source, boutique_id: boutiqueId ?? null },
         },
@@ -134,9 +146,15 @@ export function FloatingSupportButton({
         }
       }
       setPendingFiles([]);
+      setOfferId(null);
+      setTurnToken(null);
+      setAskAnotherTopic(true);
       toast.success(translateUi("Ticket créé"), { icon: <Ticket className="w-4 h-4" /> });
     } catch {
-      setOfferTicket(true);
+      setOfferId(null);
+      setOfferTicket(false);
+      setMessages(previous => [...previous, { role: "assistant", content:
+        "L'ouverture n'a pas abouti. Aucun nouveau ticket n'est confirmé. Souhaitez-vous continuer la discussion pour réessayer ?" }]);
       toast.error(translateUi("La création du ticket a échoué. Réessayez."));
     } finally {
       setLoading(false);
