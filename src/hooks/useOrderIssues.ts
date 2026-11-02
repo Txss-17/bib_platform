@@ -207,12 +207,24 @@ export function useRespondToIssue() {
     }) => {
       // One server-side transaction validates ownership, deadline and status.
       // Never insert a response if the status transition could fail afterwards.
-      const { error } = await supabase.rpc("respond_to_order_issue", {
+      // The RPC is declared by migration 0024. Until generated Supabase
+      // types are refreshed, keep the call typed locally without bypassing
+      // server-side authorization or inventing a client-side fallback.
+      const rpc = supabase.rpc as unknown as (
+        functionName: "respond_to_order_issue",
+        args: {
+          p_issue_id: string;
+          p_action: IssueAction;
+          p_message: string | null;
+          p_new_status: IssueStatus;
+        },
+      ) => Promise<{ data: string | null; error: Error | null }>;
+      const { error } = await rpc("respond_to_order_issue", {
         p_issue_id: issueId,
         p_action: action,
         p_message: message?.trim() || null,
         p_new_status: newStatus,
-      } as never);
+      });
       if (error) throw error;
     },
     onSuccess: () => {
