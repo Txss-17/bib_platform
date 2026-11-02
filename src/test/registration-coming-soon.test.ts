@@ -39,7 +39,7 @@ describe("Merchant registration remains closed while customers and partners can 
     expect(store).toContain("disabled={loading || !privacyConsent}");
     expect(store).toContain('privacyConsent,');
     expect(auth).toContain("if (!privacyConsent)");
-    expect(auth).toContain('privacy_consent_given_at: new Date().toISOString()');
+    expect(auth).toContain('privacy_notice_acknowledged_at: new Date().toISOString()');
     expect(talent).toContain("if (busy || !consent");
     expect(talentEndpoint).toContain("body.consent !== true");
   });
