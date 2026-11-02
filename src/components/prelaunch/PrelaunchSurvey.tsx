@@ -113,7 +113,7 @@ export function PrelaunchSurvey() {
             {tx("Préparons le lancement de BIB", "Help prepare BIB's launch")}
           </h2>
           <p className="mt-1 text-xs leading-5 text-muted-foreground">
-            {tx("Votre avis nous aidera à préparer son lancement.", "Your feedback will help us prepare the launch.")}
+            {tx("Vous avez envisagé de rejoindre BIB : votre avis nous aidera à préparer son lancement.", "You considered joining BIB: your feedback will help us prepare its launch.")}
           </p>
         </div>
         <Button type="button" size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={dismiss}
