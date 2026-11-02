@@ -28,14 +28,14 @@ async function conversationKey(): Promise<CryptoKey> {
   return crypto.subtle.importKey("raw", enc.encode("bib-support-v1:" + secret),
     { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]);
 }
-async function sealAssistantTurn(reply: string, baseHash: string): Promise<string> {
+async function sealAssistantTurn(reply: string, baseHash: string, questionCount: number): Promise<string> {
   const payload = toBase64Url(enc.encode(JSON.stringify({
-    reply: reply.slice(0, 3000), baseHash, expiresAt: Date.now() + 15 * 60 * 1000,
+    reply: reply.slice(0, 3000), baseHash, questionCount, expiresAt: Date.now() + 15 * 60 * 1000,
   })));
   const mac = await crypto.subtle.sign("HMAC", await conversationKey(), enc.encode(payload));
   return payload + "." + toBase64Url(new Uint8Array(mac));
 }
-async function openAssistantTurn(token: unknown, expectedHash: string): Promise<string | null> {
+async function openAssistantTurn(token: unknown, expectedHash: string): Promise<{ reply: string; questionCount: number } | null> {
   if (typeof token !== "string" || token.length > 16000) return null;
   const [payload, signature, extra] = token.split(".");
   if (!payload || !signature || extra) return null;
@@ -46,7 +46,8 @@ async function openAssistantTurn(token: unknown, expectedHash: string): Promise<
     const parsed = JSON.parse(new TextDecoder().decode(fromBase64Url(payload)));
     if (parsed.baseHash !== expectedHash || parsed.expiresAt <= Date.now() ||
         typeof parsed.reply !== "string") return null;
-    return parsed.reply.slice(0, 3000);
+    if (!Number.isSafeInteger(parsed.questionCount) || parsed.questionCount < 0 || parsed.questionCount > 12) return null;
+    return { reply: parsed.reply.slice(0, 3000), questionCount: parsed.questionCount };
   } catch { return null; }
 }
 
@@ -141,8 +142,10 @@ serve(async (req) => {
     // Assistant turns are reconstructed only from a server-signed token.
     // Do not accept arbitrary assistant/system roles in request messages.
     const priorHash = await digestConversation(messages.slice(0, -1));
-    const lastAssistant = body?.turn_token
+    const assistantTurn = body?.turn_token
       ? await openAssistantTurn(body.turn_token, priorHash) : null;
+    const lastAssistant = assistantTurn?.reply ?? null;
+    const priorDiagnosticQuestions = assistantTurn?.questionCount ?? 0;
 
     const context = body?.context ?? {};
     let authorizedBoutiqueId: string | null = null;
@@ -329,7 +332,7 @@ serve(async (req) => {
     );
     // A single user prompt or one short answer is insufficient to open an
     // issue: the assistant must investigate first.
-    const offerTicket = requestedTicket && userTurns >= 3;
+    const offerTicket = requestedTicket && userTurns >= 3 && priorDiagnosticQuestions >= 2;
     const reply = offerTicket
       ? "Merci pour ces précisions. Nous pouvons transmettre ce problème au support BIB. Souhaitez-vous ouvrir un ticket ?"
       : requestedTicket
@@ -354,7 +357,8 @@ serve(async (req) => {
       }
       offerId = pendingOffer.id;
     }
-    const turnToken = await sealAssistantTurn(reply, hash);
+    const questionCount = Math.min(12, priorDiagnosticQuestions + (reply.includes("?") ? 1 : 0));
+    const turnToken = await sealAssistantTurn(reply, hash, questionCount);
     return new Response(JSON.stringify({
       reply, offer_ticket: offerTicket, offer_id: offerId,
       offer_another_topic: finishedTopic && !offerTicket,
