@@ -41,7 +41,7 @@ const Index = () => {
       {/* =========================================================
             POUR LES MARQUES
         ========================================================= */}
-      <section className="relative overflow-hidden bg-background py-20 sm:py-28 lg:py-32">
+      <section className="relative overflow-hidden bg-background py-12 sm:py-16 lg:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-20">
             {/* Image */}
@@ -83,7 +83,7 @@ const Index = () => {
                 {text("Pour les marques", "For brands")}
               </div>
 
-              <h2 className="font-display text-4xl font-bold leading-[1.02] tracking-[-0.035em] text-foreground sm:text-5xl lg:text-6xl">
+              <h2 className="font-display text-3xl font-bold leading-[1.08] tracking-[-0.025em] text-foreground sm:text-4xl lg:text-5xl">
                 {text("Développez votre marque", "Grow your brand")}
                 <br />
                 <span className="text-bib-gold">
@@ -153,7 +153,7 @@ const Index = () => {
       {/* =========================================================
             INFRASTRUCTURE BIB
         ========================================================= */}
-      <section className="relative overflow-hidden bg-background py-20 sm:py-28 lg:py-32">
+      <section className="relative overflow-hidden bg-background py-12 sm:py-16 lg:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
             {/* Content */}
@@ -163,7 +163,7 @@ const Index = () => {
                 {text("L’infrastructure BIB", "BIB infrastructure")}
               </div>
 
-              <h2 className="font-display text-4xl font-bold leading-[1.02] tracking-[-0.035em] text-foreground sm:text-5xl lg:text-6xl">
+              <h2 className="font-display text-3xl font-bold leading-[1.08] tracking-[-0.025em] text-foreground sm:text-4xl lg:text-5xl">
                 {text("Une marque ne se développe", "A brand does not grow")}
                 <br />
                 <span className="text-bib-gold">
@@ -254,7 +254,7 @@ const Index = () => {
       {/* =========================================================
             OFFRE ACTUELLE
         ========================================================= */}
-      <section className="bg-brand-marine py-20 sm:py-28 lg:py-32">
+      <section className="bg-brand-marine py-12 sm:py-16 lg:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-5xl">
             <div className="grid items-center gap-10 lg:grid-cols-[1fr_0.75fr] lg:gap-20">
@@ -265,7 +265,7 @@ const Index = () => {
                   {text("Offre actuelle", "Current offer")}
                 </div>
 
-                <h2 className="font-display text-4xl font-bold leading-[1.02] tracking-[-0.035em] text-white sm:text-5xl lg:text-6xl">
+                <h2 className="font-display text-3xl font-bold leading-[1.08] tracking-[-0.025em] text-white sm:text-4xl lg:text-5xl">
                   {text("Commencez avec", "Get started with")}
                   <br />
                   <span className="text-bib-gold">BIB Boutique.</span>
@@ -334,7 +334,7 @@ const Index = () => {
                 </p>
 
                 <div className="mt-5 flex items-end gap-2">
-                  <span className="font-display text-6xl font-bold tracking-[-0.05em] text-white sm:text-7xl">
+                  <span className="font-display text-4xl font-bold tracking-[-0.04em] text-white sm:text-5xl">
                     79€
                   </span>
 
@@ -365,7 +365,7 @@ const Index = () => {
       {/* =========================================================
             RÉSEAU BIB
         ========================================================= */}
-      <section className="bg-background py-20 sm:py-28 lg:py-32">
+      <section className="bg-background py-12 sm:py-16 lg:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <div className="mb-5 flex items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -374,7 +374,7 @@ const Index = () => {
               <span className="h-px w-8 bg-bib-gold" />
             </div>
 
-            <h2 className="font-display text-4xl font-bold leading-[1.02] tracking-[-0.035em] text-foreground sm:text-5xl lg:text-6xl">
+            <h2 className="font-display text-3xl font-bold leading-[1.08] tracking-[-0.025em] text-foreground sm:text-4xl lg:text-5xl">
               {text("Une infrastructure construite", "Infrastructure built")}
               <br />
               <span className="text-bib-gold">
@@ -420,9 +420,9 @@ const Index = () => {
       {/* =========================================================
             BIB TALENT
         ========================================================= */}
-      <section className="relative overflow-hidden bg-background py-20 sm:py-28 lg:py-32">
+      <section className="relative overflow-hidden bg-background py-12 sm:py-16 lg:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-[2rem] bg-brand-marine px-6 py-14 sm:px-10 sm:py-16 lg:px-16 lg:py-20">
+          <div className="relative overflow-hidden rounded-2xl bg-brand-marine px-5 py-9 sm:px-8 sm:py-12 lg:px-12 lg:py-14">
             <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-bib-gold/10 blur-3xl" />
 
             <div className="relative z-10 max-w-3xl">
@@ -431,7 +431,7 @@ const Index = () => {
                 BIB Talent
               </div>
 
-              <h2 className="font-display text-4xl font-bold leading-[1.02] tracking-[-0.035em] text-white sm:text-5xl lg:text-6xl">
+              <h2 className="font-display text-3xl font-bold leading-[1.08] tracking-[-0.025em] text-white sm:text-4xl lg:text-5xl">
                 {text("Construire BIB,", "Build BIB,")}
                 <br />
                 <span className="text-bib-gold">
@@ -466,14 +466,14 @@ const Index = () => {
       {/* =========================================================
             FINAL CTA
         ========================================================= */}
-      <section className="bg-background py-20 sm:py-24 lg:py-28">
+      <section className="bg-background py-12 sm:py-16 lg:py-20">
         <div className="container mx-auto px-4 text-center sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               BIB
             </p>
 
-            <h2 className="mt-4 font-display text-4xl font-bold leading-[1.02] tracking-[-0.035em] text-foreground sm:text-5xl lg:text-6xl">
+            <h2 className="mt-4 font-display text-3xl font-bold leading-[1.08] tracking-[-0.025em] text-foreground sm:text-4xl lg:text-5xl">
               {text("Votre prochaine étape", "Your next step")}
               <br />
               <span className="text-bib-gold">
