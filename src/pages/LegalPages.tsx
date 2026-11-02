@@ -482,80 +482,40 @@ export function CGV() {
 export function Confidentialite() {
   useLanguage();
   useSEO({
-    title: translateUi("Politique de confidentialité — Brand-In-A-Box"),
-    description: translateUi(
-      "Comment Brand-In-A-Box traite vos données personnelles.",
-    ),
+    title: "Politique de confidentialité — BIB",
+    description: "Traitement des données personnelles des clients, marchands, candidats BIB Talent et visiteurs de Brand-in-a-Box.",
   });
-  return (
-    <LegalShell
-      eyebrow={translateUi("Légal")}
-      title={translateUi("Politique de confidentialité")}
-      updated="17 mai 2026"
-    >
-      <h2>{translateUi("1. Responsable de traitement")}</h2>
-      <p>
-        {translateUi(
-          "Brand-In-A-Box SAS est responsable du traitement des données collectées sur la Plateforme, conformément au RGPD.",
-        )}
-      </p>
-      <h2>{translateUi("2. Données collectées")}</h2>
-      <ul>
-        <li>
-          <strong>{translateUi("Compte :")}</strong>{" "}
-          {translateUi("nom, email, mot de passe chiffré, plan d'abonnement.")}
-        </li>
-        <li>
-          <strong>{translateUi("Boutique :")}</strong>{" "}
-          {translateUi(
-            "informations légales, logo, paramètres de personnalisation.",
-          )}
-        </li>
-        <li>
-          <strong>{translateUi("Transactions :")}</strong>{" "}
-          {translateUi("historique de commandes, KYC pour les vendeurs.")}
-        </li>
-        <li>
-          <strong>{translateUi("Analytics :")}</strong>{" "}
-          {translateUi("mesures d'audience anonymisées sur les boutiques.")}
-        </li>
-      </ul>
-      <h2>{translateUi("3. Finalités")}</h2>
-      <p>
-        {translateUi(
-          "Fournir le service, sécuriser les transactions, respecter les obligations légales, améliorer la Plateforme.",
-        )}
-      </p>
-      <h2>{translateUi("4. Durée de conservation")}</h2>
-      <p>
-        {translateUi(
-          "Données de compte : 3 ans après dernière activité. Données comptables : 10 ans (obligation légale).",
-        )}
-      </p>
-      <h2>{translateUi("5. Vos droits")}</h2>
-      <p>
-        {translateUi(
-          "Accès, rectification, suppression, portabilité, opposition. Exercez vos droits via",
-        ) + " "}
-        <a href="mailto:privacy@brand-in-a-box.space">
-          privacy@brand-in-a-box.space
-        </a>
-        .
-      </p>
-      <h2>{translateUi("6. Sous-traitants")}</h2>
-      <p>
-        {translateUi(
-          "Supabase (hébergement données), Stripe (paiements), Vercel (hébergement front), Resend (emails transactionnels).",
-        )}
-      </p>
-      <h2>{translateUi("7. Sécurité")}</h2>
-      <p>
-        {translateUi(
-          "Chiffrement TLS 1.3, RLS Postgres, audits réguliers, sauvegardes chiffrées.",
-        )}
-      </p>
-    </LegalShell>
-  );
+  return <LegalShell eyebrow="RGPD" title="Politique de confidentialité" updated="2 novembre 2026">
+    <p>Cette politique concerne la plateforme BIB, les boutiques publiées via BIB, les demandes de support, les sondages de prélancement et BIB Talent. Elle complète la <a href="/donnees-et-consentements">charte des données et consentements</a> et les informations affichées directement dans chaque formulaire.</p>
+    <h2>1. Responsable du traitement et interlocuteurs</h2>
+    <p>L'exploitant juridiquement identifié de Brand-in-a-Box est responsable des traitements déterminés pour ses propres services. Son identité légale complète est à finaliser dans les <a href="/mentions-legales">mentions légales</a>. Pour certains traitements portant sur les clients des boutiques, le marchand vendeur peut être responsable du traitement ; BIB peut agir comme prestataire/sous-traitant, responsable distinct ou, dans certains cas à analyser, coresponsable. Ces rôles doivent être définis contractuellement, notamment dans un accord de traitement des données (« DPA »).</p>
+    <p>Contact données personnelles : <a href="mailto:privacy@brand-in-a-box.space">privacy@brand-in-a-box.space</a> (adresse de réception à vérifier).</p>
+    <h2>2. Catégories de personnes et de données</h2>
+    <ul>
+      <li><strong>Visiteurs :</strong> données de navigation et journaux techniques nécessaires, préférences de langue, choix de cookies, réponses facultatives au sondage.</li>
+      <li><strong>Clients :</strong> identité de compte, email, adresses de livraison, commandes, historiques de paiement et de retour, préférences et correspondances avec le support.</li>
+      <li><strong>Marchands et partenaires :</strong> identité professionnelle, coordonnées, justificatifs nécessaires à l'éligibilité, données de catalogue, boutique, facturation, commandes, dossiers SAV et droits d'accès.</li>
+      <li><strong>BIB Talent :</strong> nom, email, activité, pôle souhaité, compétences, motivation, disponibilité et liens facultatifs vers les réalisations.</li>
+      <li><strong>Assistance :</strong> questions adressées à l'agent IA, éléments communiqués dans les échanges et tickets expressément confirmés ; ne transmettez pas de données sensibles sans nécessité.</li>
+      <li><strong>Publicité :</strong> brouillons de campagnes marchandes, budgets indicatifs et, après activation autorisée, identifiants et statistiques des comptes publicitaires connectés.</li>
+    </ul>
+    <h2>3. Finalités et bases légales</h2>
+    <p>La création d'un compte et la gestion des commandes peuvent reposer sur l'exécution d'un contrat ou des mesures précontractuelles ; la facturation et certains contrôles reposent sur des obligations légales ; la sécurité et la prévention de la fraude peuvent reposer sur l'intérêt légitime sous réserve d'une mise en balance ; les sondages facultatifs sur le consentement ; le recrutement sur la base applicable à l'examen de la candidature et, pour une conservation destinée à de futures opportunités, sur un fondement distinct approprié. La prospection et les cookies non essentiels sont soumis aux règles propres à ces traitements.</p>
+    <p>La fourniture d'un formulaire ou l'acceptation de CGU ne transforme pas automatiquement toutes les utilisations de données en traitements consentis. Les consentements facultatifs sont séparés des confirmations contractuelles et restent retirables dans les conditions applicables.</p>
+    <h2>4. Destinataires et circulation des données</h2>
+    <p>Seules les équipes habilitées de BIB ont accès aux informations nécessaires à leurs missions. Le marchand vendeur, les partenaires de logistique, les prestataires de paiement, les prestataires d'infrastructure, le support et les sous-traitants autorisés ne reçoivent que les données nécessaires à leurs opérations. Le flux des sondages vers Product Engineering et Marketplace doit être agrégé. Les candidatures BIB Talent sont réservées à RH/Talent, avant un éventuel partage contrôlé avec le pôle concerné.</p>
+    <p>Le stockage de documents confidentiels dans des dossiers publiquement accessibles est interdit. Les transferts hors Espace économique européen doivent être évalués et encadrés par un mécanisme de transfert reconnu, selon le pays et les prestataires concernés. Les localisations des prestataires et leurs garanties contractuelles doivent être confirmées.</p>
+    <h2>5. Durées de conservation</h2>
+    <p>Les durées varient selon la finalité : les comptes sont conservés tant que nécessaires au service et aux obligations subsistantes ; les pièces comptables ou légales suivent leurs délais applicables ; les dossiers BIB Talent sont limités à une échéance prévue de 180 jours sur la plateforme, à répercuter sur l'intranet ; les réponses au sondage sont analysées de manière agrégée ; les journaux de sécurité, tickets et préférences de cookies ont des durées proportionnées à documenter dans le registre des traitements. Aucune durée uniforme n'est appliquée à toutes les données.</p>
+    <h2>6. Sécurité, décisions automatisées et IA</h2>
+    <p>BIB vise à appliquer des politiques d'accès par rôle, des contrôles serveur, des accès limités, la journalisation des actions sensibles et des durées de conservation maîtrisées. Les mesures effectives doivent faire l'objet de tests. L'agent IA fournit une assistance : il ne crée pas un ticket sans validation explicite et ne doit pas décider automatiquement d'une embauche, d'une résiliation ou d'un refus de droits. Un traitement automatisé ayant un effet juridique significatif nécessiterait des garanties supplémentaires et une information adaptée.</p>
+    <h2>7. Vos droits et retrait des choix</h2>
+    <p>Vous pouvez demander l'accès, la rectification, l'effacement, la limitation, l'opposition ou la portabilité lorsque les conditions légales sont réunies. Vous pouvez retirer un consentement facultatif à tout moment sans effet rétroactif sur les traitements déjà licites. Pour exercer ces droits, contactez <a href="mailto:privacy@brand-in-a-box.space">privacy@brand-in-a-box.space</a> ; vous pouvez également saisir la CNIL.</p>
+    <h2>8. Communications et cookies</h2>
+    <p>Les emails nécessaires à la sécurité, à l'authentification, à une commande ou au suivi du service ne doivent pas être confondus avec des communications promotionnelles. Les emails marketing nécessitent une base légale et un moyen d'opposition ou de désabonnement adapté. Les traceurs non essentiels ne doivent être utilisés qu'après recueil d'un choix valable, selon la <a href="/cookies">politique cookies</a>.</p>
+    <h2>9. Modifications</h2>
+    <p>En cas d'évolution importante d'un traitement, BIB doit mettre à jour l'information fournie et, si nécessaire, recueillir un nouveau consentement pour la nouvelle finalité. Les versions applicables et leurs dates doivent pouvoir être retracées.</p>
+  </LegalShell>;
 }
 
 export function Cookies() {
