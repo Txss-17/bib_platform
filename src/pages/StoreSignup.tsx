@@ -477,9 +477,9 @@ export default function StoreSignup() {
 
                     <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-border/70 bg-muted/20 p-3 text-xs leading-5">
                       <Checkbox checked={privacyConsent} onCheckedChange={value => setPrivacyConsent(value === true)}
-                        aria-label={tx("Consentement au traitement des données pour créer mon compte", "Consent to account data processing")} className="mt-0.5" />
+                        aria-label={tx("Information sur le traitement des données du compte", "Account privacy notice acknowledgement")} className="mt-0.5" />
                       <span>
-                        {tx("J'accepte que BIB traite les informations nécessaires à la création et à la gestion de mon compte.", "I agree that BIB may process information necessary to create and manage my account.")}{" "}
+                        {tx("J'ai pris connaissance de l'utilisation des données nécessaires à la création et à la gestion de mon compte.", "I have read how BIB processes data necessary to create and manage my account.")}{" "}
                         <Link to="/confidentialite" target="_blank" rel="noopener noreferrer" className="font-medium text-primary underline">
                           {tx("Confidentialité", "Privacy notice")}
                         </Link>
