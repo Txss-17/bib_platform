@@ -71,6 +71,11 @@ serve(async (req) => {
     }
 
     const body = await req.json();
+    if (body?.action != null && body.action !== "create_ticket") {
+      return new Response(JSON.stringify({ error: "invalid_action" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const messages = Array.isArray(body?.messages) ? body.messages : [];
     if (messages.length === 0 || messages.length > 16 ||
       messages.some((msg: unknown) =>
@@ -101,6 +106,30 @@ serve(async (req) => {
       authorizedBoutiqueId = ownedBoutique.id;
     }
     const contactEmail = actor.user.email ?? null;
+    const admin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+    // This RPC atomically caps chat requests (12/min) and ticket requests
+    // (3/h) per verified user. Fail closed if the migration is not deployed.
+    const { data: permitted, error: quotaError } = await admin.rpc(
+      "reserve_support_ai_request",
+      { p_user_id: actor.user.id, p_kind: body?.action === "create_ticket" ? "ticket" : "chat" },
+    );
+    if (quotaError) {
+      console.error("support quota check failed", quotaError.code);
+      return new Response(JSON.stringify({ error: "support_temporarily_unavailable" }), {
+        status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!permitted) return new Response(JSON.stringify({ error: "rate_limited" }), {
+      status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+    if (body?.action !== "create_ticket" && messages[messages.length - 1]?.role !== "user") {
+      return new Response(JSON.stringify({ error: "last_message_must_be_user" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     
     const tools = [
       {
@@ -140,10 +169,6 @@ serve(async (req) => {
       const summary = messages.map((msg: {role: string; content: string}) =>
         `${msg.role === "user" ? "Marchand" : "Assistant"} : ${msg.content}`
       ).join("\n").slice(0, 4000);
-      const admin = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      );
       const { data: ticket, error } = await admin.from("support_tickets").insert({
         user_id: actor.user.id,
         boutique_id: authorizedBoutiqueId,
