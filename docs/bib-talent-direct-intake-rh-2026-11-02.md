@@ -14,8 +14,8 @@ Date : 2 novembre 2026
   Une vérification CAPTCHA de niveau production reste nécessaire en cas d'abus.
 - La table `bib_talent_applications` est privée (RLS active, aucun droit direct anon/auth).
   Le pôle d'intérêt est préclassé, mais le propriétaire du dossier reste RH / Talent.
-- Une purge quotidienne des dossiers Platform arrivant à 180 jours est configurée
-  via `cron.job` `bib_talent_daily_retention_purge`.
+- Une purge quotidienne des dossiers Platform arrivant à leur date de rétention est configurée
+  via `cron.job` `bib_talent_daily_retention_purge`. Le vivier facultatif de futures opportunités nécessite une case distincte et peut être conservé jusqu'à deux ans, sans prolonger rétroactivement les candidatures historiques.
 - `intranet-talent-export` est un export dédié, paginé et inaccessible sans
   `BIB_TALENT_BRIDGE_SECRET`. Ce secret doit être présent **uniquement**
   comme secret serveur sur Platform et sur l'intranet, distinct du bridge général.
