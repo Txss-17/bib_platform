@@ -84,7 +84,7 @@ Deno.serve(async request => {
     const portfolio = cleanLink(body.portfolio_url);
     if (!fullName || !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email) || email.length > 254 ||
         (body.location && !location) || !currentActivity || !skills || !motivation ||
-        portfolio === undefined || !allowedPoles.has(body.preferred_pole) ||
+        portfolio === undefined || (body.future_opportunities_consent !== true && body.future_opportunities_consent !== false) || !allowedPoles.has(body.preferred_pole) ||
         !allowedTypes.has(body.contribution_type) || !availabilities.has(body.availability) ||
         !["fr","en"].includes(body.locale) || body.consent !== true) {
       return json({ error: "invalid_form" }, 400, origin);
@@ -120,6 +120,10 @@ Deno.serve(async request => {
       availability: body.availability, portfolio_url: portfolio,
       locale: body.locale,
       consent_given_at: new Date().toISOString(),
+      future_opportunities_consent: body.future_opportunities_consent === true,
+      future_opportunities_consented_at: body.future_opportunities_consent === true ? new Date().toISOString() : null,
+      future_opportunities_notice_version: body.future_opportunities_consent === true ? "talent-v2" : null,
+      retention_until: new Date(Date.now() + (body.future_opportunities_consent === true ? 730 : 180) * 86400000).toISOString(),
       network_digest: digest, application_digest: unique,
     });
     if (error?.code === "23505") return json({ ok: true, already_received: true }, 200, origin);
