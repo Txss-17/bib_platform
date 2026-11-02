@@ -8,6 +8,7 @@ import {
   FileText,
   ScrollText,
   ShieldCheck,
+  ClipboardCheck,
   Cookie,
   ArrowRight,
   ScaleIcon,
@@ -76,6 +77,14 @@ const docs = [
     points: ["Données collectées", "Vos droits RGPD", "Sous-traitants"],
   },
   {
+    icon: ClipboardCheck,
+    get eyebrow() { return translateUi("Transparence"); },
+    get title() { return translateUi("Données et consentements"); },
+    get desc() { return translateUi("Parcours par parcours : comptes, commandes, BIB Talent, sondage, assistance IA, communications et publicités."); },
+    href: "/donnees-et-consentements",
+    points: ["Consentement et bases légales", "Destinataires", "Choix et retrait"],
+  },
+  {
     icon: Cookie,
     get eyebrow() {
       return translateUi("Traceurs");
@@ -111,18 +120,18 @@ export default function PackLegal() {
             className="absolute -top-40 -right-32 w-[520px] h-[520px] rounded-full bg-bib-gold/10 blur-3xl"
             aria-hidden
           />
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 relative max-w-4xl">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 relative max-w-4xl">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/10 text-bib-ivory text-[11px] font-semibold uppercase tracking-[0.18em] mb-6">
               <ScaleIcon className="h-3.5 w-3.5" /> {translateUi("Pack légal")}
             </span>
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05]">
+            <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.05]">
               {translateUi("Tout notre cadre légal,") + " "}
               <span className="text-bib-gold">
                 {translateUi("accessible en un endroit")}
               </span>
               .
             </h1>
-            <p className="mt-6 text-lg text-bib-ivory/80 leading-relaxed max-w-2xl">
+            <p className="mt-4 text-sm text-bib-ivory/80 leading-relaxed max-w-2xl">
               {translateUi(
                 "Retrouvez les mentions légales, les conditions d'utilisation et de vente, la confidentialité et les cookies au même endroit.",
               )}
@@ -130,23 +139,23 @@ export default function PackLegal() {
           </div>
         </section>
 
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 max-w-5xl">
-          <div className="grid sm:grid-cols-2 gap-5">
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14 max-w-5xl">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {docs.map((d) => (
               <Link
                 key={d.href}
                 to={d.href}
-                className="group relative rounded-2xl border border-border bg-card p-6 hover:border-bib-gold/50 hover:shadow-xl transition-all"
+                className="group relative rounded-xl border border-border bg-card p-4 hover:border-bib-gold/50 hover:shadow-xl transition-all"
               >
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/5 text-foreground flex items-center justify-center group-hover:bg-bib-gold/15 group-hover:text-bib-gold transition-colors">
-                    <d.icon className="h-6 w-6" />
+                  <div className="w-9 h-9 rounded-lg bg-primary/5 text-foreground flex items-center justify-center group-hover:bg-bib-gold/15 group-hover:text-bib-gold transition-colors">
+                    <d.icon className="h-4 w-4" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-bib-gold">
                       {d.eyebrow}
                     </span>
-                    <h2 className="font-display text-xl font-bold text-foreground mt-1">
+                    <h2 className="font-display text-base font-bold text-foreground mt-1">
                       {d.title}
                     </h2>
                   </div>
@@ -173,14 +182,14 @@ export default function PackLegal() {
             ))}
           </div>
 
-          <div className="mt-12 rounded-2xl border border-border bg-card p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
+          <div className="mt-8 rounded-xl border border-border bg-card p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
             <div>
               <h3 className="font-display text-lg font-bold text-foreground">
                 {translateUi("Une question juridique ?")}
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {translateUi(
-                  "Notre équipe répond sous 48 h ouvrées sur tout sujet contractuel ou RGPD.",
+                  "Contactez BIB pour toute demande juridique ou relative à la confidentialité. Le délai de réponse dépend de la nature de votre demande.",
                 )}
               </p>
             </div>
