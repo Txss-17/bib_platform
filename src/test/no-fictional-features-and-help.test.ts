@@ -42,6 +42,10 @@ describe("Production BIB contains no invented operations or obsolete programs", 
     expect(authClient).toContain("persistSession: true");
     expect(authClient).toContain("autoRefreshToken: true");
     expect(authClient).not.toContain("memoryAuthStorage");
+    const migration = read("src/lib/purgeLegacyBrowserRecords.ts");
+    expect(migration).toContain('migrationMarker = "bib:legacy-browser-cleanup:v2"');
+    expect(migration).toContain("key !== \"supabase.auth.token\"");
+    expect(migration).toContain("!/^sb-[a-z0-9-]+-auth-token$/i.test(key)");
     expect(read("src/hooks/useTourProgress.ts")).not.toContain("localStorage.setItem");
   });
 });
