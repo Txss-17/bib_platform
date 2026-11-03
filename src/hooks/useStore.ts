@@ -234,6 +234,9 @@ function normalizeStoreProduct(
 export function useStoreBoutiques() {
   return useQuery({
     queryKey: ["store-boutiques"],
+    // Public listings rarely change between visits; mutations/realtime can
+    // still invalidate this cache immediately.
+    staleTime: 60_000,
 
     queryFn: async (): Promise<
       StoreBoutique[]
@@ -414,6 +417,7 @@ export function useStoreBoutiques() {
 export function useStoreProducts() {
   return useQuery({
     queryKey: ["store-products"],
+    staleTime: 30_000,
 
     queryFn: async (): Promise<
       StoreProduct[]
@@ -484,6 +488,7 @@ export function useStoreProduct(
     ],
 
     enabled: Boolean(productId),
+    staleTime: 15_000,
 
     queryFn:
       async (): Promise<StoreProduct> => {
