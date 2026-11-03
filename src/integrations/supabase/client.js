@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 // the stored session on sign-out. This does not protect tokens against same-origin XSS:
 // maintain a strict CSP, sanitize user content and enforce RLS on every data path.
 // Use process memory only if browser storage is unavailable (e.g. privacy restrictions).
-const fallbackSessions = new Map<string, string>();
+const fallbackSessions = new Map();
 const persistentAuthStorage = {
   getItem: (key) => {
     try {
