@@ -50,6 +50,8 @@ const Index = () => {
                 <div className="aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5]">
                   <img
                     src={unboxingImg}
+                    loading="lazy"
+                    decoding="async"
                     alt={translateUi("Marque à découvrir")}
                     className="h-full w-full object-cover"
                   />
@@ -221,6 +223,8 @@ const Index = () => {
               <div className="rounded-[2rem] bg-brand-marine shadow-[0_30px_80px_rgba(20,35,55,0.14)]">
                 <img
                   src={partenerImg}
+                  loading="lazy"
+                  decoding="async"
                   alt={translateUi(
                     "Préparation d'une commande dans l'environnement BIB",
                   )}
