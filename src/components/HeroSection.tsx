@@ -87,6 +87,9 @@ const HeroSection = () => {
               <div className="aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5]">
                 <img
                   src={founderImg}
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
                   alt={text(
                     "Fondatrice présentant sa marque",
                     "Founder presenting her brand",

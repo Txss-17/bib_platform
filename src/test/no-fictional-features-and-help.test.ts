@@ -35,19 +35,17 @@ describe("Production BIB contains no invented operations or obsolete programs", 
     expect(migration).toContain("dashboard_support_requires_owner");
   });
 
-  it("does not persist carts or checkout profiles; restores Supabase auth after Stripe redirects", () => {
+  it("does not persist cart or checkout profile locally, but preserves Supabase auth across redirects", () => {
     expect(read("src/contexts/StoreCartContext.tsx")).not.toContain("localStorage.");
     expect(read("src/components/storefront/CheckoutForm.tsx")).not.toContain("localStorage.");
     const authClient = read("src/integrations/supabase/client.ts");
-    const authClientJs = read("src/integrations/supabase/client.js");
-    for (const client of [authClient, authClientJs]) {
-      expect(client).toContain("storage: persistentAuthStorage");
-      expect(client).toContain("localStorage.getItem(key)");
-      expect(client).toContain("localStorage.setItem(key, value)");
-      expect(client).toContain("localStorage.removeItem(key)");
-      expect(client).toContain("persistSession: true");
-      expect(client).toContain("autoRefreshToken: true");
-    }
+    expect(authClient).toContain("persistSession: true");
+    expect(authClient).toContain("autoRefreshToken: true");
+    expect(authClient).not.toContain("memoryAuthStorage");
+    const migration = read("src/lib/purgeLegacyBrowserRecords.ts");
+    expect(migration).toContain('migrationMarker = "bib:legacy-browser-cleanup:v2"');
+    expect(migration).toContain("key !== \"supabase.auth.token\"");
+    expect(migration).toContain("!/^sb-[a-z0-9-]+-auth-token$/i.test(key)");
     expect(read("src/hooks/useTourProgress.ts")).not.toContain("localStorage.setItem");
   });
 });

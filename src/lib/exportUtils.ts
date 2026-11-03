@@ -14,7 +14,14 @@ interface ExportOptions {
 /** Escape spreadsheet formula characters as data, not executable formulas. */
 export function escapeCsvFormula(value: unknown): string {
   const text = String(value ?? "");
-  return /^[\s\u0000-\u001f]*[=+@-]/.test(text) ? "'" + text : text;
+  // Strip leading Unicode whitespace and ASCII control bytes for detection.
+  // A loop avoids no-control-regex lint failures without relaxing CSV safety.
+  let index = 0;
+  while (index < text.length &&
+    (text.charCodeAt(index) < 32 || /\\s/.test(text[index]))) {
+    index++;
+  }
+  return index < text.length && "=+@-".includes(text[index]) ? "'" + text : text;
 }
 
 export function exportToCSV(

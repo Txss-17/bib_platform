@@ -95,6 +95,7 @@ export function useProducts() {
   const { user: currentUser } = useAuth();
   return useQuery({
     queryKey: ["products", currentUser?.id],
+    staleTime: 15_000,
     enabled: !!currentUser,
     queryFn: async (): Promise<ProductWithSupplier[]> => {
       const user = currentUser;
