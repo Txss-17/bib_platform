@@ -62,6 +62,116 @@ export type Database = {
         }
         Relationships: []
       }
+      bib_talent_applications: {
+        Row: {
+          application_digest: string
+          assigned_pole: string
+          availability: string
+          consent_given_at: string
+          contribution_type: string
+          created_at: string
+          current_activity: string
+          email: string
+          full_name: string
+          future_opportunities_consent: boolean
+          future_opportunities_consented_at: string | null
+          future_opportunities_notice_version: string | null
+          id: string
+          locale: string
+          location: string | null
+          motivation: string
+          network_digest: string
+          owner_pole: string
+          portfolio_url: string | null
+          preferred_pole: string
+          retention_until: string
+          skills: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          application_digest: string
+          assigned_pole: string
+          availability: string
+          consent_given_at: string
+          contribution_type: string
+          created_at?: string
+          current_activity: string
+          email: string
+          full_name: string
+          future_opportunities_consent?: boolean
+          future_opportunities_consented_at?: string | null
+          future_opportunities_notice_version?: string | null
+          id?: string
+          locale: string
+          location?: string | null
+          motivation: string
+          network_digest: string
+          owner_pole?: string
+          portfolio_url?: string | null
+          preferred_pole: string
+          retention_until?: string
+          skills: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          application_digest?: string
+          assigned_pole?: string
+          availability?: string
+          consent_given_at?: string
+          contribution_type?: string
+          created_at?: string
+          current_activity?: string
+          email?: string
+          full_name?: string
+          future_opportunities_consent?: boolean
+          future_opportunities_consented_at?: string | null
+          future_opportunities_notice_version?: string | null
+          id?: string
+          locale?: string
+          location?: string | null
+          motivation?: string
+          network_digest?: string
+          owner_pole?: string
+          portfolio_url?: string | null
+          preferred_pole?: string
+          retention_until?: string
+          skills?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      boutique_ai_usage: {
+        Row: {
+          boutique_id: string
+          hour_start: string
+          usage_count: number
+          user_id: string
+        }
+        Insert: {
+          boutique_id: string
+          hour_start: string
+          usage_count?: number
+          user_id: string
+        }
+        Update: {
+          boutique_id?: string
+          hour_start?: string
+          usage_count?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boutique_ai_usage_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       boutique_alert_log: {
         Row: {
           boutique_id: string
@@ -908,6 +1018,72 @@ export type Database = {
           },
         ]
       }
+      merchant_ad_drafts: {
+        Row: {
+          boutique_id: string
+          created_at: string
+          daily_budget_eur: number
+          destination_url: string
+          headline: string
+          id: string
+          message: string
+          name: string
+          objective: string
+          platform: string
+          product_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          boutique_id: string
+          created_at?: string
+          daily_budget_eur: number
+          destination_url: string
+          headline: string
+          id?: string
+          message: string
+          name: string
+          objective: string
+          platform: string
+          product_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          boutique_id?: string
+          created_at?: string
+          daily_budget_eur?: number
+          destination_url?: string
+          headline?: string
+          id?: string
+          message?: string
+          name?: string
+          objective?: string
+          platform?: string
+          product_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_ad_drafts_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "merchant_ad_drafts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       merchant_legal_acceptances: {
         Row: {
           accepted_at: string
@@ -1530,6 +1706,57 @@ export type Database = {
         }
         Relationships: []
       }
+      prelaunch_survey_responses: {
+        Row: {
+          challenge: string
+          challenge_selections: string[]
+          consent_given_at: string | null
+          consent_notice_version: string | null
+          id: string
+          locale: string
+          preferred_launch_timing: string | null
+          role: string
+          solution: string
+          solution_selections: string[]
+          submitted_at: string
+          survey_day: string
+          visitor_digest: string
+          wants_to_be_merchant: boolean | null
+        }
+        Insert: {
+          challenge: string
+          challenge_selections?: string[]
+          consent_given_at?: string | null
+          consent_notice_version?: string | null
+          id?: string
+          locale: string
+          preferred_launch_timing?: string | null
+          role: string
+          solution: string
+          solution_selections?: string[]
+          submitted_at?: string
+          survey_day?: string
+          visitor_digest: string
+          wants_to_be_merchant?: boolean | null
+        }
+        Update: {
+          challenge?: string
+          challenge_selections?: string[]
+          consent_given_at?: string | null
+          consent_notice_version?: string | null
+          id?: string
+          locale?: string
+          preferred_launch_timing?: string | null
+          role?: string
+          solution?: string
+          solution_selections?: string[]
+          submitted_at?: string
+          survey_day?: string
+          visitor_digest?: string
+          wants_to_be_merchant?: boolean | null
+        }
+        Relationships: []
+      }
       private_sales: {
         Row: {
           access_code: string
@@ -2144,6 +2371,27 @@ export type Database = {
         }
         Relationships: []
       }
+      support_ai_usage_limits: {
+        Row: {
+          kind: string
+          request_count: number
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          kind: string
+          request_count?: number
+          user_id: string
+          window_start: string
+        }
+        Update: {
+          kind?: string
+          request_count?: number
+          user_id?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       support_ticket_attachments: {
         Row: {
           byte_size: number | null
@@ -2185,6 +2433,44 @@ export type Database = {
           },
         ]
       }
+      support_ticket_offers: {
+        Row: {
+          boutique_id: string | null
+          consumed_at: string | null
+          conversation_hash: string
+          created_at: string
+          expires_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          boutique_id?: string | null
+          consumed_at?: string | null
+          conversation_hash: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          boutique_id?: string | null
+          consumed_at?: string | null
+          conversation_hash?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_ticket_offers_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_ticket_responses: {
         Row: {
           author_id: string
@@ -2222,6 +2508,8 @@ export type Database = {
           ai_conversation: Json | null
           ai_summary: string | null
           boutique_id: string | null
+          consent_given_at: string | null
+          consent_notice_version: string | null
           contact_email: string
           contact_name: string | null
           created_at: string
@@ -2237,6 +2525,8 @@ export type Database = {
           ai_conversation?: Json | null
           ai_summary?: string | null
           boutique_id?: string | null
+          consent_given_at?: string | null
+          consent_notice_version?: string | null
           contact_email: string
           contact_name?: string | null
           created_at?: string
@@ -2252,6 +2542,8 @@ export type Database = {
           ai_conversation?: Json | null
           ai_summary?: string | null
           boutique_id?: string | null
+          consent_given_at?: string | null
+          consent_notice_version?: string | null
           contact_email?: string
           contact_name?: string | null
           created_at?: string
@@ -2289,6 +2581,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_tour_progress: {
+        Row: {
+          completed_personas: string[]
+          dismissed: boolean
+          persona: string | null
+          scope: string
+          step_idx: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_personas?: string[]
+          dismissed?: boolean
+          persona?: string | null
+          scope: string
+          step_idx?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_personas?: string[]
+          dismissed?: boolean
+          persona?: string | null
+          scope?: string
+          step_idx?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -2297,6 +2619,10 @@ export type Database = {
       attach_product_stock_stripe_session: {
         Args: { p_checkout_key: string; p_stripe_session_id: string }
         Returns: number
+      }
+      bib_has_active_pro_subscription: {
+        Args: { p_environment?: string; p_user_id: string }
+        Returns: boolean
       }
       bib_has_portal: { Args: { requested: string }; Returns: boolean }
       boutique_period_kpis: {
@@ -2316,6 +2642,15 @@ export type Database = {
       confirm_product_stock_checkout: {
         Args: { p_stripe_session_id: string }
         Returns: number
+      }
+      consume_support_ticket_offer: {
+        Args: {
+          p_boutique_id: string
+          p_hash: string
+          p_offer_id: string
+          p_user_id: string
+        }
+        Returns: boolean
       }
       create_order_issue: {
         Args: {
@@ -2381,6 +2716,7 @@ export type Database = {
           views: number
         }[]
       }
+      purge_expired_bib_talent_applications: { Args: never; Returns: number }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
@@ -2401,6 +2737,10 @@ export type Database = {
         Args: { p_checkout_key: string }
         Returns: number
       }
+      reserve_boutique_ai_generation: {
+        Args: { p_boutique_id: string; p_user_id: string }
+        Returns: boolean
+      }
       reserve_order_issue_refund: {
         Args: { p_amount_cents: number; p_issue_id: string; p_user_id: string }
         Returns: Json
@@ -2408,6 +2748,10 @@ export type Database = {
       reserve_product_stock_checkout: {
         Args: { p_checkout_key: string; p_order_ids: string[] }
         Returns: number
+      }
+      reserve_support_ai_request: {
+        Args: { p_kind: string; p_user_id: string }
+        Returns: boolean
       }
       scene_analytics_summary: {
         Args: { _boutique_id: string; _since?: string }
