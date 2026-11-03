@@ -10,6 +10,7 @@ type SupplierProduct = Tables<"supplier_products">;
 export function useSupplierProducts() {
   return useQuery({
     queryKey: ["supplier-products"],
+    staleTime: 30_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("supplier_products")
@@ -26,6 +27,7 @@ export function useSupplierProducts() {
 export function useSupplierProductsByCategory(category?: string) {
   return useQuery({
     queryKey: ["supplier-products", category],
+    staleTime: 30_000,
     queryFn: async () => {
       let query = supabase
         .from("supplier_products")
