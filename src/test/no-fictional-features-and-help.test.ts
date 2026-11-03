@@ -35,10 +35,13 @@ describe("Production BIB contains no invented operations or obsolete programs", 
     expect(migration).toContain("dashboard_support_requires_owner");
   });
 
-  it("does not persist cart, checkout profile or authenticated session locally", () => {
+  it("does not persist cart or checkout profile locally, but preserves Supabase auth across redirects", () => {
     expect(read("src/contexts/StoreCartContext.tsx")).not.toContain("localStorage.");
     expect(read("src/components/storefront/CheckoutForm.tsx")).not.toContain("localStorage.");
-    expect(read("src/integrations/supabase/client.ts")).toContain("storage: memoryAuthStorage");
+    const authClient = read("src/integrations/supabase/client.ts");
+    expect(authClient).toContain("persistSession: true");
+    expect(authClient).toContain("autoRefreshToken: true");
+    expect(authClient).not.toContain("memoryAuthStorage");
     expect(read("src/hooks/useTourProgress.ts")).not.toContain("localStorage.setItem");
   });
 });
