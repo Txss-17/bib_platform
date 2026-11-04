@@ -1,6 +1,7 @@
 import { translateUi } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -45,6 +46,7 @@ export function AddToBoutiqueDialog({
   useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: boutiques = [], isLoading: boutiquesLoading } = useBoutiques();
 
   const { data: existingProducts = [], isLoading: productsLoading } =
@@ -220,6 +222,7 @@ export function AddToBoutiqueDialog({
 
       if (!created?.id) throw new Error('La création du produit n’a pas été confirmée.');
       setAddedProductId(created.id);
+      await queryClient.invalidateQueries({ queryKey: ["products"] });
       setSuccess(true);
 
       toast({
