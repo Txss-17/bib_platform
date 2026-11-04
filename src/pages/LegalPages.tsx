@@ -487,7 +487,7 @@ export function CGV() {
       <h2>{translateUi("12. Responsabilité")}</h2>
       <p>
         {translateUi(
-          "BIB, opérateur et intermédiaire et non vendeur, ne peut être tenue responsable des manquements du Marchand relatifs à la conformité, à la description ou à la disponibilité des produits, ni de ses obligations de garantie légale. Son rôle dans l'organisation de l'expédition peut engager sa responsabilité dans les conditions prévues par le Code des transports et ses contrats logistiques, sans se substituer à celle du Marchand au titre de la vente.",
+          "Pour les boutiques tierces, le marchand vendeur reste responsable des obligations de conformité et de garantie légale, sans exclure la responsabilité propre de BIB pour ses prestations d'intermédiation ou d'organisation du transport. Pour les boutiques tests exploitées directement par l'entreprise individuelle, cette même entreprise est le vendeur professionnel et assume les obligations correspondantes. Les droits impératifs des consommateurs sont préservés.",
         )}
       </p>
       <h2>12 bis. Informations et données liées à la commande</h2>
