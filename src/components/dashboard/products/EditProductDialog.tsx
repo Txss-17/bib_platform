@@ -627,19 +627,19 @@ export function EditProductDialog({
               icon={Warehouse}
               title={translateUi("Gestion du stock")}
               description={translateUi(
-                "Le stock réel est actualisé à partir des réceptions confirmées et des mouvements de stock enregistrés.",
+                "Stock physiquement réceptionné dans le circuit de la boutique. Le stock encore détenu par le fournisseur n'est pas inclus et l'ajout au catalogue ne vaut pas achat.",
               )}
             />
 
             <div className="grid gap-4 sm:grid-cols-2">
               <ReadonlyMetric
-                label={translateUi("Stock disponible")}
+                label={translateUi("Stock réceptionné enregistré")}
                 value={String(product.stock_quantity ?? 0)}
               />
 
               <Field
                 id="stock-threshold"
-                label={translateUi("Seuil d’alerte de stock")}
+                label={translateUi("Seuil d’alerte du stock réceptionné")}
                 hint={translateUi(
                   "Une alerte est déclenchée lorsque le stock atteint ce seuil.",
                 )}
@@ -660,9 +660,9 @@ export function EditProductDialog({
             <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
               <Field
                 id="restock-quantity"
-                label={translateUi("Quantité à réapprovisionner")}
+                label={translateUi("Réassort anticipé facultatif (unités)")}
                 hint={translateUi(
-                  "Minimum catalogue BIB : {v0} unité(s). La demande ne modifie pas le stock disponible.",
+                  "Minimum catalogue BIB : {v0} unité(s). Cette demande est facultative et distincte de l'achat fournisseur déclenché pour une vente client. Elle ne modifie aucun stock.",
                   { v0: moq ?? 1 },
                 )}
               >
@@ -684,7 +684,7 @@ export function EditProductDialog({
               >
                 {restockPending
                   ? translateUi("Envoi…")
-                  : translateUi("Demander le réassort")}
+                  : translateUi("Soumettre une demande de réassort")}
               </Button>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -762,7 +762,7 @@ export function EditProductDialog({
               <Info className="h-4 w-4" />
               <AlertDescription className="text-xs leading-5">
                 {translateUi(
-                  "Le stock ne peut pas être augmenté ou diminué manuellement depuis cette fenêtre. Toute entrée doit correspondre à une réception confirmée ; toute sortie doit correspondre à un mouvement de stock enregistré.",
+                  "Référencement sans préachat : le fournisseur conserve la propriété de son stock avant commande. Le stock réceptionné ici n'est pas la disponibilité fournisseur. Les achats déclenchés par une vente client, les éventuelles personnalisations, les réceptions et les livraisons doivent être vérifiés et tracés dans leurs circuits respectifs. Les quantités ne peuvent pas être modifiées manuellement.",
                 )}
               </AlertDescription>
             </Alert>
