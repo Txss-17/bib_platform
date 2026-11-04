@@ -39,8 +39,10 @@ describe("BIB Platform public prelaunch boundary", () => {
     const charter = read("src/pages/LegalConsentCharter.tsx");
     const dpa = read("src/pages/LegalMerchantDataAnnex.tsx");
     const versions = read("src/lib/legalDocumentVersions.ts");
-    expect(legalPages).toContain("l'identité légale complète");
-    expect(legalPages).toContain("marchand identifié est le vendeur professionnel");
+    expect(legalPages).toContain("nom et prénom de l'entrepreneur individuel");
+    expect(legalPages).toContain("immatriculations RNE/RCS");
+    expect(legalPages).toContain("marchands tiers");
+    expect(legalPages).toContain("boutiques tests permanentes propres à BIB");
     expect(legalPages).toContain("politique de confidentialité");
     expect(legalPages).toContain("acceptation contractuelle");
     expect(legalPages).toContain("refuser");
