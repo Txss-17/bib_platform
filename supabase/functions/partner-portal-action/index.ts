@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { forwardSupplierAudit } from "../_shared/supplier-audit-proxy.mjs";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,7 +17,9 @@ interface Body extends Record<string, unknown> {
     | "get_order" // ops: scan one paid order
     | "get_shipping_labels" // ops: build labels from paid order addresses
     | "list_shipments" // ops: read shipment tracking rows
-    | "shipment_update"; // ops: driver/carton/label/status tracking
+    | "shipment_update"
+    | "list_audits"
+    | "accept_audit_quote";
   // create_event
   kind?: string;
   title?: string;
@@ -67,7 +70,7 @@ Deno.serve(async (req) => {
 
   const { data: sub, error: subErr } = await supabase
     .from("partner_onboarding_submissions")
-    .select("id, portal, status")
+    .select("id, portal, status, email_verified_at")
     .eq("access_token", token)
     .maybeSingle();
 
@@ -75,6 +78,14 @@ Deno.serve(async (req) => {
   if (sub.status !== "approved") return json({ error: "not_approved" }, 403);
 
   try {
+    if (body.action === "list_audits" || body.action === "accept_audit_quote") {
+      const result = await forwardSupplierAudit(body, sub, {
+        url: Deno.env.get("BIB_INTRANET_AUDIT_PORTAL_URL"),
+        secret: Deno.env.get("BIB_PLATFORM_BRIDGE_SECRET"),
+      });
+      return json(result.body, result.status);
+    }
+
     if (body.action === "create_event") {
       if (!body.kind || !EVENT_KINDS_BY_PORTAL[sub.portal]?.has(body.kind))
         return json({ error: "invalid_kind" }, 400);
@@ -247,7 +258,7 @@ Deno.serve(async (req) => {
         (boutiques ?? []).map((boutique) => [boutique.id, boutique]),
       );
       const supplierById = new Map(
-        (suppliers ?? []).map((supplier) => [supplier.id, supplier.name]),
+        (suppliers ?? []).map((supplier) => [supplier.id, supplier.name] as const),
       );
       const supplierIdByProduct = new Map(
         (products ?? []).map((product) => [
@@ -255,7 +266,7 @@ Deno.serve(async (req) => {
           product.supplier_product_id,
         ]),
       );
-      const labels = [];
+      const labels: Record<string, unknown>[] = [];
 
       for (const order of orders) {
         const address = addressByOrder.get(order.id);
