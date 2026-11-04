@@ -1,7 +1,7 @@
 # BIB Platform — catalogue marchand, stock fournisseur et achat à la commande
 
 ## Décision de référence
-En phase entreprise individuelle au régime micro, **BIB ne préachète pas les produits**. Le fournisseur reste propriétaire des unités qu'il détient. Le marchand est vendeur juridique de ses produits et acquiert auprès du fournisseur les unités nécessaires à une vente confirmée, selon le contrat applicable. BIB est l'intermédiaire de référencement, de coordination opérationnelle et de logistique. L'ajout d'une référence à une boutique ne crée ni achat fournisseur, ni stock disponible, ni propriété du stock pour BIB.
+En phase entreprise individuelle au régime micro, **BIB ne préachète pas les produits**. Le fournisseur reste propriétaire des unités qu'il détient. Le marchand tiers est vendeur juridique de ses produits et acquiert auprès du fournisseur les unités nécessaires à une vente confirmée, selon le contrat applicable. Dans les boutiques tests propres, l'entreprise individuelle BIB est directement acheteur et vendeur, sans autofacturation d'abonnement ni commission. BIB est l'intermédiaire de référencement, de coordination opérationnelle et de logistique. L'ajout d'une référence à une boutique ne crée ni achat fournisseur, ni stock disponible, ni propriété du stock pour BIB.
 
 ## États à tenir séparés
 - **Référence catalogue** : contrôlée par BIB, avec qualité/audit, MOQ, prix fournisseur et capacités de personnalisation.
