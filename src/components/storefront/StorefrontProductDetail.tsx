@@ -642,7 +642,7 @@ export function StorefrontProductDetail() {
             <div className="mt-4">
               {isOutOfStock ? (
                 <Badge variant="destructive">
-                  {translateUi("Rupture de stock")}
+                  {translateUi("Commande indisponible : disponibilité fournisseur à confirmer")}
                 </Badge>
               ) : isLowStock ? (
                 <span className="text-sm font-medium text-amber-700">
@@ -658,6 +658,11 @@ export function StorefrontProductDetail() {
               )}
             </div>
 
+            {isOutOfStock && <p role="status" className="mt-2 text-xs text-muted-foreground">
+              Le stock local ne permet pas encore de confirmer une vente. Le référencement ne requiert pas de préachat,
+              mais les commandes à la demande ne seront ouvertes qu’après vérification réelle de la disponibilité fournisseur
+              et sécurisation de l’achat marchand correspondant.
+            </p>}
             {/* Description */}
             {product.description && (
               <div className="mt-7">
