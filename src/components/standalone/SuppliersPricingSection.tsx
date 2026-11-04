@@ -156,7 +156,7 @@ const FAQ = [
     },
     get answer() {
       return translateUi(
-        "Le référencement BIB ne repose pas sur un modèle ouvert de paiement pour simplement apparaître dans un catalogue. Les éventuelles conditions commerciales, prestations ou coûts applicables sont déterminés selon le parcours du fournisseur et présentés avant tout engagement contractuel.",
+        "Le modèle fournisseur retenu prévoit un forfait unique de 19 € par mois, en complément des commissions contractuelles applicables. L’audit initial de qualification est offert ; un contrôle complémentaire motivé par une non-conformité peut être facturé dans les conditions acceptées au contrat. Aucun paiement n’est dû avant la contractualisation et l’activation effective du service.",
       );
     },
   },
@@ -190,7 +190,7 @@ const FAQ = [
     },
     get answer() {
       return translateUi(
-        "Les conditions financières sont définies dans le cadre contractuel applicable au fournisseur et aux services concernés. Elles sont communiquées avant engagement et ne constituent pas un tarif public automatique applicable à tous les fournisseurs.",
+        "Le forfait fournisseur retenu est de 19 € par mois, hors taxes éventuellement applicables, auquel s’ajoutent les commissions prévues au contrat. L’audit initial est offert ; les contrôles complémentaires en cas de non-conformité peuvent être facturés selon les clauses préalablement acceptées. Le montant effectivement facturé dépend du régime de TVA applicable à l’exploitant à la date de facturation.",
       );
     },
   },
@@ -230,7 +230,7 @@ export function SuppliersPricingSection() {
 
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
             {translateUi(
-              "BIB ne fonctionne pas comme une marketplace ouverte où un fournisseur paie simplement pour publier ses produits. Chaque candidature est étudiée et les conditions applicables sont définies en fonction du parcours, des contrôles nécessaires et des opérations concernées.",
+              "BIB sélectionne et qualifie chaque fournisseur. Le modèle retenu comprend un forfait unique de 19 € par mois et des commissions contractuelles ; la validation de la candidature ne vaut ni acceptation automatique ni déclenchement immédiat d’un abonnement. L’audit initial de qualification est offert.",
             )}
           </p>
         </div>
@@ -286,13 +286,13 @@ export function SuppliersPricingSection() {
 
             <h3 className="font-display text-xl font-bold sm:text-2xl">
               {translateUi(
-                "Pas de paiement pour une simple présence au catalogue",
+                "Forfait fournisseur unique : 19 € / mois",
               )}
             </h3>
 
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               {translateUi(
-                "Le modèle fournisseur BIB repose sur un parcours qualifié et sur les services réellement nécessaires à l'intégration et aux opérations. Les conditions sont définies avant contractualisation.",
+                "Le référencement reste soumis à la qualification de BIB. Le forfait retenu est de 19 € par mois, hors taxes éventuellement applicables, complété par les commissions définies au contrat. Le premier audit de qualification est offert ; un contrôle complémentaire pour non-conformité peut être facturé après information et accord contractuel.",
               )}
             </p>
           </div>
