@@ -297,7 +297,7 @@ export function CGV() {
       <h2>{translateUi("1. Objet et champ d'application")}</h2>
       <p>
         {translateUi(
-          "Les présentes Conditions Générales de Vente (CGV) régissent les commandes de produits passées par un client final auprès des Marchands référencés sur la marketplace Brand-in-a-Box, opérée sous la marque Brand-in-a-Box (« BIB »), par l'entité à identifier dans les mentions légales. Elles précisent l'identité du vendeur, le rôle de BIB, les modalités de paiement, les garanties applicables et le règlement des litiges.",
+          "Les présentes Conditions Générales de Vente régissent les commandes de produits sur la marketplace Brand-in-a-Box. Le vendeur professionnel doit être identifié avant la commande : marchand tiers indépendant, ou entreprise individuelle BIB lorsqu'elle exploite sa propre boutique test. L'identité juridique effective de l'éditeur figure dans les mentions légales après vérification. Les présentes CGV précisent les obligations des parties, le prix, le paiement, la livraison, les garanties et le règlement des différends.",
         )}
       </p>
       <h2>{translateUi("2. Définitions")}</h2>
@@ -321,13 +321,13 @@ export function CGV() {
       <h3>{translateUi("3.1 Le vendeur")}</h3>
       <p>
         {translateUi(
-          "Le Marchand est le vendeur professionnel. Le contrat de vente se forme entre le Client et le Marchand. Le Marchand est seul responsable de la conformité, de la description et de la disponibilité de ses produits.",
+          "Pour les boutiques de marchands tiers, le Marchand est le vendeur professionnel et le contrat de vente se forme entre le Client et lui. Il répond des obligations légales liées à ses produits. Pour les boutiques tests exploitées en propre par l'entreprise individuelle BIB, cette même entreprise individuelle est directement le vendeur professionnel et assume ces obligations.",
         )}
       </p>
       <h3>{translateUi("3.2 Le rôle de BIB")}</h3>
       <p>
         {translateUi(
-          "BIB n'est pas le vendeur. Elle intervient comme opérateur et intermédiaire de la Marketplace et, selon le mandat confié par le Marchand, pour certaines opérations : mise à disposition d'une boutique en ligne, organisation de l'expédition et coordination du service après-vente.",
+          "BIB n'est pas le vendeur des produits des marchands tiers. Pour ces ventes, BIB intervient comme opérateur et intermédiaire, selon un mandat approprié, dans la mise à disposition de boutiques, l'organisation logistique et la coordination du service après-vente. Le cas de ses propres boutiques exploitées par l'entreprise individuelle demeure distinct.",
         )}
       </p>
       <h3>{translateUi("3.3 Synthèse des responsabilités")}</h3>
