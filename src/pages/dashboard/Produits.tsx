@@ -520,6 +520,12 @@ export default function Produits() {
           <Button asChild variant="outline" size="sm" className="mt-3"><Link to="/dashboard/produits-fournisseurs">Choisir une référence du catalogue</Link></Button>
         </div>
 
+        <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm">
+          <p className="font-semibold">Nouvelles règles BIB : commandes et personnalisation</p>
+          <p className="mt-2 text-muted-foreground">Les références personnalisables sont destinées en priorité aux précommandes regroupées par fenêtre de commande et capacité fournisseur vérifiée. La personnalisation n'est lancée qu'après confirmation de commande, regroupement et autorisation de production. Les articles standards effectivement disponibles suivent le circuit d'expédition habituel.</p>
+          <p className="mt-2 text-muted-foreground">Le prix fournisseur doit inclure les prestations de personnalisation prévues ; votre marge est ajoutée dans les limites contractuelles. L'annulation commerciale est gratuite jusqu'au lancement effectif de production, sans limitation des droits légaux de rétractation et de remboursement.</p>
+          <p className="mt-2 text-muted-foreground">La mise en service de la précommande regroupée nécessite encore la vérification des capacités fournisseurs, les paiements, les statuts de production et la traçabilité. Aucune commande à la demande non couverte ne doit être autorisée.</p>
+        </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             label={translateUi("Catalogue actif")}
