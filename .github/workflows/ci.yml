@@ -39,6 +39,12 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps --no-audit --no-fund
 
+      - name: Test supplier audit portal authorization and version contract
+        run: npm run test:supplier-audit
+
+      - name: Typecheck partner audit authorization boundary
+        run: npx tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --lib ES2022,DOM --skipLibCheck --strictNullChecks --noImplicitAny false --allowImportingTsExtensions tests/supplier-audit/edge-env.d.ts supabase/functions/partner-portal-action/index.ts
+
       - name: Validate TypeScript
         run: npm run check
 

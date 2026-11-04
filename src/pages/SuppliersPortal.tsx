@@ -14,6 +14,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPortal, type PortalEvent } from "@/hooks/usePartnerPortal";
 import { useLanguage } from "@/contexts/LanguageContext";
+import SupplierAuditPortal from "@/components/standalone/SupplierAuditPortal";
 import {
   PlatformTour,
   PlatformTourLauncher,
@@ -564,11 +565,13 @@ export default function SuppliersPortal() {
               </div>
             </Card>
 
-            {/* Suivre audit */}
+            <SupplierAuditPortal token={token} submissionId={submission.id} />
+
+            {/* Historical logistics notices do not constitute audit decisions. */}
             <Card className="p-5">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-primary" />{" "}
-                {tx("Suivi des audits", "Audit tracking")}
+                {tx("Signalements logistiques antérieurs", "Previous logistics notices")}
               </h3>
               <div className="grid grid-cols-3 gap-3 mb-4">
                 <MiniStat label={tx("Ouverts", "Open")} value={openAudits} />
@@ -582,8 +585,8 @@ export default function SuppliersPortal() {
               </div>
               <EventList
                 events={auditEvents}
-                emptyLabel="Aucun audit en cours. L'équipe Ops déclenchera un audit si un contrôle qualité est requis."
-                allowStatusUpdate
+                emptyLabel={tx("Aucun signalement logistique antérieur.", "No previous logistics notices.")}
+                allowStatusUpdate={false}
                 onStatusChange={(id, status) =>
                   callAction({
                     action: "update_event_status",
