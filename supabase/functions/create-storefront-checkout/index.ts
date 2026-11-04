@@ -279,7 +279,7 @@ async function createStorefrontCheckout(
   // 1. Vérifier que la boutique existe et est publiée.
   const { data: boutique, error: boutiqueError } = await supabase
     .from("boutiques")
-    .select("id, name, status")
+    .select("id, name, status, legal_business_name, legal_siret, legal_address, legal_email")
     .eq("id", body.boutiqueId)
     .maybeSingle();
 
@@ -288,6 +288,17 @@ async function createStorefrontCheckout(
   if (!boutique || boutique.status !== "published") {
     throw new CheckoutError(
       "Cette boutique n'est pas disponible à la vente.",
+      409,
+    );
+  }
+
+  // GOV-LEGAL JUR-B03: the public storefront cannot sell while the legal
+  // seller cannot be identified. This validates completeness, not documentary
+  // verification or the contract's legal approval (separate release gate).
+  if (![boutique.legal_business_name, boutique.legal_siret, boutique.legal_address, boutique.legal_email]
+    .every(value => typeof value === "string" && value.trim().length > 0)) {
+    throw new CheckoutError(
+      "Les informations juridiques du vendeur sont incomplètes : cette boutique ne peut pas recevoir de commande.",
       409,
     );
   }
