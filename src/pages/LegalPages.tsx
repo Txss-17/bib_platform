@@ -75,9 +75,10 @@ export function MentionsLegales() {
     title: "Mentions légales — BIB",
     description: "Éditeur, contacts et responsabilité des services Brand-in-a-Box.",
   });
-  return <LegalShell eyebrow="Légal" title="Mentions légales" updated="2 novembre 2026">
+  return <LegalShell eyebrow="Légal" title="Mentions légales" updated="4 novembre 2026">
+    <p className="rounded-lg border border-amber-300/40 bg-amber-50/50 p-3 text-sm text-foreground"><strong>Statut de la présente rédaction :</strong> harmonisation du projet « Mentions légales BIB v1.1 — novembre 2026 ». Les champs d'identification réglementaire et d'hébergement doivent être complétés sur justificatifs et relus juridiquement avant le lancement de ventes. Une SAS ou une SASU non constituée n'est pas l'éditeur actuel.</p>
     <h2>Éditeur et responsabilité</h2>
-    <p>Brand-in-a-Box (« BIB ») exploite une plateforme numérique destinée aux marchands, clients, fournisseurs et partenaires opérationnels. L'identité légale complète de l'exploitant doit être confirmée avant publication commerciale définitive : <strong>dénomination exacte, forme juridique, siège, capital social le cas échéant, immatriculation SIREN/RCS, numéro de TVA le cas échéant et représentant légal</strong>. Ces éléments ne sont pas indiqués ici comme acquis en l'absence de justificatifs.</p>
+    <p>Brand-in-a-Box (« BIB ») exploite une plateforme numérique destinée aux marchands, clients, fournisseurs et partenaires opérationnels. L'éditeur juridique doit être identifié par le <strong>nom et prénom de l'entrepreneur individuel, son adresse professionnelle, ses coordonnées de contact, ses identifiants SIREN/SIRET et les immatriculations RNE/RCS correspondant à l'activité réelle</strong>, ainsi que son numéro de TVA si applicable. Le capital social et la présidence sont des attributs de société, non des éléments à inventer pour une entreprise individuelle. Ces informations restent à vérifier sur justificatifs avant toute exploitation commerciale.</p>
     <p><strong>Cadre juridique de lancement envisagé :</strong> activité BIB portée initialement par une entreprise individuelle au régime micro-entrepreneur, sous réserve de vérifier sa situation administrative et de déclarer l'activité correspondante. La transition ultérieure envisagée est la création d’une SASU distincte, et non d’une SAS déjà constituée. Cette feuille de route ne constitue pas une preuve d'immatriculation, de réactivation ou de transfert contractuel. Avant toute vente réelle, les coordonnées et mentions obligatoires de l'exploitant effectivement immatriculé doivent remplacer cette information provisoire.</p>
     <p>La franchise en base de TVA, lorsqu'elle s'applique, implique une facture sans TVA avec la mention légale applicable ; elle ne doit jamais être présumée sur les seuls critères « micro-entreprise ». Les factures des produits vendus par les marchands et celles des services propres à BIB doivent identifier leurs émetteurs respectifs.</p>
     <p>Site : <strong>brand-in-a-box.space</strong>. Contact général : <a href="mailto:contact@brand-in-a-box.space">contact@brand-in-a-box.space</a> (adresse à confirmer opérationnelle). Pour les questions juridiques : <a href="mailto:legal@brand-in-a-box.space">legal@brand-in-a-box.space</a> ; pour les données personnelles : <a href="mailto:privacy@brand-in-a-box.space">privacy@brand-in-a-box.space</a>.</p>
@@ -87,6 +88,8 @@ export function MentionsLegales() {
     <p>Sur les boutiques de <strong>marchands tiers</strong>, le marchand identifié est le vendeur professionnel, BIB étant intermédiaire selon le cadre contractuel. Pour les <strong>boutiques tests permanentes propres à BIB</strong>, la même entreprise individuelle est acheteur et vendeur, sans personnalité morale ni SIREN distinct ni abonnement ou commission facturée à elle-même. Les droits légaux du consommateur restent opposables au vendeur juridiquement identifié, indépendamment des services BIB.</p>
     <h2>Contenus, propriété intellectuelle et signalements</h2>
     <p>Les marques, logiciels et créations sont protégés selon les droits effectivement détenus ou concédés à BIB. Les contenus des boutiques peuvent appartenir aux marchands ou à leurs ayants droit. Pour signaler un contenu, une utilisation illicite ou exercer des droits, contactez l'équipe juridique par courriel.</p>
+    <h2>Médiation de la consommation</h2>
+    <p>Le consommateur doit pouvoir obtenir les coordonnées du <strong>médiateur compétent réellement désigné</strong> pour le vendeur de sa commande. Ces coordonnées ne sont pas encore vérifiées : aucun organisme ne peut être présenté comme conventionné sans engagement effectif. Le recours à la médiation n'écarte pas les voies judiciaires ni les garanties légales.</p>
     <h2>Informations complémentaires</h2>
     <p>Consultez les <a href="/cgu">conditions d'utilisation</a>, les <a href="/cgv">conditions de vente</a>, la <a href="/confidentialite">politique de confidentialité</a> et la <a href="/donnees-et-consentements">charte des données et consentements</a>. Pour une vente, la boutique doit également afficher l'identité du marchand vendeur et ses informations contractuelles obligatoires.</p>
   </LegalShell>;
@@ -102,8 +105,9 @@ export function CGU() {
     <LegalShell
       eyebrow={translateUi("Légal")}
       title={translateUi("Conditions Générales d'Utilisation")}
-      updated="2 novembre 2026"
+      updated="4 novembre 2026"
     >
+      <p className="text-sm text-muted-foreground">Rédaction harmonisée à partir du projet CGU BIB v1.2 (novembre 2026), sous réserve de validation juridique et de vérification de l'identité de l'exploitant.</p>
       <h2>{translateUi("1. Objet et champ d'application")}</h2>
       <p>
         {translateUi(
@@ -172,6 +176,8 @@ export function CGU() {
           "L'Utilisateur s'engage à fournir des informations exactes et à les maintenir à jour.",
         )}
       </p>
+      <h2>Conditions communes des boutiques et informations professionnelles</h2>
+      <p>Les CGU et CGV communes sont administrées et versionnées par BIB, avec les informations légales du vendeur professionnel réellement identifié. Le marchand tiers est juridiquement responsable de ses ventes ; pour les boutiques tests propres à BIB, l'entreprise individuelle est elle-même le vendeur. Les boutiques ne peuvent pas remplacer les clauses communes par des conditions contradictoires. La version du texte accepté doit pouvoir être rattachée à la transaction concernée.</p>
       <h2>{translateUi("5. Accès et disponibilité")}</h2>
       <p>
         {translateUi(
@@ -217,6 +223,8 @@ export function CGU() {
           "Les contenus mis en ligne par un Marchand (visuels, descriptions) demeurent sa propriété ou celle des tiers titulaires des droits. Le Marchand garantit disposer des droits nécessaires à leur utilisation sur la Marketplace.",
         )}
       </p>
+      <h2>8. Services facultatifs et programmes historiques</h2>
+      <p>Les programmes de fidélité, de points, de cartes cadeaux ou d'avantages évoqués dans des documents historiques n'ouvrent de droits contractuels que s'ils sont effectivement activés, décrits et proposés selon leurs conditions en vigueur. L'abonnement client facultatif n'est pas une condition générale pour acheter auprès d'un marchand.</p>
       <h2>{translateUi("9. Rôle de BIB dans les transactions")}</h2>
       <p>
         {translateUi(
@@ -283,8 +291,9 @@ export function CGV() {
     <LegalShell
       eyebrow={translateUi("Légal")}
       title={translateUi("Conditions Générales de Vente")}
-      updated="2 novembre 2026"
+      updated="4 novembre 2026"
     >
+      <p className="text-sm text-muted-foreground">Rédaction harmonisée à partir du projet CGV BIB v1.2 (novembre 2026). Les informations obligatoires du vendeur, les modalités de paiement et le médiateur compétent doivent être validés avant la mise en vente réelle.</p>
       <h2>{translateUi("1. Objet et champ d'application")}</h2>
       <p>
         {translateUi(
@@ -369,7 +378,7 @@ export function CGV() {
       <h2>{translateUi("5. Prix et paiement")}</h2>
       <p>
         {translateUi(
-          "Les prix sont affichés en euros, toutes taxes comprises, et incluent la livraison au sein de l'Union européenne. Le paiement est exigible à la validation de la commande ; les moyens de paiement acceptés sont indiqués au moment de la commande.",
+          "Le prix total TTC applicable est annoncé avant validation et précise les frais obligatoires, y compris de livraison, ainsi que les taxes réellement applicables. Les frais et territoires desservis sont ceux confirmés pour l'offre ; la livraison n'est pas présentée comme universellement gratuite. Les moyens de paiement effectivement disponibles sont précisés lors de la commande et leur fonctionnement doit être confirmé avant tout encaissement.",
         )}
       </p>
       <h2>{translateUi("6. Commande")}</h2>
@@ -385,6 +394,7 @@ export function CGV() {
         )}
       </p>
       <h2>Précommandes, production personnalisée et annulation</h2>
+      <p>Le client est informé avant l'achat de la <strong>période ou date de livraison réaliste</strong>, des étapes de préparation et des règles d'annulation propres au produit. Un simple marquage ou logo de marchand ne suffit pas, à lui seul, pour exclure le droit de rétractation. BIB organise le circuit fournisseur → partenaire logistique → client selon les contrats applicables, sans modifier la qualité de vendeur du marchand tiers.</p>
       <p>Pour les références personnalisables, BIB prévoit un fonctionnement en précommandes regroupées par fenêtre de commande et capacité fournisseur vérifiée. La production personnalisée ne commence qu'après confirmation de la commande et décision de lancement de la production. Un délai prévisionnel pouvant aller jusqu'à un mois peut être annoncé avant l'achat, avec suivi des étapes de préparation, personnalisation, contrôle, emballage et livraison ; le délai ferme applicable doit être indiqué à la commande et respecté selon les règles légales.</p>
       <p>La politique commerciale BIB permet au client de demander une annulation sans frais jusqu'au feu vert effectif de lancement de la production. Cette politique n'écarte jamais les droits légaux de rétractation, de remboursement ou les recours pour retard, défaut ou non-conformité. Une exclusion du droit de rétractation pour un bien nettement personnalisé ne peut pas être appliquée systématiquement aux produits simplement proposés en précommande : elle doit répondre aux conditions légales et être expliquée avant la vente.</p>
       <h2>Gouvernance contractuelle et identification du vendeur</h2>
@@ -489,6 +499,7 @@ export function CGV() {
           "En cas de litige, le Client contacte en priorité le Marchand, puis le service client BIB. À défaut de résolution amiable, il peut recourir gratuitement à un médiateur de la consommation (articles L. 616-1 et suivants du Code de la consommation).",
         )}
       </p>
+      <p>Les coordonnées du médiateur de la consommation réellement désigné par le vendeur doivent être mises à disposition sur la boutique et dans les documents précontractuels. Cette désignation doit être vérifiée avant le début des ventes.</p>
       <h2>{translateUi("14. Droit applicable")}</h2>
       <p>
         {translateUi(
@@ -505,7 +516,8 @@ export function Confidentialite() {
     title: "Politique de confidentialité — BIB",
     description: "Traitement des données personnelles des clients, marchands, candidats BIB Talent et visiteurs de Brand-in-a-Box.",
   });
-  return <LegalShell eyebrow="RGPD" title="Politique de confidentialité" updated="2 novembre 2026">
+  return <LegalShell eyebrow="RGPD" title="Politique de confidentialité" updated="4 novembre 2026">
+    <p className="text-sm text-muted-foreground">Rédaction harmonisée à partir du projet Politique de confidentialité BIB v1.2, novembre 2026. Les responsabilités de traitement, durées de conservation, sous-traitants effectifs et coordonnées doivent être vérifiés avant publication contractuelle définitive.</p>
     <p>Cette politique concerne la plateforme BIB, les boutiques publiées via BIB, les demandes de support, les sondages de prélancement et BIB Talent. Elle complète la <a href="/donnees-et-consentements">charte des données et consentements</a> et les informations affichées directement dans chaque formulaire.</p>
     <h2>1. Responsable du traitement et interlocuteurs</h2>
     <p>L'exploitant juridiquement identifié de Brand-in-a-Box est responsable des traitements déterminés pour ses propres services. Son identité légale complète est à finaliser dans les <a href="/mentions-legales">mentions légales</a>. Pour certains traitements portant sur les clients des boutiques, le marchand vendeur peut être responsable du traitement ; BIB peut agir comme prestataire/sous-traitant, responsable distinct ou, dans certains cas à analyser, coresponsable. Ces rôles doivent être définis contractuellement, notamment dans un accord de traitement des données (« DPA »).</p>
@@ -523,9 +535,11 @@ export function Confidentialite() {
     <p>La création d'un compte et la gestion des commandes peuvent reposer sur l'exécution d'un contrat ou des mesures précontractuelles ; la facturation et certains contrôles reposent sur des obligations légales ; la sécurité et la prévention de la fraude peuvent reposer sur l'intérêt légitime sous réserve d'une mise en balance ; les sondages facultatifs sur le consentement ; le recrutement sur la base applicable à l'examen de la candidature et, pour une conservation destinée à de futures opportunités, sur un fondement distinct approprié. La prospection et les cookies non essentiels sont soumis aux règles propres à ces traitements.</p>
     <p>La fourniture d'un formulaire ou l'acceptation de CGU ne transforme pas automatiquement toutes les utilisations de données en traitements consentis. Les consentements facultatifs sont séparés des confirmations contractuelles et restent retirables dans les conditions applicables.</p>
     <h2>4. Destinataires et circulation des données</h2>
+    <p>Stripe est le prestataire de paiement retenu, mais cela ne signifie pas que Stripe Connect ni les flux multi-acteurs sont opérationnels. BIB qualifie son rôle RGPD traitement par traitement : responsable, sous-traitant ou éventuellement coresponsable suivant la finalité, sans déduire cette qualification du seul hébergement de boutiques.</p>
     <p>Seules les équipes habilitées de BIB ont accès aux informations nécessaires à leurs missions. Le marchand vendeur, les partenaires de logistique, les prestataires de paiement, les prestataires d'infrastructure, le support et les sous-traitants autorisés ne reçoivent que les données nécessaires à leurs opérations. Le flux des sondages vers Product Engineering et Marketplace doit être agrégé. Les candidatures BIB Talent sont réservées à RH/Talent, avant un éventuel partage contrôlé avec le pôle concerné.</p>
     <p>Le stockage de documents confidentiels dans des dossiers publiquement accessibles est interdit. Les transferts hors Espace économique européen doivent être évalués et encadrés par un mécanisme de transfert reconnu, selon le pays et les prestataires concernés. Les localisations des prestataires et leurs garanties contractuelles doivent être confirmées.</p>
     <h2>5. Durées de conservation</h2>
+    <p>Les durées sont définies par finalité, y compris pour les candidatures BIB Talent, justificatifs fournisseurs, journaux d'Intranet, pièces d'audit et sauvegardes. La conservation des décisions de gouvernance BIB n'autorise pas la conservation indéfinie de données personnelles. Les obligations de conservation comptable et fiscale demeurent distinctes du consentement marketing.</p>
     <p>Les durées varient selon la finalité : les comptes sont conservés tant que nécessaires au service et aux obligations subsistantes ; les pièces comptables ou légales suivent leurs délais applicables ; les dossiers BIB Talent sont limités à une échéance prévue de 180 jours sur la plateforme, à répercuter sur l'intranet ; les réponses au sondage sont analysées de manière agrégée ; les journaux de sécurité, tickets et préférences de cookies ont des durées proportionnées à documenter dans le registre des traitements. Aucune durée uniforme n'est appliquée à toutes les données.</p>
     <h2>6. Sécurité, décisions automatisées et IA</h2>
     <p>BIB vise à appliquer des politiques d'accès par rôle, des contrôles serveur, des accès limités, la journalisation des actions sensibles et des durées de conservation maîtrisées. Les mesures effectives doivent faire l'objet de tests. L'agent IA fournit une assistance : il ne crée pas un ticket sans validation explicite et ne doit pas décider automatiquement d'une embauche, d'une résiliation ou d'un refus de droits. Un traitement automatisé ayant un effet juridique significatif nécessiterait des garanties supplémentaires et une information adaptée.</p>
@@ -544,12 +558,14 @@ export function Cookies() {
     title: "Cookies et traceurs — BIB",
     description: "Fonctionnement des cookies, finalités et gestion des choix pour les services Brand-in-a-Box.",
   });
-  return <LegalShell eyebrow="Traceurs" title="Politique cookies" updated="2 novembre 2026">
+  return <LegalShell eyebrow="Traceurs" title="Politique cookies" updated="4 novembre 2026">
+    <p className="text-sm text-muted-foreground">Rédaction harmonisée à partir du projet Politique de cookies BIB v1.1 (novembre 2026). L'inventaire exact des traceurs et l'effectivité du gestionnaire de consentement doivent être vérifiés sur la version publiée.</p>
     <h2>1. Traceurs nécessaires</h2>
     <p>Les outils d'authentification, de sécurité, de maintien de session, de panier ou de mémorisation d'une demande explicite peuvent nécessiter un stockage technique. Lorsqu'ils sont strictement nécessaires au service demandé, ils ne requièrent pas de consentement cookies ; leur présence et leur finalité doivent néanmoins être expliquées.</p>
     <h2>2. Mesure d'audience et publicité</h2>
     <p>Les cookies statistiques, pixels publicitaires, traceurs de conversion et technologies similaires non exemptés doivent être bloqués avant consentement. L'activation ultérieure des connexions Meta Ads ou Google Ads impose une analyse des traceurs, des destinataires, de leur durée et des éventuels transferts.</p>
     <h2>3. Choix disponibles</h2>
+    <p>Les catégories de traceurs sont évaluées individuellement : cookies de compte, panier ou sécurité strictement nécessaires ; mesure d'audience éventuellement exemptée dans les limites réglementaires ; statistiques non exemptées, publicité et traceurs partenaires soumis au choix préalable quand requis. Un outil de paiement ne rend pas automatiquement tous ses traceurs soumis à consentement : leur finalité réelle doit être déterminée.</p>
     <p>Lorsque des traceurs non essentiels sont utilisés, BIB doit proposer un dispositif permettant d'<strong>accepter</strong>, de <strong>refuser</strong> et de <strong>personnaliser</strong> les finalités, avec un refus aussi simple que l'acceptation. Aucune case facultative ne doit être précochée. La poursuite de navigation ne suffit pas à donner un accord.</p>
     <p>Les décisions doivent pouvoir être modifiées ou retirées facilement ; un lien permanent « Gérer mes cookies » doit être mis à disposition après installation effective du gestionnaire. En attendant, aucun traceur nécessitant un consentement ne doit être activé sans mécanisme valable.</p>
     <h2>4. Durée et contrôle</h2>
