@@ -151,6 +151,7 @@ const OrderTracking = lazy(() => import("@/pages/OrderTracking"));
 const BoutiqueFAQPage = lazy(() => import("@/pages/BoutiqueFAQPage"));
 const BoutiqueCGVPage = lazy(() => import("@/pages/BoutiqueCGVPage"));
 const BoutiqueCGUPage = lazy(() => import("@/pages/BoutiqueCGUPage"));
+const BoutiqueMentionsPage = lazy(() => import("@/pages/BoutiqueMentionsPage"));
 const BoutiqueAboutPage = lazy(() => import("@/pages/BoutiqueAboutPage"));
 
 /* =====================================================
@@ -858,6 +859,11 @@ export default function App() {
                     <Route
                       path="/boutique/:slug/cgu"
                       element={<BoutiqueCGUPage />}
+                    />
+
+                    <Route
+                      path="/boutique/:slug/mentions-legales"
+                      element={<BoutiqueMentionsPage />}
                     />
 
                     <Route
