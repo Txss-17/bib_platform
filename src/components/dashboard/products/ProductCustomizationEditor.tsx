@@ -262,7 +262,7 @@ export function ProductCustomizationEditor({
           </div>
           <div>
             <dt className="text-muted-foreground">
-              {en ? "Unit surcharge" : "Supplément unitaire"}
+              {en ? "Additional fee declared in supplier terms" : "Frais additionnels déclarés par le fournisseur"}
             </dt>
             <dd className="mt-1 font-medium">
               {meta.terms.surcharge_cents != null && meta.terms.currency
@@ -276,6 +276,11 @@ export function ProductCustomizationEditor({
             </dd>
           </div>
         </dl>
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          {en
+            ? "The agreed supplier price must already include the contracted customization service. Any exceptional added fee must be specifically justified, contractually approved and reflected in the total presented before customer payment; this metadata alone never changes the sale price."
+            : "Le prix fournisseur convenu doit déjà inclure la personnalisation contractualisée. Tout supplément exceptionnel doit être justifié, accepté dans les conditions fournisseur et intégré au prix total affiché avant paiement ; cette indication ne modifie jamais à elle seule le prix de vente."}
+        </p>
         <div className="space-y-2">
           <h3 className="flex items-center gap-2 text-base font-semibold">
             <Palette className="h-4 w-4 text-primary" />
