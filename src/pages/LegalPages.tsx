@@ -384,6 +384,11 @@ export function CGV() {
           "BIB organise et fait exécuter l'expédition par les partenaires logistiques qu'elle désigne. Les commandes sont livrées dans l'ensemble de l'Union européenne, la livraison étant incluse dans le prix affiché. Les responsabilités entre BIB, le Marchand et les prestataires logistiques sont définies par leurs contrats et par les dispositions légales applicables, notamment le Code des transports.",
         )}
       </p>
+      <h2>Précommandes, production personnalisée et annulation</h2>
+      <p>Pour les références personnalisables, BIB prévoit un fonctionnement en précommandes regroupées par fenêtre de commande et capacité fournisseur vérifiée. La production personnalisée ne commence qu'après confirmation de la commande et décision de lancement de la production. Un délai prévisionnel pouvant aller jusqu'à un mois peut être annoncé avant l'achat, avec suivi des étapes de préparation, personnalisation, contrôle, emballage et livraison ; le délai ferme applicable doit être indiqué à la commande et respecté selon les règles légales.</p>
+      <p>La politique commerciale BIB permet au client de demander une annulation sans frais jusqu'au feu vert effectif de lancement de la production. Cette politique n'écarte jamais les droits légaux de rétractation, de remboursement ou les recours pour retard, défaut ou non-conformité. Une exclusion du droit de rétractation pour un bien nettement personnalisé ne peut pas être appliquée systématiquement aux produits simplement proposés en précommande : elle doit répondre aux conditions légales et être expliquée avant la vente.</p>
+      <h2>Gouvernance contractuelle et identification du vendeur</h2>
+      <p>BIB administre un socle commun et versionné de CGV qui s'applique aux boutiques selon les contrats en vigueur ; le marchand professionnel reste identifié comme vendeur de chaque commande. L'identité juridique du vendeur, la version des conditions effectivement acceptées, les informations précontractuelles et les consentements aux traceurs facultatifs doivent être conservés avec une traçabilité adaptée. Aucun marchand ne peut substituer librement ses propres CGV au socle standardisé BIB sans procédure contractuelle autorisée.</p>
       <h2>{translateUi("8. Droit de rétractation")}</h2>
       <p>
         {translateUi(
