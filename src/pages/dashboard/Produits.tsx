@@ -513,6 +513,13 @@ export default function Produits() {
           }
         />
 
+        <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm">
+          <p className="font-semibold">Référencement et approvisionnement : deux étapes distinctes</p>
+          <p className="mt-2 text-muted-foreground">L'ajout d'un produit depuis le catalogue fournisseur crée une référence dans votre boutique avec un stock initial nul. Une validation d'échantillon peut être nécessaire avant son activation. Pour obtenir des unités, ouvrez la fiche du produit et envoyez une demande de réassort respectant le MOQ du fournisseur. Seule une réception vérifiée peut créditer le stock disponible ; l'approbation d'une demande ne constitue ni une livraison ni une entrée en inventaire.</p>
+          <p className="mt-2 text-muted-foreground">Les quantités de la boutique ne sont pas interchangeables avec le stock détenu par un fournisseur ou un partenaire logistique. Les réservations de commande et les ventes sont suivies séparément.</p>
+          <Button asChild variant="outline" size="sm" className="mt-3"><Link to="/dashboard/produits-fournisseurs">Choisir une référence du catalogue</Link></Button>
+        </div>
+
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             label={translateUi("Catalogue actif")}
