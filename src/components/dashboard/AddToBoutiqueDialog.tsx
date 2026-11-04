@@ -61,6 +61,7 @@ export function AddToBoutiqueDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [success, setSuccess] = useState(false);
+  const [addedProductId, setAddedProductId] = useState<string | null>(null);
 
   /* ---------------------------------------------------------------------- */
   /* Reset dialog state                                                     */
@@ -75,6 +76,7 @@ export function AddToBoutiqueDialog({
           : 0,
       );
       setSuccess(false);
+      setAddedProductId(null);
       setIsSubmitting(false);
     }
   }, [open, product]);
@@ -175,7 +177,7 @@ export function AddToBoutiqueDialog({
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
+      const { data: created, error } = await supabase
         .from("products")
         .insert({
           boutique_id: selectedBoutiqueId,
@@ -203,9 +205,9 @@ export function AddToBoutiqueDialog({
           status: "paused",
 
           /*
-           * Valeurs initiales de stock.
-           * Elles pourront être modifiées ensuite
-           * depuis la gestion de la boutique.
+           * Stock initial à zéro : aucun crédit de stock depuis le navigateur.
+           * Seule une réception ou écriture d'inventaire autorisée peut
+           * rendre des unités disponibles pour la vente.
            */
           stock_quantity: 0,
         })
@@ -216,6 +218,8 @@ export function AddToBoutiqueDialog({
         throw error;
       }
 
+      if (!created?.id) throw new Error('La création du produit n’a pas été confirmée.');
+      setAddedProductId(created.id);
       setSuccess(true);
 
       toast({
@@ -257,7 +261,7 @@ export function AddToBoutiqueDialog({
               </h2>
 
               <p className="text-sm text-muted-foreground">
-                {translateUi("Le produit a bien été ajouté à votre boutique.")}
+                {translateUi("Le produit a bien été ajouté à votre boutique, sans stock disponible initial.")}
               </p>
             </div>
 
@@ -273,7 +277,7 @@ export function AddToBoutiqueDialog({
                 ) : (
                   <>
                     {translateUi(
-                      "Le nouveau produit sera ajouté en pause. La validation initiale de l’échantillon reste requise lorsqu’elle n’a pas encore été acquise.",
+                      "Le produit reste en pause : la validation de l’échantillon et la réception de stock vérifié sont deux étapes distinctes. Pour lancer le réapprovisionnement, ouvrez sa fiche produit.",
                     )}
                   </>
                 )}
@@ -281,18 +285,14 @@ export function AddToBoutiqueDialog({
             </Alert>
             <Button
               type="button"
-              onClick={handleAdd}
-              disabled={
-                isSubmitting ||
-                !selectedBoutiqueId ||
-                eligibleBoutiques.length === 0
-              }
+              onClick={() => {
+                if (!addedProductId) return;
+                onOpenChange(false);
+                navigate(`/dashboard/produits?productId=${encodeURIComponent(addedProductId)}`);
+              }}
+              disabled={!addedProductId}
             >
-              {isSubmitting
-                ? translateUi("Ajout...")
-                : existingProduct
-                  ? translateUi("Gérer le produit existant")
-                  : translateUi("Ajouter à ma boutique")}
+              {translateUi("Gérer le produit et demander du stock")}
             </Button>
           </div>
         </DialogContent>
@@ -475,10 +475,22 @@ export function AddToBoutiqueDialog({
             <AlertDescription>
               {translateUi("Le produit sera ajouté en statut")}{" "}
               <strong>{translateUi("en attente")}</strong>. Un échantillon devra
-              être validé avant sa mise en vente.
+              être validé avant sa mise en vente. Le stock initial est zéro : l’ajout au catalogue ne confirme ni achat fournisseur, ni livraison, ni disponibilité à vendre.
             </AlertDescription>
           </Alert>
 
+          <Alert>
+            <Package className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Approvisionnement et propriété du stock.</strong> Vous sélectionnez une
+              référence fournisseur validée et fixez sa marge autorisée. La quantité
+              mise en vente provient uniquement des réceptions et mouvements
+              d’inventaire confirmés, pas d'une saisie libre. Après l’ajout,
+              demandez les quantités souhaitées depuis la fiche produit ; BIB et
+              les partenaires concernés examinent puis organisent le réassort.
+              Une approbation ne constitue pas encore une réception.
+            </AlertDescription>
+          </Alert>
           {/* ---------------------------------------------------------------- */}
           {/* Promotion information                                             */}
           {/* ---------------------------------------------------------------- */}
