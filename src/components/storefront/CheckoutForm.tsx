@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { useCart } from "@/contexts/CartContext";
 import { StorefrontEmbeddedCheckout } from "@/components/payments/StorefrontEmbeddedCheckout";
+import { useStoreLegalBundle, type StoreLegalBundle } from '@/hooks/useStoreLegalBundle';
+import StoreLegalDocuments from '@/components/storefront/StoreLegalDocuments';
 
 interface CheckoutFormProps {
   boutiqueId: string;
@@ -39,7 +41,11 @@ export function CheckoutForm({
   onComplete,
   onBack,
 }: CheckoutFormProps) {
-  useLanguage();
+  const {lang}=useLanguage();
+  const tx=(fr:string,en:string)=>lang==='en'?en:fr;
+  const legal=useStoreLegalBundle(boutiqueId);
+  const [agreedHash,setAgreedHash]=useState<string|null>(null);
+  const [acceptedBundle,setAcceptedBundle]=useState<StoreLegalBundle|null>(null);
   const { slug } = useParams<{
     slug: string;
   }>();
@@ -117,6 +123,8 @@ export function CheckoutForm({
     }
 
 
+    if(!legal.data||agreedHash!==legal.data.bundle_hash||legal.isError)return;
+    setAcceptedBundle(legal.data);
     setStep("pay");
   };
 
@@ -151,7 +159,7 @@ export function CheckoutForm({
    * --------------------------------------------------------------------------
    */
 
-  if (step === "pay") {
+  if (step === "pay" && acceptedBundle) {
     const currentBoutiqueSlug = boutiqueSlug?.trim() || slug?.trim() || "";
 
     const returnUrl =
@@ -194,6 +202,7 @@ export function CheckoutForm({
           }}
           notes={notes.trim()}
           returnUrl={returnUrl}
+          legalAgreement={{bundleHash:acceptedBundle.bundle_hash,accepted:true,statement:'storefront-legal-v1'}}
           onComplete={onComplete}
         />
       </div>
@@ -451,13 +460,20 @@ export function CheckoutForm({
             />
           </div>
 
+          <div className="space-y-3 rounded-lg border p-4">
+            <h3 className="font-medium">{tx('Conditions applicables à cette commande','Terms applicable to this order')}</h3>
+            {legal.isLoading&&<p role="status">{tx('Chargement des conditions…','Loading terms…')}</p>}
+            {legal.isError&&<p role="alert" className="text-sm">{tx('Les documents du vendeur ne sont pas disponibles. La commande ne peut pas continuer.','The seller documents are unavailable. Checkout cannot continue.')} <Button type="button" variant="outline" size="sm" onClick={()=>void legal.refetch()}>{tx('Réessayer','Retry')}</Button></p>}
+            {legal.data&&!legal.isError&&<><StoreLegalDocuments bundle={legal.data}/><label className="flex items-start gap-2 text-sm"><input type="checkbox" required checked={agreedHash===legal.data.bundle_hash} onChange={e=>setAgreedHash(e.target.checked?legal.data!.bundle_hash:null)}/>{tx('J’ai pris connaissance des documents présentés et j’accepte les CGV et CGU de cette boutique pour cette commande.','I have reviewed the presented documents and accept this store’s sales and use terms for this order.')}</label><p className="text-xs text-muted-foreground">{tx('Cet accord ne vous abonne pas à des communications commerciales et ne modifie pas vos choix de cookies.','This agreement does not subscribe you to marketing or change your cookie choices.')}</p></>}
+          </div>
+
           <Button
             type="submit"
             className="w-full text-white"
             style={{
               backgroundColor: primaryColor,
             }}
-            disabled={!hasShippingInfo}
+            disabled={!hasShippingInfo||!legal.data||legal.isError||agreedHash!==legal.data.bundle_hash}
           >
             {translateUi("Continuer vers le paiement —")}{" "}
             {totalPrice.toFixed(2)} €

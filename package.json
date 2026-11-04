@@ -14,7 +14,8 @@
     "test:bridge": "vitest run --config tests/bridge/vitest.config.ts",
     "check:bridge": "node tests/bridge/typecheck.mjs",
     "test:consistency": "node tests/consistency/browser-smoke.mjs",
-    "test:supplier-audit": "node --test tests/supplier-audit/*.test.mjs"
+    "test:supplier-audit": "node --test tests/supplier-audit/*.test.mjs",
+    "test:legal-governance": "node --test tests/legal-governance/*.test.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

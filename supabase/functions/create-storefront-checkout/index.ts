@@ -17,6 +17,8 @@ interface CartItem {
 }
 
 interface StorefrontCheckoutBody {
+  checkoutKey: string;
+  legalAgreement: { bundleHash: string; accepted: boolean; statement: string };
   boutiqueId: string;
   boutiqueName?: string;
   items: CartItem[];
@@ -236,6 +238,12 @@ async function createStorefrontCheckout(
     throw new CheckoutError("Identifiant boutique invalide.");
   }
 
+  if (!isUuid(body.checkoutKey) || body.legalAgreement?.accepted !== true ||
+      body.legalAgreement.statement !== 'storefront-legal-v1' ||
+      typeof body.legalAgreement.bundleHash !== 'string' || !/^[a-f0-9]{64}$/.test(body.legalAgreement.bundleHash)) {
+    throw new CheckoutError("L’acceptation des documents présentés est requise avant le paiement.", 409);
+  }
+
   if (
     body.environment !== "sandbox" &&
     body.environment !== "live"
@@ -410,27 +418,21 @@ async function createStorefrontCheckout(
 
   // 3. Créer une commande en attente par produit distinct.
   const customerEmail = body.customerEmail.trim().toLowerCase();
-  const checkoutKey = crypto.randomUUID();
+  const checkoutKey = body.checkoutKey;
 
   const { data: orderData, error: orderError } = await supabase
-    .from("orders")
-    .insert(
-      lines.map((line) => ({
-        boutique_id: boutique.id,
-        product_id: line.product.id,
-        quantity: line.quantity,
-        customer_name: body.customerName.trim(),
-        customer_email: customerEmail,
-        amount: (line.unitAmount * line.quantity) / 100,
-        payment_status: "pending",
-        stripe_environment: body.environment,
-      })),
-    )
-    .select("id, order_number");
+    .rpc('create_storefront_legal_orders', {
+      p_checkout_key: checkoutKey, p_store_id: boutique.id,
+      p_bundle_hash: body.legalAgreement.bundleHash, p_accepted: body.legalAgreement.accepted,
+      p_customer_name: body.customerName.trim(), p_customer_email: customerEmail, p_environment: body.environment,
+      p_lines: lines.map(line=>({product_id:line.product.id,quantity:line.quantity,unit_cents:line.unitAmount})),
+    });
 
-  if (orderError) throw orderError;
+  if (orderError) throw new CheckoutError(orderError.code === '40001'
+    ? 'Les conditions ont changé. Revenez aux documents et acceptez la version actualisée.'
+    : 'La vérification juridique de cette commande n’a pas pu être confirmée.', orderError.code === '40001' ? 409 : 503);
 
-  const orders = orderData ?? [];
+  const orders = (orderData ?? []) as {id:string;order_number:string}[];
   const orderIds = orders.map((order) => order.id as string);
 
   if (orderIds.length !== lines.length) {
@@ -503,7 +505,7 @@ async function createStorefrontCheckout(
         customerPhone: (body.customerPhone ?? "").slice(0, 100),
         notes: (body.notes ?? "").slice(0, 400),
       },
-    });
+    }, {idempotencyKey:'storefront:'+checkoutKey});
   } catch (error) {
     const { error: releaseError } = await supabase.rpc(
       "release_product_stock_checkout_by_key",

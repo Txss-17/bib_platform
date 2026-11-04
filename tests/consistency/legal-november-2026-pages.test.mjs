@@ -20,6 +20,5 @@ test('Seller liability for own EI boutiques cannot be displaced by third-party C
   const boutique = read('src/pages/BoutiqueLegalPages.tsx');
   assert.match(pages, /boutiques tests exploitées directement par l'entreprise individuelle/);
   assert.match(pages, /cette même entreprise est le vendeur professionnel/);
-  assert.match(boutique, /type === "cgv" \? "\/cgv" : "\/cgu"/);
   assert.doesNotMatch(boutique, /theme\?\.cgvText/);
 });

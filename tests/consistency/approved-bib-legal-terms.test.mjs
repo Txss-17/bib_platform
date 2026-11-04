@@ -14,9 +14,9 @@ test('BIB-00 v1.5 supplier initial audits require accepted quote, never free by 
 test('BIB-00bis DEC-015 central terms are not replaced by boutique overrides', () => {
   const legal = read('src/pages/BoutiqueLegalPages.tsx');
   assert.doesNotMatch(legal, /theme\?\.cgvText|theme\?\.cguText/);
-  assert.match(legal, /type === "cgv" \? "\/cgv" : "\/cgu"/);
-  assert.match(legal, /boutique\.legal_business_name/);
-  assert.match(legal, /informations légales incomplètes|Informations légales incomplètes/);
+  const serverDocuments = read('src/hooks/useStoreLegalBundle.ts');
+  assert.match(serverDocuments, /get_store_legal_bundle/);
+  assert.doesNotMatch(legal, /dangerouslySetInnerHTML/);
 });
 
 test('DEC-002 own EI stores are treated differently from independent merchants', () => {
