@@ -261,7 +261,7 @@ export function AddToBoutiqueDialog({
               </h2>
 
               <p className="text-sm text-muted-foreground">
-                {translateUi("Le produit a bien été ajouté à votre boutique, sans stock disponible initial.")}
+                {translateUi("Le produit est référencé dans votre boutique sans préachat. Sa disponibilité à la vente dépendra de la validation et de la disponibilité fournisseur confirmée.")}
               </p>
             </div>
 
@@ -277,7 +277,7 @@ export function AddToBoutiqueDialog({
                 ) : (
                   <>
                     {translateUi(
-                      "Le produit reste en pause : la validation de l’échantillon et la réception de stock vérifié sont deux étapes distinctes. Pour lancer le réapprovisionnement, ouvrez sa fiche produit.",
+                      "Le produit reste en pause tant que les validations nécessaires ne sont pas terminées. Vous n'avez pas à acheter un stock avant de le référencer. La vente à la demande doit attendre la confirmation de disponibilité chez le fournisseur et le parcours de commande fournisseur sécurisé.",
                     )}
                   </>
                 )}
@@ -292,7 +292,7 @@ export function AddToBoutiqueDialog({
               }}
               disabled={!addedProductId}
             >
-              {translateUi("Gérer le produit et demander du stock")}
+              {translateUi("Gérer la référence dans ma boutique")}
             </Button>
           </div>
         </DialogContent>
@@ -475,7 +475,7 @@ export function AddToBoutiqueDialog({
             <AlertDescription>
               {translateUi("Le produit sera ajouté en statut")}{" "}
               <strong>{translateUi("en attente")}</strong>. Un échantillon devra
-              être validé avant sa mise en vente. Le stock initial est zéro : l’ajout au catalogue ne confirme ni achat fournisseur, ni livraison, ni disponibilité à vendre.
+              être validé avant sa mise en vente. Le stock initial de la boutique est zéro : cela ne représente pas le stock du fournisseur et n’impose pas un achat anticipé.
             </AlertDescription>
           </Alert>
 
@@ -483,12 +483,14 @@ export function AddToBoutiqueDialog({
             <Package className="h-4 w-4" />
             <AlertDescription>
               <strong>Approvisionnement et propriété du stock.</strong> Vous sélectionnez une
-              référence fournisseur validée et fixez sa marge autorisée. La quantité
-              mise en vente provient uniquement des réceptions et mouvements
-              d’inventaire confirmés, pas d'une saisie libre. Après l’ajout,
-              demandez les quantités souhaitées depuis la fiche produit ; BIB et
-              les partenaires concernés examinent puis organisent le réassort.
-              Une approbation ne constitue pas encore une réception.
+              référence fournisseur validée et fixez sa marge autorisée, sans acheter
+              le stock à l’avance. Le fournisseur reste propriétaire du stock tant
+              qu’aucune opération contractuelle n’en transfère la propriété. Lors
+              d’une vente, le marchand doit déclencher l’achat correspondant auprès
+              du fournisseur, après vérification de la disponibilité ; BIB coordonne
+              la personnalisation éventuelle et la livraison avec les partenaires.
+              Le stock déjà réceptionné en entrepôt et le stock chez le fournisseur
+              sont deux données différentes. Une demande de réassort n’est pas une réception.
             </AlertDescription>
           </Alert>
           {/* ---------------------------------------------------------------- */}
