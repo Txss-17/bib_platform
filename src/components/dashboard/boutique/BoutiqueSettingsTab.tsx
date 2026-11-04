@@ -194,7 +194,8 @@ function formatServerError(err: any): string {
 }
 
 export function BoutiqueSettingsTab({ boutiqueId, showTeam = false }: { boutiqueId: string; showTeam?: boolean }) {
-  useLanguage();
+  const {lang}=useLanguage();
+  const tx=(fr:string,en:string)=>lang==='en'?en:fr;
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -350,7 +351,7 @@ export function BoutiqueSettingsTab({ boutiqueId, showTeam = false }: { boutique
       }
       setErrors({});
 
-      const { error } = await supabase
+      const { data: saved, error } = await supabase
         .from("boutiques")
         .update({
           seo_title: form.seo_title || null,
@@ -366,11 +367,15 @@ export function BoutiqueSettingsTab({ boutiqueId, showTeam = false }: { boutique
           default_currency: form.default_currency || "EUR",
           target_markets: form.target_markets || ["EU"],
         })
-        .eq("id", boutiqueId);
+        .eq("id", boutiqueId).select('id,status').single();
       if (error) throw error;
+      return saved;
     },
-    onSuccess: () => {
+    onSuccess: (saved) => {
       toast.success(translateUi("Réglages enregistrés"));
+      if(boutique?.status==='published'&&saved?.status==='draft')toast.info(tx('La boutique est suspendue jusqu’à la nouvelle vérification de l’identité du vendeur.','The store is suspended until the seller identity has been verified again.'));
+      void queryClient.invalidateQueries({queryKey:['boutiques']});
+      void queryClient.invalidateQueries({queryKey:['store-legal-bundle',boutiqueId]});
       queryClient.invalidateQueries({
         queryKey: ["boutique-settings", boutiqueId],
       });
@@ -1055,9 +1060,7 @@ export function BoutiqueSettingsTab({ boutiqueId, showTeam = false }: { boutique
             {translateUi("Informations légales")}
           </CardTitle>
           <CardDescription>
-            {translateUi(
-              "Utilisées dans les CGV, mentions légales et factures. Verified by Linksy.",
-            )}
+            {tx('Ces informations identifient le vendeur. Leur modification suspend la publication jusqu’à une nouvelle vérification par BIB.','These details identify the seller. Changes suspend publication until BIB verifies them again.')}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid sm:grid-cols-2 gap-4">

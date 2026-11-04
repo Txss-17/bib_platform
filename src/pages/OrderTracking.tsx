@@ -25,6 +25,7 @@ import {
 import { useSEO } from "@/hooks/useSEO.ts";
 import { Logo } from "@/components/Logo";
 import { OrderIssueForm } from "@/components/storefront/OrderIssueForm";
+import OrderLegalProof from '@/components/storefront/OrderLegalProof';
 
 type OrderStatus =
   | "pending"
@@ -424,6 +425,7 @@ export default function OrderTracking() {
                 orderNumber={order.order_number}
                 email={normalizeEmail(email)}
               />
+              <OrderLegalProof orderNumber={order.order_number} email={normalizeEmail(email)}/>
               {/* Main order card */}
               <div className="space-y-5 rounded-xl border border-border bg-card p-6 shadow-sm">
                 {/* Status header */}

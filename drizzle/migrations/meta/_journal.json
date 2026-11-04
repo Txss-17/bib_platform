@@ -169,6 +169,20 @@
       "when": 1793095200000,
       "tag": "0023_stock_restock_review",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793820875851,
+      "tag": "0024_sav_48h_atomic_escalation",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1793820875852,
+      "tag": "0025_store_legal_governance_and_order_evidence",
+      "breakpoints": true
     }
   ]
 }

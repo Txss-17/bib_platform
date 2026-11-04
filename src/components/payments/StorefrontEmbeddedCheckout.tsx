@@ -4,6 +4,7 @@ import {
 } from "@stripe/react-stripe-js";
 import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
 interface CartItem {
   productId: string;
@@ -39,6 +40,7 @@ interface StorefrontCheckoutProps {
   shipping: ShippingAddress;
   notes?: string;
   returnUrl: string;
+  legalAgreement: { bundleHash: string; accepted: true; statement: 'storefront-legal-v1' };
   onOrderNumbers?: (numbers: string[]) => void;
   onComplete?: () => void;
 }
@@ -53,9 +55,11 @@ export function StorefrontEmbeddedCheckout({
   shipping,
   notes,
   returnUrl,
+  legalAgreement,
   onOrderNumbers,
   onComplete,
 }: StorefrontCheckoutProps) {
+  const [checkoutKey] = useState(() => crypto.randomUUID());
   const fetchClientSecret = async (): Promise<string> => {
     if (!boutiqueId) {
       throw new Error("Boutique manquante.");
@@ -82,6 +86,8 @@ export function StorefrontEmbeddedCheckout({
     const sessionId: string | undefined = undefined;
 
     const payload = {
+      checkoutKey,
+      legalAgreement,
       boutiqueId,
       boutiqueName,
       items: items.map((item) => ({

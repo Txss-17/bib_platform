@@ -1257,6 +1257,11 @@ export function StudioEditor({
           ? String((error as { message?: unknown }).message ?? "")
           : "";
 
+      if (/seller_identity_|approved_legal_model_required|store_legal_documents_unavailable|unresolved_legal_fields/.test(rawMessage)) {
+        toast.error(tx('L’identité du vendeur et les documents applicables doivent être vérifiés avant publication.','The seller identity and applicable documents must be verified before publication.'));
+        return;
+      }
+
       if (rawMessage.startsWith("publication_blocked:")) {
         toast.error(
           translateUi("Publication bloquée : {v0}", {
