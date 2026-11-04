@@ -114,7 +114,7 @@ const docs = [
 export default function PackLegal() {
   useLanguage();
   useSEO({
-    title: translateUi("Pack légal complet — Brand-In-A-Box"),
+    title: translateUi("Documents juridiques — Brand-In-A-Box"),
     description: translateUi(
       "Mentions légales, CGU, CGV, politique de confidentialité et cookies de Brand-In-A-Box accessibles depuis un même répertoire.",
     ),
@@ -131,7 +131,7 @@ export default function PackLegal() {
           />
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-9 lg:py-12 relative max-w-6xl">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-background/10 text-bib-ivory text-[11px] font-semibold uppercase tracking-[0.18em] mb-4">
-              <ScaleIcon className="h-3.5 w-3.5" /> {translateUi("Pack légal")}
+              <ScaleIcon className="h-3.5 w-3.5" /> {translateUi("Documents juridiques")}
             </span>
             <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold leading-[1.05]">
               {translateUi("Tout notre cadre légal,") + " "}
@@ -148,6 +148,13 @@ export default function PackLegal() {
           </div>
         </section>
 
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6 max-w-6xl">
+          <div className="rounded-lg border border-amber-400/30 bg-muted/40 p-4 text-sm">
+            <strong>Actualisation documentaire du 4 novembre 2026.</strong> Les pages présentées sont harmonisées avec les projets CGV BIB v1.2, CGU BIB v1.2, Mentions légales v1.1, Confidentialité v1.2 et Cookies v1.1.
+            Ces documents demeurent à valider juridiquement avant application contractuelle définitive. L'identité et les immatriculations de l'exploitant individuel, l'hébergeur effectif, les médiateurs de consommation et les traceurs déployés doivent être vérifiés sur justificatifs.
+            Les anciennes références à une SAS, une holding ou une filiale non constituée ne valent pas identification de l'exploitant actuel.
+          </div>
+        </section>
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14 max-w-6xl">
           <div className="grid sm:grid-cols-2 gap-3">
             {docs.map((d) => (
