@@ -515,8 +515,8 @@ export default function Produits() {
 
         <div className="rounded-xl border border-border bg-muted/30 p-4 text-sm">
           <p className="font-semibold">Référencement et approvisionnement : deux étapes distinctes</p>
-          <p className="mt-2 text-muted-foreground">L'ajout d'un produit depuis le catalogue fournisseur crée une référence dans votre boutique avec un stock initial nul. Une validation d'échantillon peut être nécessaire avant son activation. Pour obtenir des unités, ouvrez la fiche du produit et envoyez une demande de réassort respectant le MOQ du fournisseur. Seule une réception vérifiée peut créditer le stock disponible ; l'approbation d'une demande ne constitue ni une livraison ni une entrée en inventaire.</p>
-          <p className="mt-2 text-muted-foreground">Les quantités de la boutique ne sont pas interchangeables avec le stock détenu par un fournisseur ou un partenaire logistique. Les réservations de commande et les ventes sont suivies séparément.</p>
+          <p className="mt-2 text-muted-foreground">Ajouter une référence du catalogue fournisseur à votre boutique ne constitue pas un achat de stock. Le fournisseur conserve son inventaire ; la boutique peut référencer une offre sans préachat. Après validation du produit et confirmation de disponibilité fournisseur, chaque vente doit déclencher un achat fournisseur par le marchand, suivi de la coordination logistique BIB. Le stock déjà réceptionné est suivi séparément.</p>
+          <p className="mt-2 text-muted-foreground">Le compteur de stock ci-dessous représente uniquement les unités enregistrées dans le stock de la boutique ; il ne certifie ni la disponibilité fournisseur ni la possibilité de vendre à la demande. Le parcours de vente à la demande doit être activé uniquement après validation du contrôle de disponibilité et des flux de paiement/approvisionnement.</p>
           <Button asChild variant="outline" size="sm" className="mt-3"><Link to="/dashboard/produits-fournisseurs">Choisir une référence du catalogue</Link></Button>
         </div>
 
@@ -539,9 +539,9 @@ export default function Produits() {
             tone="gold"
           />
           <MetricCard
-            label={translateUi("Stock à surveiller")}
+            label={translateUi("Stock local à surveiller")}
             value={formatNumber(kpis.lowStock)}
-            detail={translateUi("Produits actifs : stock nul ou inférieur au seuil configuré")}
+            detail={translateUi("Stock réceptionné local, hors stock détenu chez le fournisseur")}
             icon={AlertTriangle}
             tone="orange"
           />
@@ -734,7 +734,7 @@ export default function Produits() {
                           <td className="px-3 py-3">
                             <span className={cn("font-medium tabular-nums", quantity <= threshold ? "text-warning-ink" : "text-foreground")}>{quantity}</span>
                             <span className="text-xs text-muted-foreground"> / {threshold}</span>
-                            {quantity === 0 && <p className="mt-1 text-[11px] text-destructive">{translateUi("Rupture")}</p>}
+                            {quantity === 0 && <p className="mt-1 text-[11px] text-destructive">{translateUi("Aucun stock local")}</p>}
                           </td>
                           <td className="px-3 py-3"><Badge variant="outline" className={getSampleStatusColor(status)}>{getSampleStatusLabel(status)}</Badge></td>
                           <td className="px-3 py-3"><Badge variant={product.status === "active" ? "default" : "secondary"}>{product.status === "active" ? translateUi("Actif") : translateUi("En pause")}</Badge></td>
@@ -986,7 +986,7 @@ export default function Produits() {
                           {stockIsOut && (
                             <p className="flex items-center gap-2 text-xs text-destructive-ink">
                               <AlertTriangle className="h-3.5 w-3.5" />
-                              {translateUi("Rupture de stock à vérifier.")}
+                              {translateUi("Aucun stock local : vérifier séparément la disponibilité fournisseur.")}
                             </p>
                           )}
                           {stockIsLow && (
