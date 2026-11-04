@@ -16,6 +16,7 @@ export function StorefrontFooter({ primaryColor }: StorefrontFooterProps) {
         { label: "FAQ", href: `/boutique/${slug}/faq` },
         { label: "CGV", href: `/boutique/${slug}/cgv` },
         { label: "CGU", href: `/boutique/${slug}/cgu` },
+        { label: translateUi("Mentions légales"), href: `/boutique/${slug}/mentions-legales` },
       ]
     : [
         { label: translateUi("About"), href: "#about" },
