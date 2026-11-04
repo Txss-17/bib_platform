@@ -224,7 +224,7 @@ export function CGU() {
         )}
       </p>
       <h2>8. Services facultatifs et programmes historiques</h2>
-      <p>Les programmes de fidélité, de points, de cartes cadeaux ou d'avantages évoqués dans des documents historiques n'ouvrent de droits contractuels que s'ils sont effectivement activés, décrits et proposés selon leurs conditions en vigueur. L'abonnement client facultatif n'est pas une condition générale pour acheter auprès d'un marchand.</p>
+      <p>Les dispositifs historiques de fidélité et les offres facultatives non activées ne créent aucun droit ni avantage par défaut. Seuls les services effectivement ouverts et contractualisés sont opposables. L'abonnement client facultatif n'est pas une condition générale pour acheter auprès d'un marchand.</p>
       <h2>{translateUi("9. Rôle de BIB dans les transactions")}</h2>
       <p>
         {translateUi(
