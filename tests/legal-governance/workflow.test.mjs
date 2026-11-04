@@ -404,6 +404,19 @@ test("the accepted texts survive subsequent template replacement and are accessi
     );
   const proof = await read("buyer@example.test");
   assert.deepEqual(proof.bundle, before);
+  assert.deepEqual(
+    proof.evidence_events.map((event) => event.type),
+    ["store_documents_presented", "store_cgv_accepted", "store_cgu_accepted"],
+  );
+  assert.equal(new Set(proof.evidence_events.map((event) => event.id)).size, 3);
+  assert.equal(
+    proof.evidence_events[1].document_hash,
+    before.documents[0].hash,
+  );
+  assert.equal(
+    proof.evidence_events[2].document_hash,
+    before.documents[1].hash,
+  );
   assert.equal(await read("other@example.test"), null);
   await assert.rejects(
     () =>
@@ -436,10 +449,16 @@ test("order creation and evidence roll back atomically on an invalid line, and r
   );
   const key = randomUUID();
   const secondProduct = randomUUID();
-  await db.query("INSERT INTO products VALUES($1,$2,'active')",[secondProduct,store]);
-  const lines = [{product_id:secondProduct,quantity:1,unit_cents:1000},{product_id:product,quantity:2,unit_cents:1250}];
-  const first = await checkout({ key,lines });
-  assert.deepEqual(await checkout({ key,lines }), first);
+  await db.query("INSERT INTO products VALUES($1,$2,'active')", [
+    secondProduct,
+    store,
+  ]);
+  const lines = [
+    { product_id: secondProduct, quantity: 1, unit_cents: 1000 },
+    { product_id: product, quantity: 2, unit_cents: 1250 },
+  ];
+  const first = await checkout({ key, lines });
+  assert.deepEqual(await checkout({ key, lines }), first);
   await assert.rejects(
     () => checkout({ key, lines, email: "different@example.test" }),
     /key_conflict/,

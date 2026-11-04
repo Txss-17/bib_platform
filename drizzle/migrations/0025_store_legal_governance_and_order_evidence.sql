@@ -70,6 +70,7 @@ CREATE TABLE public.store_order_legal_snapshots (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(), checkout_key uuid NOT NULL UNIQUE,
  boutique_id uuid NOT NULL REFERENCES public.boutiques(id), customer_email text NOT NULL,
  bundle jsonb NOT NULL, bundle_hash text NOT NULL, request_fingerprint jsonb NOT NULL,
+ evidence_events jsonb NOT NULL,
  accepted_at timestamptz NOT NULL DEFAULT now(), acceptance_statement text NOT NULL DEFAULT 'storefront-legal-v1',
  channel text NOT NULL DEFAULT 'storefront_checkout', environment text NOT NULL CHECK(environment IN('sandbox','live'))
 );
@@ -214,6 +215,7 @@ CREATE TRIGGER immutable_store_legal_evidence BEFORE UPDATE OR DELETE ON public.
 CREATE FUNCTION public.create_storefront_legal_orders(p_checkout_key uuid,p_store_id uuid,p_bundle_hash text,p_accepted boolean,p_customer_name text,p_customer_email text,p_environment text,p_lines jsonb) RETURNS jsonb
  LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,pg_temp AS $$
 DECLARE s public.store_order_legal_snapshots; bundle jsonb; fingerprint jsonb; line jsonb; ids jsonb:='[]'; o record;
+ document jsonb; evidence jsonb;
 BEGIN
  IF p_accepted IS DISTINCT FROM true OR p_bundle_hash !~ '^[a-f0-9]{64}$' OR p_checkout_key IS NULL OR p_bundle_hash IS NULL
   OR length(btrim(coalesce(p_customer_name,''))) NOT BETWEEN 1 AND 200 OR lower(btrim(coalesce(p_customer_email,''))) !~ '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$'
@@ -233,8 +235,17 @@ BEGIN
    FROM jsonb_array_elements(s.request_fingerprint->'lines') WITH ORDINALITY ordered_line(value,position)
    JOIN public.orders stored_order ON stored_order.product_id=(ordered_line.value->>'product_id')::uuid AND stored_order.legal_snapshot_id=s.id);
  END IF;
- INSERT INTO public.store_order_legal_snapshots(checkout_key,boutique_id,customer_email,bundle,bundle_hash,request_fingerprint,environment)
- VALUES(p_checkout_key,p_store_id,lower(btrim(p_customer_email)),bundle,p_bundle_hash,fingerprint,p_environment) RETURNING * INTO s;
+ evidence:=jsonb_build_array(jsonb_build_object('id',gen_random_uuid(),'type','store_documents_presented','bundle_hash',p_bundle_hash,'recorded_at',now(),'channel','storefront_checkout'));
+ FOR document IN SELECT jsonb_array_elements(bundle->'documents') LOOP
+  IF document->>'model_key' IN('JUR-B01','JUR-B02') THEN
+   evidence:=evidence||jsonb_build_array(jsonb_build_object('id',gen_random_uuid(),
+    'type',CASE document->>'model_key' WHEN 'JUR-B01' THEN 'store_cgv_accepted' ELSE 'store_cgu_accepted' END,
+    'model_id',document->'model_id','model_key',document->'model_key','version',document->'version',
+    'document_hash',document->'hash','recorded_at',now(),'channel','storefront_checkout'));
+  END IF;
+ END LOOP;
+ INSERT INTO public.store_order_legal_snapshots(checkout_key,boutique_id,customer_email,bundle,bundle_hash,request_fingerprint,evidence_events,environment)
+ VALUES(p_checkout_key,p_store_id,lower(btrim(p_customer_email)),bundle,p_bundle_hash,fingerprint,evidence,p_environment) RETURNING * INTO s;
  FOR line IN SELECT jsonb_array_elements(p_lines) LOOP
   IF jsonb_typeof(line) IS DISTINCT FROM 'object' OR EXISTS(SELECT 1 FROM jsonb_object_keys(line) k WHERE NOT k=ANY(ARRAY['product_id','quantity','unit_cents']))
    OR coalesce(line->>'quantity','') !~ '^[1-9][0-9]{0,3}$' OR coalesce(line->>'unit_cents','') !~ '^[1-9][0-9]{0,8}$'
@@ -249,7 +260,7 @@ BEGIN
 END; $$;
 CREATE FUNCTION public.track_order_legal_snapshot(_order_number text,_customer_email text) RETURNS jsonb
  LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public,pg_temp AS $$
- SELECT jsonb_build_object('bundle',s.bundle,'bundle_hash',s.bundle_hash,'accepted_at',s.accepted_at,'acceptance_statement',s.acceptance_statement,'channel',s.channel)
+ SELECT jsonb_build_object('bundle',s.bundle,'bundle_hash',s.bundle_hash,'accepted_at',s.accepted_at,'acceptance_statement',s.acceptance_statement,'channel',s.channel,'evidence_events',s.evidence_events)
  FROM public.orders o JOIN public.store_order_legal_snapshots s ON s.id=o.legal_snapshot_id
  WHERE o.order_number=upper(btrim(_order_number)) AND lower(btrim(o.customer_email))=lower(btrim(_customer_email)) LIMIT 1;
 $$;
