@@ -156,7 +156,7 @@ const FAQ = [
     },
     get answer() {
       return translateUi(
-        "Le modèle fournisseur retenu prévoit un forfait unique de 19 € par mois, en complément des commissions contractuelles applicables. L’audit initial de qualification est offert ; un contrôle complémentaire motivé par une non-conformité peut être facturé dans les conditions acceptées au contrat. Aucun paiement n’est dû avant la contractualisation et l’activation effective du service.",
+        "Le modèle fournisseur retenu prévoit un forfait unique de 19 € par mois, en complément des commissions contractuelles applicables. Le contrôle documentaire initial est facturable selon un devis accepté, avec une base indicative de chiffrage de 150 €, variable selon les références, catégories, pièces et la complexité. Les contre-audits nécessitent une prestation réelle et un devis distinct accepté, sans double facturation. Le montant du forfait et son traitement TVA sont précisés avant l'engagement.",
       );
     },
   },
@@ -190,7 +190,7 @@ const FAQ = [
     },
     get answer() {
       return translateUi(
-        "Le forfait fournisseur retenu est de 19 € par mois, hors taxes éventuellement applicables, auquel s’ajoutent les commissions prévues au contrat. L’audit initial est offert ; les contrôles complémentaires en cas de non-conformité peuvent être facturés selon les clauses préalablement acceptées. Le montant effectivement facturé dépend du régime de TVA applicable à l’exploitant à la date de facturation.",
+        "Le forfait fournisseur retenu est de 19 € par mois selon le régime de TVA réellement applicable à l’exploitant, auquel s’ajoutent les commissions prévues au contrat. L'audit documentaire initial est payant sur devis accepté (base indicative 150 €, non tarif universel). Tout contre-audit est conditionné à une prestation effective et à un nouveau devis accepté. Le montant effectivement facturé dépend du régime de TVA applicable à l’exploitant à la date de facturation.",
       );
     },
   },
@@ -230,7 +230,7 @@ export function SuppliersPricingSection() {
 
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
             {translateUi(
-              "BIB sélectionne et qualifie chaque fournisseur. Le modèle retenu comprend un forfait unique de 19 € par mois et des commissions contractuelles ; la validation de la candidature ne vaut ni acceptation automatique ni déclenchement immédiat d’un abonnement. L’audit initial de qualification est offert.",
+              "BIB sélectionne et qualifie chaque fournisseur. Le modèle retenu comprend un forfait unique de 19 € par mois et des commissions contractuelles ; la validation de la candidature ne vaut ni acceptation automatique ni déclenchement immédiat d’un abonnement. L'audit documentaire initial est facturable sur devis accepté, sur la base indicative de 150 €.",
             )}
           </p>
         </div>
@@ -292,7 +292,7 @@ export function SuppliersPricingSection() {
 
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               {translateUi(
-                "Le référencement reste soumis à la qualification de BIB. Le forfait retenu est de 19 € par mois, hors taxes éventuellement applicables, complété par les commissions définies au contrat. Le premier audit de qualification est offert ; un contrôle complémentaire pour non-conformité peut être facturé après information et accord contractuel.",
+                "Le référencement reste soumis à la qualification de BIB. Le forfait retenu est de 19 € par mois selon le régime de TVA réellement applicable à l’exploitant, complété par les commissions définies au contrat. Le contrôle documentaire initial est payant sur devis, à partir d'une base indicative de chiffrage de 150 € selon le périmètre ; un contre-audit exige une prestation réelle et un devis préalable, sans double facturation.",
               )}
             </p>
           </div>
