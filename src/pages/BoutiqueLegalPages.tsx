@@ -61,12 +61,15 @@ function LegalPageContent({ type }: LegalPageProps) {
     about: "À Propos",
   };
 
-  const content =
-    type === "cgv"
-      ? theme?.cgvText
-      : type === "cgu"
-        ? theme?.cguText
-        : theme?.customAboutText || boutique.description;
+  // DEC-015: merchant-authored theme text must never replace BIB's
+  // controlled common CGV/CGU. The boutique remains the seller.
+  const content = theme?.customAboutText || boutique.description;
+  const merchantIdentity = [
+    boutique.legal_business_name?.trim(),
+    boutique.legal_siret?.trim(),
+    boutique.legal_address?.trim(),
+    boutique.legal_email?.trim(),
+  ].filter(Boolean);
 
   return (
     <CartProvider>
@@ -85,16 +88,24 @@ function LegalPageContent({ type }: LegalPageProps) {
           <h1 className="text-3xl font-bold text-foreground mb-6">
             {titles[type]}
           </h1>
-          {content ? (
-            <div className="prose prose-gray max-w-none whitespace-pre-wrap text-foreground/80">
-              {content}
-            </div>
+          {type === "about" ? (
+            content ? <div className="prose prose-gray max-w-none whitespace-pre-wrap text-foreground/80">{content}</div> :
+            <p className="text-muted-foreground">{translateUi("Cette page n'a pas encore été renseignée par le propriétaire de la boutique.")}</p>
           ) : (
-            <p className="text-muted-foreground">
-              {translateUi(
-                "Cette page n'a pas encore été renseignée par le propriétaire de la boutique.",
-              )}
-            </p>
+            <div className="space-y-4 text-sm">
+              <p>Les conditions communes de BIB sont administrées et versionnées par la plateforme. Le marchand ne peut pas les remplacer par des clauses propres à sa boutique.</p>
+              <div className="rounded-lg border p-4 space-y-2">
+                <h2 className="font-semibold">Vendeur juridiquement identifié</h2>
+                <p className="font-medium">{boutique.legal_business_name?.trim() || "Identité légale du vendeur non vérifiée"}</p>
+                {boutique.legal_siret && <p>SIRET : {boutique.legal_siret}</p>}
+                {boutique.legal_address && <p>Adresse : {boutique.legal_address}</p>}
+                {boutique.legal_email && <p>Contact : {boutique.legal_email}</p>}
+                {merchantIdentity.length < 4 && <p className="text-destructive">Informations légales incomplètes. La boutique ne doit pas recevoir de commandes tant que l'identité du vendeur exigée n'est pas vérifiée.</p>}
+              </div>
+              <p>Les conditions applicables sont les textes communs BIB publiés, complétés par l'identification du vendeur professionnel de cette boutique et les informations propres à chaque commande.</p>
+              <Button asChild><Link to={type === "cgv" ? "/cgv" : "/cgu"}>Consulter les {type === "cgv" ? "CGV" : "CGU"} BIB en vigueur</Link></Button>
+              <p className="text-xs text-muted-foreground">La preuve de la version acceptée doit être associée à chaque commande. Cette page ne constitue pas à elle seule une preuve d'acceptation.</p>
+            </div>
           )}
         </div>
         <StorefrontFooter primaryColor={primaryColor} />
