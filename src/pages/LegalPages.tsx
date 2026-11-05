@@ -107,7 +107,7 @@ export function CGU() {
       title={translateUi("Conditions Générales d'Utilisation")}
       updated="4 novembre 2026"
     >
-      <p className="text-sm text-muted-foreground">Rédaction harmonisée à partir du projet CGU BIB v1.2 (novembre 2026), sous réserve de validation juridique et de vérification de l'identité de l'exploitant.</p>
+      <p className="text-sm text-muted-foreground">Information générale issue du projet historique CGU BIB v1.2 (novembre 2026). Les CGU Marchands (JUR-M01) et Acheteurs (JUR-C01) ont des champs distincts; l’accès à une boutique et ses ventes relèvent aussi des documents personnalisés du vendeur (JUR-B01/B02/B03). Texte à vérifier avant publication contractuelle.</p>
       <h2>{translateUi("1. Objet et champ d'application")}</h2>
       <p>
         {translateUi(
@@ -293,11 +293,11 @@ export function CGV() {
       title={translateUi("Conditions Générales de Vente")}
       updated="4 novembre 2026"
     >
-      <p className="text-sm text-muted-foreground">Rédaction harmonisée à partir du projet CGV BIB v1.2 (novembre 2026). Les informations obligatoires du vendeur, les modalités de paiement et le médiateur compétent doivent être validés avant la mise en vente réelle.</p>
+      <p className="text-sm text-muted-foreground"><strong>Présentation générale, non substitutive aux CGV du vendeur.</strong> Cette page résume les principes issus du projet historique CGV BIB v1.2. Pour une commande, seules les CGV de la boutique du vendeur réel (modèle JUR-B01, identité et version vérifiées) doivent être présentées et conservées comme preuve. Les informations obligatoires du vendeur, le paiement et la médiation doivent être validés avant vente réelle.</p>
       <h2>{translateUi("1. Objet et champ d'application")}</h2>
       <p>
         {translateUi(
-          "Les présentes Conditions Générales de Vente régissent les commandes de produits sur la marketplace Brand-in-a-Box. Le vendeur professionnel doit être identifié avant la commande : marchand tiers indépendant, ou entreprise individuelle BIB lorsqu'elle exploite sa propre boutique test. L'identité juridique effective de l'éditeur figure dans les mentions légales après vérification. Les présentes CGV précisent les obligations des parties, le prix, le paiement, la livraison, les garanties et le règlement des différends.",
+          "Cette page présente les principes communs applicables aux ventes de produits sur la marketplace Brand-in-a-Box, sans constituer un contrat unique de vente avec tous les consommateurs. Les conditions contractuelles de chaque commande sont les CGV de la boutique du vendeur professionnel identifié avant paiement : marchand tiers indépendant ou entreprise individuelle exploitant sa propre boutique test. Les CGV propres à ce vendeur exposent les obligations des parties, le prix, le paiement, la livraison, les garanties et le règlement des différends.",
         )}
       </p>
       <h2>{translateUi("2. Définitions")}</h2>
