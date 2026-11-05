@@ -1,8 +1,7 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-
-const volatileSessionId = crypto.randomUUID();
-function getSessionId(): string { return volatileSessionId; }
+import { getConsentedAnalyticsSession } from "@/lib/cookieConsent";
+import { useCookieConsent } from "@/hooks/useCookieConsent";
 
 type EventType = "impression" | "cta_click" | "dwell" | "scroll_depth" | "conversion";
 
@@ -15,13 +14,15 @@ export async function logSceneEvent(params: {
   value?: number;
   metadata?: Record<string, unknown>;
 }) {
+  const sessionId = getConsentedAnalyticsSession();
+  if (!sessionId) return;
   try {
     await supabase.from("scene_events" as never).insert({
       boutique_id: params.boutiqueId,
       scene_id: params.sceneId,
       scene_type: params.sceneType,
       event_type: params.eventType,
-      session_id: getSessionId(),
+      session_id: sessionId,
       value: params.value ?? null,
       metadata: params.metadata ?? {},
     } as never);
@@ -46,6 +47,8 @@ export function useSceneAnalytics(params: {
   ref: React.RefObject<HTMLElement>;
 }) {
   const { enabled, boutiqueId, sceneId, sceneType, ref } = params;
+  const receipt = useCookieConsent();
+  const analyticsAllowed = receipt?.purposes.analytics === true;
   const stateRef = useRef({
     impressionFired: false,
     enteredAt: 0 as number,
@@ -55,7 +58,9 @@ export function useSceneAnalytics(params: {
   });
 
   useEffect(() => {
-    if (!enabled || !ref.current) return;
+    // Do not observe engagement before consent or carry measurements across choices.
+    stateRef.current = { impressionFired: false, enteredAt: 0, totalMs: 0, maxScrollPct: 0, impressionTimer: 0 };
+    if (!enabled || !analyticsAllowed || !ref.current) return;
     const el = ref.current;
     const st = stateRef.current;
 
@@ -116,17 +121,19 @@ export function useSceneAnalytics(params: {
     };
 
     window.addEventListener("beforeunload", onLeave);
-    document.addEventListener("visibilitychange", () => {
+    const onVisibilityChange = () => {
       if (document.visibilityState === "hidden") onLeave();
-    });
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
       observer.disconnect();
       window.clearTimeout(st.impressionTimer);
       onLeave();
       window.removeEventListener("beforeunload", onLeave);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [enabled, boutiqueId, sceneId, sceneType, ref]);
+  }, [enabled, analyticsAllowed, boutiqueId, sceneId, sceneType, ref]);
 }
 
 /** Convenience helper for CTA buttons inside scenes. */

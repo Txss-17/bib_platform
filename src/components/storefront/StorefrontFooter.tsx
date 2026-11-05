@@ -1,6 +1,7 @@
 import { translateUi } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Link, useParams } from "react-router-dom";
+import { CookieSettingsButton } from "@/components/privacy/CookieConsentManager";
 
 interface StorefrontFooterProps {
   primaryColor: string;
@@ -37,6 +38,7 @@ export function StorefrontFooter({ primaryColor }: StorefrontFooterProps) {
           </div>
 
           <nav className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
+            <CookieSettingsButton className="text-sm text-gray-600 hover:text-gray-900 transition-colors" />
             {footerLinks.map((link) =>
               slug && !link.href.startsWith("#") ? (
                 <Link

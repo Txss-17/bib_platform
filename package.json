@@ -9,6 +9,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:privacy": "vitest run src/test/cookie-consent",
+    "test:privacy:browser": "node tests/privacy/browser.mjs",
     "preview": "vite preview",
     "check": "tsc --noEmit -p tsconfig.app.json",
     "test:bridge": "vitest run --config tests/bridge/vitest.config.ts",

@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import { useSEO } from "@/hooks/useSEO";
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { CookieSettingsButton } from "@/components/privacy/CookieConsentManager";
 import { FileText, ShieldCheck, Cookie, Scale, BriefcaseBusiness } from "lucide-react";
 
 const legalNavigation = [
@@ -558,18 +559,27 @@ export function Cookies() {
     title: "Cookies et traceurs — BIB",
     description: "Fonctionnement des cookies, finalités et gestion des choix pour les services Brand-in-a-Box.",
   });
-  return <LegalShell eyebrow="Traceurs" title="Politique cookies" updated="4 novembre 2026">
+  return <LegalShell eyebrow="Traceurs" title="Politique cookies" updated="5 novembre 2026">
     <p className="text-sm text-muted-foreground">Rédaction harmonisée à partir du projet Politique de cookies BIB v1.1 (novembre 2026). L'inventaire exact des traceurs et l'effectivité du gestionnaire de consentement doivent être vérifiés sur la version publiée.</p>
     <h2>1. Traceurs nécessaires</h2>
     <p>Les outils d'authentification, de sécurité, de maintien de session, de panier ou de mémorisation d'une demande explicite peuvent nécessiter un stockage technique. Lorsqu'ils sont strictement nécessaires au service demandé, ils ne requièrent pas de consentement cookies ; leur présence et leur finalité doivent néanmoins être expliquées.</p>
+    <p><CookieSettingsButton className="rounded-md border border-border px-4 py-2 text-sm font-semibold" /></p>
     <h2>2. Mesure d'audience et publicité</h2>
     <p>Les cookies statistiques, pixels publicitaires, traceurs de conversion et technologies similaires non exemptés doivent être bloqués avant consentement. L'activation ultérieure des connexions Meta Ads ou Google Ads impose une analyse des traceurs, des destinataires, de leur durée et des éventuels transferts.</p>
     <h2>3. Choix disponibles</h2>
     <p>Les catégories de traceurs sont évaluées individuellement : cookies de compte, panier ou sécurité strictement nécessaires ; mesure d'audience éventuellement exemptée dans les limites réglementaires ; statistiques non exemptées, publicité et traceurs partenaires soumis au choix préalable quand requis. Un outil de paiement ne rend pas automatiquement tous ses traceurs soumis à consentement : leur finalité réelle doit être déterminée.</p>
-    <p>Lorsque des traceurs non essentiels sont utilisés, BIB doit proposer un dispositif permettant d'<strong>accepter</strong>, de <strong>refuser</strong> et de <strong>personnaliser</strong> les finalités, avec un refus aussi simple que l'acceptation. Aucune case facultative ne doit être précochée. La poursuite de navigation ne suffit pas à donner un accord.</p>
-    <p>Les décisions doivent pouvoir être modifiées ou retirées facilement ; un lien permanent « Gérer mes cookies » doit être mis à disposition après installation effective du gestionnaire. En attendant, aucun traceur nécessitant un consentement ne doit être activé sans mécanisme valable.</p>
+    <p>Le panneau propose <strong>Tout accepter</strong>, <strong>Tout refuser</strong> et <strong>Personnaliser</strong>, avec un refus aussi simple que l'acceptation. Les statistiques des boutiques et les contenus externes sont désactivés par défaut. La poursuite de navigation et la fermeture du panneau ne donnent aucun accord. Les réglages facultatifs ne sont appliqués qu'après enregistrement explicite.</p>
+    <p>Le bouton permanent « Gérer les cookies », également accessible dans les pieds de page BIB et boutiques, permet de modifier les finalités ou de retirer son accord. Le retrait arrête les prochains événements statistiques et retire les lecteurs et cartes externes de la page ; il ne supprime pas rétroactivement les données déjà transmises. Ces choix sont indépendants des CGV, des CGU et de la prospection par email.</p>
+    <h3>Usages contrôlés par ce panneau</h3>
+    <ul>
+      <li><strong>Nécessaires :</strong> la session de connexion Supabase, l'état du menu (cookie <code>sidebar_state</code>, sept jours), le marqueur de migration technique et la mémorisation du choix cookies. Le panier n'utilise pas ce choix comme condition de fonctionnement.</li>
+      <li><strong>Statistiques des boutiques :</strong> BIB collecte, après accord, des visites, consultations de produits, clics et interactions vers son service hébergé avec Supabase. L'identifiant de visite reste en mémoire pendant la page ; aucun historique antérieur au choix n'est rejoué.</li>
+      <li><strong>Contenus externes :</strong> YouTube (Google), Vimeo et Google Maps, s'ils sont présents. Sans accord, aucun lecteur ni carte ne se connecte à ces fournisseurs. Après accord, ceux-ci reçoivent notamment l'adresse IP et peuvent utiliser leurs propres traceurs selon leurs politiques : <a href="https://policies.google.com/privacy" rel="noreferrer" target="_blank">Google / YouTube</a> et <a href="https://vimeo.com/privacy" rel="noreferrer" target="_blank">Vimeo</a>. Les durées propres à ces services et les éventuels transferts doivent être vérifiés dans ces politiques avant activation.</li>
+      <li><strong>Publicité :</strong> aucun pixel Meta Ads ou Google Ads n'est activé par ce gestionnaire. Tout ajout de fournisseur ou de finalité impose d'actualiser l'information, la version du panneau et les contrôles de chargement avant utilisation.</li>
+    </ul>
     <h2>4. Durée et contrôle</h2>
     <p>La conservation de la preuve du choix doit être proportionnée. Une durée de six mois pour mémoriser l'acceptation ou le refus constitue une pratique couramment recommandée par la CNIL, à adapter au contexte. La liste des fournisseurs, traceurs réellement déposés, durées et finalités doit être vérifiée techniquement et tenue à jour ; le simple paramétrage du navigateur ne remplace pas un choix conforme lorsque le consentement est requis.</p>
+    <p>Le choix est enregistré localement sous <code>bib:platform:cookie-consent:v1</code> avec les finalités, la date, l'échéance de six mois et la version d'information <code>2026-11-05.1</code>, sans identifiant personnel ajouté par le panneau. Une information devenue obsolète ou un choix expiré impose un nouveau choix ; les finalités facultatives restent alors désactivées. Si le navigateur interdit la mémorisation, le choix vaut pour la page courante uniquement. Il n'est pas transféré automatiquement à un autre appareil, domaine ou à Intrabib.</p>
     <h2>5. Contacts et informations complémentaires</h2>
     <p>Pour toute question : <a href="mailto:privacy@brand-in-a-box.space">privacy@brand-in-a-box.space</a>. Consultez la <a href="/confidentialite">politique de confidentialité</a> et la <a href="/donnees-et-consentements">charte des données et consentements</a>.</p>
   </LegalShell>;

@@ -20,6 +20,50 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  privacy-browser:
+    name: Cookie consent browser checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Platform
+        uses: actions/checkout@v7
+        with:
+          path: bib_platform
+      - name: Checkout compatible Intranet
+        uses: actions/checkout@v7
+        with:
+          repository: Txss-17/bib_intranet
+          ref: main
+          path: bib_intranet
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: bib_platform/package-lock.json
+      - name: Install Platform dependencies
+        working-directory: bib_platform
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
+      - name: Install Intranet dependencies
+        working-directory: bib_intranet
+        run: npm ci --no-audit --no-fund
+      - name: Install Chromium
+        working-directory: bib_platform
+        run: npx playwright install --with-deps chromium
+      - name: Verify cookie requests, withdrawal, routes and mobile layouts
+        working-directory: bib_platform
+        env:
+          BIB_INTRABIB_ROOT: ../bib_intranet
+          BIB_PRIVACY_ARTIFACTS: ${{ runner.temp }}/bib-cookie-smoke
+        run: npm run test:privacy:browser
+      - name: Upload mobile cookie screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cookie-consent-screenshots
+          path: ${{ runner.temp }}/bib-cookie-smoke
+          if-no-files-found: ignore
+
   quality:
     name: Quality checks
     runs-on: ubuntu-latest
@@ -38,6 +82,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps --no-audit --no-fund
+
+      - name: Test cookie choices, optional tracking and external media blocking
+        run: npm run test:privacy
 
       - name: Test supplier audit portal authorization and version contract
         run: npm run test:supplier-audit

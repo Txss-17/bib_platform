@@ -1,3 +1,5 @@
+import { COOKIE_CONSENT_KEY } from "@/lib/cookieConsent";
+
 /** Purge pre-existing BIB / Linksy browser records after migration to
  * server-backed or volatile state. Never writes replacement browser data. */
 export function purgeLegacyBrowserRecords(): void {
@@ -12,11 +14,13 @@ export function purgeLegacyBrowserRecords(): void {
   }
   const matches = (key: string) =>
     key !== migrationMarker &&
+    key !== COOKIE_CONSENT_KEY &&
     !/^sb-[a-z0-9-]+-auth-token$/i.test(key) &&
     key !== "supabase.auth.token" &&
     /^(bib(?:[._:-]|$)|linksy(?:[._:-]|$)|alert-sound-enabled$)/i.test(key);
-  for (const storage of [window.localStorage, window.sessionStorage]) {
+  for (const storageName of ["localStorage", "sessionStorage"] as const) {
     try {
+      const storage = window[storageName];
       const keys = Array.from({ length: storage.length }, (_, i) => storage.key(i))
         .filter((key): key is string => !!key && matches(key));
       for (const key of keys) storage.removeItem(key);
