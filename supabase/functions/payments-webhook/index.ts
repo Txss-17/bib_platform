@@ -914,10 +914,17 @@ async function handleWebhook(
         const { data: supply, error: lookupError } = await getSupabase().from("merchant_supply_payments").select("quote_id,refunded_cents,totals").eq("stripe_payment_intent_id", pi).eq("environment", env).maybeSingle();
         if (lookupError) throw lookupError;
         if (supply) {
-          const current = await createStripeClient(env).disputes.retrieve(dispute.id);
-          const state = current.status === "won" ? (supply.refunded_cents >= supply.totals.total_cents ? "refunded" : supply.refunded_cents > 0 ? "partially_refunded" : "paid") : "disputed";
+          const stripe = createStripeClient(env);
+          const current = await stripe.disputes.retrieve(dispute.id);
+          const chargeId = typeof current.charge === "string" ? current.charge : current.charge?.id;
+          if (!chargeId) throw new Error("Supply dispute charge missing");
+          const charge = await stripe.charges.retrieve(chargeId);
+          const chargeIntent = typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id;
+          if (chargeIntent !== pi) throw new Error("Supply dispute payment mismatch");
+          const refunded = charge.amount_refunded;
+          const state = current.status === "won" ? (refunded >= supply.totals.total_cents ? "refunded" : refunded > 0 ? "partially_refunded" : "paid") : "disputed";
           const { error } = await getSupabase().rpc("adjust_merchant_supply_payment", { p_payment_intent_id: pi, p_environment: env, p_event_id: event.id, p_state: state,
-            p_refunded_cents: supply.refunded_cents, p_evidence: { dispute_id: current.id, dispute_status: current.status } });
+            p_refunded_cents: refunded, p_evidence: { dispute_id: current.id, dispute_status: current.status, charge_id: charge.id } });
           if (error) throw error;
         }
       }

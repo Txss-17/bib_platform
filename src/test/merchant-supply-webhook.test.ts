@@ -7,6 +7,7 @@ beforeEach(async()=>{
  vi.resetModules();vi.clearAllMocks();vi.spyOn(console,"log").mockImplementation(()=>{});vi.spyOn(console,"error").mockImplementation(()=>{});
  vi.stubGlobal("Deno",{serve:(fn:typeof handler)=>{handler=fn;},env:{get:()=>"unit-test-only"}});
  mock.client.mockReturnValue({rpc:mock.rpc,from:mock.from});mock.rpc.mockResolvedValue({data:true,error:null});
+ mock.charge.mockResolvedValue({id:"ch_test",payment_intent:"pi_test",amount:4440,amount_refunded:0});
  mock.from.mockImplementation(()=>{const b={select:()=>b,eq:()=>b,maybeSingle:async()=>({data:{quote_id:"quote-test",refunded_cents:0,totals:{total_cents:4440}}})};return b;});
  const path="../../supabase/functions/payments-webhook/index.ts";await import(/* @vite-ignore */path);
 });
@@ -29,8 +30,13 @@ describe("Merchant supply signed webhook routing",()=>{
   expect(mock.rpc).toHaveBeenCalledWith("adjust_merchant_supply_payment",expect.objectContaining({p_state:"refunded",p_refunded_cents:4440,p_event_id:"evt_unit_test"}));
  });
  it("uses the current dispute result and never interprets an open dispute as available funding",async()=>{
-  mock.dispute.mockResolvedValue({id:"dp_test",status:"under_review"});
+  mock.dispute.mockResolvedValue({id:"dp_test",charge:"ch_test",status:"under_review"});
   expect((await deliver("charge.dispute.closed",{id:"dp_test",payment_intent:"pi_test",status:"won"})).status).toBe(200);
   expect(mock.rpc).toHaveBeenCalledWith("adjust_merchant_supply_payment",expect.objectContaining({p_state:"disputed"}));
+ });
+ it("keeps a refund hold after a won dispute even when the refund event has not reached the local ledger",async()=>{
+  mock.dispute.mockResolvedValue({id:"dp_test",charge:"ch_test",status:"won"});mock.charge.mockResolvedValue({id:"ch_test",payment_intent:"pi_test",amount:4440,amount_refunded:1000});
+  expect((await deliver("charge.dispute.closed",{id:"dp_test",payment_intent:"pi_test"})).status).toBe(200);
+  expect(mock.rpc).toHaveBeenCalledWith("adjust_merchant_supply_payment",expect.objectContaining({p_state:"partially_refunded",p_refunded_cents:1000}));
  });
 });
