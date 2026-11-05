@@ -132,7 +132,7 @@ export default function CentreAideFaq() {
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {translateUi(
-                    "Contactez le support, réponse sous 24h ouvrées.",
+                    "Contactez le support pour une assistance adaptée ; aucun délai de réponse n'est garanti.",
                   )}
                 </p>
                 <Button asChild variant="outline" size="sm" className="mt-3">
