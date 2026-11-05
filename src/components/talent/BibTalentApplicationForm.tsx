@@ -20,7 +20,7 @@ const POLES = [
 ] as const;
 const TYPES = [
   ["volunteer", "Contribution volontaire", "Voluntary contribution"],
-  ["internship", "Intérêt pour un stage (programme en préparation)", "Interest in an internship (programme in preparation)"],
+  ["internship", "Stage", "Internship"],
   ["future_opportunities", "Futures opportunités", "Future opportunities"],
   ["explore", "Premier échange", "Initial conversation"],
 ] as const;
@@ -114,8 +114,8 @@ export function BibTalentApplicationForm() {
       {form.contribution_type === "internship" && (
         <p className="rounded-lg border border-border bg-muted/40 p-3 text-xs leading-5 text-muted-foreground sm:col-span-2" role="note">
           {tr(
-            "Les stages STG-RD-01 (R&D), STG-MKT-01 (marketing), STG-JUR-01 (juridique) et STG-FRN-01 (fournisseurs) sont en préparation, sans place ouverte pour le moment. Pour orienter votre intérêt, choisissez respectivement Product Engineering, Communication, Qualité/audit/conformité ou Marketplace. Indiquez votre formation dans votre situation actuelle et la mission envisagée dans votre motivation. Aucun stage n'est confirmé avant convention avec l'établissement et validation de l'organisme d'accueil.",
-            "The STG-RD-01 (product research), STG-MKT-01 (marketing), STG-JUR-01 (legal) and STG-FRN-01 (suppliers) pathways are in preparation, with no placements currently open. To route your interest, select Product Engineering, Communications, Quality/audit/compliance or Marketplace respectively. Describe your course in your current activity and your preferred assignment in your motivation. No internship is confirmed without an educational agreement and host-organisation approval."
+            "Pour les stages STG-RD-01 (R&D), STG-MKT-01 (marketing), STG-JUR-01 (juridique) ou STG-FRN-01 (fournisseurs), choisissez respectivement Product Engineering, Communication, Qualité/audit/conformité ou Marketplace. Indiquez votre formation dans votre situation actuelle et le code de mission dans votre motivation. Chaque stage fait l’objet d’une convention avec l’établissement et d’un tutorat adapté.",
+            "For STG-RD-01 (product research), STG-MKT-01 (marketing), STG-JUR-01 (legal) or STG-FRN-01 (suppliers), select Product Engineering, Communications, Quality/audit/compliance or Marketplace respectively. Specify your course in the current activity field and your assignment code in your motivation. Each internship requires an agreement with your educational institution and suitable supervision."
           )}
         </p>
       )}
