@@ -91,7 +91,9 @@ export default function CarriereOffre() {
         </div>
         <div>
           <h2 className="font-display text-2xl font-semibold">{tr(copy("Vos missions et apprentissages", "Assignments and learning activities"))}</h2>
-          <p className="mt-4 text-sm leading-8 text-muted-foreground">{tr(opportunity.activities)}</p>
+          <ul className="mt-5 space-y-3 text-sm leading-7 text-muted-foreground">
+            {opportunity.missions.map((mission, index) => <li key={index} className="flex items-start gap-3"><span aria-hidden="true" className="shrink-0 font-semibold text-accent-ink">–</span><span>{tr(mission)}</span></li>)}
+          </ul>
         </div>
         <div>
           <h2 className="font-display text-2xl font-semibold">{tr(copy("Compétences développées", "Skills you will develop"))}</h2>
@@ -101,6 +103,10 @@ export default function CarriereOffre() {
       <aside className="h-fit rounded-2xl border border-border bg-muted/30 p-6 sm:p-8">
         <h2 className="flex items-center gap-2 text-lg font-semibold"><GraduationCap size={22} className="text-accent-ink" />{tr(copy("Profil recherché", "Who this suits"))}</h2>
         <p className="mt-4 text-sm leading-7 text-muted-foreground">{tr(opportunity.profiles)}</p>
+        <div className="mt-6 space-y-4 border-t border-border pt-6">
+          <div><h3 className="text-sm font-semibold">{tr(copy("Pôle de rattachement", "Department"))}</h3><p className="mt-1 text-sm leading-6 text-muted-foreground">{tr(opportunity.pole)}</p></div>
+          <div><h3 className="text-sm font-semibold">{tr(copy("Responsable de rattachement", "Supervising role"))}</h3><p className="mt-1 text-sm leading-6 text-muted-foreground">{tr(opportunity.supervisor)}</p></div>
+        </div>
         <div className="mt-6 border-t border-border pt-6">
           <h3 className="flex items-center gap-2 font-semibold"><BookOpen size={20} />{tr(copy("Un cadre d'apprentissage", "A learning environment"))}</h3>
           <p className="mt-3 text-sm leading-7 text-muted-foreground">{tr(copy("Les stages sont organisés avec un établissement de formation, des objectifs pédagogiques et un tutorat adapté.", "Internships involve an educational institution, learning goals and suitable supervision."))}</p>
@@ -112,9 +118,9 @@ export default function CarriereOffre() {
     </section>
     <section className="bg-muted/35 px-5 py-12 sm:py-16">
       <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
-        <div><h2 className="font-display text-xl font-semibold sm:text-2xl">{tr(copy("Découvrir l'environnement BIB", "Explore the BIB environment"))}</h2>
-        <p className="mt-2 text-sm leading-7 text-muted-foreground">{tr(copy("BIB Talent vous accompagne tout au long de votre parcours au sein des équipes.", "BIB Talent supports you throughout your journey with the teams."))}</p></div>
-        <Link to="/bib-talent" className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-semibold hover:bg-muted">{tr(copy("Découvrir BIB Talent", "Discover BIB Talent"))}<ArrowRight size={17} /></Link>
+        <div><h2 className="font-display text-xl font-semibold sm:text-2xl">{tr(copy("Explorez les autres opportunités BIB", "Explore more BIB opportunities"))}</h2>
+        <p className="mt-2 text-sm leading-7 text-muted-foreground">{tr(copy("Retrouvez toutes les offres et choisissez celles qui correspondent à votre parcours.", "Browse all opportunities and find those that fit your background."))}</p></div>
+        <Link to="/carrieres#stages" className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-semibold hover:bg-muted">{tr(copy("Toutes les offres", "All opportunities"))}<ArrowRight size={17} /></Link>
       </div>
     </section>
   </PublicPageLayout>;
