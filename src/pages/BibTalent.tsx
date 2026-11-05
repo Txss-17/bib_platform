@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ArrowRight, Compass, Lightbulb, Sparkles, Users, Workflow, Shapes, Store, ShoppingBag, Truck, Package } from "lucide-react";
 import PublicPageLayout from "@/components/layout/PublicPageLayout";
 import { Button } from "@/components/ui/button";
@@ -70,7 +71,10 @@ const steps = [
 export default function BibTalent() {
   const { lang } = useLanguage();
   const tr = (value: Copy) => value[lang];
-  const [showApplication, setShowApplication] = useState(false);
+  const [searchParams] = useSearchParams();
+  const requestedStage = searchParams.get("stage");
+  const stageCode = requestedStage && ["STG-RD-01", "STG-MKT-01", "STG-JUR-01", "STG-FRN-01"].includes(requestedStage) ? requestedStage : null;
+  const [showApplication, setShowApplication] = useState(() => stageCode !== null);
 
   useSEO({ title: tr(messages.seoTitle), description: tr(messages.seoDescription) });
 
@@ -159,7 +163,7 @@ export default function BibTalent() {
         <DialogDescription className="sr-only">
           {lang === "en" ? "Complete the private application form in this window. Close without submitting any time." : "Remplissez votre candidature dans cette fenêtre. Vous pouvez la fermer sans envoyer de données."}
         </DialogDescription>
-        <BibTalentApplicationForm />
+        <BibTalentApplicationForm initialStageCode={stageCode} />
       </DialogContent>
     </Dialog>
 
