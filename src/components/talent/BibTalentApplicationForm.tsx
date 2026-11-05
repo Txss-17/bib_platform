@@ -46,8 +46,10 @@ export function BibTalentApplicationForm({ initialStageCode = null }: { initialS
     motivation: "",
     availability: "discuss",
     portfolio_url: "",
+    linkedin_url: "",
     website: "",
   });
+  const [cvFile, setCvFile] = useState<File | null>(null);
   const [consent, setConsent] = useState(false);
   const [futureConsent, setFutureConsent] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -77,11 +79,21 @@ export function BibTalentApplicationForm({ initialStageCode = null }: { initialS
       setError(tr("Votre motivation est trop longue.", "Your motivation is too long."));
       return;
     }
+    if (cvFile && (cvFile.size > 4 * 1024 * 1024 || !/\.(pdf|docx)$/i.test(cvFile.name))) {
+      setError(tr("Le CV doit être un PDF ou DOCX de 4 Mo maximum.", "Your CV must be a PDF or DOCX of at most 4 MB."));
+      return;
+    }
+    const payload = new FormData();
+    payload.append("payload", JSON.stringify({
+      ...form, motivation, locale: en ? "en" : "fr", consent,
+      future_opportunities_consent: futureConsent,
+    }));
+    if (cvFile) payload.append("cv", cvFile, cvFile.name);
     setBusy(true);
     setError("");
     try {
       const { data, error: serverError } = await supabase.functions.invoke("submit-talent-application", {
-        body: { ...form, motivation, locale: en ? "en" : "fr", consent, future_opportunities_consent: futureConsent },
+        body: payload,
       });
       if (serverError || data?.ok !== true) throw serverError ?? new Error("talent_submission_failed");
       setDone(true);
@@ -157,7 +169,29 @@ export function BibTalentApplicationForm({ initialStageCode = null }: { initialS
       <div className="space-y-2"><Label htmlFor="career-skills">{tr("Compétences et expériences utiles *", "Relevant skills and experience *")}</Label>
         <Textarea id="career-skills" required minLength={5} maxLength={1200} rows={3} value={form.skills} onChange={e => update("skills", e.target.value)} />
       </div>
-      <div className="space-y-2"><Label htmlFor="career-link">{tr("Lien vers votre CV, LinkedIn ou portfolio (facultatif, HTTPS)", "CV, LinkedIn or portfolio link (optional, HTTPS)")}</Label>
+      <div className="space-y-2">
+        <Label htmlFor="career-cv">{tr("Joindre votre CV (facultatif)", "Attach your CV (optional)")}</Label>
+        <Input id="career-cv" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={e => {
+          const selected = e.target.files?.[0] ?? null;
+          if (!selected) { setCvFile(null); return; }
+          if (selected.size > 4 * 1024 * 1024 || !/\.(pdf|docx)$/i.test(selected.name)) {
+            setCvFile(null);
+            e.target.value = "";
+            setError(tr("Choisissez un PDF ou DOCX de 4 Mo maximum.", "Choose a PDF or DOCX up to 4 MB."));
+            return;
+          }
+          setError("");
+          setCvFile(selected);
+        }} />
+        <p className="text-xs text-muted-foreground">{tr("PDF ou DOCX, 4 Mo maximum. Le fichier est transmis avec votre candidature et stocké dans un espace privé.", "PDF or DOCX, 4 MB maximum. Uploaded securely with your application and stored privately.")}</p>
+        {cvFile && <p className="text-xs font-medium text-foreground">{tr("Fichier sélectionné :", "Selected file:")} {cvFile.name}</p>}
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="career-linkedin">{tr("Lien vers votre profil LinkedIn (facultatif)", "LinkedIn profile URL (optional)")}</Label>
+        <Input id="career-linkedin" type="url" placeholder="https://www.linkedin.com/in/..." maxLength={500} value={form.linkedin_url} onChange={e => update("linkedin_url", e.target.value)} />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="career-link">{tr("Autre lien vers un CV ou portfolio (facultatif, HTTPS)", "Another CV or portfolio link (optional, HTTPS)")}</Label>
         <Input id="career-link" type="url" placeholder="https://" maxLength={500} value={form.portfolio_url} onChange={e => update("portfolio_url", e.target.value)} />
       </div>
     </fieldset>
@@ -189,7 +223,7 @@ export function BibTalentApplicationForm({ initialStageCode = null }: { initialS
         <span className="text-xs leading-6 text-muted-foreground">{tr(
           "Facultatif : j'autorise BIB à conserver ma candidature pour me proposer d'autres opportunités. Je peux retirer cet accord à tout moment.",
           "Optional: I allow BIB to retain my application for other opportunities. I may withdraw this permission at any time."
-        )}{" "}<Link to="/talent/confidentialite" className="underline">{tr("Informations sur la conservation", "Retention information")}</Link>.</span>
+        )}{" "}<Link to="/talent/confidentialite#conservation-candidatures" className="underline">{tr("Informations sur la conservation", "Retention information")}</Link>.</span>
       </label>
     </div>
     <p className="text-xs leading-6 text-muted-foreground">{isInternship
