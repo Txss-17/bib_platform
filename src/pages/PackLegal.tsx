@@ -43,7 +43,7 @@ const docs = [
     },
     get desc() {
       return translateUi(
-        "Cadre contractuel entre vous et BIB : compte, services fournis, engagements vendeur, tarifs, résiliation.",
+        "Information générale sur l’utilisation de BIB. Les conditions propres aux marchands et aux acheteurs relèvent de documents distincts, sans remplacer les CGV de chaque boutique.",
       );
     },
     href: "/cgu",
@@ -58,10 +58,10 @@ const docs = [
       return translateUi("Conditions Générales de Vente");
     },
     get desc() {
-      return translateUi("Conditions applicables aux ventes, commandes, paiements, livraisons, retours et garanties selon les responsabilités des parties.");
+      return translateUi("Présentation générale des ventes et garanties. Les CGV applicables à une commande sont celles de la boutique, générées pour le vendeur juridiquement identifié et présentées avant paiement.");
     },
     href: "/cgv",
-    points: ["Commandes", "Livraison et retours", "Garanties"],
+    points: ["CGV de la boutique", "Vendeur identifié", "Rétractation et garanties"],
   },
   {
     icon: ShieldCheck,
@@ -150,8 +150,8 @@ export default function PackLegal() {
 
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6 max-w-6xl">
           <div className="rounded-lg border border-amber-400/30 bg-muted/40 p-4 text-sm">
-            <strong>Actualisation documentaire du 4 novembre 2026.</strong> Les pages présentées sont harmonisées avec les projets CGV BIB v1.2, CGU BIB v1.2, Mentions légales v1.1, Confidentialité v1.2 et Cookies v1.1.
-            Ces documents demeurent à valider juridiquement avant application contractuelle définitive. L'identité et les immatriculations de l'exploitant individuel, l'hébergeur effectif, les médiateurs de consommation et les traceurs déployés doivent être vérifiés sur justificatifs.
+            <strong>Harmonisation des contrats au 5 novembre 2026.</strong> Les anciens projets CGV BIB v1.2 et CGU BIB v1.2 sont des sources historiques, non des CGV de boutique opposables. Le référentiel de travail distingue JUR-M01/M02 (marchands), JUR-C01 (acheteurs), JUR-C02 (services BIB aux consommateurs non activés) et les modèles JUR-B01/B02/B03 générés pour chaque boutique. Mentions légales v1.1, Confidentialité v1.2 et Cookies v1.1 restent des projets à vérifier.
+            Les pages /cgu et /cgv sont actuellement des informations générales : les ventes de produits relèvent des CGV de la boutique et du vendeur identifié. Les documents de travail demeurent à valider juridiquement avant application contractuelle définitive. L'identité et les immatriculations de l'exploitant individuel, l'hébergeur effectif, les médiateurs de consommation et les traceurs déployés doivent être vérifiés sur justificatifs.
             Les anciennes références à une SAS, une holding ou une filiale non constituée ne valent pas identification de l'exploitant actuel.
           </div>
         </section>
