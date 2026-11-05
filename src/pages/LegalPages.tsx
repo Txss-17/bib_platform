@@ -107,7 +107,7 @@ export function CGU() {
       title={translateUi("Conditions Générales d'Utilisation")}
       updated="4 novembre 2026"
     >
-      <p className="text-sm text-muted-foreground">Information générale issue du projet historique CGU BIB v1.2 (novembre 2026). Les CGU Marchands (JUR-M01) et Acheteurs (JUR-C01) ont des champs distincts; l’accès à une boutique et ses ventes relèvent aussi des documents personnalisés du vendeur (JUR-B01/B02/B03). Texte à vérifier avant publication contractuelle.</p>
+      <p className="text-sm text-muted-foreground">Information générale issue du projet historique CGU BIB v1.2 (novembre 2026). Les CGU Marchands (JUR-M01) et Acheteurs (JUR-C01) ont des champs distincts; l’accès à une boutique et ses ventes relèvent aussi des documents personnalisés du vendeur (JUR-B01/B02/B03). Texte de travail sous réserve de validation juridique avant publication contractuelle.</p>
       <h2>{translateUi("1. Objet et champ d'application")}</h2>
       <p>
         {translateUi(
