@@ -4,7 +4,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useSEO } from "@/hooks/useSEO";
 import { ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { EnglishLegalNotices, EnglishLegalPrivacy, EnglishLegalCookies } from "@/components/legal/EnglishLegalContent";
 import { CookieSettingsButton } from "@/components/privacy/CookieConsentManager";
 import { FileText, ShieldCheck, Cookie, Scale, BriefcaseBusiness } from "lucide-react";
 
@@ -20,15 +21,16 @@ const legalNavigation = [
 function LegalShell({ title, eyebrow, updated, children }: {
   title: string; eyebrow: string; updated: string; children: ReactNode;
 }) {
-  useLanguage();
+  const { lang } = useLanguage();
+  const { pathname } = useLocation();
   return (
     <div className="legal-page min-h-screen bg-background">
       <Header />
       <main className="mx-auto max-w-6xl px-4 pb-16 pt-7 sm:px-6 lg:px-8">
-        <nav className="flex items-center gap-2 text-xs text-muted-foreground" aria-label="Fil d'Ariane">
+        <nav className="flex items-center gap-2 text-xs text-muted-foreground" aria-label={translateUi("Fil d'Ariane")}>
           <Link to="/" className="hover:text-foreground">BIB</Link>
           <span aria-hidden>›</span>
-          <Link to="/pack-legal" className="hover:text-foreground">Centre juridique</Link>
+          <Link to="/pack-legal" className="hover:text-foreground">{translateUi("Centre juridique")}</Link>
           <span aria-hidden>›</span>
           <span className="text-foreground">{title}</span>
         </nav>
@@ -36,23 +38,19 @@ function LegalShell({ title, eyebrow, updated, children }: {
           <div className="mb-2 h-0.5 w-10 rounded-full bg-bib-gold" aria-hidden />
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{eyebrow} · BIB</p>
           <h1 className="mt-2 max-w-3xl font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{title}</h1>
-          <p className="mt-2 text-xs text-muted-foreground">Dernière révision : {updated} · Lecture publique</p>
+          <p className="mt-2 text-xs text-muted-foreground">{translateUi("Dernière révision :")} {(lang === "en" ? updated.replace("novembre", "November") : updated)} · {translateUi("Lecture publique")}</p>
         </header>
         <div className="mt-7 grid grid-cols-1 items-start gap-8 lg:grid-cols-[225px_minmax(0,1fr)] lg:gap-12">
           <aside className="lg:sticky lg:top-20">
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Documents BIB</p>
-            <nav aria-label="Documents juridiques BIB" className="flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible">
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{translateUi("Documents BIB")}</p>
+            <nav aria-label={translateUi("Documents juridiques BIB")} className="flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible">
               {legalNavigation.map(item => {
-                const selected = item.label === title ||
-                  (item.href === "/cgu" && title.includes("Utilisation")) ||
-                  (item.href === "/cgv" && title.includes("Vente")) ||
-                  (item.href === "/confidentialite" && title.includes("confidentialité")) ||
-                  (item.href === "/cookies" && title.toLowerCase().includes("cookies"));
+                const selected = pathname === item.href;
                 return <Link key={item.href} to={item.href}
                   aria-current={selected ? "page" : undefined}
                   className={`inline-flex shrink-0 items-center gap-2 rounded-md border-l-2 px-3 py-2 text-xs transition-colors lg:w-full ${selected ? "border-bib-gold bg-bib-gold/10 font-semibold text-foreground" : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
                   <item.icon className="h-3.5 w-3.5 shrink-0" />
-                  {item.label}
+                  {translateUi(item.label)}
                 </Link>;
               })}
             </nav>
@@ -62,7 +60,7 @@ function LegalShell({ title, eyebrow, updated, children }: {
           </article>
         </div>
         <div className="mt-10 border-t border-border pt-5 text-xs text-muted-foreground">
-          Besoin d'une précision ? Consultez le <Link className="underline" to="/centre-aide">centre d'aide</Link> ou les contacts indiqués dans les mentions légales.
+          {translateUi("Besoin d'une précision ? Consultez le")} <Link className="underline" to="/centre-aide">{translateUi("centre d'aide")}</Link> {translateUi("ou les contacts indiqués dans les mentions légales.")}
         </div>
       </main>
       <Footer />
@@ -71,11 +69,12 @@ function LegalShell({ title, eyebrow, updated, children }: {
 }
 
 export function MentionsLegales() {
-  useLanguage();
+  const { lang } = useLanguage();
   useSEO({
-    title: "Mentions légales — BIB",
-    description: "Éditeur, contacts et responsabilité des services Brand-in-a-Box.",
+    title: lang === "en" ? "Legal notices — BIB" : "Mentions légales — BIB",
+    description: lang === "en" ? "Publisher, contacts and responsibility for Brand-in-a-Box services." : "Éditeur, contacts et responsabilité des services Brand-in-a-Box.",
   });
+  if (lang === "en") return <LegalShell eyebrow="Legal" title="Legal notices" updated="4 November 2026"><EnglishLegalNotices /></LegalShell>;
   return <LegalShell eyebrow="Légal" title="Mentions légales" updated="4 novembre 2026">
     <p className="rounded-lg border border-amber-300/40 bg-amber-50/50 p-3 text-sm text-foreground"><strong>Statut de la présente rédaction :</strong> harmonisation du projet « Mentions légales BIB v1.1 — novembre 2026 ». Les champs d'identification réglementaire et d'hébergement doivent être complétés sur justificatifs et relus juridiquement avant le lancement de ventes. Une SAS ou une SASU non constituée n'est pas l'éditeur actuel.</p>
     <h2>Éditeur et responsabilité</h2>
@@ -97,7 +96,7 @@ export function MentionsLegales() {
 }
 
 export function CGU() {
-  useLanguage();
+  const { lang } = useLanguage();
   useSEO({
     title: translateUi("Conditions Générales d'Utilisation — Brand-In-A-Box"),
     description: translateUi("CGU de la marketplace Brand-In-A-Box."),
@@ -177,8 +176,8 @@ export function CGU() {
           "L'Utilisateur s'engage à fournir des informations exactes et à les maintenir à jour.",
         )}
       </p>
-      <h2>Conditions communes des boutiques et informations professionnelles</h2>
-      <p>Les CGU et CGV communes sont administrées et versionnées par BIB, avec les informations légales du vendeur professionnel réellement identifié. Le marchand tiers est juridiquement responsable de ses ventes ; pour les boutiques tests propres à BIB, l'entreprise individuelle est elle-même le vendeur. Les boutiques ne peuvent pas remplacer les clauses communes par des conditions contradictoires. La version du texte accepté doit pouvoir être rattachée à la transaction concernée.</p>
+      <h2>{lang === "en" ? "Common store terms and professional information" : "Conditions communes des boutiques et informations professionnelles"}</h2>
+      <p>{lang === "en" ? <>BIB maintains and versions common terms of use and sale, including the verified legal details of the professional seller. A third-party merchant remains legally responsible for its sales; in BIB's own test stores, the individual entrepreneur is the seller. Stores may not override common clauses with conflicting terms. The accepted version must remain traceable to the relevant transaction.</> : <>Les CGU et CGV communes sont administrées et versionnées par BIB, avec les informations légales du vendeur professionnel réellement identifié. Le marchand tiers est juridiquement responsable de ses ventes ; pour les boutiques tests propres à BIB, l'entreprise individuelle est elle-même le vendeur. Les boutiques ne peuvent pas remplacer les clauses communes par des conditions contradictoires. La version du texte accepté doit pouvoir être rattachée à la transaction concernée.</>}</p>
       <h2>{translateUi("5. Accès et disponibilité")}</h2>
       <p>
         {translateUi(
@@ -224,8 +223,8 @@ export function CGU() {
           "Les contenus mis en ligne par un Marchand (visuels, descriptions) demeurent sa propriété ou celle des tiers titulaires des droits. Le Marchand garantit disposer des droits nécessaires à leur utilisation sur la Marketplace.",
         )}
       </p>
-      <h2>8. Services facultatifs et programmes historiques</h2>
-      <p>Les dispositifs historiques de fidélité et les offres facultatives non activées ne créent aucun droit ni avantage par défaut. Seuls les services effectivement ouverts et contractualisés sont opposables. L'abonnement client facultatif n'est pas une condition générale pour acheter auprès d'un marchand.</p>
+      <h2>{lang === "en" ? "8. Optional services and historical programmes" : "8. Services facultatifs et programmes historiques"}</h2>
+      <p>{lang === "en" ? <>Historical loyalty initiatives and inactive optional offers do not automatically create rights or benefits. Only services actually launched and contractually agreed can bind the parties. An optional consumer subscription is not a general requirement for purchasing from a merchant.</> : <>Les dispositifs historiques de fidélité et les offres facultatives non activées ne créent aucun droit ni avantage par défaut. Seuls les services effectivement ouverts et contractualisés sont opposables. L'abonnement client facultatif n'est pas une condition générale pour acheter auprès d'un marchand.</>}</p>
       <h2>{translateUi("9. Rôle de BIB dans les transactions")}</h2>
       <p>
         {translateUi(
@@ -252,9 +251,9 @@ export function CGU() {
           "BIB ne peut être tenue responsable des contenus, produits ou services proposés par les Marchands, ni de leurs manquements, sous réserve des cas de prise en charge prévus par les CGV. BIB met en œuvre des moyens raisonnables pour la sécurité de la Marketplace, sans garantir l'absence totale d'incident technique.",
         )}
       </p>
-      <h2>11 bis. Transparence des fonctionnalités numériques</h2>
-      <p>Les outils de génération de boutique, d'assistance automatisée et de création de publicités peuvent utiliser des services techniques tiers. L'utilisateur conserve la responsabilité de vérifier les contenus proposés par ces outils, les droits de propriété intellectuelle, les informations commerciales et la conformité des publicités avant toute diffusion. Une création de brouillon publicitaire ne constitue ni une mise en ligne d'annonce ni une dépense engagée.</p>
-      <p>Les demandes d'assistance peuvent être orientées vers un support humain. L'ouverture d'un ticket à partir du chat requiert une confirmation positive distincte. Le refus de cette transmission n'empêche pas la poursuite de la conversation.</p>
+      <h2>{lang === "en" ? "11 bis. Transparency of digital features" : "11 bis. Transparence des fonctionnalités numériques"}</h2>
+      <p>{lang === "en" ? <>Store-generation, automated assistance and advertising-creation tools may rely on third-party technical services. Users remain responsible for checking generated content, intellectual property rights, commercial information and advertising compliance before publication. Creating an advertising draft neither places an advertisement online nor commits any expenditure.</> : <>Les outils de génération de boutique, d'assistance automatisée et de création de publicités peuvent utiliser des services techniques tiers. L'utilisateur conserve la responsabilité de vérifier les contenus proposés par ces outils, les droits de propriété intellectuelle, les informations commerciales et la conformité des publicités avant toute diffusion. Une création de brouillon publicitaire ne constitue ni une mise en ligne d'annonce ni une dépense engagée.</>}</p>
+      <p>{lang === "en" ? <>Assistance requests may be referred to human support. Opening a support ticket from the chat requires separate positive confirmation. Refusing this transfer does not prevent the conversation from continuing.</> : <>Les demandes d'assistance peuvent être orientées vers un support humain. L'ouverture d'un ticket à partir du chat requiert une confirmation positive distincte. Le refus de cette transmission n'empêche pas la poursuite de la conversation.</>}</p>
             <h2>{translateUi("12. Données personnelles")}</h2>
       <p>
         {translateUi(
@@ -265,7 +264,7 @@ export function CGU() {
         </a>
         {translateUi(", conformément au RGPD.")}
       </p>
-      <p>Les champs et documents de création de compte informent sur les traitements indispensables et présentent les textes contractuels pertinents. Les abonnements, emails promotionnels, sondages ou traceurs facultatifs ne doivent pas être activés par une simple acceptation globale des CGU. Les détails figurent dans la <a href="/donnees-et-consentements">charte des données et consentements</a>.</p>
+      <p>{lang === "en" ? <>Account-registration fields and documents explain necessary processing and display the applicable contractual terms. Optional subscriptions, promotional emails, surveys and trackers must not be enabled merely because the user accepted the terms of use. See the <a href="/donnees-et-consentements">data and consent notice</a> for details.</> : <>Les champs et documents de création de compte informent sur les traitements indispensables et présentent les textes contractuels pertinents. Les abonnements, emails promotionnels, sondages ou traceurs facultatifs ne doivent pas être activés par une simple acceptation globale des CGU. Les détails figurent dans la <a href="/donnees-et-consentements">charte des données et consentements</a>.</>}</p>
             <h2>{translateUi("13. Modification des CGU")}</h2>
       <p>
         {translateUi(
@@ -283,7 +282,7 @@ export function CGU() {
 }
 
 export function CGV() {
-  useLanguage();
+  const { lang } = useLanguage();
   useSEO({
     title: translateUi("Conditions Générales de Vente — Brand-In-A-Box"),
     description: translateUi("CGV de la marketplace Brand-In-A-Box."),
@@ -394,12 +393,12 @@ export function CGV() {
           "BIB organise et fait exécuter l'expédition par les partenaires logistiques qu'elle désigne. Les commandes sont livrées dans l'ensemble de l'Union européenne, la livraison étant incluse dans le prix affiché. Les responsabilités entre BIB, le Marchand et les prestataires logistiques sont définies par leurs contrats et par les dispositions légales applicables, notamment le Code des transports.",
         )}
       </p>
-      <h2>Précommandes, production personnalisée et annulation</h2>
-      <p>Le client est informé avant l'achat de la <strong>période ou date de livraison réaliste</strong>, des étapes de préparation et des règles d'annulation propres au produit. Un simple marquage ou logo de marchand ne suffit pas, à lui seul, pour exclure le droit de rétractation. BIB organise le circuit fournisseur → partenaire logistique → client selon les contrats applicables, sans modifier la qualité de vendeur du marchand tiers.</p>
-      <p>Pour les références personnalisables, BIB prévoit un fonctionnement en précommandes regroupées par fenêtre de commande et capacité fournisseur vérifiée. La production personnalisée ne commence qu'après confirmation de la commande et décision de lancement de la production. Un délai prévisionnel pouvant aller jusqu'à un mois peut être annoncé avant l'achat, avec suivi des étapes de préparation, personnalisation, contrôle, emballage et livraison ; le délai ferme applicable doit être indiqué à la commande et respecté selon les règles légales.</p>
-      <p>La politique commerciale BIB permet au client de demander une annulation sans frais jusqu'au feu vert effectif de lancement de la production. Cette politique n'écarte jamais les droits légaux de rétractation, de remboursement ou les recours pour retard, défaut ou non-conformité. Une exclusion du droit de rétractation pour un bien nettement personnalisé ne peut pas être appliquée systématiquement aux produits simplement proposés en précommande : elle doit répondre aux conditions légales et être expliquée avant la vente.</p>
-      <h2>Gouvernance contractuelle et identification du vendeur</h2>
-      <p>BIB administre un socle commun et versionné de CGV qui s'applique aux boutiques selon les contrats en vigueur ; le marchand professionnel reste identifié comme vendeur de chaque commande. L'identité juridique du vendeur, la version des conditions effectivement acceptées, les informations précontractuelles et les consentements aux traceurs facultatifs doivent être conservés avec une traçabilité adaptée. Aucun marchand ne peut substituer librement ses propres CGV au socle standardisé BIB sans procédure contractuelle autorisée.</p>
+      <h2>{lang === "en" ? "Preorders, personalised production and cancellations" : "Précommandes, production personnalisée et annulation"}</h2>
+      <p>{lang === "en" ? <>Before purchase, customers must be told the <strong>realistic delivery date or period</strong>, preparation stages and product-specific cancellation terms. A merchant logo or simple marking does not by itself remove the statutory right of withdrawal. Under applicable agreements, BIB arranges the supplier → logistics partner → customer flow without changing the third-party merchant's status as seller.</> : <>Le client est informé avant l'achat de la <strong>période ou date de livraison réaliste</strong>, des étapes de préparation et des règles d'annulation propres au produit. Un simple marquage ou logo de marchand ne suffit pas, à lui seul, pour exclure le droit de rétractation. BIB organise le circuit fournisseur → partenaire logistique → client selon les contrats applicables, sans modifier la qualité de vendeur du marchand tiers.</>}</p>
+      <p>{lang === "en" ? <>For customisable products, BIB envisages preorders grouped into ordering windows, subject to verified supplier capacity. Personalised production starts only after order confirmation and a decision to begin production. An estimated period of up to one month may be disclosed before purchase, with updates on preparation, customisation, inspection, packaging and delivery; the binding delivery deadline must be stated at checkout and complied with under applicable law.</> : <>Pour les références personnalisables, BIB prévoit un fonctionnement en précommandes regroupées par fenêtre de commande et capacité fournisseur vérifiée. La production personnalisée ne commence qu'après confirmation de la commande et décision de lancement de la production. Un délai prévisionnel pouvant aller jusqu'à un mois peut être annoncé avant l'achat, avec suivi des étapes de préparation, personnalisation, contrôle, emballage et livraison ; le délai ferme applicable doit être indiqué à la commande et respecté selon les règles légales.</>}</p>
+      <p>{lang === "en" ? <>BIB's proposed commercial policy permits customers to request cancellation without charge until production is actually authorised to begin. This does not displace statutory rights of withdrawal, reimbursement or remedies for delay, defect or lack of conformity. An exclusion from withdrawal for clearly personalised goods cannot automatically apply to products merely available for preorder; the legal conditions must be met and explained before purchase.</> : <>La politique commerciale BIB permet au client de demander une annulation sans frais jusqu'au feu vert effectif de lancement de la production. Cette politique n'écarte jamais les droits légaux de rétractation, de remboursement ou les recours pour retard, défaut ou non-conformité. Une exclusion du droit de rétractation pour un bien nettement personnalisé ne peut pas être appliquée systématiquement aux produits simplement proposés en précommande : elle doit répondre aux conditions légales et être expliquée avant la vente.</>}</p>
+      <h2>{lang === "en" ? "Contract governance and seller identification" : "Gouvernance contractuelle et identification du vendeur"}</h2>
+      <p>{lang === "en" ? <>BIB manages a common, versioned set of sales terms applied to stores under relevant contracts; each order must still identify the professional merchant acting as seller. The seller's legal identity, version of the terms accepted, pre-contract information and optional tracker choices must be recorded with appropriate traceability. Merchants may not freely substitute conflicting store terms without an authorised contractual process.</> : <>BIB administre un socle commun et versionné de CGV qui s'applique aux boutiques selon les contrats en vigueur ; le marchand professionnel reste identifié comme vendeur de chaque commande. L'identité juridique du vendeur, la version des conditions effectivement acceptées, les informations précontractuelles et les consentements aux traceurs facultatifs doivent être conservés avec une traçabilité adaptée. Aucun marchand ne peut substituer librement ses propres CGV au socle standardisé BIB sans procédure contractuelle autorisée.</>}</p>
       <h2>{translateUi("8. Droit de rétractation")}</h2>
       <p>
         {translateUi(
@@ -418,7 +417,7 @@ export function CGV() {
         <table>
           <thead>
             <tr>
-              <th>Situation</th>
+              <th>{lang === "en" ? "Situation" : "Situation"}</th>
               <th>{translateUi("Traitement")}</th>
             </tr>
           </thead>
@@ -491,16 +490,16 @@ export function CGV() {
           "Pour les boutiques tierces, le marchand vendeur reste responsable des obligations de conformité et de garantie légale, sans exclure la responsabilité propre de BIB pour ses prestations d'intermédiation ou d'organisation du transport. Pour les boutiques tests exploitées directement par l'entreprise individuelle, cette même entreprise est le vendeur professionnel et assume les obligations correspondantes. Les droits impératifs des consommateurs sont préservés.",
         )}
       </p>
-      <h2>12 bis. Informations et données liées à la commande</h2>
-      <p>Avant la commande, le client doit pouvoir identifier le marchand vendeur, les caractéristiques essentielles du produit, le prix total, les frais éventuels, la livraison, le droit de rétractation et les garanties. Une confirmation explicite de l'obligation de paiement doit intervenir avant la finalisation, conformément aux règles applicables.</p>
-      <p>Les informations utiles à la commande sont partagées avec le marchand, BIB et les partenaires de paiement ou de livraison dans la mesure strictement nécessaire. Les communications transactionnelles ne valent pas abonnement à des messages publicitaires. Consultez la <a href="/confidentialite">confidentialité</a> et la <a href="/donnees-et-consentements">charte des consentements</a>.</p>
+      <h2>{lang === "en" ? "12 bis. Order information and related data" : "12 bis. Informations et données liées à la commande"}</h2>
+      <p>{lang === "en" ? <>Before checkout, customers must be able to identify the merchant seller, the product's essential features, total price, any fees, delivery terms, withdrawal rights and statutory guarantees. The obligation to pay must be confirmed explicitly before an order is finalised, in accordance with applicable rules.</> : <>Avant la commande, le client doit pouvoir identifier le marchand vendeur, les caractéristiques essentielles du produit, le prix total, les frais éventuels, la livraison, le droit de rétractation et les garanties. Une confirmation explicite de l'obligation de paiement doit intervenir avant la finalisation, conformément aux règles applicables.</>}</p>
+      <p>{lang === "en" ? <>Order information is shared with the merchant, BIB and payment or delivery partners only as necessary. Transactional communications do not automatically subscribe customers to advertising messages. See our <a href="/confidentialite">privacy policy</a> and <a href="/donnees-et-consentements">consent notice</a>.</> : <>Les informations utiles à la commande sont partagées avec le marchand, BIB et les partenaires de paiement ou de livraison dans la mesure strictement nécessaire. Les communications transactionnelles ne valent pas abonnement à des messages publicitaires. Consultez la <a href="/confidentialite">confidentialité</a> et la <a href="/donnees-et-consentements">charte des consentements</a>.</>}</p>
             <h2>{translateUi("13. Réclamations et médiation")}</h2>
       <p>
         {translateUi(
           "En cas de litige, le Client contacte en priorité le Marchand, puis le service client BIB. À défaut de résolution amiable, il peut recourir gratuitement à un médiateur de la consommation (articles L. 616-1 et suivants du Code de la consommation).",
         )}
       </p>
-      <p>Les coordonnées du médiateur de la consommation réellement désigné par le vendeur doivent être mises à disposition sur la boutique et dans les documents précontractuels. Cette désignation doit être vérifiée avant le début des ventes.</p>
+      <p>{lang === "en" ? <>Contact details of the consumer mediator actually appointed by the seller must be available on the store and in the pre-contractual information. The appointment must be verified before sales begin.</> : <>Les coordonnées du médiateur de la consommation réellement désigné par le vendeur doivent être mises à disposition sur la boutique et dans les documents précontractuels. Cette désignation doit être vérifiée avant le début des ventes.</>}</p>
       <h2>{translateUi("14. Droit applicable")}</h2>
       <p>
         {translateUi(
@@ -512,11 +511,12 @@ export function CGV() {
 }
 
 export function Confidentialite() {
-  useLanguage();
+  const { lang } = useLanguage();
   useSEO({
-    title: "Politique de confidentialité — BIB",
-    description: "Traitement des données personnelles des clients, marchands, candidats BIB Talent et visiteurs de Brand-in-a-Box.",
+    title: lang === "en" ? "Privacy policy — BIB" : "Politique de confidentialité — BIB",
+    description: lang === "en" ? "How BIB processes the personal data of customers, merchants, BIB Talent applicants and visitors." : "Traitement des données personnelles des clients, marchands, candidats BIB Talent et visiteurs de Brand-in-a-Box.",
   });
+  if (lang === "en") return <LegalShell eyebrow="GDPR" title="Privacy policy" updated="4 November 2026"><EnglishLegalPrivacy /></LegalShell>;
   return <LegalShell eyebrow="RGPD" title="Politique de confidentialité" updated="4 novembre 2026">
     <p className="text-sm text-muted-foreground">Rédaction harmonisée à partir du projet Politique de confidentialité BIB v1.2, novembre 2026. Les responsabilités de traitement, durées de conservation, sous-traitants effectifs et coordonnées doivent être vérifiés avant publication contractuelle définitive.</p>
     <p>Cette politique concerne la plateforme BIB, les boutiques publiées via BIB, les demandes de support, les sondages de prélancement et BIB Talent. Elle complète la <a href="/donnees-et-consentements">charte des données et consentements</a> et les informations affichées directement dans chaque formulaire.</p>
@@ -556,11 +556,12 @@ export function Confidentialite() {
 }
 
 export function Cookies() {
-  useLanguage();
+  const { lang } = useLanguage();
   useSEO({
-    title: "Cookies et traceurs — BIB",
-    description: "Fonctionnement des cookies, finalités et gestion des choix pour les services Brand-in-a-Box.",
+    title: lang === "en" ? "Cookies and trackers — BIB" : "Cookies et traceurs — BIB",
+    description: lang === "en" ? "How cookies work, their purposes and how to control choices on Brand-in-a-Box." : "Fonctionnement des cookies, finalités et gestion des choix pour les services Brand-in-a-Box.",
   });
+  if (lang === "en") return <LegalShell eyebrow="Trackers" title="Cookie policy" updated="5 November 2026"><EnglishLegalCookies /></LegalShell>;
   return <LegalShell eyebrow="Traceurs" title="Politique cookies" updated="5 novembre 2026">
     <p className="text-sm text-muted-foreground">Rédaction harmonisée à partir du projet Politique de cookies BIB v1.1 (novembre 2026). L'inventaire exact des traceurs et l'effectivité du gestionnaire de consentement doivent être vérifiés sur la version publiée.</p>
     <h2>1. Traceurs nécessaires</h2>
