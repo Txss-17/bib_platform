@@ -74,11 +74,18 @@ describe("BIB Platform public prelaunch boundary", () => {
     }
   });
 
-  it("keeps Careers unpublished, including the routes and About CTA", () => {
-    expect(router).not.toContain("element={<Carrieres />}");
+  it("exposes a dedicated Careers internship page while keeping legacy job posts unpublished", () => {
+    const careers = read("src/pages/Carrieres.tsx");
+    expect(router).toContain('const Carrieres = lazy(() => import("@/pages/Carrieres"));');
+    expect(router).toContain('<Route path="/carrieres" element={<Carrieres />} />');
+    expect(router).toContain('<Route path="/careers" element={<Navigate to="/carrieres" replace />} />');
     expect(router).not.toContain("element={<CarrieresPostes />}");
-    expect(router).toContain('<Route path="/carrieres" element={<Navigate to="/bib-talent" replace />} />');
-    expect(router).toContain('<Route path="/careers" element={<Navigate to="/bib-talent" replace />} />');
+    expect(PRELAUNCH_PUBLIC_ROUTES).toContain("/carrieres");
+    for (const code of ["STG-RD-01", "STG-MKT-01", "STG-JUR-01", "STG-FRN-01"]) {
+      expect(careers).toContain(`code: "${code}"`);
+    }
+    expect(careers).toContain("Postuler à ce stage");
+    expect(careers).toContain("convention avec l’établissement");
     expect(about).not.toContain('to="/carrieres"');
     expect(about).toContain('to="/bib-talent"');
   });
