@@ -112,6 +112,7 @@ try {
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(width);
     await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
   }
   if (intranetBase) {
     await page.goto(`${intranetBase}/login`);
