@@ -1,7 +1,7 @@
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { ArrowLeft } from "lucide-react";
 import PublicPageLayout from "@/components/layout/PublicPageLayout";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -12,6 +12,12 @@ const privacy="privacy@brand-in-a-box.space";
 
 function Layout({title,subtitle,children}:{title:string,subtitle:string,children:ReactNode}){
  useLanguage(); // The initial legal publications are written in French for this first audience.
+ const { hash } = useLocation();
+ useEffect(() => {
+   if (!hash) return;
+   const frame = requestAnimationFrame(() => document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView({ block: "start" }));
+   return () => cancelAnimationFrame(frame);
+ }, [hash]);
  useSEO({title:title+" | BIB Talent",description:subtitle});
  return <PublicPageLayout>
   <div className="container mx-auto max-w-5xl px-4 pb-24 pt-16 sm:px-6 lg:px-8">
@@ -38,10 +44,10 @@ export function TalentMentions() {
 export function TalentConfidentialite() {
  return <Layout title="Confidentialité — BIB Talent" subtitle="Comment les informations transmises pour rejoindre le programme de contribution BIB Talent sont utilisées.">
   <section><h2>1. Pourquoi recueillir des informations ?</h2><p>Le formulaire BIB Talent permet de découvrir des personnes intéressées par le projet, de comprendre leurs idées et centres d'intérêt, et de les recontacter pour envisager des échanges ou des contributions. Il ne sert pas à ouvrir un compte marchand, à prendre un paiement ni à créer automatiquement un accès à un service privé.</p></section>
-  <section><h2>2. Quelles informations ?</h2><p>Nom, adresse email, situation actuelle, domaine d'intérêt, type de contribution souhaitée, compétences, motivation et disponibilité. Ville/pays et lien LinkedIn ou portfolio sont facultatifs. Le formulaire ne demande ni CV, ni pièce d'identité, ni données bancaires ou sensibles.</p></section>
+  <section><h2>2. Quelles informations ?</h2><p>Nom, adresse email, situation actuelle, domaine d'intérêt, type de contribution souhaitée, compétences, motivation et disponibilité. Ville/pays, lien LinkedIn, lien portfolio et pièce jointe CV sont facultatifs. Le candidat peut joindre un CV PDF ou DOCX ou renseigner un profil LinkedIn. Les fichiers CV sont conservés dans un espace privé lié à la candidature. Le formulaire ne demande ni pièce d'identité, ni données bancaires ou sensibles.</p></section>
   <section><h2>3. Qui reçoit les réponses ?</h2><p>Le formulaire intégré enregistre les dossiers dans une base privée de BIB Platform. Un flux serveur dédié est prévu pour transmettre ces dossiers au recrutement RH de l'intranet BIB, qui en assure la qualification avant toute affectation au pôle métier. Ce transfert ne devient effectif qu'après configuration et déploiement du connecteur RH sécurisé. Aucun dossier n'est public et aucune information n'est envoyée au Google Forms historique.</p></section>
   <section><h2>4. Finalité et fondement</h2><p>Les réponses servent à examiner les manifestations d'intérêt et à organiser un éventuel échange avec BIB. La personne confirme explicitement son accord de traitement avant l'envoi. Aucune proposition d'emploi, de stage ou de collaboration n'est automatique ; un cadre juridique adapté devra être défini avant toute mission.</p></section>
-  <section><h2>5. Durée de conservation</h2><p>Les candidatures sont conservées pour la durée nécessaire à l'examen de la demande. Si vous cochez séparément l'accord facultatif concernant les futures opportunités, BIB peut conserver votre candidature dans un vivier pendant une durée maximale de deux ans à compter de son dépôt. Sans cet accord, la candidature est soumise au délai ordinaire de traitement prévu pour le dossier et ne rejoint pas ce vivier. La plateforme prévoit une purge quotidienne et toute copie autorisée dans l'intranet doit respecter la même échéance. Vous pouvez demander l'effacement anticipé ou retirer votre accord pour les futures opportunités en contactant l'adresse indiquée ci-dessous.</p></section>
+  <section id="conservation-candidatures" className="scroll-mt-28"><h2>5. Durée de conservation</h2><p>Les candidatures, y compris les CV joints éventuels, sont conservées pour la durée nécessaire à l'examen de la demande. Si vous cochez séparément l'accord facultatif concernant les futures opportunités, BIB peut conserver votre candidature dans un vivier pendant une durée maximale de deux ans à compter de son dépôt. Sans cet accord, la candidature est soumise au délai ordinaire de traitement prévu pour le dossier et ne rejoint pas ce vivier. La plateforme prévoit une purge quotidienne et toute copie autorisée dans l'intranet doit respecter la même échéance. Vous pouvez demander l'effacement anticipé ou retirer votre accord pour les futures opportunités en contactant l'adresse indiquée ci-dessous.</p></section>
   <section><h2>6. Vos droits</h2><p>Vous pouvez demander l'accès, la rectification ou l'effacement de vos informations, et vous opposer au suivi lorsque les conditions légales le permettent. Adressez votre demande à <a href={"mailto:"+privacy}>{privacy}</a>. Vous pouvez également saisir la CNIL si nécessaire.</p></section>
   <section><h2>7. Prestataires et liens externes</h2><p>Le site est hébergé via Lovable et le formulaire utilise une fonction serveur Supabase associée à BIB Platform. Les réponses pourront être transmises à l'intranet BIB via un canal privé autorisé. Aucun compte Google ni formulaire externe n'est requis pour candidater. Consultez aussi la page <a href="/talent/cookies">Cookies de BIB Talent</a>.</p></section>
  </Layout>;
