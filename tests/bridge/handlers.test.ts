@@ -99,6 +99,7 @@ describe("Privileged bridge import", () => {
       market: "EU",
       category: "Maison",
       base_price: 20,
+      acquisition_pricing: {version:"TEST-v1",currency:"EUR",goods_unit_cents:1500,delivery_unit_cents:200,bib_fee_unit_cents:300},
       ...extra,
     },
   });
@@ -137,6 +138,14 @@ describe("Privileged bridge import", () => {
     await load("intranet-import");
     expect((await handler(request(product()))).status).toBe(503);
     expect(mocks.calls.some((c) => c.action === "insert")).toBe(false);
+  });
+  it("blocks active legacy imports without an approved global price and derives the public total from approved components", async()=>{
+    await load("intranet-import");
+    expect((await handler(request(product({acquisition_pricing:undefined})))).status).toBe(412);
+    expect(mocks.calls).toHaveLength(0);
+    mocks.results.push(ok(null),ok({id}));
+    expect((await handler(request(product({base_price:1})))).status).toBe(200);
+    expect(mocks.calls.find(c=>c.action==="insert").value.base_price).toBe(20);
   });
   it("does not silently replace an explicit unknown platform id", async () => {
     mocks.results.push(ok(null));

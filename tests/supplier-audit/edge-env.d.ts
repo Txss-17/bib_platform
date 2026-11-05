@@ -3,5 +3,5 @@ declare const Deno: {
   serve(handler: (request: Request) => Promise<Response>): void;
 };
 declare module "npm:@supabase/supabase-js@2" {
-  export { createClient } from "@supabase/supabase-js";
+  export { createClient, type SupabaseClient } from "@supabase/supabase-js";
 }

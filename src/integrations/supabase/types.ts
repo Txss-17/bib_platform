@@ -2328,6 +2328,7 @@ export type Database = {
       }
       supplier_products: {
         Row: {
+          acquisition_pricing: Json | null
           base_price: number
           category: string
           created_at: string
@@ -2344,6 +2345,7 @@ export type Database = {
           rotation_indicator: Database["public"]["Enums"]["rotation_indicator"]
         }
         Insert: {
+          acquisition_pricing?: Json | null
           base_price: number
           category: string
           created_at?: string
@@ -2360,6 +2362,7 @@ export type Database = {
           rotation_indicator?: Database["public"]["Enums"]["rotation_indicator"]
         }
         Update: {
+          acquisition_pricing?: Json | null
           base_price?: number
           category?: string
           created_at?: string

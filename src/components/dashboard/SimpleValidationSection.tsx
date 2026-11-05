@@ -300,7 +300,7 @@ export function SimpleValidationSection({
               <ShoppingBag className="w-4 h-4" />
             )}
 
-            {translateUi("Acheter l’échantillon pour validation")}
+            {translateUi("Demander le devis échantillon")}
           </Button>
         )}
 

@@ -78,6 +78,7 @@ Deno.serve(async (req) => {
         : session.payment_intent.id;
       try {
         refund = await stripe.refunds.create({
+          ...(session.metadata?.charge_model === "destination_charges" ? { reverse_transfer: true } : {}),
           payment_intent: paymentIntentId,
           amount: reservation.amount_cents,
           reason: "requested_by_customer",

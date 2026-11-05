@@ -43,7 +43,7 @@ export function createStripeClient(env: StripeEnv): Stripe {
 export async function verifyWebhook(
   req: Request,
   env: StripeEnv,
-): Promise<{ type: string; data: { object: any } }> {
+): Promise<{ id: string; created: number; type: string; data: { object: any } }> {
   assertPaymentEnvironment(env, (key) => Deno.env.get(key));
   const signature = req.headers.get("stripe-signature");
   const body = await req.text();

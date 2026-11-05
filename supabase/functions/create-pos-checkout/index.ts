@@ -1,6 +1,7 @@
 import { assertTrustedReturnUrl } from "../_shared/return-url.ts";
 import { assertPaymentEnvironment } from "../_shared/payment-environment.ts";
 import { checkoutOrderMetadata } from "../_shared/checkout-session.ts";
+import { merchantSaleDestination } from "../_shared/merchant-destination.mjs";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
   type StripeEnv,
@@ -231,6 +232,9 @@ async function createPosCheckout(
   }
 
   // A private sale is a paid Pro feature, not a client-side toggle.
+  let destination;
+  try { destination = await merchantSaleDestination(supabase, stripe, boutique.id, body.environment); }
+  catch { throw new PosCheckoutError("Le compte de règlement vérifié du vendeur n'est pas disponible.", 503); }
   const { data: hasPro, error: proError } = await supabase.rpc(
     "bib_has_active_pro_subscription",
     { p_user_id: userId, p_environment: body.environment },
@@ -448,8 +452,10 @@ async function createPosCheckout(
       success_url: assertTrustedReturnUrl(body.returnUrl),
       cancel_url: assertTrustedReturnUrl(body.returnUrl),
       payment_method_types: ["card"],
-      automatic_tax: { enabled: true },
+      automatic_tax: destination.automatic_tax,
+      payment_intent_data: destination.payment_intent_data,
       metadata: {
+        ...destination.metadata,
         kind: "storefront",
         pos: "1",
         boutiqueId: boutique.id,

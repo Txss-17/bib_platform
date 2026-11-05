@@ -83,6 +83,7 @@ const personalNavItems = [
     url: "/dashboard/produits-fournisseurs",
     icon: Truck,
   },
+  { get title() { return translateUi("Devis d’acquisition"); }, url: "/dashboard/devis-approvisionnement", icon: Truck },
   {
     get title() {
       return translateUi("Paramètres");

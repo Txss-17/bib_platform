@@ -1,3 +1,4 @@
+import {catalogAcquisitionPrice,catalogAcquisitionLabel} from "@/lib/supplyPricing";
 import { translateUi, getUiLocale } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
@@ -31,7 +32,8 @@ export function ProductDetailDialog({
   product, open, onOpenChange, onAdd, isFavorite, onToggleFavorite,
 }: ProductDetailDialogProps) {
   useLanguage();
-  const basePrice = Number(product.base_price) || 0;
+  const acquisition = catalogAcquisitionPrice(product);
+  const basePrice = acquisition ?? 0;
   const maxMargin = Math.max(0, Number(product.max_margin_percent) || 0);
   const [requestedMargin, setRequestedMargin] = useState(20);
   const margin = Math.min(requestedMargin, maxMargin);
@@ -87,8 +89,8 @@ export function ProductDetailDialog({
                 <h3 className="mb-4 text-sm font-semibold">{translateUi("Conditions commerciales")}</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">{translateUi("Prix de base")}</p>
-                    <p className="mt-1 text-xl font-bold tabular-nums">{money(basePrice)}</p>
+                    <p className="text-xs text-muted-foreground">{translateUi("Prix d’acquisition indicatif")}</p>
+                    <p className="mt-1 text-xl font-bold tabular-nums">{catalogAcquisitionLabel(product)}</p>
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs text-muted-foreground">{translateUi("Marge maximale autorisée")}</p>
@@ -119,20 +121,20 @@ export function ProductDetailDialog({
                   value={[margin]}
                   onValueChange={([next]) => setRequestedMargin(Math.min(next, maxMargin))}
                   className="mt-3"
-                  disabled={maxMargin === 0}
+                  disabled={maxMargin === 0 || acquisition === null}
                 />
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   <div className="rounded-xl bg-card p-3">
                     <p className="text-xs text-muted-foreground">{translateUi("Prix de vente estimé")}</p>
-                    <p className="mt-1 text-lg font-bold tabular-nums">{money(sellingPrice)}</p>
+                    <p className="mt-1 text-lg font-bold tabular-nums">{acquisition===null?translateUi("À confirmer par devis"):money(sellingPrice)}</p>
                   </div>
                   <div className="rounded-xl bg-card p-3">
                     <p className="text-xs text-muted-foreground">{translateUi("Écart brut par unité")}</p>
-                    <p className="mt-1 text-lg font-bold tabular-nums text-primary">{money(grossDifference)}</p>
+                    <p className="mt-1 text-lg font-bold tabular-nums text-primary">{acquisition===null?"—":money(grossDifference)}</p>
                   </div>
                 </div>
                 <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-                  {translateUi("Simulation indicative avant commissions, impôts et éventuels frais supplémentaires ; ce montant n'est pas un bénéfice net.")}
+                  {translateUi("Le prix global indicatif inclut déjà la livraison et la commission BIB. L’écart de prix simulé n’est pas un bénéfice net ; le devis fixe les montants applicables.")}
                 </p>
               </section>
 

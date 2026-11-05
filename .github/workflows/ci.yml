@@ -56,6 +56,18 @@ jobs:
           BIB_INTRABIB_ROOT: ../bib_intranet
           BIB_PRIVACY_ARTIFACTS: ${{ runner.temp }}/bib-cookie-smoke
         run: npm run test:privacy:browser
+      - name: Verify supplier quotes, explicit agreement, private access and mobile layouts
+        working-directory: bib_platform
+        env:
+          BIB_SUPPLY_ARTIFACTS: ${{ runner.temp }}/bib-supply-smoke
+        run: npm run test:supply:browser
+      - name: Upload mobile supplier quote screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: supplier-quote-screenshots
+          path: ${{ runner.temp }}/bib-supply-smoke
+          if-no-files-found: ignore
       - name: Upload mobile cookie screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -82,6 +94,12 @@ jobs:
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps --no-audit --no-fund
+
+      - name: Test acquisition agreements, owner-only payments and financial evidence
+        run: npm run test:supply
+
+      - name: Typecheck supply, storefront and webhook boundaries
+        run: npx tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --lib ES2022,DOM,DOM.Iterable --skipLibCheck --strictNullChecks --noImplicitAny false --allowImportingTsExtensions tests/supplier-audit/edge-env.d.ts tests/supply/edge-env.d.ts supabase/functions/merchant-supply/index.ts supabase/functions/merchant-supply-sync/index.ts supabase/functions/create-sample-checkout/index.ts supabase/functions/create-storefront-checkout/index.ts supabase/functions/create-pos-checkout/index.ts supabase/functions/payments-webhook/index.ts supabase/functions/refund-order-issue/index.ts
 
       - name: Test cookie choices, optional tracking and external media blocking
         run: npm run test:privacy

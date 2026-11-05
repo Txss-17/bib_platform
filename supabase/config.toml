@@ -1,5 +1,11 @@
 project_id = "lfsiwtpctqxpzyskakey"
 
+[functions.merchant-supply]
+verify_jwt = true
+
+[functions.merchant-supply-sync]
+verify_jwt = false
+
 # Server-to-server only; the handler validates the bridge secret and project environment.
 [functions.legal-governance-import]
 verify_jwt = false

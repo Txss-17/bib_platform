@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   from: vi.fn(),
   session: vi.fn(),
   expire: vi.fn(),
+  account: vi.fn(),
   orderError: null as unknown,
   reserveError: null as unknown,
 }));
@@ -19,6 +20,7 @@ vi.mock("npm:@supabase/supabase-js@2", () => ({
 vi.mock("../../supabase/functions/_shared/stripe.ts", () => ({
   corsHeaders: {},
   createStripeClient: () => ({
+    accounts: {retrieve: mocks.account},
     checkout: { sessions: { create: mocks.session, expire: mocks.expire } },
   }),
 }));
@@ -45,7 +47,7 @@ beforeEach(async () => {
   });
   mocks.rpc.mockImplementation(async (name: string) => ({
     data:
-      name === "create_storefront_legal_orders"
+      name === "get_storefront_destination_route" ? {flow:"merchant_sale",environment:"sandbox",enabled:true,model:"destination_charges",entity_id:store,account_id:"acct_MerchantTest"} : name === "create_storefront_legal_orders"
         ? [{ id: order, order_number: "BIB-TEST-1" }]
         : null,
     error:
@@ -106,6 +108,7 @@ beforeEach(async () => {
     return builder;
   });
   mocks.createClient.mockReturnValue({ from: mocks.from, rpc: mocks.rpc });
+  mocks.account.mockResolvedValue({id:"acct_MerchantTest",charges_enabled:true,payouts_enabled:true,capabilities:{card_payments:"active",transfers:"active"}});
   mocks.session.mockResolvedValue({
     id: "cs_test_legal",
     client_secret: "test_secret",
@@ -173,6 +176,7 @@ describe("Storefront legal checkout boundary", () => {
     expect(response.status).toBe(409);
     expect(await response.text()).not.toContain("private SQL");
     expect(mocks.rpc.mock.calls.map((c) => c[0])).toEqual([
+      "get_storefront_destination_route",
       "create_storefront_legal_orders",
     ]);
     expect(mocks.session).not.toHaveBeenCalled();
@@ -187,7 +191,8 @@ describe("Storefront legal checkout boundary", () => {
       request({ marketingConsent: false, cookieConsent: false }),
     );
     expect(response.status, await response.clone().text()).toBe(200);
-    expect(mocks.rpc.mock.calls[0]).toEqual([
+    const legalCall=mocks.rpc.mock.calls.find(c=>c[0]==="create_storefront_legal_orders")!;
+    expect(legalCall).toEqual([
       "create_storefront_legal_orders",
       expect.objectContaining({
         p_checkout_key: key,
@@ -196,9 +201,11 @@ describe("Storefront legal checkout boundary", () => {
         p_lines: [{ product_id: product, quantity: 2, unit_cents: 1250 }],
       }),
     ]);
-    expect(mocks.rpc.mock.calls[0][1]).not.toHaveProperty("marketingConsent");
+    expect(legalCall[1]).not.toHaveProperty("marketingConsent");
     expect(mocks.session).toHaveBeenCalledWith(
       expect.objectContaining({
+        payment_intent_data: {on_behalf_of:"acct_MerchantTest",transfer_data:{destination:"acct_MerchantTest"}},
+        automatic_tax: {enabled:true,liability:{type:"account",account:"acct_MerchantTest"}},
         line_items: [
           expect.objectContaining({
             price_data: expect.objectContaining({ unit_amount: 1250 }),
