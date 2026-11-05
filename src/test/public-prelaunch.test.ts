@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { isPublicPrelaunchHost, PRELAUNCH_PUBLIC_ROUTES } from "@/lib/publicPrelaunch";
+import { isPublicPrelaunchHost, isPublicInformationPath, PRELAUNCH_PUBLIC_ROUTES } from "@/lib/publicPrelaunch";
 
 const read = (path: string) => readFileSync(new URL("../../" + path, import.meta.url), "utf8");
 
@@ -65,6 +65,30 @@ describe("BIB Platform public prelaunch boundary", () => {
     }
     expect(PRELAUNCH_PUBLIC_ROUTES).toContain("/store/signup");
     expect(router).toContain('path="/store/signup" element={<StoreSignup />} />');
+  });
+
+  it("keeps all help guides and persona FAQ reachable on the public site", () => {
+    const data = read("src/lib/centreAideData.ts");
+    const help = read("src/pages/CentreAide.tsx");
+    for (const route of [
+      "/centre-aide", "/centre-aide/guide/premiers-pas",
+      "/centre-aide/guide/carrieres", "/centre-aide/guide/talent",
+      "/centre-aide/faq/client", "/centre-aide/faq/vendeur",
+      "/centre-aide/faq/fournisseur", "/centre-aide/faq/logistique",
+      "/centre-aide/faq/compte", "/suivi-commande",
+    ]) {
+      expect(isPublicInformationPath(route), route).toBe(true);
+    }
+    expect(router).toContain('path="/centre-aide/faq/:persona"');
+    expect(router).toContain('path="/centre-aide/guide/:slug"');
+    expect(router).toContain('path="/help/faq/:persona"');
+    expect(router).toContain('path="/help/guide/:slug"');
+    expect(data).toContain('to: "/carrieres"');
+    expect(data).toContain('to: "/bib-talent"');
+    expect(data).not.toContain('to: "/talent"');
+    expect(data).toContain('to: "/centre-aide#contact"');
+    expect(data).not.toContain("Évolutions récentes");
+    expect(help).not.toContain("Évolutions récentes");
   });
 
   it("keeps a single public footer legal destination and exposes Careers", () => {
