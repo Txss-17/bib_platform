@@ -36,6 +36,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { useUpdateProduct } from "@/hooks/useProducts";
 import { useRestockRequests } from "@/hooks/useRestockRequests";
+import { useSampleValidation } from "@/hooks/useSampleValidation";
 import { supabase } from "@/integrations/supabase/client";
 
 interface EditProductDialogProps {
@@ -150,6 +151,8 @@ export function EditProductDialog({
   const [restockQuantity, setRestockQuantity] = useState("");
   const [restockPending, setRestockPending] = useState(false);
   const restock = useRestockRequests(product.id, open);
+  const sampleValidation = useSampleValidation(product.id);
+  const sampleApprovedForStock = sampleValidation.data?.status === "validated";
   const restockRequests = restock.data ?? [];
 
   const [promotionEnabled, setPromotionEnabled] = useState(false);
@@ -186,6 +189,11 @@ export function EditProductDialog({
     : 0;
 
   const requestRestock = async () => {
+    // UI guard complements the database trigger; client-side state alone is not proof.
+    if (!sampleApprovedForStock || sampleValidation.isLoading || sampleValidation.isError) {
+      toast.error(translateUi("Validez d'abord l'échantillon payé et reçu avant une demande de stock."));
+      return;
+    }
     const quantity = Number(restockQuantity);
     if (!Number.isInteger(quantity) || quantity < Number(moq ?? 1)) {
       toast.error(
@@ -657,6 +665,11 @@ export function EditProductDialog({
               </Field>
             </div>
 
+            {!sampleApprovedForStock && (
+              <p className="rounded-md border border-amber-500/30 p-3 text-xs text-muted-foreground">
+                {translateUi("Une demande de stock fournisseur nécessite un échantillon payé, reçu et validé. Aucun devis ni paiement de stock n'est créé par ce formulaire.")}
+              </p>
+            )}
             <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
               <Field
                 id="restock-quantity"
@@ -680,7 +693,7 @@ export function EditProductDialog({
               <Button
                 type="button"
                 onClick={requestRestock}
-                disabled={restockPending || !restockQuantity}
+                disabled={restockPending || !restockQuantity || !sampleApprovedForStock || sampleValidation.isLoading || sampleValidation.isError}
               >
                 {restockPending
                   ? translateUi("Envoi…")
