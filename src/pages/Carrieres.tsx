@@ -8,21 +8,20 @@ type Copy = { fr: string; en: string };
 const copy = (fr: string, en: string): Copy => ({ fr, en });
 
 const messages = {
-  seoTitle: copy("Carrières BIB — Stages courts en préparation", "BIB Careers — Proposed short internships"),
-  seoDescription: copy("Découvrez les quatre missions pédagogiques envisagées par BIB Talent : R&D, marketing, juridique et fournisseurs. Aucun stage n'est ouvert actuellement.", "Explore four proposed BIB Talent learning pathways in product research, marketing, legal documentation and suppliers. No internships are currently open."),
-  stageEyebrow: copy("Parcours pédagogiques envisagés", "Proposed learning pathways"),
-  stageTitle: copy("Quatre missions de stage à découvrir", "Explore four proposed internship assignments"),
-  stageIntro: copy("BIB Talent prépare des missions encadrées de quatre à huit semaines, adaptées aux objectifs des établissements de formation. Ce sont des projets pédagogiques, pas des postes de travail ouverts.", "BIB Talent is preparing supervised four-to-eight-week assignments, tailored to each educational institution's learning objectives. These are educational proposals, not open job positions."),
-  stageStatus: copy("En préparation — aucun stage ouvert actuellement", "In preparation — no internships currently open"),
-  stageDuration: copy("Format envisagé : 4 ou 8 semaines", "Proposed format: 4 or 8 weeks"),
+  seoTitle: copy("Carrières BIB — Stages étudiants", "BIB Careers — Student internships"),
+  seoDescription: copy("Découvrez les quatre offres de stage BIB : R&D, marketing, juridique et fournisseurs, avec missions et profils concernés.", "Explore four BIB internship pathways in product research, marketing, legal documentation and suppliers, including assignments and student profiles."),
+  stageEyebrow: copy("Stages et développement des compétences", "Internships and skill development"),
+  stageTitle: copy("Découvrez nos quatre stages", "Explore our four internship pathways"),
+  stageIntro: copy("BIB propose quatre parcours de stage de quatre ou huit semaines pour découvrir ses métiers et acquérir des compétences sur des projets encadrés. Le contenu de chaque stage est adapté à la formation de l’étudiant.", "BIB offers four- or eight-week internship pathways to explore its fields and build skills through supervised projects. Assignments are adapted to each student’s course."),
+  stageDuration: copy("Durée : 4 ou 8 semaines selon la convention", "Duration: 4 or 8 weeks, subject to the agreement"),
   stageProfiles: copy("Profils étudiants indicatifs", "Example student backgrounds"),
   stageActivities: copy("Apprentissages et missions", "Learning activities and assignments"),
   stageDeliverables: copy("Livrables pédagogiques", "Educational deliverables"),
   stageGuardrails: copy("Limites du stage", "Scope and safeguards"),
-  stageConditionsTitle: copy("Un accueil conditionné et accompagné", "Supervised internships subject to approval"),
-  stageConditions: copy("L'accueil n'interviendra qu'après vérification de l'organisme d'accueil, de sa capacité à encadrer, d'un tuteur compétent, d'une convention signée avec l'établissement, des assurances, des horaires et des règles de gratification et de frais applicables. Les missions juridiques et fournisseurs exigent en plus un encadrement spécialisé. Chaque stagiaire apprend sur des cas fictifs ou autorisés, sans remplacer un salarié ni prendre de décision engageant BIB.", "No placement will start before the host organisation and supervision capacity are verified, a qualified supervisor is designated, the educational institution signs an internship agreement, and insurance, working hours, applicable allowances and expenses are addressed. Legal and supplier pathways also require specialist oversight. Students learn using fictional or approved cases; they do not replace employees or make binding decisions for BIB."),
-  stageInterest: copy("Manifester mon intérêt", "Register my interest"),
-  stageInterestNotice: copy("Le formulaire recueille uniquement une manifestation d'intérêt. Il ne vaut ni candidature à une offre de stage ouverte, ni convention, ni admission. Les dates, places et modalités ne sont pas encore confirmées.", "The form only collects an expression of interest. It is not an application for an open internship, an agreement or an admission. Dates, places and arrangements have not yet been confirmed."),
+  stageConditionsTitle: copy("Un stage encadré, des objectifs pédagogiques clairs", "Supervised internships with clear learning goals"),
+  stageConditions: copy("Chaque stage repose sur une convention avec l’établissement de formation, un tuteur compétent, des objectifs d’apprentissage, une évaluation et les conditions légales d’accueil applicables. Les parcours juridique et fournisseurs prévoient une supervision spécialisée. Les missions sont pédagogiques et ne remplacent pas un emploi salarié.", "Each internship requires an agreement with the educational institution, a qualified supervisor, learning objectives, assessment and the applicable legal host arrangements. Legal and supplier pathways involve specialist supervision. Assignments are educational and do not replace paid jobs."),
+  stageInterest: copy("Accéder à BIB Talent", "Go to BIB Talent"),
+  stageInterestNotice: copy("Pour transmettre votre profil, sélectionnez « Stage » dans le formulaire BIB Talent, indiquez votre formation ainsi que le code de la mission souhaitée. Un échange et une convention avec l’établissement restent nécessaires avant l’accueil.", "To share your profile, choose “Internship” in the BIB Talent form and include your course and preferred assignment code. A discussion and an agreement with your educational institution are required before placement."),
 };
 
 const internshipTracks = [
@@ -78,8 +77,8 @@ export default function Carrieres() {
         </h1>
         <p className="mt-4 max-w-3xl text-sm leading-7 text-bib-ivory/85">
           {lang === "en"
-            ? "This page presents possible training assignments. They are not active recruitment offers, and no employment vacancies are confirmed at this stage."
-            : "Cette page présente des missions de formation possibles. Elles ne sont pas des offres de recrutement ouvertes et aucun poste salarié n'est confirmé à ce stade."}
+            ? "This page presents internship pathways with supervised learning assignments adapted to each student’s training."
+            : "Cette page présente les stages BIB et leurs missions pédagogiques encadrées, adaptées à chaque parcours de formation."}
         </p>
         <a href="#stages" className="mt-6 inline-flex items-center gap-2 rounded-full border border-bib-ivory/30 px-5 py-2.5 text-sm font-semibold text-bib-ivory hover:border-bib-gold hover:text-bib-gold">
           {lang === "en" ? "View internship pathways" : "Voir les parcours de stage"} <ArrowRight size={16} />
@@ -92,8 +91,7 @@ export default function Carrieres() {
         <span className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-ink">{tr(messages.stageEyebrow)}</span>
         <h2 className="mt-4 font-display text-2xl font-semibold tracking-tight sm:text-3xl">{tr(messages.stageTitle)}</h2>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">{tr(messages.stageIntro)}</p>
-        <p className="mt-4 inline-flex rounded-full border border-border bg-muted px-3 py-1.5 text-xs font-semibold text-foreground" role="status">{tr(messages.stageStatus)}</p>
-      </div>
+            </div>
       <div className="mt-7 grid gap-4 md:grid-cols-2">
         {internshipTracks.map(({ code, icon: Icon, title, profiles, activities, deliverables, limits }) => (
           <article key={code} className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6" aria-labelledby={code}>
@@ -125,18 +123,5 @@ export default function Carrieres() {
     </section>
 
 
-    <section className="bg-muted/40">
-      <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
-        <h2 className="text-xl font-semibold">{lang === "en" ? "Future career opportunities" : "Futures opportunités professionnelles"}</h2>
-        <p className="mt-2 max-w-3xl text-sm leading-7 text-muted-foreground">
-          {lang === "en"
-            ? "No employment opportunities are being advertised at this stage. BIB may publish approved positions here once a legally constituted host organisation and recruitment arrangements are in place."
-            : "Aucune offre d'emploi n'est publiée à ce stade. BIB pourra présenter ici des postes validés lorsque l'organisme d'accueil et le cadre de recrutement seront établis."}
-        </p>
-        <Link to="/bib-talent" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-accent-ink hover:underline">
-          {lang === "en" ? "Learn about BIB Talent" : "Découvrir BIB Talent"} <ArrowRight size={16} />
-        </Link>
-      </div>
-    </section>
   </PublicPageLayout>;
 }
