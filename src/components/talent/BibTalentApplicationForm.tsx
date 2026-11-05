@@ -31,20 +31,28 @@ const AVAILABILITY = [
   ["discuss", "À discuter", "To discuss"],
 ] as const;
 
-export function BibTalentApplicationForm() {
+const stageToPole: Record<string, string> = {
+  "STG-RD-01": "product_engineering",
+  "STG-MKT-01": "communication",
+  "STG-JUR-01": "quality_audit",
+  "STG-FRN-01": "marketplace",
+};
+
+export function BibTalentApplicationForm({ initialStageCode = null }: { initialStageCode?: string | null }) {
   const { lang } = useLanguage();
   const en = lang === "en";
   const tr = (fr: string, english: string) => en ? english : fr;
   const [form, setForm] = useState({
     full_name: "", email: "", location: "", current_activity: "",
-    preferred_pole: "", contribution_type: "explore",
-    skills: "", motivation: "", availability: "discuss", portfolio_url: "", website: "",
+    preferred_pole: initialStageCode ? (stageToPole[initialStageCode] ?? "") : "", contribution_type: initialStageCode ? "internship" : "explore",
+    skills: "", motivation: initialStageCode ? `${initialStageCode} — ` : "", availability: "discuss", portfolio_url: "", website: "",
   });
   const [consent, setConsent] = useState(false);
   const [futureConsent, setFutureConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  const isInternship = form.contribution_type === "internship";
   const update = (field: keyof typeof form, value: string) => setForm(old => ({ ...old, [field]: value }));
 
   async function submit(e: FormEvent<HTMLFormElement>) {
@@ -67,10 +75,11 @@ export function BibTalentApplicationForm() {
   }
   if (done) return <div role="status" className="mx-auto max-w-xl rounded-xl border border-primary/20 bg-card p-5 text-center">
     <CheckCircle2 className="mx-auto mb-4 h-11 w-11 text-primary" />
-    <h2 className="text-lg font-semibold">{tr("Merci pour votre intérêt !", "Thank you for your interest!")}</h2>
+    <h2 className="text-lg font-semibold">{isInternship ? tr("Candidature de stage reçue", "Internship application received") : tr("Merci pour votre intérêt !", "Thank you for your interest!")}</h2>
     <p className="mt-2 text-sm leading-6 text-muted-foreground">
-      {tr("Votre manifestation d'intérêt a été enregistrée et orientée vers le domaine concerné. L'équipe BIB examinera votre dossier ; cela ne constitue pas une promesse de collaboration ou de réponse dans un délai précis.",
-        "Your interest has been received and routed to the relevant team. BIB may review it; this does not guarantee an opportunity or a reply within a specific time.")}
+      {isInternship
+        ? tr("Votre candidature de stage a été enregistrée. L'équipe BIB examinera votre dossier ; la suite du processus et la convention seront définies avec votre établissement. L'envoi ne garantit pas une admission.", "Your internship application has been received. BIB will review your details; the next steps and internship agreement will be arranged with your educational institution. Submission does not guarantee placement.")
+        : tr("Votre manifestation d'intérêt a été enregistrée et orientée vers le domaine concerné. L'équipe BIB examinera votre dossier ; cela ne constitue pas une promesse de collaboration ou de réponse dans un délai précis.", "Your interest has been received and routed to the relevant team. BIB may review it; this does not guarantee an opportunity or a reply within a specific time.")}
     </p>
     <Button asChild variant="outline" className="mt-4"><Link to="/">{tr("Retour à l'accueil", "Back to homepage")}</Link></Button>
   </div>;
@@ -79,7 +88,7 @@ export function BibTalentApplicationForm() {
     <div>
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-ink">BIB Talent</p>
       <h2 id="talent-form-heading" className="mt-2 font-display text-lg font-semibold sm:text-3xl">
-        {tr("Exprimer mon intérêt", "Express my interest")}
+        {isInternship ? tr("Candidature de stage", "Internship application") : tr("Exprimer mon intérêt", "Express my interest")}
       </h2>
       <p className="mt-2 text-xs leading-5 text-muted-foreground">
         {tr("Aucun compte nécessaire. Votre dossier sera orienté vers la coordination Talent et le pôle concerné ; il ne sera pas publié.",
@@ -158,10 +167,12 @@ export function BibTalentApplicationForm() {
     </label>
     {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
     <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-      <p className="text-xs text-muted-foreground">{tr("Cette démarche n'est pas une candidature à un poste ouvert ni une promesse d'embauche.", "This is not an application for a confirmed opening or a hiring guarantee.")}</p>
+      <p className="text-xs text-muted-foreground">{isInternship
+          ? tr("Une convention de stage et l'accord de l'établissement sont nécessaires avant tout accueil.", "An internship agreement and your educational institution's approval are required before placement.")
+          : tr("Cette démarche n'est pas une promesse d'embauche ou de collaboration.", "This submission does not guarantee employment or collaboration.")}</p>
       <Button type="submit" disabled={busy || !consent || !form.preferred_pole} className="w-full gap-2 sm:w-auto">
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-        {busy ? tr("Envoi…", "Sending…") : tr("Envoyer mon intérêt", "Submit interest")}
+        {busy ? tr("Envoi…", "Sending…") : isInternship ? tr("Envoyer ma candidature", "Submit application") : tr("Envoyer mon intérêt", "Submit interest")}
       </Button>
     </div>
   </form>;
