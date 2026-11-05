@@ -58,7 +58,7 @@ export function isPublicInformationPath(pathname: string): boolean {
   return new Set([
     "/", "/landing", "/vendre", "/tarifs", "/pricing",
     "/signup", "/store/signup", "/store/login", "/register",
-    "/store", "/store/products",
+    "/store", "/store/products", "/suivi-commande",
     "/store/account", "/store/favorites", "/store/orders",
     // Partner applications and their token-scoped onboarding/resume pages.
     "/suppliers/apply", "/fournisseurs/candidature",
