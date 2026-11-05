@@ -10,6 +10,9 @@ const allowedPoles = new Set([
   "operations", "quality_audit", "undecided",
 ]);
 const allowedTypes = new Set(["volunteer", "internship", "future_opportunities", "explore"]);
+const MAX_CV_BYTES = 4 * 1024 * 1024;
+const CV_BUCKET = "bib-talent-cvs";
+const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 const availabilities = new Set(["few_hours", "part_time", "flexible", "discuss"]);
 const headers = {
   "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
@@ -50,6 +53,29 @@ function cleanLink(value: unknown): string | null | undefined {
     return u.protocol === "https:" && !u.username && !u.password ? u.toString() : undefined;
   } catch { return undefined; }
 }
+function cleanLinkedIn(value: unknown): string | null | undefined {
+  const link = cleanLink(value);
+  if (!link) return link;
+  try {
+    const url = new URL(link);
+    const host = url.hostname.toLowerCase();
+    if (host !== "linkedin.com" && !host.endsWith(".linkedin.com")) return undefined;
+    return url.toString();
+  } catch { return undefined; }
+}
+async function validCv(file: File): Promise<{ extension: "pdf" | "docx"; mime: string } | null> {
+  if (!file.size || file.size > MAX_CV_BYTES) return null;
+  if (/[\\/]/.test(file.name)) return null;
+  const extension = /\.pdf$/i.test(file.name) ? "pdf" : /\.docx$/i.test(file.name) ? "docx" : null;
+  if (!extension) return null;
+  const mime = extension === "pdf" ? "application/pdf" : DOCX_MIME;
+  if (file.type && file.type !== mime && file.type !== "application/octet-stream") return null;
+  const head = new Uint8Array(await file.slice(0, 8).arrayBuffer());
+  const signatureOk = extension === "pdf"
+    ? head.length >= 5 && head[0] === 37 && head[1] === 80 && head[2] === 68 && head[3] === 70 && head[4] === 45
+    : head.length >= 4 && head[0] === 80 && head[1] === 75 && head[2] === 3 && head[3] === 4;
+  return signatureOk ? { extension, mime } : null;
+}
 async function hmac(value: string, secret: string): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw", new TextEncoder().encode(secret),
@@ -63,13 +89,36 @@ Deno.serve(async request => {
   if (request.method === "OPTIONS") return json({}, origin ? 204 : 403, origin);
   if (request.method !== "POST") return json({ error: "method_not_allowed" }, 405, origin);
   if (!origin) return json({ error: "origin_denied" }, 403, null);
-  if (!(request.headers.get("content-type") ?? "").includes("application/json")) {
-    return json({ error: "json_required" }, 415, origin);
+  const contentType = request.headers.get("content-type") ?? "";
+  const isMultipart = contentType.includes("multipart/form-data");
+  if (!isMultipart && !contentType.includes("application/json")) {
+    return json({ error: "unsupported_content_type" }, 415, origin);
   }
+  const contentLength = Number(request.headers.get("content-length") ?? "0");
+  if (contentLength > MAX_CV_BYTES + 15000) return json({ error: "request_too_large" }, 413, origin);
   try {
-    const bodyText = await request.text();
-    if (bodyText.length > 9000) return json({ error: "request_too_large" }, 413, origin);
-    const body = JSON.parse(bodyText);
+    let body: Record<string, unknown>;
+    let cv: File | null = null;
+    let cvInfo: { extension: "pdf" | "docx"; mime: string } | null = null;
+    if (isMultipart) {
+      const parts = await request.formData();
+      const payload = parts.get("payload");
+      if (typeof payload !== "string" || payload.length > 9000) {
+        return json({ error: "invalid_form" }, 400, origin);
+      }
+      body = JSON.parse(payload);
+      const upload = parts.get("cv");
+      if (upload !== null) {
+        if (!(upload instanceof File)) return json({ error: "invalid_cv" }, 400, origin);
+        cv = upload;
+        cvInfo = await validCv(upload);
+        if (!cvInfo) return json({ error: "invalid_cv" }, 400, origin);
+      }
+    } else {
+      const bodyText = await request.text();
+      if (bodyText.length > 9000) return json({ error: "request_too_large" }, 413, origin);
+      body = JSON.parse(bodyText);
+    }
     if (!body || typeof body !== "object" || Array.isArray(body)) {
       return json({ error: "invalid_form" }, 400, origin);
     }
@@ -82,9 +131,10 @@ Deno.serve(async request => {
     const skills = cleanString(body.skills, 5, 1200);
     const motivation = cleanString(body.motivation, 20, 1800);
     const portfolio = cleanLink(body.portfolio_url);
+    const linkedin = cleanLinkedIn(body.linkedin_url);
     if (!fullName || !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email) || email.length > 254 ||
         (body.location && !location) || !currentActivity || !skills || !motivation ||
-        portfolio === undefined || (body.future_opportunities_consent !== true && body.future_opportunities_consent !== false) || !allowedPoles.has(body.preferred_pole) ||
+        portfolio === undefined || linkedin === undefined || (body.future_opportunities_consent !== true && body.future_opportunities_consent !== false) || !allowedPoles.has(body.preferred_pole) ||
         !allowedTypes.has(body.contribution_type) || !availabilities.has(body.availability) ||
         !["fr","en"].includes(body.locale) || body.consent !== true) {
       return json({ error: "invalid_form" }, 400, origin);
@@ -112,12 +162,25 @@ Deno.serve(async request => {
 
     const assignedPole = body.preferred_pole === "undecided"
       ? "talent_coordination" : body.preferred_pole;
+    // Upload to a non-public bucket before creating the applicant record.
+    // A failed insert removes the object so it does not become an orphan.
+    const cvPath = cv && cvInfo ? `cvs/${crypto.randomUUID()}.${cvInfo.extension}` : null;
+    if (cv && cvPath && cvInfo) {
+      const { error: uploadError } = await sb.storage.from(CV_BUCKET).upload(cvPath, cv, {
+        contentType: cvInfo.mime, cacheControl: "0", upsert: false,
+      });
+      if (uploadError) {
+        console.error("private CV upload failure", uploadError.message);
+        return json({ error: "cv_upload_unavailable" }, 503, origin);
+      }
+    }
     const { error } = await sb.from("bib_talent_applications").insert({
       full_name: fullName,
       email, location, current_activity: currentActivity,
       preferred_pole: body.preferred_pole, assigned_pole: assignedPole,
       contribution_type: body.contribution_type, skills, motivation,
       availability: body.availability, portfolio_url: portfolio,
+      linkedin_url: linkedin, cv_storage_path: cvPath,
       locale: body.locale,
       consent_given_at: new Date().toISOString(),
       future_opportunities_consent: body.future_opportunities_consent === true,
@@ -126,6 +189,7 @@ Deno.serve(async request => {
       retention_until: new Date(Date.now() + (body.future_opportunities_consent === true ? 730 : 180) * 86400000).toISOString(),
       network_digest: digest, application_digest: unique,
     });
+    if (error && cvPath) await sb.storage.from(CV_BUCKET).remove([cvPath]);
     if (error?.code === "23505") return json({ ok: true, already_received: true }, 200, origin);
     if (error) {
       console.error("talent submission insert failure", error.code);
