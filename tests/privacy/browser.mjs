@@ -104,10 +104,10 @@ try {
     await page.setViewportSize({ width, height: 844 });
     await expect(page.getByRole("button", { name: "Tout refuser", exact: true })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-    await page.screenshot({ path: resolve(output, `banner-${width}.png`) });
+    await page.screenshot({ path: resolve(output, `banner-${width}.png`), animations: "disabled" });
     await page.getByRole("button", { name: "Personnaliser", exact: true }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
-    await page.screenshot({ path: resolve(output, `preferences-${width}.png`) });
+    await page.screenshot({ path: resolve(output, `preferences-${width}.png`), animations: "disabled" });
     const box = await page.getByRole("dialog").boundingBox();
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(width);
@@ -119,7 +119,7 @@ try {
     await page.getByRole("button", { name: "Cookies et confidentialité", exact: true }).click();
     await expect(page.getByRole("dialog", { name: "Cookies et stockage dans Intrabib" })).toBeVisible();
     await expect(page.getByRole("switch")).toHaveCount(0);
-    await page.screenshot({ path: resolve(output, "intrabib-information.png") });
+    await page.screenshot({ path: resolve(output, "intrabib-information.png"), animations: "disabled" });
   }
   expect(errors).toEqual([]);
   console.log("PASS: no optional request before consent; granular choices; withdrawal across tabs; persisted refusal; real application routes; 320/390px layouts; no runtime errors.");
