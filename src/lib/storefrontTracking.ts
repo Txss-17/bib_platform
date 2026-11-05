@@ -1,7 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-
-const volatileSessionId = crypto.randomUUID();
-function getSessionId(): string { return volatileSessionId; }
+import { getConsentedAnalyticsSession } from "@/lib/cookieConsent";
 
 export type StorefrontEventType =
   | "boutique_view"
@@ -21,13 +19,15 @@ export async function trackStorefrontEvent(
   options: { productId?: string; metadata?: Record<string, unknown> } = {},
 ): Promise<void> {
   if (!boutiqueId) return;
+  const sessionId = getConsentedAnalyticsSession();
+  if (!sessionId) return;
   try {
     await supabase.from("storefront_events").insert([
       {
         boutique_id: boutiqueId,
         product_id: options.productId ?? null,
         event_type: eventType,
-        session_id: getSessionId(),
+        session_id: sessionId,
         metadata: (options.metadata ?? {}) as never,
       },
     ] as never);

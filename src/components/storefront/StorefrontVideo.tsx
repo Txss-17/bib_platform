@@ -1,6 +1,8 @@
 import { translateUi } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Play } from "lucide-react";
+import { ConsentProtectedFrame } from "@/components/privacy/ConsentProtectedFrame";
+import { supportedExternalEmbed } from "@/lib/externalEmbeds";
 
 interface StorefrontVideoProps {
   primaryColor: string;
@@ -14,18 +16,7 @@ export function StorefrontVideo({
   title,
 }: StorefrontVideoProps) {
   useLanguage();
-  // Extract YouTube/Vimeo embed URL
-  const getEmbedUrl = (url: string): string | null => {
-    const ytMatch = url.match(
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/,
-    );
-    if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
-    const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
-    if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
-    return null;
-  };
-
-  const embedUrl = videoUrl ? getEmbedUrl(videoUrl) : null;
+  const embedUrl = videoUrl ? supportedExternalEmbed(videoUrl)?.url : null;
 
   return (
     <section className="py-12 md:py-16 bg-white">
@@ -37,7 +28,7 @@ export function StorefrontVideo({
         )}
         <div className="aspect-video rounded-xl overflow-hidden shadow-lg border border-gray-100">
           {embedUrl ? (
-            <iframe
+            <ConsentProtectedFrame
               src={embedUrl}
               className="w-full h-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

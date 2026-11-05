@@ -3,6 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useSceneAnalytics, trackCtaClick } from "@/hooks/useSceneAnalytics";
+import { ConsentProtectedFrame } from "@/components/privacy/ConsentProtectedFrame";
 import type { SceneRecord } from "@/lib/studioScenes";
 import type { BrandDNA } from "@/hooks/useBrandStudio";
 import { loadGoogleFont } from "@/lib/googleFonts";
@@ -5053,7 +5054,7 @@ function MapLocationScene({
   const map = (
     <div className="aspect-[4/3] md:aspect-[16/10] rounded-xl overflow-hidden border border-border/40">
       {content.mapEmbedUrl ? (
-        <iframe
+        <ConsentProtectedFrame
           src={content.mapEmbedUrl}
           className="w-full h-full"
           loading="lazy"

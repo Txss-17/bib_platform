@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Logo } from "@/components/Logo";
+import { CookieSettingsButton } from "@/components/privacy/CookieConsentManager";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -199,6 +200,7 @@ const Footer = () => {
                     {translateUi("Pack légal")}
                   </Link>
                 </li>
+                <li><CookieSettingsButton className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground" /></li>
 
               </ul>
             </div>
