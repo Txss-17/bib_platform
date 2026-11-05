@@ -96,6 +96,7 @@ const OpsPortal = lazy(() => import("@/pages/OpsPortal"));
 
 const BibTalent = lazy(() => import("@/pages/BibTalent"));
 const Carrieres = lazy(() => import("@/pages/Carrieres"));
+const CarriereOffre = lazy(() => import("@/pages/CarriereOffre"));
 const TalentMentions = lazy(() => import("@/pages/TalentLegal").then(m => ({ default: m.TalentMentions })));
 const TalentConfidentialite = lazy(() => import("@/pages/TalentLegal").then(m => ({ default: m.TalentConfidentialite })));
 const TalentCookies = lazy(() => import("@/pages/TalentLegal").then(m => ({ default: m.TalentCookies })));
@@ -278,6 +279,7 @@ export default function App() {
                       <Route path="/" element={<Navigate to="/bib-talent" replace />} />
                       <Route path="/bib-talent" element={<BibTalent />} />
                       <Route path="/carrieres" element={<Carrieres />} />
+                      <Route path="/carrieres/offres/:code" element={<CarriereOffre />} />
                       <Route path="/carrieres/postes" element={<Navigate to="/carrieres" replace />} />
                       <Route path="/carrieres/talent" element={<Navigate to="/bib-talent" replace />} />
                       <Route path="/careers" element={<Navigate to="/carrieres" replace />} />
@@ -883,6 +885,7 @@ export default function App() {
                   ================================================= */}
 
                     <Route path="/carrieres" element={<Carrieres />} />
+                      <Route path="/carrieres/offres/:code" element={<CarriereOffre />} />
 
                     <Route
                       path="/carrieres/postes"
