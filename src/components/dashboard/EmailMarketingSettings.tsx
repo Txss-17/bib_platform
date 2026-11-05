@@ -325,13 +325,14 @@ export function EmailMarketingSettings({ boutiqueId: fixedBoutiqueId }: { boutiq
             </p>
             <p className="text-xs text-muted-foreground">
               {translateUi(
-                "Améliore votre réputation d'expéditeur et la qualité de votre liste.",
+                "Chaque nouvel abonnement aux offres doit être confirmé par email. Ce contrôle reste actif pour toutes les campagnes.",
               )}
             </p>
           </div>
           <Switch
-            checked={!!row.double_opt_in_enabled}
-            onCheckedChange={(v) => update({ double_opt_in_enabled: v })}
+            checked
+            disabled
+            aria-label={translateUi("Confirmation email toujours requise")}
           />
         </div>
       </SectionCard>

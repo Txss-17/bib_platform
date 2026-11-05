@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useSceneAnalytics, trackCtaClick } from "@/hooks/useSceneAnalytics";
 import { ConsentProtectedFrame } from "@/components/privacy/ConsentProtectedFrame";
+import { MarketingSubscriptionForm } from "@/components/privacy/MarketingSubscriptionForm";
 import type { SceneRecord } from "@/lib/studioScenes";
 import type { BrandDNA } from "@/hooks/useBrandStudio";
 import { loadGoogleFont } from "@/lib/googleFonts";
@@ -121,6 +122,7 @@ export function StudioSceneRenderer({
                 products={products}
                 displayFont={resolveDisplay(scene, display)}
                 boutiqueSlug={boutiqueSlug}
+                boutiqueId={disableTracking ? undefined : boutiqueId}
               />
             </SceneStyleScope>
           </TrackedScene>
@@ -453,12 +455,14 @@ function SceneSwitch({
   products,
   displayFont,
   boutiqueSlug,
+  boutiqueId,
 }: {
   scene: SceneRecord;
   boutiqueName: string;
   products: Product[];
   displayFont: string;
   boutiqueSlug?: string;
+  boutiqueId?: string;
 }) {
   useLanguage();
   const content = {
@@ -496,13 +500,13 @@ function SceneSwitch({
       return <TrustWallScene content={content} displayFont={displayFont} />;
 
     case "cta-sticky":
-      return <CtaStickyScene content={content} displayFont={displayFont} />;
+      return <CtaStickyScene content={content} displayFont={displayFont} boutiqueId={boutiqueId} />;
 
     case "faq-accordion":
       return <FaqScene content={content} displayFont={displayFont} />;
 
     case "newsletter-editorial":
-      return <NewsletterScene content={content} displayFont={displayFont} />;
+      return <NewsletterScene content={content} displayFont={displayFont} boutiqueId={boutiqueId} />;
 
     case "press-strip":
       return <PressStripScene content={content} displayFont={displayFont} />;
@@ -1491,9 +1495,11 @@ function TrustWallScene({
 function CtaStickyScene({
   content,
   displayFont,
+  boutiqueId,
 }: {
   content: any;
   displayFont: string;
+  boutiqueId?: string;
 }) {
   useLanguage();
   const variant = content.variant || "centered";
@@ -1593,30 +1599,7 @@ function CtaStickyScene({
                 )}
             </p>
 
-            <form
-              onSubmit={(e) => e.preventDefault()}
-              className="flex flex-col sm:flex-row gap-2"
-            >
-              <input
-                type="email"
-                required
-                placeholder={
-                  content.newsletterPlaceholder || translateUi("Votre email")
-                }
-                className="flex-1 rounded-full px-5 py-3 text-sm bg-white border border-border/40"
-              />
-
-              <button
-                type="submit"
-                className="rounded-full px-6 py-3 text-sm font-medium whitespace-nowrap"
-                style={{
-                  background: "hsl(var(--studio-accent))",
-                  color: "hsl(var(--studio-ink))",
-                }}
-              >
-                {content.newsletterCtaLabel || translateUi("S'inscrire")}
-              </button>
-            </form>
+            <MarketingSubscriptionForm scope={{ kind: "boutique", boutiqueId: boutiqueId ?? "" }} preview={!boutiqueId} />
           </div>
         </div>
       </section>
@@ -1870,42 +1853,17 @@ function FaqScene({
 function NewsletterScene({
   content,
   displayFont,
+  boutiqueId,
 }: {
   content: any;
   displayFont: string;
+  boutiqueId?: string;
 }) {
   useLanguage();
   const variant = content.variant || "centered";
 
-  const isLight = variant === "minimal";
-
   const form = (
-    <form
-      onSubmit={(e) => e.preventDefault()}
-      className="flex flex-col sm:flex-row gap-2"
-    >
-      <input
-        type="email"
-        required
-        placeholder={content.placeholder || translateUi("Votre email")}
-        className={
-          isLight
-            ? "flex-1 rounded-full px-5 py-3 text-sm bg-white border border-border/50"
-            : "flex-1 rounded-full px-5 py-3 text-sm text-foreground bg-white/95 border border-white/10"
-        }
-      />
-
-      <button
-        type="submit"
-        className="rounded-full px-6 py-3 text-sm font-medium whitespace-nowrap"
-        style={{
-          background: "hsl(var(--studio-accent))",
-          color: "hsl(var(--studio-ink))",
-        }}
-      >
-        {content.ctaLabel || translateUi("S'inscrire")}
-      </button>
-    </form>
+    <MarketingSubscriptionForm scope={{ kind: "boutique", boutiqueId: boutiqueId ?? "" }} preview={!boutiqueId} />
   );
 
   const benefits = (content.benefits ?? []) as string[];

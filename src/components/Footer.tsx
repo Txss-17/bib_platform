@@ -201,6 +201,7 @@ const Footer = () => {
                   </Link>
                 </li>
                 <li><CookieSettingsButton className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground" /></li>
+                <li><Link to="/communications" className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground">{translateUi("Offres BIB par email")}</Link></li>
 
               </ul>
             </div>

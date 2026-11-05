@@ -64,6 +64,7 @@ const StoreSubscriberSubscribe = lazy(
 );
 
 const Unsubscribe = lazy(() => import("@/pages/Unsubscribe"));
+const MarketingPreferences = lazy(() => import("@/pages/MarketingPreferences"));
 const StoreProduct = lazy(() => import("@/pages/StoreProduct"));
 import StoreSubscriberLayout from "@/components/StoreSubscriberLayout";
 
@@ -288,6 +289,8 @@ export default function App() {
                       <Route path="/cgu" element={<CGU />} />
                       <Route path="/cgv" element={<CGV />} />
                       <Route path="/confidentialite" element={<Confidentialite />} />
+                      <Route path="/communications" element={<MarketingPreferences />} />
+                      <Route path="/unsubscribe" element={<Unsubscribe />} />
                       <Route path="/cookies" element={<Cookies />} />
                       <Route path="/talent/mentions-legales" element={<TalentMentions />} />
                       <Route path="/talent/confidentialite" element={<TalentConfidentialite />} />
@@ -551,6 +554,7 @@ export default function App() {
                     />
 
                     <Route path="/unsubscribe" element={<Unsubscribe />} />
+                    <Route path="/communications" element={<MarketingPreferences />} />
 
                     {/* =================================================
                       STORE — CUSTOMER FEATURES

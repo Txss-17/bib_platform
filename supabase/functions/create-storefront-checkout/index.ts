@@ -594,28 +594,8 @@ async function createStorefrontCheckout(
     );
   }
 
-  // 8. Attribution à une scène : journalisation non bloquante.
-  const lastScene = body.attribution?.lastScene;
-
-  if (lastScene?.sceneId && lastScene.sceneType) {
-    const { error: eventError } = await supabase
-      .from("scene_events")
-      .insert({
-        boutique_id: boutique.id,
-        scene_id: lastScene.sceneId,
-        scene_type: lastScene.sceneType,
-        event_type: "conversion",
-        session_id: body.attribution?.sessionId ?? null,
-        metadata: { stripe_session_id: session.id },
-      });
-
-    if (eventError) {
-      console.warn(
-        "Échec de journalisation de la conversion :",
-        eventError,
-      );
-    }
-  }
+  // Checkout records required order evidence only. Optional scene attribution must not
+  // be inferred from contractual acceptance or joined to Stripe/payment identifiers.
 
   // Contrat de réponse conservé pour le frontend existant.
   return {

@@ -73,6 +73,13 @@ export default function LegalConsentCharter() {
           <li><strong>Donner son consentement facultatif :</strong> autoriser une finalité qui le requiert (sondage, prospection selon les cas, cookies non essentiels), sans case précochée et avec possibilité de retrait.</li>
         </ol>
       </section>
+      <section className="mt-7 space-y-3 rounded-xl border border-border bg-card p-4 text-sm leading-7 sm:p-6">
+        <h2 className="text-lg font-semibold">Offres, identifiant de visite et localisation</h2>
+        <p>Un identifiant de navigateur ne fournit pas à lui seul l’adresse email ni l’identité civile d’un visiteur. Le choix des cookies ne vaut pas abonnement aux offres et l’acceptation des CGV ou des CGU ne remplace aucun de ces choix.</p>
+        <p>Les abonnements proposés ici demandent un accord distinct, décoché par défaut, puis une confirmation dans la messagerie. L’expéditeur responsable et le périmètre sont indiqués : BIB, ou une boutique précise. Aucun abonnement n’est transmis automatiquement aux autres boutiques ou aux partenaires. La preuve conserve la finalité, le texte et sa version, un identifiant de dossier et les dates de demande, de confirmation et de retrait.</p>
+        <p>Les formulaires d’abonnement ne collectent ni géolocalisation précise, ni empreinte de l’appareil, ni historique de navigation. Une future utilisation de la localisation ou d’un identifiant à des fins de ciblage nécessiterait sa propre information et les choix appropriés. Les données techniques nécessaires à la connexion et à la sécurité suivent une finalité et une durée distinctes.</p>
+        <p><Link to="/communications" className="underline">Choisir les offres BIB par email</Link>. Chaque email promotionnel comporte un lien de désabonnement limité à l’expéditeur concerné. Les messages nécessaires au compte et aux commandes sont distincts.</p>
+      </section>
       <section className="mt-8 space-y-3">
         <h2 className="text-xl font-semibold">Registre simplifié des parcours BIB</h2>
         {processes.map(item => <article key={item.name} className="rounded-xl border border-border bg-card p-4 sm:p-5">

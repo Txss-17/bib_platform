@@ -86,6 +86,12 @@ jobs:
       - name: Test cookie choices, optional tracking and external media blocking
         run: npm run test:privacy
 
+      - name: Test scoped email consent, confirmed audience and withdrawal
+        run: npm run test:marketing
+
+      - name: Typecheck subscription and marketing delivery endpoints
+        run: npx tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --lib ES2022,DOM --skipLibCheck --strictNullChecks --noImplicitAny false --allowImportingTsExtensions tests/supplier-audit/edge-env.d.ts tests/marketing/edge-env.d.ts supabase/functions/marketing-subscription/index.ts supabase/functions/send-marketing-campaign/index.ts
+
       - name: Test supplier audit portal authorization and version contract
         run: npm run test:supplier-audit
 
