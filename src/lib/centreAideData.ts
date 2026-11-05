@@ -85,7 +85,7 @@ export const guideGroups: GuideGroup[] = [
         get title() {
           return translateUi("Litiges & escalade 48h");
         },
-        to: "/centre-aide/guide/litiges",
+        to: "/centre-aide#contact",
         get desc() {
           return translateUi("Procédure pas-à-pas.");
         },
