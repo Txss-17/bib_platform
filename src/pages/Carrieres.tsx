@@ -8,11 +8,11 @@ type Copy = { fr: string; en: string };
 const copy = (fr: string, en: string): Copy => ({ fr, en });
 
 const messages = {
-  seoTitle: copy("Carrières BIB — Stages étudiants", "BIB Careers — Student internships"),
+  seoTitle: copy("Carrières BIB — Découvrez nos offres", "BIB Careers — Explore our opportunities"),
   seoDescription: copy("Découvrez les quatre offres de stage BIB : R&D, marketing, juridique et fournisseurs, avec missions et profils concernés.", "Explore four BIB internship pathways in product research, marketing, legal documentation and suppliers, including assignments and student profiles."),
-  stageEyebrow: copy("Stages et développement des compétences", "Internships and skill development"),
-  stageTitle: copy("Découvrez nos quatre stages", "Explore our four internship pathways"),
-  stageIntro: copy("BIB propose quatre parcours de stage de quatre ou huit semaines pour découvrir ses métiers et acquérir des compétences sur des projets encadrés. Le contenu de chaque stage est adapté à la formation de l’étudiant.", "BIB offers four- or eight-week internship pathways to explore its fields and build skills through supervised projects. Assignments are adapted to each student’s course."),
+  stageEyebrow: copy("Opportunités et développement des compétences", "Opportunities and skill development"),
+  stageTitle: copy("Découvrir nos offres", "Explore our opportunities"),
+  stageIntro: copy("Explorez les opportunités BIB. Nos premières offres portent sur quatre domaines de stage, avec des missions pédagogiques encadrées et adaptées à chaque formation.", "Explore BIB opportunities. Our initial listings cover four internship fields with supervised learning assignments tailored to each course."),
   stageDuration: copy("Durée : 4 ou 8 semaines selon la convention", "Duration: 4 or 8 weeks, subject to the agreement"),
   stageProfiles: copy("Profils étudiants indicatifs", "Example student backgrounds"),
   stageActivities: copy("Apprentissages et missions", "Learning activities and assignments"),
@@ -70,23 +70,23 @@ export default function Carrieres() {
 
   return <PublicPageLayout>
     <section className="bg-brand-marine text-bib-ivory">
-      <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8 lg:py-16">
+      <div className="mx-auto max-w-6xl px-5 pb-16 pt-28 sm:px-8 sm:pt-32 lg:pb-20 lg:pt-36">
         <span className="text-xs font-semibold uppercase tracking-[0.22em] text-bib-gold">{lang === "en" ? "BIB Careers" : "Carrières BIB"}</span>
         <h1 className="mt-4 max-w-3xl font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">
-          {lang === "en" ? "Learn and grow with the BIB project" : "Développer ses compétences avec le projet BIB"}
+          {lang === "en" ? "Explore your future with BIB" : "Explorez vos perspectives avec BIB"}
         </h1>
         <p className="mt-4 max-w-3xl text-sm leading-7 text-bib-ivory/85">
           {lang === "en"
-            ? "This page presents internship pathways with supervised learning assignments adapted to each student’s training."
-            : "Cette page présente les stages BIB et leurs missions pédagogiques encadrées, adaptées à chaque parcours de formation."}
+            ? "Discover BIB opportunities and projects designed to help you develop practical skills in a supervised environment."
+            : "Découvrez les opportunités BIB et des projets conçus pour développer des compétences concrètes dans un cadre encadré."}
         </p>
         <a href="#stages" className="mt-6 inline-flex items-center gap-2 rounded-full border border-bib-ivory/30 px-5 py-2.5 text-sm font-semibold text-bib-ivory hover:border-bib-gold hover:text-bib-gold">
-          {lang === "en" ? "View internship pathways" : "Voir les parcours de stage"} <ArrowRight size={16} />
+          {lang === "en" ? "Explore opportunities" : "Découvrir nos offres"} <ArrowRight size={16} />
         </a>
       </div>
     </section>
 
-    <section id="stages" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-12 sm:px-8 lg:py-16">
+    <section id="stages" className="mx-auto max-w-6xl scroll-mt-28 px-5 py-16 sm:px-8 lg:py-20">
       <div className="max-w-4xl">
         <span className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-ink">{tr(messages.stageEyebrow)}</span>
         <h2 className="mt-4 font-display text-2xl font-semibold tracking-tight sm:text-3xl">{tr(messages.stageTitle)}</h2>
