@@ -145,6 +145,11 @@ const Footer = () => {
                     BIB Talent
                   </Link>
                 </li>
+                <li>
+                  <Link to="/carrieres" className="text-sm text-primary-foreground/70 transition-colors hover:text-primary-foreground">
+                    {translateUi("Carrières")}
+                  </Link>
+                </li>
 
               </ul>
             </div>
