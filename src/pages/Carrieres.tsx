@@ -17,6 +17,8 @@ const messages = {
   stageIntro: copy("Explorez les opportunités BIB. Nos premières offres portent sur quatre domaines de stage, avec des missions pédagogiques encadrées et adaptées à chaque formation.", "Explore BIB opportunities. Our initial listings cover four internship fields with supervised learning assignments tailored to each course."),
   stageDuration: copy("Durée : 4 ou 8 semaines selon la convention", "Duration: 4 or 8 weeks, subject to the agreement"),
   stageProfiles: copy("Profils étudiants indicatifs", "Example student backgrounds"),
+  stagePole: copy("Pôle de rattachement", "Department"),
+  stageSupervisor: copy("Responsable de rattachement", "Supervising role"),
   stageActivities: copy("Apprentissages et missions", "Learning activities and assignments"),
   stageDeliverables: copy("Livrables pédagogiques", "Educational deliverables"),
   stageGuardrails: copy("Limites du stage", "Scope and safeguards"),
@@ -29,6 +31,8 @@ const messages = {
 export const internshipTracks = [
   {
     code: "STG-RD-01",
+    pole: copy("Product Engineering — Produit et développement", "Product Engineering — Product and development"),
+    supervisor: copy("Responsable Product Engineering", "Head of Product Engineering"),
     icon: Shapes,
     title: copy("R&D et expérience utilisateur", "Product research and user experience"),
     profiles: copy("BUT Informatique, BTS SIO, BUT MMI, licence informatique, design UX/UI ou ergonomie.", "Computer science, IT services, multimedia, UX/UI design or interface ergonomics students."),
@@ -42,6 +46,8 @@ export const internshipTracks = [
   },
   {
     code: "STG-MKT-01",
+    pole: copy("Communication et marketing", "Communications and marketing"),
+    supervisor: copy("Responsable Communication et marketing", "Head of Communications and Marketing"),
     icon: Users,
     title: copy("Marketing et étude de marché", "Marketing and market research"),
     profiles: copy("BUT Techniques de commercialisation, BTS Communication, BTS NDRC, information-communication ou marketing.", "Business, marketing, communication, customer relations or market research students."),
@@ -55,6 +61,8 @@ export const internshipTracks = [
   },
   {
     code: "STG-JUR-01",
+    pole: copy("Qualité, audit et conformité", "Quality, audit and compliance"),
+    supervisor: copy("Responsable Conformité, avec appui juridique qualifié", "Compliance lead, supported by qualified legal supervision"),
     icon: ShieldCheck,
     title: copy("Recherche juridique et conformité documentaire", "Legal research and document compliance"),
     profiles: copy("BUT Carrières juridiques, licence de droit, droit du numérique, conformité ou protection des données.", "Law, legal practice, digital law, compliance or data protection students."),
@@ -68,6 +76,8 @@ export const internshipTracks = [
   },
   {
     code: "STG-FRN-01",
+    pole: copy("Marketplace — Relations fournisseurs", "Marketplace — Supplier relations"),
+    supervisor: copy("Responsable Relations fournisseurs", "Supplier Relations Lead"),
     icon: Package,
     title: copy("Relations et qualification fournisseurs", "Supplier relations and documentary qualification"),
     profiles: copy("BTS Commerce international, BUT QLIO, techniques de commercialisation, achats ou logistique.", "International trade, quality, industrial logistics, business, purchasing or supply chain students."),
@@ -119,7 +129,7 @@ export default function Carrieres() {
         <p className="mt-3 text-sm leading-6 text-muted-foreground">{tr(messages.stageIntro)}</p>
             </div>
       <div className="mt-7 grid gap-4 md:grid-cols-2">
-        {internshipTracks.map(({ code, icon: Icon, title, profiles, missions }) => (
+        {internshipTracks.map(({ code, icon: Icon, title, profiles, pole, supervisor, missions }) => (
           <article key={code} className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6" aria-labelledby={code}>
             <div className="flex items-start gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-bib-gold/15 text-accent-ink"><Icon size={23} /></div>
@@ -131,6 +141,8 @@ export default function Carrieres() {
             </div>
             <div className="mt-5 space-y-3 text-sm leading-6">
               <p><strong className="block text-foreground">{tr(messages.stageProfiles)}</strong><span className="text-muted-foreground">{tr(profiles)}</span></p>
+              <p><strong className="block text-foreground">{tr(messages.stagePole)}</strong><span className="text-muted-foreground">{tr(pole)}</span></p>
+              <p><strong className="block text-foreground">{tr(messages.stageSupervisor)}</strong><span className="text-muted-foreground">{tr(supervisor)}</span></p>
               <div>
                 <strong className="block text-foreground">{tr(messages.stageActivities)}</strong>
                 <ul className="mt-2 space-y-2 text-muted-foreground">
