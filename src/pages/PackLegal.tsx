@@ -112,7 +112,7 @@ const docs = [
 ];
 
 export default function PackLegal() {
-  useLanguage();
+  const { lang } = useLanguage();
   useSEO({
     title: translateUi("Documents juridiques — Brand-In-A-Box"),
     description: translateUi(
@@ -150,9 +150,15 @@ export default function PackLegal() {
 
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6 max-w-6xl">
           <div className="rounded-lg border border-amber-400/30 bg-muted/40 p-4 text-sm">
-            <strong>Harmonisation des contrats au 5 novembre 2026.</strong> Les anciens projets CGV BIB v1.2 et CGU BIB v1.2 sont des sources historiques, non des CGV de boutique opposables. Le référentiel de travail distingue JUR-M01/M02 (marchands), JUR-C01 (acheteurs), JUR-C02 (services BIB aux consommateurs non activés) et les modèles JUR-B01/B02/B03 générés pour chaque boutique. Mentions légales v1.1, Confidentialité v1.2 et Cookies v1.1 restent des projets à vérifier.
-            Les pages /cgu et /cgv sont actuellement des informations générales : les ventes de produits relèvent des CGV de la boutique et du vendeur identifié. Les documents de travail demeurent à valider juridiquement avant application contractuelle définitive. L'identité et les immatriculations de l'exploitant individuel, l'hébergeur effectif, les médiateurs de consommation et les traceurs déployés doivent être vérifiés sur justificatifs.
-            Les anciennes références à une SAS, une holding ou une filiale non constituée ne valent pas identification de l'exploitant actuel.
+{lang === "en" ? (
+              <>
+                <strong>Contract harmonization as of 5 November 2026.</strong> Former BIB Sales Terms v1.2 and BIB Terms of Use v1.2 are historical drafts, not enforceable store-specific terms of sale. The working reference separates JUR-M01/M02 (merchants), JUR-C01 (buyers), JUR-C02 (BIB services to consumers, not activated) and JUR-B01/B02/B03 templates generated for each store. Legal Notices v1.1, Privacy v1.2 and Cookies v1.1 remain drafts requiring verification.
+                <br /><br />The /cgu and /cgv pages currently provide general information only. Product sales are governed by the terms of sale of the identified seller's store. Working documents require legal approval before any definitive contractual use. The individual entrepreneur's identity and registrations, actual hosting provider, consumer mediators and deployed trackers must be verified against supporting evidence.
+                <br /><br />References to a company (SAS), holding company or subsidiary that has not been incorporated do not identify the current operator.
+              </>
+            ) : (
+              <><strong>Harmonisation des contrats au 5 novembre 2026.</strong> Les anciens projets CGV BIB v1.2 et CGU BIB v1.2 sont des sources historiques, non des CGV de boutique opposables. Le référentiel de travail distingue JUR-M01/M02 (marchands), JUR-C01 (acheteurs), JUR-C02 (services BIB aux consommateurs non activés) et les modèles JUR-B01/B02/B03 générés pour chaque boutique. Mentions légales v1.1, Confidentialité v1.2 et Cookies v1.1 restent des projets à vérifier. Les pages /cgu et /cgv sont actuellement des informations générales : les ventes de produits relèvent des CGV de la boutique et du vendeur identifié. Les documents de travail demeurent à valider juridiquement avant application contractuelle définitive. L'identité et les immatriculations de l'exploitant individuel, l'hébergeur effectif, les médiateurs de consommation et les traceurs déployés doivent être vérifiés sur justificatifs. Les anciennes références à une SAS, une holding ou une filiale non constituée ne valent pas identification de l'exploitant actuel.</>
+            )}
           </div>
         </section>
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14 max-w-6xl">
@@ -186,7 +192,7 @@ export default function PackLegal() {
                       className="text-xs text-muted-foreground flex items-center gap-2"
                     >
                       <span className="h-1 w-1 rounded-full bg-bib-gold" />
-                      {p}
+                      {translateUi(p)}
                     </li>
                   ))}
                 </ul>
