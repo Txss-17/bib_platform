@@ -1,9 +1,11 @@
 import { ArrowLeft, ArrowRight, BookOpen, BriefcaseBusiness, Clock3, GraduationCap } from "lucide-react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import PublicPageLayout from "@/components/layout/PublicPageLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSEO } from "@/hooks/useSEO";
 import { internshipTracks } from "@/pages/Carrieres";
+import { CareerApplicationDialog } from "@/components/talent/CareerApplicationDialog";
 
 type Copy = { fr: string; en: string };
 const copy = (fr: string, en: string): Copy => ({ fr, en });
@@ -47,6 +49,7 @@ const descriptions: Record<string, { introduction: Copy; context: Copy; learning
 
 export default function CarriereOffre() {
   const { code } = useParams<{ code: string }>();
+  const [applicationOpen, setApplicationOpen] = useState(false);
   const { lang } = useLanguage();
   const tr = (value: Copy) => value[lang];
   const opportunity = internshipTracks.find(item => item.code === code);
@@ -78,9 +81,9 @@ export default function CarriereOffre() {
           </div>
         </div>
         <p className="mt-7 max-w-3xl text-base leading-8 text-bib-ivory/85">{tr(details.introduction)}</p>
-        <Link to={`/carrieres?stage=${opportunity.code}#postuler`} className="mt-8 inline-flex items-center gap-2 rounded-full bg-bib-gold px-6 py-3 text-sm font-bold text-primary transition-opacity hover:opacity-90">
+        <button type="button" onClick={() => setApplicationOpen(true)} className="mt-8 inline-flex items-center gap-2 rounded-full bg-bib-gold px-6 py-3 text-sm font-bold text-primary transition-opacity hover:opacity-90">
           {tr(copy("Postuler à cette offre", "Apply for this opportunity"))}<ArrowRight size={18} />
-        </Link>
+        </button>
       </div>
     </section>
     <section className="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(270px,0.85fr)] lg:gap-16 lg:py-20">
@@ -105,15 +108,14 @@ export default function CarriereOffre() {
         <p className="mt-4 text-sm leading-7 text-muted-foreground">{tr(opportunity.profiles)}</p>
         <div className="mt-6 space-y-4 border-t border-border pt-6">
           <div><h3 className="text-sm font-semibold">{tr(copy("Pôle de rattachement", "Department"))}</h3><p className="mt-1 text-sm leading-6 text-muted-foreground">{tr(opportunity.pole)}</p></div>
-          <div><h3 className="text-sm font-semibold">{tr(copy("Responsable de rattachement", "Supervising role"))}</h3><p className="mt-1 text-sm leading-6 text-muted-foreground">{tr(opportunity.supervisor)}</p></div>
         </div>
         <div className="mt-6 border-t border-border pt-6">
           <h3 className="flex items-center gap-2 font-semibold"><BookOpen size={20} />{tr(copy("Un cadre d'apprentissage", "A learning environment"))}</h3>
           <p className="mt-3 text-sm leading-7 text-muted-foreground">{tr(copy("Les stages sont organisés avec un établissement de formation, des objectifs pédagogiques et un tutorat adapté.", "Internships involve an educational institution, learning goals and suitable supervision."))}</p>
         </div>
-        <Link to={`/carrieres?stage=${opportunity.code}#postuler`} className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90">
+        <button type="button" onClick={() => setApplicationOpen(true)} className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90">
           {tr(copy("Postuler", "Apply"))}<ArrowRight size={17} />
-        </Link>
+        </button>
       </aside>
     </section>
     <section className="bg-muted/35 px-5 py-12 sm:py-16">
@@ -123,5 +125,6 @@ export default function CarriereOffre() {
         <Link to="/carrieres#stages" className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-semibold hover:bg-muted">{tr(copy("Toutes les offres", "All opportunities"))}<ArrowRight size={17} /></Link>
       </div>
     </section>
+    <CareerApplicationDialog open={applicationOpen} onOpenChange={setApplicationOpen} initialStageCode={opportunity.code} />
   </PublicPageLayout>;
 }
