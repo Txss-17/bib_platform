@@ -1,10 +1,10 @@
 import { ArrowRight, Shapes, Users, ShieldCheck, Package, BriefcaseBusiness, GraduationCap, CheckCircle2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import PublicPageLayout from "@/components/layout/PublicPageLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSEO } from "@/hooks/useSEO";
-import { BibTalentApplicationForm } from "@/components/talent/BibTalentApplicationForm";
+import { CareerApplicationDialog } from "@/components/talent/CareerApplicationDialog";
 
 type Copy = { fr: string; en: string };
 const copy = (fr: string, en: string): Copy => ({ fr, en });
@@ -17,9 +17,6 @@ const messages = {
   stageIntro: copy("Explorez les opportunités BIB. Nos premières offres portent sur quatre domaines de stage, avec des missions pédagogiques encadrées et adaptées à chaque formation.", "Explore BIB opportunities. Our initial listings cover four internship fields with supervised learning assignments tailored to each course."),
   stageDuration: copy("Durée : 4 ou 8 semaines selon la convention", "Duration: 4 or 8 weeks, subject to the agreement"),
   stageProfiles: copy("Profils étudiants indicatifs", "Example student backgrounds"),
-  stagePole: copy("Pôle de rattachement", "Department"),
-  stageSupervisor: copy("Responsable de rattachement", "Supervising role"),
-  stageActivities: copy("Apprentissages et missions", "Learning activities and assignments"),
   stageDeliverables: copy("Livrables pédagogiques", "Educational deliverables"),
   stageGuardrails: copy("Limites du stage", "Scope and safeguards"),
   stageConditionsTitle: copy("Un stage encadré, des objectifs pédagogiques clairs", "Supervised internships with clear learning goals"),
@@ -32,7 +29,6 @@ export const internshipTracks = [
   {
     code: "STG-RD-01",
     pole: copy("Product Engineering — Produit et développement", "Product Engineering — Product and development"),
-    supervisor: copy("Responsable Product Engineering", "Head of Product Engineering"),
     icon: Shapes,
     title: copy("R&D et expérience utilisateur", "Product research and user experience"),
     profiles: copy("BUT Informatique, BTS SIO, BUT MMI, licence informatique, design UX/UI ou ergonomie.", "Computer science, IT services, multimedia, UX/UI design or interface ergonomics students."),
@@ -47,7 +43,6 @@ export const internshipTracks = [
   {
     code: "STG-MKT-01",
     pole: copy("Communication et marketing", "Communications and marketing"),
-    supervisor: copy("Responsable Communication et marketing", "Head of Communications and Marketing"),
     icon: Users,
     title: copy("Marketing et étude de marché", "Marketing and market research"),
     profiles: copy("BUT Techniques de commercialisation, BTS Communication, BTS NDRC, information-communication ou marketing.", "Business, marketing, communication, customer relations or market research students."),
@@ -62,7 +57,6 @@ export const internshipTracks = [
   {
     code: "STG-JUR-01",
     pole: copy("Qualité, audit et conformité", "Quality, audit and compliance"),
-    supervisor: copy("Responsable Conformité, avec appui juridique qualifié", "Compliance lead, supported by qualified legal supervision"),
     icon: ShieldCheck,
     title: copy("Recherche juridique et conformité documentaire", "Legal research and document compliance"),
     profiles: copy("BUT Carrières juridiques, licence de droit, droit du numérique, conformité ou protection des données.", "Law, legal practice, digital law, compliance or data protection students."),
@@ -77,7 +71,6 @@ export const internshipTracks = [
   {
     code: "STG-FRN-01",
     pole: copy("Marketplace — Relations fournisseurs", "Marketplace — Supplier relations"),
-    supervisor: copy("Responsable Relations fournisseurs", "Supplier Relations Lead"),
     icon: Package,
     title: copy("Relations et qualification fournisseurs", "Supplier relations and documentary qualification"),
     profiles: copy("BTS Commerce international, BUT QLIO, techniques de commercialisation, achats ou logistique.", "International trade, quality, industrial logistics, business, purchasing or supply chain students."),
@@ -97,11 +90,20 @@ export default function Carrieres() {
   const [searchParams] = useSearchParams();
   const requestedStage = searchParams.get("stage");
   const selectedStage = internshipTracks.some(track => track.code === requestedStage) ? requestedStage : null;
+  const [applicationStage, setApplicationStage] = useState<string | null>(selectedStage);
+  const [applicationOpen, setApplicationOpen] = useState(
+    () => window.location.hash === "#postuler" || searchParams.get("postuler") === "1"
+  );
   useEffect(() => {
-    if (selectedStage && window.location.hash === "#postuler") {
-      requestAnimationFrame(() => document.getElementById("postuler")?.scrollIntoView({ block: "start" }));
+    if (window.location.hash === "#postuler" || searchParams.get("postuler") === "1") {
+      setApplicationStage(selectedStage);
+      setApplicationOpen(true);
     }
-  }, [selectedStage]);
+  }, [selectedStage, searchParams]);
+  const openApplication = (code: string | null) => {
+    setApplicationStage(code);
+    setApplicationOpen(true);
+  };
   useSEO({ title: tr(messages.seoTitle), description: tr(messages.seoDescription) });
 
   return <PublicPageLayout>
@@ -129,7 +131,7 @@ export default function Carrieres() {
         <p className="mt-3 text-sm leading-6 text-muted-foreground">{tr(messages.stageIntro)}</p>
             </div>
       <div className="mt-7 grid gap-4 md:grid-cols-2">
-        {internshipTracks.map(({ code, icon: Icon, title, profiles, pole, supervisor, missions }) => (
+        {internshipTracks.map(({ code, icon: Icon, title, profiles }) => (
           <article key={code} className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6" aria-labelledby={code}>
             <div className="flex items-start gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-bib-gold/15 text-accent-ink"><Icon size={23} /></div>
@@ -139,29 +141,16 @@ export default function Carrieres() {
                 <p className="mt-1 text-xs text-muted-foreground">{tr(messages.stageDuration)}</p>
               </div>
             </div>
-            <div className="mt-5 space-y-3 text-sm leading-6">
+            <div className="mt-5 text-sm leading-6">
               <p><strong className="block text-foreground">{tr(messages.stageProfiles)}</strong><span className="text-muted-foreground">{tr(profiles)}</span></p>
-              <p><strong className="block text-foreground">{tr(messages.stagePole)}</strong><span className="text-muted-foreground">{tr(pole)}</span></p>
-              <p><strong className="block text-foreground">{tr(messages.stageSupervisor)}</strong><span className="text-muted-foreground">{tr(supervisor)}</span></p>
-              <div>
-                <strong className="block text-foreground">{tr(messages.stageActivities)}</strong>
-                <ul className="mt-2 space-y-2 text-muted-foreground">
-                  {missions.map((mission, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <span aria-hidden="true" className="shrink-0 text-accent-ink">–</span>
-                      <span>{tr(mission)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
             </div>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link to={`/carrieres/offres/${code}`} className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm font-semibold hover:bg-muted">
                 {lang === "en" ? "View opportunity" : "Voir l’offre"} <ArrowRight size={16} />
               </Link>
-              <Link to={`/carrieres?stage=${code}#postuler`} className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90">
+              <button type="button" onClick={() => openApplication(code)} className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90">
                 {lang === "en" ? "Apply" : "Postuler"} <ArrowRight size={16} />
-              </Link>
+              </button>
             </div>
           </article>
         ))}
@@ -197,9 +186,10 @@ export default function Carrieres() {
         <h2 className="mt-3 font-display text-2xl font-semibold sm:text-3xl">{lang === "en" ? "Apply to BIB" : "Postuler chez BIB"}</h2>
         <p className="mt-3 text-sm leading-7 text-muted-foreground">{lang === "en" ? "Choose the opportunity that suits your studies, then submit your details securely to the BIB recruitment team." : "Choisissez l’offre correspondant à votre formation, puis transmettez votre dossier de manière sécurisée à l’équipe chargée des candidatures BIB."}</p>
       </div>
-      <BibTalentApplicationForm key={selectedStage ?? "general"} initialStageCode={selectedStage} />
+      <button type="button" onClick={() => openApplication(null)} className="mt-2 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90">
+        {lang === "en" ? "Open application form" : "Ouvrir le formulaire de candidature"} <ArrowRight size={16} />
+      </button>
     </section>
-
-
+    <CareerApplicationDialog open={applicationOpen} onOpenChange={setApplicationOpen} initialStageCode={applicationStage} />
   </PublicPageLayout>;
 }
