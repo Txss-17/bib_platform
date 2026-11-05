@@ -2,6 +2,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { EnglishConsentCharter } from "@/components/legal/EnglishSupplementalLegalPages";
 
 const processes = [
   {
@@ -49,10 +51,12 @@ const processes = [
 ] as const;
 
 export default function LegalConsentCharter() {
+  const { lang } = useLanguage();
   useSEO({
-    title: "Données et consentements — Pack légal BIB",
-    description: "Informations sur les finalités, bases légales, consentements et destinataires des données sur BIB Platform, BIB Talent et les boutiques.",
+    title: lang === "en" ? "Data and consent — BIB legal centre" : "Données et consentements — Pack légal BIB",
+    description: lang === "en" ? "Purpose, lawful basis, consent and recipients of data on BIB Platform and BIB Talent." : "Informations sur les finalités, bases légales, consentements et destinataires des données sur BIB Platform, BIB Talent et les boutiques.",
   });
+  if (lang === "en") return <EnglishConsentCharter />;
   return <div className="min-h-screen bg-background">
     <Header />
     <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-14">
