@@ -67,6 +67,16 @@ describe("BIB Talent bilingual content", () => {
       expect(form).toContain(code);
     }
     expect(careers).toContain("Découvrir nos offres");
+    expect(careers).toContain('stagePole: copy("Pôle de rattachement"');
+    expect(careers).toContain('stageSupervisor: copy("Responsable de rattachement"');
+    expect(careers).toContain('tr(pole)');
+    expect(careers).toContain('tr(supervisor)');
+    expect(careers).toContain('missions.map((mission, index)');
+    expect(detail).toContain("tr(opportunity.pole)");
+    expect(detail).toContain("tr(opportunity.supervisor)");
+    expect(detail).toContain("opportunity.missions.map");
+    expect(careers).not.toContain('to="/bib-talent"');
+    expect(detail).not.toContain('to="/bib-talent"');
     expect(careers).toContain('id="postuler"');
     expect(careers).toContain('initialStageCode={selectedStage}');
     expect(careers).toContain('/carrieres/offres/');
