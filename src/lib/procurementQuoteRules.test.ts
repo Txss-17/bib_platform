@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createProcurementQuoteDraft } from "./procurementQuoteRules";
+import { createProcurementQuoteDraft, createSampleQuoteDraft } from "./procurementQuoteRules";
 
 const input = {
   bibProductId: "BIB-1", merchantId: "M-1", supplierId: "S-1",
@@ -9,6 +9,14 @@ const input = {
   logisticsCents: 12000, bibServicesCents: 15000, otherCostsCents: 3000,
 };
 describe("procurementQuoteRules", () => {
+  it("prépare un devis d'échantillon avant approbation, sans l'assimiler à une commande de stock", () => {
+    const { sampleApprovalId: ignored, ...sampleInput } = input;
+    const result = createSampleQuoteDraft({ ...sampleInput, lines: [{ ...input.lines[0], quantity: 1 }] });
+    expect(result.kind).toBe("sample");
+    expect(result.supplierGoodsCents).toBe(800);
+    expect(result.supplierIdentityDisclosed).toBe(true);
+  });
+
   it("calcule le prix commercial global sans inventer de TVA", () => {
     const quote = createProcurementQuoteDraft(input);
     expect(quote.supplierGoodsCents).toBe(80000);
