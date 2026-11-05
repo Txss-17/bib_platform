@@ -907,21 +907,16 @@ export default function App() {
 
                     <Route path="/centre-aide" element={<CentreAide />} />
 
-                    <Route
-                      path="/centre-aide/faq"
-                      element={<CentreAideFaq />}
-                    />
+                    <Route path="/centre-aide/faq" element={<Navigate to="/centre-aide" replace />} />
+                    <Route path="/centre-aide/faq/:persona" element={<CentreAideFaq />} />
+                    <Route path="/centre-aide/guide" element={<Navigate to="/centre-aide" replace />} />
+                    <Route path="/centre-aide/guide/:slug" element={<CentreAideGuide />} />
 
-                    <Route
-                      path="/centre-aide/guide"
-                      element={<CentreAideGuide />}
-                    />
-
-                    <Route path="/help" element={<CentreAide />} />
-
-                    <Route path="/help/faq" element={<CentreAideFaq />} />
-
-                    <Route path="/help/guide" element={<CentreAideGuide />} />
+                    <Route path="/help" element={<Navigate to="/centre-aide" replace />} />
+                    <Route path="/help/faq" element={<Navigate to="/centre-aide" replace />} />
+                    <Route path="/help/faq/:persona" element={<CentreAideFaq />} />
+                    <Route path="/help/guide" element={<Navigate to="/centre-aide" replace />} />
+                    <Route path="/help/guide/:slug" element={<CentreAideGuide />} />
 
                     <Route path="/pack-legal" element={<PackLegal />} />
                       <Route path="/donnees-et-consentements" element={<LegalConsentCharter />} />
