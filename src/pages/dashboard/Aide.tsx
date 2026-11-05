@@ -41,6 +41,9 @@ const faqItems = [
   { question: "Puis-je préparer des publicités dans BIB ?", answer: "Une proposition ou un brouillon n'est pas une publicité publiée. La diffusion exige une connexion officielle au compte publicitaire, la validation du contenu et une autorisation explicite avant toute dépense." },
   { question: "Quelles données sont conservées ?", answer: "Les données métier doivent être enregistrées sur les services serveur autorisés, pas dans le stockage local du navigateur. L'information et les éventuels consentements facultatifs sont présentés avant les soumissions ; consultez le pack légal." },
   { question: "Comment solliciter une aide humaine ?", answer: "Utilisez le formulaire de contact ci-contre ou les tickets du support. Une confirmation n'est affichée qu'après enregistrement effectif, et l'assistant IA ne doit pas créer de ticket sans votre accord." },
+  { question: "Comment gérer les cookies ?", answer: "Depuis le gestionnaire de cookies, vous pouvez accepter, refuser ou personnaliser les traceurs facultatifs. L'accord aux cookies ne vaut pas consentement à recevoir des communications marketing." },
+  { question: "Pourquoi certaines fonctions de la boutique ne sont-elles pas accessibles ?", answer: "L'accès aux modules marchands dépend du compte habilité, des validations et des intégrations effectivement activées. Une démonstration n'autorise pas la vente ou une opération réelle." },
+  { question: "Comment consulter les stages BIB ?", answer: "Les offres sont présentées sur la page Carrières. Cliquez sur Voir l'offre pour consulter le pôle et les missions, puis Postuler pour ouvrir une fenêtre de candidature ; BIB Talent présente l'accompagnement des équipes." },
 ];
 
 const resources = [
@@ -49,9 +52,9 @@ const resources = [
       return translateUi("Guide de démarrage");
     },
     get desc() {
-      return translateUi("Configurez votre première boutique en 10 minutes");
+      return translateUi("Comprendre les accès et le fonctionnement de BIB");
     },
-    to: "/centre-aide/guide",
+    to: "/centre-aide/guide/premiers-pas",
   },
   {
     get label() {
