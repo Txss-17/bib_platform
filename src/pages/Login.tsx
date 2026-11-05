@@ -30,6 +30,7 @@ import {
   Shield,
 } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { isProtectedGuidePath } from "@/lib/centreAideAccess";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -71,7 +72,8 @@ export default function Login() {
     from.startsWith("/seller") ||
     from.startsWith("/merchant");
 
-  const destination = isPlatformPath ? from : "/dashboard";
+  // Only a known, protected guide can be used as a return URL outside the dashboard.
+  const destination = isPlatformPath || isProtectedGuidePath(from) ? from : "/dashboard";
 
   const getErrorMessage = (errorMsg: string) => {
     const normalizedMessage = errorMsg.toLowerCase();
