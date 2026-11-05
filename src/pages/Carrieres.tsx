@@ -109,6 +109,9 @@ export default function Carrieres() {
               <p><strong className="block text-foreground">{tr(messages.stageDeliverables)}</strong><span className="text-muted-foreground">{tr(deliverables)}</span></p>
               <p className="rounded-lg bg-muted/50 p-3"><strong className="block text-foreground">{tr(messages.stageGuardrails)}</strong><span className="text-muted-foreground">{tr(limits)}</span></p>
             </div>
+            <Link to={`/bib-talent?stage=${code}`} className="mt-5 inline-flex items-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm font-semibold hover:bg-muted">
+              {lang === "en" ? "Apply for this internship" : "Postuler à ce stage"} <ArrowRight size={16} />
+            </Link>
           </article>
         ))}
       </div>
