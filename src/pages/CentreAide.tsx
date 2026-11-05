@@ -118,6 +118,8 @@ export default function CentreAide() {
     "Retour",
     "Paiement",
     "Vendre avec BIB",
+    "Carrières",
+    "Cookies",
     "Compte",
   ];
 
