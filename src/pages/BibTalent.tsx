@@ -24,7 +24,7 @@ const messages = {
   heroIntro: copy("développe un écosystème de commerce qui met en relation", "is developing a commerce ecosystem connecting"),
   actors: copy("marchands, clients, fournisseurs et partenaires logistiques", "merchants, customers, suppliers and logistics partners"),
   heroGoal: copy("L'ambition : simplifier les expériences de vente, d'achat et de coordination au sein d'une même plateforme.", "The ambition: simplify selling, buying and coordination through a connected platform."),
-  heroTalent: copy("Avec BIB Talent, découvrez des expériences encadrées, des missions concrètes et un accompagnement adapté à votre parcours.", "With BIB Talent, explore supervised experiences, practical assignments and support tailored to your learning journey."),
+  heroTalent: copy("Vous rejoignez les équipes BIB ? BIB Talent vous accompagne tout au long de votre parcours.", "Joining the BIB teams? BIB Talent supports you throughout your journey."),
   understand: copy("Comprendre BIB", "Understand BIB"),
   howJoin: copy("Découvrir nos offres", "Explore opportunities"),
   vision: copy("La vision du projet", "The project's vision"),
