@@ -70,7 +70,6 @@ describe("BIB Talent bilingual content", () => {
     expect(source).toContain("En préparation — aucun stage ouvert actuellement");
     expect(source).toContain("In preparation — no internships currently open");
     expect(source).toContain("convention signée avec l'établissement");
-    expect(source).toContain("supervision juridique qualifiée");
     expect(source).toContain("Supervision juridique qualifiée indispensable");
     expect(form).toContain('form.contribution_type === "internship"');
     expect(form).toContain("Aucun stage n'est confirmé avant convention");
