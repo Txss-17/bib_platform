@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/contexts/AuthContext";
+import { guideAccessHref } from "@/lib/centreAideAccess";
 import {
   personas,
   guideGroups,
@@ -41,7 +42,8 @@ export default function CentreAide() {
     ),
   });
 
-  const { user } = useAuth();
+  const { user, accountType } = useAuth();
+  const canReadProtectedGuides = !!user && accountType === "platform";
   const [query, setQuery] = useState("");
 
   const q = normalize(query.trim());
@@ -273,7 +275,7 @@ export default function CentreAide() {
                     group.guides.slice(0, 6).map((guide) => (
                       <Link
                         key={guide.slug}
-                        to={`/centre-aide/guide/${guide.slug}`}
+                        to={guideAccessHref(guide, canReadProtectedGuides)}
                         className="group"
                       >
                         <Card className="h-full p-5 transition-all hover:-translate-y-0.5 hover:shadow-md">
@@ -284,7 +286,7 @@ export default function CentreAide() {
                           <h3 className="mt-1 flex items-center gap-1.5 font-semibold text-foreground">
                             {guide.title}
 
-                            {guide.requiresAuth && !user && (
+                            {guide.requiresAuth && !canReadProtectedGuides && (
                               <Lock
                                 className="h-3 w-3 text-muted-foreground"
                                 aria-label={translateUi(
@@ -295,7 +297,9 @@ export default function CentreAide() {
                           </h3>
 
                           <p className="mt-2 text-sm text-muted-foreground">
-                            {guide.desc}
+                            {guide.requiresAuth && !canReadProtectedGuides
+                              ? translateUi("Connexion nécessaire pour lire la description de ce guide.")
+                              : guide.desc}
                           </p>
 
                           <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-bib-gold transition-all group-hover:gap-2">
@@ -464,7 +468,7 @@ export default function CentreAide() {
                       {guides.slice(0, 5).map((guide) => (
                         <li key={guide.slug}>
                           <Link
-                            to={`/centre-aide/guide/${guide.slug}`}
+                            to={guideAccessHref(guide, canReadProtectedGuides)}
                             className="group flex items-start gap-2 text-sm"
                           >
                             <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-bib-gold transition-transform group-hover:translate-x-0.5" />
@@ -473,7 +477,7 @@ export default function CentreAide() {
                               <span className="inline-flex items-center gap-1.5 font-medium text-foreground group-hover:text-foreground">
                                 {guide.title}
 
-                                {guide.requiresAuth && !user && (
+                                {guide.requiresAuth && !canReadProtectedGuides && (
                                   <Lock
                                     className="h-3 w-3 text-muted-foreground"
                                     aria-label={translateUi(
@@ -484,7 +488,9 @@ export default function CentreAide() {
                               </span>
 
                               <span className="mt-0.5 block text-xs text-muted-foreground">
-                                {guide.desc}
+                                {guide.requiresAuth && !canReadProtectedGuides
+                                  ? translateUi("Connexion nécessaire pour lire la description de ce guide.")
+                                  : guide.desc}
                               </span>
                             </span>
                           </Link>
