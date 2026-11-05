@@ -8,12 +8,14 @@ import { Card } from "@/components/ui/card";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/contexts/AuthContext";
 import { guideGroups, toneClass } from "@/lib/centreAideData";
+import { guideAccessHref } from "@/lib/centreAideAccess";
 import { ArrowLeft, ArrowRight, BookOpen, Lock } from "lucide-react";
 
 export default function CentreAideGuide() {
   useLanguage();
   const { slug } = useParams<{ slug: string }>();
-  const { user } = useAuth();
+  const { user, accountType, loading } = useAuth();
+  const canReadProtectedGuides = !!user && accountType === "platform";
 
   // Look for a group by slug OR an individual guide by slug across groups
   const group = guideGroups.find((g) => g.slug === slug);
@@ -30,13 +32,20 @@ export default function CentreAideGuide() {
         ? `${guide.title} — Guide BIB`
         : "Guide — Centre d'aide",
     description:
-      group?.intro ??
-      guide?.long ??
-      guide?.desc ??
-      "Guide pratique Brand-In-A-Box.",
+      guide?.requiresAuth && !canReadProtectedGuides
+        ? "Connectez-vous à votre compte BIB Platform pour consulter ce guide."
+        : group?.intro ?? guide?.long ?? guide?.desc ?? "Guide pratique Brand-In-A-Box.",
   });
 
   if (!group && !guide) return <Navigate to="/centre-aide" replace />;
+  // Never render the guide's "Comment ça marche" page to a visitor.
+  // Wait for the auth session to hydrate before deciding whether to redirect.
+  if (guide?.requiresAuth && loading) {
+    return <div className="min-h-screen bg-background" aria-busy="true" />;
+  }
+  if (guide?.requiresAuth && !canReadProtectedGuides) {
+    return <Navigate to={guideAccessHref(guide, false)} replace />;
+  }
 
   if (group) {
     const Icon = group.icon;
@@ -76,7 +85,7 @@ export default function CentreAideGuide() {
                 <Card key={g.slug} className="p-5 flex flex-col">
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="font-semibold text-foreground">{g.title}</h3>
-                    {g.requiresAuth && !user && (
+                    {g.requiresAuth && !canReadProtectedGuides && (
                       <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground">
                         <Lock className="h-3 w-3" />{" "}
                         {translateUi("Compte requis")}
@@ -84,21 +93,21 @@ export default function CentreAideGuide() {
                     )}
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground flex-1">
-                    {g.long ?? g.desc}
+                    {g.requiresAuth && !canReadProtectedGuides
+                      ? translateUi("Connectez-vous avec un compte marchand BIB pour consulter la description de ce guide.")
+                      : (g.long ?? g.desc)}
                   </p>
                   <div className="mt-4 flex gap-2">
                     <Button asChild variant="outline" size="sm">
-                      <Link to={`/centre-aide/guide/${g.slug}`}>
+                      <Link to={guideAccessHref(g, canReadProtectedGuides)}>
                         {translateUi("En savoir plus")}
                       </Link>
                     </Button>
                     <Button asChild size="sm">
                       <Link
-                        to={
-                          g.requiresAuth && !user
-                            ? `/login?next=${encodeURIComponent(g.to)}`
-                            : g.to
-                        }
+                        to={g.requiresAuth && !canReadProtectedGuides
+                          ? guideAccessHref(g, false)
+                          : g.to}
                       >
                         {translateUi("Ouvrir") + " "}
                         <ArrowRight className="ml-1 h-3.5 w-3.5" />
@@ -118,8 +127,7 @@ export default function CentreAideGuide() {
   // Single guide page
   const g = guide!;
   const GroupIcon = g.group.icon;
-  const targetTo =
-    g.requiresAuth && !user ? `/login?next=${encodeURIComponent(g.to)}` : g.to;
+  const targetTo = g.to;
 
   return (
     <div className="min-h-screen bg-background">
@@ -163,9 +171,7 @@ export default function CentreAideGuide() {
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild>
                 <Link to={targetTo}>
-                  {g.requiresAuth && !user
-                    ? translateUi("Se connecter pour accéder")
-                    : translateUi("Ouvrir la page")}
+                  {translateUi("Ouvrir la page")}
                   <ArrowRight className="ml-1 h-3.5 w-3.5" />
                 </Link>
               </Button>
@@ -175,14 +181,7 @@ export default function CentreAideGuide() {
                 </Link>
               </Button>
             </div>
-            {g.requiresAuth && !user && (
-              <p className="mt-4 text-xs text-muted-foreground inline-flex items-center gap-1">
-                <Lock className="h-3 w-3" />{" "}
-                {translateUi(
-                  "Cette page nécessite un compte. Vous serez redirigé après connexion.",
-                )}
-              </p>
-            )}
+
           </Card>
         </section>
       </main>
