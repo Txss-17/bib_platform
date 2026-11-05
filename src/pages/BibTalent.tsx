@@ -139,8 +139,8 @@ export default function BibTalent() {
     <section className="bg-muted/30 py-10 sm:py-12">
       <div className="mx-auto flex max-w-6xl flex-col gap-5 px-5 sm:px-8 md:flex-row md:items-center md:justify-between">
         <div className="max-w-2xl">
-          <h2 className="font-display text-xl font-semibold sm:text-2xl">{lang === "en" ? "Short internships: proposed learning pathways" : "Stages courts : parcours pédagogiques en préparation"}</h2>
-          <p className="mt-2 text-sm leading-7 text-muted-foreground">{lang === "en" ? "Four proposed assignments are described on the dedicated Careers page. No placements are currently open; internships require an approved agreement and qualified supervision." : "Quatre missions envisagées sont décrites sur la page Carrières. Aucun stage n'est ouvert actuellement : convention et encadrement adapté restent indispensables."}</p>
+          <h2 className="font-display text-xl font-semibold sm:text-2xl">{lang === "en" ? "Short internships and learning pathways" : "Stages courts et parcours pédagogiques"}</h2>
+          <p className="mt-2 text-sm leading-7 text-muted-foreground">{lang === "en" ? "Discover the four internship pathways on our Careers page, with student backgrounds, missions and educational deliverables. Internships are supervised and covered by an agreement with the educational institution." : "Découvrez les quatre offres de stage sur la page Carrières, leurs profils étudiants, missions et livrables pédagogiques. Les stages sont encadrés et conventionnés avec l’établissement."}</p>
         </div>
         <a href="/carrieres" className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-semibold hover:bg-muted">
           {lang === "en" ? "Explore Careers" : "Consulter les Carrières"} <ArrowRight size={16} />
