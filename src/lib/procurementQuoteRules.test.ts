@@ -10,8 +10,14 @@ const input = {
 };
 describe("procurementQuoteRules", () => {
   it("prépare un devis d'échantillon avant approbation, sans l'assimiler à une commande de stock", () => {
-    const { sampleApprovalId: ignored, ...sampleInput } = input;
-    const result = createSampleQuoteDraft({ ...sampleInput, lines: [{ ...input.lines[0], quantity: 1 }] });
+    const result = createSampleQuoteDraft({
+      bibProductId: input.bibProductId, merchantId: input.merchantId,
+      supplierId: input.supplierId, supplierLegalName: input.supplierLegalName,
+      supplierLegalIdentifier: input.supplierLegalIdentifier,
+      lines: [{ ...input.lines[0], quantity: 1 }],
+      logisticsCents: input.logisticsCents, bibServicesCents: input.bibServicesCents,
+      otherCostsCents: input.otherCostsCents,
+    });
     expect(result.kind).toBe("sample");
     expect(result.supplierGoodsCents).toBe(800);
     expect(result.supplierIdentityDisclosed).toBe(true);
