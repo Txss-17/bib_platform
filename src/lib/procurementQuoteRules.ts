@@ -21,6 +21,7 @@ export interface ProcurementQuoteInput {
   otherCostsCents: number;
 }
 export interface ProcurementQuoteDraft {
+  kind: "sample" | "stock";
   status: "draft";
   commercialTotalExcludingTaxCents: number;
   supplierGoodsCents: number;
@@ -36,15 +37,15 @@ const money = (n: number, name: string) => {
   if (!Number.isSafeInteger(n) || n < 0) throw new Error(`Montant invalide : ${name}`);
   return n;
 };
-export function createProcurementQuoteDraft(input: ProcurementQuoteInput): ProcurementQuoteDraft {
+function createQuoteDraft(input: ProcurementQuoteInput, kind: "sample" | "stock"): ProcurementQuoteDraft {
   if (!input.merchantId.trim() || !input.supplierId.trim() || !input.bibProductId.trim()) {
     throw new Error("Acheteur, fournisseur et produit BIB obligatoires.");
   }
   if (!input.supplierLegalName.trim() || !input.supplierLegalIdentifier.trim()) {
     throw new Error("Le fournisseur doit être identifié sur le devis contractuel.");
   }
-  if (!input.sampleApprovalId?.trim()) throw new Error("Validation d'échantillon requise avant devis de stock.");
-  if (!input.lines.length) throw new Error("Aucune ligne de stock.");
+  if (kind === "stock" && !input.sampleApprovalId?.trim()) throw new Error("Validation d'échantillon requise avant devis de stock.");
+  if (!input.lines.length) throw new Error("Aucune ligne à facturer.");
   let goods = 0;
   for (const line of input.lines) {
     if (!line.sku.trim() || !line.supplierProductRef.trim() || !Number.isSafeInteger(line.quantity) || line.quantity <= 0) {
@@ -59,10 +60,19 @@ export function createProcurementQuoteDraft(input: ProcurementQuoteInput): Procu
   const total = goods + logistics + services + other;
   if (!Number.isSafeInteger(total)) throw new Error("Total hors limites.");
   return {
-    status: "draft", commercialTotalExcludingTaxCents: total,
+    kind, status: "draft", commercialTotalExcludingTaxCents: total,
     supplierGoodsCents: goods, bibServicesCents: services,
     logisticsCents: logistics, otherCostsCents: other,
     supplierIdentityDisclosed: true, taxCalculationRequired: true,
     buyer: input.merchantId, seller: input.supplierLegalName,
   };
+}
+
+/** Préparation du devis d'échantillon, avant test et validation physique. */
+export function createSampleQuoteDraft(input: Omit<ProcurementQuoteInput, "sampleApprovalId">): ProcurementQuoteDraft {
+  return createQuoteDraft(input, "sample");
+}
+/** Préparation d'un devis de stock après validation explicite de l'échantillon. */
+export function createProcurementQuoteDraft(input: ProcurementQuoteInput): ProcurementQuoteDraft {
+  return createQuoteDraft(input, "stock");
 }
