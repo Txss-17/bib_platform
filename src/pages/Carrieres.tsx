@@ -1,8 +1,10 @@
-import { ArrowRight, Shapes, Users, ShieldCheck, Package } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowRight, Shapes, Users, ShieldCheck, Package, BriefcaseBusiness, GraduationCap, CheckCircle2 } from "lucide-react";
+import { useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import PublicPageLayout from "@/components/layout/PublicPageLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSEO } from "@/hooks/useSEO";
+import { BibTalentApplicationForm } from "@/components/talent/BibTalentApplicationForm";
 
 type Copy = { fr: string; en: string };
 const copy = (fr: string, en: string): Copy => ({ fr, en });
@@ -24,7 +26,7 @@ const messages = {
   stageInterestNotice: copy("Pour transmettre votre profil, sélectionnez « Stage » dans le formulaire BIB Talent, indiquez votre formation ainsi que le code de la mission souhaitée. Un échange et une convention avec l’établissement restent nécessaires avant l’accueil.", "To share your profile, choose “Internship” in the BIB Talent form and include your course and preferred assignment code. A discussion and an agreement with your educational institution are required before placement."),
 };
 
-const internshipTracks = [
+export const internshipTracks = [
   {
     code: "STG-RD-01",
     icon: Shapes,
@@ -66,6 +68,14 @@ const internshipTracks = [
 export default function Carrieres() {
   const { lang } = useLanguage();
   const tr = (value: Copy) => value[lang];
+  const [searchParams] = useSearchParams();
+  const requestedStage = searchParams.get("stage");
+  const selectedStage = internshipTracks.some(track => track.code === requestedStage) ? requestedStage : null;
+  useEffect(() => {
+    if (selectedStage && window.location.hash === "#postuler") {
+      requestAnimationFrame(() => document.getElementById("postuler")?.scrollIntoView({ block: "start" }));
+    }
+  }, [selectedStage]);
   useSEO({ title: tr(messages.seoTitle), description: tr(messages.seoDescription) });
 
   return <PublicPageLayout>
@@ -93,36 +103,66 @@ export default function Carrieres() {
         <p className="mt-3 text-sm leading-6 text-muted-foreground">{tr(messages.stageIntro)}</p>
             </div>
       <div className="mt-7 grid gap-4 md:grid-cols-2">
-        {internshipTracks.map(({ code, icon: Icon, title, profiles, activities, deliverables, limits }) => (
+        {internshipTracks.map(({ code, icon: Icon, title, profiles, activities }) => (
           <article key={code} className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6" aria-labelledby={code}>
             <div className="flex items-start gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-bib-gold/15 text-accent-ink"><Icon size={23} /></div>
               <div>
                 <p className="text-xs font-semibold tracking-wide text-muted-foreground">{code}</p>
-                <h3 id={code} className="mt-1 text-lg font-semibold leading-snug">{tr(title)}</h3>
+                <h3 id={code} className="mt-1 text-lg font-semibold leading-snug"><Link className="hover:text-accent-ink hover:underline" to={`/carrieres/offres/${code}`}>{tr(title)}</Link></h3>
                 <p className="mt-1 text-xs text-muted-foreground">{tr(messages.stageDuration)}</p>
               </div>
             </div>
             <div className="mt-5 space-y-3 text-sm leading-6">
               <p><strong className="block text-foreground">{tr(messages.stageProfiles)}</strong><span className="text-muted-foreground">{tr(profiles)}</span></p>
               <p><strong className="block text-foreground">{tr(messages.stageActivities)}</strong><span className="text-muted-foreground">{tr(activities)}</span></p>
-              <p><strong className="block text-foreground">{tr(messages.stageDeliverables)}</strong><span className="text-muted-foreground">{tr(deliverables)}</span></p>
-              <p className="rounded-lg bg-muted/50 p-3"><strong className="block text-foreground">{tr(messages.stageGuardrails)}</strong><span className="text-muted-foreground">{tr(limits)}</span></p>
             </div>
-            <Link to={`/bib-talent?stage=${code}`} className="mt-5 inline-flex items-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm font-semibold hover:bg-muted">
-              {lang === "en" ? "Apply for this internship" : "Postuler à ce stage"} <ArrowRight size={16} />
-            </Link>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link to={`/carrieres/offres/${code}`} className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm font-semibold hover:bg-muted">
+                {lang === "en" ? "View opportunity" : "Voir l’offre"} <ArrowRight size={16} />
+              </Link>
+              <Link to={`/carrieres?stage=${code}#postuler`} className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90">
+                {lang === "en" ? "Apply" : "Postuler"} <ArrowRight size={16} />
+              </Link>
+            </div>
           </article>
         ))}
       </div>
-      <div className="mt-6 rounded-2xl border border-border bg-muted/40 p-5 sm:p-6">
-        <h3 className="text-lg font-semibold">{tr(messages.stageConditionsTitle)}</h3>
-        <p className="mt-2 text-sm leading-7 text-muted-foreground">{tr(messages.stageConditions)}</p>
-        <p className="mt-4 text-xs leading-5 text-muted-foreground">{tr(messages.stageInterestNotice)}</p>
-        <Link to="/bib-talent" className="mt-5 inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-semibold hover:bg-muted">
-          {tr(messages.stageInterest)} <ArrowRight size={16} className="ml-2" />
+      <div className="mt-10 rounded-2xl border border-border bg-muted/40 p-6 sm:p-8">
+        <h3 className="flex items-center gap-3 text-xl font-semibold"><GraduationCap size={23} />{tr(messages.stageConditionsTitle)}</h3>
+        <p className="mt-3 text-sm leading-7 text-muted-foreground">{tr(messages.stageConditions)}</p>
+        <Link to="/bib-talent" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-accent-ink hover:underline">
+          {lang === "en" ? "Discover the BIB Talent experience" : "Découvrir l’expérience BIB Talent"} <ArrowRight size={16} />
         </Link>
       </div>
+    </section>
+
+    <section className="bg-muted/35 py-16 sm:py-20" aria-label={lang === "en" ? "Career journey" : "Parcours de candidature"}>
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+        <div className="max-w-3xl">
+          <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-ink">{lang === "en" ? "Your next step" : "Votre prochaine étape"}</span>
+          <h2 className="mt-3 font-display text-2xl font-semibold sm:text-3xl">{lang === "en" ? "How to join BIB" : "Comment rejoindre BIB ?"}</h2>
+        </div>
+        <div className="mt-7 grid gap-4 md:grid-cols-3">
+          {[
+            { icon: BriefcaseBusiness, fr: "Explorez les missions", en: "Explore assignments", detailFr: "Consultez le détail de chaque offre pour identifier celle qui correspond à votre parcours.", detailEn: "Read each opportunity to find the assignment that matches your background." },
+            { icon: CheckCircle2, fr: "Transmettez votre profil", en: "Share your profile", detailFr: "Précisez vos études, vos compétences et l’opportunité choisie via le formulaire ci-dessous.", detailEn: "Share your studies, skills and selected opportunity using the form below." },
+            { icon: GraduationCap, fr: "Construisez un parcours encadré", en: "Agree a supervised pathway", detailFr: "Les modalités pédagogiques sont définies avec l’établissement avant tout stage.", detailEn: "Learning arrangements are agreed with the educational institution before any internship." },
+          ].map(({icon: Icon,fr,en,detailFr,detailEn}) => <article key={fr} className="rounded-2xl border border-border bg-card p-6">
+            <Icon className="text-accent-ink" size={25} /><h3 className="mt-4 font-semibold">{lang === "en" ? en : fr}</h3>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">{lang === "en" ? detailEn : detailFr}</p>
+          </article>)}
+        </div>
+      </div>
+    </section>
+
+    <section id="postuler" className="mx-auto max-w-6xl scroll-mt-28 px-5 py-16 sm:px-8 lg:py-20">
+      <div className="mb-8 max-w-3xl">
+        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-ink">{lang === "en" ? "Applications" : "Candidatures"}</span>
+        <h2 className="mt-3 font-display text-2xl font-semibold sm:text-3xl">{lang === "en" ? "Apply to BIB" : "Postuler chez BIB"}</h2>
+        <p className="mt-3 text-sm leading-7 text-muted-foreground">{lang === "en" ? "Choose the opportunity that suits your studies, then submit your details securely to the BIB recruitment team." : "Choisissez l’offre correspondant à votre formation, puis transmettez votre dossier de manière sécurisée à l’équipe chargée des candidatures BIB."}</p>
+      </div>
+      <BibTalentApplicationForm key={selectedStage ?? "general"} initialStageCode={selectedStage} />
     </section>
 
 
