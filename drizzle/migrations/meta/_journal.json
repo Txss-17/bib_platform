@@ -183,6 +183,13 @@
       "when": 1793820875852,
       "tag": "0025_store_legal_governance_and_order_evidence",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1793836800000,
+      "tag": "0026_scoped_email_marketing_consent",
+      "breakpoints": true
     }
   ]
 }

@@ -214,4 +214,10 @@ describe("Storefront legal checkout boundary", () => {
     expect((await handler(request())).status).toBe(409);
     expect(mocks.session).not.toHaveBeenCalled();
   });
+  it("contract acceptance and a submitted scene ID do not authorize payment-linked visit tracking", async () => {
+    const response = await handler(request({ attribution: { sessionId: "browser-session", lastScene: { sceneId: store, sceneType: "hero-cinema" } } }));
+    expect(response.status).toBe(200);
+    expect(mocks.from.mock.calls.map(call => call[0])).not.toContain("scene_events");
+    expect(mocks.rpc.mock.calls.map(call => call[0])).not.toContain("request_marketing_subscription");
+  });
 });

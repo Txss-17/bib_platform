@@ -23,6 +23,8 @@ Le reçu local contient uniquement la version du schéma/de l'information, les d
 
 Ce stockage est nécessaire pour respecter le choix; il ne réutilise ni la preuve CGV/CGU d'une commande ni un consentement aux emails marketing. Il n'est partagé ni avec Intrabib ni entre appareils ou domaines. Le reçu est modifiable par le navigateur : **ce n'est pas un registre serveur immuable ni une preuve certifiée**. Une preuve de consentement côté serveur, si retenue pour les traitements futurs, nécessite son propre périmètre et sa propre durée.
 
+Le parcours d'abonnement aux offres et ses preuves serveur sont documentés séparément dans [Offres par email](email-consent-2026-11-05.md). Accepter tous les cookies ne remplit aucune case d'abonnement. Le lot email supprime aussi l'ancien rapprochement facultatif entre une scène visitée et une session Stripe au checkout.
+
 Si la lecture ou l'écriture du stockage est interdite, le service reste accessible. Un choix explicite peut s'appliquer en mémoire pour la page, avec information de l'utilisateur qu'il ne sera pas mémorisé. Le nettoyage des anciennes données protège la préférence actuelle et les sessions de connexion.
 
 ## Vérifications reproductibles

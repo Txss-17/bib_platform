@@ -5,9 +5,9 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useBoutiques } from "@/hooks/useBoutiques";
 import {
   useCustomers,
-  useUpdateCustomer,
   type BoutiqueCustomer,
 } from "@/hooks/useCustomers";
+import { useVerifiedMarketingSubscribers } from "@/hooks/useVerifiedMarketingSubscribers";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,14 +52,15 @@ export default function Clients() {
   const [boutiqueId, setBoutiqueId] = useState<string>("");
   const activeId = boutiqueId || boutiques[0]?.id || "";
   const { data: customers = [], isLoading } = useCustomers(activeId);
-  const updateCustomer = useUpdateCustomer();
+  const { data: subscribers = [], isError: audienceError } = useVerifiedMarketingSubscribers(activeId);
+  const verifiedEmails = useMemo(() => new Set(subscribers.map(subscriber => subscriber.email)), [subscribers]);
 
   const [search, setSearch] = useState("");
   const [optInOnly, setOptInOnly] = useState(false);
 
   const filtered = useMemo(() => {
     return customers.filter((c) => {
-      if (optInOnly && !c.marketing_opt_in) return false;
+      if (optInOnly && !verifiedEmails.has(c.email.trim().toLowerCase())) return false;
       if (search) {
         const s = search.toLowerCase();
         if (
@@ -70,12 +71,12 @@ export default function Clients() {
       }
       return true;
     });
-  }, [customers, search, optInOnly]);
+  }, [customers, search, optInOnly, verifiedEmails]);
 
   const stats = useMemo(
     () => ({
       total: customers.length,
-      optIn: customers.filter((c) => c.marketing_opt_in).length,
+      optIn: customers.filter((c) => verifiedEmails.has(c.email.trim().toLowerCase())).length,
       revenue: customers.reduce((s, c) => s + c.total_spent_cents, 0),
       avgBasket: customers.length
         ? customers.reduce((s, c) => s + c.total_spent_cents, 0) /
@@ -85,7 +86,7 @@ export default function Clients() {
           )
         : 0,
     }),
-    [customers],
+    [customers, verifiedEmails],
   );
 
 
@@ -193,7 +194,7 @@ export default function Clients() {
                     <TableHead>{translateUi("Dépensé")}</TableHead>
                     <TableHead>{translateUi("Dernière cmd")}</TableHead>
                     <TableHead>Source</TableHead>
-                    <TableHead className="text-right">Opt-in</TableHead>
+                    <TableHead className="text-right">{translateUi("Abonnement email")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -226,22 +227,7 @@ export default function Clients() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Switch
-                          checked={c.marketing_opt_in}
-                          onCheckedChange={(v) =>
-                            updateCustomer.mutate({
-                              id: c.id,
-                              patch: {
-                                marketing_opt_in: v,
-                                ...(v
-                                  ? ({
-                                      opt_in_at: new Date().toISOString(),
-                                    } as any)
-                                  : {}),
-                              },
-                            })
-                          }
-                        />
+                        <Badge variant="outline">{audienceError ? translateUi("Indisponible") : verifiedEmails.has(c.email.trim().toLowerCase()) ? translateUi("Confirmé") : translateUi("Non confirmé")}</Badge>
                       </TableCell>
                     </TableRow>
                   ))}

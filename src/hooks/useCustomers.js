@@ -33,19 +33,7 @@ function useDeleteCustomer() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["boutique-customers"] })
   });
 }
-async function subscribeToNewsletter(boutiqueId, email, fullName) {
-  const { error } = await supabase.from("boutique_customers").insert({
-    boutique_id: boutiqueId,
-    email: email.toLowerCase().trim(),
-    full_name: fullName ?? null,
-    source: "newsletter_signup",
-    marketing_opt_in: true,
-    opt_in_at: (/* @__PURE__ */ new Date()).toISOString()
-  });
-  if (error && !error.message.includes("duplicate")) throw error;
-}
 export {
-  subscribeToNewsletter,
   useCustomers,
   useDeleteCustomer,
   useUpdateCustomer

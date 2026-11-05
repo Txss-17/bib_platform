@@ -27,7 +27,9 @@ try {
   if (!ready) throw new Error("Privacy test server did not start");
   browser = await chromium.launch({ headless: true, args: ["--no-sandbox"], ...(process.env.BIB_CHROMIUM_EXECUTABLE ? { executablePath: process.env.BIB_CHROMIUM_EXECUTABLE } : {}) });
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
-  const mediaRequests = [], statisticRequests = [], errors = [];
+  const mediaRequests = [], statisticRequests = [], marketingRequests = [], errors = [];
+  let marketingUnavailable = false;
+  const marketingNotice = { scope_key: "bib", boutique_id: null, controller_name: "Opérateur fictif de recette", audience_name: "BIB", notice_text: "J’accepte les offres BIB par email. Ce choix est facultatif et indépendant des cookies et des achats. Je peux me désabonner dans chaque email.", notice_hash: "a".repeat(64), notice_version: "test-v1", privacy_url: "https://example.test/confidentialite" };
   const localOrigins = new Set([new URL(base).origin]);
   if (intranetBase) localOrigins.add(new URL(intranetBase).origin);
   await context.route("**/*", async route => {
@@ -35,6 +37,15 @@ try {
     if (localOrigins.has(url.origin)) return route.continue();
     // No test ever reaches a production backend or a media provider.
     if (url.hostname.endsWith(".supabase.co")) {
+      if (url.pathname.endsWith("/functions/v1/marketing-subscription")) {
+        const headers = { "access-control-allow-origin": "*", "access-control-allow-headers": "authorization,apikey,x-client-info,content-type", "access-control-allow-methods": "POST,OPTIONS" };
+        if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers });
+        const body = route.request().postDataJSON();
+        marketingRequests.push(body);
+        if (marketingUnavailable) return route.fulfill({ status: 503, headers, contentType: "application/json", body: JSON.stringify({ error: "subscription_unavailable" }) });
+        const result = body.action === "context" ? marketingNotice : body.action === "request" ? { accepted: true } : { valid: true, state: body.action === "withdraw" ? "withdrawn" : body.action === "inspect_confirmation" ? "pending" : "active", audience_name: "BIB", controller_name: marketingNotice.controller_name, notice_text: marketingNotice.notice_text };
+        return route.fulfill({ status: body.action === "request" ? 202 : 200, headers, contentType: "application/json", body: JSON.stringify(result) });
+      }
       if (url.pathname.includes("/rest/v1/storefront_events") && route.request().method() === "POST") statisticRequests.push(url.href);
       return route.fulfill({ status: 200, contentType: "application/json", body: "[]", headers: { "access-control-allow-origin": "*" } });
     }
@@ -98,6 +109,38 @@ try {
     await page.goto(`${base}${path}`);
     await expect(page.locator("#cookie-settings-trigger")).toBeVisible();
   }
+  // Full application email flow: accepting cookies never enrolls a visitor.
+  await page.goto(`${base}/communications`);
+  await expect(page.getByRole("checkbox")).not.toBeChecked();
+  await page.locator("#cookie-settings-trigger").click();
+  await page.getByRole("button", { name: "Tout accepter", exact: true }).click();
+  await expect(page.getByRole("checkbox")).not.toBeChecked();
+  expect(marketingRequests.filter(body => body.action === "request")).toHaveLength(0);
+  await page.getByLabel("Votre adresse email").fill("recipient@example.test");
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button", { name: "Recevoir l’email de confirmation" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Votre demande a été prise en compte" })).toBeVisible();
+  expect(marketingRequests.filter(body => body.action === "request")).toHaveLength(1);
+  await page.goto(`${base}/communications?action=confirm#token=${"a".repeat(64)}`);
+  await expect(page.getByRole("button", { name: "Confirmer mon abonnement" })).toBeVisible();
+  expect(new URL(page.url()).hash).toBe("");
+  expect(marketingRequests.filter(body => body.action === "confirm")).toHaveLength(0);
+  await page.getByRole("button", { name: "Confirmer mon abonnement" }).click();
+  await expect(page.getByText("Votre abonnement est confirmé.", { exact: true })).toBeVisible();
+  await page.goto(`${base}/communications?action=unsubscribe#token=${"b".repeat(64)}`);
+  await page.getByRole("button", { name: "Me désabonner de ces offres" }).click();
+  await expect(page.getByText("Vous êtes désabonné de ces offres.", { exact: true })).toBeVisible();
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto(`${base}/communications`);
+    await expect(page.getByRole("checkbox")).not.toBeChecked();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: resolve(output, `email-subscription-${width}.png`), animations: "disabled", fullPage: true });
+  }
+  marketingUnavailable = true;
+  await page.goto(`${base}/communications`);
+  await expect(page.getByRole("alert").filter({ hasText: "L’inscription n’a pas pu être enregistrée" })).toBeVisible();
+  marketingUnavailable = false;
   await page.evaluate(() => localStorage.removeItem("bib:platform:cookie-consent:v1"));
   await page.goto(`${base}/cookies`);
   for (const width of [320, 390]) {
@@ -122,7 +165,7 @@ try {
     await page.screenshot({ path: resolve(output, "intrabib-information.png"), animations: "disabled" });
   }
   expect(errors).toEqual([]);
-  console.log("PASS: no optional request before consent; granular choices; withdrawal across tabs; persisted refusal; real application routes; 320/390px layouts; no runtime errors.");
+  console.log("PASS: cookie blocking and withdrawal; explicit scoped email request; manual confirmation and unsubscribe; unavailable backend; real routes and 320/390px layouts; no runtime errors.");
 } finally {
   if (browser) await browser.close();
   server?.kill("SIGTERM");

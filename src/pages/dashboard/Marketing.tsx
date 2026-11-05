@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { useBoutiques } from "@/hooks/useBoutiques";
-import { useCustomers } from "@/hooks/useCustomers";
+import { useVerifiedMarketingSubscribers } from "@/hooks/useVerifiedMarketingSubscribers";
 import {
   useCampaigns,
   useSendCampaign,
@@ -74,7 +74,7 @@ export default function Marketing() {
   const [boutiqueId, setBoutiqueId] = useState<string>("");
   const requestedBoutiqueId = searchParams.get("boutiqueId");
   const activeId = boutiqueId || boutiques.find(b => b.id === requestedBoutiqueId)?.id || boutiques[0]?.id || "";
-  const { data: customers = [] } = useCustomers(activeId);
+  const { data: subscribers = [], isError: audienceError } = useVerifiedMarketingSubscribers(activeId);
   const { data: campaigns = [] } = useCampaigns(activeId);
   const { data: automations } = useAutomations(activeId);
   const { data: emailSettings } = useEmailSettings(activeId);
@@ -83,10 +83,7 @@ export default function Marketing() {
   const testSend = useTestSendCampaign();
   const saveDraft = useSaveCampaignDraft();
 
-  const optInCount = useMemo(
-    () => customers.filter((c) => c.marketing_opt_in).length,
-    [customers],
-  );
+  const optInCount = subscribers.length;
   const gmailReady = !!emailSettings?.gmail_connected;
 
   // Composer state
@@ -125,12 +122,12 @@ export default function Marketing() {
   const estimatedRecipients = useMemo(() => {
     if (segmentType === "min_spent" && segmentValue) {
       const threshold = Number(segmentValue) * 100;
-      return customers.filter(
-        (c) => c.marketing_opt_in && c.total_spent_cents >= threshold,
+      return subscribers.filter(
+        (c) => c.total_spent_cents >= threshold,
       ).length;
     }
     return optInCount;
-  }, [customers, segmentType, segmentValue, optInCount]);
+  }, [subscribers, segmentType, segmentValue, optInCount]);
 
   const buildPayload = () => ({
     boutique_id: activeId,
@@ -154,7 +151,7 @@ export default function Marketing() {
   };
 
   const handleSend = async () => {
-    if (!activeId || !subject || blocks.length === 0) {
+    if (!activeId || !subject || blocks.length === 0 || audienceError) {
       toast({
         title: translateUi("Champs manquants"),
         description: translateUi("Sujet et au moins un bloc requis"),
@@ -302,6 +299,7 @@ export default function Marketing() {
           )}
         </div>
 
+        {activeTab !== "ads" && audienceError && <Alert variant="destructive"><AlertTriangle className="h-4 w-4" /><AlertDescription>{translateUi("Les abonnements confirmés ne sont pas disponibles. L’envoi reste bloqué tant que les consentements ne peuvent pas être vérifiés.")}</AlertDescription></Alert>}
         {activeTab !== "ads" && !gmailReady && (
           <Alert>
             <AlertTriangle className="w-4 h-4" />
@@ -563,6 +561,7 @@ export default function Marketing() {
                       onClick={handleSend}
                       disabled={
                         !gmailReady ||
+                        audienceError ||
                         sendCampaign.isPending ||
                         estimatedRecipients === 0
                       }

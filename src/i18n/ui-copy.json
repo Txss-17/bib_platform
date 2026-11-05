@@ -1,4 +1,13 @@
 {
+  "Offres BIB par email": {"en": "BIB offers by email"},
+  "Offres et nouveautés de": {"en": "Offers and news from"},
+  "Les abonnements confirmés ne sont pas disponibles. L’envoi reste bloqué tant que les consentements ne peuvent pas être vérifiés.": {"en": "Confirmed subscriptions are unavailable. Sending remains blocked until consent can be verified."},
+  "Abonnement email": {"en": "Email subscription"},
+  "Indisponible": {"en": "Unavailable"},
+  "Confirmé": {"en": "Confirmed"},
+  "Non confirmé": {"en": "Not confirmed"},
+  "Chaque nouvel abonnement aux offres doit être confirmé par email. Ce contrôle reste actif pour toutes les campagnes.": {"en": "Every new offer subscription must be confirmed by email. This check remains active for all campaigns."},
+  "Confirmation email toujours requise": {"en": "Email confirmation is always required"},
   "1 boutique incluse · jusqu'à 3 boutiques avec options supplémentaires": {"en":"1 store included · up to 3 stores with optional add-ons"},
   "Gestion d’équipe et rôles": { "en": "Team management and roles" },
   "Paramètres des boutiques": { "en": "Store settings" },

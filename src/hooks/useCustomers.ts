@@ -64,22 +64,3 @@ export function useDeleteCustomer() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["boutique-customers"] }),
   });
 }
-
-/**
- * Public storefront newsletter signup — uses anon insert policy.
- */
-export async function subscribeToNewsletter(
-  boutiqueId: string,
-  email: string,
-  fullName?: string,
-) {
-  const { error } = await supabase.from("boutique_customers" as any).insert({
-    boutique_id: boutiqueId,
-    email: email.toLowerCase().trim(),
-    full_name: fullName ?? null,
-    source: "newsletter_signup",
-    marketing_opt_in: true,
-    opt_in_at: new Date().toISOString(),
-  } as any);
-  if (error && !error.message.includes("duplicate")) throw error;
-}

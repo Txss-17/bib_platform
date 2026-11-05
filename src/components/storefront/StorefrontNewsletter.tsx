@@ -1,76 +1,48 @@
 import { translateUi } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Mail, Check } from "lucide-react";
+import { Mail } from "lucide-react";
+import { MarketingSubscriptionForm } from "@/components/privacy/MarketingSubscriptionForm";
 
 interface StorefrontNewsletterProps {
   primaryColor: string;
   boutiqueName: string;
+  boutiqueId?: string;
+  preview?: boolean;
 }
 
 export function StorefrontNewsletter({
   primaryColor,
   boutiqueName,
+  boutiqueId,
+  preview,
 }: StorefrontNewsletterProps) {
   useLanguage();
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) setSubmitted(true);
-  };
-
   return (
     <section
       className="py-12 md:py-16"
       style={{ backgroundColor: `${primaryColor}08` }}
     >
-      <div className="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="mx-auto max-w-xl px-4 text-center sm:px-6 lg:px-8">
         <div
-          className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
+          className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full"
           style={{ backgroundColor: `${primaryColor}15` }}
         >
-          <Mail className="w-6 h-6" style={{ color: primaryColor }} />
+          <Mail
+            className="h-6 w-6"
+            style={{ color: primaryColor }}
+            aria-hidden="true"
+          />
         </div>
-        <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+        <h2 className="mb-2 text-2xl font-semibold text-gray-900">
           {translateUi("Restez informé")}
         </h2>
-        <p className="text-gray-600 mb-6">
-          {translateUi(
-            "Inscrivez-vous pour recevoir nos offres exclusives et nouveautés de",
-          ) + " "}
-          {boutiqueName}.
+        <p className="mb-6 text-gray-600">
+          {translateUi("Offres et nouveautés de")} {boutiqueName}.
         </p>
-
-        {submitted ? (
-          <div className="flex items-center justify-center gap-2 text-green-600">
-            <Check className="w-5 h-5" />
-            <span className="font-medium">
-              {translateUi("Merci pour votre inscription !")}
-            </span>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="flex gap-2 max-w-md mx-auto">
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={translateUi("votre@email.com")}
-              required
-              className="bg-white"
-            />
-            <Button
-              type="submit"
-              style={{ backgroundColor: primaryColor }}
-              className="text-white shrink-0"
-            >
-              {translateUi("S'inscrire")}
-            </Button>
-          </form>
-        )}
+        <MarketingSubscriptionForm
+          scope={{ kind: "boutique", boutiqueId: boutiqueId ?? "" }}
+          preview={preview || !boutiqueId}
+        />
       </div>
     </section>
   );

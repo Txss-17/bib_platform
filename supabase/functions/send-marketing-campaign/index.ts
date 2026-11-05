@@ -1,5 +1,6 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import sanitizeHtml from "npm:sanitize-html@2.13.0";
+import { verifiedMarketingAudience, marketingUnsubscribeLinks } from "../_shared/verified-marketing-audience.mjs";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,7 +46,8 @@ function appendSignatureAndFooter(
     signature?: string | null;
     footerLinks?: Record<string, string> | null;
     boutiqueName: string;
-    unsubLink: string;
+    unsubLink?: string;
+    controllerName?: string;
   },
 ) {
   const sigBlock = opts.signature
@@ -61,8 +63,9 @@ function appendSignatureAndFooter(
     <hr style="margin:32px 0;border:none;border-top:1px solid #e5e5e5"/>
     <p style="font-size:11px;color:#888;text-align:center;font-family:Arial,sans-serif">
       ${links ? links + "<br/>" : ""}
-      Vous recevez cet email car vous êtes abonné(e) à la newsletter de <strong>${escapeHtml(opts.boutiqueName)}</strong>.<br/>
-      <a href="${opts.unsubLink}" style="color:#888">Se désabonner</a>
+      ${opts.unsubLink
+        ? `Vous recevez cet email car vous avez confirmé votre abonnement à <strong>${escapeHtml(opts.boutiqueName)}</strong>, sous la responsabilité de ${escapeHtml(opts.controllerName ?? opts.boutiqueName)}.<br/><a href="${escapeHtml(opts.unsubLink)}" style="color:#888">Se désabonner de ces offres</a>`
+        : "Email de test adressé au titulaire du compte. Aucun abonnement créé."}
     </p>`;
   return html + sigBlock + footer;
 }
@@ -75,6 +78,7 @@ async function sendOne(opts: {
   to: string;
   subject: string;
   html: string;
+  unsubscribeUrl?: string;
 }) {
   const fromHeader = opts.fromAddress
     ? `${opts.fromName} <${opts.fromAddress}>`
@@ -85,6 +89,10 @@ async function sendOne(opts: {
     `Subject: =?UTF-8?B?${btoa(unescape(encodeURIComponent(opts.subject)))}?=`,
     "MIME-Version: 1.0",
     'Content-Type: text/html; charset="UTF-8"',
+    ...(opts.unsubscribeUrl ? [
+      `List-Unsubscribe: <${opts.unsubscribeUrl}>`,
+      "List-Unsubscribe-Post: List-Unsubscribe=One-Click",
+    ] : []),
     "",
     opts.html,
   ].join("\r\n");
@@ -104,6 +112,7 @@ async function sendOne(opts: {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers: corsHeaders });
 
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -161,7 +170,7 @@ Deno.serve(async (req) => {
       .eq("boutique_id", boutique_id).maybeSingle();
     const fromName = String(settings?.from_name || boutique.name || "Boutique").replace(/[\r\n]/g, " ").slice(0, 100);
     const proposedFromAddress = settings?.marketing_from_address;
-    const fromAddress = typeof proposedFromAddress === "string" && /^[^\\s@<>\\r\\n]+@[^\\s@<>\\r\\n]+\\.[^\\s@<>\\r\\n]+$/.test(proposedFromAddress) ? proposedFromAddress : undefined;
+    const fromAddress = typeof proposedFromAddress === "string" && /^[a-z0-9][a-z0-9._+%=-]*@[a-z0-9][a-z0-9.-]*\.[a-z]{2,63}$/i.test(proposedFromAddress) ? proposedFromAddress : undefined;
     const signature = settings?.marketing_signature ?? null;
     const footerLinks = (settings?.marketing_footer_links as Record<string, string> | null) ?? null;
 
@@ -172,16 +181,15 @@ Deno.serve(async (req) => {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const unsubLink = `${Deno.env.get("SUPABASE_URL")?.replace(/\.supabase\.co.*/, "")}.lovable.app/unsubscribe?email=${encodeURIComponent(test_recipient)}&boutique=${boutique.slug}`;
       const vars = {
         first_name: "Test",
         full_name: "Destinataire de test",
         boutique_name: escapeHtml(boutique.name),
-        promo_code: promo_code ?? "TESTCODE",
+        promo_code: escapeHtml(String(promo_code ?? "TESTCODE")),
       };
-      const html = appendSignatureAndFooter(renderTemplate(sanitizedBody, vars), {
-        signature, footerLinks, boutiqueName: boutique.name, unsubLink,
-      });
+      const html = safeEmailHtml(appendSignatureAndFooter(renderTemplate(sanitizedBody, vars), {
+        signature, footerLinks, boutiqueName: boutique.name,
+      }));
       const subj = `[TEST] ${renderTemplate(subject, vars)}`;
       const res = await sendOne({
         lovableKey: LOVABLE_API_KEY, gmailKey: GOOGLE_MAIL_API_KEY,
@@ -202,26 +210,19 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Resolve segment -> recipients
-    let query = admin.from("boutique_customers")
-      .select("id, email, full_name")
-      .eq("boutique_id", boutique_id)
-      .eq("marketing_opt_in", true);
-
+    // Service-only canonical consent, scoped to the CURRENT verified seller.
+    // Legacy owner-editable marketing_opt_in flags are never audience evidence.
     const seg = segment ?? { type: "all_opt_in" };
-    if (seg.type === "min_spent" && seg.value) {
-      query = query.gte("total_spent_cents", Number(seg.value) * 100);
-    }
-    const { data: customers, error: custErr } = await query.limit(2000);
-    if (custErr) throw custErr;
-    const recipients = customers ?? [];
+    const minSpentCents = seg.type === "min_spent" ? Math.round(Number(seg.value) * 100) : null;
+    if (!["all_opt_in", "min_spent"].includes(seg.type) || (minSpentCents !== null && (!Number.isSafeInteger(minSpentCents) || minSpentCents < 0))) throw new Error("invalid_marketing_segment");
+    const recipients = await verifiedMarketingAudience(admin, boutique_id, minSpentCents);
 
     // Create campaign row
     const { data: campaign, error: campErr } = await admin
       .from("marketing_campaigns")
       .insert({
         boutique_id, user_id: user.id, name: name ?? subject,
-        kind: kind ?? "newsletter", subject, body_html,
+        kind: kind ?? "newsletter", subject, body_html: sanitizedBody,
         body_blocks: body_blocks ?? [],
         segment: seg, promo_code: promo_code ?? null,
         status: "sending", recipients_count: recipients.length,
@@ -231,23 +232,26 @@ Deno.serve(async (req) => {
     if (campErr) throw campErr;
 
     // Send loop with light throttling (250ms)
-    let sent = 0, failed = 0;
-    for (const r of recipients) {
-      const unsubLink = `${Deno.env.get("SUPABASE_URL")?.replace(/\.supabase\.co.*/, "")}.lovable.app/unsubscribe?email=${encodeURIComponent(r.email)}&boutique=${boutique.slug}`;
+    let sent = 0, failed = 0, skipped = 0;
+    for (const candidate of recipients) {
+      // A withdrawal/expiry/identity change after audience selection must stop the next send.
+      const [r] = await verifiedMarketingAudience(admin, boutique_id, minSpentCents, candidate.subscription_id);
+      if (!r) { skipped++; continue; }
+      const links = marketingUnsubscribeLinks(r, Deno.env.get("SUPABASE_URL")!);
       const vars = {
         first_name: escapeHtml((r.full_name ?? "").split(" ")[0] ?? ""),
         full_name: escapeHtml(r.full_name ?? ""),
         boutique_name: escapeHtml(boutique.name),
         promo_code: escapeHtml(String(promo_code ?? "")),
       };
-      const html = appendSignatureAndFooter(renderTemplate(body_html, vars), {
-        signature, footerLinks, boutiqueName: boutique.name, unsubLink,
-      });
+      const html = safeEmailHtml(appendSignatureAndFooter(renderTemplate(sanitizedBody, vars), {
+        signature, footerLinks, boutiqueName: boutique.name, unsubLink: links.page, controllerName: r.controller_name,
+      }));
       const subj = renderTemplate(subject, vars);
 
       const res = await sendOne({
         lovableKey: LOVABLE_API_KEY, gmailKey: GOOGLE_MAIL_API_KEY,
-        fromName, fromAddress, to: r.email, subject: subj, html,
+        fromName, fromAddress, to: r.email, subject: subj, html, unsubscribeUrl: links.oneClick,
       });
       if (res.ok) sent++; else failed++;
 
@@ -265,13 +269,14 @@ Deno.serve(async (req) => {
     }
 
     await admin.from("marketing_campaigns").update({
-      status: failed === recipients.length && recipients.length > 0 ? "failed" : "sent",
+      status: failed > 0 && sent === 0 ? "failed" : "sent",
+      recipients_count: sent + failed,
       sent_count: sent, failed_count: failed, sent_at: new Date().toISOString(),
     }).eq("id", campaign.id);
 
     return new Response(JSON.stringify({
       ok: true, campaign_id: campaign.id,
-      recipients: recipients.length, sent, failed,
+      recipients: recipients.length, sent, failed, skipped,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     console.error("send-marketing-campaign error", e instanceof Error ? e.name : "unknown");

@@ -33,6 +33,10 @@ verify_jwt = false
 [functions.handle-email-unsubscribe]
 verify_jwt = false
 
+# Public subscription choices; scoped random capability tokens, service-only SQL.
+[functions.marketing-subscription]
+verify_jwt = false
+
 [functions.handle-email-suppression]
 verify_jwt = false
 

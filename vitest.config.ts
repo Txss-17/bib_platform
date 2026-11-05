@@ -16,6 +16,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
       // Resolve the Edge Function's Deno npm specifier for mocked Node tests.
       "npm:@supabase/supabase-js@2": "@supabase/supabase-js",
+      "npm:sanitize-html@2.13.0": "sanitize-html",
     },
   },
 });

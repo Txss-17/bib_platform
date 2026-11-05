@@ -629,6 +629,8 @@ export function StorefrontPreview({
             key="newsletter"
             primaryColor={primaryColor}
             boutiqueName={boutiqueName}
+            boutiqueId={boutiqueId}
+            preview={isPreview}
           />
         );
 
