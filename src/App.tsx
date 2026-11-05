@@ -95,6 +95,7 @@ const OpsPortal = lazy(() => import("@/pages/OpsPortal"));
 ===================================================== */
 
 const BibTalent = lazy(() => import("@/pages/BibTalent"));
+const Carrieres = lazy(() => import("@/pages/Carrieres"));
 const TalentMentions = lazy(() => import("@/pages/TalentLegal").then(m => ({ default: m.TalentMentions })));
 const TalentConfidentialite = lazy(() => import("@/pages/TalentLegal").then(m => ({ default: m.TalentConfidentialite })));
 const TalentCookies = lazy(() => import("@/pages/TalentLegal").then(m => ({ default: m.TalentCookies })));
@@ -220,7 +221,7 @@ function RootPage() {
   }
 
   if (host.startsWith("carrieres.")) {
-    return <BibTalent />;
+    return <Carrieres />;
   }
 
   if (host.startsWith("tarifs.")) {
@@ -276,11 +277,11 @@ export default function App() {
                     <Routes>
                       <Route path="/" element={<Navigate to="/bib-talent" replace />} />
                       <Route path="/bib-talent" element={<BibTalent />} />
-                      <Route path="/carrieres" element={<Navigate to="/bib-talent" replace />} />
-                      <Route path="/carrieres/postes" element={<Navigate to="/bib-talent" replace />} />
+                      <Route path="/carrieres" element={<Carrieres />} />
+                      <Route path="/carrieres/postes" element={<Navigate to="/carrieres" replace />} />
                       <Route path="/carrieres/talent" element={<Navigate to="/bib-talent" replace />} />
-                      <Route path="/careers" element={<Navigate to="/bib-talent" replace />} />
-                      <Route path="/careers/jobs" element={<Navigate to="/bib-talent" replace />} />
+                      <Route path="/careers" element={<Navigate to="/carrieres" replace />} />
+                      <Route path="/careers/jobs" element={<Navigate to="/carrieres" replace />} />
                       <Route path="/pack-legal" element={<PackLegal />} />
                       <Route path="/donnees-et-consentements" element={<LegalConsentCharter />} />
                       <Route path="/annexe-donnees-marchands" element={<LegalMerchantDataAnnex />} />
@@ -881,11 +882,11 @@ export default function App() {
                       CAREERS / BIB TALENT
                   ================================================= */}
 
-                    <Route path="/carrieres" element={<Navigate to="/bib-talent" replace />} />
+                    <Route path="/carrieres" element={<Carrieres />} />
 
                     <Route
                       path="/carrieres/postes"
-                      element={<Navigate to="/bib-talent" replace />}
+                      element={<Navigate to="/carrieres" replace />}
                     />
 
                     <Route path="/carrieres/talent" element={<Navigate to="/bib-talent" replace />} />
@@ -959,9 +960,9 @@ export default function App() {
                       CAREERS ALIASES
                   ================================================= */}
 
-                    <Route path="/careers" element={<Navigate to="/bib-talent" replace />} />
+                    <Route path="/careers" element={<Navigate to="/carrieres" replace />} />
 
-                    <Route path="/careers/jobs" element={<Navigate to="/bib-talent" replace />} />
+                    <Route path="/careers/jobs" element={<Navigate to="/carrieres" replace />} />
 
                     {/* =================================================
                       FALLBACK
