@@ -16,7 +16,7 @@ describe("BIB Talent bilingual content", () => {
     expect(source).toContain("Comment participer ?");
     expect(source).toContain("How can I contribute?");
     expect(source).not.toContain("<video");
-    expect(source).toContain("<BibTalentApplicationForm />");
+    expect(source).toContain("<BibTalentApplicationForm initialStageCode={stageCode} />");
     expect(source).toContain("setShowApplication(true)");
     expect(source).toContain("<Dialog open={showApplication}");
     expect(source).toContain("<DialogContent");
@@ -58,21 +58,29 @@ describe("BIB Talent bilingual content", () => {
     expect(publicExport).not.toContain("talent_applications:");
   });
 
-  it("presents four bilingual internship pathways and keeps placements explicitly closed", () => {
+  it("connects four bilingual Careers internships with the Talent application", () => {
+    const careers = readFileSync(new URL("../pages/Carrieres.tsx", import.meta.url), "utf8");
     const form = readFileSync(new URL("../components/talent/BibTalentApplicationForm.tsx", import.meta.url), "utf8");
     for (const code of ["STG-RD-01", "STG-MKT-01", "STG-JUR-01", "STG-FRN-01"]) {
-      expect(source).toContain(`code: "${code}"`);
+      expect(careers).toContain(`code: "${code}"`);
       expect(form).toContain(code);
+      expect(source).toContain(code);
     }
-    expect(source).toContain('id="stages-courts"');
-    expect(source).toContain("Quatre missions de stage à découvrir");
-    expect(source).toContain("Explore four proposed internship assignments");
-    expect(source).toContain("En préparation — aucun stage ouvert actuellement");
-    expect(source).toContain("In preparation — no internships currently open");
-    expect(source).toContain("convention signée avec l'établissement");
-    expect(source).toContain("Supervision juridique qualifiée indispensable");
+    expect(careers).toContain('id="stages"');
+    expect(careers).toContain("Découvrez nos quatre stages");
+    expect(careers).toContain("Explore our four internship pathways");
+    expect(careers).toContain("Postuler à ce stage");
+    expect(careers).toContain("Apply for this internship");
+    expect(careers).toContain('/bib-talent?stage=');
+    expect(careers).not.toContain("aucun stage ouvert actuellement");
+    expect(careers).not.toContain("candidatures non ouvertes");
+    expect(source).toContain('useSearchParams()');
+    expect(source).toContain('<BibTalentApplicationForm initialStageCode={stageCode} />');
+    expect(source).toContain('href="/carrieres"');
     expect(form).toContain('form.contribution_type === "internship"');
-    expect(form).toContain("Aucun stage n'est confirmé avant convention");
-    expect(source).toContain("aucun stage ouvert actuellement");
+    expect(form).toContain("Candidature de stage");
+    expect(form).toContain("Envoyer ma candidature");
+    expect(form).toContain("stageToPole");
   });
+
 });
