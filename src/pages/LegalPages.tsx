@@ -4,7 +4,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useSEO } from "@/hooks/useSEO";
 import { ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { EnglishLegalNotices, EnglishLegalPrivacy, EnglishLegalCookies } from "@/components/legal/EnglishLegalContent";
 import { CookieSettingsButton } from "@/components/privacy/CookieConsentManager";
 import { FileText, ShieldCheck, Cookie, Scale, BriefcaseBusiness } from "lucide-react";
 
@@ -20,15 +21,16 @@ const legalNavigation = [
 function LegalShell({ title, eyebrow, updated, children }: {
   title: string; eyebrow: string; updated: string; children: ReactNode;
 }) {
-  useLanguage();
+  const { lang } = useLanguage();
+  const { pathname } = useLocation();
   return (
     <div className="legal-page min-h-screen bg-background">
       <Header />
       <main className="mx-auto max-w-6xl px-4 pb-16 pt-7 sm:px-6 lg:px-8">
-        <nav className="flex items-center gap-2 text-xs text-muted-foreground" aria-label="Fil d'Ariane">
+        <nav className="flex items-center gap-2 text-xs text-muted-foreground" aria-label={translateUi("Fil d'Ariane")}>
           <Link to="/" className="hover:text-foreground">BIB</Link>
           <span aria-hidden>›</span>
-          <Link to="/pack-legal" className="hover:text-foreground">Centre juridique</Link>
+          <Link to="/pack-legal" className="hover:text-foreground">{translateUi("Centre juridique")}</Link>
           <span aria-hidden>›</span>
           <span className="text-foreground">{title}</span>
         </nav>
@@ -36,23 +38,19 @@ function LegalShell({ title, eyebrow, updated, children }: {
           <div className="mb-2 h-0.5 w-10 rounded-full bg-bib-gold" aria-hidden />
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{eyebrow} · BIB</p>
           <h1 className="mt-2 max-w-3xl font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{title}</h1>
-          <p className="mt-2 text-xs text-muted-foreground">Dernière révision : {updated} · Lecture publique</p>
+          <p className="mt-2 text-xs text-muted-foreground">{translateUi("Dernière révision :")} {(lang === "en" ? updated.replace("novembre", "November") : updated)} · {translateUi("Lecture publique")}</p>
         </header>
         <div className="mt-7 grid grid-cols-1 items-start gap-8 lg:grid-cols-[225px_minmax(0,1fr)] lg:gap-12">
           <aside className="lg:sticky lg:top-20">
-            <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Documents BIB</p>
-            <nav aria-label="Documents juridiques BIB" className="flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible">
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{translateUi("Documents BIB")}</p>
+            <nav aria-label={translateUi("Documents juridiques BIB")} className="flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible">
               {legalNavigation.map(item => {
-                const selected = item.label === title ||
-                  (item.href === "/cgu" && title.includes("Utilisation")) ||
-                  (item.href === "/cgv" && title.includes("Vente")) ||
-                  (item.href === "/confidentialite" && title.includes("confidentialité")) ||
-                  (item.href === "/cookies" && title.toLowerCase().includes("cookies"));
+                const selected = pathname === item.href;
                 return <Link key={item.href} to={item.href}
                   aria-current={selected ? "page" : undefined}
                   className={`inline-flex shrink-0 items-center gap-2 rounded-md border-l-2 px-3 py-2 text-xs transition-colors lg:w-full ${selected ? "border-bib-gold bg-bib-gold/10 font-semibold text-foreground" : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
                   <item.icon className="h-3.5 w-3.5 shrink-0" />
-                  {item.label}
+                  {translateUi(item.label)}
                 </Link>;
               })}
             </nav>
@@ -62,7 +60,7 @@ function LegalShell({ title, eyebrow, updated, children }: {
           </article>
         </div>
         <div className="mt-10 border-t border-border pt-5 text-xs text-muted-foreground">
-          Besoin d'une précision ? Consultez le <Link className="underline" to="/centre-aide">centre d'aide</Link> ou les contacts indiqués dans les mentions légales.
+          {translateUi("Besoin d'une précision ? Consultez le")} <Link className="underline" to="/centre-aide">{translateUi("centre d'aide")}</Link> {translateUi("ou les contacts indiqués dans les mentions légales.")}
         </div>
       </main>
       <Footer />
@@ -71,11 +69,12 @@ function LegalShell({ title, eyebrow, updated, children }: {
 }
 
 export function MentionsLegales() {
-  useLanguage();
+  const { lang } = useLanguage();
   useSEO({
-    title: "Mentions légales — BIB",
-    description: "Éditeur, contacts et responsabilité des services Brand-in-a-Box.",
+    title: lang === "en" ? "Legal notices — BIB" : "Mentions légales — BIB",
+    description: lang === "en" ? "Publisher, contacts and responsibility for Brand-in-a-Box services." : "Éditeur, contacts et responsabilité des services Brand-in-a-Box.",
   });
+  if (lang === "en") return <LegalShell eyebrow="Legal" title="Legal notices" updated="4 November 2026"><EnglishLegalNotices /></LegalShell>;
   return <LegalShell eyebrow="Légal" title="Mentions légales" updated="4 novembre 2026">
     <p className="rounded-lg border border-amber-300/40 bg-amber-50/50 p-3 text-sm text-foreground"><strong>Statut de la présente rédaction :</strong> harmonisation du projet « Mentions légales BIB v1.1 — novembre 2026 ». Les champs d'identification réglementaire et d'hébergement doivent être complétés sur justificatifs et relus juridiquement avant le lancement de ventes. Une SAS ou une SASU non constituée n'est pas l'éditeur actuel.</p>
     <h2>Éditeur et responsabilité</h2>
@@ -512,11 +511,12 @@ export function CGV() {
 }
 
 export function Confidentialite() {
-  useLanguage();
+  const { lang } = useLanguage();
   useSEO({
-    title: "Politique de confidentialité — BIB",
-    description: "Traitement des données personnelles des clients, marchands, candidats BIB Talent et visiteurs de Brand-in-a-Box.",
+    title: lang === "en" ? "Privacy policy — BIB" : "Politique de confidentialité — BIB",
+    description: lang === "en" ? "How BIB processes the personal data of customers, merchants, BIB Talent applicants and visitors." : "Traitement des données personnelles des clients, marchands, candidats BIB Talent et visiteurs de Brand-in-a-Box.",
   });
+  if (lang === "en") return <LegalShell eyebrow="GDPR" title="Privacy policy" updated="4 November 2026"><EnglishLegalPrivacy /></LegalShell>;
   return <LegalShell eyebrow="RGPD" title="Politique de confidentialité" updated="4 novembre 2026">
     <p className="text-sm text-muted-foreground">Rédaction harmonisée à partir du projet Politique de confidentialité BIB v1.2, novembre 2026. Les responsabilités de traitement, durées de conservation, sous-traitants effectifs et coordonnées doivent être vérifiés avant publication contractuelle définitive.</p>
     <p>Cette politique concerne la plateforme BIB, les boutiques publiées via BIB, les demandes de support, les sondages de prélancement et BIB Talent. Elle complète la <a href="/donnees-et-consentements">charte des données et consentements</a> et les informations affichées directement dans chaque formulaire.</p>
@@ -556,11 +556,12 @@ export function Confidentialite() {
 }
 
 export function Cookies() {
-  useLanguage();
+  const { lang } = useLanguage();
   useSEO({
-    title: "Cookies et traceurs — BIB",
-    description: "Fonctionnement des cookies, finalités et gestion des choix pour les services Brand-in-a-Box.",
+    title: lang === "en" ? "Cookies and trackers — BIB" : "Cookies et traceurs — BIB",
+    description: lang === "en" ? "How cookies work, their purposes and how to control choices on Brand-in-a-Box." : "Fonctionnement des cookies, finalités et gestion des choix pour les services Brand-in-a-Box.",
   });
+  if (lang === "en") return <LegalShell eyebrow="Trackers" title="Cookie policy" updated="5 November 2026"><EnglishLegalCookies /></LegalShell>;
   return <LegalShell eyebrow="Traceurs" title="Politique cookies" updated="5 novembre 2026">
     <p className="text-sm text-muted-foreground">Rédaction harmonisée à partir du projet Politique de cookies BIB v1.1 (novembre 2026). L'inventaire exact des traceurs et l'effectivité du gestionnaire de consentement doivent être vérifiés sur la version publiée.</p>
     <h2>1. Traceurs nécessaires</h2>
