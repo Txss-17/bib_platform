@@ -76,3 +76,7 @@ verify_jwt = false
 # Private RH-only CV download; the function verifies BIB_TALENT_BRIDGE_SECRET.
 [functions.intranet-talent-cv]
 verify_jwt = false
+
+# Trusted scheduler only: delete CV objects queued by retention/erasure.
+[functions.talent-cv-cleanup]
+verify_jwt = false
