@@ -85,7 +85,7 @@ describe("BIB Talent bilingual content", () => {
     expect(careers).not.toContain('to="/bib-talent"');
     expect(detail).not.toContain('to="/bib-talent"');
     expect(careers).toContain('id="postuler"');
-    expect(careers).toContain('initialStageCode={selectedStage}');
+    expect(careers).toContain('initialStageCode={applicationStage}');
     expect(careers).toContain('/carrieres/offres/');
     expect(careers).toContain('window.location.hash === "#postuler"');
     expect(routes).toContain('path="/carrieres/offres/:code"');
