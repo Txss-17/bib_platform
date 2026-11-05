@@ -67,11 +67,12 @@ describe("BIB Platform public prelaunch boundary", () => {
     expect(router).toContain('path="/store/signup" element={<StoreSignup />} />');
   });
 
-  it("keeps a single public footer legal destination and no Careers entry", () => {
+  it("keeps a single public footer legal destination and exposes Careers", () => {
     expect(footer).toContain('to="/pack-legal"');
-    for (const route of ["/mentions-legales", "/confidentialite", "/cookies", "/cgu", "/cgv", "/carrieres"]) {
+    for (const route of ["/mentions-legales", "/confidentialite", "/cookies", "/cgu", "/cgv"]) {
       expect(footer).not.toContain('to="' + route + '"');
     }
+    expect(footer).toContain('to="/carrieres"');
   });
 
   it("exposes a dedicated Careers internship page while keeping legacy job posts unpublished", () => {
@@ -84,22 +85,28 @@ describe("BIB Platform public prelaunch boundary", () => {
     for (const code of ["STG-RD-01", "STG-MKT-01", "STG-JUR-01", "STG-FRN-01"]) {
       expect(careers).toContain(`code: "${code}"`);
     }
-    expect(careers).toContain("Postuler à ce stage");
+    expect(careers).toContain("Postuler");
+    expect(careers).toContain("Découvrir nos offres");
+    expect(careers).toContain('id="postuler"');
+    expect(router).toContain('path="/carrieres/offres/:code"');
+    expect(PRELAUNCH_PUBLIC_ROUTES).toContain("/carrieres");
     expect(careers).toContain("convention avec l’établissement");
     expect(about).not.toContain('to="/carrieres"');
     expect(about).toContain('to="/bib-talent"');
   });
 
-  it("keeps Talent as an independent contribution programme, without film or job offers", () => {
+  it("keeps Talent as an independent accompaniment programme, without a submission form", () => {
     expect(talent).toContain("useLanguage()");
     expect(talent).toContain("const tr = (value: Copy) => value[lang]");
     expect(talent).toContain("BIB Talent");
-    expect(talent).toContain("Comment fonctionne BIB Talent ?");
-    expect(talent).toContain("How does BIB Talent work?");
+    expect(talent).toContain("Vous rejoignez les équipes BIB ? BIB Talent vous accompagne tout au long de votre parcours.");
+    expect(talent).toContain("Joining the BIB teams? BIB Talent supports you throughout your journey.");
     expect(talent).not.toContain("<video");
     expect(talent).not.toContain("bibProjectFilm");
     expect(talent).not.toContain("Aperçus visuels issus");
-    expect(talent).toContain("<BibTalentApplicationForm initialStageCode={stageCode} />");
+    expect(talent).toContain("BIB, c'est quoi concrètement ?");
+    expect(talent).toContain('to="/carrieres"');
+    expect(talent).not.toContain("<BibTalentApplicationForm");
     expect(talent).not.toContain("docs.google.com/forms");
     expect(legal).toContain("Le formulaire intégré enregistre les dossiers");
     expect(legal).toContain("recrutement RH de l'intranet BIB");
