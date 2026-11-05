@@ -169,9 +169,6 @@ export default function Carrieres() {
       <div className="mt-10 rounded-2xl border border-border bg-muted/40 p-6 sm:p-8">
         <h3 className="flex items-center gap-3 text-xl font-semibold"><GraduationCap size={23} />{tr(messages.stageConditionsTitle)}</h3>
         <p className="mt-3 text-sm leading-7 text-muted-foreground">{tr(messages.stageConditions)}</p>
-        <Link to="/bib-talent" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-accent-ink hover:underline">
-          {lang === "en" ? "Discover the BIB Talent experience" : "Découvrir l’expérience BIB Talent"} <ArrowRight size={16} />
-        </Link>
       </div>
     </section>
 
