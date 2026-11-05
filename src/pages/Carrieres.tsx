@@ -32,7 +32,11 @@ export const internshipTracks = [
     icon: Shapes,
     title: copy("R&D et expérience utilisateur", "Product research and user experience"),
     profiles: copy("BUT Informatique, BTS SIO, BUT MMI, licence informatique, design UX/UI ou ergonomie.", "Computer science, IT services, multimedia, UX/UI design or interface ergonomics students."),
-    activities: copy("Observer les parcours marchands et clients, préparer des scénarios de test et proposer des améliorations UX.", "Study merchant and customer journeys, prepare test scenarios and propose UX improvements."),
+    missions: [
+      copy("Observer les parcours des marchands et des clients sur les interfaces de démonstration.", "Observe merchant and customer journeys in the demo interfaces."),
+      copy("Construire des scénarios de test et participer aux essais fonctionnels encadrés.", "Prepare test scenarios and take part in supervised functional testing."),
+      copy("Identifier les difficultés d’utilisation et proposer des pistes d’amélioration UX.", "Identify usability issues and suggest UX improvements."),
+    ],
     deliverables: copy("Cartographie des parcours, rapport d'anomalies et maquettes de démonstration.", "Journey maps, issue report and demo mockups."),
     limits: copy("Pas d'accès aux données réelles, de changement en production ni d'audit de cybersécurité.", "No real customer data, production changes or cybersecurity auditing."),
   },
@@ -41,7 +45,11 @@ export const internshipTracks = [
     icon: Users,
     title: copy("Marketing et étude de marché", "Marketing and market research"),
     profiles: copy("BUT Techniques de commercialisation, BTS Communication, BTS NDRC, information-communication ou marketing.", "Business, marketing, communication, customer relations or market research students."),
-    activities: copy("Étudier la cible francophone, comparer des offres publiques et construire des hypothèses de communication.", "Study French-speaking audiences, compare public offerings and develop communication hypotheses."),
+    missions: [
+      copy("Étudier les besoins et les attentes des publics francophones ciblés.", "Research the needs and expectations of target French-speaking audiences."),
+      copy("Comparer les offres et les pratiques de communication accessibles publiquement.", "Compare publicly available offers and communication approaches."),
+      copy("Formuler des recommandations de positionnement et des idées de communication.", "Develop positioning recommendations and communication ideas."),
+    ],
     deliverables: copy("Benchmark sourcé, profils cibles hypothétiques et mini-plan de communication.", "Sourced competitor analysis, hypothetical audience personas and a sample communication plan."),
     limits: copy("Ni prospection autonome, ni envoi de campagnes, ni objectif commercial obligatoire.", "No independent prospecting, campaign sending or mandatory sales targets."),
   },
@@ -50,7 +58,11 @@ export const internshipTracks = [
     icon: ShieldCheck,
     title: copy("Recherche juridique et conformité documentaire", "Legal research and document compliance"),
     profiles: copy("BUT Carrières juridiques, licence de droit, droit du numérique, conformité ou protection des données.", "Law, legal practice, digital law, compliance or data protection students."),
-    activities: copy("Rechercher des références officielles et comparer des documents fictifs sur les CGU, CGV, cookies et données.", "Research official sources and compare fictional terms, sales conditions, cookies and data notices."),
+    missions: [
+      copy("Rechercher des références officielles relatives au commerce numérique et à la protection des données.", "Research official sources on digital commerce and data protection."),
+      copy("Comparer des documents pédagogiques sur les CGU, CGV, cookies et consentements.", "Compare educational examples of terms, sales conditions, cookies and consent."),
+      copy("Identifier les questions de conformité à documenter et à soumettre à la supervision juridique.", "Document compliance questions to be reviewed under legal supervision."),
+    ],
     deliverables: copy("Cartographie documentaire, matrice de sources et registre de questions pour le juriste.", "Document inventory, source matrix and questions for legal review."),
     limits: copy("Supervision juridique qualifiée indispensable ; aucun avis juridique, signature ni publication autonome.", "Qualified legal oversight required; no independent legal advice, signatures or publication."),
   },
@@ -59,7 +71,11 @@ export const internshipTracks = [
     icon: Package,
     title: copy("Relations et qualification fournisseurs", "Supplier relations and documentary qualification"),
     profiles: copy("BTS Commerce international, BUT QLIO, techniques de commercialisation, achats ou logistique.", "International trade, quality, industrial logistics, business, purchasing or supply chain students."),
-    activities: copy("Simuler une qualification fournisseur, comparer des fiches produits et cartographier les flux documentaires.", "Simulate supplier qualification, compare product specifications and map documentation workflows."),
+    missions: [
+      copy("Découvrir les étapes d’une qualification fournisseur à partir de cas simulés.", "Explore supplier qualification steps through simulated cases."),
+      copy("Comparer des fiches produits et des critères de qualité, de conformité et de logistique.", "Compare product specifications and quality, compliance and logistics criteria."),
+      copy("Cartographier les échanges documentaires entre fournisseurs et équipes BIB.", "Map document workflows between suppliers and BIB teams."),
+    ],
     deliverables: copy("Grille de qualification, fiches SKU fictives et synthèse des risques logistiques.", "Qualification checklist, fictional SKU records and a logistics risk summary."),
     limits: copy("Ni audit officiel, ni sélection définitive, ni commande ou négociation engageant BIB.", "No official audits, final supplier approval, purchasing or binding negotiation."),
   },
@@ -103,7 +119,7 @@ export default function Carrieres() {
         <p className="mt-3 text-sm leading-6 text-muted-foreground">{tr(messages.stageIntro)}</p>
             </div>
       <div className="mt-7 grid gap-4 md:grid-cols-2">
-        {internshipTracks.map(({ code, icon: Icon, title, profiles, activities }) => (
+        {internshipTracks.map(({ code, icon: Icon, title, profiles, missions }) => (
           <article key={code} className="rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6" aria-labelledby={code}>
             <div className="flex items-start gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-bib-gold/15 text-accent-ink"><Icon size={23} /></div>
@@ -115,7 +131,17 @@ export default function Carrieres() {
             </div>
             <div className="mt-5 space-y-3 text-sm leading-6">
               <p><strong className="block text-foreground">{tr(messages.stageProfiles)}</strong><span className="text-muted-foreground">{tr(profiles)}</span></p>
-              <p><strong className="block text-foreground">{tr(messages.stageActivities)}</strong><span className="text-muted-foreground">{tr(activities)}</span></p>
+              <div>
+                <strong className="block text-foreground">{tr(messages.stageActivities)}</strong>
+                <ul className="mt-2 space-y-2 text-muted-foreground">
+                  {missions.map((mission, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span aria-hidden="true" className="shrink-0 text-accent-ink">–</span>
+                      <span>{tr(mission)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link to={`/carrieres/offres/${code}`} className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2.5 text-sm font-semibold hover:bg-muted">
