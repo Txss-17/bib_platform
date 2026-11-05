@@ -29,6 +29,7 @@ describe("Legal-pack English coverage", () => {
     expect(pages).toContain("EnglishLegalPrivacy");
     expect(pages).toContain("EnglishLegalCookies");
     expect(pages).toContain('pathname === item.href');
+    expect(pages).toContain('aria-label={lang === "en" ? "BIB legal documents" : "Documents juridiques BIB"}');
     expect(charter).toContain("EnglishConsentCharter");
     expect(merchant).toContain("EnglishMerchantDataAnnex");
     for (const route of ["MentionsLegales", "Confidentialite", "Cookies"]) {
