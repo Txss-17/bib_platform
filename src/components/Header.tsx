@@ -10,6 +10,7 @@ import {
   LifeBuoy,
   Info,
   Users,
+  BriefcaseBusiness,
 } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -36,7 +37,9 @@ const Header = () => {
           about: "À propos",
           company: "Entreprise",
           companyDesc: "Découvrir Brand-in-a-Box",
-          talentDesc: "Participer au développement de BIB",
+          talentDesc: "Découvrir les expériences et l’accompagnement BIB Talent",
+          careers: "Carrières",
+          careersDesc: "Découvrir nos offres",
           network: "Réseau BIB",
           infrastructure: "Infrastructure BIB",
           suppliers: "Fournisseurs",
@@ -53,7 +56,9 @@ const Header = () => {
           about: "About",
           company: "Company",
           companyDesc: "Learn about Brand-in-a-Box",
-          talentDesc: "Contribute to BIB",
+          talentDesc: "Explore BIB Talent experiences and mentoring",
+          careers: "Careers",
+          careersDesc: "Explore our opportunities",
           network: "BIB Network",
           infrastructure: "BIB Infrastructure",
           suppliers: "Suppliers",
@@ -140,6 +145,7 @@ const Header = () => {
                 {[
                   { to: "/a-propos", label: nav.about, desc: nav.companyDesc, icon: Info },
                   { to: "/bib-talent", label: "BIB Talent", desc: nav.talentDesc, icon: Users },
+                  { to: "/carrieres", label: nav.careers, desc: nav.careersDesc, icon: BriefcaseBusiness },
                 ].map(({ to, label, desc, icon: Icon }) => (
                   <DropdownMenuItem key={to} asChild className="rounded-xl">
                     <Link to={to} className="flex cursor-pointer items-center gap-3 px-3 py-3">
@@ -270,6 +276,7 @@ const Header = () => {
                     {[
                       { to: "/a-propos", label: nav.about, desc: nav.companyDesc, icon: Info },
                       { to: "/bib-talent", label: "BIB Talent", desc: nav.talentDesc, icon: Users },
+                  { to: "/carrieres", label: nav.careers, desc: nav.careersDesc, icon: BriefcaseBusiness },
                     ].map(({ to, label, desc, icon: Icon }) => (
                       <Link key={to} to={to} onClick={closeMobileMenu}
                         className="flex items-center gap-3 rounded-xl px-2 py-3 transition-colors hover:bg-muted/60">
