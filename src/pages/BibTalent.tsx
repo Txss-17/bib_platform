@@ -1,10 +1,7 @@
-import { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { ArrowRight, Compass, Lightbulb, Sparkles, Users, Workflow, Shapes, Store, ShoppingBag, Truck, Package } from "lucide-react";
 import PublicPageLayout from "@/components/layout/PublicPageLayout";
 import { Button } from "@/components/ui/button";
-import { BibTalentApplicationForm } from "@/components/talent/BibTalentApplicationForm";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useSEO } from "@/hooks/useSEO";
 import { useLanguage } from "@/contexts/LanguageContext";
 import platformDashboard from "@/assets/landing-dashboard.jpg";
@@ -48,9 +45,9 @@ const messages = {
   logisticsDesc: copy("BIB prévoit de coordonner la préparation et l'acheminement des commandes grâce à ses partenaires opérationnels. L'expédition directe marchand → client ne constitue pas le modèle logistique BIB.", "BIB plans to coordinate order preparation and delivery through operational partners. Direct merchant-to-customer shipping is not part of the BIB logistics model."),
   contributionEyebrow: copy("Apprendre sur des projets concrets", "Learn through practical projects"),
   contributionTitle: copy("Développez des compétences utiles à votre parcours.", "Develop skills that support your future."),
-  contributionDesc: copy("BIB Talent associe objectifs pédagogiques, projets encadrés, méthodologie et restitution de livrables. Les missions s'adaptent à votre formation et aux activités de BIB.", "BIB Talent combines learning goals, supervised projects, methodology and meaningful deliverables. Assignments are tailored to your course and BIB's activities."),
+  contributionDesc: copy("BIB Talent vous aide à comprendre les enjeux de notre écosystème, à situer votre rôle dans les équipes et à avancer avec des repères clairs.", "BIB Talent helps you understand the challenges of our ecosystem, your role within the teams, and how to move forward with clarity."),
   howEyebrow: copy("Votre parcours BIB Talent", "Your BIB Talent journey"),
-  howTitle: copy("Une expérience structurée, de la candidature au bilan.", "A structured experience, from application to feedback."),
+  howTitle: copy("Comprendre BIB, trouver ses repères et progresser.", "Understand BIB, find your bearings and keep growing."),
   closingTitle: copy("Une opportunité qui correspond à votre parcours ?", "An opportunity that fits your journey?"),
   closingDesc: copy("Consultez les offres, découvrez les profils recherchés et choisissez le domaine qui vous correspond.", "Browse our opportunities, explore the profiles and find the right field for you."),
 };
@@ -63,9 +60,9 @@ const contributionItems = [
 ];
 
 const steps = [
-  { number: "01", title: copy("Explorez les offres", "Explore opportunities"), desc: copy("Consultez les opportunités et repérez les missions qui correspondent à votre formation.", "Browse the opportunities and find assignments suited to your course.") },
-  { number: "02", title: copy("Transmettez votre candidature", "Submit your application"), desc: copy("Présentez votre formation, vos compétences et le domaine que vous souhaitez découvrir.", "Share your course, skills and the area you would like to explore.") },
-  { number: "03", title: copy("Définissez votre parcours", "Define your learning plan"), desc: copy("Après sélection et accord de l'établissement, formalisez les objectifs, la convention et le tutorat.", "Following selection and approval by your institution, agree learning goals, the internship agreement and supervision.") },
+  { number: "01", title: copy("Comprendre l'écosystème BIB", "Understand the BIB ecosystem"), desc: copy("Découvrez les acteurs, les services et les enjeux qui orientent les activités de BIB.", "Explore the people, services and challenges that shape BIB's activities.") },
+  { number: "02", title: copy("Trouver vos repères", "Find your bearings"), desc: copy("Identifiez votre périmètre, vos interlocuteurs et la contribution de vos missions à l'ensemble.", "Understand your scope, your contacts and how your assignments fit into the wider ecosystem.") },
+  { number: "03", title: copy("Avancer avec un accompagnement", "Grow with support"), desc: copy("Bénéficiez d'échanges, de ressources et d'un suivi adapté à votre activité et à votre progression.", "Benefit from guidance, resources and regular feedback adapted to your role and development.") },
 ];
 
 export default function BibTalent() {
@@ -74,9 +71,11 @@ export default function BibTalent() {
   const [searchParams] = useSearchParams();
   const requestedStage = searchParams.get("stage");
   const stageCode = requestedStage && ["STG-RD-01", "STG-MKT-01", "STG-JUR-01", "STG-FRN-01"].includes(requestedStage) ? requestedStage : null;
-  const [showApplication, setShowApplication] = useState(() => stageCode !== null);
 
   useSEO({ title: tr(messages.seoTitle), description: tr(messages.seoDescription) });
+
+  // Preserve legacy links from internship cards by taking applicants to Careers.
+  if (stageCode) return <Navigate to={`/carrieres?stage=${stageCode}#postuler`} replace />;
 
   function Join({ secondary = false }: { secondary?: boolean }) {
     return <Button asChild variant={secondary ? "outline" : "premium"} size="default"
@@ -145,9 +144,9 @@ export default function BibTalent() {
           <h2 className="font-display text-xl font-semibold sm:text-2xl">{lang === "en" ? "Find the right opportunity for you" : "Trouvez l’opportunité qui vous correspond"}</h2>
           <p className="mt-2 text-sm leading-7 text-muted-foreground">{lang === "en" ? "Explore current listings in product research, marketing, legal documentation and supplier qualification. Each opportunity outlines the expected background, assignments and learning outcomes." : "Parcourez les offres en R&D/UX, marketing, documentation juridique et qualification fournisseurs. Chaque opportunité présente le profil recherché, les missions et les acquis attendus."}</p>
         </div>
-        <a href="/carrieres" className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-semibold hover:bg-muted">
+        <Link to="/carrieres" className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-semibold hover:bg-muted">
           {lang === "en" ? "Explore opportunities" : "Découvrir nos offres"} <ArrowRight size={16} />
-        </a>
+        </Link>
       </div>
     </section>
 
@@ -155,16 +154,6 @@ export default function BibTalent() {
       <div className="max-w-3xl"><span className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-ink">{tr(messages.howEyebrow)}</span><h2 className="mt-4 font-display text-2xl font-semibold tracking-tight sm:text-3xl">{tr(messages.howTitle)}</h2></div>
       <div className="mt-7 grid gap-3 md:grid-cols-3">{steps.map(({ number, title, desc }) => <article key={number} className="border-t-2 border-bib-gold py-4"><span className="text-sm font-semibold text-accent-ink">{number}</span><h3 className="mt-3 text-lg font-bold">{tr(title)}</h3><p className="mt-4 max-w-sm leading-7 text-muted-foreground">{tr(desc)}</p></article>)}</div>
     </section>
-
-    <Dialog open={showApplication} onOpenChange={setShowApplication}>
-      <DialogContent className="w-[calc(100vw-1.25rem)] max-w-2xl max-h-[90dvh] overflow-y-auto p-3 sm:p-5">
-        <DialogTitle className="sr-only">{tr(messages.join)}</DialogTitle>
-        <DialogDescription className="sr-only">
-          {lang === "en" ? "Complete the private application form in this window. Close without submitting any time." : "Remplissez votre candidature dans cette fenêtre. Vous pouvez la fermer sans envoyer de données."}
-        </DialogDescription>
-        <BibTalentApplicationForm initialStageCode={stageCode} />
-      </DialogContent>
-    </Dialog>
 
     <section className="bg-brand-marine px-5 py-12 text-center text-bib-ivory sm:py-16">
       <div className="mx-auto max-w-3xl"><span className="text-xs font-semibold uppercase tracking-[0.22em] text-bib-gold">BIB Talent</span><h2 className="mt-4 font-display text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">{tr(messages.closingTitle)}</h2><p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-bib-ivory/75">{tr(messages.closingDesc)}</p><div className="mt-5 flex justify-center"><Join secondary /></div></div>
