@@ -69,6 +69,7 @@ export type Database = {
           availability: string
           consent_given_at: string
           contribution_type: string
+          cv_storage_path: string | null
           created_at: string
           current_activity: string
           email: string
@@ -77,6 +78,7 @@ export type Database = {
           future_opportunities_consented_at: string | null
           future_opportunities_notice_version: string | null
           id: string
+          linkedin_url: string | null
           locale: string
           location: string | null
           motivation: string
@@ -95,6 +97,7 @@ export type Database = {
           availability: string
           consent_given_at: string
           contribution_type: string
+          cv_storage_path?: string | null
           created_at?: string
           current_activity: string
           email: string
@@ -103,6 +106,7 @@ export type Database = {
           future_opportunities_consented_at?: string | null
           future_opportunities_notice_version?: string | null
           id?: string
+          linkedin_url?: string | null
           locale: string
           location?: string | null
           motivation: string
@@ -121,6 +125,7 @@ export type Database = {
           availability?: string
           consent_given_at?: string
           contribution_type?: string
+          cv_storage_path?: string | null
           created_at?: string
           current_activity?: string
           email?: string
@@ -129,6 +134,7 @@ export type Database = {
           future_opportunities_consented_at?: string | null
           future_opportunities_notice_version?: string | null
           id?: string
+          linkedin_url?: string | null
           locale?: string
           location?: string | null
           motivation?: string
