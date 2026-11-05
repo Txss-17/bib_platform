@@ -72,3 +72,7 @@ verify_jwt = false
 
 [functions.intranet-talent-export]
 verify_jwt = false
+
+# Private RH-only CV download; the function verifies BIB_TALENT_BRIDGE_SECRET.
+[functions.intranet-talent-cv]
+verify_jwt = false
