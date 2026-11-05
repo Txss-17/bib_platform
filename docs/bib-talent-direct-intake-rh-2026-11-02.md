@@ -74,3 +74,18 @@ jour une page publiée depuis un projet différent.
 - Autre pôle : aucun accès à la liste RH sans transfert approuvé.
 - Purge : échéance et propagation vers intranet vérifiées.
 - Contrats et statuts de collaboration : contrôles RH avant toute création de compte.
+
+
+## Évolution Carrières — 5 novembre 2026 (GitHub `main`)
+
+- Les quatre offres sont publiées dans `/carrieres` avec des cartes synthétiques (intitulé, profil, durée et boutons). Le pôle de rattachement et les missions sont visibles en ouvrant la fiche complète, sans afficher de responsable nominatif ou fonctionnel.
+- Depuis `/carrieres` et `/carrieres/offres/:code`, « Postuler » ouvre une fenêtre modale accessible avec formulaire complet, offre préselectionnée et fermeture explicite. Les anciennes URL `?stage=CODE#postuler` ouvrent aussi la modale, sans défilement forcé vers le formulaire.
+- Le candidat peut joindre un **CV PDF ou DOCX jusqu'à 4 Mio**, transmettre un **lien LinkedIn** ou un autre lien CV/portfolio. Aucun CV n'est publié dans le répertoire public.
+- Le formulaire transmet un `multipart/form-data` à `submit-talent-application`. La fonction contrôle l'origine, la taille, l'extension et la signature de fichier, le consentement, le quota et le lien LinkedIn. Les CV sont téléversés via le service role dans le bucket privé `bib-talent-cvs` ; la référence privée `cv_storage_path` et `linkedin_url` sont rattachées à `bib_talent_applications`.
+- `intranet-talent-export` expose les nouvelles métadonnées uniquement au bridge RH muni du secret. `intranet-talent-cv` fournit le fichier uniquement au serveur RH autorisé, par `POST` avec `application_id` et le secret `BIB_TALENT_BRIDGE_SECRET`. Le secret ne doit **jamais** se trouver dans le navigateur.
+- Le lien « Informations sur la conservation » cible `/talent/confidentialite#conservation-candidatures` et déclenche le défilement vers la bonne section sur chargement SPA.
+- Migration requise : `supabase/migrations/20261105174500_talent_private_cv_storage.sql` (colonnes, bucket privé, RLS restrictive, queue de purge). La suppression d'une candidature inscrit sa pièce jointe dans `bib_talent_cv_cleanup_queue`, puis `talent-cv-cleanup` purge l'objet via l'API Storage, uniquement lorsqu'un ordonnanceur autorisé l'appelle.
+
+**Statut de déploiement :** les changements ci-dessus sont des modifications source dans GitHub. L'application effective de la migration, le déploiement des fonctions Supabase, la configuration du secret bridge, le déclenchement régulier de `talent-cv-cleanup`, la synchronisation Intrabib RH et le fonctionnement réel du dépôt/téléchargement CV **n'ont pas été confirmés** dans cet environnement. Un parcours utilisateur complet et les contrôles d'accès doivent être testés avant communication publique.
+
+**Recette à effectuer :** ouvrir/fermer les modales depuis chaque entrée, vérifier les quatre codes de stage, soumettre PDF valide, DOCX valide, CV absent + LinkedIn, rejeter fichiers invalides/surdimensionnés et liens non LinkedIn, vérifier le bucket non public, l'export RH, le téléchargement réservé au bridge, le lien-ancre de conservation et la purge effective des CV expirés.
