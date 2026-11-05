@@ -57,4 +57,23 @@ describe("BIB Talent bilingual content", () => {
     expect(exportFn).toContain('destination: "rh_recruitment"');
     expect(publicExport).not.toContain("talent_applications:");
   });
+
+  it("presents four bilingual internship pathways and keeps placements explicitly closed", () => {
+    const form = readFileSync(new URL("../components/talent/BibTalentApplicationForm.tsx", import.meta.url), "utf8");
+    for (const code of ["STG-RD-01", "STG-MKT-01", "STG-JUR-01", "STG-FRN-01"]) {
+      expect(source).toContain(`code: "${code}"`);
+      expect(form).toContain(code);
+    }
+    expect(source).toContain('id="stages-courts"');
+    expect(source).toContain("Quatre missions de stage à découvrir");
+    expect(source).toContain("Explore four proposed internship assignments");
+    expect(source).toContain("En préparation — aucun stage ouvert actuellement");
+    expect(source).toContain("In preparation — no internships currently open");
+    expect(source).toContain("convention signée avec l'établissement");
+    expect(source).toContain("supervision juridique qualifiée");
+    expect(source).toContain("Supervision juridique qualifiée indispensable");
+    expect(form).toContain('form.contribution_type === "internship"');
+    expect(form).toContain("Aucun stage n'est confirmé avant convention");
+    expect(source).toContain("aucun stage ouvert actuellement");
+  });
 });
