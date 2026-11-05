@@ -10,7 +10,7 @@ const HeroSection = () => {
   const { lang } = useLanguage();
   const text = (fr: string, en: string) => (lang === "fr" ? fr : en);
   return (
-    <section className="relative overflow-hidden bg-background pt-24 sm:pt-28 lg:pt-[7.5rem]">
+    <section className="relative overflow-hidden bg-background pt-10 sm:pt-12 lg:pt-16">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid min-h-[680px] items-center gap-12 py-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16 lg:py-16">
           {/* Copy */}
