@@ -10,170 +10,195 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const POLES = [
-  ["product_engineering", "Product Engineering — produit et développement", "Product Engineering — product & development"],
-  ["marketplace", "Marketplace — marchands et fournisseurs", "Marketplace — merchants & suppliers"],
-  ["communication", "Communication et création", "Communications & creative"],
-  ["operations", "Opérations et logistique", "Operations & logistics"],
-  ["quality_audit", "Qualité, audit et conformité", "Quality, audit & compliance"],
-  ["undecided", "À définir ensemble", "Help me choose"],
-] as const;
-const TYPES = [
-  ["volunteer", "Contribution volontaire", "Voluntary contribution"],
-  ["internship", "Stage", "Internship"],
-  ["future_opportunities", "Futures opportunités", "Future opportunities"],
-  ["explore", "Premier échange", "Initial conversation"],
-] as const;
-const AVAILABILITY = [
-  ["few_hours", "Quelques heures par semaine", "A few hours per week"],
-  ["part_time", "Disponibilité régulière", "Regular part-time availability"],
-  ["flexible", "Flexible", "Flexible"],
-  ["discuss", "À discuter", "To discuss"],
+const OFFERS = [
+  ["STG-RD-01", "R&D et expérience utilisateur", "Product research and user experience", "product_engineering"],
+  ["STG-MKT-01", "Marketing et étude de marché", "Marketing and market research", "communication"],
+  ["STG-JUR-01", "Recherche juridique et conformité documentaire", "Legal research and document compliance", "quality_audit"],
+  ["STG-FRN-01", "Relations et qualification fournisseurs", "Supplier relations and qualification", "marketplace"],
 ] as const;
 
-const stageToPole: Record<string, string> = {
-  "STG-RD-01": "product_engineering",
-  "STG-MKT-01": "communication",
-  "STG-JUR-01": "quality_audit",
-  "STG-FRN-01": "marketplace",
-};
+const POLES = [
+  ["product_engineering", "Produit et développement", "Product and development"],
+  ["communication", "Marketing et communication", "Marketing and communications"],
+  ["quality_audit", "Juridique et conformité documentaire", "Legal and documentation compliance"],
+  ["marketplace", "Marchands et fournisseurs", "Merchants and suppliers"],
+  ["operations", "Opérations et logistique", "Operations and logistics"],
+  ["undecided", "À préciser", "To be discussed"],
+] as const;
+
+const stageToPole: Record<string, string> = Object.fromEntries(OFFERS.map(([code, , , pole]) => [code, pole]));
 
 export function BibTalentApplicationForm({ initialStageCode = null }: { initialStageCode?: string | null }) {
   const { lang } = useLanguage();
   const en = lang === "en";
   const tr = (fr: string, english: string) => en ? english : fr;
+  const validInitial = OFFERS.some(([code]) => code === initialStageCode) ? initialStageCode : null;
+  const [selectedOffer, setSelectedOffer] = useState<string>(validInitial ?? "spontaneous");
+  const [desiredPeriod, setDesiredPeriod] = useState("");
   const [form, setForm] = useState({
-    full_name: "", email: "", location: "", current_activity: "",
-    preferred_pole: initialStageCode ? (stageToPole[initialStageCode] ?? "") : "", contribution_type: initialStageCode ? "internship" : "explore",
-    skills: "", motivation: initialStageCode ? `${initialStageCode} — ` : "", availability: "discuss", portfolio_url: "", website: "",
+    full_name: "",
+    email: "",
+    location: "",
+    current_activity: "",
+    preferred_pole: validInitial ? stageToPole[validInitial] : "undecided",
+    contribution_type: validInitial ? "internship" : "future_opportunities",
+    skills: "",
+    motivation: "",
+    availability: "discuss",
+    portfolio_url: "",
+    website: "",
   });
   const [consent, setConsent] = useState(false);
   const [futureConsent, setFutureConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+
   const isInternship = form.contribution_type === "internship";
   const update = (field: keyof typeof form, value: string) => setForm(old => ({ ...old, [field]: value }));
+  const chooseOffer = (offer: string) => {
+    setSelectedOffer(offer);
+    setForm(old => ({
+      ...old,
+      preferred_pole: stageToPole[offer] ?? "undecided",
+      contribution_type: offer === "spontaneous" ? "future_opportunities" : "internship",
+    }));
+  };
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (busy || !consent || !form.preferred_pole) return;
+    const reference = selectedOffer === "spontaneous" ? "Candidature spontanée" : `Offre ${selectedOffer}`;
+    const period = desiredPeriod.trim() ? `Période souhaitée : ${desiredPeriod.trim()}` : "";
+    // Keep the current RH intake schema: identify the selected offer and timing in
+    // the motivation field so the protected intranet bridge receives both.
+    const motivation = [reference, period, form.motivation.trim()].filter(Boolean).join(" — ");
+    if (motivation.length > 1800) {
+      setError(tr("Votre motivation est trop longue.", "Your motivation is too long."));
+      return;
+    }
     setBusy(true);
     setError("");
     try {
       const { data, error: serverError } = await supabase.functions.invoke("submit-talent-application", {
-        body: { ...form, locale: en ? "en" : "fr", consent, future_opportunities_consent: futureConsent },
+        body: { ...form, motivation, locale: en ? "en" : "fr", consent, future_opportunities_consent: futureConsent },
       });
       if (serverError || data?.ok !== true) throw serverError ?? new Error("talent_submission_failed");
       setDone(true);
     } catch {
-      setError(tr("La candidature n'a pas pu être enregistrée. Vérifiez vos réponses ou réessayez.",
-        "We could not submit your application. Please check the form or try again."));
+      setError(tr("La candidature n'a pas pu être enregistrée. Vérifiez les informations saisies et réessayez.",
+        "We could not submit your application. Check your details and try again."));
     } finally {
       setBusy(false);
     }
   }
-  if (done) return <div role="status" className="mx-auto max-w-xl rounded-xl border border-primary/20 bg-card p-5 text-center">
-    <CheckCircle2 className="mx-auto mb-4 h-11 w-11 text-primary" />
-    <h2 className="text-lg font-semibold">{isInternship ? tr("Candidature de stage reçue", "Internship application received") : tr("Merci pour votre intérêt !", "Thank you for your interest!")}</h2>
-    <p className="mt-2 text-sm leading-6 text-muted-foreground">
-      {isInternship
-        ? tr("Votre candidature de stage a été enregistrée. L'équipe BIB examinera votre dossier ; la suite du processus et la convention seront définies avec votre établissement. L'envoi ne garantit pas une admission.", "Your internship application has been received. BIB will review your details; the next steps and internship agreement will be arranged with your educational institution. Submission does not guarantee placement.")
-        : tr("Votre manifestation d'intérêt a été enregistrée et orientée vers le domaine concerné. L'équipe BIB examinera votre dossier ; cela ne constitue pas une promesse de collaboration ou de réponse dans un délai précis.", "Your interest has been received and routed to the relevant team. BIB may review it; this does not guarantee an opportunity or a reply within a specific time.")}
-    </p>
-    <Button asChild variant="outline" className="mt-4"><Link to="/">{tr("Retour à l'accueil", "Back to homepage")}</Link></Button>
+
+  if (done) return <div role="status" className="mx-auto max-w-2xl rounded-2xl border border-border bg-card p-6 text-center sm:p-8">
+    <CheckCircle2 className="mx-auto mb-4 h-12 w-12 text-primary" />
+    <h3 className="text-xl font-semibold">{tr("Candidature reçue", "Application received")}</h3>
+    <p className="mt-3 text-sm leading-7 text-muted-foreground">{tr(
+      "Votre candidature a bien été transmise à l'équipe chargée des candidatures BIB.",
+      "Your application has been forwarded to the BIB recruitment team."
+    )}</p>
+    <Button asChild variant="outline" className="mt-6"><Link to="/carrieres">{tr("Retour aux offres", "Back to opportunities")}</Link></Button>
   </div>;
 
-  return <form onSubmit={submit} className="mx-auto max-w-2xl space-y-4 rounded-xl border border-border bg-card p-4 text-left shadow-sm sm:p-6" aria-labelledby="talent-form-heading">
+  return <form onSubmit={submit} className="mx-auto max-w-3xl space-y-7 rounded-2xl border border-border bg-card p-5 text-left shadow-sm sm:p-8" aria-labelledby="career-form-heading">
     <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent-ink">BIB Talent</p>
-      <h2 id="talent-form-heading" className="mt-2 font-display text-lg font-semibold sm:text-3xl">
-        {isInternship ? tr("Candidature de stage", "Internship application") : tr("Exprimer mon intérêt", "Express my interest")}
-      </h2>
-      <p className="mt-2 text-xs leading-5 text-muted-foreground">
-        {tr("Aucun compte nécessaire. Votre dossier sera orienté vers la coordination Talent et le pôle concerné ; il ne sera pas publié.",
-          "No account required. Your submission will be handled by Talent coordination and the relevant team; it won't be made public.")}
-      </p>
+      <p className="text-xs font-semibold uppercase tracking-[0.17em] text-accent-ink">{tr("Carrières BIB", "BIB Careers")}</p>
+      <h3 id="career-form-heading" className="mt-2 font-display text-2xl font-semibold">{tr("Votre candidature", "Your application")}</h3>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">{tr(
+        "Aucun compte n'est nécessaire. Le dossier est traité par l'équipe chargée des candidatures et le pôle concerné.",
+        "No account is required. The recruitment team and relevant department will review your submission."
+      )}</p>
     </div>
-    <div className="grid gap-3 sm:grid-cols-2">
-      <div className="space-y-1.5"><Label htmlFor="talent-name">{tr("Nom et prénom *", "Full name *")}</Label>
-        <Input id="talent-name" required minLength={2} maxLength={120} value={form.full_name} autoComplete="name" onChange={e => update("full_name",e.target.value)} />
-      </div>
-      <div className="space-y-1.5"><Label htmlFor="talent-email">{tr("Adresse email *", "Email address *")}</Label>
-        <Input id="talent-email" type="email" required maxLength={254} autoComplete="email" value={form.email} onChange={e => update("email",e.target.value)} />
-      </div>
-      <div className="space-y-1.5"><Label htmlFor="talent-location">{tr("Ville / pays (facultatif)", "City / country (optional)")}</Label>
-        <Input id="talent-location" maxLength={120} autoComplete="address-level2" value={form.location} onChange={e => update("location",e.target.value)} />
-      </div>
-      <div className="space-y-1.5"><Label htmlFor="talent-activity">{tr("Votre situation actuelle *", "Current activity *")}</Label>
-        <Input id="talent-activity" required minLength={2} maxLength={160} placeholder={tr("Étudiant, professionnel, en reconversion…", "Student, professional, career change…")} value={form.current_activity} onChange={e => update("current_activity",e.target.value)} />
-      </div>
-      <div className="space-y-1.5"><Label htmlFor="talent-pole">{tr("Domaine qui vous intéresse *", "Area of interest *")}</Label>
-        <Select value={form.preferred_pole} onValueChange={value => update("preferred_pole",value)}>
-          <SelectTrigger id="talent-pole"><SelectValue placeholder={tr("Choisir un domaine", "Choose an area")} /></SelectTrigger>
-          <SelectContent>{POLES.map(([key,fr,english]) => <SelectItem key={key} value={key}>{tr(fr,english)}</SelectItem>)}</SelectContent>
+
+    <fieldset className="space-y-4">
+      <legend className="mb-4 text-base font-semibold">{tr("1. Offre souhaitée", "1. Selected opportunity")}</legend>
+      <div className="space-y-2">
+        <Label htmlFor="career-offer">{tr("Offre à laquelle vous postulez *", "Opportunity you are applying for *")}</Label>
+        <Select value={selectedOffer} onValueChange={chooseOffer}>
+          <SelectTrigger id="career-offer"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {OFFERS.map(([code, fr, english]) => <SelectItem key={code} value={code}>{code} — {tr(fr, english)}</SelectItem>)}
+            <SelectItem value="spontaneous">{tr("Candidature spontanée", "General application")}</SelectItem>
+          </SelectContent>
         </Select>
       </div>
-      <div className="space-y-1.5"><Label htmlFor="talent-type">{tr("Type de contribution", "Type of interest")}</Label>
-        <Select value={form.contribution_type} onValueChange={value => update("contribution_type",value)}>
-          <SelectTrigger id="talent-type"><SelectValue /></SelectTrigger>
-          <SelectContent>{TYPES.map(([key,fr,english]) => <SelectItem key={key} value={key}>{tr(fr,english)}</SelectItem>)}</SelectContent>
+      {selectedOffer === "spontaneous" && <div className="space-y-2">
+        <Label htmlFor="career-pole">{tr("Domaine qui vous intéresse *", "Area of interest *")}</Label>
+        <Select value={form.preferred_pole} onValueChange={value => update("preferred_pole", value)}>
+          <SelectTrigger id="career-pole"><SelectValue /></SelectTrigger>
+          <SelectContent>{POLES.map(([key, fr, english]) => <SelectItem key={key} value={key}>{tr(fr, english)}</SelectItem>)}</SelectContent>
         </Select>
+      </div>}
+    </fieldset>
+
+    <fieldset className="space-y-4">
+      <legend className="mb-4 text-base font-semibold">{tr("2. Coordonnées", "2. Contact details")}</legend>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2"><Label htmlFor="career-name">{tr("Nom et prénom *", "Full name *")}</Label>
+          <Input id="career-name" required autoComplete="name" minLength={2} maxLength={120} value={form.full_name} onChange={e => update("full_name", e.target.value)} />
+        </div>
+        <div className="space-y-2"><Label htmlFor="career-email">{tr("Adresse email *", "Email address *")}</Label>
+          <Input id="career-email" required autoComplete="email" type="email" maxLength={254} value={form.email} onChange={e => update("email", e.target.value)} />
+        </div>
+        <div className="space-y-2 sm:col-span-2"><Label htmlFor="career-location">{tr("Ville / pays (facultatif)", "City / country (optional)")}</Label>
+          <Input id="career-location" autoComplete="address-level2" maxLength={120} value={form.location} onChange={e => update("location", e.target.value)} />
+        </div>
       </div>
-      {form.contribution_type === "internship" && (
-        <p className="rounded-lg border border-border bg-muted/40 p-3 text-xs leading-5 text-muted-foreground sm:col-span-2" role="note">
-          {tr(
-            "Pour les stages STG-RD-01 (R&D), STG-MKT-01 (marketing), STG-JUR-01 (juridique) ou STG-FRN-01 (fournisseurs), choisissez respectivement Product Engineering, Communication, Qualité/audit/conformité ou Marketplace. Indiquez votre formation dans votre situation actuelle et le code de mission dans votre motivation. Chaque stage fait l’objet d’une convention avec l’établissement et d’un tutorat adapté.",
-            "For STG-RD-01 (product research), STG-MKT-01 (marketing), STG-JUR-01 (legal) or STG-FRN-01 (suppliers), select Product Engineering, Communications, Quality/audit/compliance or Marketplace respectively. Specify your course in the current activity field and your assignment code in your motivation. Each internship requires an agreement with your educational institution and suitable supervision."
-          )}
-        </p>
-      )}
-      <div className="space-y-1.5 sm:col-span-2"><Label htmlFor="talent-skills">{tr("Compétences, expériences ou centres d'intérêt *", "Skills, experience or interests *")}</Label>
-        <Textarea id="talent-skills" required minLength={5} maxLength={1200} rows={2} value={form.skills} onChange={e => update("skills",e.target.value)} />
+    </fieldset>
+
+    <fieldset className="space-y-4">
+      <legend className="mb-4 text-base font-semibold">{tr("3. Votre parcours", "3. Your background")}</legend>
+      <div className="space-y-2"><Label htmlFor="career-education">{tr("Formation actuelle et établissement (ou situation professionnelle) *", "Current course and institution (or professional status) *")}</Label>
+        <Input id="career-education" required minLength={2} maxLength={160} placeholder={tr("Ex. BUT Informatique — IUT de ...", "e.g. Computer science — University of ...")} value={form.current_activity} onChange={e => update("current_activity", e.target.value)} />
       </div>
-      <div className="space-y-1.5 sm:col-span-2"><Label htmlFor="talent-motivation">{tr("Pourquoi souhaitez-vous contribuer à BIB ? *", "Why would you like to contribute to BIB? *")}</Label>
-        <Textarea id="talent-motivation" required minLength={20} maxLength={1800} rows={3} value={form.motivation} onChange={e => update("motivation",e.target.value)} />
+      <div className="space-y-2"><Label htmlFor="career-skills">{tr("Compétences et expériences utiles *", "Relevant skills and experience *")}</Label>
+        <Textarea id="career-skills" required minLength={5} maxLength={1200} rows={3} value={form.skills} onChange={e => update("skills", e.target.value)} />
       </div>
-      <div className="space-y-1.5"><Label htmlFor="talent-availability">{tr("Disponibilité", "Availability")}</Label>
-        <Select value={form.availability} onValueChange={value => update("availability",value)}>
-          <SelectTrigger id="talent-availability"><SelectValue /></SelectTrigger>
-          <SelectContent>{AVAILABILITY.map(([key,fr,english]) => <SelectItem key={key} value={key}>{tr(fr,english)}</SelectItem>)}</SelectContent>
-        </Select>
+      <div className="space-y-2"><Label htmlFor="career-link">{tr("Lien vers votre CV, LinkedIn ou portfolio (facultatif, HTTPS)", "CV, LinkedIn or portfolio link (optional, HTTPS)")}</Label>
+        <Input id="career-link" type="url" placeholder="https://" maxLength={500} value={form.portfolio_url} onChange={e => update("portfolio_url", e.target.value)} />
       </div>
-      <div className="space-y-1.5"><Label htmlFor="talent-link">{tr("Lien LinkedIn ou portfolio (facultatif, HTTPS)", "LinkedIn or portfolio URL (optional, HTTPS)")}</Label>
-        <Input id="talent-link" type="url" maxLength={500} placeholder="https://" value={form.portfolio_url} onChange={e => update("portfolio_url",e.target.value)} />
+    </fieldset>
+
+    <fieldset className="space-y-4">
+      <legend className="mb-4 text-base font-semibold">{tr("4. Votre projet", "4. Your interests")}</legend>
+      <div className="space-y-2"><Label htmlFor="career-period">{tr("Période envisagée (facultatif)", "Preferred dates (optional)")}</Label>
+        <Input id="career-period" maxLength={120} placeholder={tr("Ex. mai à juin 2027", "e.g. May to June 2027")} value={desiredPeriod} onChange={e => setDesiredPeriod(e.target.value)} />
       </div>
-    </div>
+      <div className="space-y-2"><Label htmlFor="career-motivation">{tr("Pourquoi cette opportunité vous intéresse-t-elle ? *", "Why are you interested in this opportunity? *")}</Label>
+        <Textarea id="career-motivation" required minLength={20} maxLength={1400} rows={5} value={form.motivation} onChange={e => update("motivation", e.target.value)} />
+      </div>
+    </fieldset>
+
     <div className="hidden" aria-hidden="true">
-      <Label htmlFor="talent-website">Website</Label>
-      <Input id="talent-website" tabIndex={-1} autoComplete="off" value={form.website} onChange={e => update("website",e.target.value)} />
+      <Label htmlFor="career-website">Website</Label>
+      <Input id="career-website" tabIndex={-1} autoComplete="off" value={form.website} onChange={e => update("website", e.target.value)} />
     </div>
-    <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border/70 bg-muted/20 p-3">
-      <Checkbox checked={consent} onCheckedChange={checked => setConsent(checked === true)} aria-label={tr("Accepter le traitement de ma candidature", "Consent to application processing")} className="mt-1" />
-      <span className="text-xs leading-5 text-muted-foreground">
-        {tr("J'accepte que BIB utilise les informations fournies pour étudier ma manifestation d'intérêt et me contacter si nécessaire.",
-          "I consent to BIB processing this information to review my interest and contact me if needed.")}
-        {" "}<Link to="/talent/confidentialite" className="font-semibold text-accent-ink underline">{tr("Politique de confidentialité", "Privacy policy")}</Link>.
-      </span>
-    </label>
-    <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border/70 p-3">
-      <Checkbox checked={futureConsent} onCheckedChange={checked => setFutureConsent(checked === true)}
-        aria-label={tr("Autoriser le contact pour de futures opportunités", "Allow contact for future opportunities")} className="mt-1" />
-      <span className="text-xs leading-5 text-muted-foreground">
-        {tr("Facultatif : j'accepte que BIB conserve ma candidature pour me recontacter à propos de futures opportunités. Je peux retirer cet accord à tout moment.",
-          "Optional: I agree that BIB may retain my application for future opportunities. I may withdraw this consent at any time.")}
-        {" "}<Link to="/talent/confidentialite" className="underline">{tr("Détails sur la conservation", "Retention details")}</Link>.
-      </span>
-    </label>
+    <div className="space-y-3">
+      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-muted/20 p-4">
+        <Checkbox checked={consent} onCheckedChange={checked => setConsent(checked === true)} aria-label={tr("Accepter le traitement de ma candidature", "Consent to application processing")} className="mt-1" />
+        <span className="text-xs leading-6 text-muted-foreground">{tr(
+          "J'accepte le traitement des informations transmises pour l'examen de ma candidature et les échanges liés à celle-ci.",
+          "I agree to the processing of my information to review my application and communicate about it."
+        )}{" "}<Link to="/talent/confidentialite" className="font-semibold text-accent-ink underline">{tr("Politique de confidentialité", "Privacy policy")}</Link>.</span>
+      </label>
+      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border p-4">
+        <Checkbox checked={futureConsent} onCheckedChange={checked => setFutureConsent(checked === true)} aria-label={tr("Autoriser le contact pour de futures opportunités", "Allow contact for future opportunities")} className="mt-1" />
+        <span className="text-xs leading-6 text-muted-foreground">{tr(
+          "Facultatif : j'autorise BIB à conserver ma candidature pour me proposer d'autres opportunités. Je peux retirer cet accord à tout moment.",
+          "Optional: I allow BIB to retain my application for other opportunities. I may withdraw this permission at any time."
+        )}{" "}<Link to="/talent/confidentialite" className="underline">{tr("Informations sur la conservation", "Retention information")}</Link>.</span>
+      </label>
+    </div>
+    <p className="text-xs leading-6 text-muted-foreground">{isInternship
+      ? tr("Pour tout stage, une convention et la validation de l'établissement sont nécessaires avant l'accueil.", "Any internship requires an agreement and approval from the educational institution.")
+      : tr("L'envoi de votre candidature ne constitue pas une promesse d'embauche.", "Submitting an application does not guarantee employment.")}</p>
     {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-    <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-      <p className="text-xs text-muted-foreground">{isInternship
-          ? tr("Une convention de stage et l'accord de l'établissement sont nécessaires avant tout accueil.", "An internship agreement and your educational institution's approval are required before placement.")
-          : tr("Cette démarche n'est pas une promesse d'embauche ou de collaboration.", "This submission does not guarantee employment or collaboration.")}</p>
-      <Button type="submit" disabled={busy || !consent || !form.preferred_pole} className="w-full gap-2 sm:w-auto">
-        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-        {busy ? tr("Envoi…", "Sending…") : isInternship ? tr("Envoyer ma candidature", "Submit application") : tr("Envoyer mon intérêt", "Submit interest")}
-      </Button>
-    </div>
+    <Button type="submit" disabled={busy || !consent || !form.preferred_pole} className="w-full gap-2 sm:w-auto">
+      {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+      {busy ? tr("Envoi…", "Sending…") : tr("Envoyer ma candidature", "Submit application")}
+    </Button>
   </form>;
 }
