@@ -78,5 +78,6 @@ export function isPublicInformationPath(pathname: string): boolean {
     "/careers", "/careers/jobs",
   ]).has(path) ||
     /^\/(suppliers|ops)\/portal\/[^/]+$/.test(path) ||
-    /^\/store\/(boutique|product)\/[^/]+$/.test(path);
+    /^\/store\/(boutique|product)\/[^/]+$/.test(path) ||
+    /^\/carrieres\/offres\/[A-Z0-9-]+$/.test(path);
 }
