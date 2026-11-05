@@ -12,6 +12,7 @@ export const personas: Persona[] = [
   { id: "vendeur", label: "Je suis marchand", desc: "Boutique, catalogue, qualité et publication", icon: Store },
   { id: "fournisseur", label: "Je suis fournisseur", desc: "Candidature, référencement et conformité", icon: Boxes },
   { id: "logistique", label: "Je suis partenaire logistique", desc: "Candidature, expédition et suivi opérationnel", icon: Truck },
+  { id: "compte", label: "Compte et facturation", desc: "Accès, tarifs, documents et données", icon: CreditCard },
 ];
 
 export type Guide = {
@@ -30,7 +31,8 @@ export const guideGroups: GuideGroup[] = [
     guides: [
       { slug: "prelancement", title: "À quel stade en est BIB ?", to: "/signup", desc: "Comprendre l'accès progressif aux services.", long: "BIB prépare son lancement commercial. Certaines fonctionnalités marchandes sont encore soumises à validation et ne sont pas nécessairement ouvertes au public. La page d'inscription peut présenter un accès en préparation et un sondage facultatif." },
       { slug: "parcours", title: "Quels sont les rôles sur BIB ?", to: "/a-propos", desc: "Marchand, client, fournisseur, logistique et BIB.", long: "Le marchand est le vendeur juridique. Les fournisseurs proposent des produits à qualifier, les partenaires logistiques exécutent les prestations convenues et BIB fournit l'infrastructure, l'intermédiation et l'orchestration des flux." },
-      { slug: "compte", title: "Comment créer un compte ?", to: "/store/signup", desc: "Compte client ou accès marchand selon ouverture.", long: "Lorsque l'inscription est ouverte, vérifiez le domaine officiel BIB, prenez connaissance des documents contractuels et des informations de confidentialité. Le compte marchand peut rester fermé pendant le prélancement." },
+      { slug: "compte", title: "Comment créer un compte ?", to: "/store/signup", desc: "Compte client ou accès marchand selon ouverture.", long: "L’inscription client et l’accès marchand sont deux parcours distincts. La création d’une boutique marchande reste réservée aux profils habilités pendant la phase de tests. La page d’information ne vaut pas activation du compte marchand." },
+      { slug: "carrieres", title: "Où consulter les stages et candidater ?", to: "/carrieres", desc: "Offres, fiches détaillées et formulaire de candidature.", long: "Consultez les offres de stage de 4 ou 8 semaines dans Carrières. Les cartes indiquent le profil et la durée ; cliquez sur « Voir l’offre » pour lire les missions et le pôle de rattachement. « Postuler » ouvre une fenêtre contenant le formulaire et l’offre déjà sélectionnée. L’accueil en stage requiert une convention et un encadrement adaptés." },
     ],
   },
   {
@@ -58,7 +60,7 @@ export const guideGroups: GuideGroup[] = [
         },
         get long() {
           return translateUi(
-            "Aucun compte requis : votre numéro de commande + l'email utilisé au paiement suffisent pour voir le statut en temps réel.",
+            "Lorsque le suivi de commande est actif pour une vente réelle, utilisez la référence et l’adresse e-mail associée. Une maquette ou une boutique test ne garantit pas la disponibilité d’un suivi transporteur en temps réel.",
           );
         },
       },
@@ -73,7 +75,7 @@ export const guideGroups: GuideGroup[] = [
         },
         get long() {
           return translateUi(
-            "Reversements automatiques selon votre plan, après période de rétention anti-litige.",
+            "Les reversements et leur calendrier dépendent du contrat marchand applicable, de la configuration effective du prestataire de paiement et des contrôles anti-litige. Un aperçu ou un tarif annoncé ne confirme pas une activation du service.",
           );
         },
         requiresAuth: true,
@@ -111,7 +113,9 @@ export const guideGroups: GuideGroup[] = [
       { slug: "documents", title: "Quels documents juridiques consulter ?", to: "/pack-legal", desc: "CGU, CGV, confidentialité, cookies et annexes.", long: "Le pack légal BIB présente les règles de la plateforme et les responsabilités des parties. Les informations de l'entreprise et les conditions de chaque boutique doivent être finalisées et validées avant l'exploitation commerciale." },
       { slug: "confidentialite", title: "Pourquoi BIB demande-t-il mes données ?", to: "/donnees-et-consentements", desc: "Finalité expliquée avant chaque formulaire.", long: "Les données nécessaires à un compte, à une commande ou au support ne doivent pas être confondues avec des finalités facultatives. Les sondages, la prospection et les cookies soumis au consentement proposent des choix séparés. Les droits RGPD sont détaillés dans le pack légal." },
       { slug: "assistant", title: "L'assistant BIB peut-il ouvrir un ticket sans mon accord ?", to: "/centre-aide", desc: "Non, une confirmation doit être demandée.", long: "L'assistant doit chercher à comprendre la demande, poser des questions pertinentes, proposer un ticket si nécessaire puis attendre une réponse affirmative. Une conversation simple ne déclenche pas automatiquement un ticket." },
-      { slug: "talent", title: "Comment rejoindre BIB Talent ?", to: "/talent", desc: "Candidature intégrée et traitement réservé aux RH.", long: "Le bouton Rejoindre BIB Talent ouvre un formulaire dans une fenêtre au-dessus de la page. Les candidatures sont examinées par la coordination RH, avant toute orientation éventuelle vers un pôle métier. Aucune promesse automatique de collaboration n'est faite." },
+      { slug: "talent", title: "Quelle est la différence entre BIB Talent et Carrières ?", to: "/bib-talent", desc: "Accompagnement d’équipe et dépôt des candidatures.", long: "BIB Talent présente l’intégration et l’accompagnement des personnes rejoignant les équipes BIB. Les offres sont publiées dans Carrières, où chaque fiche décrit les missions, le pôle, le profil recherché et la durée. La candidature se dépose uniquement depuis Carrières ; BIB Talent ne collecte pas les candidatures." },
+      { slug: "cookies", title: "Comment accepter, refuser ou personnaliser les cookies ?", to: "/cookies", desc: "Réglages des traceurs et choix facultatifs.", long: "Le gestionnaire de cookies permet d’accepter, de refuser ou de personnaliser les traceurs facultatifs et de modifier son choix ensuite. Le consentement aux cookies ne vaut pas autorisation de prospection par e-mail ; les communications marketing demandent une base légale ou un accord distinct selon le cas." },
+      { slug: "candidatures", title: "Puis-je joindre mon CV ou un profil LinkedIn ?", to: "/carrieres", desc: "CV PDF/DOCX, lien LinkedIn et confidentialité.", long: "Depuis une offre Carrières, le bouton « Postuler » ouvre le formulaire. Il prévoit un CV PDF ou DOCX jusqu’à 4 Mo, un lien LinkedIn facultatif et un lien CV ou portfolio distinct. Le dépôt de fichiers exige l’activation du stockage privé et des fonctions serveur ; son fonctionnement en production dépend de ce déploiement. Consultez les informations de conservation avant envoi." },
     ],
   },
   {
@@ -139,7 +143,7 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Munissez-vous de votre numéro de commande (format LKS26-XXXXXX) et de l'e-mail utilisé au paiement, puis ouvrez la page de suivi.",
+            "Pour une commande réelle éligible au suivi BIB, utilisez la référence communiquée à l’achat et l’adresse e-mail associée. Le statut du transport dépend des intégrations réellement actives.",
           );
         },
         to: "/suivi-commande",
@@ -151,7 +155,7 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Les délais dépendent du pays et du transporteur sélectionné par la boutique. Une estimation s'affiche à l'étape livraison du checkout et un e-mail récapitule l'expédition.",
+            "Les délais dépendent du vendeur, de la destination et du partenaire logistique effectivement sélectionné. Consultez les conditions et informations de livraison communiquées avant de confirmer une commande.",
           );
         },
       },
@@ -181,7 +185,7 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Vérifiez votre carte (plafond, 3-D Secure) puis réessayez. Aucune commande n'est confirmée tant que le paiement n'est pas validé — vous ne risquez pas de double débit.",
+            "Vérifiez le statut de la tentative auprès de votre banque et du vendeur avant de recommencer. Une autorisation bancaire peut apparaître temporairement sans commande confirmée ; en cas de débit constaté sans confirmation, contactez le support avec la référence de transaction.",
           );
         },
       },
@@ -200,7 +204,7 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Depuis le dashboard, cliquez « Nouvelle boutique ». Trois étapes : informations, produits, aperçu. Le Brand Studio IA génère ensuite votre identité visuelle sur-mesure.",
+            "La création de boutique s’effectue dans l’espace marchand habilité : informations du vendeur, identité de marque, pages et catalogue. Les fonctions de génération assistée peuvent nécessiter une activation et les contenus doivent être vérifiés avant publication.",
           );
         },
         to: "/dashboard/boutiques",
@@ -209,12 +213,12 @@ export const faq: FaqCategory[] = [
       {
         get q() {
           return translateUi(
-            "Pourquoi l'échantillon Stripe est-il obligatoire ?",
+            "Un échantillon est-il toujours obligatoire ?",
           );
         },
         get a() {
           return translateUi(
-            "Pour garantir la qualité avant mise en ligne, chaque produit fournisseur doit passer une commande échantillon. Une fois validée, le produit devient publiable.",
+            "La nécessité de vérifier un échantillon dépend des règles de qualification du fournisseur et de la catégorie. Un paiement éventuel, la validation qualité et la décision de publication sont des étapes distinctes ; la fiche n’est pas publiable par le seul fait de son importation.",
           );
         },
       },
@@ -224,7 +228,7 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Les reversements sont déclenchés selon votre plan (Starter mensuel, Growth/Pro hebdomadaire) après période de rétention anti-litige. Détails dans Paiements.",
+            "Les versements dépendent des contrats, de la configuration du compte de paiement et des contrôles applicables. Le calendrier exact doit être confirmé dans l’espace Paiements lorsqu’il est activé pour votre compte.",
           );
         },
         to: "/dashboard/paiements",
@@ -248,7 +252,7 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Oui, dans Équipe : 4 rôles disponibles (Owner, Manager, Marketing, Support). Les limites de sièges dépendent de votre plan.",
+            "La gestion des accès et des rôles se fait dans l’espace Équipe pour les marchands habilités. Vérifiez les autorisations et limites de votre offre active avant d’inviter une personne.",
           );
         },
         to: "/dashboard/equipe",
@@ -281,7 +285,7 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Remplissez le formulaire de candidature. Notre équipe revient sous 5 jours ouvrés avec un retour qualifié.",
+            "Vous pouvez déposer une candidature via le portail fournisseurs. BIB vérifie les informations et justificatifs selon le processus de qualification ; aucun délai de réponse ou référencement n’est garanti.",
           );
         },
         to: "/suppliers/apply",
@@ -303,7 +307,7 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Vous fixez votre prix fournisseur. Le vendeur applique sa marge. La plateforme prélève une commission selon le plan du vendeur (15/10/8 %).",
+            "Le fournisseur propose ses conditions tarifaires ; le marchand établit son prix de vente dans le cadre contractuel applicable. Les commissions, frais d’audit éventuels et devis doivent être validés avant toute facturation ou engagement.",
           );
         },
       },
@@ -313,7 +317,7 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Le portail fournisseur affiche les ventes, MOQ atteint, taux de retour et performance sur 6 mois.",
+            "Le suivi des performances dépend des données réellement disponibles et des fonctionnalités activées dans le portail partenaire. Les indicateurs affichés ne constituent pas une garantie de ventes.",
           );
         },
       },
@@ -323,7 +327,7 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Mettez à jour votre stock dans le portail. Les produits passent automatiquement « hors stock » côté boutique pour éviter les commandes orphelines.",
+            "Les disponibilités doivent être actualisées et validées avant mise en vente. Les ruptures peuvent suspendre la commande ou la publication ; une synchronisation automatique ne doit pas être supposée sans intégration opérationnelle.",
           );
         },
       },
@@ -354,7 +358,7 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Étiquette BIB A6 (100×150 mm) avec Code128 et QR de suivi. Une variante planche A4 ×4 est disponible pour les imprimantes bureautiques.",
+            "Le format d’étiquette dépend du transporteur et des flux logistiques effectivement activés. BIB documente les références d’expédition lors de l’intégration opérationnelle du partenaire.",
           );
         },
       },
@@ -364,7 +368,7 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Tous les litiges remontent dans le portail Ops avec un SLA de 48 h. Au-delà, la plateforme tranche et indemnise selon contrat.",
+            "Les incidents sont signalés au partenaire et à l’équipe BIB selon le contrat applicable. Les délais, responsabilités et indemnisations dépendent des conditions convenues ; une résolution automatique après 48 h n’est pas garantie.",
           );
         },
       },
@@ -393,7 +397,7 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Depuis Tarifs ou Paramètres. Le changement est immédiat, prorata appliqué automatiquement.",
+            "Les offres sont présentées sur Tarifs. Les changements de formule ne peuvent être confirmés qu’une fois le compte marchand habilité, le prestataire de paiement configuré et les conditions commerciales acceptées.",
           );
         },
         to: "/tarifs",
@@ -407,7 +411,7 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Dans Paiements, onglet Facturation : export PDF ou CSV avec mention « Verified by BIB ».",
+            "Les documents de facturation sont accessibles selon les modules activés et les droits du compte. Les factures doivent mentionner le bon émetteur légal ; la facturation électronique nécessite les intégrations réglementaires correspondantes.",
           );
         },
       },
@@ -417,7 +421,7 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Dans Paramètres → Compte. La suppression est définitive et bloquée tant que vous avez du stock actif ou des commandes ouvertes.",
+            "Les demandes de clôture sont traitées depuis les paramètres du compte ou par le support selon les accès disponibles. Les commandes, obligations comptables et durées légales de conservation peuvent empêcher l’effacement immédiat de toutes les données.",
           );
         },
         to: "/dashboard/parametres",
@@ -431,7 +435,7 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Dans Paramètres → Sécurité. Nous recommandons une app TOTP (Google Authenticator, 1Password).",
+            "Consultez les options de sécurité réellement proposées dans votre compte. Lorsque la double authentification est disponible, privilégiez une application d’authentification et protégez vos codes de secours.",
           );
         },
       },
@@ -441,7 +445,7 @@ export const faq: FaqCategory[] = [
         },
         get a() {
           return translateUi(
-            "Oui, selon votre plan. Starter = 1, Growth = 3, Pro = illimité. Chaque boutique a sa propre identité et son propre catalogue.",
+            "Le nombre de boutiques autorisées dépend de la formule effectivement souscrite et des règles d’activation. Chaque boutique dispose de ses propres informations commerciales et de son catalogue.",
           );
         },
       },
