@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 /**
- * Shared chrome for public marketing pages: fixed Header, main content slot,
+ * Shared chrome for public marketing pages: sticky Header, main content slot,
  * and Footer. Keeps individual pages free of duplicated layout markup.
  */
 export default function PublicPageLayout({ children }: { children: ReactNode }) {
