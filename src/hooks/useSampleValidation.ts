@@ -87,19 +87,10 @@ export function useSampleValidations() {
 export function useOrderSample() {
   return useMutation({
     mutationFn: async (productId: string) => {
-      const { data, error } = await supabase.functions.invoke("create-sample-checkout", {
-        body: {
-          productId,
-          environment: "live",
-          returnUrl: window.location.origin + "/dashboard/produits",
-        },
-      });
-      if (error || !data?.checkoutUrl ||
-          typeof data.checkoutUrl !== "string" ||
-          !data.checkoutUrl.startsWith("https://checkout.stripe.com/")) {
-        throw new Error("Le paiement de l'échantillon n'est pas encore disponible.");
-      }
-      return data.checkoutUrl as string;
+      const url = new URL("/dashboard/devis-approvisionnement", window.location.origin);
+      url.searchParams.set("productId", productId);
+      url.searchParams.set("purpose", "sample");
+      return url.href;
     },
   });
 }

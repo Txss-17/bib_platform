@@ -7,6 +7,7 @@ import {
 import { BridgeBody, SupplierProduct } from "../_shared/bridge-contract.ts";
 import { parseStockReceipt } from "../_shared/stockReceipt.ts";
 import type { z } from "npm:zod@3";
+import { acquisitionUnitTotal } from "../_shared/supply-contract.mjs";
 
 type Client = ReturnType<typeof adminClient>;
 type Product = z.infer<typeof SupplierProduct>;
@@ -20,6 +21,8 @@ async function syncProduct(
   const clean = Object.fromEntries(
     Object.entries(fields).filter(([, value]) => value !== undefined),
   );
+  if (input.is_active !== false && !input.acquisition_pricing) return json({ error: "approved_global_acquisition_price_required" }, 412);
+  if (input.acquisition_pricing) clean.base_price = acquisitionUnitTotal(input.acquisition_pricing) / 100;
   const columns = "id, intranet_id, intranet_source_updated_at";
   let existing: {
     id: string;

@@ -1,6 +1,7 @@
 import { assertTrustedReturnUrl } from "../_shared/return-url.ts";
 import { assertPaymentEnvironment } from "../_shared/payment-environment.ts";
 import { checkoutOrderMetadata } from "../_shared/checkout-session.ts";
+import { merchantSaleDestination } from "../_shared/merchant-destination.mjs";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
   type StripeEnv,
@@ -312,6 +313,9 @@ async function createStorefrontCheckout(
   }
 
   // 2. Charger les données produits fiables depuis la base.
+  let destination;
+  try { destination = await merchantSaleDestination(supabase, stripe, boutique.id, body.environment); }
+  catch { throw new CheckoutError("Le compte de règlement vérifié du vendeur n'est pas disponible.", 503); }
   // Les prix, noms et images envoyés par le navigateur sont ignorés.
   const productIds = cart.map((item) => item.productId);
 
@@ -471,7 +475,8 @@ async function createStorefrontCheckout(
       return_url: returnUrl,
       customer_email: customerEmail,
       customer_creation: "always",
-      automatic_tax: { enabled: true },
+      automatic_tax: destination.automatic_tax,
+      payment_intent_data: destination.payment_intent_data,
 
       line_items: lines.map((line) => ({
         price_data: {
@@ -496,6 +501,7 @@ async function createStorefrontCheckout(
       },
 
       metadata: {
+        ...destination.metadata,
         kind: "storefront",
         boutiqueId: boutique.id,
         boutiqueName: (boutique.name ?? "").slice(0, 200),

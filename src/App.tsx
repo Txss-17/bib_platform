@@ -111,6 +111,7 @@ const Produits = lazy(() => import("@/pages/dashboard/Produits"));
 const ProduitsFournisseurs = lazy(
   () => import("@/pages/dashboard/ProduitsFournisseurs"),
 );
+const SupplyQuotes = lazy(() => import("@/pages/dashboard/SupplyQuotes"));
 const Paiements = lazy(() => import("@/pages/dashboard/Paiements"));
 const SEOAnalytics = lazy(() => import("@/pages/dashboard/SEOAnalytics"));
 const Boutiques = lazy(() => import("@/pages/dashboard/Boutiques"));
@@ -556,6 +557,7 @@ export default function App() {
                       element={<Navigate to="/order-tracking" replace />}
                     />
 
+                    <Route path="/dashboard/devis-approvisionnement" element={<ProtectedRoute><SupplyQuotes /></ProtectedRoute>} />
                     <Route path="/unsubscribe" element={<Unsubscribe />} />
                     <Route path="/communications" element={<MarketingPreferences />} />
 

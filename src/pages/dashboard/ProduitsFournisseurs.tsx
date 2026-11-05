@@ -1,5 +1,6 @@
 import { translateUi } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
+import {catalogAcquisitionLabel,catalogAcquisitionPrice} from "@/lib/supplyPricing";
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -105,13 +106,14 @@ const CATEGORIES = [
 function MarginSimulator({ product }: { product: SupplierProduct }) {
   useLanguage();
   const [margin, setMargin] = useState(20);
-  const sellingPrice = product.base_price * (1 + margin / 100);
-  const profit = sellingPrice - product.base_price;
+  const acquisition = catalogAcquisitionPrice(product);
+  const sellingPrice = (acquisition ?? 0) * (1 + margin / 100);
+  const profit = sellingPrice - (acquisition ?? 0);
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1">
+        <Button variant="outline" size="sm" className="gap-1" disabled={acquisition===null}>
           <Calculator className="w-3 h-3" />
           <span className="hidden sm:inline text-xs">
             {translateUi("Marge")}
@@ -130,10 +132,10 @@ function MarginSimulator({ product }: { product: SupplierProduct }) {
         <div className="space-y-5 py-3">
           <div>
             <label className="text-xs text-muted-foreground">
-              {translateUi("Prix de base (logistique incluse)")}
+              {translateUi("Prix d’acquisition indicatif")}
             </label>
             <p className="text-xl font-bold">
-              {product.base_price.toFixed(2)} €
+              {catalogAcquisitionLabel(product)}
             </p>
           </div>
           <div>
@@ -157,15 +159,15 @@ function MarginSimulator({ product }: { product: SupplierProduct }) {
                 {translateUi("Prix de vente")}
               </label>
               <p className="text-lg font-bold text-primary">
-                {sellingPrice.toFixed(2)} €
+                {acquisition===null?"—":sellingPrice.toFixed(2)+" €"}
               </p>
             </div>
             <div>
               <label className="text-xs text-muted-foreground">
-                {translateUi("Profit par unité")}
+                {translateUi("Écart brut par unité")}
               </label>
               <p className="text-lg font-bold text-success-ink">
-                +{profit.toFixed(2)} €
+                {acquisition===null?"—":"+"+profit.toFixed(2)+" €"}
               </p>
             </div>
           </div>
@@ -179,8 +181,9 @@ function MarginSimulator({ product }: { product: SupplierProduct }) {
 function InlineMarginCalc({ product }: { product: SupplierProduct }) {
   useLanguage();
   const [margin, setMargin] = useState(20);
-  const sellingPrice = product.base_price * (1 + margin / 100);
-  const profit = sellingPrice - product.base_price;
+  const acquisition = catalogAcquisitionPrice(product);
+  const sellingPrice = (acquisition ?? 0) * (1 + margin / 100);
+  const profit = sellingPrice - (acquisition ?? 0);
 
   return (
     <div className="px-3 pb-3 space-y-2 border-t border-border/50 pt-2">
@@ -190,7 +193,7 @@ function InlineMarginCalc({ product }: { product: SupplierProduct }) {
           {margin}%
         </span>
         <span className="text-[10px] font-mono text-success-ink">
-          +{profit.toFixed(2)} €
+          {acquisition===null?"—":"+"+profit.toFixed(2)+" €"}
         </span>
       </div>
       <Slider
@@ -205,7 +208,7 @@ function InlineMarginCalc({ product }: { product: SupplierProduct }) {
         <span className="text-muted-foreground">
           {translateUi("Vente:") + " "}
           <span className="font-semibold text-foreground">
-            {sellingPrice.toFixed(2)} €
+            {acquisition===null?"—":sellingPrice.toFixed(2)+" €"}
           </span>
         </span>
         <span className="text-muted-foreground">
@@ -300,6 +303,8 @@ export default function ProduitsFournisseurs() {
           <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
             {translateUi("Explorez les références du catalogue, comparez leur prix de base et personnalisez votre sélection avant de l'ajouter à une boutique.")}
           </p>
+          <p className="text-sm leading-6 text-muted-foreground">{translateUi("Le prix global validé inclut produit, livraison et commission BIB. Le fournisseur est identifié sur votre devis avant engagement ; l’ajout à une boutique ne constitue pas un achat.")}</p>
+          <Button type="button" variant="outline" onClick={()=>{window.location.href="/dashboard/devis-approvisionnement";}}>{translateUi("Demander un devis d’acquisition")}</Button>
         </div>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative min-w-0 flex-1">
@@ -656,9 +661,9 @@ function ProductGridCard({
             {product.name}
           </button>
           <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-            <span>{translateUi("Prix de base")}</span>
+            <span>{translateUi("Prix d’acquisition indicatif")}</span>
             <span className="text-sm font-bold tabular-nums text-foreground sm:text-base">
-              {product.base_price.toFixed(2)} €
+              {catalogAcquisitionLabel(product)}
             </span>
           </div>
           <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-2">
@@ -684,13 +689,15 @@ function ProductGridCard({
               {translateUi("Ajouter")}
             </Button>
           </div>
-          <div className="flex justify-start">
+          <div className="flex flex-wrap justify-start">
+            <Button type="button" variant="ghost" className="h-7 text-[11px]" onClick={()=>{window.location.href=`/dashboard/devis-approvisionnement?catalogId=${encodeURIComponent(product.id)}`;}}>{translateUi("Demander un devis")}</Button>
             <Button
               type="button"
               variant="ghost"
               className="h-7 min-w-0 gap-1 px-1 text-[11px]"
               onClick={() => setShowCalc(!showCalc)}
               aria-expanded={showCalc}
+              disabled={catalogAcquisitionPrice(product)===null}
             >
               <Calculator className="h-4 w-4 shrink-0" />
               {translateUi("Simuler")}
@@ -791,7 +798,7 @@ function ProductListCard({
                     />
                   </button>
                   <p className="text-sm sm:text-base font-bold text-foreground">
-                    €{product.base_price.toFixed(2)}
+                    {catalogAcquisitionLabel(product)}
                   </p>
                 </div>
               </div>

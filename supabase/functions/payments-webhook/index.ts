@@ -3,6 +3,7 @@ import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 
 import {
   type StripeEnv,
+  createStripeClient,
   verifyWebhook,
 } from "../_shared/stripe.ts";
 
@@ -502,6 +503,18 @@ async function handleSubscriptionDeleted(
  */
 
 async function handleCheckoutCompleted(session: any, env: StripeEnv) {
+  if (session.metadata?.kind === "merchant_supply") {
+    if (session.payment_status !== "paid") return;
+    const paymentIntentId = typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id;
+    if (!paymentIntentId) throw new Error("Supply payment intent missing");
+    const intent = await createStripeClient(env).paymentIntents.retrieve(paymentIntentId, { expand: ["latest_charge"] });
+    const { error } = await getSupabase().rpc("record_merchant_supply_payment", {
+      p_session: { ...session, payment_intent: paymentIntentId }, p_payment_intent: intent,
+      p_environment: env, p_event_id: `checkout-paid:${session.id}`,
+    });
+    if (error) throw new Error("Supply payment evidence could not be recorded");
+    return;
+  }
   if (session.metadata?.kind === "merchant_sample") {
     // Webhook signature and Stripe environment were verified by verifyWebhook.
     if (session.payment_status !== "paid") return;
@@ -875,6 +888,41 @@ async function handleWebhook(
       await handleCheckoutCompleted(event.data.object, env);
       break;
 
+    case "charge.refunded": {
+      const charge = event.data.object;
+      const pi = typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id;
+      if (pi) {
+        const { data: supply, error: lookupError } = await getSupabase().from("merchant_supply_payments").select("quote_id").eq("stripe_payment_intent_id", pi).eq("environment", env).maybeSingle();
+        if (lookupError) throw lookupError;
+        if (supply) {
+          const current = await createStripeClient(env).charges.retrieve(charge.id);
+          const refunded = current.amount_refunded;
+          const { error } = await getSupabase().rpc("adjust_merchant_supply_payment", { p_payment_intent_id: pi, p_environment: env, p_event_id: event.id,
+            p_state: refunded >= current.amount ? "refunded" : "partially_refunded", p_refunded_cents: refunded,
+            p_evidence: { charge_id: current.id, refunded_cents: refunded } });
+          if (error) throw error;
+        }
+      }
+      break;
+    }
+    case "charge.dispute.created":
+    case "charge.dispute.updated":
+    case "charge.dispute.closed": {
+      const dispute = event.data.object;
+      const pi = typeof dispute.payment_intent === "string" ? dispute.payment_intent : dispute.payment_intent?.id;
+      if (pi) {
+        const { data: supply, error: lookupError } = await getSupabase().from("merchant_supply_payments").select("quote_id,refunded_cents,totals").eq("stripe_payment_intent_id", pi).eq("environment", env).maybeSingle();
+        if (lookupError) throw lookupError;
+        if (supply) {
+          const current = await createStripeClient(env).disputes.retrieve(dispute.id);
+          const state = current.status === "won" ? (supply.refunded_cents >= supply.totals.total_cents ? "refunded" : supply.refunded_cents > 0 ? "partially_refunded" : "paid") : "disputed";
+          const { error } = await getSupabase().rpc("adjust_merchant_supply_payment", { p_payment_intent_id: pi, p_environment: env, p_event_id: event.id, p_state: state,
+            p_refunded_cents: supply.refunded_cents, p_evidence: { dispute_id: current.id, dispute_status: current.status } });
+          if (error) throw error;
+        }
+      }
+      break;
+    }
     case "refund.created":
     case "refund.updated":
     case "refund.failed":
@@ -883,6 +931,11 @@ async function handleWebhook(
 
     case "checkout.session.async_payment_failed": {
       const session = event.data.object;
+      if (session.metadata?.kind === "merchant_supply") {
+        const { error } = await getSupabase().rpc("fail_merchant_supply_checkout", { p_session_id: session.id, p_environment: env });
+        if (error) throw error;
+        break;
+      }
       if (session.metadata?.kind === "merchant_sample") {
         const { error } = await getSupabase().from("sample_purchases")
           .update({ payment_status: "failed" })
@@ -911,6 +964,11 @@ async function handleWebhook(
 
     case "checkout.session.expired": {
       const session = event.data.object;
+      if (session.metadata?.kind === "merchant_supply") {
+        const { error } = await getSupabase().rpc("fail_merchant_supply_checkout", { p_session_id: session.id, p_environment: env });
+        if (error) throw error;
+        break;
+      }
       if (session.metadata?.kind === "merchant_sample") {
         const { error } = await getSupabase().from("sample_purchases")
           .update({ payment_status: "expired" })

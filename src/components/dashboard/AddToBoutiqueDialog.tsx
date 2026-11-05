@@ -1,3 +1,4 @@
+import {catalogAcquisitionPrice,catalogAcquisitionLabel} from "@/lib/supplyPricing";
 import { translateUi } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useEffect, useMemo, useState } from "react";
@@ -115,7 +116,8 @@ export function AddToBoutiqueDialog({
   /* Commercial calculations                                                */
   /* ---------------------------------------------------------------------- */
 
-  const basePrice = Number(product.base_price ?? 0);
+  const acquisition = catalogAcquisitionPrice(product);
+  const basePrice = acquisition ?? Number(product.base_price ?? 0);
 
   const maxMargin = Number(product.max_margin_percent ?? 0);
 
@@ -346,7 +348,7 @@ export function AddToBoutiqueDialog({
               </p>
 
               <p className="mt-2 text-sm font-medium">
-                {translateUi("Prix fournisseur :")} {basePrice.toFixed(2)} €
+                {translateUi("Prix d’acquisition indicatif")} : {catalogAcquisitionLabel(product)}
               </p>
             </div>
           </div>
@@ -428,13 +430,14 @@ export function AddToBoutiqueDialog({
           {/* Price summary                                                     */}
           {/* ---------------------------------------------------------------- */}
 
+          {acquisition===null&&<p className="text-sm text-muted-foreground">{translateUi("Le coût global reste à confirmer par devis. L’ajout prépare votre catalogue et ne constitue pas un achat.")}</p>}
           <div className="rounded-lg border bg-muted/30 p-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">
-                {translateUi("Prix fournisseur")}
+                {translateUi("Prix d’acquisition indicatif")}
               </span>
 
-              <span>{basePrice.toFixed(2)} €</span>
+              <span>{catalogAcquisitionLabel(product)}</span>
             </div>
 
             <div className="mt-2 flex items-center justify-between">
@@ -459,11 +462,11 @@ export function AddToBoutiqueDialog({
 
             <div className="mt-1 flex items-center justify-between">
               <span className="text-sm text-muted-foreground">
-                {translateUi("Bénéfice estimé / unité")}
+                {translateUi("Écart brut par unité")}
               </span>
 
               <span className="text-sm font-medium">
-                {estimatedProfit.toFixed(2)} €
+                {acquisition===null?"—":estimatedProfit.toFixed(2)+" €"}
               </span>
             </div>
           </div>

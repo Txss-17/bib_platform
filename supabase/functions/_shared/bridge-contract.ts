@@ -1,4 +1,5 @@
 import { z } from "npm:zod@3";
+import { parseAcquisitionPrice } from "./supply-contract.mjs";
 import {
   parseCustomizationCapabilities,
   parseCustomizationTerms,
@@ -33,6 +34,7 @@ export const SupplierProduct = z
     moq: optional(z.number().int().min(1)),
     market: optional(z.string().trim().min(1).max(50)),
     base_price: optional(z.number().finite().min(0)),
+    acquisition_pricing: optional(metadata(parseAcquisitionPrice)),
     max_margin_percent: optional(z.number().int().min(0).max(1000)),
     customization_capabilities: optional(
       metadata(parseCustomizationCapabilities),
