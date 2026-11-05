@@ -2,9 +2,13 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { useSEO } from "@/hooks/useSEO";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { EnglishMerchantDataAnnex } from "@/components/legal/EnglishSupplementalLegalPages";
 
 export default function LegalMerchantDataAnnex() {
-  useSEO({title:"Annexe données marchands — BIB",description:"Projet d'annexe de traitement des données pour les boutiques marchandes BIB."});
+  const { lang } = useLanguage();
+  useSEO({title: lang === "en" ? "Merchant data addendum — BIB" : "Annexe données marchands — BIB",description: lang === "en" ? "Draft merchant data processing addendum for BIB stores." : "Projet d'annexe de traitement des données pour les boutiques marchandes BIB."});
+  if (lang === "en") return <EnglishMerchantDataAnnex />;
   return <div className="min-h-screen bg-background"><Header/>
     <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-14">
       <Link to="/pack-legal" className="text-sm text-primary underline">Retour au pack légal</Link>
