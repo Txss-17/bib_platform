@@ -9,21 +9,19 @@ describe("BIB Talent bilingual content", () => {
     expect(source).toContain("const tr = (value: Copy) => value[lang]");
     expect(source).toContain("useSEO({ title: tr(messages.seoTitle), description: tr(messages.seoDescription) })");
   });
-  it("contains both language variants for main content and application link", () => {
-    expect(source).toContain("Rejoindre BIB Talent");
-    expect(source).toContain("Join BIB Talent");
-    expect(source).toContain("building what's next together");
-    expect(source).toContain("Comment participer ?");
-    expect(source).toContain("How can I contribute?");
-    expect(source).not.toContain("<video");
-    expect(source).toContain("<BibTalentApplicationForm initialStageCode={stageCode} />");
-    expect(source).toContain("setShowApplication(true)");
-    expect(source).toContain("<Dialog open={showApplication}");
-    expect(source).toContain("<DialogContent");
-    expect(source).not.toContain("scrollIntoView");
-    expect(source).toContain("max-w-6xl");
+  it("describes BIB Talent's accompaniment in French and English without a form", () => {
+    expect(source).toContain("Vous rejoignez les équipes BIB ? BIB Talent vous accompagne tout au long de votre parcours.");
+    expect(source).toContain("Joining the BIB teams? BIB Talent supports you throughout your journey.");
+    expect(source).toContain("BIB, c'est quoi concrètement ?");
+    expect(source).toContain("Comprendre l'écosystème BIB");
+    expect(source).toContain("Understand the BIB ecosystem");
+    expect(source).toContain('to="/carrieres"');
+    expect(source).toContain('<Navigate to={`/carrieres?stage=${stageCode}#postuler`} replace />');
+    expect(source).not.toContain("<BibTalentApplicationForm");
+    expect(source).not.toContain("<Dialog");
     expect(source).not.toContain("docs.google.com/forms");
   });
+
   it("removes retention duration from the form and requires a separate future-opportunity opt-in", () => {
     const form = readFileSync(new URL("../components/talent/BibTalentApplicationForm.tsx", import.meta.url), "utf8");
     const endpoint = readFileSync(new URL("../../supabase/functions/submit-talent-application/index.ts", import.meta.url), "utf8");
@@ -58,29 +56,29 @@ describe("BIB Talent bilingual content", () => {
     expect(publicExport).not.toContain("talent_applications:");
   });
 
-  it("connects four bilingual Careers internships with the Talent application", () => {
+  it("connects detailed Careers offers to the RH form, not to BIB Talent", () => {
     const careers = readFileSync(new URL("../pages/Carrieres.tsx", import.meta.url), "utf8");
+    const detail = readFileSync(new URL("../pages/CarriereOffre.tsx", import.meta.url), "utf8");
     const form = readFileSync(new URL("../components/talent/BibTalentApplicationForm.tsx", import.meta.url), "utf8");
+    const routes = readFileSync(new URL("../App.tsx", import.meta.url), "utf8");
     for (const code of ["STG-RD-01", "STG-MKT-01", "STG-JUR-01", "STG-FRN-01"]) {
       expect(careers).toContain(`code: "${code}"`);
+      expect(detail).toContain(`"${code}": {`);
       expect(form).toContain(code);
-      expect(source).toContain(code);
     }
-    expect(careers).toContain('id="stages"');
-    expect(careers).toContain("Découvrez nos quatre stages");
-    expect(careers).toContain("Explore our four internship pathways");
-    expect(careers).toContain("Postuler à ce stage");
-    expect(careers).toContain("Apply for this internship");
-    expect(careers).toContain('/bib-talent?stage=');
-    expect(careers).not.toContain("aucun stage ouvert actuellement");
-    expect(careers).not.toContain("candidatures non ouvertes");
-    expect(source).toContain('useSearchParams()');
-    expect(source).toContain('<BibTalentApplicationForm initialStageCode={stageCode} />');
-    expect(source).toContain('href="/carrieres"');
-    expect(form).toContain('form.contribution_type === "internship"');
-    expect(form).toContain("Candidature de stage");
+    expect(careers).toContain("Découvrir nos offres");
+    expect(careers).toContain('id="postuler"');
+    expect(careers).toContain('initialStageCode={selectedStage}');
+    expect(careers).toContain('/carrieres/offres/');
+    expect(detail).toContain('to={`/carrieres?stage=${opportunity.code}#postuler`}');
+    expect(routes).toContain('path="/carrieres/offres/:code"');
+    expect(form).toContain("Formation actuelle et établissement");
+    expect(form).toContain("Période envisagée");
     expect(form).toContain("Envoyer ma candidature");
     expect(form).toContain("stageToPole");
+    expect(form).toContain("future_opportunities_consent: futureConsent");
+    expect(careers).not.toContain('/bib-talent?stage=');
+    expect(source).not.toContain('<BibTalentApplicationForm');
   });
 
 });
