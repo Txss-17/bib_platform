@@ -1,0 +1,61 @@
+{
+  "status": "BROUILLON_NON_PUBLIE",
+  "revision": "2.1",
+  "date": "2026-11-05",
+  "source": "Modèles Word JUR-B01/B02/B03 v2.1 corrigés dans Google Drive BIB; contrôle des placeholders contre les migrations SQL Platform 0025 et Intrabib 0084",
+  "effective_at": null,
+  "approved_by_legal": false,
+  "approved_by_direction": false,
+  "legal_model_versions": {
+    "merchant_cgu": "2026-09",
+    "merchant_cgv": "2026-09",
+    "merchant_privacy": "2026-11-02"
+  },
+  "models": {
+    "JUR-B01": {
+      "required_placeholders": [
+        "VENDEUR_NOM_LEGAL",
+        "BOUTIQUE_NOM",
+        "FORME_OU_EI",
+        "SIREN_SIRET",
+        "ADRESSE",
+        "CONTACT_VENDEUR",
+        "MEDIATEUR_COORDONNEES",
+        "CGV_MODELE_VERSION",
+        "CGV_BOUTIQUE_VERSION",
+        "DATE_EFFET"
+      ],
+      "document_revision": "2.1",
+      "import_allowed": false
+    },
+    "JUR-B02": {
+      "required_placeholders": [
+        "VENDEUR_NOM_LEGAL",
+        "BOUTIQUE_NOM",
+        "URL_BOUTIQUE",
+        "CGU_MODELE_VERSION",
+        "CGU_BOUTIQUE_VERSION",
+        "CONTACT_VENDEUR"
+      ],
+      "document_revision": "2.1",
+      "import_allowed": false
+    },
+    "JUR-B03": {
+      "required_placeholders": [
+        "VENDEUR_NOM_LEGAL",
+        "BOUTIQUE_NOM",
+        "URL_BOUTIQUE",
+        "FORME_OU_EI",
+        "SIREN_SIRET",
+        "ADRESSE",
+        "TVA_ID",
+        "CONTACT_VENDEUR",
+        "BIB_IDENTITE_LEGALE_VERIFIEE",
+        "BIB_CONTACT",
+        "HEBERGEUR_RAISON_SOCIALE_ET_COORDONNEES"
+      ],
+      "document_revision": "2.1",
+      "import_allowed": false
+    }
+  }
+}
