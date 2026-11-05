@@ -43,7 +43,7 @@ function LegalShell({ title, eyebrow, updated, children }: {
         <div className="mt-7 grid grid-cols-1 items-start gap-8 lg:grid-cols-[225px_minmax(0,1fr)] lg:gap-12">
           <aside className="lg:sticky lg:top-20">
             <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{translateUi("Documents BIB")}</p>
-            <nav aria-label={translateUi("Documents juridiques BIB")} className="flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible">
+            <nav aria-label={lang === "en" ? "BIB legal documents" : "Documents juridiques BIB"} className="flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible">
               {legalNavigation.map(item => {
                 const selected = pathname === item.href;
                 return <Link key={item.href} to={item.href}
