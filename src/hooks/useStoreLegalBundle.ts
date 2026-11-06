@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { assertStoreLegalBundleReady } from "@/lib/legalBundleReadiness";
 
 export type StoreLegalDocument = {
   model_id: string;
@@ -53,14 +54,7 @@ export function useStoreLegalBundle(storeId?: string) {
         "get_store_legal_bundle",
         { p_store_id: storeId },
       );
-      if (
-        !bundle ||
-        bundle.store_id !== storeId ||
-        !/^[a-f0-9]{64}$/.test(bundle.bundle_hash) ||
-        !Array.isArray(bundle.documents) ||
-        bundle.documents.length !== 3
-      )
-        throw new Error("legal_documents_unavailable");
+      assertStoreLegalBundleReady(bundle, storeId!);
       return bundle;
     },
   });
