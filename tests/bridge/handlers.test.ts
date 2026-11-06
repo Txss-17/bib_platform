@@ -17,6 +17,7 @@ const version = "2026-10-25T12:00:00Z";
 const ok = (data: unknown) => ({ data, error: null });
 let handler: (req: Request) => Promise<Response>;
 let configured = true;
+let paymentEnvironment = "live";
 
 function from(table: string) {
   const call: any = { table, filters: [], action: "read" };
@@ -57,6 +58,7 @@ beforeEach(() => {
   mocks.results.length = 0;
   mocks.calls.length = 0;
   configured = true;
+  paymentEnvironment = "live";
   vi.stubGlobal("Deno", {
     serve: (fn: typeof handler) => {
       handler = fn;
@@ -67,7 +69,7 @@ beforeEach(() => {
           ? configured
             ? "test-secret"
             : undefined
-          : "test-config",
+          : ({PAYMENTS_ENVIRONMENT:paymentEnvironment,PAYMENTS_LIVE_PROJECT_REF:"live-recette",PAYMENTS_SANDBOX_PROJECT_REF:"sandbox-recette",SUPABASE_URL:`https://${paymentEnvironment}-recette.supabase.co`})[key] ?? "test-config",
     },
   });
   mocks.createClient.mockReturnValue({ from, rpc: mocks.rpc });
@@ -111,6 +113,23 @@ describe("Privileged bridge import", () => {
       expect(mocks.createClient).not.toHaveBeenCalled();
     },
   );
+  it("confirms the sandbox receiver before any private client or catalogue write", async()=>{
+    paymentEnvironment="sandbox";await load("intranet-import");
+    const response=await handler(request({type:"catalog_environment",data:{environment:"sandbox"}}));
+    expect(response.status).toBe(200);expect(await response.json()).toEqual({schema_version:1,environment:"sandbox"});
+    expect(mocks.createClient).not.toHaveBeenCalled();expect(mocks.calls).toHaveLength(0);
+  });
+  it("refuses sandbox imports and handshakes on a live project before database access", async()=>{
+    await load("intranet-import");
+    for(const input of [product({environment:"sandbox"}),{type:"catalog_environment",data:{environment:"sandbox"}}])expect((await handler(request(input))).status).toBe(503);
+    expect(mocks.createClient).not.toHaveBeenCalled();expect(mocks.calls).toHaveLength(0);
+  });
+  it("requires an explicit sandbox tag and never writes transport metadata as a database column", async()=>{
+    paymentEnvironment="sandbox";await load("intranet-import");
+    expect((await handler(request(product()))).status).toBe(503);expect(mocks.calls).toHaveLength(0);
+    mocks.results.push(ok(null),ok({id}));expect((await handler(request(product({environment:"sandbox"})))).status).toBe(200);
+    expect(mocks.calls.find(c=>c.action==="insert").value).not.toHaveProperty("environment");
+  });
   it("fails closed when the secret is not configured", async () => {
     configured = false;
     await load("intranet-import");

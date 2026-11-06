@@ -8,6 +8,7 @@ import { BridgeBody, SupplierProduct } from "../_shared/bridge-contract.ts";
 import { parseStockReceipt } from "../_shared/stockReceipt.ts";
 import type { z } from "npm:zod@3";
 import { acquisitionUnitTotal } from "../_shared/supply-contract.mjs";
+import { assertPaymentEnvironment } from "../_shared/payment-environment.ts";
 
 type Client = ReturnType<typeof adminClient>;
 type Product = z.infer<typeof SupplierProduct>;
@@ -17,7 +18,7 @@ async function syncProduct(
   input: Product,
   retry = true,
 ): Promise<Response> {
-  const { platform_id, source_updated_at, ...fields } = input;
+  const { platform_id, source_updated_at, environment: _environment, ...fields } = input;
   const clean = Object.fromEntries(
     Object.entries(fields).filter(([, value]) => value !== undefined),
   );
@@ -114,6 +115,13 @@ Deno.serve(async (req) => {
 
   const parsed = BridgeBody.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return json({ error: parsed.error.flatten() }, 400);
+  if (parsed.data.type === "supplier_product" || parsed.data.type === "catalog_environment") {
+    try {
+      // A legacy untagged catalogue is live; sandbox always needs an explicit tag.
+      assertPaymentEnvironment(parsed.data.data.environment ?? "live",name=>Deno.env.get(name));
+    } catch { return json({error:"catalog_environment_unavailable"},503); }
+    if (parsed.data.type === "catalog_environment") return json({schema_version:1,environment:parsed.data.data.environment});
+  }
   const sb = adminClient();
 
   if (parsed.data.type === "restock_review") {

@@ -48,8 +48,22 @@ beforeEach(() => {
   mocks.rpc.mockImplementation(async () => ({
     data: {
       store_id: "store",
+      legal_entity_id: "20000000-0000-4000-8000-000000000001",
+      identity_review_id: "30000000-0000-4000-8000-000000000001",
+      environment: "sandbox",
       bundle_hash: hash,
-      seller: { VENDEUR_NOM_LEGAL: "Vendeur", SIREN_SIRET: "123456789" },
+      seller: {
+        VENDEUR_NOM_LEGAL: "Vendeur fictif",
+        SIREN_SIRET: "123456789",
+        ADRESSE: "1 rue Exemple, Paris",
+        CONTACT_VENDEUR: "merchant@example.test",
+        FORME_OU_EI: "EI",
+        MEDIATEUR_COORDONNEES: "Médiateur fictif, adresse de test",
+        TVA_ID: "Régime fiscal fictif de recette",
+        BIB_IDENTITE_LEGALE_VERIFIEE: "Opérateur fictif de recette",
+        BIB_CONTACT: "operator@example.test",
+        HEBERGEUR_RAISON_SOCIALE_ET_COORDONNEES: "Hébergeur fictif, adresse de test",
+      },
       documents: [
         document,
         { ...document, model_id: "second", model_key: "JUR-B02" },

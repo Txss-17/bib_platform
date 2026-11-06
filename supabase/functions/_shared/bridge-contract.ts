@@ -28,6 +28,7 @@ export const SupplierProduct = z
     platform_id: optional(z.string().uuid()),
     intranet_id: optional(z.string().trim().min(1).max(100)),
     source_updated_at: optional(z.string().datetime({ offset: true })),
+    environment: optional(z.enum(["sandbox", "live"])),
     name: optional(z.string().trim().min(1).max(255)),
     description: z.string().max(5000).nullable().optional(),
     image_url: z.string().url().nullable().optional(),
@@ -80,6 +81,7 @@ const ShopStatus = z
   }));
 
 export const BridgeBody = z.discriminatedUnion("type", [
+  z.object({type:z.literal("catalog_environment"),data:z.object({environment:z.enum(["sandbox","live"])})}),
   z.object({
     type: z.literal("restock_review"),
     data: z.object({
