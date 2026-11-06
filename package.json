@@ -17,6 +17,7 @@
     "check:bridge": "node tests/bridge/typecheck.mjs",
     "test:consistency": "node tests/consistency/browser-smoke.mjs",
     "test:supply": "node --test tests/supply/*.test.mjs && vitest run src/test/merchant-supply-checkout.test.ts src/test/merchant-supply-ui.test.tsx src/test/merchant-supply-webhook.test.ts src/test/merchant-supply-sync.test.ts src/test/storefront-legal-checkout.test.ts",
+    "test:supply:integration": "vitest run --config tests/bridge/vitest.config.ts merchant-supply-flow.test.ts",
     "test:supply:browser": "node tests/supply/browser.mjs",
     "test:supplier-audit": "node --test tests/supplier-audit/*.test.mjs",
     "test:legal-governance": "node --test tests/legal-governance/*.test.mjs",
