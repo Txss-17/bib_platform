@@ -150,6 +150,9 @@ jobs:
       - name: Typecheck private legal governance import
         run: npx tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --lib ES2022,DOM --skipLibCheck --strictNullChecks --noImplicitAny false --allowImportingTsExtensions tests/supplier-audit/edge-env.d.ts supabase/functions/legal-governance-import/index.ts
 
+      - name: Typecheck authenticated merchant mandate evidence endpoint
+        run: npx tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --lib ES2022,DOM --skipLibCheck --strictNullChecks --noImplicitAny false --allowImportingTsExtensions tests/supplier-audit/edge-env.d.ts supabase/functions/merchant-mandates/index.ts
+
       - name: Typecheck partner audit authorization boundary
         run: npx tsc --noEmit --target ES2022 --module ESNext --moduleResolution bundler --lib ES2022,DOM --skipLibCheck --strictNullChecks --noImplicitAny false --allowImportingTsExtensions tests/supplier-audit/edge-env.d.ts supabase/functions/partner-portal-action/index.ts
 
