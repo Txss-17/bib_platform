@@ -86,3 +86,6 @@ verify_jwt = false
 # Trusted scheduler only: delete CV objects queued by retention/erasure.
 [functions.talent-cv-cleanup]
 verify_jwt = false
+
+[functions.merchant-mandates]
+verify_jwt = true
