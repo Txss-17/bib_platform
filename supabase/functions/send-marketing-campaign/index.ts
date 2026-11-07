@@ -17,6 +17,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 function cleanSubject(value: string): string {
   // Strip control characters (incl. CR/LF) so the subject cannot inject headers.
+  // eslint-disable-next-line no-control-regex -- Deliberately reject ASCII C0 and DEL in email subjects.
   return value.replace(/[\u0000-\u001f\u007f]+/g, " ").trim().slice(0, 200);
 }
 
