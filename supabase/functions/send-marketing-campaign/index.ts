@@ -9,6 +9,17 @@ const corsHeaders = {
 
 const GATEWAY = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
 
+// Outbound abuse bounds: a verified seller can only reach its own consented
+// audience, a limited number of times per day, from a published boutique.
+const MAX_CAMPAIGNS_PER_DAY = 3;
+const MAX_TEST_SENDS_PER_DAY = 10;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function cleanSubject(value: string): string {
+  // Strip control characters (incl. CR/LF) so the subject cannot inject headers.
+  return value.replace(/[\u0000-\u001f\u007f]+/g, " ").trim().slice(0, 200);
+}
+
 function b64url(s: string) {
   return btoa(unescape(encodeURIComponent(s)))
     .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -133,14 +144,15 @@ Deno.serve(async (req) => {
     );
     const { data: userData } = await userClient.auth.getUser();
     const user = userData.user;
-    if (!user) {
+    if (!user || !user.email_confirmed_at) {
       return new Response(JSON.stringify({ error: "Non authentifié" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const body = await req.json();
-    const { boutique_id, name, kind, subject, body_html, body_blocks, segment, promo_code, test_recipient } = body ?? {};
+    const { boutique_id, name, kind, subject: rawSubject, body_html, body_blocks, segment, promo_code, test_recipient } = body ?? {};
+    const subject = typeof rawSubject === "string" ? cleanSubject(rawSubject) : rawSubject;
     if (!boutique_id || typeof subject !== "string" || typeof body_html !== "string" || !subject.trim() || !body_html.trim() || subject.length > 200 || body_html.length > 100000) {
       return new Response(JSON.stringify({ error: "Paramètres manquants" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -154,12 +166,18 @@ Deno.serve(async (req) => {
 
     // Verify ownership
     const { data: boutique } = await admin.from("boutiques")
-      .select("id, name, user_id, slug").eq("id", boutique_id).maybeSingle();
+      .select("id, name, user_id, slug, status").eq("id", boutique_id).maybeSingle();
     if (!boutique || boutique.user_id !== user.id) {
       return new Response(JSON.stringify({ error: "Accès refusé" }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    if (boutique.status !== "published") {
+      return new Response(JSON.stringify({ error: "boutique_not_published" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const since = new Date(Date.now() - DAY_MS).toISOString();
 
     const sanitizedBody = safeEmailHtml(body_html);
     if (!sanitizedBody.trim()) throw new Error("email_html_invalid");
@@ -179,6 +197,14 @@ Deno.serve(async (req) => {
       if (!user.email || test_recipient.trim().toLowerCase() !== user.email.toLowerCase()) {
         return new Response(JSON.stringify({ error: "test_recipient_must_be_account_email" }), {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { count: testCount, error: testCountErr } = await admin.from("boutique_email_log")
+        .select("id", { count: "exact", head: true })
+        .eq("boutique_id", boutique_id).like("type", "campaign_test:%").gte("created_at", since);
+      if (testCountErr || (testCount ?? 0) >= MAX_TEST_SENDS_PER_DAY) {
+        return new Response(JSON.stringify({ error: "campaign_test_quota_reached" }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       const vars = {
@@ -207,6 +233,15 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ ok: res.ok, test: true, status: res.status }), {
         status: res.ok ? 200 : 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { count: campaignCount, error: campaignCountErr } = await admin.from("marketing_campaigns")
+      .select("id", { count: "exact", head: true })
+      .eq("boutique_id", boutique_id).gte("created_at", since);
+    if (campaignCountErr || (campaignCount ?? 0) >= MAX_CAMPAIGNS_PER_DAY) {
+      return new Response(JSON.stringify({ error: "campaign_quota_reached" }), {
+        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 

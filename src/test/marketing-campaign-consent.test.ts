@@ -68,7 +68,7 @@ beforeEach(async () => {
       throw new Error("unverified_legacy_audience_must_not_be_used");
     const data =
       table === "boutiques"
-        ? { id: store, user_id: owner, name: "Boutique test", slug: "test" }
+        ? { id: store, user_id: owner, name: "Boutique test", slug: "test", status: "published" }
         : table === "boutique_email_settings"
           ? {
               from_name: "Boutique test",
@@ -80,6 +80,8 @@ beforeEach(async () => {
     const builder = {
       select: () => builder,
       eq: () => builder,
+      like: () => builder,
+      gte: () => builder,
       maybeSingle: async () => ({ data, error: null }),
       single: async () => ({ data, error: null }),
       insert: (value: unknown) => {
@@ -91,7 +93,7 @@ beforeEach(async () => {
         return builder;
       },
       then: (resolve: (value: unknown) => unknown) =>
-        Promise.resolve({ data, error: null }).then(resolve),
+        Promise.resolve({ data, error: null, count: 0 }).then(resolve),
     };
     return builder;
   });
@@ -100,7 +102,7 @@ beforeEach(async () => {
     from: mocks.from,
     auth: {
       getUser: async () => ({
-        data: { user: { id: owner, email: "owner@example.test" } },
+        data: { user: { id: owner, email: "owner@example.test", email_confirmed_at: "2026-01-01T00:00:00Z" } },
         error: null,
       }),
     },
