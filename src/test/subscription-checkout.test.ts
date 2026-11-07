@@ -23,6 +23,7 @@ beforeEach(async () => {
     PAYMENTS_LIVE_PROJECT_REF: "live-project",
     PAYMENTS_SANDBOX_PROJECT_REF: "sandbox-project",
     SUPABASE_URL: "https://sandbox-project.supabase.co",
+    BIB_PUBLIC_SITE_ORIGIN: "https://example.com",
   }[key] ?? "test-config") }, serve: (fn: typeof handler) => { handler = fn; } });
   mocks.getUser.mockResolvedValue({ data: { user: { id: "authenticated-user", email: "user@example.com" } }, error: null });
   mocks.subscriptions.mockResolvedValue({ data: [], error: null });
