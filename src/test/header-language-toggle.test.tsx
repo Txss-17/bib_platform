@@ -26,7 +26,7 @@ describe("Header language toggle", () => {
     renderHeader();
 
     expect(screen.getAllByRole("link", { name: "Boutiques" }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("link", { name: "À propos" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Entreprise").length).toBeGreaterThan(0);
     expect(screen.getByTitle("Passer en anglais")).toBeInTheDocument();
   });
 
@@ -36,7 +36,7 @@ describe("Header language toggle", () => {
     fireEvent.click(screen.getByTitle("Passer en anglais"));
 
     expect(screen.getAllByRole("link", { name: "Stores" }).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole("link", { name: "About" }).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Company").length).toBeGreaterThan(0);
     expect(screen.getByTitle("Switch to French")).toBeInTheDocument();
   });
 });
