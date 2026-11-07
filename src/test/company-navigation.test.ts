@@ -30,6 +30,7 @@ describe("BIB institutional navigation", () => {
     expect(brands).not.toContain('to="/bib-talent"');
     expect(company).toContain('to="/a-propos"');
     expect(company).toContain('to="/bib-talent"');
-    expect(footer).not.toContain('to="/carrieres"');
+    expect(brands).not.toContain('to="/carrieres"');
+    expect(company).toContain('to="/carrieres"');
   });
 });
