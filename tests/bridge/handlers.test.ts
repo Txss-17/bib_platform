@@ -404,7 +404,7 @@ describe("Partner Ops portal", () => {
 describe("Bridge export", () => {
   it("exports the owner identity in complete merchant and boutique snapshots", async () => {
     const boutique = { id: other, user_id: id, name: "Ma boutique", status: "draft", intranet_status: null };
-    for (let i = 0; i < 14; i++)
+    for (let i = 0; i < 15; i++)
       mocks.results.push(ok(i === 0 ? [boutique] : []));
     mocks.results.push(
       ok([{ user_id: id, plan_tier: "starter" }]),
@@ -426,7 +426,7 @@ describe("Bridge export", () => {
     expect(data.boutiques[0]).not.toHaveProperty("intranet_status");
   });
   it("refuses an orphan boutique instead of exporting an incomplete owner snapshot", async () => {
-    for (let i = 0; i < 14; i++)
+    for (let i = 0; i < 15; i++)
       mocks.results.push(ok(i === 0 ? [{ id: other, user_id: id, name: "Orphan" }] : []));
     mocks.results.push(ok([]), ok([]));
     await load("intranet-export");
@@ -436,7 +436,7 @@ describe("Bridge export", () => {
   });
 
   it("exports order changes by updated_at, including orders created before the requested window", async () => {
-    for (let i = 0; i < 14; i++)
+    for (let i = 0; i < 15; i++)
       mocks.results.push(
         ok(
           i === 1
@@ -464,7 +464,7 @@ describe("Bridge export", () => {
     ).toContainEqual(["gte", "updated_at", "2026-10-25T00:00:00.000Z"]);
   });
   it("never returns a successful empty snapshot after a supplier export failure", async () => {
-    for (let i = 0; i < 14; i++)
+    for (let i = 0; i < 15; i++)
       mocks.results.push(
         i === 3
           ? { data: null, error: { message: "missing required table" } }
@@ -475,7 +475,7 @@ describe("Bridge export", () => {
   });
 
   it("fails the export when restock requests are unavailable", async () => {
-    for (let i = 0; i < 14; i++) {
+    for (let i = 0; i < 15; i++) {
       mocks.results.push(
         i === 11
           ? { data: null, error: { message: "restock requests unavailable" } }
@@ -494,7 +494,7 @@ describe("Bridge export", () => {
       status: "succeeded", stripe_refund_id: "re_123", payment_intent_id: "pi_123",
       updated_at: version, orders: { boutique_id: other, order_number: "BIB-123" },
     };
-    for (let i = 0; i < 14; i++)
+    for (let i = 0; i < 15; i++)
       mocks.results.push(ok(i === 0 ? [boutique] : i === 12 ? [refund] : []));
     mocks.results.push(ok([{ user_id: id, plan_tier: "starter" }]), ok([{ user_id: id, full_name: "Marchand", business_name: "Ma boutique" }]), ok([]));
     mocks.createClient.mockReturnValue({
@@ -514,7 +514,7 @@ describe("Bridge export", () => {
     expect(call.filters).toContainEqual(["gte", "updated_at", "1970-01-01T00:00:00Z"]);
   });
   it("fails closed when settled refunds cannot be queried", async () => {
-    for (let i = 0; i < 14; i++) {
+    for (let i = 0; i < 15; i++) {
       mocks.results.push(i === 12
         ? { data: null, error: { message: "refund source unavailable" } }
         : ok([]));
@@ -532,7 +532,7 @@ describe("Bridge export", () => {
     };
     // A valid SAV event must refer to an exported boutique and its owner.
     const boutique = { id: other, user_id: id, name: "Boutique SAV", status: "draft", intranet_status: null };
-    for (let i=0;i<14;i++) mocks.results.push(ok(i===0?[boutique]:i===13?[handoff]:[]));
+    for (let i=0;i< 15;i++) mocks.results.push(ok(i===0?[boutique]:i===13?[handoff]:[]));
     mocks.results.push(ok([{ user_id:id,plan_tier:"starter" }]),ok([{ user_id:id,full_name:"Marchand",business_name:"Boutique SAV" }]),ok([]));
     mocks.createClient.mockReturnValue({
       from, rpc:mocks.rpc,
@@ -548,7 +548,7 @@ describe("Bridge export", () => {
       .toContainEqual(["gte","escalated_at","2026-10-24T00:00:00.000Z"]);
   });
   it("fails the snapshot rather than silently dropping a SAV escalation source",async () => {
-    for(let i=0;i<14;i++)
+    for(let i=0;i< 15;i++)
       mocks.results.push(i===13
         ? {data:null,error:{message:"SAV export unavailable"}}
         : ok([]));
@@ -577,7 +577,7 @@ describe("Bridge export", () => {
       boutiques: arrayJoins ? [boutique] : boutique,
       private_internal_notes: "Do not export",
     };
-    for (let i = 0; i < 14; i++) mocks.results.push(ok(i === 11 ? [row] : []));
+    for (let i = 0; i < 15; i++) mocks.results.push(ok(i === 11 ? [row] : []));
     mocks.results.push(ok([]));
     await load("intranet-export");
     const response = await handler(request({ since }));
