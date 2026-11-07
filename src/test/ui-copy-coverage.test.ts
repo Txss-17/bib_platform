@@ -16,7 +16,14 @@ function sourceFiles(dir: string): string[] {
 describe("Explicit BIB copy catalogue", () => {
   it("keeps every page reactive to the shared language context", () => {
     const pages = sourceFiles(join(root, "pages"));
-    const wrappers = new Set([join(root, "pages", "Vendre.tsx")]);
+    // Thin route re-exports delegate their visible text and language handling
+    // to BoutiqueLegalPages, which is checked as a real page separately.
+    const wrappers = new Set([
+      join(root, "pages", "Vendre.tsx"),
+      join(root, "pages", "BoutiqueCGUPage.tsx"),
+      join(root, "pages", "BoutiqueCGVPage.tsx"),
+      join(root, "pages", "BoutiqueMentionsPage.tsx"),
+    ]);
     const missing = pages.filter(
       (path) =>
         !wrappers.has(path) &&
