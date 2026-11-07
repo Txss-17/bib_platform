@@ -75,6 +75,19 @@ export function CheckoutForm({
 
   const [step, setStep] = useState<CheckoutStep>("info");
 
+  // A legally material replacement/withdrawal invalidates the accepted
+  // snapshot. Return to the terms before another payment can be started.
+  useEffect(() => {
+    if (!acceptedBundle) return;
+    if (legal.isError ||
+        (legal.data && legal.data.bundle_hash !== acceptedBundle.bundle_hash)) {
+      setAgreedHash(null);
+      setAcceptedBundle(null);
+      setStep("shipping");
+    }
+  }, [acceptedBundle, legal.data, legal.isError]);
+
+
   /*
    * --------------------------------------------------------------------------
    * Validation
@@ -123,7 +136,7 @@ export function CheckoutForm({
     }
 
 
-    if(!legal.data||agreedHash!==legal.data.bundle_hash||legal.isError)return;
+    if(!legal.data||legal.isFetching||agreedHash!==legal.data.bundle_hash||legal.isError)return;
     setAcceptedBundle(legal.data);
     setStep("pay");
   };
@@ -159,7 +172,11 @@ export function CheckoutForm({
    * --------------------------------------------------------------------------
    */
 
-  if (step === "pay" && acceptedBundle) {
+  if (step === "pay" && acceptedBundle && legal.isFetching) {
+    return <p role="status" className="py-6 text-sm">{tx("Vérification des conditions en cours…", "Checking applicable terms…")}</p>;
+  }
+
+  if (step === "pay" && acceptedBundle && !legal.isError && legal.data?.bundle_hash === acceptedBundle.bundle_hash) {
     const currentBoutiqueSlug = boutiqueSlug?.trim() || slug?.trim() || "";
 
     const returnUrl =
@@ -473,7 +490,7 @@ export function CheckoutForm({
             style={{
               backgroundColor: primaryColor,
             }}
-            disabled={!hasShippingInfo||!legal.data||legal.isError||agreedHash!==legal.data.bundle_hash}
+            disabled={!hasShippingInfo||!legal.data||legal.isFetching||legal.isError||agreedHash!==legal.data.bundle_hash}
           >
             {translateUi("Continuer vers le paiement —")}{" "}
             {totalPrice.toFixed(2)} €
