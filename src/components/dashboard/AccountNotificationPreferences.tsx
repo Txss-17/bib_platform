@@ -53,17 +53,17 @@ export function AccountNotificationPreferences() {
   if (isLoading) return <p className="py-5 text-sm text-muted-foreground">{translateUi("Chargement des préférences…")}</p>;
   if (isError) return <p role="alert" className="rounded-lg border border-destructive/30 p-4 text-sm text-destructive">{translateUi("Impossible de charger les préférences de notification. Réessayez avant de modifier vos réglages.")}</p>;
   const rows: { key: keyof Preferences; label: string; detail: string; locked?: boolean }[] = [
-    { key: "security_emails", label: "Sécurité du compte", detail: "Alertes de connexion et événements de sécurité obligatoires", locked: true },
-    { key: "account_updates", label: "Informations de compte", detail: "Mises à jour administratives et changements de votre espace" },
-    { key: "platform_announcements", label: "Actualités BIB", detail: "Annonces non essentielles et nouveautés de la plateforme" },
-    { key: "weekly_digest", label: "Synthèse hebdomadaire", detail: "Récapitulatif des événements de votre activité" },
+    { key: "security_emails", label: translateUi("Sécurité du compte"), detail: translateUi("Alertes de connexion et événements de sécurité obligatoires"), locked: true },
+    { key: "account_updates", label: translateUi("Informations de compte"), detail: translateUi("Mises à jour administratives et changements de votre espace") },
+    { key: "platform_announcements", label: translateUi("Actualités BIB"), detail: translateUi("Annonces non essentielles et nouveautés de la plateforme") },
+    { key: "weekly_digest", label: translateUi("Synthèse hebdomadaire"), detail: translateUi("Récapitulatif des événements de votre activité") },
   ];
   return <div className="space-y-4">
     <div className="divide-y divide-border overflow-hidden rounded-xl border border-border">
       {rows.map(row => <div key={row.key} className="flex items-center justify-between gap-4 p-4">
         <div className="min-w-0">
-          <p className="text-sm font-medium text-foreground">{translateUi(row.label)}</p>
-          <p className="mt-1 text-xs text-muted-foreground">{translateUi(row.detail)}</p>
+          <p className="text-sm font-medium text-foreground">{row.label}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{row.detail}</p>
         </div>
         <Switch checked={row.locked ? true : prefs[row.key]} disabled={row.locked} onCheckedChange={v => setPrefs(p => ({ ...p, [row.key]: v }))} aria-label={translateUi(row.label)}/>
       </div>)}
