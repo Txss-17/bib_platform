@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
-const source = readFileSync(new URL("../pages/BibTalent.tsx", import.meta.url), "utf8");
+const source = readFileSync(resolve(process.cwd(), "src/pages/BibTalent.tsx"), "utf8");
 
 describe("BIB Talent bilingual content", () => {
   it("uses the shared language selection instead of fixed French copy", () => {
@@ -23,10 +24,10 @@ describe("BIB Talent bilingual content", () => {
   });
 
   it("removes retention duration from the form and requires a separate future-opportunity opt-in", () => {
-    const form = readFileSync(new URL("../components/talent/BibTalentApplicationForm.tsx", import.meta.url), "utf8");
-    const endpoint = readFileSync(new URL("../../supabase/functions/submit-talent-application/index.ts", import.meta.url), "utf8");
-    const notice = readFileSync(new URL("../pages/TalentLegal.tsx", import.meta.url), "utf8");
-    const migration = readFileSync(new URL("../../supabase/migrations/20261102170000_talent_future_opportunities_retention.sql", import.meta.url), "utf8");
+    const form = readFileSync(resolve(process.cwd(), "src/components/talent/BibTalentApplicationForm.tsx"), "utf8");
+    const endpoint = readFileSync(resolve(process.cwd(), "supabase/functions/submit-talent-application/index.ts"), "utf8");
+    const notice = readFileSync(resolve(process.cwd(), "src/pages/TalentLegal.tsx"), "utf8");
+    const migration = readFileSync(resolve(process.cwd(), "supabase/migrations/20261102170000_talent_future_opportunities_retention.sql", import.meta.url), "utf8");
     expect(form).not.toContain("180 jours");
     expect(form).not.toContain("180 days");
     expect(form).toContain("future_opportunities_consent: futureConsent");
@@ -38,11 +39,11 @@ describe("BIB Talent bilingual content", () => {
   });
 
   it("validates and routes first-party Talent applications to RH", () => {
-    const form = readFileSync(new URL("../components/talent/BibTalentApplicationForm.tsx", import.meta.url), "utf8");
-    const submit = readFileSync(new URL("../../supabase/functions/submit-talent-application/index.ts", import.meta.url), "utf8");
-    const exportFn = readFileSync(new URL("../../supabase/functions/intranet-talent-export/index.ts", import.meta.url), "utf8");
-    const publicExport = readFileSync(new URL("../../supabase/functions/intranet-export/index.ts", import.meta.url), "utf8");
-    const migration = readFileSync(new URL("../../supabase/migrations/20261102133500_bib_talent_applications.sql", import.meta.url), "utf8");
+    const form = readFileSync(resolve(process.cwd(), "src/components/talent/BibTalentApplicationForm.tsx"), "utf8");
+    const submit = readFileSync(resolve(process.cwd(), "supabase/functions/submit-talent-application/index.ts"), "utf8");
+    const exportFn = readFileSync(resolve(process.cwd(), "supabase/functions/intranet-talent-export/index.ts"), "utf8");
+    const publicExport = readFileSync(resolve(process.cwd(), "supabase/functions/intranet-export/index.ts"), "utf8");
+    const migration = readFileSync(resolve(process.cwd(), "supabase/migrations/20261102133500_bib_talent_applications.sql", import.meta.url), "utf8");
     expect(form).toContain('functions.invoke("submit-talent-application"');
     expect(form).toContain("consent");
     expect(form).toContain("quality_audit");
@@ -57,10 +58,10 @@ describe("BIB Talent bilingual content", () => {
   });
 
   it("connects detailed Careers offers to the RH form, not to BIB Talent", () => {
-    const careers = readFileSync(new URL("../pages/Carrieres.tsx", import.meta.url), "utf8");
-    const detail = readFileSync(new URL("../pages/CarriereOffre.tsx", import.meta.url), "utf8");
-    const form = readFileSync(new URL("../components/talent/BibTalentApplicationForm.tsx", import.meta.url), "utf8");
-    const routes = readFileSync(new URL("../App.tsx", import.meta.url), "utf8");
+    const careers = readFileSync(resolve(process.cwd(), "src/pages/Carrieres.tsx"), "utf8");
+    const detail = readFileSync(resolve(process.cwd(), "src/pages/CarriereOffre.tsx"), "utf8");
+    const form = readFileSync(resolve(process.cwd(), "src/components/talent/BibTalentApplicationForm.tsx"), "utf8");
+    const routes = readFileSync(resolve(process.cwd(), "src/App.tsx"), "utf8");
     for (const code of ["STG-RD-01", "STG-MKT-01", "STG-JUR-01", "STG-FRN-01"]) {
       expect(careers).toContain(`code: "${code}"`);
       expect(detail).toContain(`"${code}": {`);
@@ -98,13 +99,13 @@ describe("BIB Talent bilingual content", () => {
     expect(form).toContain("form.linkedin_url");
     expect(form).toContain('body: payload');
     expect(form).toContain('to="/talent/confidentialite#conservation-candidatures"');
-    const notice = readFileSync(new URL("../pages/TalentLegal.tsx", import.meta.url), "utf8");
+    const notice = readFileSync(resolve(process.cwd(), "src/pages/TalentLegal.tsx"), "utf8");
     expect(notice).toContain('id="conservation-candidatures"');
-    const intake = readFileSync(new URL("../../supabase/functions/submit-talent-application/index.ts", import.meta.url), "utf8");
+    const intake = readFileSync(resolve(process.cwd(), "supabase/functions/submit-talent-application/index.ts"), "utf8");
     expect(intake).toContain('request.formData()');
     expect(intake).toContain('cv_storage_path: cvPath');
     expect(intake).toContain('linkedin_url: linkedin');
-    const bridge = readFileSync(new URL("../../supabase/functions/intranet-talent-cv/index.ts", import.meta.url), "utf8");
+    const bridge = readFileSync(resolve(process.cwd(), "supabase/functions/intranet-talent-cv/index.ts"), "utf8");
     expect(bridge).toContain('BIB_TALENT_BRIDGE_SECRET');
     expect(bridge).toContain('cv_storage_path');
     expect(careers).not.toContain('/bib-talent?stage=');
