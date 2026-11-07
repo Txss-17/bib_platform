@@ -27,7 +27,7 @@ describe("BIB Talent bilingual content", () => {
     const form = readFileSync(resolve(process.cwd(), "src/components/talent/BibTalentApplicationForm.tsx"), "utf8");
     const endpoint = readFileSync(resolve(process.cwd(), "supabase/functions/submit-talent-application/index.ts"), "utf8");
     const notice = readFileSync(resolve(process.cwd(), "src/pages/TalentLegal.tsx"), "utf8");
-    const migration = readFileSync(resolve(process.cwd(), "supabase/migrations/20261102170000_talent_future_opportunities_retention.sql", import.meta.url), "utf8");
+    const migration = readFileSync(resolve(process.cwd(), "supabase/migrations/20261102170000_talent_future_opportunities_retention.sql"), "utf8");
     expect(form).not.toContain("180 jours");
     expect(form).not.toContain("180 days");
     expect(form).toContain("future_opportunities_consent: futureConsent");
@@ -43,7 +43,7 @@ describe("BIB Talent bilingual content", () => {
     const submit = readFileSync(resolve(process.cwd(), "supabase/functions/submit-talent-application/index.ts"), "utf8");
     const exportFn = readFileSync(resolve(process.cwd(), "supabase/functions/intranet-talent-export/index.ts"), "utf8");
     const publicExport = readFileSync(resolve(process.cwd(), "supabase/functions/intranet-export/index.ts"), "utf8");
-    const migration = readFileSync(resolve(process.cwd(), "supabase/migrations/20261102133500_bib_talent_applications.sql", import.meta.url), "utf8");
+    const migration = readFileSync(resolve(process.cwd(), "supabase/migrations/20261102133500_bib_talent_applications.sql"), "utf8");
     expect(form).toContain('functions.invoke("submit-talent-application"');
     expect(form).toContain("consent");
     expect(form).toContain("quality_audit");
