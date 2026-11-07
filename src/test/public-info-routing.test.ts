@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { isPublicInformationPath, isMerchantTestPath } from "@/lib/publicPrelaunch";
 
-const app = readFileSync(new URL("../App.tsx", import.meta.url), "utf8");
+const app = readFileSync(resolve(process.cwd(), "src/App.tsx"), "utf8");
 
 describe("BIB public navigation", () => {
   it("keeps information pages accessible on the public domain", () => {
