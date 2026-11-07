@@ -99,7 +99,7 @@ describe("Merchant registration remains closed while customers and partners can 
     expect(bridge).toContain("preferred_launch_timing_counts");
     expect(bridge).toContain("surveyRows.error ||");
     // Inspect selected columns; a documentation comment may mention prohibited fields.
-    expect(bridge).not.toMatch(/\\.select\\([^)]*visitor_digest/);
+    expect(bridge).not.toMatch(/\.select\([^)]*visitor_digest/);
   });
 
   it("presents bilingual Coming Soon copy with login and home links", () => {
