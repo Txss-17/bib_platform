@@ -7,7 +7,9 @@ function useBoutiqueSearch(query, limit = 8) {
     enabled: q.length >= 2,
     staleTime: 3e4,
     queryFn: async () => {
-      const like = `%${q}%`;
+      const term = q.replace(/[,.:()"'\\%_*]/g, " ").replace(/\s+/g, " ").trim();
+      if (term.length < 2) return [];
+      const like = `%${term}%`;
       const boutiquesPromise = supabase.from("boutiques").select("id, name, slug, category, tagline, logo_url").eq("status", "published").or(`name.ilike.${like},tagline.ilike.${like},description.ilike.${like}`).limit(limit);
       const productsPromise = supabase.from("products").select(
         "id, boutique_id, supplier_products!inner(name, image_url), boutiques!inner(id, name, slug, category, tagline, logo_url, status)"

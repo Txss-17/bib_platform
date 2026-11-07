@@ -26,7 +26,11 @@ export function useBoutiqueSearch(query: string, limit = 8) {
     enabled: q.length >= 2,
     staleTime: 30_000,
     queryFn: async (): Promise<BoutiqueSearchResult[]> => {
-      const like = `%${q}%`;
+      // Strip PostgREST filter syntax (, . : ( ) " \\) and SQL wildcards so the
+      // typed text can only ever be matched as a literal substring.
+      const term = q.replace(/[,.:()"'\\%_*]/g, " ").replace(/\s+/g, " ").trim();
+      if (term.length < 2) return [];
+      const like = `%${term}%`;
 
       // 1) Boutiques whose name/tagline/description match
       const boutiquesPromise = supabase
