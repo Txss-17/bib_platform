@@ -202,7 +202,7 @@ export default function Suppliers() {
   }, [location.hash]);
 
   return (
-    <StandaloneLayout portal="Suppliers" accent="primary">
+    <StandaloneLayout portal="Suppliers" accent="primary" showPortalIdentifier={false}>
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-border/50 bg-background">
         <div className="container mx-auto px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
