@@ -4,6 +4,7 @@ import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useSEO } from "@/hooks/useSEO";
 import { useEffect } from "react";
 import { SuppliersPricingSection } from "@/components/standalone/SuppliersPricingSection";
@@ -202,6 +203,71 @@ export default function Suppliers() {
 
   return (
     <StandaloneLayout portal="Suppliers" accent="primary" showPortalIdentifier={false}>
+      {/* HERO */}
+      <section className="relative overflow-hidden border-b border-border/50 bg-background">
+        <div className="container mx-auto px-4 py-7 sm:px-6 lg:px-8 lg:py-10">
+          <div className="max-w-4xl">
+            <Badge variant="secondary" className="mb-5">
+              {translateUi("Réseau fournisseurs BIB")}
+            </Badge>
+
+            <h1 className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+              {translateUi("Référencez vos produits dans le réseau")}
+              <span className="text-primary"> Brand-In-A-Box.</span>
+            </h1>
+
+            <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+              {translateUi(
+                "BIB sélectionne des fournisseurs et leurs produits afin de construire un catalogue contrôlé, exploitable par les boutiques du réseau et coordonné avec ses partenaires opérationnels.",
+              )}
+            </p>
+
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Button asChild size="lg" className="gap-2">
+                <Link to="/suppliers/apply">
+                  {translateUi("Candidater comme fournisseur")}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+
+              <a
+                href="#fonctionnement"
+                className="text-sm font-medium text-muted-foreground underline-offset-4 hover:underline"
+              >
+                {translateUi("Comprendre le fonctionnement")}
+              </a>
+            </div>
+
+            <div className="mt-8 grid max-w-3xl grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
+                <p className="text-xs text-muted-foreground">
+                  {translateUi("Accès")}
+                </p>
+                <p className="mt-0.5 text-sm font-semibold">
+                  {translateUi("Sur candidature")}
+                </p>
+              </div>
+
+              <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
+                <p className="text-xs text-muted-foreground">Catalogue</p>
+                <p className="mt-0.5 text-sm font-semibold">
+                  {translateUi("Contrôlé par BIB")}
+                </p>
+              </div>
+
+              <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
+                <p className="text-xs text-muted-foreground">
+                  {translateUi("Opérations")}
+                </p>
+                <p className="mt-0.5 text-sm font-semibold">
+                  {translateUi("Coordonnées par BIB")}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* POSITIONNEMENT */}
       <section
         id="fonctionnement"
