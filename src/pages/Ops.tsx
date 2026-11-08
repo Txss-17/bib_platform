@@ -647,7 +647,7 @@ export default function Ops() {
               <p className="text-xs text-muted-foreground">Organisation</p>
 
               <p className="text-sm font-semibold mt-0.5">
-                {translateUi("Pilotée par BIB Ops")}
+                {translateUi("Coordonnée avec BIB")}
               </p>
             </div>
           </div>
