@@ -67,7 +67,7 @@ const howItWorks = [
     },
     get text() {
       return translateUi(
-        "Les commandes affectées au partenaire sont préparées selon les procédures BIB, avec les références et emballages requis.",
+        "Préparation des commandes selon les conditions convenues avec chaque partenaire.",
       );
     },
   },
@@ -103,7 +103,7 @@ const advantages = [
     },
     get text() {
       return translateUi(
-        "Commandes, réassorts et tâches logistiques organisés selon les priorités définies.",
+        "Consultez les opérations qui vous concernent depuis votre espace partenaire.",
       );
     },
   },
@@ -125,7 +125,7 @@ const advantages = [
     },
     get text() {
       return translateUi(
-        "Historique des préparations, expéditions, incidents et événements opérationnels.",
+        "Visibilité sur les principales étapes des prestations réalisées.",
       );
     },
   },
@@ -181,21 +181,21 @@ const processSteps = [
   },
   {
     get title() {
-      return translateUi("Audit & cadrage");
+      return translateUi("Échanges et conditions");
     },
     get text() {
       return translateUi(
-        "Les installations, procédures et exigences applicables sont vérifiées avant l'intégration.",
+        "Les conditions du partenariat sont étudiées avec les candidats retenus.",
       );
     },
   },
   {
     get title() {
-      return translateUi("Test opérationnel");
+      return translateUi("Préparation du partenariat");
     },
     get text() {
       return translateUi(
-        "Un parcours de test permet de valider les flux, références, étiquetage et procédures.",
+        "Les modalités de démarrage sont définies conjointement avant collaboration.",
       );
     },
   },
@@ -665,7 +665,7 @@ export default function Ops() {
           </p>
 
           <h2 className="font-display text-2xl sm:text-3xl font-bold">
-            {translateUi("Comment fonctionne le réseau logistique BIB")}
+            {translateUi("Les services logistiques du réseau BIB")}
           </h2>
 
           <p className="text-sm sm:text-base text-muted-foreground mt-3 leading-relaxed">
@@ -708,7 +708,7 @@ export default function Ops() {
             </p>
 
             <h2 className="font-display text-2xl sm:text-3xl font-bold">
-              {translateUi("Un cadre opérationnel commun")}
+              {translateUi("Des engagements clairs pour chaque partenaire")}
             </h2>
 
             <p className="text-sm sm:text-base text-muted-foreground mt-3">
@@ -751,7 +751,7 @@ export default function Ops() {
           </p>
 
           <h2 className="font-display text-2xl sm:text-3xl font-bold">
-            {translateUi("Quatre zones opérationnelles")}
+            {translateUi("Une couverture européenne progressive")}
           </h2>
 
           <p className="text-sm sm:text-base text-muted-foreground mt-3">
@@ -812,7 +812,7 @@ export default function Ops() {
 
             <p className="text-sm sm:text-base text-muted-foreground mt-3">
               {translateUi(
-                "Les partenaires disposent progressivement d'outils permettant de consulter et mettre à jour les opérations qui leur sont attribuées.",
+                "Un espace professionnel facilite les échanges et le suivi des prestations confiées.",
               )}
             </p>
           </div>
@@ -820,11 +820,11 @@ export default function Ops() {
           <Card className="p-6 sm:p-8 bg-background">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
               {[
-                translateUi("Commandes et opérations à traiter"),
-                translateUi("Statuts de préparation et d'expédition"),
+                translateUi("Prestations confiées au partenaire"),
+                translateUi("Informations de suivi des prestations"),
                 translateUi("Gestion des retours"),
-                translateUi("Historique des opérations"),
-                translateUi("Incidents et anomalies"),
+                translateUi("Historique des prestations concernées"),
+                translateUi("Suivi des demandes"),
                 translateUi("Suivi des volumes et délais"),
               ].map((item) => (
                 <div key={item} className="flex items-start gap-3">
@@ -840,7 +840,7 @@ export default function Ops() {
 
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {translateUi(
-                  "Les fonctionnalités disponibles dépendent du rôle du partenaire, de son périmètre opérationnel et du niveau d'intégration mis en place avec BIB.",
+                  "L'accès aux informations dépend du partenariat convenu et reste réservé au partenaire concerné.",
                 )}
               </p>
             </div>
