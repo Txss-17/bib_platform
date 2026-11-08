@@ -3,7 +3,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useSEO } from "@/hooks/useSEO";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
