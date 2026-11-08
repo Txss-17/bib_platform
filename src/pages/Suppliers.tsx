@@ -1,5 +1,6 @@
 import { translateUi } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { partnerJourney } from "@/lib/partnerJourney";
 import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -68,59 +69,6 @@ const compatibility = [
   },
 ];
 
-const steps = [
-  {
-    get title() {
-      return translateUi("Candidature");
-    },
-    get text() {
-      return translateUi(
-        "Présentez votre entreprise, vos capacités de production et les catégories de produits que vous souhaitez proposer.",
-      );
-    },
-  },
-  {
-    get title() {
-      return translateUi("Étude du dossier");
-    },
-    get text() {
-      return translateUi(
-        "BIB étudie la compatibilité de votre activité avec les exigences du réseau et les zones couvertes.",
-      );
-    },
-  },
-  {
-    get title() {
-      return translateUi("Contrôles");
-    },
-    get text() {
-      return translateUi(
-        "Les documents, produits, capacités opérationnelles et éléments de conformité sont examinés.",
-      );
-    },
-  },
-  {
-    get title() {
-      return translateUi("Validation");
-    },
-    get text() {
-      return translateUi(
-        "Après validation, les références retenues peuvent être intégrées au catalogue BIB.",
-      );
-    },
-  },
-  {
-    get title() {
-      return translateUi("Opérations");
-    },
-    get text() {
-      return translateUi(
-        "Les flux de stock, de préparation et de livraison sont ensuite coordonnés avec BIB et ses partenaires opérationnels.",
-      );
-    },
-  },
-];
-
 const minimumCriteria = [
   "Entreprise ou activité légalement enregistrée",
   "Documents administratifs et de conformité disponibles",
@@ -178,7 +126,8 @@ const principles = [
 ];
 
 export default function Suppliers() {
-  useLanguage();
+  const { lang } = useLanguage();
+  const journey = partnerJourney.suppliers[lang];
   useSEO({
     title: translateUi("Fournisseurs — Brand-In-A-Box"),
     description: translateUi(
@@ -231,20 +180,26 @@ export default function Suppliers() {
               </Button>
 
               <a
-                href="#fonctionnement"
+                href="#etapes"
                 className="text-sm font-medium text-muted-foreground underline-offset-4 hover:underline"
               >
-                {translateUi("Comprendre le fonctionnement")}
+                {lang === "en" ? "See the supplier journey" : "Voir le parcours fournisseur"}
               </a>
+              <Link
+                to="/suppliers/resume?portal=suppliers"
+                className="text-sm font-medium text-muted-foreground underline-offset-4 hover:underline"
+              >
+                {lang === "en" ? "Resume my file" : "Reprendre mon dossier"}
+              </Link>
             </div>
 
             <div className="mt-8 grid max-w-3xl grid-cols-1 gap-3 sm:grid-cols-3">
               <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
                 <p className="text-xs text-muted-foreground">
-                  {translateUi("Accès")}
+                  {lang === "en" ? "Applications" : "Candidatures"}
                 </p>
                 <p className="mt-0.5 text-sm font-semibold">
-                  {translateUi("Sur candidature")}
+                  {lang === "en" ? "Open to suppliers" : "Ouvertes aux fournisseurs"}
                 </p>
               </div>
 
@@ -431,11 +386,12 @@ export default function Suppliers() {
             <h2 className="font-display text-2xl font-bold sm:text-3xl">
               {translateUi("De la candidature au catalogue BIB")}
             </h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{journey.application}</p>
           </div>
 
           <div className="max-w-3xl">
             <ol className="space-y-4">
-              {steps.map((step, index) => (
+              {journey.steps.map((step, index) => (
                 <li key={step.title} className="flex items-start gap-4">
                   <div className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
                     {index + 1}

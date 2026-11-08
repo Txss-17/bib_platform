@@ -20,6 +20,7 @@ import { toast } from "@/hooks/use-toast";
 import { useSEO } from "@/hooks/useSEO";
 import { usePartnerPortal, type PortalEvent } from "@/hooks/usePartnerPortal";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { partnerJourney } from "@/lib/partnerJourney";
 import {
   fetchLabelData,
   fetchLabelsData,
@@ -608,10 +609,11 @@ export default function OpsPortal() {
           </div>
           <p className="text-sm text-muted-foreground mt-2">
             {tx(
-              "Dashboard stock, commandes des boutiques, livraisons, packaging, retours.",
-              "Stock dashboard, store orders, deliveries, packaging and returns.",
+              "Stocks, commandes attribuées, livraisons, emballages et retours.",
+              "Stock, assigned orders, deliveries, packaging and returns.",
             )}
           </p>
+          <p className="mt-2 text-sm text-muted-foreground">{partnerJourney.ops[lang].operations}</p>
           <PlatformTour autoOpen availablePersonas={["ops", "supplier"]} />
         </div>
 

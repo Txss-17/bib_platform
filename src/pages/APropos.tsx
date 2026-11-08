@@ -107,7 +107,7 @@ const ecosystem = [
 ];
 
 export default function APropos() {
-  useLanguage();
+  const { lang } = useLanguage();
   useSEO({
     title: translateUi("À propos — Brand-In-A-Box"),
     description: translateUi(
@@ -297,6 +297,11 @@ export default function APropos() {
                 {translateUi(
                   "BIB se construit progressivement autour des personnes et des organisations qui rendent une marque possible.",
                 )}
+              </p>
+              <p className="mt-3 text-muted-foreground leading-relaxed">
+                {lang === "en"
+                  ? "Suppliers invoice merchants for the goods, and BIB invoices for its own services. The merchant is the seller to the final customer. In BIB’s own test shops, the sole proprietor operating the shop is the seller."
+                  : "Le fournisseur facture les biens au marchand et BIB facture ses propres prestations. Le marchand reste le vendeur auprès du client final. Pour les boutiques tests propres, le vendeur est l’entreprise individuelle qui les exploite."}
               </p>
             </div>
 

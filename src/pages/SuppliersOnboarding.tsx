@@ -1,4 +1,4 @@
-import { translateUi } from "@/lib/uiTranslation";
+import { getUiLanguage, translateUi } from "@/lib/uiTranslation";
 import { Link } from "react-router-dom";
 import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
 import PartnerOnboardingWizard, {
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useSEO } from "@/hooks/useSEO";
 import { ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { partnerJourney } from "@/lib/partnerJourney";
 import { localizePartnerOnboardingCopy } from "@/lib/partnerOnboardingI18n";
 
 export const suppliersOnboardingConfig: OnboardingConfig = {
@@ -17,7 +18,7 @@ export const suppliersOnboardingConfig: OnboardingConfig = {
     return translateUi("Onboarding Fournisseur");
   },
   get subtitle() {
-    return translateUi("Activation opérationnelle après présélection.");
+    return partnerJourney.suppliers[getUiLanguage()].onboarding;
   },
   documents: [
     {
@@ -285,9 +286,7 @@ export default function SuppliersOnboarding() {
     title: english
       ? "Supplier Onboarding — Brand-In-A-Box"
       : "Onboarding Fournisseur — Brand-In-A-Box",
-    description: english
-      ? "Operational onboarding for preselected suppliers: documents, commitments, setup and pilot."
-      : "Activation opérationnelle pour fournisseurs présélectionnés : documents, engagements, intégration et pilote.",
+    description: partnerJourney.suppliers[lang].onboarding,
   });
   return (
     <StandaloneLayout
@@ -309,7 +308,7 @@ export default function SuppliersOnboarding() {
           </Link>
         </Button>
         <Badge variant="secondary" className="mb-3">
-          {copy("Activation · Réservé aux fournisseurs présélectionnés")}
+          {english ? "File by invitation" : "Dossier sur invitation"}
         </Badge>
         <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
           {copy(suppliersOnboardingConfig.title)}

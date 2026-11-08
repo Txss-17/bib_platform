@@ -174,27 +174,28 @@ const Index = () => {
               </h2>
 
               <p className="mt-6 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
-                {translateUi(
-                  "Derrière chaque boutique BIB, un environnement structuré relie les produits, les fournisseurs, la logistique et les contrôles nécessaires au bon fonctionnement du réseau.",
+                {text(
+                  "Chaque marchand vend à ses clients. BIB coordonne l’approvisionnement et la logistique selon les conditions convenues.",
+                  "Each merchant sells to their own customers. BIB coordinates sourcing and logistics under the agreed terms.",
                 )}
               </p>
 
               <div className="mt-10 grid gap-4 sm:grid-cols-2">
                 <InfoCard
                   icon={PackageCheck}
-                  title={translateUi("Produits sélectionnés")}
+                  title={text("Catalogue marchand", "Merchant catalogue")}
                   text={text(
-                    "Un catalogue structuré selon les critères BIB.",
-                    "A catalog organized around BIB criteria.",
+                    "Le prix global indicatif approuvé inclut le produit, la livraison et les prestations BIB. Selon la référence, le prix reste à confirmer par devis.",
+                    "The approved indicative total includes the product, delivery and BIB services. Some references require a quote to confirm the price.",
                   )}
                 />
 
                 <InfoCard
                   icon={ShieldCheck}
-                  title={text("Contrôles", "Checks")}
+                  title={text("Devis fournisseur privé", "Private supplier quote")}
                   text={text(
-                    "Des acteurs et produits vérifiés avant intégration.",
-                    "Members and products verified before joining.",
+                    "L’identité du fournisseur et le détail du prix figurent sur le devis privé que le marchand examine avant de s’engager.",
+                    "The supplier’s identity and price breakdown appear in the private quote the merchant reviews before committing.",
                   )}
                 />
 
@@ -202,17 +203,17 @@ const Index = () => {
                   icon={Truck}
                   title={translateUi("Logistique")}
                   text={text(
-                    "Un réseau logistique pensé pour accompagner les ventes.",
-                    "A logistics network designed to support sales.",
+                    "Un partenaire habilité assure la réception, la préparation, l’expédition et le traitement des retours.",
+                    "An authorised partner handles receiving, preparation, dispatch and returns.",
                   )}
                 />
 
                 <InfoCard
                   icon={Users}
-                  title={text("Réseau", "Network")}
+                  title={text("Contrôles par référence", "Checks by product reference")}
                   text={text(
-                    "Des partenaires intégrés dans un même environnement.",
-                    "Partners connected in one shared environment.",
+                    "BIB examine les références avant admission. La publication et l’ouverture des commandes suivent leurs propres validations.",
+                    "BIB reviews product references before admission. Publication and live orders require their own approvals.",
                   )}
                 />
               </div>
@@ -402,8 +403,8 @@ const Index = () => {
               eyebrow={text("Approvisionnement", "Supply")}
               title={text("Fournisseurs", "Suppliers")}
               text={text(
-                "Découvrez le fonctionnement du réseau fournisseur BIB.",
-                "Learn how the BIB supplier network works.",
+                "Du catalogue initial au contrat, puis à l’admission par référence.",
+                "From the initial catalogue to an agreement, then admission by product reference.",
               )}
               href="/suppliers"
             />
@@ -412,8 +413,9 @@ const Index = () => {
               icon={Truck}
               eyebrow={text("Opérations", "Operations")}
               title={translateUi("Logistique")}
-              text={translateUi(
-                "Découvrez l'organisation logistique du réseau BIB.",
+              text={text(
+                "De la fiche des besoins au contrat du prestataire et aux essais logistiques.",
+                "From the requirements and provider agreement to logistics trials.",
               )}
               href="/ops"
             />

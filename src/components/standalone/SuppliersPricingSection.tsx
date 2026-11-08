@@ -144,7 +144,7 @@ const FAQ = [
     },
     get answer() {
       return translateUi(
-        "Le modèle BIB vise à encadrer la relation opérationnelle entre fournisseurs et boutiques. Les échanges, flux et procédures sont organisés par BIB afin de conserver un fonctionnement cohérent et traçable.",
+        "Le fournisseur vend les biens au marchand identifié dans le devis privé. BIB coordonne l’achat et la logistique selon le mandat convenu et facture ses propres prestations.",
       );
     },
   },
@@ -156,7 +156,7 @@ const FAQ = [
     },
     get answer() {
       return translateUi(
-        "Le modèle fournisseur retenu prévoit un forfait unique de 19 € par mois, en complément des commissions contractuelles applicables. Le contrôle documentaire initial est facturable selon un devis accepté, avec une base indicative de chiffrage de 150 €, variable selon les références, catégories, pièces et la complexité. Les contre-audits nécessitent une prestation réelle et un devis distinct accepté, sans double facturation. Le montant du forfait et son traitement TVA sont précisés avant l'engagement.",
+        "Le modèle de référence prévoit un forfait de 19 € par mois. Les conditions signées précisent son montant applicable, sa date de prise d’effet, le régime de TVA et les éventuelles commissions. La candidature ouvre l’étude du dossier.",
       );
     },
   },
@@ -190,7 +190,7 @@ const FAQ = [
     },
     get answer() {
       return translateUi(
-        "Le forfait fournisseur retenu est de 19 € par mois selon le régime de TVA réellement applicable à l’exploitant, auquel s’ajoutent les commissions prévues au contrat. L'audit documentaire initial est payant sur devis accepté (base indicative 150 €, non tarif universel). Tout contre-audit est conditionné à une prestation effective et à un nouveau devis accepté. Le montant effectivement facturé dépend du régime de TVA applicable à l’exploitant à la date de facturation.",
+        "Le devis d’audit documentaire initial précise le périmètre, les livrables, les montants et le régime de TVA. La base indicative de chiffrage de 150 € varie selon les références, les pièces et la complexité. Le montant applicable figure sur le devis accepté.",
       );
     },
   },
@@ -230,7 +230,7 @@ export function SuppliersPricingSection() {
 
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
             {translateUi(
-              "BIB sélectionne et qualifie chaque fournisseur. Le modèle retenu comprend un forfait unique de 19 € par mois et des commissions contractuelles ; la validation de la candidature ne vaut ni acceptation automatique ni déclenchement immédiat d’un abonnement. L'audit documentaire initial est facturable sur devis accepté, sur la base indicative de 150 €.",
+              "BIB étudie le dossier du fournisseur et les références proposées. Les conditions financières sont communiquées avant engagement. Toute prestation d’audit facturable fait l’objet d’un devis préalable accepté.",
             )}
           </p>
         </div>
@@ -286,13 +286,13 @@ export function SuppliersPricingSection() {
 
             <h3 className="font-display text-xl font-bold sm:text-2xl">
               {translateUi(
-                "Forfait fournisseur unique : 19 € / mois",
+                "Conditions communiquées avant engagement",
               )}
             </h3>
 
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               {translateUi(
-                "Le référencement reste soumis à la qualification de BIB. Le forfait retenu est de 19 € par mois selon le régime de TVA réellement applicable à l’exploitant, complété par les commissions définies au contrat. Le contrôle documentaire initial est payant sur devis, à partir d'une base indicative de chiffrage de 150 € selon le périmètre ; un contre-audit exige une prestation réelle et un devis préalable, sans double facturation.",
+                "Les prestations BIB et la vente de marchandises ont des factures distinctes. Les frais d’audit facturés par BIB sont réglés par virement, puis rapprochés par Finance. Pour facturer un contre-audit au fournisseur, BIB vérifie son imputabilité, fait accepter un devis distinct et justifie la prestation réalisée.",
               )}
             </p>
           </div>
