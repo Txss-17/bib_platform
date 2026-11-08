@@ -205,7 +205,7 @@ export default function Suppliers() {
     <StandaloneLayout portal="Suppliers" accent="primary" showPortalIdentifier={false}>
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-border/50 bg-background">
-        <div className="container mx-auto px-4 py-7 sm:px-6 lg:px-8 lg:py-10">
+        <div className="container mx-auto px-4 pt-2 pb-7 sm:px-6 lg:px-8 lg:pt-3 lg:pb-10">
           <div className="max-w-4xl">
             <Badge variant="secondary" className="mb-5">
               {translateUi("Réseau fournisseurs BIB")}
