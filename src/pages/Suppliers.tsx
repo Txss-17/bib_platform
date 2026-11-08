@@ -29,7 +29,7 @@ const compatibility = [
     },
     get text() {
       return translateUi(
-        "BIB étudie votre entreprise, vos documents et vos produits avant toute intégration au catalogue.",
+        "BIB examine les candidatures et les produits proposés selon ses critères de sélection.",
       );
     },
   },
@@ -51,7 +51,7 @@ const compatibility = [
     },
     get text() {
       return translateUi(
-        "Les flux de stock, de préparation et d'expédition sont coordonnés avec les partenaires logistiques retenus par BIB.",
+        "BIB facilite la coordination logistique avec les partenaires retenus.",
       );
     },
   },
@@ -62,7 +62,7 @@ const compatibility = [
     },
     get text() {
       return translateUi(
-        "Les documents, la qualité, la traçabilité et les exigences de commercialisation sont examinés dans le parcours BIB.",
+        "Les exigences de qualité, de traçabilité et de conformité sont prises en compte.",
       );
     },
   },
@@ -95,7 +95,7 @@ const steps = [
     },
     get text() {
       return translateUi(
-        "Les documents, produits, capacités opérationnelles et éléments de conformité sont examinés.",
+        "BIB peut solliciter des informations complémentaires pour étudier votre candidature.",
       );
     },
   },
@@ -115,7 +115,7 @@ const steps = [
     },
     get text() {
       return translateUi(
-        "Les flux de stock, de préparation et de livraison sont ensuite coordonnés avec BIB et ses partenaires opérationnels.",
+        "Les modalités de collaboration sont définies avec les partenaires retenus.",
       );
     },
   },
@@ -135,10 +135,10 @@ const constraints = [
   "Référencement soumis à validation BIB",
   "Produits et références contrôlés avant intégration au catalogue",
   "Documents de conformité à maintenir à jour",
-  "Informations de stock et de disponibilité à transmettre selon les procédures BIB",
+  "Informations de disponibilité à communiquer selon les modalités convenues",
   "Respect des exigences qualité, emballage, traçabilité et expédition",
   "Relations opérationnelles avec les boutiques encadrées par BIB",
-  "Respect des procédures définies avec les partenaires logistiques concernés",
+  "Respect des engagements logistiques convenus",
 ];
 
 const principles = [
@@ -429,7 +429,7 @@ export default function Suppliers() {
             </p>
 
             <h2 className="font-display text-2xl font-bold sm:text-3xl">
-              {translateUi("De la candidature au catalogue BIB")}
+              {translateUi("Les grandes étapes pour nous rejoindre")}
             </h2>
           </div>
 
