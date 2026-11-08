@@ -156,7 +156,7 @@ const FAQ = [
     },
     get answer() {
       return translateUi(
-        "Le modèle fournisseur retenu prévoit un forfait unique de 19 € par mois, en complément des commissions contractuelles applicables. Le contrôle documentaire initial est facturable selon un devis accepté, avec une base indicative de chiffrage de 150 €, variable selon les références, catégories, pièces et la complexité. Les contre-audits nécessitent une prestation réelle et un devis distinct accepté, sans double facturation. Le montant du forfait et son traitement TVA sont précisés avant l'engagement.",
+        "Les éventuels frais de service, abonnements et prestations de contrôle sont présentés au fournisseur avant tout engagement. Aucun montant n'est dû du seul fait de candidater.",
       );
     },
   },
@@ -166,7 +166,7 @@ const FAQ = [
     },
     get answer() {
       return translateUi(
-        "Oui. Selon le profil du fournisseur, les produits, le pays, le niveau de risque et les exigences applicables, BIB peut demander des documents complémentaires, des échantillons, des contrôles ou un audit adapté. Celui-ci peut notamment être réalisé sur site lorsque cela est pertinent.",
+        "Oui. Selon les produits et les exigences applicables, BIB peut demander des justificatifs ou des contrôles complémentaires. Leurs conditions sont communiquées aux partenaires concernés.",
       );
     },
   },
@@ -190,7 +190,7 @@ const FAQ = [
     },
     get answer() {
       return translateUi(
-        "Le forfait fournisseur retenu est de 19 € par mois selon le régime de TVA réellement applicable à l’exploitant, auquel s’ajoutent les commissions prévues au contrat. L'audit documentaire initial est payant sur devis accepté (base indicative 150 €, non tarif universel). Tout contre-audit est conditionné à une prestation effective et à un nouveau devis accepté. Le montant effectivement facturé dépend du régime de TVA applicable à l’exploitant à la date de facturation.",
+        "Les conditions financières applicables sont précisées dans la proposition commerciale, le devis et le contrat destinés au fournisseur. Les prestations supplémentaires nécessitent un accord adapté.",
       );
     },
   },
@@ -230,7 +230,7 @@ export function SuppliersPricingSection() {
 
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
             {translateUi(
-              "BIB sélectionne et qualifie chaque fournisseur. Le modèle retenu comprend un forfait unique de 19 € par mois et des commissions contractuelles ; la validation de la candidature ne vaut ni acceptation automatique ni déclenchement immédiat d’un abonnement. L'audit documentaire initial est facturable sur devis accepté, sur la base indicative de 150 €.",
+              "La candidature est étudiée sans référencement automatique. Les conditions de collaboration et les éventuels services facturables sont communiqués avant engagement.",
             )}
           </p>
         </div>
@@ -286,13 +286,13 @@ export function SuppliersPricingSection() {
 
             <h3 className="font-display text-xl font-bold sm:text-2xl">
               {translateUi(
-                "Forfait fournisseur unique : 19 € / mois",
+                "Des conditions adaptées au partenariat",
               )}
             </h3>
 
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               {translateUi(
-                "Le référencement reste soumis à la qualification de BIB. Le forfait retenu est de 19 € par mois selon le régime de TVA réellement applicable à l’exploitant, complété par les commissions définies au contrat. Le contrôle documentaire initial est payant sur devis, à partir d'une base indicative de chiffrage de 150 € selon le périmètre ; un contre-audit exige une prestation réelle et un devis préalable, sans double facturation.",
+                "L'accès au réseau repose sur l'étude de la candidature. Les frais éventuels, services et modalités contractuelles sont proposés individuellement avant toute acceptation.",
               )}
             </p>
           </div>
