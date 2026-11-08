@@ -109,14 +109,14 @@ export const opsOnboardingConfig: OnboardingConfig = {
       },
       get text() {
         return translateUi(
-          "Lien public ou webhook — communicable directement à l'acheteur BIB.",
+          "Les modalités de transmission des informations de suivi sont convenues avec BIB.",
         );
       },
     },
     {
       id: "ops_dedicated",
       get title() {
-        return translateUi("Ops Manager dédié en heures ouvrées UE");
+        return translateUi("Contact opérationnel identifié");
       },
       get text() {
         return translateUi(
@@ -173,7 +173,7 @@ export const opsOnboardingConfig: OnboardingConfig = {
     {
       id: "ops_contact",
       get label() {
-        return translateUi("Ops Manager dédié");
+        return translateUi("Responsable opérationnel");
       },
       type: "text",
       required: true,
@@ -184,7 +184,7 @@ export const opsOnboardingConfig: OnboardingConfig = {
     {
       id: "ops_email",
       get label() {
-        return translateUi("Email Ops Manager");
+        return translateUi("Email du contact opérationnel");
       },
       type: "email",
       required: true,
