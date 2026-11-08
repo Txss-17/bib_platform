@@ -227,7 +227,7 @@ export const suppliersOnboardingConfig: OnboardingConfig = {
     {
       id: "erp",
       get label() {
-        return translateUi("ERP / outil interne utilisé");
+        return translateUi("Outil de gestion de production utilisé");
       },
       type: "text",
       required: false,
