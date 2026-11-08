@@ -303,11 +303,11 @@ const blockers: QualBlocker[] = [
   {
     id: "sla",
     get title() {
-      return translateUi("SLA livraison ≥ 95 % garanti contractuellement");
+      return translateUi("Engagement de qualité de livraison");
     },
     get text() {
       return translateUi(
-        "En dessous de 90 % sur 30 jours consécutifs : mise en observation puis suspension avec préavis 30 jours.",
+        "Les objectifs de service et les mesures correctives éventuelles seront définis lors de la contractualisation.",
       );
     },
   },
@@ -318,7 +318,7 @@ const blockers: QualBlocker[] = [
     },
     get text() {
       return translateUi(
-        "BIB transmet le lien de suivi à l'acheteur. Tracking non fonctionnel = incident critique.",
+        "BIB transmet le lien de suivi à l'acheteur. Les modalités de suivi seront précisées avec le partenaire retenu.",
       );
     },
   },
@@ -331,7 +331,7 @@ const blockers: QualBlocker[] = [
     },
     get text() {
       return translateUi(
-        "Un interlocuteur unique pour gestion d'incidents et escalade. Pas de support généraliste.",
+        "Un contact professionnel opérationnel est demandé pour faciliter les échanges.",
       );
     },
   },
@@ -342,7 +342,7 @@ const blockers: QualBlocker[] = [
     },
     get text() {
       return translateUi(
-        "Taux de livraison, incidents, retours et délais transmis via portail ou export structuré chaque mois.",
+        "Les indicateurs utiles et leur fréquence de communication seront convenus avec le partenaire.",
       );
     },
   },
@@ -368,7 +368,7 @@ export default function OpsApply() {
       menuItems={[
         { label: tx("Présentation", "Overview"), href: "/ops", icon: "truck" },
         {
-          label: tx("Critères bloquants", "Mandatory criteria"),
+          label: tx("Critères de partenariat", "Partnership criteria"),
           href: "#blockers",
           icon: "shield",
         },
