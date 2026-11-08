@@ -556,6 +556,7 @@ export default function Ops() {
     <StandaloneLayout
       portal="Ops"
       accent="accent"
+      showPortalIdentifier={false}
       menuItems={[
         {
           label: translateUi("Fonctionnement"),
