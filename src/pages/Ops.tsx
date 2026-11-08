@@ -592,7 +592,7 @@ export default function Ops() {
     >
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-border/50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-7 lg:py-10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-7 lg:pt-3 lg:pb-10">
           <Badge variant="secondary" className="mb-5">
             {translateUi("Réseau opérations BIB")}
           </Badge>
