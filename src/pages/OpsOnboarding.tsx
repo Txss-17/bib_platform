@@ -94,11 +94,11 @@ export const opsOnboardingConfig: OnboardingConfig = {
     {
       id: "sla",
       get title() {
-        return translateUi("SLA livraison ≥ 95% garanti contractuellement");
+        return translateUi("Qualité de service à définir");
       },
       get text() {
         return translateUi(
-          "En dessous de 90% sur 30 jours consécutifs : mise en observation puis suspension avec préavis 30 jours.",
+          "Les objectifs de service et les mesures correctives sont définis dans les engagements contractuels.",
         );
       },
     },
@@ -120,7 +120,7 @@ export const opsOnboardingConfig: OnboardingConfig = {
       },
       get text() {
         return translateUi(
-          "Un interlocuteur unique nommé, joignable < 2h. Pas de support généraliste.",
+          "Un interlocuteur professionnel identifié facilite les échanges de suivi.",
         );
       },
     },
@@ -142,7 +142,7 @@ export const opsOnboardingConfig: OnboardingConfig = {
       },
       get text() {
         return translateUi(
-          "Assurance ad valorem activée par défaut — pas de plafond inférieur à la valeur déclarée.",
+          "Les garanties et plafonds applicables sont examinés et précisés contractuellement.",
         );
       },
     },
@@ -316,7 +316,7 @@ export const opsOnboardingConfig: OnboardingConfig = {
     },
     get description() {
       return translateUi(
-        "Décrivez la fenêtre proposée pour la phase pilote : volumes, transporteurs mobilisés, format de reporting et critères de succès. Notre Ops Manager validera et déclenchera le go-live progressif.",
+        "Présentez vos capacités et les modalités possibles d'un démarrage. Les conditions seront précisées avec les partenaires retenus.",
       );
     },
     get placeholder() {
