@@ -4,7 +4,6 @@ import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useSEO } from "@/hooks/useSEO";
 import { useEffect } from "react";
 import { SuppliersPricingSection } from "@/components/standalone/SuppliersPricingSection";
