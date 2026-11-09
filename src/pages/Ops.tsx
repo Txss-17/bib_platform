@@ -163,7 +163,7 @@ const coverage = [
 const processSteps = [
   {
     get title() {
-      return translateUi("Candidature");
+      return translateUi("Demande de partenariat");
     },
     get text() {
       return translateUi(
@@ -185,7 +185,7 @@ const processSteps = [
     },
     get text() {
       return translateUi(
-        "Les conditions du partenariat sont étudiées avec les candidats retenus.",
+        "Les conditions du partenariat sont étudiées avec les partenaires retenus.",
       );
     },
   },
@@ -298,7 +298,7 @@ function OpsContactDialog({ children }: { children: React.ReactNode }) {
 
     setSubmitting(true);
 
-    const subject = `[Ops BIB] Candidature partenaire — ${parsed.data.company}`;
+    const subject = `[Ops BIB] Demande de partenariat partenaire — ${parsed.data.company}`;
 
     const message =
       `Société : ${parsed.data.company}\n` +
@@ -337,7 +337,7 @@ function OpsContactDialog({ children }: { children: React.ReactNode }) {
     toast({
       title: translateUi("Demande envoyée"),
       description: translateUi(
-        "Votre candidature a bien été transmise à l'équipe BIB.",
+        "Votre demande de partenariat a bien été transmise à l'équipe BIB.",
       ),
     });
   }
@@ -363,7 +363,7 @@ function OpsContactDialog({ children }: { children: React.ReactNode }) {
 
           <DialogDescription>
             {translateUi(
-              "Présentez votre activité et vos capacités. L'équipe BIB reviendra vers vous après étude de votre candidature.",
+              "Présentez votre activité et vos capacités. L'équipe BIB reviendra vers vous après étude de votre demande.",
             )}
           </DialogDescription>
         </DialogHeader>
@@ -513,12 +513,12 @@ function OpsContactDialog({ children }: { children: React.ReactNode }) {
                 <Mail className="w-4 h-4 mr-2" />
               )}
 
-              {translateUi("Envoyer ma candidature")}
+              {translateUi("Envoyer ma demande")}
             </Button>
 
             <p className="text-xs text-muted-foreground text-center">
               {translateUi(
-                "Les informations transmises sont utilisées pour étudier votre candidature de partenaire logistique.",
+                "Les informations transmises sont utilisées pour étudier votre demande de partenariat logistique.",
               )}
             </p>
           </form>
@@ -907,7 +907,7 @@ export default function Ops() {
 
             <p className="text-sm sm:text-base text-bib-ivory/80 mt-3 leading-relaxed">
               {translateUi(
-                "Présentez vos capacités logistiques, vos zones couvertes et vos services. BIB étudiera votre candidature avant de définir les prochaines étapes.",
+                "Présentez vos capacités logistiques, vos zones couvertes et vos services. BIB étudiera votre proposition avant de définir les prochaines étapes.",
               )}
             </p>
 
