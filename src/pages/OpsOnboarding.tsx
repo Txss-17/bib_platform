@@ -345,7 +345,7 @@ export default function OpsOnboarding() {
       accent="accent"
       menuItems={[
         { label: copy("Présentation"), href: "/ops", icon: "truck" },
-        { label: copy("Candidature"), href: "/ops/apply", icon: "clipboard" },
+        { label: copy("Partenariat"), href: "/ops/apply", icon: "clipboard" },
       ]}
     >
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14 max-w-3xl">
