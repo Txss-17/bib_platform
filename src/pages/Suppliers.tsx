@@ -25,7 +25,7 @@ const compatibility = [
     },
     get text() {
       return translateUi(
-        "BIB examine les candidatures et les produits proposés selon ses critères de sélection.",
+        "BIB examine les demandes de partenariat et les produits proposés selon ses critères de sélection.",
       );
     },
   },
@@ -67,7 +67,7 @@ const compatibility = [
 const steps = [
   {
     get title() {
-      return translateUi("Candidature");
+      return translateUi("Demande de partenariat");
     },
     get text() {
       return translateUi(
@@ -91,7 +91,7 @@ const steps = [
     },
     get text() {
       return translateUi(
-        "BIB peut solliciter des informations complémentaires pour étudier votre candidature.",
+        "BIB peut solliciter des informations complémentaires pour étudier votre demande.",
       );
     },
   },
@@ -165,7 +165,7 @@ export default function Suppliers() {
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="gap-2">
                 <Link to="/suppliers/apply">
-                  {translateUi("Candidater comme fournisseur")}
+                  {translateUi("Proposer un partenariat")}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -184,7 +184,7 @@ export default function Suppliers() {
                   {translateUi("Accès")}
                 </p>
                 <p className="mt-0.5 text-sm font-semibold">
-                  {translateUi("Sur candidature")}
+                  {translateUi("Sur demande de partenariat")}
                 </p>
               </div>
 
@@ -309,14 +309,14 @@ export default function Suppliers() {
 
             <p className="mt-3 text-sm leading-relaxed text-primary-foreground/80 sm:text-base">
               {translateUi(
-                "Déposez votre candidature. L'équipe BIB étudiera votre activité, vos produits et vos capacités opérationnelles avant de vous indiquer la suite du parcours.",
+                "Présentez votre proposition de partenariat. L'équipe BIB étudiera votre activité, vos produits et vos capacités opérationnelles avant de vous indiquer la suite du parcours.",
               )}
             </p>
 
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Button asChild size="lg" variant="secondary" className="gap-2">
                 <Link to="/suppliers/apply">
-                  {translateUi("Déposer une candidature")}
+                  {translateUi("Proposer un partenariat")}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
