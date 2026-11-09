@@ -34,7 +34,7 @@ const FAQ = [
     },
     get answer() {
       return translateUi(
-        "Non. La candidature constitue uniquement la première étape. BIB étudie le fournisseur, son activité, ses documents, ses capacités et les produits proposés avant toute décision de référencement.",
+        "Non. La demande de partenariat constitue uniquement la première étape. BIB étudie le fournisseur, son activité, ses documents, ses capacités et les produits proposés avant toute décision de référencement.",
       );
     },
   },
@@ -82,7 +82,7 @@ const FAQ = [
     },
     get answer() {
       return translateUi(
-        "Les éventuels frais de service, abonnements et prestations de contrôle sont présentés au fournisseur avant tout engagement. Aucun montant n'est dû du seul fait de candidater.",
+        "Les éventuels frais de service, abonnements et prestations de contrôle sont présentés au fournisseur avant tout engagement. Aucun montant n'est dû du seul fait de proposer un partenariat.",
       );
     },
   },
@@ -156,7 +156,7 @@ export function SuppliersPricingSection() {
 
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
             {translateUi(
-              "La candidature est étudiée sans référencement automatique. Les conditions de collaboration et les éventuels services facturables sont communiqués avant engagement.",
+              "La demande de partenariat est étudiée sans référencement automatique. Les conditions de collaboration et les éventuels services facturables sont communiqués avant engagement.",
             )}
           </p>
         </div>
@@ -179,7 +179,7 @@ export function SuppliersPricingSection() {
 
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               {translateUi(
-                "L'accès au réseau repose sur l'étude de la candidature. Les frais éventuels, services et modalités contractuelles sont proposés individuellement avant toute acceptation.",
+                "L'accès au réseau repose sur l'étude de la demande de partenariat. Les frais éventuels, services et modalités contractuelles sont proposés individuellement avant toute acceptation.",
               )}
             </p>
           </div>
@@ -194,7 +194,7 @@ export function SuppliersPricingSection() {
 
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 {translateUi(
-                  "L'accès au réseau commence par une candidature et une étude du dossier. Aucune intégration automatique n'est effectuée.",
+                  "L'accès au réseau commence par une demande de partenariat et une étude du dossier. Aucune intégration automatique n'est effectuée.",
                 )}
               </p>
 
@@ -280,7 +280,7 @@ export function SuppliersPricingSection() {
 
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
                   {translateUi(
-                    "Le dépôt d'une candidature ne constitue pas un engagement contractuel. Si le dossier est retenu pour la suite du parcours, BIB présente les conditions applicables avant toute contractualisation.",
+                    "Le dépôt d'une demande de partenariat ne constitue pas un engagement contractuel. Si le dossier est retenu pour la suite du parcours, BIB présente les conditions applicables avant toute contractualisation.",
                   )}
                 </p>
               </div>
