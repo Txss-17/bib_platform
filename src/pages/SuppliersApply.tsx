@@ -346,7 +346,7 @@ export default function SuppliersApply() {
   const english = lang === "en";
   const tx = (fr: string, en: string) => (english ? en : fr);
   useSEO({
-    title: translateUi("Candidature fournisseur — BIB"),
+    title: translateUi("Demande de partenariat fournisseur — BIB"),
     description: translateUi(
       "Soumettez votre profil fournisseur à BIB. Qualification des capacités de production, minimums de commande, délais, traçabilité et aptitude à intégrer le réseau.",
     ),
@@ -372,8 +372,8 @@ export default function SuppliersApply() {
 
         <Badge variant="secondary" className="mb-3">
           {tx(
-            "Candidature fournisseur · Qualification",
-            "Supplier application · Qualification",
+            "Demande de partenariat fournisseur · Qualification",
+            "Supplier partnership request · Qualification",
           )}
         </Badge>
 
@@ -393,8 +393,8 @@ export default function SuppliersApply() {
 
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
           {tx(
-            "Le dépôt de cette candidature ne constitue pas une validation de référencement. Les fournisseurs présélectionnés poursuivent ensuite un processus de vérification et de contrôle avant toute intégration.",
-            "Submitting this application does not guarantee approval for listing. Preselected suppliers continue through a verification and review process before onboarding.",
+            "Le dépôt de cette demande de partenariat ne constitue pas une validation de référencement. Les fournisseurs présélectionnés poursuivent ensuite un processus de vérification et de contrôle avant toute intégration.",
+            "Submitting this partnership request does not guarantee approval for listing. Preselected suppliers continue through a verification and review process before onboarding.",
           )}
         </p>
 
@@ -494,7 +494,7 @@ export default function SuppliersApply() {
         <section className="mt-12" aria-labelledby="qualification-title">
           <div className="mb-5">
             <Badge variant="outline" className="mb-2">
-              {tx("Avant de candidater", "Before applying")}
+              {tx("Avant de proposer un partenariat", "Before applying")}
             </Badge>
 
             <h2
@@ -560,8 +560,8 @@ export default function SuppliersApply() {
 
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
             {tx(
-              "Une candidature peut être poursuivie, mise en attente, refusée ou orientée vers une qualification complémentaire. Le dépôt d'une candidature ne garantit donc pas l'accès au réseau.",
-              "An application may proceed, be put on hold, be declined or be referred for further qualification. Applying does not guarantee access to the network.",
+              "Une demande de partenariat peut être poursuivie, mise en attente, refusée ou orientée vers une qualification complémentaire. Le dépôt d'une demande de partenariat ne garantit donc pas l'accès au réseau.",
+              "A partnership request may proceed, be put on hold, be declined or be referred for further qualification. Submitting a request does not guarantee access to the network.",
             )}
           </p>
 
