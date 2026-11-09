@@ -354,8 +354,8 @@ export default function OpsApply() {
   const tx = (fr: string, en: string) => (english ? en : fr);
   useSEO({
     title: english
-      ? "Logistics Partner Application — Brand-In-A-Box"
-      : "Candidature Partenaire Logistique — Brand-In-A-Box",
+      ? "Logistics Partnership Request — Brand-In-A-Box"
+      : "Demande de partenariat logistique — Brand-In-A-Box",
     description: english
       ? "Step 1: operational qualification to join the Brand-In-A-Box Ops network (EU coverage, SLAs, tracking and capacity)."
       : "Étape 1 : qualification opérationnelle pour rejoindre le réseau Ops Brand-In-A-Box (couverture UE, SLA, tracking, capacités).",
@@ -382,12 +382,12 @@ export default function OpsApply() {
           </Link>
         </Button>
         <Badge variant="secondary" className="mb-3">
-          {tx("Candidature · Étape 1 / 2", "Application · Step 1 / 2")}
+          {tx("Partenariat · Étape 1 / 2", "Partnership · Step 1 / 2")}
         </Badge>
         <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
           {tx(
-            "Candidature Partenaire Logistique",
-            "Logistics Partner Application",
+            "Demande de partenariat logistique",
+            "Logistics Partnership Request",
           )}
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground mt-3 mb-8 max-w-2xl">
