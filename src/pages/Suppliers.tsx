@@ -11,13 +11,10 @@ import { SuppliersPricingSection } from "@/components/standalone/SuppliersPricin
 import {
   ShieldCheck,
   Truck,
-  Workflow,
   ArrowRight,
-  AlertTriangle,
   Mail,
   ClipboardCheck,
   PackageCheck,
-  Globe2,
 } from "lucide-react";
 
 const compatibility = [
@@ -115,52 +112,6 @@ const steps = [
     get text() {
       return translateUi(
         "Les modalités de collaboration sont définies avec les partenaires retenus.",
-      );
-    },
-  },
-];
-
-const constraints = [
-  "Référencement soumis à validation BIB",
-  "Produits et références contrôlés avant intégration au catalogue",
-  "Documents de conformité à maintenir à jour",
-  "Informations de disponibilité à communiquer selon les modalités convenues",
-  "Respect des exigences qualité, emballage, traçabilité et expédition",
-  "Relations opérationnelles avec les boutiques encadrées par BIB",
-  "Respect des engagements logistiques convenus",
-];
-
-const principles = [
-  {
-    icon: ShieldCheck,
-    get title() {
-      return translateUi("Un réseau de confiance");
-    },
-    get text() {
-      return translateUi(
-        "BIB ne fonctionne pas comme un catalogue ouvert. L'accès au réseau repose sur une sélection, des contrôles et une validation préalable.",
-      );
-    },
-  },
-  {
-    icon: Globe2,
-    get title() {
-      return translateUi("Une ouverture progressive");
-    },
-    get text() {
-      return translateUi(
-        "Les zones de commercialisation et d'expédition sont définies selon les capacités opérationnelles, réglementaires et logistiques.",
-      );
-    },
-  },
-  {
-    icon: Workflow,
-    get title() {
-      return translateUi("Un intermédiaire opérationnel");
-    },
-    get text() {
-      return translateUi(
-        "BIB coordonne le parcours entre fournisseurs, catalogue, boutiques et partenaires opérationnels, sans créer de relation directe non encadrée avec les boutiques.",
       );
     },
   },
@@ -299,83 +250,12 @@ export default function Suppliers() {
         </div>
       </section>
 
-      {/* PRINCIPES */}
-      <section className="border-y border-border/50 bg-muted/30">
-        <div className="container mx-auto px-4 py-14 sm:px-6 lg:px-8 lg:py-18">
-          <div className="mb-8 max-w-2xl">
-            <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-secondary">
-              {translateUi("Notre fonctionnement")}
-            </p>
-
-            <h2 className="font-display text-2xl font-bold sm:text-3xl">
-              {translateUi("Ce que signifie travailler avec BIB")}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-            {principles.map((item) => {
-              const Icon = item.icon;
-
-              return (
-                <Card key={item.title} className="bg-background p-6">
-                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Icon className="h-5 w-5" />
-                  </div>
-
-                  <h3 className="font-semibold">{item.title}</h3>
-
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {item.text}
-                  </p>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* CONTRAINTES */}
-      <section
-        id="contraintes"
-        className="container mx-auto scroll-mt-20 px-4 pb-14 sm:px-6 lg:px-8 lg:pb-18"
-      >
-        <Card className="border-warning/30 bg-warning/5 p-6 sm:p-8">
-          <div className="mb-6 flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-warning/10 text-warning">
-              <AlertTriangle className="h-5 w-5" />
-            </div>
-
-            <div>
-              <h2 className="font-display text-xl font-bold sm:text-2xl">
-                {translateUi("Exigences du réseau")}
-              </h2>
-
-              <p className="mt-1 text-sm text-muted-foreground">
-                {translateUi(
-                  "Le référencement BIB implique un cadre opérationnel commun à l'ensemble des fournisseurs.",
-                )}
-              </p>
-            </div>
-          </div>
-
-          <ul className="grid grid-cols-1 gap-x-8 gap-y-3 md:grid-cols-2">
-            {constraints.map((constraint) => (
-              <li key={constraint} className="flex items-start gap-2.5 text-sm">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-warning" />
-
-                <span className="leading-relaxed">{constraint}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      </section>
-
       {/* PROCESSUS */}
       <section
         id="etapes"
-        className="scroll-mt-20 border-y border-border/50 bg-muted/30"
+        className="scroll-mt-20 border-t border-border/50 bg-muted/20"
       >
-        <div className="container mx-auto px-4 py-14 sm:px-6 lg:px-8 lg:py-18">
+        <div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
           <div className="mb-8 max-w-2xl">
             <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-secondary">
               {translateUi("Parcours fournisseur")}
@@ -414,7 +294,7 @@ export default function Suppliers() {
       </section>
 
       {/* CTA */}
-      <section className="container mx-auto px-4 py-14 sm:px-6 lg:px-8 lg:py-18">
+      <section className="container mx-auto px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
         <Card className="border-0 bg-primary p-7 text-center text-primary-foreground sm:p-10">
           <div className="mx-auto max-w-2xl">
             <div className="mx-auto mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-primary-foreground/10">
