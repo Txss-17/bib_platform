@@ -12,7 +12,6 @@ import {
   ShieldCheck,
   Truck,
   Workflow,
-  Check,
   ArrowRight,
   AlertTriangle,
   Mail,
@@ -119,16 +118,6 @@ const steps = [
       );
     },
   },
-];
-
-const minimumCriteria = [
-  "Entreprise ou activité légalement enregistrée",
-  "Documents administratifs et de conformité disponibles",
-  "Produits clairement identifiés et documentés",
-  "Capacité à fournir les informations techniques nécessaires",
-  "Capacité à expédier vers les zones compatibles avec le réseau BIB",
-  "Traçabilité des produits et des lots lorsque nécessaire",
-  "Capacité de production ou de réapprovisionnement compatible avec les besoins",
 ];
 
 const constraints = [
@@ -343,42 +332,6 @@ export default function Suppliers() {
             })}
           </div>
         </div>
-      </section>
-
-      {/* CRITERES */}
-      <section
-        id="criteres"
-        className="container mx-auto scroll-mt-20 px-4 py-14 sm:px-6 lg:px-8 lg:py-18"
-      >
-        <div className="mb-7 max-w-2xl">
-          <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-secondary">
-            {translateUi("Avant de candidater")}
-          </p>
-
-          <h2 className="font-display text-2xl font-bold sm:text-3xl">
-            {translateUi("Critères de compatibilité")}
-          </h2>
-
-          <p className="mt-2 text-sm text-muted-foreground">
-            {translateUi(
-              "Ces éléments permettent de déterminer si votre entreprise et vos produits peuvent entrer dans le parcours de référencement BIB.",
-            )}
-          </p>
-        </div>
-
-        <Card className="p-6 sm:p-8">
-          <ul className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
-            {minimumCriteria.map((criterion) => (
-              <li key={criterion} className="flex items-start gap-3 text-sm">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-success/10 text-success">
-                  <Check className="h-3.5 w-3.5" />
-                </span>
-
-                <span className="pt-0.5 leading-relaxed">{criterion}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
       </section>
 
       {/* CONTRAINTES */}
