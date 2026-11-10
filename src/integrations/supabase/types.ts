@@ -69,7 +69,6 @@ export type Database = {
           availability: string
           consent_given_at: string
           contribution_type: string
-          cv_storage_path: string | null
           created_at: string
           current_activity: string
           email: string
@@ -78,7 +77,6 @@ export type Database = {
           future_opportunities_consented_at: string | null
           future_opportunities_notice_version: string | null
           id: string
-          linkedin_url: string | null
           locale: string
           location: string | null
           motivation: string
@@ -97,7 +95,6 @@ export type Database = {
           availability: string
           consent_given_at: string
           contribution_type: string
-          cv_storage_path?: string | null
           created_at?: string
           current_activity: string
           email: string
@@ -106,7 +103,6 @@ export type Database = {
           future_opportunities_consented_at?: string | null
           future_opportunities_notice_version?: string | null
           id?: string
-          linkedin_url?: string | null
           locale: string
           location?: string | null
           motivation: string
@@ -125,7 +121,6 @@ export type Database = {
           availability?: string
           consent_given_at?: string
           contribution_type?: string
-          cv_storage_path?: string | null
           created_at?: string
           current_activity?: string
           email?: string
@@ -134,7 +129,6 @@ export type Database = {
           future_opportunities_consented_at?: string | null
           future_opportunities_notice_version?: string | null
           id?: string
-          linkedin_url?: string | null
           locale?: string
           location?: string | null
           motivation?: string
@@ -687,6 +681,7 @@ export type Database = {
           has_protection: boolean
           highlight_media: Json
           id: string
+          intranet_status: string | null
           legal_address: string | null
           legal_business_name: string | null
           legal_email: string | null
@@ -719,6 +714,7 @@ export type Database = {
           has_protection?: boolean
           highlight_media?: Json
           id?: string
+          intranet_status?: string | null
           legal_address?: string | null
           legal_business_name?: string | null
           legal_email?: string | null
@@ -751,6 +747,7 @@ export type Database = {
           has_protection?: boolean
           highlight_media?: Json
           id?: string
+          intranet_status?: string | null
           legal_address?: string | null
           legal_business_name?: string | null
           legal_email?: string | null
@@ -775,6 +772,64 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      customer_boutique_favorites: {
+        Row: {
+          boutique_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          boutique_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          boutique_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_boutique_favorites_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_product_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_product_favorites_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customer_profiles: {
         Row: {
@@ -1024,6 +1079,249 @@ export type Database = {
           },
         ]
       }
+      legal_governance_configuration: {
+        Row: {
+          environment: string
+          public_origin: string
+          singleton: boolean
+        }
+        Insert: {
+          environment: string
+          public_origin: string
+          singleton?: boolean
+        }
+        Update: {
+          environment?: string
+          public_origin?: string
+          singleton?: boolean
+        }
+        Relationships: []
+      }
+      legal_governance_mirror: {
+        Row: {
+          activation_sequence: number
+          delivery_sequence: number
+          envelope: Json
+          kind: string
+          payload: Json
+          received_at: string
+          source_id: string
+          source_revision: number
+          state: string
+        }
+        Insert: {
+          activation_sequence: number
+          delivery_sequence: number
+          envelope: Json
+          kind: string
+          payload: Json
+          received_at?: string
+          source_id: string
+          source_revision: number
+          state: string
+        }
+        Update: {
+          activation_sequence?: number
+          delivery_sequence?: number
+          envelope?: Json
+          kind?: string
+          payload?: Json
+          received_at?: string
+          source_id?: string
+          source_revision?: number
+          state?: string
+        }
+        Relationships: []
+      }
+      marketing_consent_events: {
+        Row: {
+          action: string
+          controller_key: string
+          id: string
+          notice_hash: string
+          notice_text: string
+          notice_version: string
+          occurred_at: string
+          request_id: string | null
+          scope_key: string
+          subscription_id: string
+        }
+        Insert: {
+          action: string
+          controller_key: string
+          id?: string
+          notice_hash: string
+          notice_text: string
+          notice_version: string
+          occurred_at?: string
+          request_id?: string | null
+          scope_key: string
+          subscription_id: string
+        }
+        Update: {
+          action?: string
+          controller_key?: string
+          id?: string
+          notice_hash?: string
+          notice_text?: string
+          notice_version?: string
+          occurred_at?: string
+          request_id?: string | null
+          scope_key?: string
+          subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_consent_events_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_service_configuration: {
+        Row: {
+          bib_controller_id: string | null
+          bib_controller_name: string | null
+          bib_enabled: boolean
+          confirmation_from_address: string | null
+          enabled: boolean
+          public_origin: string | null
+          sender_domain: string | null
+          singleton: boolean
+        }
+        Insert: {
+          bib_controller_id?: string | null
+          bib_controller_name?: string | null
+          bib_enabled?: boolean
+          confirmation_from_address?: string | null
+          enabled?: boolean
+          public_origin?: string | null
+          sender_domain?: string | null
+          singleton?: boolean
+        }
+        Update: {
+          bib_controller_id?: string | null
+          bib_controller_name?: string | null
+          bib_enabled?: boolean
+          confirmation_from_address?: string | null
+          enabled?: boolean
+          public_origin?: string | null
+          sender_domain?: string | null
+          singleton?: boolean
+        }
+        Relationships: []
+      }
+      marketing_subscription_requests: {
+        Row: {
+          created_at: string
+          expires_at: string
+          generation: number
+          id: string
+          subscription_id: string
+          token_hash: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          generation: number
+          id?: string
+          subscription_id: string
+          token_hash: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          generation?: number
+          id?: string
+          subscription_id?: string
+          token_hash?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_subscription_requests_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "marketing_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_subscriptions: {
+        Row: {
+          audience_name: string
+          boutique_id: string | null
+          confirmed_at: string | null
+          controller_key: string
+          controller_name: string
+          created_at: string
+          email: string
+          expires_at: string | null
+          generation: number
+          id: string
+          locale: string
+          notice_hash: string
+          notice_text: string
+          notice_version: string
+          scope_key: string
+          status: string
+          unsubscribe_token: string
+          updated_at: string
+        }
+        Insert: {
+          audience_name: string
+          boutique_id?: string | null
+          confirmed_at?: string | null
+          controller_key: string
+          controller_name: string
+          created_at?: string
+          email: string
+          expires_at?: string | null
+          generation?: number
+          id?: string
+          locale: string
+          notice_hash: string
+          notice_text: string
+          notice_version: string
+          scope_key: string
+          status?: string
+          unsubscribe_token?: string
+          updated_at?: string
+        }
+        Update: {
+          audience_name?: string
+          boutique_id?: string | null
+          confirmed_at?: string | null
+          controller_key?: string
+          controller_name?: string
+          created_at?: string
+          email?: string
+          expires_at?: string | null
+          generation?: number
+          id?: string
+          locale?: string
+          notice_hash?: string
+          notice_text?: string
+          notice_version?: string
+          scope_key?: string
+          status?: string
+          unsubscribe_token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_subscriptions_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       merchant_ad_drafts: {
         Row: {
           boutique_id: string
@@ -1110,6 +1408,196 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      merchant_mandate_acceptances: {
+        Row: {
+          acceptance_label: string
+          accepted_at: string
+          document_sha256: string
+          document_version: string
+          evidence_id: string
+          id: string
+          mandate_key: string
+          merchant_legal_entity_id: string
+          merchant_user_id: string
+          revoked_at: string | null
+          signer_role: string
+        }
+        Insert: {
+          acceptance_label: string
+          accepted_at?: string
+          document_sha256: string
+          document_version: string
+          evidence_id: string
+          id?: string
+          mandate_key: string
+          merchant_legal_entity_id: string
+          merchant_user_id: string
+          revoked_at?: string | null
+          signer_role: string
+        }
+        Update: {
+          acceptance_label?: string
+          accepted_at?: string
+          document_sha256?: string
+          document_version?: string
+          evidence_id?: string
+          id?: string
+          mandate_key?: string
+          merchant_legal_entity_id?: string
+          merchant_user_id?: string
+          revoked_at?: string | null
+          signer_role?: string
+        }
+        Relationships: []
+      }
+      merchant_supply_payment_events: {
+        Row: {
+          created_at: string
+          event_id: string
+          evidence: Json
+          quote_id: string
+          state: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          evidence: Json
+          quote_id: string
+          state: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          evidence?: Json
+          quote_id?: string
+          state?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_supply_payment_events_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_supply_payments"
+            referencedColumns: ["quote_id"]
+          },
+        ]
+      }
+      merchant_supply_payment_outbox: {
+        Row: {
+          command_key: string
+          created_at: string
+          delivered_at: string | null
+          payload: Json
+          quote_id: string
+          revision: number
+        }
+        Insert: {
+          command_key?: string
+          created_at?: string
+          delivered_at?: string | null
+          payload: Json
+          quote_id: string
+          revision: number
+        }
+        Update: {
+          command_key?: string
+          created_at?: string
+          delivered_at?: string | null
+          payload?: Json
+          quote_id?: string
+          revision?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_supply_payment_outbox_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_supply_payments"
+            referencedColumns: ["quote_id"]
+          },
+        ]
+      }
+      merchant_supply_payments: {
+        Row: {
+          acceptance: Json
+          boutique_id: string
+          checkout_key: string
+          checkout_url: string | null
+          created_at: string
+          destination_account: string
+          environment: string
+          merchant_id: string
+          merchant_product_id: string | null
+          payload: Json
+          quote_hash: string
+          quote_id: string
+          refunded_cents: number
+          revision: number
+          state: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          totals: Json
+          updated_at: string
+        }
+        Insert: {
+          acceptance: Json
+          boutique_id: string
+          checkout_key: string
+          checkout_url?: string | null
+          created_at?: string
+          destination_account: string
+          environment: string
+          merchant_id: string
+          merchant_product_id?: string | null
+          payload: Json
+          quote_hash: string
+          quote_id: string
+          refunded_cents?: number
+          revision?: number
+          state?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          totals: Json
+          updated_at?: string
+        }
+        Update: {
+          acceptance?: Json
+          boutique_id?: string
+          checkout_key?: string
+          checkout_url?: string | null
+          created_at?: string
+          destination_account?: string
+          environment?: string
+          merchant_id?: string
+          merchant_product_id?: string | null
+          payload?: Json
+          quote_hash?: string
+          quote_id?: string
+          refunded_cents?: number
+          revision?: number
+          state?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          totals?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merchant_supply_payments_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "merchant_supply_payments_merchant_product_id_fkey"
+            columns: ["merchant_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       moq_reservations: {
         Row: {
@@ -1474,6 +1962,7 @@ export type Database = {
           customer_profile_id: string | null
           customer_validated: boolean
           id: string
+          legal_snapshot_id: string | null
           logistics_status: Database["public"]["Enums"]["logistics_status"]
           market: string
           order_number: string
@@ -1487,6 +1976,7 @@ export type Database = {
           sales_channel: string
           stripe_environment: string | null
           stripe_session_id: string | null
+          updated_at: string
         }
         Insert: {
           amount: number
@@ -1497,6 +1987,7 @@ export type Database = {
           customer_profile_id?: string | null
           customer_validated?: boolean
           id?: string
+          legal_snapshot_id?: string | null
           logistics_status?: Database["public"]["Enums"]["logistics_status"]
           market?: string
           order_number: string
@@ -1510,6 +2001,7 @@ export type Database = {
           sales_channel?: string
           stripe_environment?: string | null
           stripe_session_id?: string | null
+          updated_at?: string
         }
         Update: {
           amount?: number
@@ -1520,6 +2012,7 @@ export type Database = {
           customer_profile_id?: string | null
           customer_validated?: boolean
           id?: string
+          legal_snapshot_id?: string | null
           logistics_status?: Database["public"]["Enums"]["logistics_status"]
           market?: string
           order_number?: string
@@ -1533,6 +2026,7 @@ export type Database = {
           sales_channel?: string
           stripe_environment?: string | null
           stripe_session_id?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -1547,6 +2041,13 @@ export type Database = {
             columns: ["customer_profile_id"]
             isOneToOne: false
             referencedRelation: "customer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_legal_snapshot_id_fkey"
+            columns: ["legal_snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "store_order_legal_snapshots"
             referencedColumns: ["id"]
           },
           {
@@ -1815,6 +2316,53 @@ export type Database = {
             columns: ["boutique_id"]
             isOneToOne: false
             referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_customization_dossiers: {
+        Row: {
+          created_at: string
+          id: string
+          merchant_config: Json
+          product_id: string
+          reviewed_at: string | null
+          submitted_at: string | null
+          supplier_comment: string | null
+          supplier_status: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          merchant_config?: Json
+          product_id: string
+          reviewed_at?: string | null
+          submitted_at?: string | null
+          supplier_comment?: string | null
+          supplier_status?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          merchant_config?: Json
+          product_id?: string
+          reviewed_at?: string | null
+          submitted_at?: string | null
+          supplier_comment?: string | null
+          supplier_status?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_customization_dossiers_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -2171,6 +2719,64 @@ export type Database = {
         }
         Relationships: []
       }
+      sav_escalation_events: {
+        Row: {
+          boutique_id: string
+          due_at: string
+          environment: string
+          escalated_at: string
+          insurance_verified_at: string
+          issue_id: string
+          merchant_id: string
+          order_id: string
+          reason: string
+        }
+        Insert: {
+          boutique_id: string
+          due_at: string
+          environment: string
+          escalated_at?: string
+          insurance_verified_at?: string
+          issue_id: string
+          merchant_id: string
+          order_id: string
+          reason?: string
+        }
+        Update: {
+          boutique_id?: string
+          due_at?: string
+          environment?: string
+          escalated_at?: string
+          insurance_verified_at?: string
+          issue_id?: string
+          merchant_id?: string
+          order_id?: string
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sav_escalation_events_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sav_escalation_events_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: true
+            referencedRelation: "order_issues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sav_escalation_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scene_events: {
         Row: {
           boutique_id: string
@@ -2241,6 +2847,129 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_restock_requests: {
+        Row: {
+          boutique_id: string
+          catalog_moq: number
+          created_at: string
+          id: string
+          note: string | null
+          product_id: string
+          requested_quantity: number
+          review_comment: string | null
+          reviewed_at: string | null
+          status: string
+          supplier_product_id: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          boutique_id: string
+          catalog_moq: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          product_id: string
+          requested_quantity: number
+          review_comment?: string | null
+          reviewed_at?: string | null
+          status?: string
+          supplier_product_id: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          boutique_id?: string
+          catalog_moq?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          product_id?: string
+          requested_quantity?: number
+          review_comment?: string | null
+          reviewed_at?: string | null
+          status?: string
+          supplier_product_id?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_restock_requests_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_restock_requests_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_restock_requests_supplier_product_id_fkey"
+            columns: ["supplier_product_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_order_legal_snapshots: {
+        Row: {
+          acceptance_statement: string
+          accepted_at: string
+          boutique_id: string
+          bundle: Json
+          bundle_hash: string
+          channel: string
+          checkout_key: string
+          customer_email: string
+          environment: string
+          evidence_events: Json
+          id: string
+          request_fingerprint: Json
+        }
+        Insert: {
+          acceptance_statement?: string
+          accepted_at?: string
+          boutique_id: string
+          bundle: Json
+          bundle_hash: string
+          channel?: string
+          checkout_key: string
+          customer_email: string
+          environment: string
+          evidence_events: Json
+          id?: string
+          request_fingerprint: Json
+        }
+        Update: {
+          acceptance_statement?: string
+          accepted_at?: string
+          boutique_id?: string
+          bundle?: Json
+          bundle_hash?: string
+          channel?: string
+          checkout_key?: string
+          customer_email?: string
+          environment?: string
+          evidence_events?: Json
+          id?: string
+          request_fingerprint?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_order_legal_snapshots_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
             referencedColumns: ["id"]
           },
         ]
@@ -2330,12 +3059,16 @@ export type Database = {
         Row: {
           acquisition_pricing: Json | null
           base_price: number
+          catalog_details: Json
           category: string
           created_at: string
+          customization_capabilities: Json
+          customization_terms: Json
           description: string | null
           id: string
           image_url: string | null
           intranet_id: string | null
+          intranet_source_updated_at: string | null
           is_active: boolean
           market: string
           max_margin_percent: number
@@ -2347,12 +3080,16 @@ export type Database = {
         Insert: {
           acquisition_pricing?: Json | null
           base_price: number
+          catalog_details?: Json
           category: string
           created_at?: string
+          customization_capabilities?: Json
+          customization_terms?: Json
           description?: string | null
           id?: string
           image_url?: string | null
           intranet_id?: string | null
+          intranet_source_updated_at?: string | null
           is_active?: boolean
           market?: string
           max_margin_percent?: number
@@ -2364,12 +3101,16 @@ export type Database = {
         Update: {
           acquisition_pricing?: Json | null
           base_price?: number
+          catalog_details?: Json
           category?: string
           created_at?: string
+          customization_capabilities?: Json
+          customization_terms?: Json
           description?: string | null
           id?: string
           image_url?: string | null
           intranet_id?: string | null
+          intranet_source_updated_at?: string | null
           is_active?: boolean
           market?: string
           max_margin_percent?: number
@@ -2377,6 +3118,63 @@ export type Database = {
           name?: string
           performance_history?: Json | null
           rotation_indicator?: Database["public"]["Enums"]["rotation_indicator"]
+        }
+        Relationships: []
+      }
+      supply_destination_routes: {
+        Row: {
+          account_id: string | null
+          enabled: boolean
+          entity_id: string
+          environment: string
+          evidence_reference: string
+          flow: string
+          model: string
+          tax_liability_approved: boolean
+          verified_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          enabled?: boolean
+          entity_id: string
+          environment: string
+          evidence_reference: string
+          flow: string
+          model?: string
+          tax_liability_approved?: boolean
+          verified_at: string
+        }
+        Update: {
+          account_id?: string | null
+          enabled?: boolean
+          entity_id?: string
+          environment?: string
+          evidence_reference?: string
+          flow?: string
+          model?: string
+          tax_liability_approved?: boolean
+          verified_at?: string
+        }
+        Relationships: []
+      }
+      supply_payment_configuration: {
+        Row: {
+          enabled: boolean
+          evidence_reference: string | null
+          platform_entity_id: string | null
+          singleton: boolean
+        }
+        Insert: {
+          enabled?: boolean
+          evidence_reference?: string | null
+          platform_entity_id?: string | null
+          singleton?: boolean
+        }
+        Update: {
+          enabled?: boolean
+          evidence_reference?: string | null
+          platform_entity_id?: string | null
+          singleton?: boolean
         }
         Relationships: []
       }
@@ -2625,6 +3423,52 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      adjust_merchant_supply_payment: {
+        Args: {
+          p_environment: string
+          p_event_id: string
+          p_evidence: Json
+          p_payment_intent_id: string
+          p_refunded_cents: number
+          p_state: string
+        }
+        Returns: boolean
+      }
+      apply_intranet_boutique_status: {
+        Args: { p_boutique_id: string; p_status: string }
+        Returns: string
+      }
+      apply_product_customization_review: {
+        Args: {
+          p_comment?: string
+          p_product_id: string
+          p_status: string
+          p_version: number
+        }
+        Returns: Json
+      }
+      apply_stock_restock_review: {
+        Args: {
+          p_comment?: string
+          p_request_id: string
+          p_status: string
+          p_version: number
+        }
+        Returns: Json
+      }
+      assign_order_shipment: {
+        Args: { p_order_id: string; p_submission_id: string }
+        Returns: string
+      }
+      attach_merchant_supply_session: {
+        Args: {
+          p_checkout_key: string
+          p_checkout_url: string
+          p_quote_id: string
+          p_session_id: string
+        }
+        Returns: undefined
+      }
       attach_product_stock_stripe_session: {
         Args: { p_checkout_key: string; p_stripe_session_id: string }
         Returns: number
@@ -2644,9 +3488,18 @@ export type Database = {
           views: number
         }[]
       }
+      calculate_catalog_acquisition_price: {
+        Args: { p: Json }
+        Returns: number
+      }
+      calculate_supply_quote: { Args: { p: Json }; Returns: Json }
       claim_guest_orders: {
         Args: { _customer_profile_id: string; _email: string }
         Returns: number
+      }
+      compose_store_legal_bundle: {
+        Args: { p_require_published?: boolean; p_store_id: string }
+        Returns: Json
       }
       confirm_product_stock_checkout: {
         Args: { p_stripe_session_id: string }
@@ -2671,6 +3524,19 @@ export type Database = {
         }
         Returns: string
       }
+      create_storefront_legal_orders: {
+        Args: {
+          p_accepted: boolean
+          p_bundle_hash: string
+          p_checkout_key: string
+          p_customer_email: string
+          p_customer_name: string
+          p_environment: string
+          p_lines: Json
+          p_store_id: string
+        }
+        Returns: Json
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -2679,6 +3545,20 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      escalate_unanswered_order_issues: {
+        Args: { p_environment?: string; p_limit?: number }
+        Returns: {
+          boutique_id: string
+          deadline_at: string
+          issue_id: string
+          merchant_id: string
+          order_id: string
+        }[]
+      }
+      fail_merchant_supply_checkout: {
+        Args: { p_environment: string; p_session_id: string }
+        Returns: undefined
       }
       finalize_order_issue_refund: {
         Args: {
@@ -2690,9 +3570,59 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_boutique_marketing_subscribers: {
+        Args: { p_boutique_id: string }
+        Returns: {
+          confirmed_at: string
+          email: string
+          expires_at: string
+          total_spent_cents: number
+        }[]
+      }
+      get_own_supply_payments: {
+        Args: { p_boutique_id: string }
+        Returns: Json
+      }
+      get_store_legal_bundle: { Args: { p_store_id: string }; Returns: Json }
+      get_storefront_destination_route: {
+        Args: { p_boutique_id: string; p_environment: string }
+        Returns: Json
+      }
+      get_supply_destination_route: {
+        Args: { p_entity_id: string; p_environment: string; p_flow: string }
+        Returns: Json
+      }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
+      }
+      import_legal_governance_record: {
+        Args: { p_environment: string; p_public_origin: string; p_record: Json }
+        Returns: string
+      }
+      legal_required_text: { Args: { k: string; p: Json }; Returns: string }
+      manage_marketing_subscription: {
+        Args: { p_action: string; p_token: string }
+        Returns: Json
+      }
+      marketing_campaign_recipients: {
+        Args: {
+          p_boutique_id: string
+          p_min_spent_cents?: number
+          p_subscription_id?: string
+        }
+        Returns: {
+          controller_name: string
+          email: string
+          full_name: string
+          public_origin: string
+          subscription_id: string
+          unsubscribe_token: string
+        }[]
+      }
+      marketing_subscription_context: {
+        Args: { p_boutique_id?: string; p_locale?: string }
+        Returns: Json
       }
       move_to_dlq: {
         Args: {
@@ -2726,6 +3656,7 @@ export type Database = {
         }[]
       }
       purge_expired_bib_talent_applications: { Args: never; Returns: number }
+      purge_expired_marketing_data: { Args: never; Returns: number }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
@@ -2734,9 +3665,30 @@ export type Database = {
           read_ct: number
         }[]
       }
+      read_store_legal_identity_for_review: {
+        Args: { p_store_id: string }
+        Returns: Json
+      }
       receive_product_stock: {
         Args: { p_product_id: string; p_quantity: number; p_receipt_id: string }
         Returns: number
+      }
+      record_marketing_consent_event: {
+        Args: {
+          p_action: string
+          p_request_id?: string
+          p_subscription_id: string
+        }
+        Returns: undefined
+      }
+      record_merchant_supply_payment: {
+        Args: {
+          p_environment: string
+          p_event_id: string
+          p_payment_intent: Json
+          p_session: Json
+        }
+        Returns: undefined
       }
       release_product_stock_checkout: {
         Args: { p_failure_status?: string; p_stripe_session_id: string }
@@ -2746,9 +3698,29 @@ export type Database = {
         Args: { p_checkout_key: string }
         Returns: number
       }
+      request_marketing_subscription: {
+        Args: {
+          p_accepted: boolean
+          p_boutique_id: string
+          p_email: string
+          p_locale: string
+          p_notice_hash: string
+        }
+        Returns: Json
+      }
       reserve_boutique_ai_generation: {
         Args: { p_boutique_id: string; p_user_id: string }
         Returns: boolean
+      }
+      reserve_merchant_supply_payment: {
+        Args: {
+          p_boutique_id: string
+          p_checkout_key: string
+          p_environment: string
+          p_merchant_id: string
+          p_quote: Json
+        }
+        Returns: Json
       }
       reserve_order_issue_refund: {
         Args: { p_amount_cents: number; p_issue_id: string; p_user_id: string }
@@ -2761,6 +3733,23 @@ export type Database = {
       reserve_support_ai_request: {
         Args: { p_kind: string; p_user_id: string }
         Returns: boolean
+      }
+      respond_to_order_issue: {
+        Args: {
+          p_action: Database["public"]["Enums"]["issue_action"]
+          p_issue_id: string
+          p_message?: string
+          p_new_status?: Database["public"]["Enums"]["issue_status"]
+        }
+        Returns: string
+      }
+      save_product_customization_draft: {
+        Args: {
+          p_config: Json
+          p_expected_version?: number
+          p_product_id: string
+        }
+        Returns: Json
       }
       scene_analytics_summary: {
         Args: { _boutique_id: string; _since?: string }
@@ -2776,6 +3765,19 @@ export type Database = {
           scene_type: string
         }[]
       }
+      store_legal_identity_fields: {
+        Args: { p_store_id: string }
+        Returns: Json
+      }
+      submit_product_customization: {
+        Args: { p_expected_version: number; p_product_id: string }
+        Returns: Json
+      }
+      supply_text: {
+        Args: { k: string; max_length?: number; p: Json }
+        Returns: string
+      }
+      supply_timestamp: { Args: { value: string }; Returns: string }
       track_order: {
         Args: { _customer_email: string; _order_number: string }
         Returns: {
@@ -2786,6 +3788,10 @@ export type Database = {
           order_number: string
           product_name: string
         }[]
+      }
+      track_order_legal_snapshot: {
+        Args: { _customer_email: string; _order_number: string }
+        Returns: Json
       }
       track_order_refund_status: {
         Args: { _customer_email: string; _order_number: string }
@@ -2798,6 +3804,28 @@ export type Database = {
         Args: { _customer_email: string; _order_number: string }
         Returns: Json
       }
+      update_assigned_shipment: {
+        Args: {
+          p_event_label?: string
+          p_order_number: string
+          p_patch: Json
+          p_status?: string
+          p_submission_id: string
+        }
+        Returns: string
+      }
+      validate_customization_configuration: {
+        Args: { p_caps: Json; p_config: Json }
+        Returns: undefined
+      }
+      validate_customization_metadata: {
+        Args: { p_caps: Json; p_details: Json; p_terms: Json }
+        Returns: undefined
+      }
+      validate_legal_governance_payload: {
+        Args: { kind: string; p: Json }
+        Returns: undefined
+      }
       validate_private_sale: {
         Args: { _access_code: string; _boutique_slug: string }
         Returns: {
@@ -2807,6 +3835,15 @@ export type Database = {
           id: string
           name: string
         }[]
+      }
+      verified_supply_sample: {
+        Args: {
+          p_boutique_id: string
+          p_catalog_id: string
+          p_environment: string
+          p_merchant_id: string
+        }
+        Returns: Json
       }
     }
     Enums: {
