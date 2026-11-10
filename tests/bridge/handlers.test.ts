@@ -163,7 +163,7 @@ describe("Privileged bridge import", () => {
     await load("intranet-import");
     for (const item of [
       product({ is_active: undefined }),
-      product({ intranet_id: undefined }),
+      product({ intranet_id: undefined, platform_id: id }),
       product({ source_updated_at: undefined }),
       product({ acquisition_pricing: undefined }),
     ]) {
