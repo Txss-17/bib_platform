@@ -97,6 +97,7 @@ describe("Privileged bridge import", () => {
     data: {
       intranet_id: id,
       source_updated_at: version,
+      is_active: true,
       name: "Produit",
       market: "EU",
       category: "Maison",
@@ -157,6 +158,27 @@ describe("Privileged bridge import", () => {
     await load("intranet-import");
     expect((await handler(request(product()))).status).toBe(503);
     expect(mocks.calls.some((c) => c.action === "insert")).toBe(false);
+  });
+  it("rejects incomplete active supplier publications before privileged DB access", async () => {
+    await load("intranet-import");
+    for (const item of [
+      product({ is_active: undefined }),
+      product({ intranet_id: undefined }),
+      product({ source_updated_at: undefined }),
+      product({ acquisition_pricing: undefined }),
+    ]) {
+      const response = await handler(request(item));
+      expect(response.status).toBe(412);
+    }
+    expect(mocks.calls).toHaveLength(0);
+  });
+  it("still permits explicit deactivation of an older product", async () => {
+    mocks.results.push(ok({id, intranet_id:id, intranet_source_updated_at:version}),ok({id}));
+    await load("intranet-import");
+    expect((await handler(request(product({
+      is_active:false, acquisition_pricing:undefined, source_updated_at:"2026-10-26T12:00:00Z",
+    })))).status).toBe(200);
+    expect(mocks.calls.find(c => c.action === "update").value.is_active).toBe(false);
   });
   it("blocks active legacy imports without an approved global price and derives the public total from approved components", async()=>{
     await load("intranet-import");
@@ -324,6 +346,17 @@ describe("Restock review bridge import", () => {
   });
 });
 
+describe("Partner portal identity guard", () => {
+  it("denies portal actions when the partner email has not been verified", async () => {
+    mocks.results.push(ok({id:other,portal:"suppliers",status:"approved",email_verified_at:null}));
+    await load("partner-portal-action");
+    const response=await handler(request({access_token:"test-operational-access-token",action:"create_event",kind:"catalog_draft",title:"test product"}));
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({error:"email_verification_required"});
+    expect(mocks.calls.some(c => c.table === "partner_portal_events")).toBe(false);
+  });
+});
+
 describe("Partner Ops portal", () => {
   const ops = (action: string, extra = {}) =>
     request({
@@ -332,7 +365,7 @@ describe("Partner Ops portal", () => {
       ...extra,
     });
   beforeEach(() => {
-    mocks.results.push(ok({ id: other, portal: "ops", status: "approved" }));
+    mocks.results.push(ok({ id: other, portal: "ops", status: "approved", email_verified_at: version }));
   });
   it.each(["list_orders", "get_order"])(
     "scopes %s to the partner's assigned live orders",
