@@ -207,30 +207,38 @@ Deno.serve(async (req) => {
   // An unavailable required source is an export failure, never an empty snapshot.
   const appsData = apps.data ?? [];
 
-  const err =
-    surveyRows.error ||
-    savRows.error ||
-    refundRows.error ||
-    restockRows.error ||
-    customizationRows.error ||
-    apps.error ||
-    b.error ||
-    o.error ||
-    t.error ||
-    subsRows.error ||
-    payRows.error ||
-    planRows.error ||
-    productFavorites.error ||
-    boutiqueFavorites.error ||
-    products.error;
-
-  if (err) {
-    return json(
-      {
-        error: err.message,
-      },
-      500,
-    );
+  const sourceFailures = [
+    ['prelaunch_survey_responses', surveyRows.error],
+    ['sav_escalation_events', savRows.error],
+    ['refunds', refundRows.error],
+    ['stock_restock_requests', restockRows.error],
+    ['product_customization_dossiers', customizationRows.error],
+    ['partner_onboarding_submissions', apps.error],
+    ['boutiques', b.error],
+    ['orders', o.error],
+    ['support_tickets', t.error],
+    ['subscriptions', subsRows.error],
+    ['payments', payRows.error],
+    ['plans', planRows.error],
+    ['customer_product_favorites', productFavorites.error],
+    ['customer_boutique_favorites', boutiqueFavorites.error],
+    ['products', products.error],
+  ].filter((item) => item[1] != null);
+  if (sourceFailures.length > 0) {
+    // A missing source table is a Platform deployment/configuration error.
+    // Never treat its rows as empty: Intranet would otherwise delete or
+    // replace previously complete snapshots of customer favourites.
+    console.error('intranet-export required Platform source unavailable',
+      sourceFailures.map(([source, error]) => ({
+        source,
+        code: (error as { code?: string } | null)?.code ?? 'unknown',
+      })));
+    return json({
+      error: 'platform_export_required_sources_unavailable',
+      source_tables: sourceFailures.map(([source]) => source),
+      source_app: 'bib_platform',
+      retryable: true,
+    }, 503);
   }
 
   // ============================================================
