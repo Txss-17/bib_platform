@@ -19,6 +19,7 @@ interface Body extends Record<string, unknown> {
     | "list_shipments" // ops: read shipment tracking rows
     | "shipment_update"
     | "list_audits"
+    | "list_supplier_references"
     | "accept_audit_quote";
   // create_event
   kind?: string;
@@ -81,7 +82,7 @@ Deno.serve(async (req) => {
   if (!sub.email_verified_at) return json({ error: "email_verification_required" }, 403);
 
   try {
-    if (body.action === "list_audits" || body.action === "accept_audit_quote") {
+    if (body.action === "list_audits" || body.action === "list_supplier_references" || body.action === "accept_audit_quote") {
       const result = await forwardSupplierAudit(body, sub, {
         url: Deno.env.get("BIB_INTRANET_AUDIT_PORTAL_URL"),
         secret: Deno.env.get("BIB_PLATFORM_BRIDGE_SECRET"),
