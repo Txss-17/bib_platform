@@ -71,13 +71,14 @@ Deno.serve(async (req) => {
 
   const { data: sub, error: subErr } = await supabase
     .from("partner_onboarding_submissions")
-    .select("id, portal, status, email_verified_at")
+    .select("id, portal, status, email_verified_at, operational_access_revoked_at")
     .eq("access_token", token)
     .gt("access_token_expires_at", new Date().toISOString())
     .maybeSingle();
 
   if (subErr || !sub) return json({ error: "not_found" }, 404);
   if (sub.status !== "approved") return json({ error: "not_approved" }, 403);
+  if (sub.operational_access_revoked_at) return json({ error: "operational_access_revoked" }, 403);
   // A stored access token is not proof of OTP-verified ownership. All portal
   // actions, not only audit quote acceptance, require verified recipient email.
   if (!sub.email_verified_at) return json({ error: "email_verification_required" }, 403);
