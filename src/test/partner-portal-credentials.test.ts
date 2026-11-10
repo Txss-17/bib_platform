@@ -28,6 +28,8 @@ describe("Partner bearer credential safety contracts", () => {
     expect(verify).toContain("const newToken = generateAccessToken()");
     expect(verify).not.toContain("existing.access_token ||");
     expect(verify).toContain("if (rotateError) return json(");
+    expect(verify).toContain(".is('consumed_at', null)");
+    expect(verify).toContain("if (claimError || !claimed) return json(");
   });
 
   it("limits operational read projections to approved OTP-verified partners", () => {
