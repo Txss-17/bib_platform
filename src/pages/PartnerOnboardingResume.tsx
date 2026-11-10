@@ -197,7 +197,11 @@ export default function PartnerOnboardingResume() {
       return;
     }
 
-    navigate(`/${portal}/portal/${response.access_token}`);
+    // Keep the verified bearer token out of URL history and referrer headers.
+    navigate(`/${portal}/dossier`, {
+      replace: true,
+      state: { portal, accessToken: response.access_token },
+    });
   }
 
   return (
