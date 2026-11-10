@@ -12,6 +12,7 @@ const GATEWAY = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
 // Outbound abuse bounds: a verified seller can only reach its own consented
 // audience, a limited number of times per day, from a published boutique.
 const MAX_CAMPAIGNS_PER_DAY = 3;
+const SENT_CAMPAIGN_STATUSES = ["sending", "sent", "failed"];
 const MAX_TEST_SENDS_PER_DAY = 10;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -239,7 +240,9 @@ Deno.serve(async (req) => {
 
     const { count: campaignCount, error: campaignCountErr } = await admin.from("marketing_campaigns")
       .select("id", { count: "exact", head: true })
-      .eq("boutique_id", boutique_id).gte("created_at", since);
+      .eq("boutique_id", boutique_id).gte("created_at", since)
+      // Only campaigns that actually went out count: drafts and scheduled rows are not sends.
+      .in("status", SENT_CAMPAIGN_STATUSES);
     if (campaignCountErr || (campaignCount ?? 0) >= MAX_CAMPAIGNS_PER_DAY) {
       return new Response(JSON.stringify({ error: "campaign_quota_reached" }), {
         status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   from: vi.fn(),
   send: vi.fn(),
   writes: [] as unknown[],
+  filters: [] as unknown[],
 }));
 vi.mock("npm:@supabase/supabase-js@2", () => ({
   createClient: mocks.createClient,
@@ -43,6 +44,7 @@ beforeEach(async () => {
   vi.resetModules();
   vi.clearAllMocks();
   mocks.writes = [];
+  mocks.filters = [];
   vi.stubGlobal("Deno", {
     env: {
       get: (name: string) =>
@@ -82,6 +84,10 @@ beforeEach(async () => {
       eq: () => builder,
       like: () => builder,
       gte: () => builder,
+      in: (column: string, values: unknown[]) => {
+        mocks.filters.push([table, "in", column, values]);
+        return builder;
+      },
       maybeSingle: async () => ({ data, error: null }),
       single: async () => ({ data, error: null }),
       insert: (value: unknown) => {
@@ -174,5 +180,14 @@ describe("campaign consent enforcement", () => {
     expect(mocks.rpc).not.toHaveBeenCalled();
     expect(message()).toContain("Aucun abonnement créé");
     expect(message()).not.toContain("List-Unsubscribe:");
+  });
+  it("the daily campaign limit counts only campaigns that were sent, never drafts or scheduled ones", async () => {
+    expect((await handler(request())).status).toBe(200);
+    expect(mocks.filters).toContainEqual([
+      "marketing_campaigns",
+      "in",
+      "status",
+      ["sending", "sent", "failed"],
+    ]);
   });
 });
