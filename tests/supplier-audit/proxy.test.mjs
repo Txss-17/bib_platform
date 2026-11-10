@@ -136,3 +136,24 @@ test("remote SQL errors and network failures are not exposed or converted to suc
   });
   assert.equal(r.status, 503);
 });
+
+test("latest SKU decisions are fetched using only the verified supplier submission", async () => {
+  let sent;
+  const result=await forwardSupplierAudit(
+    {action:"list_supplier_references",submission_id:"forged",supplier_id:"forged"},
+    submission,{url,secret,fetcher:async (_url,opts)=>{
+      sent=JSON.parse(opts.body);
+      return new Response(JSON.stringify({references:[{reference:"SKU-1",decision:"admitted",case_id:"case",decided_at:"2026-11-10T00:00:00Z"}]}));
+    }}
+  );
+  assert.equal(result.status,200);
+  assert.deepEqual(sent,{schema_version:1,submission_id:submission.id,action:"list_references"});
+  assert.equal(result.body.references.length,1);
+  assert.equal(JSON.stringify(result).includes("forged"),false);
+});
+test("malformed latest decisions response fails closed",async()=>{
+  const r=await forwardSupplierAudit({action:"list_supplier_references"},submission,{
+    url,secret,fetcher:async()=>new Response(JSON.stringify({cases:[]}))
+  });
+  assert.equal(r.status,503);
+});
