@@ -79,3 +79,15 @@ Sorties limitées à SKU, décision `admitted/refused/correction_required`, doss
 Sur la demande OTP existante, Platform refuse maintenant de retourner un succès si le service de courriel transactionnel renvoie un statut d'erreur ou si l'appel réseau échoue. Un enregistrement OTP peut exister dans ce cas ; il doit expirer selon le délai configuré et n'est **pas** une preuve de remise. Le contrôle ne prouve pas que le message a été effectivement délivré dans la boîte de réception : il prouve uniquement l'acceptation de la requête par le service d'envoi.
 
 La véritable invitation post-contrat reste un lot distinct : émission uniquement après dossier signé et visa Intranet, lien public vers le parcours OTP, preuve d'émission/acheminement, idempotence, session révocable et interdiction de placer un jeton de dossier dans l'URL. La route héritée `/:portal/portal/:token` demeure un risque à résorber avant activation d'accès réels ; ce correctif ne la présente pas comme sûre.
+
+## Sécurisation incrémentale du portail partenaire (PR #48)
+
+- Le RPC opérationnel n'expose plus l'enregistrement brut du dossier partenaire. Une migration additive (non exécutée) limite la réponse aux champs nécessaires et impose un statut `approved` avec email vérifié. Le jeton, les pièces KYC et les notes internes sont volontairement absents.
+- Après OTP, la reprise d'onboarding utilise désormais la route sans identifiant `/{suppliers|ops}/dossier` avec passage de la preuve de session dans l'état de navigation ; les anciennes routes `/portal/:token` renvoient vers la vérification OTP. C'est une réduction des fuites via URL/referrer, **pas** encore une session serveur à expiration.
+- Les confirmations de candidature ne construisent plus de liens contenant le jeton de dossier et ne reprennent plus un en-tête Origin non fiable ; le lien mène à la reprise OTP sur le domaine BIB.
+- La vérification OTP remplace le jeton du dossier après chaque login, et la consommation du code utilise une écriture conditionnelle atomique pour refuser un deuxième usage.
+- Tests de non-régression ajoutés pour les chemins URL sans jeton, la projection SQL, la rotation et l'usage unique.
+
+### Blocages restant avant mise en service
+
+Ces changements, bien que renforçant la sécurité, **ne satisfont pas** encore l'issue #41 : la table de dossier conserve un jeton bearer persistant, la durée de vie et la révocation des sessions ne sont pas modélisées indépendamment, les invitations ne sont pas déclenchées par une décision de contrat signé authentifiée par Intranet, et la permission opérationnelle ne distingue pas encore les rôles documentaires, SKU et commandes live. Les parcours existants doivent être testés en préproduction, avec plan de reprise des liens hérités et retrait des tokens stockés dans les journaux historiques. L'administrateur doit décider du basculement après recette et sans invalider silencieusement des comptes légitimes.
