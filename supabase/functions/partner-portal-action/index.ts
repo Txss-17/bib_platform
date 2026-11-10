@@ -76,6 +76,9 @@ Deno.serve(async (req) => {
 
   if (subErr || !sub) return json({ error: "not_found" }, 404);
   if (sub.status !== "approved") return json({ error: "not_approved" }, 403);
+  // A stored access token is not proof of OTP-verified ownership. All portal
+  // actions, not only audit quote acceptance, require verified recipient email.
+  if (!sub.email_verified_at) return json({ error: "email_verification_required" }, 403);
 
   try {
     if (body.action === "list_audits" || body.action === "accept_audit_quote") {
