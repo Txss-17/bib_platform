@@ -55,3 +55,9 @@
 ## Politique de livraison
 
 La validation de Direction **fige les choix métier**, mais ne vaut pas permission d'exécuter des migrations irréversibles, de faire circuler des paiements réels, de publier des données partenaires ni d'attester une conformité réglementaire non vérifiée. Maintenir les travaux en PR jusqu'aux contrôles de préproduction, puis enregistrer la décision Go/No-Go et les preuves.
+
+## Correctif supplémentaire dans la PR #48 — garde du récepteur catalogue
+
+Le récepteur `intranet-import` n'autorise plus l'activation implicite d'un produit si `is_active` manque. Toute opération d'activation doit maintenant transporter : (1) `is_active=true` explicite, (2) un UUID canonique du produit Intranet, (3) un horodatage de version source et (4) une enveloppe de prix global approuvée. La désactivation `is_active=false` reste possible pour retirer une offre même depuis un ancien expéditeur ; les protections de provenance et d'environnement continuent de s'appliquer. Six tests de régression ciblés couvrent ces règles.
+
+**Limite importante :** ces champs d'import ne démontrent pas eux-mêmes la décision d'admission Audit. Cette décision est contrôlée en amont par `loadAdmittedSupplierProduct` (Intranet), qui appelle `get_supplier_reference_admission`. La preuve connectée, l'anti-rejeu et la cohérence entre les deux systèmes doivent encore être vérifiés, notamment sur l'issue #40. Une ligne active préexistante sans provenance vérifiée ne devient pas admise du seul fait de cette correction. Le récepteur ne doit pas être déployé isolément sans test de compatibilité du producteur et de non-régression sur les désactivations.
