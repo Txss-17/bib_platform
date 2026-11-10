@@ -29,7 +29,7 @@ export async function forwardSupplierAudit(
   const payload = {
     schema_version: 1,
     submission_id: submission.id,
-    action: body.action === "list_audits" ? "list" : "accept",
+    action: body.action === "list_supplier_references" ? "list_references" : body.action === "list_audits" ? "list" : "accept",
   };
   if (body.action === "accept_audit_quote") {
     if (
@@ -52,7 +52,7 @@ export async function forwardSupplierAudit(
       quote_hash: body.quote_hash,
       signatory: body.signatory.trim(),
     });
-  } else if (body.action !== "list_audits")
+  } else if (!["list_audits", "list_supplier_references"].includes(body.action))
     return { status: 400, body: { error: "invalid_audit_action" } };
   try {
     const response = await fetcher(target.toString(), {
@@ -77,6 +77,10 @@ export async function forwardSupplierAudit(
         },
       };
     const data = await response.json();
+    if (body.action === "list_supplier_references") {
+      if (!data || !Array.isArray(data.references)) throw new Error("invalid_reference_response");
+      return { status: 200, body: { ok: true, references: data.references } };
+    }
     if (!data || !Array.isArray(data.cases))
       throw new Error("invalid_response");
     return { status: 200, body: { ok: true, cases: data.cases } };
