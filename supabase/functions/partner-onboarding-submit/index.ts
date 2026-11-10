@@ -135,8 +135,9 @@ Deno.serve(async (req) => {
   })
 
   // Confirmation email to the partner
-  const origin = req.headers.get('origin') ?? 'https://brand-in-a-box.space'
-  const portalUrl = `${origin}/${sub.portal}/portal/${access_token}`
+  // Never include bearer credentials or a request-controlled Origin in email
+  // links. Resuming a dossier always requires a fresh mailbox OTP.
+  const portalUrl = `https://brand-in-a-box.space/${sub.portal}/resume?portal=${sub.portal}`
   try {
     await fetch(`${SUPABASE_URL}/functions/v1/send-transactional-email`, {
       method: 'POST',
