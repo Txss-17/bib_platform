@@ -225,7 +225,7 @@ describe("Privileged bridge import", () => {
     await load("intranet-import");
     expect(
       (await handler(request(product({ source_updated_at: null })))).status,
-    ).toBe(409);
+    ).toBe(412);
   });
   it("refuses a lost optimistic update instead of claiming success", async () => {
     mocks.results.push(
