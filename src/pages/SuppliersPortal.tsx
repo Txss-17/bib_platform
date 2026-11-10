@@ -695,8 +695,9 @@ export default function SuppliersPortal() {
                 />
               </div>
               <p className="text-xs text-muted-foreground mt-4">
-                {translateUi(
+                {tx(
                   "Indicateurs d'activité du portail uniquement : une proposition traitée ne prouve ni l'admission d'une référence ni sa publication. Les documents contractuels et financiers restent distincts.",
+                  "Portal activity indicators only: a processed proposal does not establish admission or publication of any SKU. Contractual and financial documents remain separate.",
                 )}
               </p>
             </Card>
