@@ -107,3 +107,9 @@ Le blocage pour un pilotage entièrement automatisé est la liaison canonique de
 Le lot Platform ajoute la migration `20261111001000_partner_operational_revocation.sql` : un indicateur `operational_access_revoked_at`, une fonction `revoke_partner_portal_operations` accessible au rôle de service uniquement, et un journal append-only des motifs de révocation. Le RPC opérationnel et les actions Edge refusent l'accès révoqué, y compris lorsqu'un jeton OTP reste valide. La candidature et ses documents ne sont pas effacés par cette suspension. Les tests couvrent le refus de l'accès serveur.
 
 **Limite :** le circuit de décision Intranet n'appelle pas encore cette fonction de révocation par une passerelle authentifiée et idempotente. Une intégration explicite doit associer les dossiers et confirmer le statut contractuel et les droits réellement accordés avant toute activation live. Les opérations préproduction et production restent bloquées par le Go/No-Go. Les tests automatisés ne sont pas une preuve de livraison d'e-mail ni de statut contractuel d'un partenaire réel.
+
+### Résilience du parcours OTP
+
+Après inspection des derniers échecs CI, le simulateur du bridge a été corrigé pour prendre en charge le filtre d'expiration `gt` de Supabase. La limitation des demandes OTP échoue désormais fermée si son décompte SQL est indisponible, et la vérification refuse de continuer si la recherche du code ou l'enregistrement du compteur de tentatives échoue ou entre en conflit. L'usage unique et la rotation du jeton restent requis. Ces gardes ont des tests de non-régression dédiés.
+
+**État de la recette** : tests code/CI à confirmer à la dernière révision ; la couverture anglaise complète de l'interface reste un défaut distinct et n'est pas considérée comme validée. Aucun envoi d'invitation externe, aucune migration distante.
