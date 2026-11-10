@@ -38,7 +38,7 @@ describe("Partner bearer credential safety contracts", () => {
     const submit = source("supabase/functions/partner-onboarding-submit/index.ts");
     const portalAction = source("supabase/functions/partner-portal-action/index.ts");
     expect(migration).toContain("ADD COLUMN IF NOT EXISTS access_token_expires_at");
-    expect((migration.match(/access_token_expires_at > now\\(\\)/g) ?? []).length).toBe(3);
+    expect((migration.match(/access_token_expires_at > now\(\)/g) ?? []).length).toBe(3);
     expect((verify.match(/access_token_expires_at:/g) ?? []).length).toBe(2);
     expect(submit).toContain(".gt('access_token_expires_at', new Date().toISOString())");
     expect(portalAction).toContain('.gt("access_token_expires_at", new Date().toISOString())');
