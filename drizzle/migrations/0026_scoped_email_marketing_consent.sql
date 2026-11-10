@@ -14,8 +14,13 @@ CREATE TABLE public.marketing_service_configuration (
 );
 INSERT INTO public.marketing_service_configuration(singleton) VALUES(true);
 -- The old anonymous CRM insert is not the subscription endpoint anymore.
-DROP POLICY IF EXISTS "Anon can insert newsletter signup on published boutique" ON public.boutique_customers;
-REVOKE INSERT ON public.boutique_customers FROM anon;
+-- Guarded: the legacy CRM table is absent from some environments.
+DO $guard$ BEGIN
+ IF to_regclass('public.boutique_customers') IS NOT NULL THEN
+  EXECUTE 'DROP POLICY IF EXISTS "Anon can insert newsletter signup on published boutique" ON public.boutique_customers';
+  EXECUTE 'REVOKE INSERT ON public.boutique_customers FROM anon';
+ END IF;
+END $guard$;
 
 CREATE TABLE public.marketing_subscriptions (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
