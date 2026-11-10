@@ -12,6 +12,7 @@ import {
   Route,
   Routes,
   useParams,
+  useLocation,
 } from "react-router-dom";
 
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -242,14 +243,15 @@ function RootPage() {
 ===================================================== */
 
 function PartnerPortalRoute({ portal }: { portal: "suppliers" | "ops" }) {
-  const { token = "" } = useParams();
-
-  const config =
-    portal === "suppliers" ? suppliersOnboardingConfig : opsOnboardingConfig;
-
-  return (
-    <PartnerOnboardingPortal portal={portal} token={token} config={config} />
-  );
+  // OTP grants access only to this navigation. Never serialize bearer tokens
+  // into a browser-visible URL, query string, or outbound referrer.
+  const location = useLocation();
+  const state = location.state as { accessToken?: unknown; portal?: unknown } | null;
+  const token = state?.portal === portal && typeof state.accessToken === "string"
+    && /^[a-f0-9]{48}$/i.test(state.accessToken) ? state.accessToken : "";
+  const config = portal === "suppliers" ? suppliersOnboardingConfig : opsOnboardingConfig;
+  if (!token) return <Navigate to={`/${portal}/resume?portal=${portal}`} replace />;
+  return <PartnerOnboardingPortal portal={portal} token={token} config={config} />;
 }
 
 /* =====================================================
@@ -385,9 +387,11 @@ export default function App() {
                       element={<SuppliersPortal />}
                     />
 
+                    <Route path="/suppliers/dossier" element={<PartnerPortalRoute portal="suppliers" />} />
+
                     <Route
                       path="/suppliers/portal/:token"
-                      element={<PartnerPortalRoute portal="suppliers" />}
+                      element={<Navigate to="/suppliers/resume?portal=suppliers" replace />}
                     />
 
                     {/* =================================================
@@ -430,9 +434,11 @@ export default function App() {
 
                     <Route path="/ops/portal" element={<OpsPortal />} />
 
+                    <Route path="/ops/dossier" element={<PartnerPortalRoute portal="ops" />} />
+
                     <Route
                       path="/ops/portal/:token"
-                      element={<PartnerPortalRoute portal="ops" />}
+                      element={<Navigate to="/ops/resume?portal=ops" replace />}
                     />
 
                     {/* =================================================
