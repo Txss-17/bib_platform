@@ -43,6 +43,13 @@ type Case = {
   reference_decisions: { reference: string; decision: string }[] | null;
 };
 
+type ReferenceDecision = {
+  reference: string;
+  decision: "admitted" | "refused" | "correction_required";
+  case_id: string;
+  decided_at: string;
+};
+
 export default function SupplierAuditPortal({
   token,
   submissionId,
@@ -82,6 +89,20 @@ export default function SupplierAuditPortal({
     staleTime: 30000,
     retry: 1,
   });
+  const decisions = useQuery({
+    queryKey: ["supplier-current-sku-decisions", submissionId],
+    queryFn: async (): Promise<ReferenceDecision[]> => {
+      const { data, error } = await supabase.functions.invoke("partner-portal-action", {
+        body: { action: "list_supplier_references", access_token: token },
+      });
+      if (error || !data?.ok || !Array.isArray(data.references))
+        throw new Error(tx("Décisions indisponibles", "Decisions unavailable"));
+      return data.references as ReferenceDecision[];
+    },
+    enabled: !!token,
+    staleTime: 30_000,
+    retry: 1,
+  });
   const acceptance = useMutation({
     mutationFn: async (c: Case) => {
       if (
@@ -112,6 +133,7 @@ export default function SupplierAuditPortal({
     },
     onSuccess: () => {
       void query.refetch();
+      void decisions.refetch();
       setAgreed({});
     },
     onError: () => {
@@ -145,6 +167,25 @@ export default function SupplierAuditPortal({
           {tx("Actualiser", "Refresh")}
         </Button>
       </div>
+      <section className="space-y-3 rounded-md border p-3" aria-label={tx("Décisions de référencement", "Listing decisions")}>
+        <h4 className="font-medium">{tx("Références et décisions actuelles", "References and current decisions")}</h4>
+        <p className="text-xs text-muted-foreground">
+          {tx("Décisions Audit les plus récentes pour vos références. Une admission ne constitue pas une publication commerciale ; seules les informations communicables sont affichées.",
+          "Latest Audit decisions for your references. Admission does not constitute commercial publication; only shareable information is shown.")}
+        </p>
+        <Button size="sm" variant="outline" disabled={decisions.isFetching} onClick={() => void decisions.refetch()}>{tx("Actualiser les décisions", "Refresh decisions")}</Button>
+        {decisions.isLoading && <p role="status">{tx("Chargement des décisions…", "Loading decisions…")}</p>}
+        {decisions.isError && <p role="alert" className="text-sm text-destructive">{tx("Décisions indisponibles. Aucun produit ne peut être considéré comme admis sur cette base.", "Decisions unavailable. No product can be considered admitted on this basis.")}</p>}
+        {decisions.isSuccess && decisions.data.length === 0 && <p className="text-sm text-muted-foreground">{tx("Aucune décision finale de référencement communiquée.", "No final listing decision available.")}</p>}
+        {decisions.isSuccess && decisions.data.map(d => (
+          <div key={d.reference} className="flex flex-wrap items-center justify-between gap-2 border-t pt-2 text-sm">
+            <div><strong>{d.reference}</strong><p className="text-xs text-muted-foreground">{new Date(d.decided_at).toLocaleDateString(en ? "en-GB" : "fr-FR")}</p></div>
+            <Badge variant={d.decision === "admitted" ? "default" : d.decision === "refused" ? "destructive" : "outline"}>
+              {d.decision === "admitted" ? tx("Admise", "Admitted") : d.decision === "refused" ? tx("Refusée", "Refused") : tx("Compléments requis", "Corrections required")}
+            </Badge>
+          </div>
+        ))}
+      </section>
       {query.isLoading && <p role="status">{tx("Chargement…", "Loading…")}</p>}
       {query.isError && (
         <p role="alert" className="text-sm text-muted-foreground">
@@ -336,6 +377,7 @@ export default function SupplierAuditPortal({
               </p>
             </section>
           )}
+          {c.reference_decisions?.length ? <p className="text-xs text-muted-foreground">{tx("Historique de ce rapport (ne reflète pas nécessairement la décision actuelle)", "Decision history for this report (may not reflect the current decision)")}</p> : null}
           {c.reference_decisions?.map((d) => (
             <p className="text-sm" key={d.reference}>
               {d.reference} :{" "}
