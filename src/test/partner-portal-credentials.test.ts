@@ -32,6 +32,18 @@ describe("Partner bearer credential safety contracts", () => {
     expect(verify).toContain("if (claimError || !claimed) return json(");
   });
 
+  it("expires dossier bearers through all SQL and Edge Function authorization paths", () => {
+    const migration = source("supabase/migrations/20261110225500_partner_dossier_bearer_expiration.sql");
+    const verify = source("supabase/functions/partner-otp-verify/index.ts");
+    const submit = source("supabase/functions/partner-onboarding-submit/index.ts");
+    const portalAction = source("supabase/functions/partner-portal-action/index.ts");
+    expect(migration).toContain("ADD COLUMN IF NOT EXISTS access_token_expires_at");
+    expect((migration.match(/access_token_expires_at > now\\(\\)/g) ?? []).length).toBe(3);
+    expect((verify.match(/access_token_expires_at:/g) ?? []).length).toBe(2);
+    expect(submit).toContain(".gt('access_token_expires_at', new Date().toISOString())");
+    expect(portalAction).toContain('.gt("access_token_expires_at", new Date().toISOString())');
+  });
+
   it("limits operational read projections to approved OTP-verified partners", () => {
     const migration = source("supabase/migrations/20261110224500_partner_operational_portal_minimal_projection.sql");
     expect(migration).toContain("email_verified_at IS NOT NULL");
