@@ -2,7 +2,6 @@
 -- is an operational escalation only; it does not transfer statutory liability.
 -- Requires 0008_secure_order_issue_creation, 0012_order_issue_refunds,
 -- plan insurance subscription metadata and the existing issue tables.
-BEGIN;
 
 CREATE TABLE public.sav_escalation_events (
  issue_id uuid PRIMARY KEY REFERENCES public.order_issues(id) ON DELETE RESTRICT,
@@ -144,4 +143,3 @@ REVOKE ALL ON FUNCTION public.escalate_unanswered_order_issues(integer,text)
  FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.escalate_unanswered_order_issues(integer,text)
  TO service_role;
-COMMIT;
