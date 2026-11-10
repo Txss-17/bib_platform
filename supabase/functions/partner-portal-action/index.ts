@@ -110,18 +110,34 @@ Deno.serve(async (req) => {
     }
 
     if (body.action === "update_event_status") {
-      if (!body.event_id) return json({ error: "missing_event_id" }, 400);
-      if (
-        !body.status ||
-        !["in_progress", "resolved", "rejected"].includes(body.status)
-      )
+      if (!body.event_id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.event_id))
+        return json({ error: "invalid_event_id" }, 400);
+      if (!body.status || !["in_progress", "resolved", "rejected"].includes(body.status))
         return json({ error: "invalid_status" }, 400);
+      // A partner may report fulfilment, but must never validate its own
+      // catalogue proposal or a decision belonging to Audit/Intranet.
+      const { data: event, error: lookupError } = await supabase
+        .from("partner_portal_events")
+        .select("id, kind")
+        .eq("id", body.event_id)
+        .eq("submission_id", sub.id)
+        .eq("portal", sub.portal)
+        .maybeSingle();
+      if (lookupError) return json({ error: "event_lookup_failed" }, 503);
+      if (!event) return json({ error: "event_not_found" }, 404);
+      const allowed = sub.portal === "suppliers"
+        ? ["moq_request", "delivery_update"]
+        : ["delivery_update", "return_logged"];
+      if (!allowed.includes(event.kind))
+        return json({ error: "event_review_requires_intranet" }, 403);
       const { error } = await supabase
         .from("partner_portal_events")
         .update({ status: body.status })
-        .eq("id", body.event_id)
-        .eq("submission_id", sub.id);
-      if (error) return json({ error: error.message }, 500);
+        .eq("id", event.id)
+        .eq("submission_id", sub.id)
+        .eq("portal", sub.portal)
+        .eq("kind", event.kind);
+      if (error) return json({ error: "event_update_failed" }, 503);
       return json({ ok: true });
     }
 
