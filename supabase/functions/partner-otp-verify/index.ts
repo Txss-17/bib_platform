@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
   const code_hash = await sha256Hex(`${email}:${portal}:${code}`)
 
   // Find most recent unconsumed OTP for this email/portal
-  const { data: otp } = await supabase
+  const { data: otp, error: otpLookupError } = await supabase
     .from('partner_email_otps')
     .select('id, code_hash, expires_at, attempts, consumed_at')
     .eq('email', email)
@@ -50,15 +50,21 @@ Deno.serve(async (req) => {
     .limit(1)
     .maybeSingle()
 
+  if (otpLookupError) return json({ error: 'otp_verification_unavailable' }, 503)
   if (!otp) return json({ error: 'no_pending_code' }, 400)
   if (new Date(otp.expires_at).getTime() < Date.now()) return json({ error: 'expired' }, 400)
   if (otp.attempts >= 5) return json({ error: 'too_many_attempts' }, 429)
 
   if (otp.code_hash !== code_hash) {
-    await supabase
+    const { data: attemptUpdated, error: attemptError } = await supabase
       .from('partner_email_otps')
       .update({ attempts: otp.attempts + 1 })
       .eq('id', otp.id)
+      .eq('attempts', otp.attempts)
+      .is('consumed_at', null)
+      .select('id')
+      .maybeSingle()
+    if (attemptError || !attemptUpdated) return json({ error: 'otp_verification_unavailable' }, 503)
     return json({ error: 'invalid_code', attempts_remaining: 4 - otp.attempts }, 400)
   }
 
