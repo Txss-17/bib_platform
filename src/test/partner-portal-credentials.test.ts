@@ -54,6 +54,15 @@ describe("Partner bearer credential safety contracts", () => {
     expect(action).toContain("if (sub.operational_access_revoked_at)");
   });
 
+  it("fails closed when OTP rate limits or attempt counters cannot be persisted", () => {
+    const request = source("supabase/functions/partner-otp-request/index.ts");
+    const verify = source("supabase/functions/partner-otp-verify/index.ts");
+    expect(request).toContain("if (rateLimitError || count === null)");
+    expect(verify).toContain("if (otpLookupError)");
+    expect(verify).toContain(".eq('attempts', otp.attempts)");
+    expect(verify).toContain("if (attemptError || !attemptUpdated)");
+  });
+
   it("limits operational read projections to approved OTP-verified partners", () => {
     const migration = source("supabase/migrations/20261110224500_partner_operational_portal_minimal_projection.sql");
     expect(migration).toContain("email_verified_at IS NOT NULL");
