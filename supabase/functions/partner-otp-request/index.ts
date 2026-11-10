@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
 
   // Fire the transactional email through the existing pipeline.
   try {
-    await fetch(`${SUPABASE_URL}/functions/v1/send-transactional-email`, {
+    const delivery = await fetch(`${SUPABASE_URL}/functions/v1/send-transactional-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -75,9 +75,10 @@ Deno.serve(async (req) => {
         templateData: { code, portal: portal === 'suppliers' ? 'fournisseur' : 'logistique', minutes: 10 },
       }),
     })
-  } catch (e) {
-    console.error('OTP email enqueue failed', e)
-    // Don't leak failure to client — the row exists and we still want them to retry.
+    if (!delivery.ok) return json({ error: 'otp_delivery_unavailable' }, 503)
+  } catch {
+    // Never claim that an OTP was sent when the provider could not accept it.
+    return json({ error: 'otp_delivery_unavailable' }, 503)
   }
 
   return json({ ok: true, expires_in_seconds: 600 }, 200)
