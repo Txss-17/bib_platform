@@ -40,13 +40,15 @@ Deno.serve(async (req) => {
   const supabase = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } })
 
   // Rate limit : max 3 OTP requests per email/portal per 60s
-  const { count } = await supabase
+  const { count, error: rateLimitError } = await supabase
     .from('partner_email_otps')
     .select('id', { count: 'exact', head: true })
     .eq('email', email)
     .eq('portal', portal)
     .gte('created_at', new Date(Date.now() - 60_000).toISOString())
-  if ((count ?? 0) >= 3) return json({ error: 'rate_limited', retry_after_seconds: 60 }, 429)
+  // A database outage must never silently disable OTP abuse prevention.
+  if (rateLimitError || count === null) return json({ error: 'otp_rate_limit_unavailable' }, 503)
+  if (count >= 3) return json({ error: 'rate_limited', retry_after_seconds: 60 }, 429)
 
   const code = generateOtp()
   const code_hash = await sha256Hex(`${email}:${portal}:${code}`)
