@@ -31,7 +31,7 @@ const docs = [
       );
     },
     href: "/mentions-legales",
-    points: ["Éditeur & SIRET", "Hébergement", "Propriété intellectuelle"],
+    get points() { return [translateUi("Éditeur & SIRET"), translateUi("Hébergement"), translateUi("Propriété intellectuelle")]; },
   },
   {
     icon: ScrollText,
@@ -47,7 +47,7 @@ const docs = [
       );
     },
     href: "/cgu",
-    points: ["Création de compte 18+", "Services & tarifs", "Résiliation"],
+    get points() { return [translateUi("Création de compte 18+"), translateUi("Services & tarifs"), translateUi("Résiliation")]; },
   },
   {
     icon: ScrollText,
@@ -61,7 +61,7 @@ const docs = [
       return translateUi("Présentation générale des ventes et garanties. Les CGV applicables à une commande sont celles de la boutique, générées pour le vendeur juridiquement identifié et présentées avant paiement.");
     },
     href: "/cgv",
-    points: ["CGV de la boutique", "Vendeur identifié", "Rétractation et garanties"],
+    get points() { return [translateUi("CGV de la boutique"), translateUi("Vendeur identifié"), translateUi("Rétractation et garanties")]; },
   },
   {
     icon: ShieldCheck,
@@ -75,7 +75,7 @@ const docs = [
       );
     },
     href: "/confidentialite",
-    points: ["Données collectées", "Vos droits RGPD", "Sous-traitants"],
+    get points() { return [translateUi("Données collectées"), translateUi("Vos droits RGPD"), translateUi("Sous-traitants")]; },
   },
   {
     icon: ClipboardCheck,
@@ -83,7 +83,7 @@ const docs = [
     get title() { return translateUi("Données et consentements"); },
     get desc() { return translateUi("Parcours par parcours : comptes, commandes, BIB Talent, sondage, assistance IA, communications et publicités."); },
     href: "/donnees-et-consentements",
-    points: ["Consentement et bases légales", "Destinataires", "Choix et retrait"],
+    get points() { return [translateUi("Consentement et bases légales"), translateUi("Destinataires"), translateUi("Choix et retrait")]; },
   },
   {
     icon: BriefcaseBusiness,
@@ -91,7 +91,7 @@ const docs = [
     get title() { return translateUi("Annexe de traitement des données"); },
     get desc() { return translateUi("Projet d'accord entre BIB et les marchands pour protéger les données clients des boutiques ; à valider avant signature."); },
     href: "/annexe-donnees-marchands",
-    points: ["Responsabilités RGPD", "Sécurité et transferts", "Projet non signé"],
+    get points() { return [translateUi("Responsabilités RGPD"), translateUi("Sécurité et transferts"), translateUi("Projet non signé")]; },
   },
   {
     icon: Cookie,
@@ -107,7 +107,7 @@ const docs = [
       );
     },
     href: "/cookies",
-    points: ["Essentiels", "Préférences", "Mesure d'audience"],
+    get points() { return [translateUi("Essentiels"), translateUi("Préférences"), translateUi("Mesure d'audience")]; },
   },
 ];
 
@@ -192,7 +192,7 @@ export default function PackLegal() {
                       className="text-xs text-muted-foreground flex items-center gap-2"
                     >
                       <span className="h-1 w-1 rounded-full bg-bib-gold" />
-                      {translateUi(p)}
+                      {p}
                     </li>
                   ))}
                 </ul>
