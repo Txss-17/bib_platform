@@ -44,6 +44,7 @@ Deno.serve(async (req) => {
     .select('id, portal, contact_email, contact_name, company, status, support_ticket_id, payload, kyc_attachments')
     .eq('access_token', access_token)
     .not('email_verified_at', 'is', null)
+    .gt('access_token_expires_at', new Date().toISOString())
     .maybeSingle()
 
   if (!sub) return json({ error: 'not_found_or_unverified' }, 404)
