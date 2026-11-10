@@ -31,6 +31,7 @@ function from(table: string) {
     "order",
     "limit",
     "gte",
+    "gt",
     "lte",
     "not",
     "range",
