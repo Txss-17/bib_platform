@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
   // Find or create a submission for this email+portal
   const { data: existing } = await supabase
     .from('partner_onboarding_submissions')
-    .select('id, access_token, status, payload, kyc_attachments, support_ticket_id')
+    .select('id, status, payload, kyc_attachments, support_ticket_id')
     .eq('contact_email', email)
     .eq('portal', portal)
     .order('created_at', { ascending: false })
@@ -76,8 +76,10 @@ Deno.serve(async (req) => {
     .maybeSingle()
 
   if (existing) {
-    const newToken = existing.access_token || generateAccessToken()
-    await supabase
+    // Rotate the old bearer on each successful OTP check. A leaked historical
+    // URL or an earlier device token must not remain valid indefinitely.
+    const newToken = generateAccessToken()
+    const { error: rotateError } = await supabase
       .from('partner_onboarding_submissions')
       .update({
         email_verified_at: new Date().toISOString(),
@@ -85,6 +87,7 @@ Deno.serve(async (req) => {
         status: existing.status === 'draft' ? 'email_verified' : existing.status,
       })
       .eq('id', existing.id)
+    if (rotateError) return json({ error: 'session_issuance_failed' }, 503)
     return json({
       ok: true,
       access_token: newToken,
