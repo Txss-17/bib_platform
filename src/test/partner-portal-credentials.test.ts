@@ -35,7 +35,7 @@ describe("Partner bearer credential safety contracts", () => {
     expect(migration).toContain("email_verified_at IS NOT NULL");
     expect(migration).toContain("status = 'approved'");
     expect(migration).toContain("jsonb_build_object(");
-    expect(migration).not.toMatch(/SELECT\\s+to_jsonb\\(_sub\\)/i);
+    expect(migration).not.toMatch(/SELECT\s+to_jsonb\(_sub\)/i);
     expect(migration).not.toMatch(/'access_token'\s*,\s*_sub/);
     expect(migration).not.toContain("'kyc_attachments'");
   });
