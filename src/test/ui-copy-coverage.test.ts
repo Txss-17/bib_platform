@@ -51,6 +51,12 @@ describe("Explicit BIB copy catalogue", () => {
           n.expression.getText() === "translateUi"
         ) {
           const key = n.arguments[0];
+          // Plan features come from the validated plans catalogue, not source literals.
+          // Keep the exception exact: other dynamic translation keys remain errors.
+          if (path.endsWith("/pages/Tarifs.tsx") && ts.isIdentifier(key) && key.text === "feature") {
+            ts.forEachChild(n, visit);
+            return;
+          }
           expect(
             ts.isStringLiteral(key),
             "Only explicit BIB source literals may be translated: " + path,

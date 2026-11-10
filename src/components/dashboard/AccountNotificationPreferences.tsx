@@ -65,7 +65,7 @@ export function AccountNotificationPreferences() {
           <p className="text-sm font-medium text-foreground">{row.label}</p>
           <p className="mt-1 text-xs text-muted-foreground">{row.detail}</p>
         </div>
-        <Switch checked={row.locked ? true : prefs[row.key]} disabled={row.locked} onCheckedChange={v => setPrefs(p => ({ ...p, [row.key]: v }))} aria-label={translateUi(row.label)}/>
+        <Switch checked={row.locked ? true : prefs[row.key]} disabled={row.locked} onCheckedChange={v => setPrefs(p => ({ ...p, [row.key]: v }))} aria-label={row.label}/>
       </div>)}
     </div>
     <p className="text-xs text-muted-foreground">{translateUi("Les annonces et la synthèse hebdomadaire sont des préférences enregistrées. Leur diffusion dépend de l’activation des services d’envoi correspondants ; aucun e-mail n’est programmé par ce formulaire.")}</p>

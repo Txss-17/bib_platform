@@ -36,7 +36,8 @@ describe("BIB public navigation", () => {
     expect(app).toContain('path="/store/signup" element={<StoreSignup />} />');
   });
 
-  it("does not unhide Careers ahead of the recruitment phase", () => {
-    expect(app).toContain('<Route path="/carrieres" element={<Navigate to="/bib-talent" replace />} />');
+  it("serves the explicitly launched Careers page and keeps Talent accessible", () => {
+    expect(app).toContain('<Route path="/carrieres" element={<Carrieres />} />');
+    expect(app).toContain('<Route path="/bib-talent" element={<BibTalent />} />');
   });
 });

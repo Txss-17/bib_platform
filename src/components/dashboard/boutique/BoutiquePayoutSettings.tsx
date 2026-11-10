@@ -8,6 +8,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { SectionCard } from "@/components/dashboard/shared";
 import { useAuth } from "@/contexts/AuthContext";
 import { translateUi } from "@/lib/uiTranslation";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import { Loader2, LockKeyhole, Wallet } from "lucide-react";
 
@@ -45,6 +46,8 @@ const initial: PayoutData = {
 
 export function BoutiquePayoutSettings({ boutiqueId }: { boutiqueId: string }) {
   const { user } = useAuth();
+  const { lang } = useLanguage();
+  const countryNames = new Intl.DisplayNames([lang === "en" ? "en" : "fr"], { type: "region" });
   const qc = useQueryClient();
   const [draft, setDraft] = useState(initial);
   const { data, isLoading, error } = useQuery({
@@ -98,7 +101,7 @@ export function BoutiquePayoutSettings({ boutiqueId }: { boutiqueId: string }) {
             <Select value={draft.country_code} onValueChange={country_code => setDraft(current => ({...current, country_code}))}>
               <SelectTrigger><SelectValue placeholder={translateUi("Choisir un pays")} /></SelectTrigger>
               <SelectContent>{EU_PAYOUT_COUNTRIES.map(country => (
-                <SelectItem key={country.code} value={country.code}>{translateUi(country.label)}</SelectItem>
+                <SelectItem key={country.code} value={country.code}>{countryNames.of(country.code) ?? country.label}</SelectItem>
               ))}</SelectContent>
             </Select>
           </div>
