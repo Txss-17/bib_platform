@@ -390,6 +390,18 @@ describe("Partner catalogue decisions", () => {
   });
 });
 
+describe("Partner operational revocation", () => {
+  it("denies all partner actions if service revoked the operational entitlement", async () => {
+    mocks.results.push(ok({id:other,portal:"suppliers",status:"approved",email_verified_at:version,operational_access_revoked_at:version}));
+    await load("partner-portal-action");
+    const response = await handler(request({access_token:"test-operational-access-token",action:"list_supplier_references"}));
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({error:"operational_access_revoked"});
+    expect(mocks.rpc).not.toHaveBeenCalled();
+    expect(mocks.calls.some(c=>c.action==="update"||c.action==="insert")).toBe(false);
+  });
+});
+
 describe("Partner Ops portal", () => {
   const ops = (action: string, extra = {}) =>
     request({
