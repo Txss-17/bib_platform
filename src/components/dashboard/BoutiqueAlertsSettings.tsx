@@ -303,7 +303,7 @@ export function BoutiqueAlertsSettings({ boutiqueId: fixedBoutiqueId }: { boutiq
                   <p className="text-sm font-semibold text-foreground">{item.title}</p>
                   {item.message && <p className="mt-1 text-xs text-muted-foreground">{item.message}</p>}
                   <p className="mt-1 text-[11px] text-muted-foreground">
-                    {new Date(item.created_at).toLocaleString()} · {translateUi(item.severity)} · {item.email_status === "sent" ? translateUi("E-mail envoyé") : translateUi("E-mail non envoyé")}
+                    {new Date(item.created_at).toLocaleString()} · {(item.severity === 'critical' ? translateUi('Critique') : item.severity === 'warning' ? translateUi('Avertissement') : translateUi('Information'))} · {item.email_status === "sent" ? translateUi("E-mail envoyé") : translateUi("E-mail non envoyé")}
                   </p>
                 </div>
                 {item.resolved_at ? (
