@@ -18,6 +18,18 @@ const legalNavigation = [
   { href: "/donnees-et-consentements", label: "Données et consentements", icon: ShieldCheck },
   { href: "/annexe-donnees-marchands", label: "Annexe marchands (projet)", icon: BriefcaseBusiness },
 ];
+function legalNavLabel(href: string): string {
+ switch (href) {
+  case '/mentions-legales': return translateUi("Mentions légales");
+  case '/cgu': return translateUi("Conditions d'utilisation");
+  case '/cgv': return translateUi("Conditions de vente");
+  case '/confidentialite': return translateUi("Confidentialité");
+  case '/cookies': return translateUi("Cookies et traceurs");
+  case '/donnees-et-consentements': return translateUi("Données et consentements");
+  case '/annexe-donnees-marchands': return translateUi("Annexe marchands (projet)");
+  default: return href;
+ }
+}
 function LegalShell({ title, eyebrow, updated, children }: {
   title: string; eyebrow: string; updated: string; children: ReactNode;
 }) {
@@ -50,7 +62,7 @@ function LegalShell({ title, eyebrow, updated, children }: {
                   aria-current={selected ? "page" : undefined}
                   className={`inline-flex shrink-0 items-center gap-2 rounded-md border-l-2 px-3 py-2 text-xs transition-colors lg:w-full ${selected ? "border-bib-gold bg-bib-gold/10 font-semibold text-foreground" : "border-transparent text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
                   <item.icon className="h-3.5 w-3.5 shrink-0" />
-                  {translateUi(item.label)}
+                  {legalNavLabel(item.href)}
                 </Link>;
               })}
             </nav>
