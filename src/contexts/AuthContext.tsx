@@ -157,16 +157,27 @@ export function AuthProvider({
   useEffect(() => {
     let mounted = true;
     let sequence = 0;
+    // undefined = no session resolved yet (initial load).
+    let resolvedUserId: string | null | undefined = undefined;
 
     const syncSession = async (currentSession: Session | null) => {
       const revision = ++sequence;
-      setLoading(true);
       const currentUser = currentSession?.user ?? null;
+      const nextUserId = currentUser?.id ?? null;
+      // Only block protected pages while the identity actually changes. Token
+      // refreshes and profile updates for the same user keep pages mounted so
+      // unsaved form edits are never lost.
+      if (nextUserId !== resolvedUserId) setLoading(true);
+      if (resolvedUserId !== undefined && nextUserId === resolvedUserId) {
+        setSession(currentSession);
+        setUser(currentUser);
+      }
       const verifiedType = await resolveAccountType(currentUser);
       if (!mounted || revision !== sequence) return;
       setSession(currentSession);
       setUser(currentUser);
       setAccountType(verifiedType);
+      resolvedUserId = nextUserId;
       if (currentUser && verifiedType === "platform") {
         const { data } = await supabase.from("profiles")
           .select("*").eq("user_id", currentUser.id).maybeSingle();
