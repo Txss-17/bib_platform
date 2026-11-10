@@ -471,7 +471,7 @@ describe("Bridge export", () => {
           : ok([]),
       );
     await load("intranet-export");
-    expect((await handler(request({}))).status).toBe(500);
+    expect((await handler(request({}))).status).toBe(503);
   });
 
   it("fails the export when restock requests are unavailable", async () => {
@@ -483,7 +483,7 @@ describe("Bridge export", () => {
       );
     }
     await load("intranet-export");
-    expect((await handler(request({}))).status).toBe(500);
+    expect((await handler(request({}))).status).toBe(503);
   });
 
 
@@ -521,7 +521,7 @@ describe("Bridge export", () => {
     }
     await load("intranet-export");
     const response = await handler(request({}));
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(503);
   });
 
   it("exports private operational SAV handoffs without claim personal data",async () => {
@@ -553,7 +553,7 @@ describe("Bridge export", () => {
         ? {data:null,error:{message:"SAV export unavailable"}}
         : ok([]));
     await load("intranet-export");
-    expect((await handler(request({}))).status).toBe(500);
+    expect((await handler(request({}))).status).toBe(503);
   });
 
   it.each([false, true])("exports catalogue identity and the authoritative restock state (array joins: %s)", async (arrayJoins) => {
