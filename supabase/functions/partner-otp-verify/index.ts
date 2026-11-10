@@ -62,8 +62,16 @@ Deno.serve(async (req) => {
     return json({ error: 'invalid_code', attempts_remaining: 4 - otp.attempts }, 400)
   }
 
-  // Mark consumed
-  await supabase.from('partner_email_otps').update({ consumed_at: new Date().toISOString() }).eq('id', otp.id)
+  // Consume once, atomically. Competing verification requests must not issue
+  // separate bearer credentials for the same six-digit code.
+  const { data: claimed, error: claimError } = await supabase
+    .from('partner_email_otps')
+    .update({ consumed_at: new Date().toISOString() })
+    .eq('id', otp.id)
+    .is('consumed_at', null)
+    .select('id')
+    .maybeSingle()
+  if (claimError || !claimed) return json({ error: 'code_already_used' }, 409)
 
   // Find or create a submission for this email+portal
   const { data: existing } = await supabase
