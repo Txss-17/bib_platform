@@ -92,6 +92,7 @@ Deno.serve(async (req) => {
       .update({
         email_verified_at: new Date().toISOString(),
         access_token: newToken,
+        access_token_expires_at: new Date(Date.now() + 2 * 60 * 60_000).toISOString(),
         status: existing.status === 'draft' ? 'email_verified' : existing.status,
       })
       .eq('id', existing.id)
@@ -114,6 +115,7 @@ Deno.serve(async (req) => {
       portal,
       contact_email: email,
       access_token,
+      access_token_expires_at: new Date(Date.now() + 2 * 60 * 60_000).toISOString(),
       email_verified_at: new Date().toISOString(),
       status: 'email_verified',
     })
