@@ -14,7 +14,9 @@ test("mandate evidence migration is registered once after existing migrations", 
   const matches = journal.entries.filter((entry) => entry.tag === "0028_merchant_mandate_acceptances");
   assert.equal(matches.length, 1);
   assert.equal(matches[0].idx, 28);
-  assert.equal(journal.entries.at(-1).tag, matches[0].tag);
+  assert.equal(journal.entries.find((entry) => entry.idx === 28)?.tag, matches[0].tag);
+  assert.ok(journal.entries.every((entry) => entry.idx >= 28 || entry.tag !== matches[0].tag));
+  assert.ok(journal.entries.at(-1).idx >= matches[0].idx, "later additive migrations are permitted");
 });
 
 test("mandate types are separated and browser writes remain denied", () => {
