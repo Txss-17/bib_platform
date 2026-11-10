@@ -44,6 +44,16 @@ describe("Partner bearer credential safety contracts", () => {
     expect(portalAction).toContain('.gt("access_token_expires_at", new Date().toISOString())');
   });
 
+  it("operational revocation is server-only, auditable and checked before data or actions", () => {
+    const migration=source("supabase/migrations/20261111001000_partner_operational_revocation.sql");
+    const action=source("supabase/functions/partner-portal-action/index.ts");
+    expect(migration).toContain("revoke_partner_portal_operations(");
+    expect(migration).toContain("partner_portal_revocation_events");
+    expect(migration).toContain("GRANT EXECUTE ON FUNCTION public.revoke_partner_portal_operations(uuid,text) TO service_role");
+    expect(migration).toContain("operational_access_revoked_at IS NULL");
+    expect(action).toContain("if (sub.operational_access_revoked_at)");
+  });
+
   it("limits operational read projections to approved OTP-verified partners", () => {
     const migration = source("supabase/migrations/20261110224500_partner_operational_portal_minimal_projection.sql");
     expect(migration).toContain("email_verified_at IS NOT NULL");
