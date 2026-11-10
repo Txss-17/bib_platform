@@ -8,10 +8,11 @@ const read = (path: string) => readFileSync(resolve(process.cwd(), path), "utf8"
 describe("Legal-pack English coverage", () => {
   it("translates each card point and the directory's legal status notice", () => {
     const source = read("src/pages/PackLegal.tsx");
-    expect(source).toContain("{translateUi(p)}");
+    expect(source).toContain("{p}");
+    expect(source).toContain("get points() { return [translateUi(");
     expect(source).toContain('lang === "en"');
     expect(source).toContain("Contract harmonization as of 5 November 2026.");
-    const lists = [...source.matchAll(/points:\s*\[([^\]]+)\]/g)];
+    const lists = [...source.matchAll(/get points\(\) \{ return \[([^\]]+)\]; \}/g)];
     expect(lists.length).toBe(7);
     for (const [, line] of lists) {
       for (const match of line.matchAll(/"([^"]+)"/g)) {
