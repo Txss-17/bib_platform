@@ -73,6 +73,7 @@ Deno.serve(async (req) => {
     .from("partner_onboarding_submissions")
     .select("id, portal, status, email_verified_at")
     .eq("access_token", token)
+    .gt("access_token_expires_at", new Date().toISOString())
     .maybeSingle();
 
   if (subErr || !sub) return json({ error: "not_found" }, 404);
