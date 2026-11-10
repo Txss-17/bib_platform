@@ -180,8 +180,8 @@ export default function SuppliersPortal() {
           "Product submitted for review",
         ),
         description: tx(
-          "L'équipe revient vers vous sous 48h.",
-          "Our team will get back to you within 48 hours.",
+          "Cette proposition reste en examen. Le référencement exige une décision d'admission distincte par référence produit.",
+          "This proposal remains under review. Listing requires a separate admission decision for each product reference.",
         ),
       });
     } catch (e) {
@@ -669,7 +669,7 @@ export default function SuppliersPortal() {
               </h3>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <MiniStat
-                  label={tx("Produits validés", "Approved products")}
+                  label={tx("Propositions traitées", "Processed proposals")}
                   value={
                     catalogDrafts.filter((e) => e.status === "resolved").length
                   }
@@ -698,7 +698,7 @@ export default function SuppliersPortal() {
               </div>
               <p className="text-xs text-muted-foreground mt-4">
                 {translateUi(
-                  "Indicateurs calculés sur l'ensemble de votre activité dans le portail. Un rapport mensuel détaillé est joint dans la section Factures.",
+                  "Indicateurs d'activité du portail uniquement : une proposition traitée ne prouve ni l'admission d'une référence ni sa publication. Les documents contractuels et financiers restent distincts.",
                 )}
               </p>
             </Card>
