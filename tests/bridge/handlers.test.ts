@@ -357,6 +357,38 @@ describe("Partner portal identity guard", () => {
   });
 });
 
+describe("Partner catalogue decisions", () => {
+  const eventRequest=(event_id: string) => request({
+    access_token: "test-operational-access-token",
+    action: "update_event_status", event_id, status: "resolved",
+  });
+  it("prevents a supplier from resolving its own catalogue proposal", async () => {
+    mocks.results.push(
+      ok({ id: other, portal: "suppliers", status: "approved", email_verified_at: version }),
+      ok({ id, kind: "catalog_draft" }),
+    );
+    await load("partner-portal-action");
+    const response=await handler(eventRequest(id));
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({error:"event_review_requires_intranet"});
+    expect(mocks.calls.filter(c => c.action === "update")).toHaveLength(0);
+  });
+  it("permits a scoped fulfilment update without changing review events", async () => {
+    mocks.results.push(
+      ok({ id: other, portal: "suppliers", status: "approved", email_verified_at: version }),
+      ok({ id, kind: "moq_request" }),
+      ok(null),
+    );
+    await load("partner-portal-action");
+    const response=await handler(eventRequest(id));
+    expect(response.status).toBe(200);
+    const update=mocks.calls.find(c => c.action === "update");
+    expect(update.filters).toEqual(expect.arrayContaining([
+      ["eq","submission_id",other],["eq","portal","suppliers"],["eq","kind","moq_request"]
+    ]));
+  });
+});
+
 describe("Partner Ops portal", () => {
   const ops = (action: string, extra = {}) =>
     request({
