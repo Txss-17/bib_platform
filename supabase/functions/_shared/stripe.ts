@@ -1,6 +1,7 @@
 import { assertPaymentEnvironment, assertEventEnvironment } from "./payment-environment.ts";
 import { encode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
 import Stripe from "https://esm.sh/stripe@22.0.2";
+import { readDirectStripeSecretKey } from "./stripe-key.ts";
 
 const getEnv = (key: string): string => {
   const value = Deno.env.get(key);
@@ -10,33 +11,19 @@ const getEnv = (key: string): string => {
 
 export type StripeEnv = "sandbox" | "live";
 
-const GATEWAY_STRIPE_BASE = "https://connector-gateway.lovable.dev/stripe";
-
-export function getConnectionApiKey(env: StripeEnv): string {
-  assertPaymentEnvironment(env, (key) => Deno.env.get(key));
-  return env === "sandbox"
-    ? getEnv("STRIPE_SANDBOX_API_KEY")
-    : getEnv("STRIPE_LIVE_API_KEY");
-}
-
+/**
+ * Direct Stripe API access for a BIB-owned Stripe account.
+ *
+ * IMPORTANT: Deploy ONLY after staging secrets, connected accounts, webhook
+ * signatures, refunds, idempotency and destination charges are verified.
+ * No fallback to Lovable's payment gateway or connector credentials.
+ */
 export function createStripeClient(env: StripeEnv): Stripe {
-  const connectionApiKey = getConnectionApiKey(env);
-  const lovableApiKey = getEnv("LOVABLE_API_KEY");
-
-  return new Stripe(connectionApiKey, {
+  assertPaymentEnvironment(env, (key) => Deno.env.get(key));
+  const secretKey = readDirectStripeSecretKey(env, (name) => Deno.env.get(name));
+  return new Stripe(secretKey, {
     apiVersion: "2026-03-25.dahlia",
-    httpClient: Stripe.createFetchHttpClient((url: RequestInfo | URL, init?: RequestInit) => {
-      const request = url instanceof Request ? url : undefined;
-      const gatewayUrl = (request?.url ?? url.toString()).replace("https://api.stripe.com", GATEWAY_STRIPE_BASE);
-      return fetch(gatewayUrl, {
-        ...init,
-        headers: {
-          ...Object.fromEntries(new Headers(init?.headers ?? request?.headers).entries()),
-          "X-Connection-Api-Key": connectionApiKey,
-          "Lovable-API-Key": lovableApiKey,
-        },
-      });
-    }),
+    httpClient: Stripe.createFetchHttpClient(),
   });
 }
 
