@@ -23,7 +23,7 @@ export function createStripeClient(env: StripeEnv): Stripe {
   const secretKey = readDirectStripeSecretKey(env, (name) => Deno.env.get(name));
   return new Stripe(secretKey, {
     apiVersion: "2026-03-25.dahlia",
-    httpClient: Stripe.createFetchHttpClient(),
+    httpClient: Stripe.createFetchHttpClient(fetch),
   });
 }
 
