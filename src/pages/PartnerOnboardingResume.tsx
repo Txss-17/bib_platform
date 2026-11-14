@@ -54,12 +54,12 @@ export default function PartnerOnboardingResume() {
 
   useSEO({
     title:
-      (english ? "Resume my onboarding " : "Reprendre mon onboarding ") +
+      tx("Reprendre mon dossier ", "Resume my file ") +
       portalLabel +
       " — Brand-In-A-Box",
     description: tx(
-      "Reprenez et modifiez votre dossier d'onboarding avant sa validation finale.",
-      "Resume and update your onboarding file before final approval.",
+      "Retrouvez le suivi de votre dossier partenaire avec l’adresse email associée.",
+      "Use the email address linked to your partner file to check its progress.",
     ),
   });
 
@@ -120,7 +120,7 @@ export default function PartnerOnboardingResume() {
 
     toast({
       title:
-        (english ? "Resume my onboarding " : "Reprendre mon onboarding ") +
+        tx("Reprendre mon dossier ", "Resume my file ") +
         portalLabel +
         " — Brand-In-A-Box",
       description: english
@@ -226,21 +226,13 @@ export default function PartnerOnboardingResume() {
         </Badge>
 
         <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-          {tx("Reprendre mon onboarding", "Resume my onboarding")}
+          {tx("Reprendre mon dossier", "Resume my file")}
         </h1>
 
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
           {tx(
-            "Utilisez l'adresse email associée à votre dossier. BIB vous",
-            "Use the email address linked to your file. BIB will send you",
-          )}
-          {tx(
-            "enverra un code à 6 chiffres permettant d'accéder à votre",
-            "a 6-digit code to access your file and",
-          )}
-          {tx(
-            "dossier et de le modifier lorsque cela est encore possible.",
-            "update it if the file is still editable.",
+            "Utilisez l’adresse email associée à votre dossier. Le code à 6 chiffres donne accès à son suivi et à sa modification si elle est encore possible. Le traitement des commandes exige une habilitation distincte.",
+            "Use the email address linked to your file. The six-digit code opens its status and lets you make changes if the file is still editable. Processing orders requires separate authorisation.",
           )}
         </p>
 

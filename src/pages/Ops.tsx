@@ -1,12 +1,13 @@
 import { translateUi } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { partnerJourney } from "@/lib/partnerJourney";
 import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useSEO } from "@/hooks/useSEO";
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -158,57 +159,6 @@ const coverage = [
   "Zone Ouest Europe",
   "Zone Sud Europe",
   "Zone Est Europe",
-];
-
-const processSteps = [
-  {
-    get title() {
-      return translateUi("Demande de partenariat");
-    },
-    get text() {
-      return translateUi(
-        "Présentez votre entreprise, vos installations, vos capacités et vos zones couvertes.",
-      );
-    },
-  },
-  {
-    title: "Qualification",
-    get text() {
-      return translateUi(
-        "BIB étudie vos capacités de stockage, préparation, expédition, retours et intégration opérationnelle.",
-      );
-    },
-  },
-  {
-    get title() {
-      return translateUi("Échanges et conditions");
-    },
-    get text() {
-      return translateUi(
-        "Les conditions du partenariat sont étudiées avec les partenaires retenus.",
-      );
-    },
-  },
-  {
-    get title() {
-      return translateUi("Préparation du partenariat");
-    },
-    get text() {
-      return translateUi(
-        "Les modalités de démarrage sont définies conjointement avant collaboration.",
-      );
-    },
-  },
-  {
-    get title() {
-      return translateUi("Intégration");
-    },
-    get text() {
-      return translateUi(
-        "Le partenaire est progressivement intégré aux opérations BIB selon sa zone et ses capacités.",
-      );
-    },
-  },
 ];
 
 const COUNTRIES = [
@@ -529,7 +479,8 @@ function OpsContactDialog({ children }: { children: React.ReactNode }) {
 }
 
 export default function Ops() {
-  useLanguage();
+  const { lang } = useLanguage();
+  const journey = partnerJourney.ops[lang];
   useSEO({
     title: translateUi("Partenaires logistiques — Brand-In-A-Box"),
     description: translateUi(
@@ -609,18 +560,24 @@ export default function Ops() {
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-3">
-            <OpsContactDialog>
-              <Button size="lg" variant="coral" className="gap-2">
-                {translateUi("Devenir partenaire")}
+            <Button asChild size="lg" variant="coral" className="gap-2">
+              <Link to="/ops/apply">
+                {lang === "en" ? "Apply as a logistics partner" : "Candidater comme logisticien"}
                 <ArrowRight className="w-4 h-4" />
-              </Button>
-            </OpsContactDialog>
+              </Link>
+            </Button>
 
             <Button asChild size="lg" variant="outline" className="gap-2">
-              <a href="#fonctionnement">
-                {translateUi("Découvrir le fonctionnement")}
+              <a href="#processus">
+                {lang === "en" ? "See the logistics journey" : "Voir le parcours logistique"}
               </a>
             </Button>
+            <Link
+              to="/ops/resume?portal=ops"
+              className="text-sm font-medium text-muted-foreground underline-offset-4 hover:underline"
+            >
+              {lang === "en" ? "Resume my file" : "Reprendre mon dossier"}
+            </Link>
           </div>
 
           <div className="mt-9 grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl">
@@ -864,15 +821,13 @@ export default function Ops() {
           </h2>
 
           <p className="text-sm text-muted-foreground mt-3">
-            {translateUi(
-              "Le partenariat commence par une qualification avant toute intégration opérationnelle.",
-            )}
+            {journey.application}
           </p>
         </div>
 
         <Card className="p-6 sm:p-8">
           <ol className="space-y-5">
-            {processSteps.map((step, index) => (
+            {journey.steps.map((step, index) => (
               <li key={step.title} className="flex items-start gap-4">
                 <span className="shrink-0 w-8 h-8 rounded-full bg-accent text-accent-foreground text-xs font-semibold inline-flex items-center justify-center">
                   {index + 1}
@@ -914,7 +869,7 @@ export default function Ops() {
             <div className="flex flex-wrap items-center justify-center gap-3 pt-6">
               <OpsContactDialog>
                 <Button size="lg" variant="premium" className="gap-2">
-                  {translateUi("Devenir partenaire")}
+                  {lang === "en" ? "Contact the logistics team" : "Échanger avec l’équipe logistique"}
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </OpsContactDialog>

@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useSEO } from "@/hooks/useSEO";
 import { ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { partnerJourney } from "@/lib/partnerJourney";
 
 const fields: QualSelectField[] = [
   {
@@ -350,6 +351,7 @@ const blockers: QualBlocker[] = [
 
 export default function OpsApply() {
   const { lang } = useLanguage();
+  const journey = partnerJourney.ops[lang];
   const english = lang === "en";
   const tx = (fr: string, en: string) => (english ? en : fr);
   useSEO({
@@ -357,8 +359,8 @@ export default function OpsApply() {
       ? "Logistics Partnership Request — Brand-In-A-Box"
       : "Demande de partenariat logistique — Brand-In-A-Box",
     description: english
-      ? "Step 1: operational qualification to join the Brand-In-A-Box Ops network (EU coverage, SLAs, tracking and capacity)."
-      : "Étape 1 : qualification opérationnelle pour rejoindre le réseau Ops Brand-In-A-Box (couverture UE, SLA, tracking, capacités).",
+      ? "Introduce your logistics services, coverage and capacity so BIB can review your application."
+      : "Présentez vos services logistiques, vos zones couvertes et vos capacités pour l’étude de votre candidature.",
   });
 
   return (
@@ -382,7 +384,7 @@ export default function OpsApply() {
           </Link>
         </Button>
         <Badge variant="secondary" className="mb-3">
-          {tx("Partenariat · Étape 1 / 2", "Partnership · Step 1 / 2")}
+          {tx("Candidature · Étude du dossier", "Application · File review")}
         </Badge>
         <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
           {tx(
@@ -390,16 +392,15 @@ export default function OpsApply() {
             "Logistics Partnership Request",
           )}
         </h1>
-        <p className="text-sm sm:text-base text-muted-foreground mt-3 mb-8 max-w-2xl">
-          {tx(
-            "Processus en 2 étapes. L'étape 1 évalue votre couverture, vos délais et votre fiabilité en moins de 6 minutes.",
-            "Two-step process. Step 1 assesses your coverage, delivery times and reliability in under 6 minutes.",
-          )}
-          {tx(
-            "L'étape 2 est débloquée sur présélection uniquement.",
-            "Step 2 is available to preselected applicants only.",
-          )}
+        <p className="mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
+          {journey.application}
         </p>
+        <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
+          {journey.onboarding}
+        </p>
+        <Link to="/ops#processus" className="mb-8 mt-3 inline-block text-sm font-medium text-foreground underline-offset-4 hover:underline">
+          {tx("Voir le parcours logistique complet", "See the full logistics journey")}
+        </Link>
         <PartnerQualificationForm
           portal="ops"
           fields={fields}

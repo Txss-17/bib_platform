@@ -14,6 +14,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPortal, type PortalEvent } from "@/hooks/usePartnerPortal";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { partnerJourney } from "@/lib/partnerJourney";
 import SupplierAuditPortal from "@/components/standalone/SupplierAuditPortal";
 import {
   PlatformTour,
@@ -306,10 +307,11 @@ export default function SuppliersPortal() {
           </div>
           <p className="text-sm text-muted-foreground mt-2">
             {tx(
-              "Catalogue, demandes MOQ, documents, signalements.",
-              "Catalog, MOQ requests, documents and reports.",
+              "Catalogue, demandes d’approvisionnement, documents et signalements.",
+              "Catalogue, procurement requests, documents and reports.",
             )}
           </p>
+          <p className="mt-2 text-sm text-muted-foreground">{partnerJourney.suppliers[lang].operations}</p>
           <PlatformTour autoOpen availablePersonas={["ops", "supplier"]} />
         </div>
 

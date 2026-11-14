@@ -25,6 +25,7 @@ import type { OnboardingConfig } from "@/components/standalone/PartnerOnboarding
 
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { partnerJourney } from "@/lib/partnerJourney";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -541,6 +542,9 @@ export default function PartnerOnboardingPortal({
 
             <p className="mt-2 max-w-2xl text-muted-foreground">
               {submission.company}
+            </p>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              {partnerJourney[portal][lang].onboarding}
             </p>
           </div>
 

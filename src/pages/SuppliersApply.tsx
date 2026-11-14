@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useSEO } from "@/hooks/useSEO";
 import { ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { partnerJourney } from "@/lib/partnerJourney";
 import { localizePartnerQualificationCopy } from "@/components/standalone/PartnerQualificationForm";
 
 const fields: QualSelectField[] = [
@@ -343,6 +344,7 @@ const blockers: QualBlocker[] = [
 
 export default function SuppliersApply() {
   const { lang } = useLanguage();
+  const journey = partnerJourney.suppliers[lang];
   const english = lang === "en";
   const tx = (fr: string, en: string) => (english ? en : fr);
   useSEO({
@@ -392,10 +394,7 @@ export default function SuppliersApply() {
         </p>
 
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-          {tx(
-            "Le dépôt de cette demande de partenariat ne constitue pas une validation de référencement. Les fournisseurs présélectionnés poursuivent ensuite un processus de vérification et de contrôle avant toute intégration.",
-            "Submitting this partnership request does not guarantee approval for listing. Preselected suppliers continue through a verification and review process before onboarding.",
-          )}
+          {journey.application}
         </p>
 
         {/* ------------------------------------------------------------------ */}
@@ -403,75 +402,22 @@ export default function SuppliersApply() {
         {/* ------------------------------------------------------------------ */}
 
         <div className="mt-7 rounded-xl border bg-muted/30 p-4 sm:p-5">
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-              1
-            </div>
-
-            <div>
-              <p className="font-medium">
-                {tx("Qualification initiale", "Initial qualification")}
-              </p>
-
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                {tx(
-                  "BIB étudie les informations transmises et peut demander des éléments complémentaires afin d'évaluer la compatibilité du fournisseur avec le réseau.",
-                  "BIB reviews the information provided and may request additional details to assess the supplier’s fit with the network.",
-                )}
-              </p>
-            </div>
-          </div>
-
-          <div
-            className="my-4 ml-4 h-5 border-l border-border"
-            aria-hidden="true"
-          />
-
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-              2
-            </div>
-
-            <div>
-              <p className="font-medium">
-                {tx(
-                  "Vérification et référencement",
-                  "Verification and listing",
-                )}
-              </p>
-
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                {tx(
-                  "Les profils retenus peuvent faire l'objet de contrôles documentaires, qualité, conformité ou opérationnels avant la validation des références concernées.",
-                  "Selected applicants may undergo document, quality, compliance or operational checks before the relevant products are approved for listing.",
-                )}
-              </p>
-            </div>
-          </div>
-
-          <div
-            className="my-4 ml-4 h-5 border-l border-border"
-            aria-hidden="true"
-          />
-
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-              3
-            </div>
-
-            <div>
-              <p className="font-medium">
-                {tx("Intégration opérationnelle", "Operational onboarding")}
-              </p>
-
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                {tx(
-                  "Après validation, les références retenues sont intégrées selon les procédures BIB et le schéma logistique applicable.",
-                  "Once approved, selected products are integrated according to BIB procedures and the applicable logistics model.",
-                )}
-              </p>
-            </div>
-          </div>
+          <ol className="space-y-4">
+            {journey.steps.slice(0, 3).map((step, index) => (
+              <li key={step.title} className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                  {index + 1}
+                </span>
+                <div>
+                  <p className="font-medium">{step.title}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{step.text}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <Link to="/suppliers#etapes" className="mt-4 inline-block text-sm font-medium text-primary underline-offset-4 hover:underline">
+            {tx("Voir le parcours fournisseur complet", "See the full supplier journey")}
+          </Link>
         </div>
 
         {/* ------------------------------------------------------------------ */}

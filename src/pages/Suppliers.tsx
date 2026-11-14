@@ -1,5 +1,6 @@
 import { translateUi } from "@/lib/uiTranslation";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { partnerJourney } from "@/lib/partnerJourney";
 import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -64,61 +65,65 @@ const compatibility = [
   },
 ];
 
-const steps = [
+const minimumCriteria = [
+  "Entreprise ou activité légalement enregistrée",
+  "Documents administratifs et de conformité disponibles",
+  "Produits clairement identifiés et documentés",
+  "Capacité à fournir les informations techniques nécessaires",
+  "Capacité à expédier vers les zones compatibles avec le réseau BIB",
+  "Traçabilité des produits et des lots lorsque nécessaire",
+  "Capacité de production ou de réapprovisionnement compatible avec les besoins",
+];
+
+const constraints = [
+  "Référencement soumis à validation BIB",
+  "Produits et références contrôlés avant intégration au catalogue",
+  "Documents de conformité à maintenir à jour",
+  "Informations de stock et de disponibilité à transmettre selon les procédures BIB",
+  "Respect des exigences qualité, emballage, traçabilité et expédition",
+  "Relations opérationnelles avec les boutiques encadrées par BIB",
+  "Respect des procédures définies avec les partenaires logistiques concernés",
+];
+
+const principles = [
   {
+    icon: ShieldCheck,
     get title() {
-      return translateUi("Demande de partenariat");
+      return translateUi("Un réseau de confiance");
     },
     get text() {
       return translateUi(
-        "Présentez votre entreprise, vos capacités de production et les catégories de produits que vous souhaitez proposer.",
+        "BIB ne fonctionne pas comme un catalogue ouvert. L'accès au réseau repose sur une sélection, des contrôles et une validation préalable.",
       );
     },
   },
   {
+    icon: Globe2,
     get title() {
-      return translateUi("Étude du dossier");
+      return translateUi("Une ouverture progressive");
     },
     get text() {
       return translateUi(
-        "BIB étudie la compatibilité de votre activité avec les exigences du réseau et les zones couvertes.",
+        "Les zones de commercialisation et d'expédition sont définies selon les capacités opérationnelles, réglementaires et logistiques.",
       );
     },
   },
   {
+    icon: Workflow,
     get title() {
-      return translateUi("Contrôles");
+      return translateUi("Un intermédiaire opérationnel");
     },
     get text() {
       return translateUi(
-        "BIB peut solliciter des informations complémentaires pour étudier votre demande.",
-      );
-    },
-  },
-  {
-    get title() {
-      return translateUi("Validation");
-    },
-    get text() {
-      return translateUi(
-        "Après validation, les références retenues peuvent être intégrées au catalogue BIB.",
-      );
-    },
-  },
-  {
-    get title() {
-      return translateUi("Opérations");
-    },
-    get text() {
-      return translateUi(
-        "Les modalités de collaboration sont définies avec les partenaires retenus.",
+        "BIB coordonne le parcours entre fournisseurs, catalogue, boutiques et partenaires opérationnels, sans créer de relation directe non encadrée avec les boutiques.",
       );
     },
   },
 ];
 
 export default function Suppliers() {
-  useLanguage();
+  const { lang } = useLanguage();
+  const journey = partnerJourney.suppliers[lang];
   useSEO({
     title: translateUi("Fournisseurs — Brand-In-A-Box"),
     description: translateUi(
@@ -171,20 +176,26 @@ export default function Suppliers() {
               </Button>
 
               <a
-                href="#fonctionnement"
+                href="#etapes"
                 className="text-sm font-medium text-muted-foreground underline-offset-4 hover:underline"
               >
-                {translateUi("Comprendre le fonctionnement")}
+                {lang === "en" ? "See the supplier journey" : "Voir le parcours fournisseur"}
               </a>
+              <Link
+                to="/suppliers/resume?portal=suppliers"
+                className="text-sm font-medium text-muted-foreground underline-offset-4 hover:underline"
+              >
+                {lang === "en" ? "Resume my file" : "Reprendre mon dossier"}
+              </Link>
             </div>
 
             <div className="mt-8 grid max-w-3xl grid-cols-1 gap-3 sm:grid-cols-3">
               <div className="rounded-lg border border-border/60 bg-muted/20 px-4 py-3">
                 <p className="text-xs text-muted-foreground">
-                  {translateUi("Accès")}
+                  {lang === "en" ? "Applications" : "Candidatures"}
                 </p>
                 <p className="mt-0.5 text-sm font-semibold">
-                  {translateUi("Sur demande de partenariat")}
+                  {lang === "en" ? "Open to suppliers" : "Ouvertes aux fournisseurs"}
                 </p>
               </div>
 
@@ -264,11 +275,12 @@ export default function Suppliers() {
             <h2 className="font-display text-2xl font-bold sm:text-3xl">
               {translateUi("Les grandes étapes pour nous rejoindre")}
             </h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{journey.application}</p>
           </div>
 
           <div className="max-w-3xl">
             <ol className="space-y-4">
-              {steps.map((step, index) => (
+              {journey.steps.map((step, index) => (
                 <li key={step.title} className="flex items-start gap-4">
                   <div className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
                     {index + 1}

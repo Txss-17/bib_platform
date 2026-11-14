@@ -1,4 +1,4 @@
-import { translateUi } from "@/lib/uiTranslation";
+import { getUiLanguage, translateUi } from "@/lib/uiTranslation";
 import { Link } from "react-router-dom";
 import { StandaloneLayout } from "@/components/standalone/StandaloneLayout";
 import PartnerOnboardingWizard, {
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useSEO } from "@/hooks/useSEO";
 import { ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { partnerJourney } from "@/lib/partnerJourney";
 import { localizePartnerOnboardingCopy } from "@/lib/partnerOnboardingI18n";
 
 export const opsOnboardingConfig: OnboardingConfig = {
@@ -17,9 +18,7 @@ export const opsOnboardingConfig: OnboardingConfig = {
     return translateUi("Onboarding Partenaire Logistique");
   },
   get subtitle() {
-    return translateUi(
-      "Activation opérationnelle après présélection — du KYC au pilote.",
-    );
+    return partnerJourney.ops[getUiLanguage()].onboarding;
   },
   documents: [
     {
@@ -335,9 +334,7 @@ export default function OpsOnboarding() {
     title: english
       ? "Logistics Partner Onboarding — Brand-In-A-Box"
       : "Onboarding Partenaire Logistique — Brand-In-A-Box",
-    description: english
-      ? "Operational onboarding for preselected 3PLs and carriers: verification, SLAs, technical integration and pilot."
-      : "Activation opérationnelle pour 3PL et transporteurs présélectionnés : KYC, SLA, intégration technique et pilote.",
+    description: partnerJourney.ops[lang].onboarding,
   });
   return (
     <StandaloneLayout
@@ -355,7 +352,7 @@ export default function OpsOnboarding() {
           </Link>
         </Button>
         <Badge variant="secondary" className="mb-3">
-          {copy("Activation · Réservé aux partenaires présélectionnés")}
+          {english ? "File by invitation" : "Dossier sur invitation"}
         </Badge>
         <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">
           {copy(opsOnboardingConfig.title)}
