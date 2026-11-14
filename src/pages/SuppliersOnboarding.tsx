@@ -93,22 +93,22 @@ export const suppliersOnboardingConfig: OnboardingConfig = {
     {
       id: "audit",
       get title() {
-        return translateUi("Audit qualité annoncé sous 48h de préavis");
+        return translateUi("Contrôles de qualité adaptés");
       },
       get text() {
         return translateUi(
-          "Notre Ops Manager peut auditer vos lignes 1 fois / an minimum, avec préavis court.",
+          "Les vérifications et leurs modalités sont précisées dans les documents contractuels applicables.",
         );
       },
     },
     {
       id: "hub",
       get title() {
-        return translateUi("Expédition systématique vers le hub BIB");
+        return translateUi("Organisation des expéditions");
       },
       get text() {
         return translateUi(
-          "Aucune expédition directe vers le client final — tout transite par notre entrepôt de contrôle qualité.",
+          "Les modalités d'expédition sont convenues selon les produits et les partenaires concernés.",
         );
       },
     },
@@ -119,29 +119,29 @@ export const suppliersOnboardingConfig: OnboardingConfig = {
       },
       get text() {
         return translateUi(
-          "Production, expédition, incidents : tout passe par le portail. Email seul = non recevable.",
+          "Les informations opérationnelles utiles sont échangées par les canaux prévus avec BIB.",
         );
       },
     },
     {
       id: "sla",
       get title() {
-        return translateUi("Respect des délais avec pénalités contractuelles");
+        return translateUi("Respect des délais convenus");
       },
       get text() {
         return translateUi(
-          "Retard non justifié > 10 jours = pénalité forfaitaire prévue au contrat.",
+          "Les engagements de délai et les conséquences éventuelles d'un manquement sont définis par contrat.",
         );
       },
     },
     {
       id: "moq",
       get title() {
-        return translateUi("MOQ et tarifs gelés pour 12 mois");
+        return translateUi("Conditions de prix et de capacité");
       },
       get text() {
         return translateUi(
-          "Toute hausse > 5% doit être notifiée 60 jours à l'avance.",
+          "Les modalités de révision des prix sont définies lors de la contractualisation.",
         );
       },
     },
@@ -228,7 +228,7 @@ export const suppliersOnboardingConfig: OnboardingConfig = {
     {
       id: "erp",
       get label() {
-        return translateUi("ERP / outil interne utilisé");
+        return translateUi("Outil de gestion de production utilisé");
       },
       type: "text",
       required: false,
@@ -267,7 +267,7 @@ export const suppliersOnboardingConfig: OnboardingConfig = {
     },
     get description() {
       return translateUi(
-        "Décrivez la référence proposée pour la commande pilote (1 à 3 SKU). Notre Ops Manager validera la fiche, la grille tarifaire et la fenêtre de production avant de déclencher la première commande test.",
+        "Présentez les références envisagées et vos possibilités de livraison. Les modalités d'une éventuelle commande pilote seront étudiées avec BIB.",
       );
     },
     get placeholder() {

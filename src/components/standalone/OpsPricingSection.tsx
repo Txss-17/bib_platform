@@ -332,11 +332,11 @@ export function OpsPricingSection() {
           </h3>
           <p className="text-sm text-muted-foreground mb-5">
             {translateUi(
-              "Candidature en 4 à 6 minutes — validation sous 3 jours ouvrés.",
+              "Demande de partenariat en 4 à 6 minutes — retour après étude du dossier.",
             )}
           </p>
           <Button asChild variant="coral" size="lg">
-            <Link to="/ops/apply">{translateUi("Postuler maintenant")}</Link>
+            <Link to="/ops/apply">{translateUi("Proposer un partenariat")}</Link>
           </Button>
         </div>
       </section>

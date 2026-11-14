@@ -68,7 +68,7 @@ const howItWorks = [
     },
     get text() {
       return translateUi(
-        "Les commandes affectées au partenaire sont préparées selon les procédures BIB, avec les références et emballages requis.",
+        "Préparation des commandes selon les conditions convenues avec chaque partenaire.",
       );
     },
   },
@@ -104,7 +104,7 @@ const advantages = [
     },
     get text() {
       return translateUi(
-        "Commandes, réassorts et tâches logistiques organisés selon les priorités définies.",
+        "Consultez les opérations qui vous concernent depuis votre espace partenaire.",
       );
     },
   },
@@ -126,7 +126,7 @@ const advantages = [
     },
     get text() {
       return translateUi(
-        "Historique des préparations, expéditions, incidents et événements opérationnels.",
+        "Visibilité sur les principales étapes des prestations réalisées.",
       );
     },
   },
@@ -248,7 +248,7 @@ function OpsContactDialog({ children }: { children: React.ReactNode }) {
 
     setSubmitting(true);
 
-    const subject = `[Ops BIB] Candidature partenaire — ${parsed.data.company}`;
+    const subject = `[Ops BIB] Demande de partenariat partenaire — ${parsed.data.company}`;
 
     const message =
       `Société : ${parsed.data.company}\n` +
@@ -287,7 +287,7 @@ function OpsContactDialog({ children }: { children: React.ReactNode }) {
     toast({
       title: translateUi("Demande envoyée"),
       description: translateUi(
-        "Votre candidature a bien été transmise à l'équipe BIB.",
+        "Votre demande de partenariat a bien été transmise à l'équipe BIB.",
       ),
     });
   }
@@ -313,7 +313,7 @@ function OpsContactDialog({ children }: { children: React.ReactNode }) {
 
           <DialogDescription>
             {translateUi(
-              "Présentez votre activité et vos capacités. L'équipe BIB reviendra vers vous après étude de votre candidature.",
+              "Présentez votre activité et vos capacités. L'équipe BIB reviendra vers vous après étude de votre demande.",
             )}
           </DialogDescription>
         </DialogHeader>
@@ -463,12 +463,12 @@ function OpsContactDialog({ children }: { children: React.ReactNode }) {
                 <Mail className="w-4 h-4 mr-2" />
               )}
 
-              {translateUi("Envoyer ma candidature")}
+              {translateUi("Envoyer ma demande")}
             </Button>
 
             <p className="text-xs text-muted-foreground text-center">
               {translateUi(
-                "Les informations transmises sont utilisées pour étudier votre candidature de partenaire logistique.",
+                "Les informations transmises sont utilisées pour étudier votre demande de partenariat logistique.",
               )}
             </p>
           </form>
@@ -507,6 +507,7 @@ export default function Ops() {
     <StandaloneLayout
       portal="Ops"
       accent="accent"
+      showPortalIdentifier={false}
       menuItems={[
         {
           label: translateUi("Fonctionnement"),
@@ -542,7 +543,7 @@ export default function Ops() {
     >
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-border/50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-7 lg:pt-3 lg:pb-10">
           <Badge variant="secondary" className="mb-5">
             {translateUi("Réseau opérations BIB")}
           </Badge>
@@ -604,7 +605,7 @@ export default function Ops() {
               <p className="text-xs text-muted-foreground">Organisation</p>
 
               <p className="text-sm font-semibold mt-0.5">
-                {translateUi("Pilotée par BIB Ops")}
+                {translateUi("Coordonnée avec BIB")}
               </p>
             </div>
           </div>
@@ -622,7 +623,7 @@ export default function Ops() {
           </p>
 
           <h2 className="font-display text-2xl sm:text-3xl font-bold">
-            {translateUi("Comment fonctionne le réseau logistique BIB")}
+            {translateUi("Les services logistiques du réseau BIB")}
           </h2>
 
           <p className="text-sm sm:text-base text-muted-foreground mt-3 leading-relaxed">
@@ -665,7 +666,7 @@ export default function Ops() {
             </p>
 
             <h2 className="font-display text-2xl sm:text-3xl font-bold">
-              {translateUi("Un cadre opérationnel commun")}
+              {translateUi("Des engagements clairs pour chaque partenaire")}
             </h2>
 
             <p className="text-sm sm:text-base text-muted-foreground mt-3">
@@ -708,7 +709,7 @@ export default function Ops() {
           </p>
 
           <h2 className="font-display text-2xl sm:text-3xl font-bold">
-            {translateUi("Quatre zones opérationnelles")}
+            {translateUi("Une couverture européenne progressive")}
           </h2>
 
           <p className="text-sm sm:text-base text-muted-foreground mt-3">
@@ -769,7 +770,7 @@ export default function Ops() {
 
             <p className="text-sm sm:text-base text-muted-foreground mt-3">
               {translateUi(
-                "Les partenaires disposent progressivement d'outils permettant de consulter et mettre à jour les opérations qui leur sont attribuées.",
+                "Un espace professionnel facilite les échanges et le suivi des prestations confiées.",
               )}
             </p>
           </div>
@@ -777,11 +778,11 @@ export default function Ops() {
           <Card className="p-6 sm:p-8 bg-background">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
               {[
-                translateUi("Commandes et opérations à traiter"),
-                translateUi("Statuts de préparation et d'expédition"),
+                translateUi("Prestations confiées au partenaire"),
+                translateUi("Informations de suivi des prestations"),
                 translateUi("Gestion des retours"),
-                translateUi("Historique des opérations"),
-                translateUi("Incidents et anomalies"),
+                translateUi("Historique des prestations concernées"),
+                translateUi("Suivi des demandes"),
                 translateUi("Suivi des volumes et délais"),
               ].map((item) => (
                 <div key={item} className="flex items-start gap-3">
@@ -797,7 +798,7 @@ export default function Ops() {
 
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {translateUi(
-                  "Les fonctionnalités disponibles dépendent du rôle du partenaire, de son périmètre opérationnel et du niveau d'intégration mis en place avec BIB.",
+                  "L'accès aux informations dépend du partenariat convenu et reste réservé au partenaire concerné.",
                 )}
               </p>
             </div>
@@ -861,7 +862,7 @@ export default function Ops() {
 
             <p className="text-sm sm:text-base text-bib-ivory/80 mt-3 leading-relaxed">
               {translateUi(
-                "Présentez vos capacités logistiques, vos zones couvertes et vos services. BIB étudiera votre candidature avant de définir les prochaines étapes.",
+                "Présentez vos capacités logistiques, vos zones couvertes et vos services. BIB étudiera votre proposition avant de définir les prochaines étapes.",
               )}
             </p>
 

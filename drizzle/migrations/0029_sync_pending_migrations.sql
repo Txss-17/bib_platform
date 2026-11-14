@@ -1,0 +1,1 @@
+COMMENT ON TABLE public.boutiques IS 'Merchant storefronts (BIB platform).';

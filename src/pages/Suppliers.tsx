@@ -12,14 +12,10 @@ import { SuppliersPricingSection } from "@/components/standalone/SuppliersPricin
 import {
   ShieldCheck,
   Truck,
-  Workflow,
-  Check,
   ArrowRight,
-  AlertTriangle,
   Mail,
   ClipboardCheck,
   PackageCheck,
-  Globe2,
 } from "lucide-react";
 
 const compatibility = [
@@ -30,7 +26,7 @@ const compatibility = [
     },
     get text() {
       return translateUi(
-        "BIB étudie votre entreprise, vos documents et vos produits avant toute intégration au catalogue.",
+        "BIB examine les demandes de partenariat et les produits proposés selon ses critères de sélection.",
       );
     },
   },
@@ -52,7 +48,7 @@ const compatibility = [
     },
     get text() {
       return translateUi(
-        "Les flux de stock, de préparation et d'expédition sont coordonnés avec les partenaires logistiques retenus par BIB.",
+        "BIB facilite la coordination logistique avec les partenaires retenus.",
       );
     },
   },
@@ -63,7 +59,7 @@ const compatibility = [
     },
     get text() {
       return translateUi(
-        "Les documents, la qualité, la traçabilité et les exigences de commercialisation sont examinés dans le parcours BIB.",
+        "Les exigences de qualité, de traçabilité et de conformité sont prises en compte.",
       );
     },
   },
@@ -151,10 +147,10 @@ export default function Suppliers() {
   }, [location.hash]);
 
   return (
-    <StandaloneLayout portal="Suppliers" accent="primary">
+    <StandaloneLayout portal="Suppliers" accent="primary" showPortalIdentifier={false}>
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-border/50 bg-background">
-        <div className="container mx-auto px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+        <div className="container mx-auto px-4 pt-2 pb-7 sm:px-6 lg:px-8 lg:pt-3 lg:pb-10">
           <div className="max-w-4xl">
             <Badge variant="secondary" className="mb-5">
               {translateUi("Réseau fournisseurs BIB")}
@@ -174,7 +170,7 @@ export default function Suppliers() {
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="gap-2">
                 <Link to="/suppliers/apply">
-                  {translateUi("Candidater comme fournisseur")}
+                  {translateUi("Proposer un partenariat")}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -265,126 +261,19 @@ export default function Suppliers() {
         </div>
       </section>
 
-      {/* PRINCIPES */}
-      <section className="border-y border-border/50 bg-muted/30">
-        <div className="container mx-auto px-4 py-14 sm:px-6 lg:px-8 lg:py-18">
-          <div className="mb-8 max-w-2xl">
-            <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-secondary">
-              {translateUi("Notre fonctionnement")}
-            </p>
-
-            <h2 className="font-display text-2xl font-bold sm:text-3xl">
-              {translateUi("Ce que signifie travailler avec BIB")}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-            {principles.map((item) => {
-              const Icon = item.icon;
-
-              return (
-                <Card key={item.title} className="bg-background p-6">
-                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Icon className="h-5 w-5" />
-                  </div>
-
-                  <h3 className="font-semibold">{item.title}</h3>
-
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    {item.text}
-                  </p>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* CRITERES */}
-      <section
-        id="criteres"
-        className="container mx-auto scroll-mt-20 px-4 py-14 sm:px-6 lg:px-8 lg:py-18"
-      >
-        <div className="mb-7 max-w-2xl">
-          <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-secondary">
-            {translateUi("Avant de candidater")}
-          </p>
-
-          <h2 className="font-display text-2xl font-bold sm:text-3xl">
-            {translateUi("Critères de compatibilité")}
-          </h2>
-
-          <p className="mt-2 text-sm text-muted-foreground">
-            {translateUi(
-              "Ces éléments permettent de déterminer si votre entreprise et vos produits peuvent entrer dans le parcours de référencement BIB.",
-            )}
-          </p>
-        </div>
-
-        <Card className="p-6 sm:p-8">
-          <ul className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
-            {minimumCriteria.map((criterion) => (
-              <li key={criterion} className="flex items-start gap-3 text-sm">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-success/10 text-success">
-                  <Check className="h-3.5 w-3.5" />
-                </span>
-
-                <span className="pt-0.5 leading-relaxed">{criterion}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      </section>
-
-      {/* CONTRAINTES */}
-      <section
-        id="contraintes"
-        className="container mx-auto scroll-mt-20 px-4 pb-14 sm:px-6 lg:px-8 lg:pb-18"
-      >
-        <Card className="border-warning/30 bg-warning/5 p-6 sm:p-8">
-          <div className="mb-6 flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-warning/10 text-warning">
-              <AlertTriangle className="h-5 w-5" />
-            </div>
-
-            <div>
-              <h2 className="font-display text-xl font-bold sm:text-2xl">
-                {translateUi("Exigences du réseau")}
-              </h2>
-
-              <p className="mt-1 text-sm text-muted-foreground">
-                {translateUi(
-                  "Le référencement BIB implique un cadre opérationnel commun à l'ensemble des fournisseurs.",
-                )}
-              </p>
-            </div>
-          </div>
-
-          <ul className="grid grid-cols-1 gap-x-8 gap-y-3 md:grid-cols-2">
-            {constraints.map((constraint) => (
-              <li key={constraint} className="flex items-start gap-2.5 text-sm">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-warning" />
-
-                <span className="leading-relaxed">{constraint}</span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      </section>
-
       {/* PROCESSUS */}
       <section
         id="etapes"
-        className="scroll-mt-20 border-y border-border/50 bg-muted/30"
+        className="scroll-mt-20 border-t border-border/50 bg-muted/20"
       >
-        <div className="container mx-auto px-4 py-14 sm:px-6 lg:px-8 lg:py-18">
+        <div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
           <div className="mb-8 max-w-2xl">
             <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-secondary">
               {translateUi("Parcours fournisseur")}
             </p>
 
             <h2 className="font-display text-2xl font-bold sm:text-3xl">
-              {translateUi("De la candidature au catalogue BIB")}
+              {translateUi("Les grandes étapes pour nous rejoindre")}
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{journey.application}</p>
           </div>
@@ -417,7 +306,7 @@ export default function Suppliers() {
       </section>
 
       {/* CTA */}
-      <section className="container mx-auto px-4 py-14 sm:px-6 lg:px-8 lg:py-18">
+      <section className="container mx-auto px-4 py-12 sm:px-6 lg:px-8 lg:py-14">
         <Card className="border-0 bg-primary p-7 text-center text-primary-foreground sm:p-10">
           <div className="mx-auto max-w-2xl">
             <div className="mx-auto mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-primary-foreground/10">
@@ -432,14 +321,14 @@ export default function Suppliers() {
 
             <p className="mt-3 text-sm leading-relaxed text-primary-foreground/80 sm:text-base">
               {translateUi(
-                "Déposez votre candidature. L'équipe BIB étudiera votre activité, vos produits et vos capacités opérationnelles avant de vous indiquer la suite du parcours.",
+                "Présentez votre proposition de partenariat. L'équipe BIB étudiera votre activité, vos produits et vos capacités opérationnelles avant de vous indiquer la suite du parcours.",
               )}
             </p>
 
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Button asChild size="lg" variant="secondary" className="gap-2">
                 <Link to="/suppliers/apply">
-                  {translateUi("Déposer une candidature")}
+                  {translateUi("Proposer un partenariat")}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>

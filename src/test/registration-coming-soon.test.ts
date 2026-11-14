@@ -97,7 +97,8 @@ describe("Merchant registration remains closed while customers and partners can 
     expect(bridge).toContain('row.solution_selections ?? [row.solution]');
     expect(bridge).toContain("merchant_interest: {");
     expect(bridge).toContain("preferred_launch_timing_counts");
-    expect(bridge).toContain("surveyRows.error ||");
+    expect(bridge).toContain("['prelaunch_survey_responses', surveyRows.error]");
+    expect(bridge).toContain("platform_export_required_sources_unavailable");
     // Inspect selected columns; a documentation comment may mention prohibited fields.
     expect(bridge).not.toMatch(/\.select\([^)]*visitor_digest/);
   });

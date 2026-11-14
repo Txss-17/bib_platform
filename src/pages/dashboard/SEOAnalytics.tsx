@@ -616,8 +616,8 @@ export default function SEOAnalytics() {
             </div>
             {recommendations.length === 0 ? (
               <EmptyState
-                title={translateUi(avgScore === null ? "Aucune donnée SEO" : "Aucune action prioritaire")}
-                description={translateUi(avgScore === null ? "Ajoutez des boutiques et produits pour établir un contrôle SEO." : "Aucune correction prioritaire n’a été identifiée selon la grille interne.")}
+                title={avgScore === null ? translateUi("Aucune donnée SEO") : translateUi("Aucune action prioritaire")}
+                description={avgScore === null ? translateUi("Ajoutez des boutiques et produits pour établir un contrôle SEO.") : translateUi("Aucune correction prioritaire n’a été identifiée selon la grille interne.")}
               />
             ) : (
               <div className="space-y-2">

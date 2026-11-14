@@ -28,6 +28,9 @@ interface StandaloneLayoutProps {
    */
   portal: string;
 
+  /** Hide the small portal banner above the page hero when the public page already identifies itself. */
+  showPortalIdentifier?: boolean;
+
   /**
    * Accent used for the portal identifier.
    */
@@ -50,6 +53,7 @@ interface StandaloneLayoutProps {
 export function StandaloneLayout({
   children,
   portal,
+  showPortalIdentifier = true,
   accent = "primary",
 }: StandaloneLayoutProps) {
   useLanguage();
@@ -67,7 +71,7 @@ export function StandaloneLayout({
       <div className="h-16 lg:h-20" aria-hidden="true" />
 
       {/* Lightweight portal identifier */}
-      {portal && (
+      {showPortalIdentifier && portal && (
         <div
           className="border-b border-border/50 bg-background"
           aria-label={translateUi("Portail {v0}", { v0: portal })}

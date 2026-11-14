@@ -33,7 +33,8 @@ describe("Merchant operational workspaces", () => {
     const sidebar = read("src/components/dashboard/DashboardSidebar.tsx");
     const widget = read("src/components/support/FloatingSupportButton.tsx");
     const server = read("supabase/functions/support-ai/index.ts");
-    expect(layout).toContain("bib.dashboard.sidebar.collapsed");
+    expect(layout).toContain('const [sidebarCollapsed, setSidebarCollapsed] = useState(false)');
+    expect(layout).toContain('aria-expanded={!sidebarCollapsed}');
     expect(layout).toContain("PanelLeftOpen");
     expect(layout).toContain("PanelLeftClose");
     expect(sidebar).toContain("if (collapsed) return null;");
@@ -389,7 +390,7 @@ describe("Merchant operational workspaces", () => {
     expect(catalog).toContain("lg:hidden");
     const marketing = read("src/pages/dashboard/Marketing.tsx");
     expect(marketing).toContain('w-full min-w-0 pb-1');
-    expect(marketing).toContain('min-w-0 grid-cols-3');
+    expect(marketing).toContain('min-[420px]:grid-cols-3');
     expect(marketing).toContain('sm:flex-row sm:items-end');
     const composer = read("src/components/marketing/BlockComposer.tsx");
     expect(composer).toContain("lg:grid-cols-[minmax(0,1fr)_minmax(0,320px)]");

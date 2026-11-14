@@ -204,6 +204,13 @@
       "when": 1793955900000,
       "tag": "0028_merchant_mandate_acceptances",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1794302829132,
+      "tag": "0029_sync_pending_migrations",
+      "breakpoints": true
     }
   ]
 }
