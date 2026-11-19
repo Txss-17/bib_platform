@@ -16,6 +16,8 @@ import {
   Mail,
   ClipboardCheck,
   PackageCheck,
+  Globe2,
+  Workflow,
 } from "lucide-react";
 
 const compatibility = [
