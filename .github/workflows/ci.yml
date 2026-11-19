@@ -170,7 +170,9 @@ jobs:
           NODE_OPTIONS: --import=./scripts/migration/test-network-guard.mjs
           VITE_SUPABASE_URL: https://yhzhygssycjoqrxyygvj.supabase.co
           VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_local_regression_fixture
-        run: npm test -- --run --passWithNoTests
+        run: |
+          npm test -- --run --passWithNoTests
+          node --test tests/migration/partner-onboarding-read.test.mjs
 
       - name: Test insured SAV with real PostgreSQL functions
         run: npx vitest run --config tests/sav/vitest.config.ts

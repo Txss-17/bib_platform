@@ -211,6 +211,13 @@
       "when": 1794302829132,
       "tag": "0029_sync_pending_migrations",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1795070504577,
+      "tag": "0030_current_auth_email_policy",
+      "breakpoints": true
     }
   ]
 }
