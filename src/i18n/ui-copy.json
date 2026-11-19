@@ -1,105 +1,307 @@
 {
-  "Le prix global indicatif inclut déjà la livraison et la commission BIB. L’écart de prix simulé n’est pas un bénéfice net ; le devis fixe les montants applicables.": {"en": "The indicative global price already includes delivery and the BIB fee. The simulated price difference is not net profit; the quote sets the applicable amounts."},
-  "Le coût global reste à confirmer par devis. L’ajout prépare votre catalogue et ne constitue pas un achat.": {"en": "The global cost must still be confirmed by quote. Adding a reference prepares your catalogue and does not constitute a purchase."},
-  "Devis d’acquisition": {"en": "Acquisition quotes"},
-  "Demander le devis échantillon": {"en": "Request a sample quote"},
-  "Prix d’acquisition indicatif": {"en": "Indicative acquisition price"},
-  "À confirmer par devis": {"en": "To be confirmed by quote"},
-  "Le prix global validé inclut produit, livraison et commission BIB. Le fournisseur est identifié sur votre devis avant engagement ; l’ajout à une boutique ne constitue pas un achat.": {"en": "The approved global price includes the product, delivery and BIB fee. The supplier is identified in your quote before you agree; adding a product to a store is not a purchase."},
-  "Demander un devis d’acquisition": {"en": "Request an acquisition quote"},
-  "Demander un devis": {"en": "Request a quote"},
-  "Le paiement de l'échantillon n'est pas disponible actuellement.": {"en": "Sample payment is currently unavailable."},
-  "Aucune commande n'a été enregistrée. Réessayez lorsque le paiement sera activé.": {"en": "No order has been recorded. Try again when payment is activated."},
-  "Offres BIB par email": {"en": "BIB offers by email"},
-  "Offres et nouveautés de": {"en": "Offers and news from"},
-  "Les abonnements confirmés ne sont pas disponibles. L’envoi reste bloqué tant que les consentements ne peuvent pas être vérifiés.": {"en": "Confirmed subscriptions are unavailable. Sending remains blocked until consent can be verified."},
-  "Abonnement email": {"en": "Email subscription"},
-  "Indisponible": {"en": "Unavailable"},
-  "Confirmé": {"en": "Confirmed"},
-  "Non confirmé": {"en": "Not confirmed"},
-  "Chaque nouvel abonnement aux offres doit être confirmé par email. Ce contrôle reste actif pour toutes les campagnes.": {"en": "Every new offer subscription must be confirmed by email. This check remains active for all campaigns."},
-  "Confirmation email toujours requise": {"en": "Email confirmation is always required"},
-  "1 boutique incluse · jusqu'à 3 boutiques avec options supplémentaires": {"en":"1 store included · up to 3 stores with optional add-ons"},
-  "Gestion d’équipe et rôles": { "en": "Team management and roles" },
-  "Paramètres des boutiques": { "en": "Store settings" },
-  "Préférences de notification enregistrées": { "en": "Notification preferences saved" },
-  "Chargement des préférences…": { "en": "Loading preferences…" },
-  "Sécurité du compte": { "en": "Account security" },
-  "Alertes de connexion et événements de sécurité obligatoires": { "en": "Mandatory sign-in alerts and security events" },
-  "Informations de compte": { "en": "Account information" },
-  "Mises à jour administratives et changements de votre espace": { "en": "Administrative updates and account changes" },
-  "Actualités BIB": { "en": "BIB announcements" },
-  "Annonces non essentielles et nouveautés de la plateforme": { "en": "Nonessential announcements and platform news" },
-  "Synthèse hebdomadaire": { "en": "Weekly digest" },
-  "Récapitulatif des événements de votre activité": { "en": "Summary of activity events" },
-  "Les e-mails transactionnels et de sécurité obligatoires ne peuvent pas être désactivés. Les préférences enregistrées doivent être respectées par les envois automatisés.": { "en": "Mandatory transactional and security messages cannot be disabled. Automated sends must respect stored preferences." },
-  "Enregistrer les préférences": { "en": "Save preferences" },
-  "Instructions de versement": { "en": "Payout instructions" },
-  "Configurez les préférences de versement de cette boutique. Les virements restent soumis à la vérification du bénéficiaire et aux règlements de BIB.": { "en": "Set this store's payout preferences. Transfers remain subject to beneficiary verification and BIB settlement processes." },
-  "Vérification du bénéficiaire en attente": { "en": "Beneficiary verification pending" },
-  "Bénéficiaire vérifié": { "en": "Beneficiary verified" },
-  "Aucune modification de coordonnées bancaires ni aucun virement automatique ne sont effectués ici.": { "en": "No bank details are changed and no automatic transfers are initiated here." },
-  "Bénéficiaire légal": { "en": "Legal beneficiary" },
-  "Raison sociale ou nom légal": { "en": "Registered company or legal name" },
-  "E-mail de contact pour les versements": { "en": "Payout contact email" },
-  "Préférence de périodicité": { "en": "Preferred payout frequency" },
-  "Deux fois par mois": { "en": "Twice monthly" },
-  "Une fois par mois": { "en": "Once monthly" },
-  "La périodicité est une préférence, pas une promesse de date de versement. Les fonds sont versés uniquement après validation financière et contrôle des commandes.": { "en": "Frequency is a preference, not a promised payout date. Funds are transferred only after financial and order verification." },
-  "Enregistrer les instructions": { "en": "Save instructions" },
-  "Instructions de versement enregistrées — vérification nécessaire": { "en": "Payout instructions saved — verification required" },
-  "Les préférences de versement dépendent de la boutique et se règlent dans son espace de configuration. Les paiements et virements effectifs restent disponibles dans « Paiements ».": { "en": "Payout preferences belong to each store and are managed in its settings. Actual payments and transfers remain under Payments." },
-  "Choisir une boutique et configurer ses versements": { "en": "Select a store and configure payouts" },
-  "Gestion d'équipe indisponible sur Starter": { "en": "Team management is not available on Starter" },
-  "L'espace Équipe est disponible avec Growth et Pro.": { "en": "The Team workspace is available with Growth and Pro." },
-  "Passez à Growth ou Pro pour inviter des collaborateurs et leur attribuer des rôles sur vos boutiques.": { "en": "Upgrade to Growth or Pro to invite teammates and assign store roles." },
-  "Répartition par marché": { "en": "Sales by market" },
-  "Montants des commandes payées par marché déclaré · aucune localisation client inventée": { "en": "Paid order values by declared market · no inferred customer location" },
-  "Aucune vente payée localisée par marché": { "en": "No paid sales categorized by market" },
-  "Cette répartition sera alimentée par les commandes réellement payées. Les commandes de test sont exclues.": { "en": "This breakdown uses confirmed paid orders only. Test orders are excluded." },
-  "du chiffre d'affaires analysé": { "en": "of analyzed revenue" },
-  "Produits classés par chiffre d’affaires payé sur les six derniers mois": { "en": "Products ranked by paid revenue over the last six months" },
-  "Six derniers mois · commandes payées, hors environnement de test": { "en": "Last six months · paid orders excluding test mode" },
-  "Produits en stock sans vente confirmée depuis plus de 30 jours ; les produits jamais vendus sont signalés séparément": { "en": "Stocked products with no confirmed sale for over 30 days; never-sold products shown separately" },
-  "Produit et boutique": { "en": "Product and store" },
-  "Stock / seuil": { "en": "Stock / threshold" },
-  "Échantillon": { "en": "Sample" },
-  "Publication": { "en": "Publication" },
-  "Actions": { "en": "Actions" },
-  "Autres actions": { "en": "More actions" },
-  "unités vendues": { "en": "units sold" },
-  "Indicateurs de qualité SEO": { "en": "SEO quality indicators" },
-  "Statistiques & qualité SEO": { "en": "Analytics & SEO quality" },
-  "Indice de qualité SEO": { "en": "SEO quality indicator" },
-  "Actions prioritaires": { "en": "Prioritized actions" },
-  "Contrôles SEO des fiches et pages": { "en": "SEO checks for listings and pages" },
-  "Diagnostic du contenu présent dans BIB — ne présume pas de son indexation par les moteurs de recherche": { "en": "Checks content stored in BIB; does not imply search engine indexing" },
-  "Sources : boutiques, produits et commandes BIB. Seules les ventes payées hors environnement de test sont comptées. Le score SEO est une grille interne de contrôle éditorial.": { "en": "Sources: BIB stores, products, and orders. Only paid non-test sales count. The SEO indicator is an internal editorial checklist." },
-  "Aucune date confirmée": { "en": "No confirmed date" },
-  "Date planifiée enregistrée": { "en": "Scheduled date recorded" },
-  "Retours gratuits : frais de retour pris en charge": { "en": "Free returns: return shipping costs covered" },
-  "Jusqu'à 15 produits audités": { "en": "Up to 15 audited products" },
-  "Jusqu'à 50 produits audités": { "en": "Up to 50 audited products" },
-  "Support email 72h": { "en": "Email support within 72 hours" },
-  "Support prioritaire 48h": { "en": "Priority support within 48 hours" },
-  "Analytics complets (pages, scènes, produits) + exports CSV et PDF": { "en": "Complete analytics (pages, scenes, products) + CSV and PDF exports" },
-  "1 boutique incluse ; jusqu'à 3 avec options payantes (+19,99 €/mois pour 1 supplémentaire, +35,99 €/mois pour 2 supplémentaires)": { "en": "1 store included; up to 3 with paid add-ons (+€19.99/month for 1 extra, +€35.99/month for 2 extras)" },
-  "Domaine personnalisé réservé au plan Pro": { "en": "Custom domain reserved for Pro" },
-  "Boutiques supplémentaires — Growth et Pro": { "en": "Extra stores — Growth and Pro" },
-  "Une boutique est incluse dans Growth et Pro. Activez un seul palier supplémentaire : les deux prix ne se cumulent pas. L'accès s'ouvre uniquement après validation du paiement.": { "en": "Growth and Pro include one store. Choose one extra-store tier; the prices do not add together. Access is granted only after payment confirmation." },
-  "2 boutiques au total": { "en": "2 stores in total" },
-  "3 boutiques au total": { "en": "3 stores in total" },
-  "boutiques au total": { "en": "stores in total" },
-  "Activer ce palier": { "en": "Activate this tier" },
-  "Changer de palier": { "en": "Change tier" },
-  "Palier actif": { "en": "Active tier" },
-  "Résilier les boutiques supplémentaires": { "en": "Cancel extra stores" },
-  "Limite de boutiques atteinte. Consultez vos abonnements pour activer une boutique supplémentaire.": { "en": "Store limit reached. Manage your subscription to enable another store." },
-  "Les boutiques supplémentaires du plan Pro nécessitent une activation payante confirmée dans l'abonnement.": { "en": "Extra stores on Growth and Pro require a paid subscription add-on." },
-  "Avant toute mission opérationnelle, les modalités adaptées à chaque situation sont définies par écrit : statut, durée, responsabilités, encadrement, confidentialité et rémunération le cas échéant. Une candidature ne donne aucun accès automatique à l'Intranet.": { "en": "Before any operational assignment, suitable written terms will define the status, duration, responsibilities, supervision, confidentiality and remuneration where applicable. An application does not automatically grant Intranet access." },
-  "Candidater à BIB Talent": { "en": "Apply to BIB Talent" },
-  "Retour à l'édition": { "en": "Back to editing" },
-  "Recommandé pour vous": { "en": "Recommended for you" },
+  "Le prix global indicatif inclut déjà la livraison et la commission BIB. L’écart de prix simulé n’est pas un bénéfice net ; le devis fixe les montants applicables.": {
+    "en": "The indicative global price already includes delivery and the BIB fee. The simulated price difference is not net profit; the quote sets the applicable amounts."
+  },
+  "Le coût global reste à confirmer par devis. L’ajout prépare votre catalogue et ne constitue pas un achat.": {
+    "en": "The global cost must still be confirmed by quote. Adding a reference prepares your catalogue and does not constitute a purchase."
+  },
+  "Devis d’acquisition": {
+    "en": "Acquisition quotes"
+  },
+  "Demander le devis échantillon": {
+    "en": "Request a sample quote"
+  },
+  "Prix d’acquisition indicatif": {
+    "en": "Indicative acquisition price"
+  },
+  "À confirmer par devis": {
+    "en": "To be confirmed by quote"
+  },
+  "Le prix global validé inclut produit, livraison et commission BIB. Le fournisseur est identifié sur votre devis avant engagement ; l’ajout à une boutique ne constitue pas un achat.": {
+    "en": "The approved global price includes the product, delivery and BIB fee. The supplier is identified in your quote before you agree; adding a product to a store is not a purchase."
+  },
+  "Demander un devis d’acquisition": {
+    "en": "Request an acquisition quote"
+  },
+  "Demander un devis": {
+    "en": "Request a quote"
+  },
+  "Le paiement de l'échantillon n'est pas disponible actuellement.": {
+    "en": "Sample payment is currently unavailable."
+  },
+  "Aucune commande n'a été enregistrée. Réessayez lorsque le paiement sera activé.": {
+    "en": "No order has been recorded. Try again when payment is activated."
+  },
+  "Offres BIB par email": {
+    "en": "BIB offers by email"
+  },
+  "Offres et nouveautés de": {
+    "en": "Offers and news from"
+  },
+  "Les abonnements confirmés ne sont pas disponibles. L’envoi reste bloqué tant que les consentements ne peuvent pas être vérifiés.": {
+    "en": "Confirmed subscriptions are unavailable. Sending remains blocked until consent can be verified."
+  },
+  "Abonnement email": {
+    "en": "Email subscription"
+  },
+  "Indisponible": {
+    "en": "Unavailable"
+  },
+  "Confirmé": {
+    "en": "Confirmed"
+  },
+  "Non confirmé": {
+    "en": "Not confirmed"
+  },
+  "Chaque nouvel abonnement aux offres doit être confirmé par email. Ce contrôle reste actif pour toutes les campagnes.": {
+    "en": "Every new offer subscription must be confirmed by email. This check remains active for all campaigns."
+  },
+  "Confirmation email toujours requise": {
+    "en": "Email confirmation is always required"
+  },
+  "1 boutique incluse · jusqu'à 3 boutiques avec options supplémentaires": {
+    "en": "1 store included · up to 3 stores with optional add-ons"
+  },
+  "Gestion d’équipe et rôles": {
+    "en": "Team management and roles"
+  },
+  "Paramètres des boutiques": {
+    "en": "Store settings"
+  },
+  "Préférences de notification enregistrées": {
+    "en": "Notification preferences saved"
+  },
+  "Chargement des préférences…": {
+    "en": "Loading preferences…"
+  },
+  "Sécurité du compte": {
+    "en": "Account security"
+  },
+  "Alertes de connexion et événements de sécurité obligatoires": {
+    "en": "Mandatory sign-in alerts and security events"
+  },
+  "Informations de compte": {
+    "en": "Account information"
+  },
+  "Mises à jour administratives et changements de votre espace": {
+    "en": "Administrative updates and account changes"
+  },
+  "Actualités BIB": {
+    "en": "BIB announcements"
+  },
+  "Annonces non essentielles et nouveautés de la plateforme": {
+    "en": "Nonessential announcements and platform news"
+  },
+  "Synthèse hebdomadaire": {
+    "en": "Weekly digest"
+  },
+  "Récapitulatif des événements de votre activité": {
+    "en": "Summary of activity events"
+  },
+  "Les e-mails transactionnels et de sécurité obligatoires ne peuvent pas être désactivés. Les préférences enregistrées doivent être respectées par les envois automatisés.": {
+    "en": "Mandatory transactional and security messages cannot be disabled. Automated sends must respect stored preferences."
+  },
+  "Enregistrer les préférences": {
+    "en": "Save preferences"
+  },
+  "Instructions de versement": {
+    "en": "Payout instructions"
+  },
+  "Configurez les préférences de versement de cette boutique. Les virements restent soumis à la vérification du bénéficiaire et aux règlements de BIB.": {
+    "en": "Set this store's payout preferences. Transfers remain subject to beneficiary verification and BIB settlement processes."
+  },
+  "Vérification du bénéficiaire en attente": {
+    "en": "Beneficiary verification pending"
+  },
+  "Bénéficiaire vérifié": {
+    "en": "Beneficiary verified"
+  },
+  "Aucune modification de coordonnées bancaires ni aucun virement automatique ne sont effectués ici.": {
+    "en": "No bank details are changed and no automatic transfers are initiated here."
+  },
+  "Bénéficiaire légal": {
+    "en": "Legal beneficiary"
+  },
+  "Raison sociale ou nom légal": {
+    "en": "Registered company or legal name"
+  },
+  "E-mail de contact pour les versements": {
+    "en": "Payout contact email"
+  },
+  "Préférence de périodicité": {
+    "en": "Preferred payout frequency"
+  },
+  "Deux fois par mois": {
+    "en": "Twice monthly"
+  },
+  "Une fois par mois": {
+    "en": "Once monthly"
+  },
+  "La périodicité est une préférence, pas une promesse de date de versement. Les fonds sont versés uniquement après validation financière et contrôle des commandes.": {
+    "en": "Frequency is a preference, not a promised payout date. Funds are transferred only after financial and order verification."
+  },
+  "Enregistrer les instructions": {
+    "en": "Save instructions"
+  },
+  "Instructions de versement enregistrées — vérification nécessaire": {
+    "en": "Payout instructions saved — verification required"
+  },
+  "Les préférences de versement dépendent de la boutique et se règlent dans son espace de configuration. Les paiements et virements effectifs restent disponibles dans « Paiements ».": {
+    "en": "Payout preferences belong to each store and are managed in its settings. Actual payments and transfers remain under Payments."
+  },
+  "Choisir une boutique et configurer ses versements": {
+    "en": "Select a store and configure payouts"
+  },
+  "Gestion d'équipe indisponible sur Starter": {
+    "en": "Team management is not available on Starter"
+  },
+  "L'espace Équipe est disponible avec Growth et Pro.": {
+    "en": "The Team workspace is available with Growth and Pro."
+  },
+  "Passez à Growth ou Pro pour inviter des collaborateurs et leur attribuer des rôles sur vos boutiques.": {
+    "en": "Upgrade to Growth or Pro to invite teammates and assign store roles."
+  },
+  "Répartition par marché": {
+    "en": "Sales by market"
+  },
+  "Montants des commandes payées par marché déclaré · aucune localisation client inventée": {
+    "en": "Paid order values by declared market · no inferred customer location"
+  },
+  "Aucune vente payée localisée par marché": {
+    "en": "No paid sales categorized by market"
+  },
+  "Cette répartition sera alimentée par les commandes réellement payées. Les commandes de test sont exclues.": {
+    "en": "This breakdown uses confirmed paid orders only. Test orders are excluded."
+  },
+  "du chiffre d'affaires analysé": {
+    "en": "of analyzed revenue"
+  },
+  "Produits classés par chiffre d’affaires payé sur les six derniers mois": {
+    "en": "Products ranked by paid revenue over the last six months"
+  },
+  "Six derniers mois · commandes payées, hors environnement de test": {
+    "en": "Last six months · paid orders excluding test mode"
+  },
+  "Produits en stock sans vente confirmée depuis plus de 30 jours ; les produits jamais vendus sont signalés séparément": {
+    "en": "Stocked products with no confirmed sale for over 30 days; never-sold products shown separately"
+  },
+  "Produit et boutique": {
+    "en": "Product and store"
+  },
+  "Stock / seuil": {
+    "en": "Stock / threshold"
+  },
+  "Échantillon": {
+    "en": "Sample"
+  },
+  "Publication": {
+    "en": "Publication"
+  },
+  "Actions": {
+    "en": "Actions"
+  },
+  "Autres actions": {
+    "en": "More actions"
+  },
+  "unités vendues": {
+    "en": "units sold"
+  },
+  "Indicateurs de qualité SEO": {
+    "en": "SEO quality indicators"
+  },
+  "Statistiques & qualité SEO": {
+    "en": "Analytics & SEO quality"
+  },
+  "Indice de qualité SEO": {
+    "en": "SEO quality indicator"
+  },
+  "Actions prioritaires": {
+    "en": "Prioritized actions"
+  },
+  "Contrôles SEO des fiches et pages": {
+    "en": "SEO checks for listings and pages"
+  },
+  "Diagnostic du contenu présent dans BIB — ne présume pas de son indexation par les moteurs de recherche": {
+    "en": "Checks content stored in BIB; does not imply search engine indexing"
+  },
+  "Sources : boutiques, produits et commandes BIB. Seules les ventes payées hors environnement de test sont comptées. Le score SEO est une grille interne de contrôle éditorial.": {
+    "en": "Sources: BIB stores, products, and orders. Only paid non-test sales count. The SEO indicator is an internal editorial checklist."
+  },
+  "Aucune date confirmée": {
+    "en": "No confirmed date"
+  },
+  "Date planifiée enregistrée": {
+    "en": "Scheduled date recorded"
+  },
+  "Retours gratuits : frais de retour pris en charge": {
+    "en": "Free returns: return shipping costs covered"
+  },
+  "Jusqu'à 15 produits audités": {
+    "en": "Up to 15 audited products"
+  },
+  "Jusqu'à 50 produits audités": {
+    "en": "Up to 50 audited products"
+  },
+  "Support email 72h": {
+    "en": "Email support within 72 hours"
+  },
+  "Support prioritaire 48h": {
+    "en": "Priority support within 48 hours"
+  },
+  "Analytics complets (pages, scènes, produits) + exports CSV et PDF": {
+    "en": "Complete analytics (pages, scenes, products) + CSV and PDF exports"
+  },
+  "1 boutique incluse ; jusqu'à 3 avec options payantes (+19,99 €/mois pour 1 supplémentaire, +35,99 €/mois pour 2 supplémentaires)": {
+    "en": "1 store included; up to 3 with paid add-ons (+€19.99/month for 1 extra, +€35.99/month for 2 extras)"
+  },
+  "Domaine personnalisé réservé au plan Pro": {
+    "en": "Custom domain reserved for Pro"
+  },
+  "Boutiques supplémentaires — Growth et Pro": {
+    "en": "Extra stores — Growth and Pro"
+  },
+  "Une boutique est incluse dans Growth et Pro. Activez un seul palier supplémentaire : les deux prix ne se cumulent pas. L'accès s'ouvre uniquement après validation du paiement.": {
+    "en": "Growth and Pro include one store. Choose one extra-store tier; the prices do not add together. Access is granted only after payment confirmation."
+  },
+  "2 boutiques au total": {
+    "en": "2 stores in total"
+  },
+  "3 boutiques au total": {
+    "en": "3 stores in total"
+  },
+  "boutiques au total": {
+    "en": "stores in total"
+  },
+  "Activer ce palier": {
+    "en": "Activate this tier"
+  },
+  "Changer de palier": {
+    "en": "Change tier"
+  },
+  "Palier actif": {
+    "en": "Active tier"
+  },
+  "Résilier les boutiques supplémentaires": {
+    "en": "Cancel extra stores"
+  },
+  "Limite de boutiques atteinte. Consultez vos abonnements pour activer une boutique supplémentaire.": {
+    "en": "Store limit reached. Manage your subscription to enable another store."
+  },
+  "Les boutiques supplémentaires du plan Pro nécessitent une activation payante confirmée dans l'abonnement.": {
+    "en": "Extra stores on Growth and Pro require a paid subscription add-on."
+  },
+  "Avant toute mission opérationnelle, les modalités adaptées à chaque situation sont définies par écrit : statut, durée, responsabilités, encadrement, confidentialité et rémunération le cas échéant. Une candidature ne donne aucun accès automatique à l'Intranet.": {
+    "en": "Before any operational assignment, suitable written terms will define the status, duration, responsibilities, supervision, confidentiality and remuneration where applicable. An application does not automatically grant Intranet access."
+  },
+  "Candidater à BIB Talent": {
+    "en": "Apply to BIB Talent"
+  },
+  "Retour à l'édition": {
+    "en": "Back to editing"
+  },
+  "Recommandé pour vous": {
+    "en": "Recommended for you"
+  },
   " Votre compte repasse aux limites du plan Starter.": {
     "en": " Your account returns to Starter plan limits."
   },
@@ -13015,69 +13217,1003 @@
   "Configuration indisponible ici": {
     "en": "Setup unavailable here"
   },
-  "Information générale sur l’utilisation de BIB. Les conditions propres aux marchands et aux acheteurs relèvent de documents distincts, sans remplacer les CGV de chaque boutique.": {"en": "General information about using BIB. Terms applicable to merchants and buyers are set out in separate documents and do not replace the terms of sale for each store."},
-  "Présentation générale des ventes et garanties. Les CGV applicables à une commande sont celles de la boutique, générées pour le vendeur juridiquement identifié et présentées avant paiement.": {"en": "Overview of sales and statutory guarantees. The terms governing an order are those issued for the legally identified seller's store and presented before payment."},
-  "Transparence": {"en": "Transparency"},
-  "Données et consentements": {"en": "Data and consent"},
-  "Parcours par parcours : comptes, commandes, BIB Talent, sondage, assistance IA, communications et publicités.": {"en": "Processing by activity: accounts, orders, BIB Talent, surveys, AI assistance, communications and advertising."},
-  "Marchands": {"en": "Merchants"},
-  "Annexe de traitement des données": {"en": "Data processing addendum"},
-  "Projet d'accord entre BIB et les marchands pour protéger les données clients des boutiques ; à valider avant signature.": {"en": "Draft agreement between BIB and merchants to protect store customers' data; it must be approved before signature."},
-  "Documents juridiques — Brand-In-A-Box": {"en": "Legal documents — Brand-In-A-Box"},
-  "Mentions légales, CGU, CGV, politique de confidentialité et cookies de Brand-In-A-Box accessibles depuis un même répertoire.": {"en": "Brand-In-A-Box legal notices, terms of use, terms of sale, privacy and cookie policies, all in one directory."},
-  "Documents juridiques": {"en": "Legal documents"},
-  "Retrouvez les mentions légales, les conditions d'utilisation et de vente, la confidentialité et les cookies au même endroit.": {"en": "Find our legal notices, terms of use and sale, privacy information and cookie policy in one place."},
-  "Contactez BIB pour toute demande juridique ou relative à la confidentialité. Le délai de réponse dépend de la nature de votre demande.": {"en": "Contact BIB for legal or privacy-related questions. Response times depend on the nature of your request."},
-  "Éditeur & SIRET": {"en": "Publisher and business registration"},
-  "Création de compte 18+": {"en": "Account registration: 18+"},
-  "Services & tarifs": {"en": "Services and pricing"},
-  "Résiliation": {"en": "Termination"},
-  "CGV de la boutique": {"en": "Store terms of sale"},
-  "Vendeur identifié": {"en": "Identified seller"},
-  "Rétractation et garanties": {"en": "Withdrawal rights and statutory guarantees"},
-  "Données collectées": {"en": "Data collected"},
-  "Vos droits RGPD": {"en": "Your GDPR rights"},
-  "Sous-traitants": {"en": "Processors"},
-  "Consentement et bases légales": {"en": "Consent and lawful bases"},
-  "Destinataires": {"en": "Data recipients"},
-  "Choix et retrait": {"en": "Choices and withdrawal"},
-  "Responsabilités RGPD": {"en": "GDPR responsibilities"},
-  "Sécurité et transferts": {"en": "Security and transfers"},
-  "Projet non signé": {"en": "Unsigned draft"},
-  "Essentiels": {"en": "Necessary cookies"},
-  "Préférences": {"en": "Preferences"},
-  "Mesure d'audience": {"en": "Audience measurement"},
-  "Centre juridique": {"en": "Legal centre"},
-  "Fil d'Ariane": {"en": "Breadcrumb"},
-  "Documents BIB": {"en": "BIB documents"},
-  "Dernière révision :": {"en": "Last revised:"},
-  "Lecture publique": {"en": "Public reading"},
-  "Besoin d'une précision ? Consultez le": {"en": "Need more information? Visit the"},
-  "centre d'aide": {"en": "help centre"},
-  "ou les contacts indiqués dans les mentions légales.": {"en": "or use the contact details provided in the legal notices."},
-  "Conditions d'utilisation": {"en": "Terms of use"},
-  "Conditions de vente": {"en": "Terms of sale"},
-  "Cookies et traceurs": {"en": "Cookies and trackers"},
-  "Annexe marchands (projet)": {"en": "Merchant addendum (draft)"},
-  "Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de la marketplace Brand-in-a-Box (« la Marketplace »), opérée sous la marque Brand-in-a-Box (« BIB »), par l'entité éditrice à identifier dans les mentions légales, par tout Utilisateur, Marchand ou Client.": {"en": "These Terms of Use govern access to and use of the Brand-in-a-Box marketplace (the “Marketplace”), operated under the Brand-in-a-Box (“BIB”) brand by the operator to be identified in the legal notices, by any User, Merchant or Customer."},
-  ", qui régissent les commandes de produits, et du Contrat Marchand, qui régit la relation commerciale entre BIB et les Marchands référencés.": {"en": ", which govern product orders, and the Merchant Agreement, which governs the commercial relationship between BIB and listed Merchants."},
-  "La création d'un Compte Marchand est soumise au processus de sélection et de validation du réseau BIB et aux conditions du Contrat Marchand en vigueur. L'accès aux fonctionnalités marchandes (mise en catalogue, gestion de boutique, programme Boutique Verte) est conditionné à cette validation.": {"en": "Creating a Merchant Account is subject to BIB's network selection and approval process and the applicable Merchant Agreement. Access to merchant features (catalogue listing, store management and the Green Store programme) is subject to such approval."},
-  "La création d'un compte client facilite l'accès à l'historique et aux services disponibles. L'achat auprès d'un marchand ne suppose pas de souscrire une offre facultative sauf condition clairement annoncée avant la commande.": {"en": "A customer account provides access to order history and available services. Purchasing from a merchant does not require subscribing to an optional offer unless that condition is clearly stated before the order."},
-  "ne pas falsifier de commandes, de paiements, de documents ou de données opérationnelles ;": {"en": "not falsify orders, payments, documents or operational data;"},
-  "pour les Marchands, ne pas expédier directement les commandes au Client final, en violation du Contrat Marchand et des CGV ;": {"en": "for Merchants, not ship orders directly to the end Customer in breach of the Merchant Agreement or applicable terms of sale;"},
-  "Les marques, codes et créations exploités sur la Marketplace sont protégés dans la mesure des droits détenus par BIB ou des licences dont elle dispose. Les présentes CGU ne transfèrent aucun droit de propriété intellectuelle sur ces éléments. Toute reproduction ou réutilisation non autorisée demeure interdite.": {"en": "Trademarks, source code and creative works used on the Marketplace are protected to the extent of rights held or licensed by BIB. These Terms of Use do not transfer intellectual property rights in those elements. Unauthorised reproduction or reuse remains prohibited."},
-  "BIB peut suspendre ou résilier l'accès d'un Utilisateur en cas de manquement aux CGU, de fraude avérée ou suspectée, ou de non-respect des conditions applicables aux produits réglementés. Sauf urgence ou obligation légale, la décision est précédée d'une information appropriée.": {"en": "BIB may suspend or terminate a User's access for a breach of these Terms, established or suspected fraud, or failure to comply with conditions for regulated products. Except in urgent cases or where the law requires otherwise, appropriate notice is provided beforehand."},
-  "Le Client peut résilier son abonnement BIB Abonné à tout moment. Le Marchand résilie son Compte dans les conditions du Contrat Marchand.": {"en": "Customers may cancel a BIB Subscriber subscription at any time. Merchants may terminate their accounts under the applicable Merchant Agreement."},
-  "BIB peut mettre à jour les CGU pour tenir compte des évolutions techniques, commerciales ou légales. Toute modification substantielle est portée à la connaissance des utilisateurs concernés ; lorsque la réglementation impose une nouvelle acceptation contractuelle, elle est recueillie avant l'application des nouvelles conditions.": {"en": "BIB may update these Terms of Use to reflect technical, commercial or legal changes. Affected users will be informed of material amendments; where the law requires renewed contractual acceptance, it will be obtained before the revised terms apply."},
-  "Cette page présente les principes communs applicables aux ventes de produits sur la marketplace Brand-in-a-Box, sans constituer un contrat unique de vente avec tous les consommateurs. Les conditions contractuelles de chaque commande sont les CGV de la boutique du vendeur professionnel identifié avant paiement : marchand tiers indépendant ou entreprise individuelle exploitant sa propre boutique test. Les CGV propres à ce vendeur exposent les obligations des parties, le prix, le paiement, la livraison, les garanties et le règlement des différends.": {"en": "This page outlines common principles applicable to product sales on the Brand-in-a-Box marketplace. It is not a single sales contract with all consumers. Each order is governed by the store terms of the professional seller identified before payment: an independent third-party merchant or the individual entrepreneur operating a test store. That seller's terms set out the parties' obligations, prices, payment, delivery, guarantees and dispute resolution."},
-  "Pour les boutiques de marchands tiers, le Marchand est le vendeur professionnel et le contrat de vente se forme entre le Client et lui. Il répond des obligations légales liées à ses produits. Pour les boutiques tests exploitées en propre par l'entreprise individuelle BIB, cette même entreprise individuelle est directement le vendeur professionnel et assume ces obligations.": {"en": "For third-party merchants' stores, the Merchant is the professional seller and the sales contract is formed between the Customer and that Merchant, who bears the statutory obligations relating to the goods. For test stores operated directly by the BIB individual entrepreneur, that individual entrepreneur is the professional seller and bears those obligations."},
-  "BIB n'est pas le vendeur des produits des marchands tiers. Pour ces ventes, BIB intervient comme opérateur et intermédiaire, selon un mandat approprié, dans la mise à disposition de boutiques, l'organisation logistique et la coordination du service après-vente. Le cas de ses propres boutiques exploitées par l'entreprise individuelle demeure distinct.": {"en": "BIB is not the seller of third-party merchants' products. For such sales, BIB acts as platform operator and intermediary, subject to an appropriate mandate, providing stores, organising logistics and coordinating after-sales support. Stores operated by the individual entrepreneur on its own account are treated separately."},
-  "Le prix total TTC applicable est annoncé avant validation et précise les frais obligatoires, y compris de livraison, ainsi que les taxes réellement applicables. Les frais et territoires desservis sont ceux confirmés pour l'offre ; la livraison n'est pas présentée comme universellement gratuite. Les moyens de paiement effectivement disponibles sont précisés lors de la commande et leur fonctionnement doit être confirmé avant tout encaissement.": {"en": "The applicable total price including tax is disclosed before confirmation, specifying mandatory charges, including delivery, and taxes actually applicable. Fees and delivery territories depend on the confirmed offer; delivery is not described as universally free. Available payment methods are displayed at checkout and must be verified before payments are accepted."},
-  "Pour les boutiques tierces, le marchand vendeur reste responsable des obligations de conformité et de garantie légale, sans exclure la responsabilité propre de BIB pour ses prestations d'intermédiation ou d'organisation du transport. Pour les boutiques tests exploitées directement par l'entreprise individuelle, cette même entreprise est le vendeur professionnel et assume les obligations correspondantes. Les droits impératifs des consommateurs sont préservés.": {"en": "For third-party stores, the selling merchant remains responsible for statutory conformity and guarantees, without excluding BIB's own liability for its intermediary or transport-organising services. For test stores directly operated by the individual entrepreneur, that entrepreneur is the professional seller and bears the corresponding obligations. Mandatory consumer rights are preserved."},
-  "Le modèle de référence prévoit un forfait de 19 € par mois. Les conditions signées précisent son montant applicable, sa date de prise d’effet, le régime de TVA et les éventuelles commissions. La candidature ouvre l’étude du dossier.": {"en": "The reference model provides for a monthly fee of €19. The signed terms specify the applicable amount, start date, VAT treatment and any commissions. Submitting an application starts the file review."},
-  "Le devis d’audit documentaire initial précise le périmètre, les livrables, les montants et le régime de TVA. La base indicative de chiffrage de 150 € varie selon les références, les pièces et la complexité. Le montant applicable figure sur le devis accepté.": {"en": "The initial document audit quote sets out scope, deliverables, amounts and VAT treatment. The indicative €150 estimate varies with the references, documents and complexity. The accepted quote specifies the applicable amount."},
-  "BIB étudie le dossier du fournisseur et les références proposées. Les conditions financières sont communiquées avant engagement. Toute prestation d’audit facturable fait l’objet d’un devis préalable accepté.": {"en": "BIB reviews the supplier’s file and proposed product references. Financial terms are provided before any commitment. Any billable audit service requires a previously accepted quote."},
-  "Conditions communiquées avant engagement": {"en": "Terms provided before commitment"},
-  "Les prestations BIB et la vente de marchandises ont des factures distinctes. Les frais d’audit facturés par BIB sont réglés par virement, puis rapprochés par Finance. Pour facturer un contre-audit au fournisseur, BIB vérifie son imputabilité, fait accepter un devis distinct et justifie la prestation réalisée.": {"en": "BIB services and the sale of goods are invoiced separately. Audit fees invoiced by BIB are paid by bank transfer and reconciled by Finance. Before billing a follow-up audit to the supplier, BIB establishes responsibility, obtains acceptance of a separate quote and documents the service performed."},
-  "Le fournisseur vend les biens au marchand identifié dans le devis privé. BIB coordonne l’achat et la logistique selon le mandat convenu et facture ses propres prestations.": {"en": "The supplier sells the goods to the merchant named in the private quote. BIB coordinates procurement and logistics under the agreed mandate and invoices for its own services."}
+  "Information générale sur l’utilisation de BIB. Les conditions propres aux marchands et aux acheteurs relèvent de documents distincts, sans remplacer les CGV de chaque boutique.": {
+    "en": "General information about using BIB. Terms applicable to merchants and buyers are set out in separate documents and do not replace the terms of sale for each store."
+  },
+  "Présentation générale des ventes et garanties. Les CGV applicables à une commande sont celles de la boutique, générées pour le vendeur juridiquement identifié et présentées avant paiement.": {
+    "en": "Overview of sales and statutory guarantees. The terms governing an order are those issued for the legally identified seller's store and presented before payment."
+  },
+  "Transparence": {
+    "en": "Transparency"
+  },
+  "Données et consentements": {
+    "en": "Data and consent"
+  },
+  "Parcours par parcours : comptes, commandes, BIB Talent, sondage, assistance IA, communications et publicités.": {
+    "en": "Processing by activity: accounts, orders, BIB Talent, surveys, AI assistance, communications and advertising."
+  },
+  "Marchands": {
+    "en": "Merchants"
+  },
+  "Annexe de traitement des données": {
+    "en": "Data processing addendum"
+  },
+  "Projet d'accord entre BIB et les marchands pour protéger les données clients des boutiques ; à valider avant signature.": {
+    "en": "Draft agreement between BIB and merchants to protect store customers' data; it must be approved before signature."
+  },
+  "Documents juridiques — Brand-In-A-Box": {
+    "en": "Legal documents — Brand-In-A-Box"
+  },
+  "Mentions légales, CGU, CGV, politique de confidentialité et cookies de Brand-In-A-Box accessibles depuis un même répertoire.": {
+    "en": "Brand-In-A-Box legal notices, terms of use, terms of sale, privacy and cookie policies, all in one directory."
+  },
+  "Documents juridiques": {
+    "en": "Legal documents"
+  },
+  "Retrouvez les mentions légales, les conditions d'utilisation et de vente, la confidentialité et les cookies au même endroit.": {
+    "en": "Find our legal notices, terms of use and sale, privacy information and cookie policy in one place."
+  },
+  "Contactez BIB pour toute demande juridique ou relative à la confidentialité. Le délai de réponse dépend de la nature de votre demande.": {
+    "en": "Contact BIB for legal or privacy-related questions. Response times depend on the nature of your request."
+  },
+  "Éditeur & SIRET": {
+    "en": "Publisher and business registration"
+  },
+  "Création de compte 18+": {
+    "en": "Account registration: 18+"
+  },
+  "Services & tarifs": {
+    "en": "Services and pricing"
+  },
+  "Résiliation": {
+    "en": "Termination"
+  },
+  "CGV de la boutique": {
+    "en": "Store terms of sale"
+  },
+  "Vendeur identifié": {
+    "en": "Identified seller"
+  },
+  "Rétractation et garanties": {
+    "en": "Withdrawal rights and statutory guarantees"
+  },
+  "Données collectées": {
+    "en": "Data collected"
+  },
+  "Vos droits RGPD": {
+    "en": "Your GDPR rights"
+  },
+  "Sous-traitants": {
+    "en": "Processors"
+  },
+  "Consentement et bases légales": {
+    "en": "Consent and lawful bases"
+  },
+  "Destinataires": {
+    "en": "Data recipients"
+  },
+  "Choix et retrait": {
+    "en": "Choices and withdrawal"
+  },
+  "Responsabilités RGPD": {
+    "en": "GDPR responsibilities"
+  },
+  "Sécurité et transferts": {
+    "en": "Security and transfers"
+  },
+  "Projet non signé": {
+    "en": "Unsigned draft"
+  },
+  "Essentiels": {
+    "en": "Necessary cookies"
+  },
+  "Préférences": {
+    "en": "Preferences"
+  },
+  "Mesure d'audience": {
+    "en": "Audience measurement"
+  },
+  "Centre juridique": {
+    "en": "Legal centre"
+  },
+  "Fil d'Ariane": {
+    "en": "Breadcrumb"
+  },
+  "Documents BIB": {
+    "en": "BIB documents"
+  },
+  "Dernière révision :": {
+    "en": "Last revised:"
+  },
+  "Lecture publique": {
+    "en": "Public reading"
+  },
+  "Besoin d'une précision ? Consultez le": {
+    "en": "Need more information? Visit the"
+  },
+  "centre d'aide": {
+    "en": "help centre"
+  },
+  "ou les contacts indiqués dans les mentions légales.": {
+    "en": "or use the contact details provided in the legal notices."
+  },
+  "Conditions d'utilisation": {
+    "en": "Terms of use"
+  },
+  "Conditions de vente": {
+    "en": "Terms of sale"
+  },
+  "Cookies et traceurs": {
+    "en": "Cookies and trackers"
+  },
+  "Annexe marchands (projet)": {
+    "en": "Merchant addendum (draft)"
+  },
+  "Les présentes Conditions Générales d'Utilisation (CGU) régissent l'accès et l'utilisation de la marketplace Brand-in-a-Box (« la Marketplace »), opérée sous la marque Brand-in-a-Box (« BIB »), par l'entité éditrice à identifier dans les mentions légales, par tout Utilisateur, Marchand ou Client.": {
+    "en": "These Terms of Use govern access to and use of the Brand-in-a-Box marketplace (the “Marketplace”), operated under the Brand-in-a-Box (“BIB”) brand by the operator to be identified in the legal notices, by any User, Merchant or Customer."
+  },
+  ", qui régissent les commandes de produits, et du Contrat Marchand, qui régit la relation commerciale entre BIB et les Marchands référencés.": {
+    "en": ", which govern product orders, and the Merchant Agreement, which governs the commercial relationship between BIB and listed Merchants."
+  },
+  "La création d'un Compte Marchand est soumise au processus de sélection et de validation du réseau BIB et aux conditions du Contrat Marchand en vigueur. L'accès aux fonctionnalités marchandes (mise en catalogue, gestion de boutique, programme Boutique Verte) est conditionné à cette validation.": {
+    "en": "Creating a Merchant Account is subject to BIB's network selection and approval process and the applicable Merchant Agreement. Access to merchant features (catalogue listing, store management and the Green Store programme) is subject to such approval."
+  },
+  "La création d'un compte client facilite l'accès à l'historique et aux services disponibles. L'achat auprès d'un marchand ne suppose pas de souscrire une offre facultative sauf condition clairement annoncée avant la commande.": {
+    "en": "A customer account provides access to order history and available services. Purchasing from a merchant does not require subscribing to an optional offer unless that condition is clearly stated before the order."
+  },
+  "ne pas falsifier de commandes, de paiements, de documents ou de données opérationnelles ;": {
+    "en": "not falsify orders, payments, documents or operational data;"
+  },
+  "pour les Marchands, ne pas expédier directement les commandes au Client final, en violation du Contrat Marchand et des CGV ;": {
+    "en": "for Merchants, not ship orders directly to the end Customer in breach of the Merchant Agreement or applicable terms of sale;"
+  },
+  "Les marques, codes et créations exploités sur la Marketplace sont protégés dans la mesure des droits détenus par BIB ou des licences dont elle dispose. Les présentes CGU ne transfèrent aucun droit de propriété intellectuelle sur ces éléments. Toute reproduction ou réutilisation non autorisée demeure interdite.": {
+    "en": "Trademarks, source code and creative works used on the Marketplace are protected to the extent of rights held or licensed by BIB. These Terms of Use do not transfer intellectual property rights in those elements. Unauthorised reproduction or reuse remains prohibited."
+  },
+  "BIB peut suspendre ou résilier l'accès d'un Utilisateur en cas de manquement aux CGU, de fraude avérée ou suspectée, ou de non-respect des conditions applicables aux produits réglementés. Sauf urgence ou obligation légale, la décision est précédée d'une information appropriée.": {
+    "en": "BIB may suspend or terminate a User's access for a breach of these Terms, established or suspected fraud, or failure to comply with conditions for regulated products. Except in urgent cases or where the law requires otherwise, appropriate notice is provided beforehand."
+  },
+  "Le Client peut résilier son abonnement BIB Abonné à tout moment. Le Marchand résilie son Compte dans les conditions du Contrat Marchand.": {
+    "en": "Customers may cancel a BIB Subscriber subscription at any time. Merchants may terminate their accounts under the applicable Merchant Agreement."
+  },
+  "BIB peut mettre à jour les CGU pour tenir compte des évolutions techniques, commerciales ou légales. Toute modification substantielle est portée à la connaissance des utilisateurs concernés ; lorsque la réglementation impose une nouvelle acceptation contractuelle, elle est recueillie avant l'application des nouvelles conditions.": {
+    "en": "BIB may update these Terms of Use to reflect technical, commercial or legal changes. Affected users will be informed of material amendments; where the law requires renewed contractual acceptance, it will be obtained before the revised terms apply."
+  },
+  "Cette page présente les principes communs applicables aux ventes de produits sur la marketplace Brand-in-a-Box, sans constituer un contrat unique de vente avec tous les consommateurs. Les conditions contractuelles de chaque commande sont les CGV de la boutique du vendeur professionnel identifié avant paiement : marchand tiers indépendant ou entreprise individuelle exploitant sa propre boutique test. Les CGV propres à ce vendeur exposent les obligations des parties, le prix, le paiement, la livraison, les garanties et le règlement des différends.": {
+    "en": "This page outlines common principles applicable to product sales on the Brand-in-a-Box marketplace. It is not a single sales contract with all consumers. Each order is governed by the store terms of the professional seller identified before payment: an independent third-party merchant or the individual entrepreneur operating a test store. That seller's terms set out the parties' obligations, prices, payment, delivery, guarantees and dispute resolution."
+  },
+  "Pour les boutiques de marchands tiers, le Marchand est le vendeur professionnel et le contrat de vente se forme entre le Client et lui. Il répond des obligations légales liées à ses produits. Pour les boutiques tests exploitées en propre par l'entreprise individuelle BIB, cette même entreprise individuelle est directement le vendeur professionnel et assume ces obligations.": {
+    "en": "For third-party merchants' stores, the Merchant is the professional seller and the sales contract is formed between the Customer and that Merchant, who bears the statutory obligations relating to the goods. For test stores operated directly by the BIB individual entrepreneur, that individual entrepreneur is the professional seller and bears those obligations."
+  },
+  "BIB n'est pas le vendeur des produits des marchands tiers. Pour ces ventes, BIB intervient comme opérateur et intermédiaire, selon un mandat approprié, dans la mise à disposition de boutiques, l'organisation logistique et la coordination du service après-vente. Le cas de ses propres boutiques exploitées par l'entreprise individuelle demeure distinct.": {
+    "en": "BIB is not the seller of third-party merchants' products. For such sales, BIB acts as platform operator and intermediary, subject to an appropriate mandate, providing stores, organising logistics and coordinating after-sales support. Stores operated by the individual entrepreneur on its own account are treated separately."
+  },
+  "Le prix total TTC applicable est annoncé avant validation et précise les frais obligatoires, y compris de livraison, ainsi que les taxes réellement applicables. Les frais et territoires desservis sont ceux confirmés pour l'offre ; la livraison n'est pas présentée comme universellement gratuite. Les moyens de paiement effectivement disponibles sont précisés lors de la commande et leur fonctionnement doit être confirmé avant tout encaissement.": {
+    "en": "The applicable total price including tax is disclosed before confirmation, specifying mandatory charges, including delivery, and taxes actually applicable. Fees and delivery territories depend on the confirmed offer; delivery is not described as universally free. Available payment methods are displayed at checkout and must be verified before payments are accepted."
+  },
+  "Pour les boutiques tierces, le marchand vendeur reste responsable des obligations de conformité et de garantie légale, sans exclure la responsabilité propre de BIB pour ses prestations d'intermédiation ou d'organisation du transport. Pour les boutiques tests exploitées directement par l'entreprise individuelle, cette même entreprise est le vendeur professionnel et assume les obligations correspondantes. Les droits impératifs des consommateurs sont préservés.": {
+    "en": "For third-party stores, the selling merchant remains responsible for statutory conformity and guarantees, without excluding BIB's own liability for its intermediary or transport-organising services. For test stores directly operated by the individual entrepreneur, that entrepreneur is the professional seller and bears the corresponding obligations. Mandatory consumer rights are preserved."
+  },
+  "Le modèle de référence prévoit un forfait de 19 € par mois. Les conditions signées précisent son montant applicable, sa date de prise d’effet, le régime de TVA et les éventuelles commissions. La candidature ouvre l’étude du dossier.": {
+    "en": "The reference model provides for a monthly fee of €19. The signed terms specify the applicable amount, start date, VAT treatment and any commissions. Submitting an application starts the file review."
+  },
+  "Le devis d’audit documentaire initial précise le périmètre, les livrables, les montants et le régime de TVA. La base indicative de chiffrage de 150 € varie selon les références, les pièces et la complexité. Le montant applicable figure sur le devis accepté.": {
+    "en": "The initial document audit quote sets out scope, deliverables, amounts and VAT treatment. The indicative €150 estimate varies with the references, documents and complexity. The accepted quote specifies the applicable amount."
+  },
+  "BIB étudie le dossier du fournisseur et les références proposées. Les conditions financières sont communiquées avant engagement. Toute prestation d’audit facturable fait l’objet d’un devis préalable accepté.": {
+    "en": "BIB reviews the supplier’s file and proposed product references. Financial terms are provided before any commitment. Any billable audit service requires a previously accepted quote."
+  },
+  "Conditions communiquées avant engagement": {
+    "en": "Terms provided before commitment"
+  },
+  "Les prestations BIB et la vente de marchandises ont des factures distinctes. Les frais d’audit facturés par BIB sont réglés par virement, puis rapprochés par Finance. Pour facturer un contre-audit au fournisseur, BIB vérifie son imputabilité, fait accepter un devis distinct et justifie la prestation réalisée.": {
+    "en": "BIB services and the sale of goods are invoiced separately. Audit fees invoiced by BIB are paid by bank transfer and reconciled by Finance. Before billing a follow-up audit to the supplier, BIB establishes responsibility, obtains acceptance of a separate quote and documents the service performed."
+  },
+  "Le fournisseur vend les biens au marchand identifié dans le devis privé. BIB coordonne l’achat et la logistique selon le mandat convenu et facture ses propres prestations.": {
+    "en": "The supplier sells the goods to the merchant named in the private quote. BIB coordinates procurement and logistics under the agreed mandate and invoices for its own services."
+  },
+  "Entreprise": {
+    "en": "Company"
+  },
+  "BIB en préparation": {
+    "en": "BIB in preparation"
+  },
+  "Impossible de charger les préférences de notification. Réessayez avant de modifier vos réglages.": {
+    "en": "Unable to load notification preferences. Try again before changing your settings."
+  },
+  "Les annonces et la synthèse hebdomadaire sont des préférences enregistrées. Leur diffusion dépend de l’activation des services d’envoi correspondants ; aucun e-mail n’est programmé par ce formulaire.": {
+    "en": "Announcements and the weekly summary are saved preferences. Delivery depends on the corresponding sending services being enabled; this form does not schedule any emails."
+  },
+  "Le produit est référencé dans votre boutique sans préachat. Sa disponibilité à la vente dépendra de la validation et de la disponibilité fournisseur confirmée.": {
+    "en": "The product is listed in your shop without an advance purchase. It can be offered for sale once validation is complete and supplier availability is confirmed."
+  },
+  "Le produit reste en pause tant que les validations nécessaires ne sont pas terminées. Vous n'avez pas à acheter un stock avant de le référencer. La vente à la demande doit attendre la confirmation de disponibilité chez le fournisseur et le parcours de commande fournisseur sécurisé.": {
+    "en": "The product remains paused until the required validations are complete. You do not need to buy stock before listing it. On-demand sales must wait for confirmed supplier availability and a secure supplier ordering process."
+  },
+  "Gérer la référence dans ma boutique": {
+    "en": "Manage this listing in my shop"
+  },
+  "Écart brut par unité": {
+    "en": "Gross difference per unit"
+  },
+  "Impossible de charger les alertes. Vérifiez les droits d'accès et réessayez.": {
+    "en": "Unable to load alerts. Check your access permissions and try again."
+  },
+  "Veuillez renseigner une adresse de notification valide.": {
+    "en": "Please enter a valid notification email address."
+  },
+  "Journal des alertes": {
+    "en": "Alert log"
+  },
+  "Dernières vérifications de cette boutique. Les événements sont datés et peuvent être marqués comme traités.": {
+    "en": "Latest checks for this shop. Events are dated and can be marked as handled."
+  },
+  "Chargement de l'historique…": {
+    "en": "Loading history…"
+  },
+  "Impossible de charger l'historique des alertes.": {
+    "en": "Unable to load the alert history."
+  },
+  "Aucune alerte enregistrée. Lancez une vérification pour analyser les indicateurs disponibles.": {
+    "en": "No alerts recorded. Run a check to analyse the available indicators."
+  },
+  "E-mail envoyé": {
+    "en": "Email sent"
+  },
+  "E-mail non envoyé": {
+    "en": "Email not sent"
+  },
+  "Traité": {
+    "en": "Handled"
+  },
+  "Marquer comme traité": {
+    "en": "Mark as handled"
+  },
+  "Informations produit et simulation de prix avant l'ajout à votre boutique.": {
+    "en": "Product information and price simulation before adding it to your shop."
+  },
+  "Visuel indisponible": {
+    "en": "Image unavailable"
+  },
+  "Description du produit": {
+    "en": "Product description"
+  },
+  "Conditions commerciales": {
+    "en": "Commercial terms"
+  },
+  "Marge maximale autorisée": {
+    "en": "Maximum permitted margin"
+  },
+  "Le prix final dépend de la marge que vous choisissez et des frais applicables.": {
+    "en": "The final price depends on your chosen margin and the applicable fees."
+  },
+  "Simuler mon prix de vente": {
+    "en": "Simulate my selling price"
+  },
+  "Prix de vente estimé": {
+    "en": "Estimated selling price"
+  },
+  "Informations complémentaires": {
+    "en": "Additional information"
+  },
+  "Marché commercial": {
+    "en": "Commercial market"
+  },
+  "En favoris": {
+    "en": "In favourites"
+  },
+  "Ajouter à une boutique": {
+    "en": "Add to a shop"
+  },
+  "Impossible de charger les instructions de versement.": {
+    "en": "Unable to load payout instructions."
+  },
+  "Pays du bénéficiaire": {
+    "en": "Recipient country"
+  },
+  "Choisir un pays": {
+    "en": "Choose a country"
+  },
+  "Devise": {
+    "en": "Currency"
+  },
+  "URL canonique transmise à Search Console. Vous pourrez ensuite demander son indexation dans Google.": {
+    "en": "Canonical URL submitted to Search Console. You can then request indexing in Google."
+  },
+  "Choisissez la méthode « Balise HTML » : Google vous donne une balise <meta name=\"google-site-verification\" content=\"…\" />. Suivez la procédure de validation de la propriété Google associée au domaine réellement utilisé.": {
+    "en": "Choose the “HTML tag” method: Google provides a <meta name=\"google-site-verification\" content=\"…\" /> tag. Follow the verification procedure for the Google property associated with the domain actually in use."
+  },
+  "Sous « Inspection de l'URL », collez l'URL d'une boutique ou d'un produit. Si la page est valide, cliquez « Demander une indexation ». Le résultat apparaît sous un délai variable dans Pages > Indexées.": {
+    "en": "Under “URL inspection”, paste a shop or product URL. If the page is valid, click “Request indexing”. Results appear after a variable delay under Pages > Indexed."
+  },
+  "Préparez l’indexation de cette boutique et de ses produits dans Google.": {
+    "en": "Prepare this shop and its products for indexing in Google."
+  },
+  "Ouvre Search Console pré-rempli avec l'URL choisie pour examiner sa présence dans Google.": {
+    "en": "Opens Search Console with the selected URL filled in to check its presence in Google."
+  },
+  "») à Search Console pour éviter les doublons d'indexation entre versions linguistiques. Cliquez ensuite sur « Demander une indexation » dans Google (effet sous un délai variable).": {
+    "en": "”) to Search Console to avoid duplicate indexing of language versions. Then click “Request indexing” in Google (results take a variable amount of time)."
+  },
+  "Menu & logo": {
+    "en": "Menu & logo"
+  },
+  "Thèmes": {
+    "en": "Themes"
+  },
+  "Le domaine personnalisé est réservé au plan Pro.": {
+    "en": "A custom domain is available on the Pro plan."
+  },
+  "Validez d'abord l'échantillon payé et reçu avant une demande de stock.": {
+    "en": "Validate the paid and received sample before requesting stock."
+  },
+  "Stock physiquement réceptionné dans le circuit de la boutique. Le stock encore détenu par le fournisseur n'est pas inclus et l'ajout au catalogue ne vaut pas achat.": {
+    "en": "Stock physically received into the shop's fulfilment process. Stock still held by the supplier is excluded, and adding a catalogue listing does not constitute a purchase."
+  },
+  "Stock réceptionné enregistré": {
+    "en": "Recorded received stock"
+  },
+  "Seuil d’alerte du stock réceptionné": {
+    "en": "Received stock alert threshold"
+  },
+  "Une demande de stock fournisseur nécessite un échantillon payé, reçu et validé. Aucun devis ni paiement de stock n'est créé par ce formulaire.": {
+    "en": "A supplier stock request requires a sample that has been paid for, received and validated. This form does not create a stock quotation or payment."
+  },
+  "Réassort anticipé facultatif (unités)": {
+    "en": "Optional advance restocking (units)"
+  },
+  "Minimum catalogue BIB : {v0} unité(s). Cette demande est facultative et distincte de l'achat fournisseur déclenché pour une vente client. Elle ne modifie aucun stock.": {
+    "en": "BIB catalogue minimum: {v0} unit(s). This optional request is separate from the supplier purchase triggered by a customer sale. It does not change any stock levels."
+  },
+  "Soumettre une demande de réassort": {
+    "en": "Submit a restocking request"
+  },
+  "Référencement sans préachat : le fournisseur conserve la propriété de son stock avant commande. Le stock réceptionné ici n'est pas la disponibilité fournisseur. Les achats déclenchés par une vente client, les éventuelles personnalisations, les réceptions et les livraisons doivent être vérifiés et tracés dans leurs circuits respectifs. Les quantités ne peuvent pas être modifiées manuellement.": {
+    "en": "Listing without an advance purchase: the supplier owns its stock before an order is placed. Stock received here does not represent supplier availability. Purchases triggered by customer sales, any customisation, receipts and deliveries must be verified and recorded in their respective workflows. Quantities cannot be edited manually."
+  },
+  "Zone non précisée": {
+    "en": "Area not specified"
+  },
+  "Union européenne": {
+    "en": "European Union"
+  },
+  "Le monde de vos ventes": {
+    "en": "Your sales around the world"
+  },
+  "Suivez les commandes confirmées à mesure qu’elles arrivent.": {
+    "en": "Track confirmed orders as they arrive."
+  },
+  "En direct": {
+    "en": "Live"
+  },
+  "Globe animé illustrant l’activité commerciale mondiale": {
+    "en": "Animated globe illustrating worldwide commercial activity"
+  },
+  "commandes récentes": {
+    "en": "recent orders"
+  },
+  "Activité commerciale récente": {
+    "en": "Recent commercial activity"
+  },
+  "Dernières commandes, regroupées par marché": {
+    "en": "Latest orders, grouped by market"
+  },
+  "Vos nouvelles ventes apparaîtront ici.": {
+    "en": "Your new sales will appear here."
+  },
+  "commandes": {
+    "en": "orders"
+  },
+  "Les zones indiquées correspondent aux marchés commerciaux des commandes.": {
+    "en": "The areas shown correspond to the orders' commercial markets."
+  },
+  "Classement des ventes payées": {
+    "en": "Paid sales ranking"
+  },
+  "Six derniers mois": {
+    "en": "Last six months"
+  },
+  "Unités": {
+    "en": "Units"
+  },
+  "Stock": {
+    "en": "Stock"
+  },
+  "Dernière vente": {
+    "en": "Latest sale"
+  },
+  "Autres marchés": {
+    "en": "Other markets"
+  },
+  "Vos marchés apparaîtront ici": {
+    "en": "Your markets will appear here"
+  },
+  "Découvrez les zones qui contribuent le plus à votre chiffre d’affaires dès vos premières ventes.": {
+    "en": "Discover which areas contribute most to your revenue as soon as you make your first sales."
+  },
+  "Répartition du chiffre d’affaires par marché commercial": {
+    "en": "Revenue breakdown by commercial market"
+  },
+  "Chiffre d’affaires": {
+    "en": "Revenue"
+  },
+  "marchés commerciaux": {
+    "en": "commercial markets"
+  },
+  "Analyse par zone commerciale associée aux commandes.": {
+    "en": "Analysis by the commercial area associated with orders."
+  },
+  "Les marques": {
+    "en": "The brands"
+  },
+  "du catalogue BIB.": {
+    "en": "in the BIB catalogue."
+  },
+  "Les boutiques seront présentées ici lorsqu'elles disposeront de produits réels qualifiés et publiables.": {
+    "en": "Shops will be shown here when they have genuine, qualified products that are ready for publication."
+  },
+  "Réseau BIB en préparation": {
+    "en": "BIB network in preparation"
+  },
+  "Un catalogue construit à partir de références fournisseurs contrôlées.": {
+    "en": "A catalogue built from verified supplier listings."
+  },
+  "Votre prochaine action marchand": {
+    "en": "Your next merchant action"
+  },
+  "Votre prochaine action": {
+    "en": "Your next action"
+  },
+  "Masquer cette aide": {
+    "en": "Hide this help"
+  },
+  "Masquer les étapes": {
+    "en": "Hide the steps"
+  },
+  "Voir toutes les étapes": {
+    "en": "View all steps"
+  },
+  "1 boutique supplémentaire (+19,99 €/mois)": {
+    "en": "1 additional shop (+€19.99/month)"
+  },
+  "2 boutiques supplémentaires (+35,99 €/mois)": {
+    "en": "2 additional shops (+€35.99/month)"
+  },
+  "Demande de partenariat en 4 à 6 minutes — retour après étude du dossier.": {
+    "en": "Partnership application in 4 to 6 minutes — response after the application has been reviewed."
+  },
+  "Proposer un partenariat": {
+    "en": "Propose a partnership"
+  },
+  "Non. La demande de partenariat constitue uniquement la première étape. BIB étudie le fournisseur, son activité, ses documents, ses capacités et les produits proposés avant toute décision de référencement.": {
+    "en": "No. A partnership application is only the first step. BIB reviews the supplier, its business, documents, capabilities and proposed products before making any listing decision."
+  },
+  "Oui. Selon les produits et les exigences applicables, BIB peut demander des justificatifs ou des contrôles complémentaires. Leurs conditions sont communiquées aux partenaires concernés.": {
+    "en": "Yes. Depending on the products and applicable requirements, BIB may request supporting documents or additional checks. Their terms are communicated to the partners concerned."
+  },
+  "L'accès au réseau commence par une demande de partenariat et une étude du dossier. Aucune intégration automatique n'est effectuée.": {
+    "en": "Access to the network begins with a partnership application and a review. No partner is admitted automatically."
+  },
+  "Le dépôt d'une demande de partenariat ne constitue pas un engagement contractuel. Si le dossier est retenu pour la suite du parcours, BIB présente les conditions applicables avant toute contractualisation.": {
+    "en": "Submitting a partnership application does not create a contractual commitment. If the application is selected for the next stage, BIB presents the applicable terms before any contract is entered into."
+  },
+  "Commande indisponible : disponibilité fournisseur à confirmer": {
+    "en": "Ordering unavailable: supplier availability must be confirmed"
+  },
+  "Une pièce jointe n’a pas pu être transmise.": {
+    "en": "An attachment could not be sent."
+  },
+  "La création du ticket a échoué. Réessayez.": {
+    "en": "Ticket creation failed. Try again."
+  },
+  "Assistant BIB": {
+    "en": "BIB Assistant"
+  },
+  "Besoin d’aide ?": {
+    "en": "Need help?"
+  },
+  "Assistant BIB · Support": {
+    "en": "BIB Assistant · Support"
+  },
+  "Conseils sur BIB · possibilité de contacter le support humain": {
+    "en": "BIB guidance · option to contact human support"
+  },
+  "Confirmer l'ouverture d'un ticket": {
+    "en": "Confirm opening a ticket"
+  },
+  "Le ticket ne sera ouvert que si vous choisissez Oui.": {
+    "en": "The ticket will only be opened if you choose Yes."
+  },
+  "Oui, ouvrir un ticket": {
+    "en": "Yes, open a ticket"
+  },
+  "Non, pas de ticket": {
+    "en": "No, do not open a ticket"
+  },
+  "Aborder un autre sujet": {
+    "en": "Discuss another topic"
+  },
+  "Souhaitez-vous aborder un autre sujet ?": {
+    "en": "Would you like to discuss another topic?"
+  },
+  "Oui, un autre sujet": {
+    "en": "Yes, another topic"
+  },
+  "Non, merci": {
+    "en": "No, thank you"
+  },
+  "Nouvelle conversation": {
+    "en": "New conversation"
+  },
+  "Ce sujet est résolu": {
+    "en": "This issue is resolved"
+  },
+  "Le changement est enregistré. La notification client doit être envoyée par le workflow support sécurisé.": {
+    "en": "The change has been saved. The customer notification must be sent through the secure support workflow."
+  },
+  "Lorsque le suivi de commande est actif pour une vente réelle, utilisez la référence et l’adresse e-mail associée. Une maquette ou une boutique test ne garantit pas la disponibilité d’un suivi transporteur en temps réel.": {
+    "en": "When order tracking is enabled for a genuine sale, use the associated reference and email address. A mock-up or test shop does not guarantee that real-time carrier tracking is available."
+  },
+  "Les reversements et leur calendrier dépendent du contrat marchand applicable, de la configuration effective du prestataire de paiement et des contrôles anti-litige. Un aperçu ou un tarif annoncé ne confirme pas une activation du service.": {
+    "en": "Payouts and their timing depend on the applicable merchant contract, the payment provider's actual configuration and dispute prevention checks. A preview or advertised price does not confirm that the service is enabled."
+  },
+  "Le vendeur reste responsable du litige. En l'absence de réponse sous 48 h, BIB peut prendre le relais selon les conditions de l'assistance ou de l'assurance souscrite.": {
+    "en": "The seller remains responsible for the dispute. If there is no response within 48 hours, BIB may take over under the terms of the support or insurance purchased."
+  },
+  "Pour une commande réelle éligible au suivi BIB, utilisez la référence communiquée à l’achat et l’adresse e-mail associée. Le statut du transport dépend des intégrations réellement actives.": {
+    "en": "For a genuine order eligible for BIB tracking, use the reference provided at purchase and the associated email address. Shipment status depends on the integrations that are actually enabled."
+  },
+  "Les délais dépendent du vendeur, de la destination et du partenaire logistique effectivement sélectionné. Consultez les conditions et informations de livraison communiquées avant de confirmer une commande.": {
+    "en": "Delivery times depend on the seller, destination and logistics partner actually selected. Read the delivery terms and information provided before confirming an order."
+  },
+  "Contactez d'abord la boutique vendeuse via la page produit. Si le marchand ne répond pas sous 48 h, BIB peut intervenir dans les conditions de son assistance et de l'option d'assurance applicable, sans supprimer les obligations légales du vendeur.": {
+    "en": "First contact the selling shop through the product page. If the merchant does not respond within 48 hours, BIB may intervene under the terms of its support and applicable insurance option, without removing the seller's legal obligations."
+  },
+  "Qui est responsable de ma commande ?": {
+    "en": "Who is responsible for my order?"
+  },
+  "La boutique marchande est votre vendeur et demeure responsable de la vente, de la conformité et du service après-vente. BIB fournit la plateforme et coordonne l'expédition avec ses partenaires logistiques.": {
+    "en": "The merchant shop is your seller and remains responsible for the sale, conformity and after-sales service. BIB provides the platform and coordinates shipping with its logistics partners."
+  },
+  "Vérifiez le statut de la tentative auprès de votre banque et du vendeur avant de recommencer. Une autorisation bancaire peut apparaître temporairement sans commande confirmée ; en cas de débit constaté sans confirmation, contactez le support avec la référence de transaction.": {
+    "en": "Check the status of the payment attempt with your bank and the seller before trying again. A bank authorisation may appear temporarily without a confirmed order; if you have been charged without confirmation, contact support with the transaction reference."
+  },
+  "La création de boutique s’effectue dans l’espace marchand habilité : informations du vendeur, identité de marque, pages et catalogue. Les fonctions de génération assistée peuvent nécessiter une activation et les contenus doivent être vérifiés avant publication.": {
+    "en": "Shop creation takes place in the authorised merchant workspace: seller details, brand identity, pages and catalogue. Assisted generation features may need to be enabled, and content must be reviewed before publication."
+  },
+  "Un échantillon est-il toujours obligatoire ?": {
+    "en": "Is a sample always required?"
+  },
+  "La nécessité de vérifier un échantillon dépend des règles de qualification du fournisseur et de la catégorie. Un paiement éventuel, la validation qualité et la décision de publication sont des étapes distinctes ; la fiche n’est pas publiable par le seul fait de son importation.": {
+    "en": "The need to check a sample depends on the supplier qualification rules and the product category. Any payment, quality validation and publication decision are separate steps; importing a listing alone does not make it ready for publication."
+  },
+  "Les versements dépendent des contrats, de la configuration du compte de paiement et des contrôles applicables. Le calendrier exact doit être confirmé dans l’espace Paiements lorsqu’il est activé pour votre compte.": {
+    "en": "Payouts depend on the contracts, payment account configuration and applicable checks. The precise schedule must be confirmed in the Payments workspace when it is enabled for your account."
+  },
+  "Vous restez responsable du SAV, des retours et des garanties légales. Une absence de réponse sous 48 h peut déclencher une escalade vers BIB selon les conditions de l'assistance ou de l'assurance souscrite.": {
+    "en": "You remain responsible for after-sales service, returns and statutory warranties. A failure to respond within 48 hours may trigger an escalation to BIB under the terms of the support or insurance purchased."
+  },
+  "La gestion des accès et des rôles se fait dans l’espace Équipe pour les marchands habilités. Vérifiez les autorisations et limites de votre offre active avant d’inviter une personne.": {
+    "en": "Authorised merchants manage access and roles in the Team workspace. Check the permissions and limits of your active plan before inviting someone."
+  },
+  "Vous pouvez déposer une candidature via le portail fournisseurs. BIB vérifie les informations et justificatifs selon le processus de qualification ; aucun délai de réponse ou référencement n’est garanti.": {
+    "en": "You can apply through the supplier portal. BIB checks the information and supporting documents through its qualification process; no response time or listing is guaranteed."
+  },
+  "Le fournisseur propose ses conditions tarifaires ; le marchand établit son prix de vente dans le cadre contractuel applicable. Les commissions, frais d’audit éventuels et devis doivent être validés avant toute facturation ou engagement.": {
+    "en": "The supplier proposes its pricing terms; the merchant sets its selling price within the applicable contractual framework. Commissions, any audit fees and quotations must be validated before any billing or commitment."
+  },
+  "Le suivi des performances dépend des données réellement disponibles et des fonctionnalités activées dans le portail partenaire. Les indicateurs affichés ne constituent pas une garantie de ventes.": {
+    "en": "Performance tracking depends on the data actually available and the features enabled in the partner portal. Displayed indicators do not guarantee sales."
+  },
+  "Les disponibilités doivent être actualisées et validées avant mise en vente. Les ruptures peuvent suspendre la commande ou la publication ; une synchronisation automatique ne doit pas être supposée sans intégration opérationnelle.": {
+    "en": "Availability must be updated and validated before products are offered for sale. Shortages may suspend ordering or publication; automatic synchronisation must not be assumed without an operational integration."
+  },
+  "Le format d’étiquette dépend du transporteur et des flux logistiques effectivement activés. BIB documente les références d’expédition lors de l’intégration opérationnelle du partenaire.": {
+    "en": "The label format depends on the carrier and the logistics flows actually enabled. BIB documents shipping references when the partner is integrated into operations."
+  },
+  "Les incidents sont signalés au partenaire et à l’équipe BIB selon le contrat applicable. Les délais, responsabilités et indemnisations dépendent des conditions convenues ; une résolution automatique après 48 h n’est pas garantie.": {
+    "en": "Incidents are reported to the partner and the BIB team under the applicable contract. Timelines, responsibilities and compensation depend on the agreed terms; automatic resolution after 48 hours is not guaranteed."
+  },
+  "Les offres sont présentées sur Tarifs. Les changements de formule ne peuvent être confirmés qu’une fois le compte marchand habilité, le prestataire de paiement configuré et les conditions commerciales acceptées.": {
+    "en": "Plans are shown on the Pricing page. Plan changes can only be confirmed once the merchant account is authorised, the payment provider configured and the commercial terms accepted."
+  },
+  "Les documents de facturation sont accessibles selon les modules activés et les droits du compte. Les factures doivent mentionner le bon émetteur légal ; la facturation électronique nécessite les intégrations réglementaires correspondantes.": {
+    "en": "Billing documents are available according to the enabled modules and account permissions. Invoices must identify the correct legal issuer; electronic invoicing requires the corresponding regulatory integrations."
+  },
+  "Les demandes de clôture sont traitées depuis les paramètres du compte ou par le support selon les accès disponibles. Les commandes, obligations comptables et durées légales de conservation peuvent empêcher l’effacement immédiat de toutes les données.": {
+    "en": "Account closure requests are handled through account settings or support, depending on available access. Orders, accounting obligations and statutory retention periods may prevent immediate deletion of all data."
+  },
+  "Consultez les options de sécurité réellement proposées dans votre compte. Lorsque la double authentification est disponible, privilégiez une application d’authentification et protégez vos codes de secours.": {
+    "en": "Review the security options actually available in your account. When two-factor authentication is available, use an authenticator app where possible and protect your recovery codes."
+  },
+  "Le nombre de boutiques autorisées dépend de la formule effectivement souscrite et des règles d’activation. Chaque boutique dispose de ses propres informations commerciales et de son catalogue.": {
+    "en": "The number of shops allowed depends on the plan actually purchased and the activation rules. Each shop has its own commercial information and catalogue."
+  },
+  "Connexion nécessaire pour lire la description de ce guide.": {
+    "en": "Sign in to read this guide's description."
+  },
+  "Contactez le support pour une assistance adaptée ; aucun délai de réponse n'est garanti.": {
+    "en": "Contact support for tailored assistance; no response time is guaranteed."
+  },
+  "Connectez-vous avec un compte marchand BIB pour consulter la description de ce guide.": {
+    "en": "Sign in with a BIB merchant account to view this guide's description."
+  },
+  "Préparation des commandes selon les conditions convenues avec chaque partenaire.": {
+    "en": "Order preparation according to the terms agreed with each partner."
+  },
+  "Consultez les opérations qui vous concernent depuis votre espace partenaire.": {
+    "en": "View the operations relevant to you in your partner workspace."
+  },
+  "Visibilité sur les principales étapes des prestations réalisées.": {
+    "en": "Visibility of the main stages of the services provided."
+  },
+  "Votre demande de partenariat a bien été transmise à l'équipe BIB.": {
+    "en": "Your partnership application has been sent to the BIB team."
+  },
+  "Présentez votre activité et vos capacités. L'équipe BIB reviendra vers vous après étude de votre demande.": {
+    "en": "Describe your business and capabilities. The BIB team will contact you after reviewing your application."
+  },
+  "Envoyer ma demande": {
+    "en": "Send my application"
+  },
+  "Les informations transmises sont utilisées pour étudier votre demande de partenariat logistique.": {
+    "en": "The information provided is used to review your logistics partnership application."
+  },
+  "Coordonnée avec BIB": {
+    "en": "Coordinated with BIB"
+  },
+  "Les services logistiques du réseau BIB": {
+    "en": "Logistics services in the BIB network"
+  },
+  "Des engagements clairs pour chaque partenaire": {
+    "en": "Clear commitments for every partner"
+  },
+  "Une couverture européenne progressive": {
+    "en": "Gradually expanding European coverage"
+  },
+  "Un espace professionnel facilite les échanges et le suivi des prestations confiées.": {
+    "en": "A professional workspace facilitates communication and tracking of the services assigned to you."
+  },
+  "Prestations confiées au partenaire": {
+    "en": "Services assigned to the partner"
+  },
+  "Informations de suivi des prestations": {
+    "en": "Service tracking information"
+  },
+  "Historique des prestations concernées": {
+    "en": "History of relevant services"
+  },
+  "L'accès aux informations dépend du partenariat convenu et reste réservé au partenaire concerné.": {
+    "en": "Information access depends on the agreed partnership and is restricted to the partner concerned."
+  },
+  "Présentez vos capacités logistiques, vos zones couvertes et vos services. BIB étudiera votre proposition avant de définir les prochaines étapes.": {
+    "en": "Describe your logistics capabilities, coverage areas and services. BIB will review your proposal before defining the next steps."
+  },
+  "Engagement de qualité de livraison": {
+    "en": "Delivery quality commitment"
+  },
+  "Les objectifs de service et les mesures correctives éventuelles seront définis lors de la contractualisation.": {
+    "en": "Service objectives and any corrective measures will be defined when the contract is agreed."
+  },
+  "BIB transmet le lien de suivi à l'acheteur. Les modalités de suivi seront précisées avec le partenaire retenu.": {
+    "en": "BIB sends the tracking link to the buyer. Tracking arrangements will be specified with the selected partner."
+  },
+  "Un contact professionnel opérationnel est demandé pour faciliter les échanges.": {
+    "en": "An operational business contact is required to facilitate communication."
+  },
+  "Les indicateurs utiles et leur fréquence de communication seront convenus avec le partenaire.": {
+    "en": "The relevant indicators and their reporting frequency will be agreed with the partner."
+  },
+  "Qualité de service à définir": {
+    "en": "Service quality to be defined"
+  },
+  "Les objectifs de service et les mesures correctives sont définis dans les engagements contractuels.": {
+    "en": "Service objectives and corrective measures are defined in the contractual commitments."
+  },
+  "Les modalités de transmission des informations de suivi sont convenues avec BIB.": {
+    "en": "Arrangements for sharing tracking information are agreed with BIB."
+  },
+  "Contact opérationnel identifié": {
+    "en": "Identified operational contact"
+  },
+  "Un interlocuteur professionnel identifié facilite les échanges de suivi.": {
+    "en": "An identified business contact facilitates follow-up communication."
+  },
+  "Les garanties et plafonds applicables sont examinés et précisés contractuellement.": {
+    "en": "Applicable guarantees and limits are reviewed and specified in the contract."
+  },
+  "Responsable opérationnel": {
+    "en": "Operations manager"
+  },
+  "Email du contact opérationnel": {
+    "en": "Operational contact email"
+  },
+  "Présentez vos capacités et les modalités possibles d'un démarrage. Les conditions seront précisées avec les partenaires retenus.": {
+    "en": "Describe your capabilities and possible arrangements for starting operations. Terms will be specified with the selected partners."
+  },
+  "BIB examine les demandes de partenariat et les produits proposés selon ses critères de sélection.": {
+    "en": "BIB reviews partnership applications and proposed products against its selection criteria."
+  },
+  "BIB facilite la coordination logistique avec les partenaires retenus.": {
+    "en": "BIB facilitates logistics coordination with the selected partners."
+  },
+  "Les exigences de qualité, de traçabilité et de conformité sont prises en compte.": {
+    "en": "Quality, traceability and conformity requirements are taken into account."
+  },
+  "Les grandes étapes pour nous rejoindre": {
+    "en": "The main steps to join us"
+  },
+  "Présentez votre proposition de partenariat. L'équipe BIB étudiera votre activité, vos produits et vos capacités opérationnelles avant de vous indiquer la suite du parcours.": {
+    "en": "Present your partnership proposal. The BIB team will review your business, products and operational capabilities before advising you on the next steps."
+  },
+  "Demande de partenariat fournisseur — BIB": {
+    "en": "Supplier partnership application — BIB"
+  },
+  "Contrôles de qualité adaptés": {
+    "en": "Appropriate quality checks"
+  },
+  "Les vérifications et leurs modalités sont précisées dans les documents contractuels applicables.": {
+    "en": "Checks and their arrangements are specified in the applicable contractual documents."
+  },
+  "Organisation des expéditions": {
+    "en": "Shipping arrangements"
+  },
+  "Les modalités d'expédition sont convenues selon les produits et les partenaires concernés.": {
+    "en": "Shipping arrangements are agreed according to the products and partners concerned."
+  },
+  "Les informations opérationnelles utiles sont échangées par les canaux prévus avec BIB.": {
+    "en": "Relevant operational information is exchanged through the channels agreed with BIB."
+  },
+  "Respect des délais convenus": {
+    "en": "Meeting agreed deadlines"
+  },
+  "Les engagements de délai et les conséquences éventuelles d'un manquement sont définis par contrat.": {
+    "en": "Time commitments and the potential consequences of a breach are defined by contract."
+  },
+  "Conditions de prix et de capacité": {
+    "en": "Pricing and capacity terms"
+  },
+  "Les modalités de révision des prix sont définies lors de la contractualisation.": {
+    "en": "Price revision arrangements are defined when the contract is agreed."
+  },
+  "Outil de gestion de production utilisé": {
+    "en": "Production management tool used"
+  },
+  "Présentez les références envisagées et vos possibilités de livraison. Les modalités d'une éventuelle commande pilote seront étudiées avec BIB.": {
+    "en": "Describe your proposed products and delivery capabilities. Arrangements for a possible pilot order will be reviewed with BIB."
+  },
+  "Comprendre les accès et le fonctionnement de BIB": {
+    "en": "Understand BIB access and how it works"
+  },
+  "Un ticket enregistré dans le support BIB, sans délai de réponse garanti.": {
+    "en": "A ticket recorded in BIB support, without a guaranteed response time."
+  },
+  "Vérification des droits de votre abonnement…": {
+    "en": "Checking your subscription permissions…"
+  },
+  "Analytics Starter": {
+    "en": "Starter Analytics"
+  },
+  "Votre formule comprend les indicateurs généraux de performance. Les analyses des pages, des scènes et des produits ainsi que les exports sont réservés aux offres Growth et Pro.": {
+    "en": "Your plan includes general performance indicators. Page, scene and product analytics, as well as exports, are available on the Growth and Pro plans."
+  },
+  "Passez à Growth ou Pro pour accéder aux analyses détaillées et aux exports CSV et PDF.": {
+    "en": "Upgrade to Growth or Pro to access detailed analytics and CSV and PDF exports."
+  },
+  "Voir les offres": {
+    "en": "View plans"
+  },
+  "Plafond de boutiques atteint": {
+    "en": "Shop limit reached"
+  },
+  "L'ajout d'une boutique nécessite une place disponible dans votre abonnement. Pour Pro, les boutiques supplémentaires s'activent après paiement.": {
+    "en": "Adding a shop requires an available slot in your subscription. On Pro, additional shops are activated after payment."
+  },
+  "Paramètres de la boutique": {
+    "en": "Shop settings"
+  },
+  "Logo de {v0}": {
+    "en": "{v0} logo"
+  },
+  "Boutique BIB": {
+    "en": "BIB shop"
+  },
+  "Points à vérifier": {
+    "en": "Items to check"
+  },
+  "Créer une publicité": {
+    "en": "Create an advertisement"
+  },
+  "Analyses": {
+    "en": "Analytics"
+  },
+  "Analyses de {v0}": {
+    "en": "{v0} analytics"
+  },
+  "Activer une boutique supplémentaire": {
+    "en": "Activate an additional shop"
+  },
+  "Plafond actuel :": {
+    "en": "Current limit:"
+  },
+  "Gérer les boutiques supplémentaires": {
+    "en": "Manage additional shops"
+  },
+  "Affichage limité à 200 lignes. Affinez votre recherche pour retrouver un client.": {
+    "en": "Display limited to 200 rows. Refine your search to find a customer."
+  },
+  "Collaboration": {
+    "en": "Collaboration"
+  },
+  "Comparer les offres": {
+    "en": "Compare plans"
+  },
+  "Mes boutiques → Paramètres de la boutique → E-mail": {
+    "en": "My shops → Shop settings → Email"
+  },
+  "Publicités": {
+    "en": "Advertisements"
+  },
+  "Mot de passe, sessions et sécurité du compte : ouvrir les paramètres.": {
+    "en": "Password, sessions and account security: open settings."
+  },
+  "Les dates de versement ne sont affichées que lorsqu’un virement est réellement planifié. Les préférences de chaque boutique ne constituent pas un calendrier de paiement confirmé.": {
+    "en": "Payout dates are only displayed when a transfer has actually been scheduled. Each shop's preferences do not constitute a confirmed payment schedule."
+  },
+  "Les informations personnelles restent dans « Mon profil ». Les e-mails marketing, alertes et réglages commerciaux de chaque boutique se trouvent dans « Mes boutiques » → « Paramètres de la boutique ».": {
+    "en": "Personal information remains in “My profile”. Marketing emails, alerts and commercial settings for each shop are available under “My shops” → “Shop settings”."
+  },
+  "Paiement transmis. Le statut de votre commande sera confirmé après vérification Stripe.": {
+    "en": "Payment submitted. Your order status will be confirmed after Stripe verification."
+  },
+  "Achat de l'échantillon annulé. Aucun échantillon n'est encore confirmé.": {
+    "en": "Sample purchase cancelled. No sample is confirmed yet."
+  },
+  "Inventaire opérationnel : recherchez, filtrez, vérifiez les échantillons, contrôlez les stocks et modifiez les références de vos boutiques.": {
+    "en": "Operational inventory: search, filter, check samples, monitor stock and edit your shops' product listings."
+  },
+  "Stock local à surveiller": {
+    "en": "Local stock to monitor"
+  },
+  "Stock réceptionné local, hors stock détenu chez le fournisseur": {
+    "en": "Stock received locally, excluding stock held by the supplier"
+  },
+  "Aucun stock local": {
+    "en": "No local stock"
+  },
+  "Mettre en pause": {
+    "en": "Pause"
+  },
+  "Aucun stock local : vérifier séparément la disponibilité fournisseur.": {
+    "en": "No local stock: check supplier availability separately."
+  },
+  "Sélection fournisseurs BIB": {
+    "en": "BIB supplier selection"
+  },
+  "Trouvez les produits de votre prochaine collection": {
+    "en": "Find products for your next collection"
+  },
+  "Explorez les références du catalogue, comparez leur prix de base et personnalisez votre sélection avant de l'ajouter à une boutique.": {
+    "en": "Explore catalogue listings, compare base prices and customise your selection before adding it to a shop."
+  },
+  "Rechercher dans le catalogue": {
+    "en": "Search the catalogue"
+  },
+  "Nom du produit, catégorie…": {
+    "en": "Product name, category…"
+  },
+  "Affiner ma sélection": {
+    "en": "Refine my selection"
+  },
+  "Tout découvrir": {
+    "en": "Discover everything"
+  },
+  "Explorer les références": {
+    "en": "Explore the listings"
+  },
+  "Chargement du catalogue…": {
+    "en": "Loading the catalogue…"
+  },
+  "produits disponibles selon vos critères": {
+    "en": "products matching your criteria"
+  },
+  "Trier les produits": {
+    "en": "Sort products"
+  },
+  "Vue grille": {
+    "en": "Grid view"
+  },
+  "Vue liste": {
+    "en": "List view"
+  },
+  "Consulter le produit {v0}": {
+    "en": "View product {v0}"
+  },
+  "Marge autorisée jusqu'à": {
+    "en": "Permitted margin up to"
+  },
+  "Simuler": {
+    "en": "Simulate"
+  },
+  "Analyse de ventes payées, contrôle SEO des fiches et priorités de correction. Les scores SEO sont des diagnostics internes, pas des positions Google.": {
+    "en": "Paid sales analysis, listing SEO checks and correction priorities. SEO scores are internal diagnostics, not Google rankings."
+  },
+  "Aucune donnée à évaluer": {
+    "en": "No data to assess"
+  },
+  "Commandes payées — 30 jours": {
+    "en": "Paid orders — 30 days"
+  },
+  "Hors transactions de test": {
+    "en": "Excluding test transactions"
+  },
+  "Chiffre d'affaires payé — 30 jours": {
+    "en": "Paid revenue — 30 days"
+  },
+  "Montants des commandes BIB confirmées": {
+    "en": "Amounts of confirmed BIB orders"
+  },
+  "Vos statistiques reflètent les commandes confirmées. Le score SEO évalue la qualité du contenu de vos pages.": {
+    "en": "Your statistics reflect confirmed orders. The SEO score assesses the quality of your page content."
+  },
+  "Conseils calculés à partir des données et anomalies détectées, sans simulation d’analyse IA": {
+    "en": "Recommendations calculated from the data and detected issues, without simulated AI analysis"
+  },
+  "Aucune donnée SEO": {
+    "en": "No SEO data"
+  },
+  "Aucune action prioritaire": {
+    "en": "No priority action"
+  },
+  "Ajoutez des boutiques et produits pour établir un contrôle SEO.": {
+    "en": "Add shops and products to establish an SEO assessment."
+  },
+  "Aucune correction prioritaire n’a été identifiée selon la grille interne.": {
+    "en": "No priority correction has been identified using the internal assessment criteria."
+  },
+  "Évolution de vos ventes confirmées sur les six derniers mois": {
+    "en": "Your confirmed sales over the last six months"
+  },
+  "Chargement des ventes…": {
+    "en": "Loading sales…"
+  },
+  "Données de ventes indisponibles.": {
+    "en": "Sales data unavailable."
+  },
+  "Vos ventes par marché": {
+    "en": "Your sales by market"
+  },
+  "Identifiez les marchés qui génèrent le plus de chiffre d’affaires.": {
+    "en": "Identify the markets that generate the most revenue."
+  },
+  "Chargement des marchés…": {
+    "en": "Loading markets…"
+  },
+  "Chargement des performances…": {
+    "en": "Loading performance data…"
+  },
+  "Performances indisponibles.": {
+    "en": "Performance data unavailable."
+  },
+  "Aucune vente payée": {
+    "en": "No paid sales"
+  },
+  "Vos meilleures ventes apparaîtront ici dès les premières commandes confirmées.": {
+    "en": "Your bestsellers will appear here as soon as your first orders are confirmed."
+  },
+  "Chargement des stocks et ventes…": {
+    "en": "Loading stock and sales…"
+  },
+  "Impossible de calculer les alertes de rotation.": {
+    "en": "Unable to calculate stock turnover alerts."
+  },
+  "Aucun produit actif en stock ne répond aux critères de faible rotation sur les données disponibles.": {
+    "en": "No active product in stock meets the slow-turnover criteria based on the available data."
+  },
+  "Aucune vente payée enregistrée sur la période": {
+    "en": "No paid sales recorded during the period"
+  },
+  "jours depuis la dernière vente": {
+    "en": "days since the last sale"
+  }
 }

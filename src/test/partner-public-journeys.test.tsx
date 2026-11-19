@@ -19,6 +19,7 @@ vi.mock("@/integrations/supabase/client", () => ({ supabase: {} }));
 
 beforeEach(() => {
   language.current = "fr";
+  setUiLanguage("fr");
 });
 afterEach(cleanup);
 
@@ -40,8 +41,11 @@ describe("Public partner journeys", () => {
       "Audit et admission par référence",
       "Publication et commandes",
     ]);
-    expect(screen.getByRole("link", { name: "Candidater comme fournisseur" }))
-      .toHaveAttribute("href", "/suppliers/apply");
+    const applications = screen.getAllByRole("link", { name: "Proposer un partenariat" });
+    expect(applications).toHaveLength(2);
+    for (const application of applications) {
+      expect(application).toHaveAttribute("href", "/suppliers/apply");
+    }
     expect(screen.getByRole("link", { name: "Reprendre mon dossier" }))
       .toHaveAttribute("href", "/suppliers/resume?portal=suppliers");
   });
