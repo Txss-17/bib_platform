@@ -1,24 +1,14 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(() => ({
   server: {
     host: "::",
     port: 8080,
-    proxy: {
-      "/__l5e/assets-v1": {
-        target:
-          "https://id-preview--1aa1b209-5f17-4dd2-aaca-54cdffc202fc.lovable.app",
-        changeOrigin: true,
-      },
-    },
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(
-    Boolean,
-  ),
+  plugins: [react()],
   build: {
     rollupOptions: {
       output: {
