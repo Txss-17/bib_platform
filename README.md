@@ -56,3 +56,13 @@ des changements qui se chevauchent et des schémas externes.
 
 Après toute évolution du schéma, régénérer `src/integrations/supabase/types.ts`.
 Vérifier les migrations déjà appliquées et la base ciblée avant tout déploiement.
+
+Drizzle lit la connexion serveur `BIB_DATABASE_URL`. Comparer le schéma et les
+historiques Drizzle/Supabase avant toute application sur une base restaurée ;
+ne pas modifier artificiellement un journal pour aligner les compteurs.
+
+Le [dossier maître BIB](https://docs.google.com/document/d/18lpUzk5j6jTKMw9m_s2XAPsALxdeP4OVkkqpbr-iv9M)
+centralise les preuves, blocages et décisions Go/No-Go. La compilation ne
+valide ni la restauration, ni les fournisseurs email/IA, ni un paiement Stripe
+sandbox. Toute bascule de production, DNS ou Stripe réel demande une validation
+explicite distincte.
