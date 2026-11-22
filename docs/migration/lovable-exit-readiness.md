@@ -10,7 +10,16 @@ Storage: boutique-media (public, 10 MiB; image/video); support-attachments (priv
 All Auth identities observed are email provider identities; no identity credentials were exported.
 
 ## Special risks
-P0: supabase/functions/_shared/stripe.ts routes Stripe requests via connector-gateway.lovable.dev/stripe and LOVABLE_API_KEY. Replace direct Stripe SDK/API preserving sandbox/live, destination charges, Connect account identity, webhook signature, idempotency, refunds and reconciliation. Other LOVABLE_API_KEY references across AI/email/marketing require review. Drizzle migration journal is canonical per README; do not replay old supabase/migrations indiscriminately.
+P0: **le remplacement du client Stripe Lovable est déjà intégré au code `main`**. `supabase/functions/_shared/stripe.ts` utilise directement le SDK Stripe et les secrets BIB sandbox/live, sans fallback vers le gateway Lovable. **Cela ne démontre aucun déploiement des fonctions Stripe ni aucune transaction sandbox validée**. Les contrôles Connect, destination charges, webhooks, remboursements, idempotence et rapprochement restent P0. Les autres références `LOVABLE_API_KEY` dans les fonctions e-mail, marketing et IA demandent une migration distincte. Le journal Drizzle reste canonique selon le README ; ne pas rejouer les anciennes migrations Supabase sans rapprochement.
+
+
+## Reconciliation du 22 novembre 2026 — preuve de code et runtime
+- [x] Code du client Stripe direct présent sur GitHub `main` (`09c9dd19`) : `_shared/stripe.ts` importe `stripe@22.0.2`, appelle `readDirectStripeSecretKey` et vérifie la signature du webhook. Aucune référence au gateway Stripe Lovable dans les fonctions de paiement actives. Tests unitaires de sélection des clés : `src/test/stripe-direct-key.test.ts`.
+- [x] Le client est utilisé dans les modules checkout, abonnements, storefront, supply, POS, remboursements et webhook.
+- [x] Contrôle Supabase `bib-platform-staging` (`yhzhygssycjoqrxyygvj`) : seulement deux Edge Functions ACTIVE, `intranet-talent-export` et `bib-preprod-storage-import`. Les fonctions de paiement Stripe du dépôt ne sont pas déployées dans ce projet.
+- [ ] Configurer uniquement des secrets SANDBOX vérifiés, compiler/déployer les fonctions paiement nécessaires après contrôle Auth/RLS et dépendances, et faire tests E2E avec comptes Stripe et Connect autorisés.
+- [ ] Vérifier e-mails/Gmail, queue, suppressions et fonctions IA encore dépendantes du fournisseur Lovable avant toute bascule.
+**Décision** : code Stripe direct confirmé, paiements de préproduction et production non validés ; aucun GO, aucune clé live ni DNS modifié.
 
 ## Gate 0 — source and export rights
 - [ ] Verify owner, production source project, database export/download method approved by Lovable; SELECT metadata access is **not** pg_dump permission.
